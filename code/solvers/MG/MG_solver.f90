@@ -1,18 +1,18 @@
       module MG_solver_mod
       ! type(mg),dimension(n_levels) :: mg
-      ! 
+      !
       ! call solve(operator,mg,x,b,m,n_levels,n,norm,compute_norms)
       ! solves Ax = b using multigrid method.
-      ! 
-      ! A is described by matrix-free 
+      !
+      ! A is described by matrix-free
       ! operations defined in routine "operator"
-      ! 
+      !
       ! Smoother      = Jacobi method
       ! Direct solver = Conjugate Gradient Method
 
       use mesh_mod
       use SF_mod
-      use BCs_mod
+      use boundary_conditions_mod
       use apply_BCs_mod
       use norms_mod
       use MG_tools_mod
@@ -62,8 +62,8 @@
           call subtract(mg(1)%smooth%res,mg(1)%smooth%b,mg(1)%smooth%Ax)
 
           ! Zero boundary values
-          call zeroGhostPoints(mg(1)%smooth%res)
-          ! call zeroWall_conditional(mg(1)%smooth%res)
+          call assign_wall_Dirichlet(mg(1)%smooth%res)
+          ! call assign_wall_Dirichlet(mg(1)%smooth%res)
 
           ! 3) Begin decending into coarser grids, starting at level 2
           ! V-Cycle: Given whatever is needed, find, "exactly" the error
@@ -121,8 +121,8 @@
           call subtract(mg(j+1)%smooth%res,mg(j+1)%smooth%b,mg(j+1)%smooth%Ax)
 
           ! Zero boundary values
-          call zeroGhostPoints(mg(j+1)%smooth%res)
-          ! call zeroWall_conditional(mg(j+1)%smooth%res)
+          call assign_ghost_XPeriodic(mg(j+1)%smooth%res,0.0_cp)
+          ! call assign_wall_Dirichlet(mg(j+1)%smooth%res)
 
           ! 4) Decend to coarser level
           call Vcycle(operator,mg,j+1,n_levels)
@@ -138,7 +138,7 @@
           mg(j+1)%smooth%D,mg(j+1)%smooth%m,n,mg(j+1)%smooth%norm,mg(j+1)%compute_norms,&
           mg(j+1)%smooth%Ax,mg(j+1)%smooth%res)
 
-          ! The solution on any mesh above the 
+          ! The solution on any mesh above the
           ! base mesh is the error!
           call assign(mg(j+1)%e,mg(j+1)%x)
 

@@ -4,7 +4,6 @@
        use SF_mod
        use VF_mod
        use TF_mod
-       use domain_mod
        use norms_mod
        use ops_aux_mod
        use ops_interp_mod
@@ -42,7 +41,7 @@
          call add(temp_CC1,temp_CC2)
          call multiply(temp_CC1,dt)
          call add(T,temp_CC1)
-         call apply_BCs(T,m)
+         call apply_BCs(T)
        end subroutine
 
        subroutine explicitEuler_with_source(T,U_F,dt,Re,Pr,m,Q_CC,temp_CC1,temp_CC2,temp_F)
@@ -65,7 +64,7 @@
          call add(temp_CC1,Q_CC)
          call multiply(temp_CC1,dt)
          call add(T,temp_CC1)
-         call apply_BCs(T,m)
+         call apply_BCs(T)
          call subtract_mean_along_dir(T,m,1,temp_CC1)
        end subroutine
 
@@ -153,7 +152,7 @@
          ! Explicit Euler
          call multiply(temp_CC1,dt)
          call add(T,temp_CC1)
-         call apply_BCs(T,m)
+         call apply_BCs(T)
        end subroutine
 
        end module

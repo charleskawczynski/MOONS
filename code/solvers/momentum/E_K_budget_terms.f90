@@ -258,7 +258,7 @@
          type(VF),intent(inout) :: VF_CC1,VF_CC2,VF_CC3,VF_F
          call edge2CellCenter(VF_CC1,J,m,VF_F)
          call face2CellCenter(VF_CC2,B,m)
-         call cross(VF_CC3,VF_CC1,VF_CC2)
+         call cross_product(VF_CC3,VF_CC1,VF_CC2)
          call multiply(VF_CC3,U_CC)
          call add(e,VF_CC3)
          call multiply(e,scale)

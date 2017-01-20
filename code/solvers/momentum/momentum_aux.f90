@@ -7,10 +7,10 @@
        use ops_interp_mod
        use ops_discrete_mod
        use ops_norms_mod
-       
+
        implicit none
        private
-       
+
        public :: compute_TKE
        public :: compute_TKE_2C
        public :: compute_CoFoRe_grid
@@ -18,23 +18,25 @@
 
        contains
 
-       subroutine compute_TKE(K_energy,U_CC,vol)
+       subroutine compute_TKE(K_energy,U_CC,m)
          implicit none
          real(cp),intent(inout) :: K_energy
-         type(VF),intent(in) :: U_CC
-         type(SF),intent(in) :: vol
-         call Ln(K_energy,U_CC,2.0_cp,vol)
+         type(VF),intent(inout) :: U_CC
+         type(mesh),intent(in) :: m
+         call assign_ghost_XPeriodic(U_CC,0.0_cp) ! norms now includes ghost points
+         call Ln(K_energy,U_CC,2.0_cp,m)
          K_energy = 0.5_cp*K_energy ! KE = 1/2 int(u^2) dV
        end subroutine
 
-       subroutine compute_TKE_2C(K_energy,A,B,vol,temp)
+       subroutine compute_TKE_2C(K_energy,A,B,m,temp)
          implicit none
          real(cp),intent(inout) :: K_energy
          type(SF),intent(inout) :: temp
          type(SF),intent(in) :: A,B
-         type(SF),intent(in) :: vol
+         type(mesh),intent(in) :: m
          call add(temp,A,B)
-         call Ln(K_energy,temp,2.0_cp,vol)
+         call assign_ghost_XPeriodic(temp,0.0_cp) ! norms now includes ghost points
+         call Ln(K_energy,temp,2.0_cp,m)
          K_energy = 0.5_cp*K_energy ! KE = 1/2 int(u^2) dV
        end subroutine
 

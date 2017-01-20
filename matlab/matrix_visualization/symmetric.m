@@ -3,7 +3,7 @@ clc; clear all; close all;
 myDir.MOONSdir = 'C:\Users\Charlie\Documents\GitHub\MOONS\';
 addpath([myDir.MOONSdir 'matlab\tools'])
 addpath([myDir.MOONSdir 'matlab\matrixAnalysis'])
-myPlot = myPlotSettings();
+% myPlot = myPlotSettings();
 
 % name = 'PCG_VF_U'; A = load([name '.dat']);
 % A = A'; % A^T is exported, not A
@@ -36,7 +36,7 @@ name = 'PCG_VF_op_mat_B'; A = load([name '.dat']);
 A = A'; % A^T is exported, not A
 A_curl = A;
 
-analyzeMatrix(A,name,true,false,true,false,false)
+analyzeMatrix(A,name,false,false,false,false,false,'d')
 A_simple = A*2/max(max(abs(A)));
 A_curl_simple = A_simple;
 

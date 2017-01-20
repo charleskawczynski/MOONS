@@ -1,7 +1,6 @@
        module E_M_budget_mod
        use current_precision_mod
        use mesh_mod
-       use domain_mod
        use string_mod
        use path_mod
        use dir_tree_mod

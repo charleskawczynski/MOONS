@@ -5,12 +5,14 @@
        use grid_connect_mod
        use coordinate_stretch_parameters_mod
        use grid_mod
-       use domain_mod
+       use mesh_domain_mod
        use mesh_mod
+       use constants_mod
        implicit none
 
        private
        public :: cube_uniform,cube
+       public :: square
        public :: extend_cube_uniform,extend_cube
        public :: matrix_export_mesh
 
@@ -18,8 +20,6 @@
        public :: Hunt_duct_magnetic
        public :: Shercliff_duct_magnetic
        public :: duct_with_vacuum
-
-       real(cp),parameter :: PI = 3.141592653589793238462643383279502884197169399375105820974_cp
 
        contains
 
@@ -31,9 +31,14 @@
          integer :: i
          integer,dimension(3) :: N
          call delete(m)
-         N = (/45,45,45/)
-         ! N = (/67,67,27/)
-         hmin = -1.0_cp; hmax = 1.0_cp
+         ! N = (/45,45,45/); hmin = -1.0_cp; hmax = 1.0_cp
+         ! N = 45; hmin = -1.0_cp; hmax = 1.0_cp
+         N = 45
+         ! N = 13*2**2
+         ! N = 13
+         hmin = -1.0_cp
+         hmax =  1.0_cp
+         ! N = 64; hmin = -0.5_cp; hmax = 0.5_cp
          ! hmin = -0.5_cp; hmax = 0.5_cp
          ! hmin(1) = -1.0_cp; hmax(1) = 1.0_cp
          ! hmin(3) = -0.5_cp; hmax(3) = 0.5_cp
@@ -42,7 +47,7 @@
          i= 2; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
          i= 3; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
          call add(m,g)
-         call initProps(m)
+         call init_props(m)
          call patch(m)
          call delete(g)
        end subroutine
@@ -55,23 +60,49 @@
          integer,dimension(3) :: N
          integer :: i
          real(cp) :: Ha,Re
-         Ha = 20.0_cp; Re = 1000.0_cp
+         ! Ha = 4.0_cp*10.0_cp**(3.0_cp)
+         ! Re = 400.0_cp
+         Ha = 20.0_cp
+         Re = 100.0_cp
          call delete(m)
-         N = (/30,30,30/); hmin = -1.0_cp; hmax = 1.0_cp
-         ! beta = reynoldsBL(Re,hmin,hmax)
+         ! N = (/45,45,45/); hmin = -1.0_cp; hmax = 1.0_cp
+         ! N = 16; hmin = -0.5_cp; hmax = 0.5_cp
+         N = 30
+         N(3) = 40
+         hmin = -1.0_cp
+         hmax = 1.0_cp
+         hmin(3) = -5.0_cp
+         hmax(3) =  5.0_cp
+         ! beta = ReynoldsBL(Re,hmin,hmax)
          beta = HartmannBL(Ha,hmin,hmax)
-
-         ! i= 1; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
-         ! i= 2; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
-         ! i= 3; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
-
          i = 1; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
          i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
          i = 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
-         ! i = 3; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
-         ! i = 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
          call add(m,g)
-         call initProps(m)
+         call init_props(m)
+         call patch(m)
+         call delete(g)
+       end subroutine
+
+       subroutine square(m)
+         implicit none
+         type(mesh),intent(inout) :: m
+         type(grid) :: g
+         real(cp),dimension(3) :: hmin,hmax,beta
+         integer,dimension(3) :: N
+         integer :: i
+         real(cp) :: Ha,Re
+         Ha = 5.0_cp; Re = 400.0_cp
+         call delete(m)
+         N = (/45,45,1/); hmin = -0.5_cp; hmax = 0.5_cp
+         beta = ReynoldsBL(Re,hmin,hmax)
+         ! beta = HartmannBL(Ha,hmin,hmax)
+
+         i = 1; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
+         i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
+         i= 3; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
+         call add(m,g)
+         call init_props(m)
          call patch(m)
          call delete(g)
        end subroutine
@@ -84,13 +115,15 @@
          integer :: i
          integer,dimension(3) :: N
          call delete(m)
-         call init(g,m_in%g(1))
+         call init(g,m_in%B(1)%g)
          N = 11
+         ! N = 3
+         ! N = 3*2**2
          i = 1; call ext_uniform_IO(g,N(i),i)
          i = 2; call ext_uniform_IO(g,N(i),i)
          i = 3; call ext_uniform_IO(g,N(i),i)
          call init(m,g)
-         call initProps(m)
+         call init_props(m)
          call patch(m)
          call delete(g)
        end subroutine
@@ -104,13 +137,13 @@
          integer,dimension(3) :: N
          real(cp),dimension(3) :: L
          call delete(m)
-         call init(g,m_in%g(1))
+         call init(g,m_in%B(1)%g)
          N = 2; L = 1.0_cp
          i = 1; call ext_Roberts_near_IO(g,L(i),N(i),i)
          i = 2; call ext_Roberts_near_IO(g,L(i),N(i),i)
          i = 3; call ext_Roberts_near_IO(g,L(i),N(i),i)
          call init(m,g)
-         call initProps(m)
+         call init_props(m)
          call patch(m)
          call delete(g)
        end subroutine
@@ -125,9 +158,9 @@
          real(cp) :: Ha,Re
          Ha = 60.0_cp; Re = 10.0_cp**(7.0_cp)
          call delete(m)
-         N = (/256,200,1/); hmin = -1.0_cp; hmax = 1.0_cp
-         hmin(1) = 0.0_cp; hmax(1) = 60.0_cp
-         ! beta = reynoldsBL(Re,hmin,hmax)
+         N = (/25,40,1/); hmin = -0.5_cp; hmax = 0.5_cp
+         hmin(1) = 0.0_cp; hmax(1) = 10.0_cp
+         ! beta = ReynoldsBL(Re,hmin,hmax)
          beta = HartmannBL(Ha,hmin,hmax)
 
          i = 1; call grid_uniform(  g,hmin(i),hmax(i),N(i),i)
@@ -136,7 +169,7 @@
          ! i = 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i)
 
          call add(m,g)
-         call initProps(m)
+         call init_props(m)
          call patch(m)
          call delete(g)
        end subroutine
@@ -145,14 +178,14 @@
          implicit none
          type(mesh),intent(inout) :: m_ind
          type(mesh),intent(in) :: m_mom
-         type(domain),intent(inout) :: D_sigma
+         type(mesh_domain),intent(inout) :: D_sigma
          type(mesh) :: m_sigma
          type(grid) :: g
          real(cp) :: tw,tf
          real(cp) :: Gamma_f,Gamma_w,Gamma_v
          integer :: N_w,N_v
          call delete(m_ind)
-         call init(g,m_mom%g(1))
+         call init(g,m_mom%B(1)%g)
 
          Gamma_f = 1.0_cp
          Gamma_w = Gamma_f + tw
@@ -167,9 +200,9 @@
          call ext_Roberts_B_IO(g,tw,N_w,2)
          call ext_Roberts_B_IO(g,tw,N_w,3)
 
-         ! Define domain for electrical conductivity
+         ! Define mesh_domain for electrical conductivity
          call add(m_sigma,g)
-         call initProps(m_sigma)
+         call init_props(m_sigma)
          call patch(m_sigma)
 
          ! Vacuum
@@ -178,7 +211,7 @@
          ! call ext_Roberts_near_IO(g,Gamma_v - tw - tf,N_v,3) ! z-direction
 
          call add(m_ind,g)
-         call initProps(m_ind)
+         call init_props(m_ind)
          call patch(m_ind)
 
          call init(D_sigma,m_sigma,m_ind)
@@ -200,7 +233,7 @@
          i = 2; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
          i = 3; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
          call add(m,g)
-         call initProps(m)
+         call init_props(m)
          call patch(m)
          call delete(g)
        end subroutine
@@ -209,24 +242,24 @@
          implicit none
          type(mesh),intent(inout) :: m_ind
          type(mesh),intent(in) :: m_mom
-         type(domain),intent(inout) :: D_sigma
+         type(mesh_domain),intent(inout) :: D_sigma
          type(mesh) :: m_sigma
          type(grid) :: g
          real(cp) :: tw
          integer :: N_w
          call delete(m_ind)
-         call init(g,m_mom%g(1))
+         call init(g,m_mom%B(1)%g)
          tw = 0.01_cp
          N_w = 3
          ! Wall
          call ext_Roberts_near_IO(g,tw,N_w,2) ! Comment / uncomment for Shercliff / Hunt flow
-         ! Define domain for electrical conductivity
+         ! Define mesh_domain for electrical conductivity
          call add(m_sigma,g)
-         call initProps(m_sigma)
+         call init_props(m_sigma)
          call patch(m_sigma)
-         ! Define domain for magnetic field domain
+         ! Define mesh_domain for magnetic field mesh_domain
          call add(m_ind,g)
-         call initProps(m_ind)
+         call init_props(m_ind)
          call patch(m_ind)
 
          call init(D_sigma,m_sigma,m_ind)
@@ -238,20 +271,20 @@
          implicit none
          type(mesh),intent(inout) :: m_ind
          type(mesh),intent(in) :: m_mom
-         type(domain),intent(inout) :: D_sigma
+         type(mesh_domain),intent(inout) :: D_sigma
          type(mesh) :: m_sigma
          type(grid) :: g
          integer :: N_w
          call delete(m_ind)
-         call init(g,m_mom%g(1))
+         call init(g,m_mom%B(1)%g)
          N_w = 3
-         ! Define domain for electrical conductivity
+         ! Define mesh_domain for electrical conductivity
          call add(m_sigma,g)
-         call initProps(m_sigma)
+         call init_props(m_sigma)
          call patch(m_sigma)
-         ! Define domain for magnetic field domain
+         ! Define mesh_domain for magnetic field mesh_domain
          call add(m_ind,g)
-         call initProps(m_ind)
+         call init_props(m_ind)
          call patch(m_ind)
 
          call init(D_sigma,m_sigma,m_ind)

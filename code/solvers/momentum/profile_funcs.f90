@@ -2,6 +2,7 @@
        use current_precision_mod
        use grid_mod
        use coordinates_mod
+       use constants_mod
        implicit none
 
        private
@@ -16,8 +17,6 @@
        public :: cylinder2D         ! Need to change to func
        public :: SH_profile
 
-       real(cp),parameter :: PI = 3.141592653589793238462643383279502884197169399375105820974_cp
-       
        contains
 
        function rotatingCylinder(cx,cy,sx,sy,r0,omega0,component) result(f)
@@ -37,12 +36,12 @@
          real(cp),dimension(:),allocatable :: x,y
          real(cp),dimension(2) :: hmin,hmax
          allocate(x(sx)); allocate(y(sy))
-             if (sx.eq.cx%sn) then; x = cx%hn
-         elseif (sx.eq.cx%sc) then; x = cx%hc
+             if (sx.eq.cx%sn) then; x = cx%hn%f
+         elseif (sx.eq.cx%sc) then; x = cx%hc%f
            else; stop 'Error: bad size in rotatingCylinder in profile_funcs.f90'
          endif
-             if (sy.eq.cy%sn) then; y = cy%hn
-         elseif (sy.eq.cy%sc) then; y = cy%hc
+             if (sy.eq.cy%sn) then; y = cy%hn%f
+         elseif (sy.eq.cy%sc) then; y = cy%hc%f
            else; stop 'Error: bad size in rotatingCylinder in profile_funcs.f90'
          endif
 
@@ -64,8 +63,8 @@
        function shercliff_profile(cx,cy,sx,sy,Ha,mu,dpdz) result(w)
          ! Computes the Shercliff profile, w(x,y) for Hartmann number,Ha
          ! Reference:
-         !      "Planas, R., Badia, S. & Codina, R. Approximation of 
-         !      the inductionless MHD problem using a stabilized finite 
+         !      "Planas, R., Badia, S. & Codina, R. Approximation of
+         !      the inductionless MHD problem using a stabilized finite
          !      element method. J. Comput. Phys. 230, 2977–2996 (2011)."
          implicit none
          integer,intent(in) :: sx,sy
@@ -77,12 +76,12 @@
          real(cp),dimension(:),allocatable :: x,y
 
          allocate(x(sx)); allocate(y(sy))
-             if (sx.eq.cx%sn) then; x = cx%hn
-         elseif (sx.eq.cx%sc) then; x = cx%hc
+             if (sx.eq.cx%sn) then; x = cx%hn%f
+         elseif (sx.eq.cx%sc) then; x = cx%hc%f
            else; stop 'Error: bad size in shercliff_profile in profile_funcs.f90'
          endif
-             if (sy.eq.cy%sn) then; y = cy%hn
-         elseif (sy.eq.cy%sc) then; y = cy%hc
+             if (sy.eq.cy%sn) then; y = cy%hn%f
+         elseif (sy.eq.cy%sc) then; y = cy%hc%f
            else; stop 'Error: bad size in shercliff_profile in profile_funcs.f90'
          endif
 
@@ -100,7 +99,7 @@
              r2k = 0.5_cp*(-Ha + N)
              V2 = shercliff_coeff(r1k,r2k,y(j)/a,d_B,N)
              V3 = shercliff_coeff(r2k,r1k,y(j)/a,d_B,N)
-             
+
              coeff = 2.0_cp*(-1.0_cp)**k*cos(alpha_k*x(i)/a)/(L*alpha_k**3.0_cp)
              term = coeff*(1.0_cp - V2 - V3)
              w(i,j) = w(i,j) + term
@@ -113,9 +112,9 @@
        function shercliff_coeff(r1k,r2k,eta,d_B,N) result(V)
          ! Computes the coefficient (V2,V3) in the Shercliff profile
          ! expressions given in reference:
-         ! 
-         !      "Planas, R., Badia, S. & Codina, R. Approximation of 
-         !      the inductionless MHD problem using a stabilized finite 
+         !
+         !      "Planas, R., Badia, S. & Codina, R. Approximation of
+         !      the inductionless MHD problem using a stabilized finite
          !      element method. J. Comput. Phys. 230, 2977–2996 (2011)."
          implicit none
          real(cp),intent(in) :: r1k,r2k,eta,d_B,N
@@ -130,9 +129,9 @@
        function hunt_coeff(r1k,r2k,eta,N) result(V)
          ! Computes the coefficient (V2,V3) in the Hunt profile
          ! expressions given in reference:
-         ! 
-         !      "Planas, R., Badia, S. & Codina, R. Approximation of 
-         !      the inductionless MHD problem using a stabilized finite 
+         !
+         !      "Planas, R., Badia, S. & Codina, R. Approximation of
+         !      the inductionless MHD problem using a stabilized finite
          !      element method. J. Comput. Phys. 230, 2977–2996 (2011)."
          implicit none
          real(cp),intent(in) :: r1k,r2k,eta,N
@@ -146,8 +145,8 @@
        function hunt_profile(cx,cy,sx,sy,Ha,mu,dpdz) result(w)
          ! Computes the Hunt profile, w(x,y) for Hartmann number,Ha
          ! Reference:
-         !      "Planas, R., Badia, S. & Codina, R. Approximation of 
-         !      the inductionless MHD problem using a stabilized finite 
+         !      "Planas, R., Badia, S. & Codina, R. Approximation of
+         !      the inductionless MHD problem using a stabilized finite
          !      element method. J. Comput. Phys. 230, 2977–2996 (2011)."
          implicit none
          integer,intent(in) :: sx,sy
@@ -159,12 +158,12 @@
          real(cp),dimension(:),allocatable :: x,y
 
          allocate(x(sx)); allocate(y(sy))
-             if (sx.eq.cx%sn) then; x = cx%hn
-         elseif (sx.eq.cx%sc) then; x = cx%hc
+             if (sx.eq.cx%sn) then; x = cx%hn%f
+         elseif (sx.eq.cx%sc) then; x = cx%hc%f
            else; stop 'Error: bad size in hunt_profile in profile_funcs.f90'
          endif
-             if (sy.eq.cy%sn) then; y = cy%hn
-         elseif (sy.eq.cy%sc) then; y = cy%hc
+             if (sy.eq.cy%sn) then; y = cy%hn%f
+         elseif (sy.eq.cy%sc) then; y = cy%hc%f
            else; stop 'Error: bad size in hunt_profile in profile_funcs.f90'
          endif
 
@@ -181,7 +180,7 @@
              r2k = 0.5_cp*(-Ha + N)
              V2 = hunt_coeff(r1k,r2k,y(j)/a,N)
              V3 = hunt_coeff(r2k,r1k,y(j)/a,N)
-             
+
              coeff = 2.0_cp*(-1.0_cp)**k*cos(alpha_k*x(i)/a)/(L*alpha_k**3.0_cp)
              term = coeff*(1.0_cp - V2 - V3)
              w(i,j) = w(i,j) + term
@@ -194,9 +193,9 @@
        function SH_coeff(r1k,r2k,eta,d_B,N) result(V)
          ! Computes the coefficient (V2,V3) in the Shercliff profile
          ! expressions given in reference:
-         ! 
-         !      "Planas, R., Badia, S. & Codina, R. Approximation of 
-         !      the inductionless MHD problem using a stabilized finite 
+         !
+         !      "Planas, R., Badia, S. & Codina, R. Approximation of
+         !      the inductionless MHD problem using a stabilized finite
          !      element method. J. Comput. Phys. 230, 2977–2996 (2011)."
          implicit none
          real(cp),intent(in) :: r1k,r2k,eta,d_B,N
@@ -211,13 +210,13 @@
        function SH_profile(cx,cy,sx,sy,d_B,Ha,mu,dpdz) result(w)
          ! Computes the Hunt profile, w(x,y) for Hartmann number,Ha
          ! Reference:
-         !      "Planas, R., Badia, S. & Codina, R. Approximation of 
-         !      the inductionless MHD problem using a stabilized finite 
+         !      "Planas, R., Badia, S. & Codina, R. Approximation of
+         !      the inductionless MHD problem using a stabilized finite
          !      element method. J. Comput. Phys. 230, 2977–2996 (2011)."
-         ! 
-         ! 
+         !
+         !
          ! Hunt flow configuration
-         ! 
+         !
          !         conducting
          !   B⁰   |----------|
          !   ^    |          |
@@ -225,7 +224,7 @@
          !   |    |          |
          !        |----------|
          !         conducting
-         ! 
+         !
          implicit none
          integer,intent(in) :: sx,sy
          real(cp),dimension(sx,sy) :: w
@@ -236,12 +235,12 @@
          real(cp),dimension(:),allocatable :: x,y,xi,eta
 
          allocate(x(sx)); allocate(y(sy)); allocate(xi(sx)); allocate(eta(sy))
-             if (sx.eq.cx%sn) then; x = cx%hn
-         elseif (sx.eq.cx%sc) then; x = cx%hc
+             if (sx.eq.cx%sn) then; x = cx%hn%f
+         elseif (sx.eq.cx%sc) then; x = cx%hc%f
            else; stop 'Error: bad size in hunt_profile in profile_funcs.f90'
          endif
-             if (sy.eq.cy%sn) then; y = cy%hn
-         elseif (sy.eq.cy%sc) then; y = cy%hc
+             if (sy.eq.cy%sn) then; y = cy%hn%f
+         elseif (sy.eq.cy%sc) then; y = cy%hc%f
            else; stop 'Error: bad size in hunt_profile in profile_funcs.f90'
          endif
 
@@ -261,7 +260,7 @@
              r2k = 0.5_cp*(-Ha + N)
              V2 = SH_coeff(r1k,r2k,eta(j),d_B,N)
              V3 = SH_coeff(r2k,r1k,eta(j),d_B,N)
-             
+
              coeff = 2.0_cp*(-1.0_cp)**k*cos(alpha_k*xi(i))/(L*alpha_k**3.0_cp)
              term = coeff*(1.0_cp - V2 - V3)
              w(i,j) = w(i,j) + term
@@ -282,13 +281,13 @@
          integer :: i,j,n,m,nMax,mMax
          hmin = (/cx%hmin,cy%hmin/); allocate(hx(sx)); width  = (hmax(1) - hmin(1))/2.0_cp
          hmax = (/cx%hmax,cy%hmax/); allocate(hy(sy)); height = (hmax(2) - hmin(2))/2.0_cp
-         
-             if (sx.eq.cx%sn) then; hx = cx%hn
-         elseif (sx.eq.cx%sc) then; hx = cx%hc
+
+             if (sx.eq.cx%sn) then; hx = cx%hn%f
+         elseif (sx.eq.cx%sc) then; hx = cx%hc%f
            else; stop 'Error: bad size in init_FD_DuctFlow in profile_funcs.f90'
          endif
-             if (sy.eq.cy%sn) then; hy = cy%hn
-         elseif (sy.eq.cy%sc) then; hy = cy%hc
+             if (sy.eq.cy%sn) then; hy = cy%hn%f
+         elseif (sy.eq.cy%sc) then; hy = cy%hc%f
            else; stop 'Error: bad size in init_FD_DuctFlow in profile_funcs.f90'
          endif
          ! Iterations in infinite series:
@@ -323,8 +322,8 @@
          real(cp) :: Re
          Re = 200.0_cp
          allocate(h(s))
-             if (s.eq.c%sn) then; h = c%hn
-         elseif (s.eq.c%sc) then; h = c%hc
+             if (s.eq.c%sn) then; h = c%hn%f
+         elseif (s.eq.c%sc) then; h = c%hc%f
          else; stop 'Error: bad size in parabolic1D in profile_funcs.f90'
          endif
          do i=1,s
@@ -335,10 +334,10 @@
 
        function isolatedEddy2D(cx,cy,sx,sy,component) result(f)
          ! Computes velocities fx,fy from reference:
-         !      "Weiss, N. O. The Expulsion of Magnetic Flux 
+         !      "Weiss, N. O. The Expulsion of Magnetic Flux
          !      by Eddies. Proc. R. Soc. A Math. Phys. Eng.
          !      Sci. 293, 310–328 (1966).""
-         ! 
+         !
          ! Computes
          !           U = curl(psi)
          ! Where
@@ -349,7 +348,7 @@
          ! Computes
          !       u = dpsi/dy =   cos(2 pi x) sin(2 pi y)
          !       v =-dpsi/dx = - sin(2 pi x) cos(2 pi y)
-         ! 
+         !
          ! Component = (1,2) = (x,y)
          implicit none
          integer,intent(in) :: sx,sy
@@ -362,12 +361,12 @@
          if (sx.lt.1) stop 'Error: sx < 1 in isolatedEddy2D in profile_funcs.f90'
          if (sy.lt.1) stop 'Error: sy < 1 in isolatedEddy2D in profile_funcs.f90'
          allocate(x(sx)); allocate(y(sy))
-             if (sx.eq.cx%sn) then; x = cx%hn
-         elseif (sx.eq.cx%sc) then; x = cx%hc
+             if (sx.eq.cx%sn) then; x = cx%hn%f
+         elseif (sx.eq.cx%sc) then; x = cx%hc%f
            else; stop 'Error: bad size in isolatedEddy2D in profile_funcs.f90'
          endif
-             if (sy.eq.cy%sn) then; y = cy%hn
-         elseif (sy.eq.cy%sc) then; y = cy%hc
+             if (sy.eq.cy%sn) then; y = cy%hn%f
+         elseif (sy.eq.cy%sc) then; y = cy%hc%f
            else; stop 'Error: bad size in isolatedEddy2D in profile_funcs.f90'
          endif
 
@@ -388,10 +387,10 @@
 
        ! subroutine isolatedEddy2D(u,v,g)
        !   ! From
-       !   !      Weiss, N. O. The Expulsion of Magnetic Flux 
+       !   !      Weiss, N. O. The Expulsion of Magnetic Flux
        !   !      by Eddies. Proc. R. Soc. A Math. Phys. Eng.
        !   !      Sci. 293, 310–328 (1966).
-       !   ! 
+       !   !
        !   ! Computes
        !   !           U = curl(psi)
        !   ! Where
@@ -411,21 +410,21 @@
        !   wavenum = 2.0_cp
        !   sx = shape(u); sy = shape(v)
        !   do j=1,sx(2);do i=1,sx(1)
-       !        u(i,j) =   cos(wavenum*PI*g%c(1)%hn(i)) * &
-       !                   sin(wavenum*PI*g%c(2)%hc(j))
+       !        u(i,j) =   cos(wavenum*PI*g%c(1)%hn%f(i)) * &
+       !                   sin(wavenum*PI*g%c(2)%hc%f(j))
        !   enddo;enddo
        !   do j=1,sy(2);do i=1,sy(1)
-       !        v(i,j) = - sin(wavenum*PI*g%c(1)%hc(i)) * &
-       !                   cos(wavenum*PI*g%c(2)%hn(j))
+       !        v(i,j) = - sin(wavenum*PI*g%c(1)%hc%f(i)) * &
+       !                   cos(wavenum*PI*g%c(2)%hn%f(j))
        !   enddo;enddo
        ! end subroutine
 
        subroutine singleEddy2D(u,v,g)
          ! From
-         !      Weiss, N. O. The Expulsion of Magnetic Flux 
+         !      Weiss, N. O. The Expulsion of Magnetic Flux
          !      by Eddies. Proc. R. Soc. A Math. Phys. Eng.
          !      Sci. 293, 310–328 (1966).
-         ! 
+         !
          ! Computes
          !           U = curl(psi)
          ! Where
@@ -447,23 +446,23 @@
          three = 3.0_cp; four = 4.0_cp
          sx = shape(u); sy = shape(v)
          do j=1,sx(2);do i=1,sx(1)
-              u(i,j) =   (32.0_cp*g%c(2)%hc(j)/PI)*((one-four*g%c(2)%hc(j)**two)**three) * &
-              cos(PI*g%c(1)%hn(i))
+          u(i,j) = (32.0_cp*g%c(2)%hc%f(j)/PI)*((one-four*g%c(2)%hc%f(j)**two)**three) * &
+          cos(PI*g%c(1)%hn%f(i))
          enddo;enddo
          do j=1,sy(2);do i=1,sy(1)
-              v(i,j) = - ((one-four*g%c(2)%hn(j)**two)**four)*sin(PI*g%c(1)%hc(i))
+          v(i,j) = - ((one-four*g%c(2)%hn%f(j)**two)**four)*sin(PI*g%c(1)%hc%f(i))
          enddo;enddo
        end subroutine
 
        subroutine cylinder2D(u,v,g)
          ! From
          !      Moffatt
-         ! 
+         !
          ! Computes
          !           U(r) = omega0*r
          ! for
          !           0 < r < r0
-         ! 
+         !
          implicit none
          real(cp),dimension(:,:),intent(inout) :: u,v
          type(grid),intent(in) :: g
@@ -479,14 +478,14 @@
          hc = (/((g%c(i)%hmax+g%c(i)%hmin)/2.0_cp,i=1,3)/)
 
          do j=1,sx(2);do i=1,sx(1)
-              r = sqrt((g%c(1)%hn(i)-hc(1))**two + (g%c(2)%hc(j)-hc(2))**two)
-              theta = atan2(g%c(2)%hc(j),g%c(1)%hn(i))
-              if (r.lt.r0) u(i,j) =-omega0*r*sin(theta)
+          r = sqrt((g%c(1)%hn%f(i)-hc(1))**two + (g%c(2)%hc%f(j)-hc(2))**two)
+          theta = atan2(g%c(2)%hc%f(j),g%c(1)%hn%f(i))
+          if (r.lt.r0) u(i,j) =-omega0*r*sin(theta)
          enddo;enddo
          do j=1,sy(2);do i=1,sy(1)
-              r = sqrt((g%c(1)%hc(i)-hc(1))**two + (g%c(2)%hn(j)-hc(2))**two)
-              theta = atan2(g%c(2)%hn(j),g%c(1)%hc(i))
-              if (r.lt.r0) v(i,j) = omega0*r*cos(theta)
+          r = sqrt((g%c(1)%hc%f(i)-hc(1))**two + (g%c(2)%hn%f(j)-hc(2))**two)
+          theta = atan2(g%c(2)%hn%f(j),g%c(1)%hc%f(i))
+          if (r.lt.r0) v(i,j) = omega0*r*cos(theta)
          enddo;enddo
        end subroutine
 
@@ -522,8 +521,8 @@
        !       do i = 1,s(1)
        !         r0 = sqrt( (g%c(d(1))%hmax-g%c(d(1))%hmin)**two + &
        !                    (g%c(d(2))%hmax-g%c(d(2))%hmin)**two )
-       !         r = sqrt( g%c(d(1))%hc(i)**two + & 
-       !                   g%c(d(2))%hc(j)**two )/r0
+       !         r = sqrt( g%c(d(1))%hc%f(i)**two + &
+       !                   g%c(d(2))%hc%f(j)**two )/r0
        !         omega(i,j,k) = omega0*(one - r**two)*exp(-alpha*r**two)
        !       enddo
        !     enddo
@@ -542,7 +541,7 @@
        !   call delete(psi)
        !   call delete(tempVF)
        ! end subroutine
-       
+
 
        ! subroutine initVortex(u,v,w,g,vdir,vsign,dir)
        !   implicit none
@@ -572,8 +571,8 @@
        !   x_N = g%c(1)%hmax; y_N = g%c(2)%hmax; z_N = g%c(3)%hmax
        !   allocate(xc(g%c(1)%sc),yc(g%c(2)%sc),zc(g%c(3)%sc))
        !   allocate(xn(g%c(1)%sn),yn(g%c(2)%sn),zn(g%c(3)%sn))
-       !   xc = g%c(1)%hc; yc = g%c(2)%hc; zc = g%c(3)%hc
-       !   xn = g%c(1)%hn; yn = g%c(2)%hn; zn = g%c(3)%hn
+       !   xc = g%c(1)%hc%f; yc = g%c(2)%hc%f; zc = g%c(3)%hc%f
+       !   xn = g%c(1)%hn%f; yn = g%c(2)%hn%f; zn = g%c(3)%hn%f
        !   call setAllZero(psi_bcs,Nx+2,Ny+2,Nz+2,5)
        !   call checkBCs(psi_bcs)
        !   call writeAllBoundaries(psi_bcs,dir//'parameters/','psi')
@@ -608,7 +607,7 @@
        !   call myCellCenter2Face(v,temp,g,2)
        !   v = -v
        !   deallocate(psi)
-       !   w = 0.0
+       !   w = 0.0_cp
        !   deallocate(tempx,tempy,tempz,temp)
        !   deallocate(xn,yn,zn)
        !   deallocate(xc,yc,zc)

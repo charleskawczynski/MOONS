@@ -8,12 +8,12 @@
       ! Input:
       !     u            = initial guess for u
       !     f            = RHS of above equation
-      !     u_bcs        = boundary conditions for u. Refer to BCs_mod for more info.
+      !     u_bcs        = boundary conditions for u. Refer to boundary_conditions_mod for more info.
       !     g            = contains grid information (dhc,dhn)
       !     ss           = solver settings (specifies max iterations, tolerance etc.)
       !     displayTF    = print residuals to screen (T,F)
-      ! 
-      ! 
+      !
+      !
       ! There are 3 iteration numbers that must be set:
       !      1) Number of V-Cycles - defined by maxIterations in ss
       !      2) Iterations per cycle - call setIterationsPerLevel()
@@ -21,7 +21,7 @@
       use current_precision_mod
       use coordinates_mod
       use grid_mod
-      use BCs_mod
+      use boundary_conditions_mod
       use solverSettings_mod
       use applyBCs_mod
       use norms_mod
@@ -50,7 +50,8 @@
         type(norms) :: norm
         type(solverSettings) :: ss
         integer :: nLevels
-        logical :: displayTF,MG_init
+        logical :: displayTF = .false.
+        logical :: MG_init = .false.
       end type
 
       interface init;       module procedure initMultiGrid;    end interface
@@ -113,11 +114,11 @@
           allocate(mg(j)%res(N(1),N(2),N(3)))
           allocate(mg(j)%e(N(1),N(2),N(3)))
 
-          mg(j)%u    = real(0.0,cp)
-          mg(j)%f    = real(0.0,cp)
-          mg(j)%lapU = real(0.0,cp)
-          mg(j)%res  = real(0.0,cp)
-          mg(j)%e    = real(0.0,cp)
+          mg(j)%u    = 0.0_cp
+          mg(j)%f    = 0.0_cp
+          mg(j)%lapU = 0.0_cp
+          mg(j)%res  = 0.0_cp
+          mg(j)%e    = 0.0_cp
         enddo
 
         ! ******************** Initialize norm/ss ********************
@@ -137,7 +138,7 @@
           endif
 
           ! RIGHT NOW ONLY HANDLES ZERO DIRICHLET AND ZERO NEUAMNN
-          ! FACE/EDGE-DATA IS NOT SUPPORTED AND CANNOT BE SIMPLY 
+          ! FACE/EDGE-DATA IS NOT SUPPORTED AND CANNOT BE SIMPLY
           ! SINCE THE NUMBER OF DATA POINTS DIFFERS BY 1 BETWEEN
           ! EACH DIRECTION FOR STAGGERED DATA.
           if ((s(1).eq.g_base%c(1)%sn).and.(getAllNeumann(mg(1)%u_bcs))) bctype = 4       ! Neumann wall coincident
@@ -280,7 +281,7 @@
 
           s = shape(mg(1)%res)
           ! Zero boundary values
-          call zeroGhostPoints(mg(1)%res)
+          call assign_ghost_XPeriodic(mg(1)%res,0.0_cp)
 
           ! 3) Begin decending into coarser grids, starting at level 2
           ! V-Cycle: Given whatever is needed, compute, "exactly" the error
@@ -298,8 +299,8 @@
 #ifdef _EXPORT_MG_CONVERGENCE_
             call lap(mg(1)%lapu,mg(1)%u,mg(1)%g)
             mg(1)%res = mg(1)%lapu - mg(1)%f
-            call zeroGhostPoints(mg(1)%res)
-            call compute(norm,real(0.0,cp),mg(1)%res)
+            call assign_ghost_XPeriodic(mg(1)%res,0.0_cp)
+            call compute(norm,0.0_cp,mg(1)%res)
             write(NU,*) getL1(norm),getL2(norm),getLinf(norm)
 #endif
 
@@ -322,8 +323,8 @@
 
           call lap(mg(1)%lapu,u,g)
           mg(1)%res = mg(1)%lapu - mg(1)%f
-          call zeroGhostPoints(mg(1)%res)
-          call compute(norm,real(0.0,cp),mg(1)%res)
+          call assign_ghost_XPeriodic(mg(1)%res,0.0_cp)
+          call compute(norm,0.0_cp,mg(1)%res)
           call print(norm,'MG Residuals for '//trim(adjustl(getName(ss))))
         endif
       end subroutine
@@ -361,7 +362,7 @@
           mg(j+1)%res = mg(j+1)%f - mg(j+1)%lapU
           ! Zero boundary values
           s = shape(mg(j+1)%res)
-          call zeroGhostPoints(mg(j+1)%res)
+          call assign_ghost_XPeriodic(mg(j+1)%res,0.0_cp)
 
           ! 4) Decend to coarser level
           call Vcycle(mg,j+1)
@@ -375,7 +376,7 @@
           ! 6) Final smoothing sweeps
           call solve(SOR,mg(j+1)%u,mg(j+1)%f,mg(j+1)%u_bcs,mg(j+1)%g,&
             mg(j+1)%ss,mg(j+1)%norm,mg(j+1)%displayTF)
-          ! The solution on any grid above the 
+          ! The solution on any grid above the
           ! base grid is the error!
           mg(j+1)%e = mg(j+1)%u
 
@@ -386,8 +387,8 @@
           call solve(SOR,mg(j+1)%u,mg(j+1)%f,mg(j+1)%u_bcs,mg(j+1)%g,&
             mg(j+1)%ss,mg(j+1)%norm,mg(j+1)%displayTF)
 
-          ! The solution on any grid above the 
-          ! base grid is the correction on the 
+          ! The solution on any grid above the
+          ! base grid is the correction on the
           ! finer grid!
           mg(j+1)%e = mg(j+1)%u
         endif

@@ -4,9 +4,8 @@
       use mesh_mod
       use SF_mod
       use VF_mod
-      use BCs_mod
+      use boundary_conditions_mod
       use apply_BCs_mod
-      use apply_Stitches_mod
       use norms_mod
       use ops_norms_mod
       use ops_discrete_mod
@@ -22,7 +21,6 @@
 
 #ifdef _EXPORT_PSE_CONVERGENCE_
       real(cp) :: tol_abs = 10.0_cp**(-12.0_cp)
-      character(len=19) :: norm_fmt = '(I10,6E40.28E3,I10)'
 #endif
 
       contains
@@ -46,18 +44,18 @@
         type(norms) :: norm_res0
 #endif
         integer :: i
-        call apply_BCs(x,m)
+        call apply_BCs(x)
         do i=1,n
           call operator(Ax,x,k,m,MFP,tempk)
           call subtract(r,Ax,b)
           call multiply(r,ds)
           call add(x,r)
-          call apply_BCs(x,m)
+          call apply_BCs(x)
           N_iter = N_iter + 1
 #ifdef _EXPORT_PSE_CONVERGENCE_
-          if (n.eq.1) call compute(norm_res0,r,vol)
-          call compute(norm,r,vol)
-          write(un,norm_fmt) N_iter,norm%L1,norm%L2,norm%Linf,&
+          if (n.eq.1) call compute(norm_res0,r,vol,m%MP%volume)
+          call compute(norm,r,vol,m%MP%volume)
+          write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,&
                                     norm_res0%L1,norm_res0%L2,norm_res0%Linf,i
 #endif
         enddo
@@ -66,15 +64,16 @@
         if (compute_norms) then
           call operator(Ax,x,k,m,MFP,tempk)
           call subtract(r,Ax,b)
-          call zeroGhostPoints(r)
-          call zeroWall_conditional(r,m,x)
-          call compute(norm,r,vol); call print(norm,'PSE Residuals SF')
+          call assign_ghost_XPeriodic(r,0.0_cp)
+          call assign_wall_Dirichlet(r,0.0_cp,x)
+          call compute(norm,r,vol,m%MP%volume)
+          call print(norm,'PSE Residuals SF')
           write(un,*) norm%L1,norm%L2,norm%Linf
           write(*,*) 'PSE iterations (executed/max) = ',i-1,n
         endif
 #endif
       end subroutine
-      
+
       subroutine solve_PSE_VF(operator,x,b,vol,k,m,MFP,n,ds,norm,compute_norms,un,tempk,Ax,r,N_iter)
         implicit none
         procedure(op_VF_explicit) :: operator
@@ -94,30 +93,31 @@
         type(norms) :: norm_res0
 #endif
         integer :: i
-        call apply_BCs(x,m)
+        call apply_BCs(x)
         do i=1,n
           call operator(Ax,x,k,m,MFP,tempk)
           call subtract(r,Ax,b)
           call multiply(r,ds)
           call add(x,r)
-          call apply_BCs(x,m)
+          call apply_BCs(x)
           N_iter = N_iter + 1
 #ifdef _EXPORT_PSE_CONVERGENCE_
-          if (n.eq.1) call compute(norm_res0,r,vol)
-          call compute(norm,r,vol)
-          write(un,norm_fmt) N_iter,norm%L1,norm%L2,norm%Linf,&
+          if (n.eq.1) call compute(norm_res0,r,vol,m%MP%volume)
+          call compute(norm,r,vol,m%MP%volume)
+          write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,&
                                     norm_res0%L1,norm_res0%L2,norm_res0%Linf,i
 #endif
         enddo
 
-        call apply_BCs(x,m)
+        call apply_BCs(x)
 #ifndef _EXPORT_PSE_CONVERGENCE_
         if (compute_norms) then
           call operator(Ax,x,k,m,MFP,tempk)
           call subtract(r,Ax,b)
-          call zeroGhostPoints(r)
-          call zeroWall_conditional(r,m,x)
-          call compute(norm,r,vol); call print(norm,'PSE Residuals VF')
+          call assign_ghost_XPeriodic(r,0.0_cp)
+          call assign_wall_Dirichlet(r,0.0_cp,x)
+          call compute(norm,r,vol,m%MP%volume)
+          call print(norm,'PSE Residuals VF')
           write(un,*) norm%L1,norm%L2,norm%Linf
           write(*,*) 'PSE iterations (executed/max) = ',i-1,n
         endif

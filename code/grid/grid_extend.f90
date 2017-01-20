@@ -1,8 +1,11 @@
        module grid_extend_mod
        use current_precision_mod
+       use array_mod
+       use coordinates_mod
        use grid_mod
-       use grid_genHelper_mod
+       use mesh_quality_params_mod
        use coordinate_distribution_funcs_mod
+       use coordinate_distribution_funcs_iterate_mod
        use coordinate_stretch_param_match_mod
        implicit none
 
@@ -13,20 +16,20 @@
        public :: ext_Roberts_far_IO
        public :: ext_Roberts_B_IO
 
-       public :: ext_prep_uniform,ext_prep_uniform_IO      ! ext_prep_uniform(g,g_in,N,dir)
-       public :: ext_prep_Roberts_L,ext_prep_Roberts_L_IO    ! ext_prep_Roberts_L(g,g_in,L,N,dir)
-       public :: ext_prep_Roberts_R,ext_prep_Roberts_R_IO    ! ext_prep_Roberts_R(g,g_in,L,N,dir)
-       public :: ext_prep_Roberts_B,ext_prep_Roberts_B_IO    ! ext_prep_Roberts_B(g,g_in,L,N,dir)
+       public :: ext_prep_uniform_IO      ! ext_prep_uniform(g,N,dir)
+       public :: ext_prep_Roberts_L_IO    ! ext_prep_Roberts_L(g,L,N,dir)
+       public :: ext_prep_Roberts_R_IO    ! ext_prep_Roberts_R(g,L,N,dir)
+       public :: ext_prep_Roberts_B_IO    ! ext_prep_Roberts_B(g,L,N,dir)
        ! public :: ext_prep_cluster      ! Not yet implemented
 
-       public :: ext_app_uniform,ext_app_uniform_IO       ! ext_app_uniform(g,g_in,N,dir)
-       public :: ext_app_Roberts_L,ext_app_Roberts_L_IO     ! ext_app_Roberts_L(g,g_in,L,N,dir)
-       public :: ext_app_Roberts_R,ext_app_Roberts_R_IO     ! ext_app_Roberts_R(g,g_in,L,N,dir)
-       public :: ext_app_Roberts_B,ext_app_Roberts_B_IO     ! ext_app_Roberts_B(g,g_in,L,N,dir)
+       public :: ext_app_uniform_IO       ! ext_app_uniform(g,N,dir)
+       public :: ext_app_Roberts_L_IO     ! ext_app_Roberts_L(g,L,N,dir)
+       public :: ext_app_Roberts_R_IO     ! ext_app_Roberts_R(g,L,N,dir)
+       public :: ext_app_Roberts_B_IO     ! ext_app_Roberts_B(g,L,N,dir)
        ! public :: ext_app_cluster       ! Not yet implemented
 
-       public :: ext_app_Roberts_C2F,ext_app_Roberts_C2F_IO     ! ext_app_Roberts_B(g,g_in,L,N,dir)
-
+       public :: ext_app_Roberts_C2F_IO     ! ext_app_Roberts_B(g,L,N,dir)
+       public :: ext_prep_Roberts_C2F_IO
 
        contains
 
@@ -40,292 +43,273 @@
          call ext_app_uniform_IO (g,N,dir)
        end subroutine
 
-       subroutine ext_Roberts_near_IO(g,L,N,dir)
+       subroutine ext_Roberts_near_IO(g,L,N,dir,MQP)
          implicit none
          type(grid),intent(inout) :: g
          real(cp),intent(in) :: L
          integer,intent(in) :: N,dir
-         call ext_prep_Roberts_R_IO(g,L,N,dir)
-         call ext_app_Roberts_L_IO (g,L,N,dir)
+         type(mesh_quality_params),intent(in) :: MQP
+         call ext_prep_Roberts_R_IO(g,L,N,dir,MQP)
+         call ext_app_Roberts_L_IO (g,L,N,dir,MQP)
        end subroutine
 
-       subroutine ext_Roberts_far_IO(g,L,N,dir)
+       subroutine ext_Roberts_far_IO(g,L,N,dir,MQP)
          implicit none
          type(grid),intent(inout) :: g
          real(cp),intent(in) :: L
          integer,intent(in) :: N,dir
-         call ext_prep_Roberts_L_IO(g,L,N,dir)
-         call ext_app_Roberts_R_IO (g,L,N,dir)
+         type(mesh_quality_params),intent(in) :: MQP
+         call ext_prep_Roberts_L_IO(g,L,N,dir,MQP)
+         call ext_app_Roberts_R_IO (g,L,N,dir,MQP)
        end subroutine
 
-       subroutine ext_Roberts_B_IO(g,L,N,dir)
+       subroutine ext_Roberts_B_IO(g,L,N,dir,MQP)
          implicit none
          type(grid),intent(inout) :: g
          real(cp),intent(in) :: L
          integer,intent(in) :: N,dir
-         call ext_prep_Roberts_B_IO(g,L,N,dir)
-         call ext_app_Roberts_B_IO (g,L,N,dir)
+         type(mesh_quality_params),intent(in) :: MQP
+         call ext_prep_Roberts_B_IO(g,L,N,dir,MQP)
+         call ext_app_Roberts_B_IO (g,L,N,dir,MQP)
        end subroutine
 
        ! ******************************************************************** Prepend
+
+       subroutine process_prepend(g,a,b,dir)
+         implicit none
+         type(grid),intent(inout) :: g
+         type(array),intent(inout) :: a,b
+         integer,intent(in) :: dir
+         call snip(a); call snip(a)
+         call prepend(a,b)
+         call init(g%c(dir),a)
+         call prepend_ghost(g%c(dir))
+         call initProps(g)
+         call delete(a); call delete(b)
+       end subroutine
 
        subroutine ext_prep_uniform_IO(g,N,dir)
          implicit none
          type(grid),intent(inout) :: g
          integer,intent(in) :: N,dir
-         type(grid) :: temp
-         call init(temp,g); call ext_prep_uniform(g,temp,N,dir); call delete(temp)
+         type(array) :: a,b
+         real(cp) :: hmin,dh
+         call check_N(N,'ext_prep_uniform')
+         call init(a,g%c(dir)%hn)
+         hmin = g%c(dir)%hmin; dh = g%c(dir)%dhn%f(1)
+         call init(b,uniformLeft(hmin,dh,N))
+         call process_prepend(g,a,b,dir)
        end subroutine
 
-       subroutine ext_prep_uniform(g,g_in,N,dir)
-         implicit none
-         type(grid),intent(inout) :: g
-         type(grid),intent(in) :: g_in
-         integer,intent(in) :: N,dir
-         type(gridGenerator) :: gg
-         real(cp) :: dh
-         if (.not.(N.gt.0)) stop 'Error: N is not > 0 in ext_prep_uniform in extend_grid.f90'
-         call init(g,g_in); call init(gg%g%c(dir),g_in%c(dir))
-         call snip(gg,dir) ! Remove ghost nodes
-         dh = gg%g%c(dir)%dhn(1)
-         call snip(gg,dir)
-         call prep(gg,(/uniformLeft(g_in%c(dir)%hmin,dh,N)/),dir)
-         call prepGhost(gg,dir) ! re-apply ghosts
-         call init(g,gg%g%c(dir)%hn,dir)
-         call initProps(g)
-         call delete(gg)
-       end subroutine
-
-       subroutine ext_prep_Roberts_L_IO(g,L,N,dir)
+       subroutine ext_prep_Roberts_L_IO(g,L,N,dir,MQP)
          implicit none
          type(grid),intent(inout) :: g
          real(cp),intent(in) :: L
          integer,intent(in) :: N,dir
-         type(grid) :: temp
-         call init(temp,g); call ext_prep_Roberts_L(g,temp,L,N,dir); call delete(temp)
+         type(mesh_quality_params),intent(in) :: MQP
+         real(cp) :: beta,hmin,dh
+         type(array) :: a,b
+         integer :: i,N_final
+         call check_N(N,'ext_prep_Roberts_L')
+         call init(a,g%c(dir)%hn)
+         hmin = g%c(dir)%hmin; dh = g%c(dir)%dhn%f(1)
+         N_final = N
+         do i=1,MQP%N_iter
+           beta = beta_dh_small(hmin - L,hmin,N_final,dh)
+           call init(b,robertsLeft(hmin-L,hmin,N_final,beta))
+           N_final = b%N
+           if (needs_more_points(b,MQP)) then; N_final=N_final+1; else; exit; endif
+         enddo
+         call process_prepend(g,a,b,dir)
        end subroutine
 
-       subroutine ext_prep_Roberts_L(g,g_in,L,N,dir)
-         implicit none
-         type(grid),intent(inout) :: g
-         type(grid),intent(in) :: g_in
-         real(cp),intent(in) :: L
-         integer,intent(in) :: N,dir
-         real(cp) :: beta,hmin
-         type(gridGenerator) :: gg
-         if (.not.(N.gt.0)) stop 'Error: N is not > 0 in ext_prep_Roberts_L in extend_grid.f90'
-         call init(g,g_in); call init(gg%g%c(dir),g_in%c(dir))
-         hmin = g_in%c(dir)%hmin
-         beta = beta_dh_small(hmin - L,hmin,N,g_in%c(dir)%dhn(1))
-         call snip(gg,dir); call snip(gg,dir)
-         call prep(gg,(/robertsLeft(hmin-L,hmin,N,beta)/),dir)
-         call prepGhost(gg,dir)
-         call init(g,gg%g%c(dir)%hn,dir)
-         call initProps(g)
-         call delete(gg)
-       end subroutine
-
-       subroutine ext_prep_Roberts_R_IO(g,L,N,dir)
+       subroutine ext_prep_Roberts_R_IO(g,L,N,dir,MQP)
          implicit none
          type(grid),intent(inout) :: g
          real(cp),intent(in) :: L
          integer,intent(in) :: N,dir
-         type(grid) :: temp
-         call init(temp,g); call ext_prep_Roberts_R(g,temp,L,N,dir); call delete(temp)
+         type(mesh_quality_params),intent(in) :: MQP
+         real(cp) :: beta,hmin,dh
+         type(array) :: a,b
+         integer :: i,N_final
+         call check_N(N,'ext_prep_Roberts_R')
+         call init(a,g%c(dir)%hn)
+         hmin = g%c(dir)%hmin; dh = g%c(dir)%dhn%f(1)
+         N_final = N
+         do i=1,MQP%N_iter
+           beta = beta_dh_small(hmin - L,hmin,N_final,dh)
+           call init(b,robertsRight(hmin-L,hmin,N_final,beta))
+           N_final = b%N
+           if (needs_more_points(b,MQP)) then; N_final=N_final+1; else; exit; endif
+         enddo
+         call process_prepend(g,a,b,dir)
        end subroutine
 
-       subroutine ext_prep_Roberts_R(g,g_in,L,N,dir)
-         implicit none
-         type(grid),intent(inout) :: g
-         type(grid),intent(in) :: g_in
-         real(cp),intent(in) :: L
-         integer,intent(in) :: N,dir
-         real(cp) :: beta,hmin
-         type(gridGenerator) :: gg
-         if (.not.(N.gt.0)) stop 'Error: N is not > 0 in ext_prep_Roberts_R in extend_grid.f90'
-         call init(g,g_in); call init(gg%g%c(dir),g_in%c(dir))
-         hmin = g_in%c(dir)%hmin
-         beta = beta_dh_small(hmin - L,hmin,N,g_in%c(dir)%dhn(1))
-         call snip(gg,dir); call snip(gg,dir)
-         call prep(gg,(/robertsRight(hmin-L,hmin,N,beta)/),dir)
-         call prepGhost(gg,dir)
-         call init(g,gg%g%c(dir)%hn,dir)
-         call initProps(g)
-         call delete(gg)
-       end subroutine
-
-       subroutine ext_prep_Roberts_B_IO(g,L,N,dir)
+       subroutine ext_prep_Roberts_B_IO(g,L,N,dir,MQP)
          implicit none
          type(grid),intent(inout) :: g
          real(cp),intent(in) :: L
          integer,intent(in) :: N,dir
-         type(grid) :: temp
-         call init(temp,g); call ext_prep_Roberts_B(g,temp,L,N,dir); call delete(temp)
+         type(mesh_quality_params),intent(in) :: MQP
+         real(cp) :: beta,hmin,dh
+         type(array) :: a,b
+         integer :: i,N_final
+         call check_N(N,'ext_prep_Roberts_B')
+         call init(a,g%c(dir)%hn)
+         hmin = g%c(dir)%hmin; dh = g%c(dir)%dhn%f(1)
+         N_final = N
+         do i=1,MQP%N_iter
+           beta = beta_dh_both(hmin - L,hmin,N_final,dh)
+           call init(b,robertsBoth(hmin-L,hmin,N_final,beta))
+           N_final = b%N
+           if (needs_more_points(b,MQP)) then; N_final=N_final+1; else; exit; endif
+         enddo
+         call process_prepend(g,a,b,dir)
        end subroutine
 
-       subroutine ext_prep_Roberts_B(g,g_in,L,N,dir)
+       subroutine ext_prep_Roberts_C2F_IO(g,L,N,dir,MQP)
          implicit none
          type(grid),intent(inout) :: g
-         type(grid),intent(in) :: g_in
          real(cp),intent(in) :: L
          integer,intent(in) :: N,dir
-         real(cp) :: beta,hmin
-         type(gridGenerator) :: gg
-         if (.not.(N.gt.0)) stop 'Error: N is not > 0 in ext_prep_Roberts_B in extend_grid.f90'
-         call init(g,g_in); call init(gg%g%c(dir),g_in%c(dir))
-         hmin = g_in%c(dir)%hmin
-         beta = beta_dh_both(hmin - L,hmin,N,g_in%c(dir)%dhn(1))
-         call snip(gg,dir); call snip(gg,dir)
-         call prep(gg,(/robertsBoth(hmin-L,hmin,N,beta)/),dir)
-         call prepGhost(gg,dir)
-         call init(g,gg%g%c(dir)%hn,dir)
-         call initProps(g)
-         call delete(gg)
+         type(mesh_quality_params),intent(in) :: MQP
+         real(cp) :: beta,hmin,dh
+         type(array) :: a,b
+         integer :: i,N_final
+         call check_N(N,'ext_prep_Roberts_B')
+         call init(a,g%c(dir)%hn)
+         hmin = g%c(dir)%hmin; dh = g%c(dir)%dhn%f(1)
+         N_final = N
+         do i=1,MQP%N_iter
+           beta = beta_dh_big(hmin - L,hmin,N_final,dh)
+           call init(b,robertsLeft(hmin-L,hmin,N_final,beta))
+           N_final = b%N
+           if (needs_more_points(b,MQP)) then; N_final=N_final+1; else; exit; endif
+         enddo
+         call process_prepend(g,a,b,dir)
        end subroutine
 
        ! ******************************************************************** Append
+
+       subroutine process_append(g,a,b,dir)
+         implicit none
+         type(grid),intent(inout) :: g
+         type(array),intent(inout) :: a,b
+         integer,intent(in) :: dir
+         call init(a,g%c(dir)%hn)
+         call pop(a); call pop(a)
+         call append(a,b)
+         call init(g%c(dir),a)
+         call append_ghost(g%c(dir))
+         call initProps(g)
+         call delete(a); call delete(b)
+       end subroutine
 
        subroutine ext_app_uniform_IO(g,N,dir)
          implicit none
          type(grid),intent(inout) :: g
          integer,intent(in) :: N,dir
-         type(grid) :: temp
-         call init(temp,g); call ext_app_uniform(g,temp,N,dir); call delete(temp)
-       end subroutine
-
-       subroutine ext_app_uniform(g,g_in,N,dir)
-         implicit none
-         type(grid),intent(inout) :: g
-         type(grid),intent(in) :: g_in
-         integer,intent(in) :: N,dir
-         type(gridGenerator) :: gg
+         type(array) :: a,b
          real(cp) :: dh
-         if (.not.(N.gt.0)) stop 'Error: N is not > 0 in ext_app_uniform in extend_grid.f90'
-         call init(g,g_in); call init(gg%g%c(dir),g_in%c(dir))
-         call pop(gg,dir) ! Remove ghost nodes
-         dh = gg%g%c(dir)%dhn(gg%g%c(dir)%sn-1)
-         call pop(gg,dir)
-         call app(gg,(/uniformRight(g_in%c(dir)%hmax,dh,N)/),dir)
-         call appGhost(gg,dir) ! re-apply ghosts
-         call init(g,gg%g%c(dir)%hn,dir)
-         call initProps(g)
-         call delete(gg)
+         call check_N(N,'ext_app_uniform_IO')
+         call init(a,g%c(dir)%hn)
+         dh = g%c(dir)%dhn_e
+         call init(b,uniformRight(g%c(dir)%hmax,dh,N))
+         call process_append(g,a,b,dir)
        end subroutine
 
-       subroutine ext_app_Roberts_L_IO(g,L,N,dir)
+       subroutine ext_app_Roberts_L_IO(g,L,N,dir,MQP)
          implicit none
          type(grid),intent(inout) :: g
          real(cp),intent(in) :: L
          integer,intent(in) :: N,dir
-         type(grid) :: temp
-         call init(temp,g); call ext_app_Roberts_L(g,temp,L,N,dir); call delete(temp)
+         type(mesh_quality_params),intent(in) :: MQP
+         real(cp) :: beta,hmax,dh
+         type(array) :: a,b
+         integer :: i,N_final
+         call check_N(N,'ext_app_Roberts_L_IO')
+         hmax = g%c(dir)%hmax; dh = g%c(dir)%dhn_e
+         N_final = N
+         do i=1,MQP%N_iter
+           beta = beta_dh_small(hmax,hmax + L,N_final,dh)
+           call init(b,robertsLeft(hmax,hmax + L,N_final,beta))
+           N_final = b%N
+           if (needs_more_points(b,MQP)) then; N_final=N_final+1; else; exit; endif
+         enddo
+         call process_append(g,a,b,dir)
        end subroutine
 
-       subroutine ext_app_Roberts_L(g,g_in,L,N,dir)
-         implicit none
-         type(grid),intent(inout) :: g
-         type(grid),intent(in) :: g_in
-         real(cp),intent(in) :: L
-         integer,intent(in) :: N,dir
-         real(cp) :: beta,hmax
-         type(gridGenerator) :: gg
-         if (.not.(N.gt.0)) stop 'Error: N is not > 0 in ext_app_Roberts_L in extend_grid.f90'
-         call init(g,g_in); call init(gg%g%c(dir),g_in%c(dir))
-         hmax = g_in%c(dir)%hmax
-         beta = beta_dh_small(hmax,hmax + L,N,g_in%c(dir)%dhn(g_in%c(dir)%sn-1))
-         call pop(gg,dir); call pop(gg,dir)
-         call app(gg,(/robertsLeft(hmax,hmax + L,N,beta)/),dir)
-         call appGhost(gg,dir)
-         call init(g,gg%g%c(dir)%hn,dir)
-         call initProps(g)
-         call delete(gg)
-       end subroutine
-
-       subroutine ext_app_Roberts_R_IO(g,L,N,dir)
+       subroutine ext_app_Roberts_R_IO(g,L,N,dir,MQP)
          implicit none
          type(grid),intent(inout) :: g
          real(cp),intent(in) :: L
          integer,intent(in) :: N,dir
-         type(grid) :: temp
-         call init(temp,g); call ext_app_Roberts_R(g,temp,L,N,dir); call delete(temp)
+         type(mesh_quality_params),intent(in) :: MQP
+         real(cp) :: beta,hmax,dh
+         type(array) :: a,b
+         integer :: i,N_final
+         call check_N(N,'ext_app_Roberts_R_IO')
+         hmax = g%c(dir)%hmax; dh = g%c(dir)%dhn_e
+         N_final = N
+         do i=1,MQP%N_iter
+           beta = beta_dh_small(hmax,hmax + L,N_final,dh)
+           call init(b,robertsRight(hmax,hmax + L,N_final,beta))
+           N_final = b%N
+           if (needs_more_points(b,MQP)) then; N_final=N_final+1; else; exit; endif
+         enddo
+         call process_append(g,a,b,dir)
        end subroutine
 
-       subroutine ext_app_Roberts_R(g,g_in,L,N,dir)
-         implicit none
-         type(grid),intent(inout) :: g
-         type(grid),intent(in) :: g_in
-         real(cp),intent(in) :: L
-         integer,intent(in) :: N,dir
-         real(cp) :: beta,hmax
-         type(gridGenerator) :: gg
-         if (.not.(N.gt.0)) stop 'Error: N is not > 0 in ext_app_Roberts_R in extend_grid.f90'
-         call init(g,g_in); call init(gg%g%c(dir),g_in%c(dir))
-         hmax = g_in%c(dir)%hmax
-         beta = beta_dh_small(hmax,hmax + L,N,g_in%c(dir)%dhn(g_in%c(dir)%sn-1))
-         call pop(gg,dir); call pop(gg,dir)
-         call app(gg,(/robertsRight(hmax,hmax + L,N,beta)/),dir)
-         call appGhost(gg,dir)
-         call init(g,gg%g%c(dir)%hn,dir)
-         call initProps(g)
-         call delete(gg)
-       end subroutine
-
-       subroutine ext_app_Roberts_B_IO(g,L,N,dir)
+       subroutine ext_app_Roberts_B_IO(g,L,N,dir,MQP)
          implicit none
          type(grid),intent(inout) :: g
          real(cp),intent(in) :: L
          integer,intent(in) :: N,dir
-         type(grid) :: temp
-         call init(temp,g); call ext_app_Roberts_B(g,temp,L,N,dir); call delete(temp)
+         type(mesh_quality_params),intent(in) :: MQP
+         real(cp) :: beta,hmax,dh
+         type(array) :: a,b
+         integer :: i,N_final
+         call check_N(N,'ext_app_Roberts_B_IO')
+         hmax = g%c(dir)%hmax; dh = g%c(dir)%dhn_e
+         N_final = N
+         do i=1,MQP%N_iter
+           beta = beta_dh_both(hmax,hmax + L,N_final,dh)
+           call init(b,robertsBoth(hmax,hmax + L,N_final,beta))
+           N_final = b%N
+           if (needs_more_points(b,MQP)) then; N_final=N_final+1; else; exit; endif
+         enddo
+         call process_append(g,a,b,dir)
        end subroutine
 
-       subroutine ext_app_Roberts_B(g,g_in,L,N,dir)
-         implicit none
-         type(grid),intent(inout) :: g
-         type(grid),intent(in) :: g_in
-         real(cp),intent(in) :: L
-         integer,intent(in) :: N,dir
-         real(cp) :: beta,hmax
-         type(gridGenerator) :: gg
-         if (.not.(N.gt.0)) stop 'Error: N is not > 0 in ext_app_Roberts_B in extend_grid.f90'
-         call init(g,g_in); call init(gg%g%c(dir),g_in%c(dir))
-         hmax = g_in%c(dir)%hmax
-         beta = beta_dh_both(hmax,hmax + L,N,g_in%c(dir)%dhn(g_in%c(dir)%sn-1))
-         call pop(gg,dir); call pop(gg,dir)
-         call app(gg,(/robertsBoth(hmax,hmax + L,N,beta)/),dir)
-         call appGhost(gg,dir)
-         call init(g,gg%g%c(dir)%hn,dir)
-         call initProps(g)
-         call delete(gg)
-       end subroutine
-
-       subroutine ext_app_Roberts_C2F_IO(g,L,N,dir)
+       subroutine ext_app_Roberts_C2F_IO(g,L,N,dir,MQP)
          implicit none
          type(grid),intent(inout) :: g
          real(cp),intent(in) :: L
          integer,intent(in) :: N,dir
-         type(grid) :: temp
-         call init(temp,g); call ext_app_Roberts_C2F(g,temp,L,N,dir); call delete(temp)
+         type(mesh_quality_params),intent(in) :: MQP
+         real(cp) :: beta,hmax,dh
+         type(array) :: a,b
+         integer :: i,N_final
+         call check_N(N,'ext_app_Roberts_C2F_IO')
+         hmax = g%c(dir)%hmax; dh = g%c(dir)%dhn_e
+         N_final = N
+         do i=1,MQP%N_iter
+           beta = beta_dh_big(hmax,hmax + L,N_final,dh)
+           call init(b,robertsRight(hmax,hmax + L,N_final,beta))
+           N_final = b%N
+           if (needs_more_points(b,MQP)) then; N_final=N_final+1; else; exit; endif
+         enddo
+         call process_append(g,a,b,dir)
        end subroutine
 
-       subroutine ext_app_Roberts_C2F(g,g_in,L,N,dir)
+       subroutine check_N(N,caller)
          implicit none
-         type(grid),intent(inout) :: g
-         type(grid),intent(in) :: g_in
-         real(cp),intent(in) :: L
-         integer,intent(in) :: N,dir
-         real(cp) :: beta,hmax
-         type(gridGenerator) :: gg
-         if (.not.(N.gt.0)) stop 'Error: N is not > 0 in ext_app_Roberts_C2F in extend_grid.f90'
-         call init(g,g_in); call init(gg%g%c(dir),g_in%c(dir))
-         hmax = g_in%c(dir)%hmax
-         beta = beta_dh_big(hmax,hmax + L,N,g_in%c(dir)%dhn(g_in%c(dir)%sn-1))
-         call pop(gg,dir); call pop(gg,dir)
-         call app(gg,(/robertsRight(hmax,hmax + L,N,beta)/),dir)
-         call appGhost(gg,dir)
-         call init(g,gg%g%c(dir)%hn,dir)
-         call initProps(g)
-         call delete(gg)
+         character(len=*),intent(in) :: caller
+         integer,intent(in) :: N
+         if (.not.(N.gt.0)) then
+           write(*,*) 'Error: N is not > 0 in ',caller,' in extend_grid.f90'
+           stop 'Done'
+         endif
        end subroutine
 
        end module

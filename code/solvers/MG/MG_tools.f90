@@ -8,19 +8,19 @@
        implicit none
 
        ! Compiler flags: ( _DEBUG_INTERP_ , fopenmp )
-       ! 
+       !
        ! NOTE: Indexes have not been ordered for speed yet
 
        private
        public :: restrict
        public :: prolongate
 
-       interface restrict;     module procedure restrictField1D_RF;    end interface
+       interface restrict;     module procedure restrictField1D_GF;    end interface
        interface restrict;     module procedure restrictField_SF;      end interface
        interface restrict;     module procedure restrictField_SF_slow; end interface
        interface restrict;     module procedure restrictField_VF;      end interface
 
-       interface prolongate;   module procedure prolongateField1D_RF;  end interface
+       interface prolongate;   module procedure prolongateField1D_GF;  end interface
        interface prolongate;   module procedure prolongateField_SF;    end interface
 
        contains
@@ -31,19 +31,19 @@
       ! **********************************************************
       ! **********************************************************
 
-      subroutine restrictField1D_RF(r,u,c,dir,s,sr,x,y,z)
+      subroutine restrictField1D_GF(r,u,c,dir,s,sr,x,y,z)
         ! This routine restricts the field u {fine grid} to r {coarse grid}
         ! There are 4 possible scenarios
-        ! 
+        !
         ! Case (1): u {CC}, mod(sc/2,2)=0
         !      (2): u {N},  mod(sc/2,2)=0
         !      (3): u {CC}, mod(sc/2,2)≠0 (bad)
         !      (4): u {N},  mod(sc/2,2)≠0 (bad)
-        ! 
-        ! These cases are determined internally. This 
-        ! restriction corresponds to the same restriction 
+        !
+        ! These cases are determined internally. This
+        ! restriction corresponds to the same restriction
         ! as the restrict routine in coordinates.f90.
-        ! 
+        !
         implicit none
         real(cp),dimension(:,:,:),intent(in) :: u     ! fine field
         real(cp),dimension(:,:,:),intent(inout) :: r  ! restricted field
@@ -81,7 +81,7 @@
            ! write(*,*) 'ri,ui,ui+x = ',i*(1-x)+x*i/2+x,i,i+x
           enddo
           ! stop 'printed CC restriction'
-          
+
           ! ! Linearly extrapolate to ghost points
           ! ! Is this necessary? Ghost nodes are ALWAYS defined in the smoother
           ! ! so why define them here? BUT this is a restriction operator.
@@ -149,16 +149,16 @@
       subroutine restrictField_SF(r,u,m,temp1,temp2)
         ! This routine restricts the field u {fine grid} to r {coarse grid}
         ! There are 4 possible scenarios
-        ! 
+        !
         ! Case (1): u {CC}, mod(sc/2,2)=0
         !      (2): u {N},  mod(sc/2,2)=0
         !      (3): u {CC}, mod(sc/2,2)≠0 (bad)
         !      (4): u {N},  mod(sc/2,2)≠0 (bad)
-        ! 
-        ! These cases are determined internally. This 
-        ! restriction corresponds to the same restriction 
+        !
+        ! These cases are determined internally. This
+        ! restriction corresponds to the same restriction
         ! as the restrict routine in coordinates.f90.
-        ! 
+        !
         implicit none
         type(SF),intent(in) :: u     ! fine field
         type(SF),intent(inout) :: r  ! restricted field
@@ -166,14 +166,14 @@
         type(SF),intent(inout) :: temp1,temp2
         integer :: i
         do i=1,u%s
-          call restrict(temp1%RF(i)%f,  u%RF(i)%f  ,m%g(i)%c(1),1,u%RF(i)%s    ,temp1%RF(i)%s,1,0,0)
-          call restrict(temp2%RF(i)%f,temp1%RF(i)%f,m%g(i)%c(2),2,temp1%RF(i)%s,temp2%RF(i)%s,0,1,0)
-          call restrict(  r%RF(i)%f,  temp2%RF(i)%f,m%g(i)%c(3),3,temp2%RF(i)%s,r%RF(i)%s    ,0,0,1)
+          call restrict(temp1%BF(i)%GF%f,  u%BF(i)%GF%f  ,m%B(i)%g%c(1),1,u%BF(i)%GF%s    ,temp1%BF(i)%GF%s,1,0,0)
+          call restrict(temp2%BF(i)%GF%f,temp1%BF(i)%GF%f,m%B(i)%g%c(2),2,temp1%BF(i)%GF%s,temp2%BF(i)%GF%s,0,1,0)
+          call restrict(  r%BF(i)%GF%f,  temp2%BF(i)%GF%f,m%B(i)%g%c(3),3,temp2%BF(i)%GF%s,r%BF(i)%GF%s    ,0,0,1)
         enddo
       end subroutine
 
       subroutine restrictField_SF_slow(r,u,m,m_rx,m_rxy)
-        ! This routine is specifically designed 
+        ! This routine is specifically designed
         ! for the coefficient, sigma.
         implicit none
         type(SF),intent(in) :: u
@@ -210,15 +210,15 @@
       ! **********************************************************
       ! **********************************************************
 
-      subroutine prolongateField1D_RF(p,u,c,dir,s,sp,x,y,z)
+      subroutine prolongateField1D_GF(p,u,c,dir,s,sp,x,y,z)
         ! This routine prolongates the field u {coarse grid} to p {fine grid}
         ! There are 4 possible scenarios
-        ! 
+        !
         ! Case (1): u {CC}, mod(sc/2,2)=0
         !      (2): u {N},  mod(sc/2,2)=0
         !      (3): u {CC}, mod(sc/2,2)≠0 (bad)
         !      (4): u {N},  mod(sc/2,2)≠0 (bad)
-        ! 
+        !
         implicit none
         real(cp),dimension(:,:,:),intent(in) :: u    ! size = s
         real(cp),dimension(:,:,:),intent(inout) :: p ! size = 2*s-1
@@ -311,12 +311,12 @@
       subroutine prolongateField_SF(p,u,mf,temp1,temp2)
         ! This routine prolongates the field u {coarse grid} to p {fine grid}
         ! There are 4 possible scenarios
-        ! 
+        !
         ! Case (1): u {CC}, mod(sc/2,2)=0
         !      (2): u {N},  mod(sc/2,2)=0
         !      (3): u {CC}, mod(sc/2,2)≠0 (bad)
         !      (4): u {N},  mod(sc/2,2)≠0 (bad)
-        ! 
+        !
         implicit none
         type(SF),intent(in) :: u    ! size = s
         type(SF),intent(inout) :: p ! size = 2*s-1
@@ -324,9 +324,9 @@
         type(SF),intent(inout) :: temp1,temp2
         integer :: i
         do i=1,u%s
-          call prolongate(temp1%RF(i)%f,  u%RF(i)%f  ,mf%g(i)%c(1),1,u%RF(i)%s    ,temp1%RF(i)%s,1,0,0)
-          call prolongate(temp2%RF(i)%f,temp1%RF(i)%f,mf%g(i)%c(2),2,temp1%RF(i)%s,temp2%RF(i)%s,0,1,0)
-          call prolongate(  p%RF(i)%f,  temp2%RF(i)%f,mf%g(i)%c(3),3,temp2%RF(i)%s,p%RF(i)%s    ,0,0,1)
+          call prolongate(temp1%BF(i)%GF%f,  u%BF(i)%GF%f  ,mf%g(i)%c(1),1,u%BF(i)%GF%s    ,temp1%BF(i)%GF%s,1,0,0)
+          call prolongate(temp2%BF(i)%GF%f,temp1%BF(i)%GF%f,mf%g(i)%c(2),2,temp1%BF(i)%GF%s,temp2%BF(i)%GF%s,0,1,0)
+          call prolongate(  p%BF(i)%GF%f,  temp2%BF(i)%GF%f,mf%g(i)%c(3),3,temp2%BF(i)%GF%s,p%BF(i)%GF%s    ,0,0,1)
         enddo
       end subroutine
 

@@ -2,7 +2,7 @@
        use current_precision_mod
        use mesh_mod
        use ops_embedExtract_mod
-       use domain_mod
+       use mesh_domain_mod
        use SF_mod
        implicit none
 
@@ -16,38 +16,41 @@
 
        contains
 
-       subroutine initK(k,D)
+       subroutine initK(k,m,MD)
          implicit none
-         type(domain),intent(in) :: D
+         type(mesh),intent(in) :: m
          type(SF),intent(inout) :: k
+         type(mesh_domain),intent(in) :: MD
          if (preDefined_K.ne.0) then
-           call initPredefinedK(k,D)
+           call initPredefinedK(k,m,MD)
          else
-           call initUserK(k,D)
+           call initUserK(k,m,MD)
          endif
        end subroutine
 
-       subroutine initPredefinedK(k,D)
+       subroutine initPredefinedK(k,m,MD)
          implicit none
          type(SF),intent(inout) :: k
-         type(domain),intent(in) :: D
+         type(mesh),intent(in) :: m
+         type(mesh_domain),intent(in) :: MD
          type(SF) :: k_l
-         call init_CC(k_l,D%m_in)
+         call init_CC(k_l,m,MD)
          call assign(k_l,1.0_cp)
          call assign(k,kStarWall)
-         call embedCC(k,k_l,D)
+         call embedCC(k,k_l,MD)
          call delete(k_l)
        end subroutine
 
-       subroutine initUserK(k,D)
+       subroutine initUserK(k,m,MD)
          implicit none
          type(SF),intent(inout) :: k
-         type(domain),intent(in) :: D
+         type(mesh),intent(in) :: m
+         type(mesh_domain),intent(in) :: MD
          type(SF) :: k_l
-         call init_CC(k_l,D%m_in)
+         call init_CC(k_l,m,MD)
          call assign(k_l,1.0_cp)
          call assign(k,kStarWall)
-         call embedCC(k,k_l,D)
+         call embedCC(k,k_l,MD)
          call delete(k_l)
        end subroutine
 

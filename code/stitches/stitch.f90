@@ -6,7 +6,7 @@
        public :: init,delete,display,print,export,import ! Essentials
 
        type stitch
-         logical :: TF
+         logical :: TF = .false.
          integer :: ID
        end type
 
@@ -17,7 +17,7 @@
        interface print;     module procedure print_stitch;    end interface
        interface export;    module procedure export_stitch;   end interface
        interface import;    module procedure import_stitch;   end interface
-       
+
        contains
 
        subroutine delete_stitch(s)

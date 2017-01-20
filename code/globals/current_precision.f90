@@ -3,12 +3,14 @@
 
       private
       public :: cp,li
+      public :: pow
+      public :: equal
 
 #ifdef _QUAD_PRECISION_
-       ! integer,parameter :: cp = selected_real_kind(32) ! Quad precision
+       integer,parameter :: cp = selected_real_kind(32) ! Quad precision
 #else
 #ifdef _SINGLE_PRECISION_
-       ! integer,parameter :: cp = selected_real_kind(8)  ! Single precision
+       integer,parameter :: cp = selected_real_kind(8)  ! Single precision
 #else
        integer,parameter :: cp = selected_real_kind(14) ! Double precision (default)
 #endif
@@ -18,7 +20,23 @@
        ! integer,parameter :: ip = selected_int_kind(8)  ! Short int
 
        ! integer,parameter :: cip = selected_int_kind(64)
-       ! real(cp),parameter :: PI = 4.0_cp*atan(1.0_cp)
-       ! real(cp),parameter :: PI = 3.141592653589793238462643383279502884197169399375105820974_cp
+
+       contains
+
+       pure function pow(i) result(p)
+         implicit none
+         integer,intent(in) :: i
+         real(cp) :: p
+         p = 10.0_cp**(real(i,cp))
+       end function
+
+       pure function equal(A,B) result(L)
+         implicit none
+         real(cp),intent(in) :: A,B
+         real(cp) :: tol
+         logical :: L
+         tol = 10.0_cp*epsilon(1.0_cp)
+         L = abs(A-B).lt.tol
+       end function
 
       end module

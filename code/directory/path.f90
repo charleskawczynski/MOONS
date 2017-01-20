@@ -1,6 +1,4 @@
       module path_mod
-      use current_precision_mod
-      use IO_tools_mod
       use string_mod
       implicit none
 

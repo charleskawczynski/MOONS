@@ -14,15 +14,15 @@
        use ops_advect_mod
        use ops_norms_mod
        use apply_BCs_mod
-       use apply_BCs_implicit_mod
-       use apply_stitches_mod
        use PCG_mod
        use GS_poisson_mod
        use matrix_free_operators_mod
-       
+       use clean_divergence_mod
+       use update_intermediate_field_BCs_mod
+
        implicit none
        private
-       
+
        ! Routine names are besed on the following convention:
        ! 1) Time marching scheme (Explicit Euler, Diffusion-Implicit, etc.)
        ! 2) PPE method (Gauss-Seidel, SOR, multigrid, FFT, etc.)
@@ -39,91 +39,74 @@
 
        contains
 
-       subroutine CN_AB2_PPE_PCG_mom_PCG(mom_PCG,PPE_PCG,U,Unm1,U_E,p,F,Fnm1,m,&
-         Re,dt,Ustar,temp_F,temp_CC,temp_E,compute_norms)
+       subroutine CN_AB2_PPE_PCG_mom_PCG(mom_PCG,PPE_PCG,U,Ustar,Unm1,U_E,p,F,Fnm1,m,&
+         Re,dt,temp_F1,temp_F2,temp_CC,temp_CC_VF,temp_E,compute_norms)
          implicit none
          type(PCG_solver_VF),intent(inout) :: mom_PCG
          type(PCG_solver_SF),intent(inout) :: PPE_PCG
          type(SF),intent(inout) :: p
-         type(VF),intent(inout) :: U,Unm1
+         type(VF),intent(inout) :: U,Ustar,Unm1,temp_CC_VF
          type(TF),intent(inout) :: U_E
          type(VF),intent(in) :: F,Fnm1
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: Re,dt
-         type(VF),intent(inout) :: Ustar,temp_F,temp_E
+         type(VF),intent(inout) :: temp_F1,temp_F2,temp_E
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
-         call advect_U(Ustar,U,U_E,m,.false.,temp_E,temp_CC)
-         call advect_U(temp_F,Unm1,U_E,m,.true.,temp_E,temp_CC)
-         call AB2_overwrite(Ustar,temp_F)
-         call multiply(Ustar,-1.0_cp) ! Because advect_div gives positive
-
-         call lap(temp_F,U,m)
-         call multiply(temp_F,0.5_cp/Re)
-         call add(Ustar,temp_F)
-
-         call AB2(temp_F,F,Fnm1)
-         call add(Ustar,temp_F)
-
-         call multiply(Ustar,dt)
-         call add(Ustar,U)
+         call advect_U(temp_F1,U,U_E,m,.false.,temp_E,temp_CC)
+         call advect_U(temp_F2,Unm1,U_E,m,.true.,temp_E,temp_CC)
+         call AB2_overwrite(temp_F1,temp_F2)
+         call multiply(temp_F1,-1.0_cp) ! Because advect_div gives positive
+         ! call lap(temp_F2,U,m)
+         call lap_centered(temp_F2,U,m)
+         call multiply(temp_F2,0.5_cp/Re)
+         call add(temp_F1,temp_F2)
+         call AB2(temp_F2,F,Fnm1)
+         call add(temp_F1,temp_F2)
+         call multiply(temp_F1,dt)
+         call assign_wall_Dirichlet(temp_F1,0.0_cp,U)
+         call add(temp_F1,U)
          call assign(Unm1,U)
 
-         call solve(mom_PCG,U,Ustar,m,compute_norms) ! Solve for Ustar
-
-         call zeroWall_conditional(U,m)
-         call div(temp_CC,U,m)
-         call multiply(temp_CC,1.0_cp/dt)
-         call zeroGhostPoints(temp_CC)
-         call solve(PPE_PCG,p,temp_CC,m,compute_norms)
-         call grad(temp_F,p,m)
-         call subtract(temp_F%x,1.0_cp) ! mpg
-         call multiply(temp_F,dt)
-         call subtract(U,temp_F) ! U = Ustar - grad(p)
-         call apply_BCs(U,m)
+         call solve(mom_PCG,Ustar,temp_F1,m,compute_norms) ! Solve for U*
+         call clean_div(PPE_PCG,U,Ustar,p,m,temp_F2,temp_CC,compute_norms)
+         call update_intermediate_field_BCs(Ustar,U,p,m,temp_F1,temp_F2,temp_CC_VF)
        end subroutine
 
-       subroutine CN_AB2_PPE_GS_mom_PCG(mom_PCG,PPE_GS,U,Unm1,U_E,p,F,Fnm1,m,&
-         Re,dt,Ustar,temp_F,temp_CC,temp_E,compute_norms)
+       subroutine CN_AB2_PPE_GS_mom_PCG(mom_PCG,PPE_GS,U,Ustar,Unm1,U_E,p,F,Fnm1,m,&
+         Re,dt,temp_F1,temp_F2,temp_CC,temp_CC_VF,temp_E,compute_norms)
          implicit none
          type(PCG_solver_VF),intent(inout) :: mom_PCG
          type(GS_Poisson_SF),intent(inout) :: PPE_GS
          type(SF),intent(inout) :: p
-         type(VF),intent(inout) :: U,Unm1
+         type(VF),intent(inout) :: U,Ustar,Unm1
          type(TF),intent(inout) :: U_E
          type(VF),intent(in) :: F,Fnm1
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: Re,dt
-         type(VF),intent(inout) :: Ustar,temp_F,temp_E
+         type(VF),intent(inout) :: temp_F1,temp_F2,temp_E,temp_CC_VF
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
-         call advect_U(Ustar,U,U_E,m,.false.,temp_E,temp_CC)
-         call advect_U(temp_F,Unm1,U_E,m,.true.,temp_E,temp_CC)
-         call AB2_overwrite(Ustar,temp_F)
-         call multiply(Ustar,-1.0_cp) ! Because advect_div gives positive
+         call advect_U(temp_F1,U,U_E,m,.false.,temp_E,temp_CC)
+         call advect_U(temp_F2,Unm1,U_E,m,.true.,temp_E,temp_CC)
+         call AB2_overwrite(temp_F1,temp_F2)
+         call multiply(temp_F1,-1.0_cp) ! Because advect_div gives positive
 
-         call lap(temp_F,U,m)
-         call multiply(temp_F,0.5_cp/Re)
-         call add(Ustar,temp_F)
+         call lap(temp_F2,U,m)
+         call multiply(temp_F2,0.5_cp/Re)
+         call add(temp_F1,temp_F2)
 
-         call AB2(temp_F,F,Fnm1)
-         call add(Ustar,temp_F)
+         call AB2(temp_F2,F,Fnm1)
+         call add(temp_F1,temp_F2)
 
-         call multiply(Ustar,dt)
-         call add(Ustar,U)
-         call zeroWall_conditional(Ustar,m,U)
+         call multiply(temp_F1,dt)
+         call add(temp_F1,U)
+         call assign_wall_Dirichlet(temp_F1,0.0_cp,U)
          call assign(Unm1,U)
 
-         call solve(mom_PCG,U,Ustar,m,compute_norms)
-
-         call div(temp_CC,U,m)
-         call multiply(temp_CC,1.0_cp/dt)
-         call zeroGhostPoints(temp_CC)
-         call solve(PPE_GS,p,temp_CC,m,compute_norms)
-         call grad(temp_F,p,m)
-         call multiply(temp_F,dt)
-         call subtract(U,temp_F)
-         call apply_BCs(U,m)
+         call solve(mom_PCG,Ustar,temp_F1,m,compute_norms)
+         call clean_div(PPE_GS,U,Ustar,p,m,temp_F2,temp_CC,compute_norms)
+         call update_intermediate_field_BCs(Ustar,U,p,m,temp_F1,temp_F2,temp_CC_VF)
        end subroutine
 
        ! **********************************************************************
@@ -132,131 +115,112 @@
        ! **********************************************************************
        ! **********************************************************************
 
-       subroutine Euler_PCG_Donor(PCG,U,U_E,p,F,m,Re,dt,&
-         Ustar,temp_F1,temp_CC,temp_E,compute_norms)
+       subroutine Euler_PCG_Donor(PCG,U,Ustar,U_E,p,F,m,Re,dt,&
+         temp_F1,temp_F2,temp_CC,temp_E,compute_norms)
          implicit none
          type(PCG_solver_SF),intent(inout) :: PCG
          type(SF),intent(inout) :: p
-         type(VF),intent(inout) :: U
+         type(VF),intent(inout) :: U,Ustar
          type(TF),intent(inout) :: U_E
          type(VF),intent(in) :: F
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: Re,dt
-         type(VF),intent(inout) :: Ustar,temp_F1,temp_E
+         type(VF),intent(inout) :: temp_F1,temp_F2,temp_E
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
-         call advect_U(temp_F1,U,U_E,m,.false.,temp_E,temp_CC)
-         call multiply(Ustar,temp_F1,-1.0_cp) ! Because advect_div gives positive
-         call lap(temp_F1,U,m)
-         ! call lap_centered(temp_F1,U,m) ! Seems to work better for stitching, but O(dx^1) on boundaries
-         call multiply(temp_F1,1.0_cp/Re)
-         call add(Ustar,temp_F1)
-         call add(Ustar,F)
-         call zeroWall_conditional(Ustar,m,U)
-         call multiply(Ustar,dt)
-         call add(Ustar,U)
-         call div(temp_CC,Ustar,m)
-         call multiply(temp_CC,1.0_cp/dt)
-         call solve(PCG,p,temp_CC,m,compute_norms)
-         call grad(temp_F1,p,m)
-         ! call subtract(temp_F1%x,1.0_cp) ! mpg
+         call advect_U(temp_F2,U,U_E,m,.false.,temp_E,temp_CC)
+         call multiply(temp_F1,temp_F2,-1.0_cp) ! Because advect_div gives positive
+         ! call laplacian_matrix_based(temp_F2,U,m) ! O(dx^1) near boundaries
+         call lap_centered(temp_F2,U,m) ! Seems to work better for stitching, but O(dx^1) on boundaries
+         ! call lap(temp_F2,U,m) ! O(dx^2) near boundaries
+         call multiply(temp_F2,1.0_cp/Re)
+         call add(temp_F1,temp_F2)
+         call add(temp_F1,F)
          call multiply(temp_F1,dt)
-         call subtract(U,Ustar,temp_F1)
-         call apply_BCs(U,m)
+         call assign_wall_Dirichlet(temp_F1,0.0_cp,U)
+         call add(U,temp_F1)
+         call assign(Ustar,U)
+         call clean_div(PCG,U,Ustar,p,m,temp_F2,temp_CC,compute_norms)
        end subroutine
 
        subroutine Euler_Donor_no_PPE(U,U_E,F,m,Re,dt,&
-         Ustar,temp_F1,temp_CC,temp_E)
+         temp_F1,temp_F2,temp_CC,temp_E)
          implicit none
          type(VF),intent(inout) :: U
          type(TF),intent(inout) :: U_E
          type(VF),intent(in) :: F
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: Re,dt
-         type(VF),intent(inout) :: Ustar,temp_F1,temp_E
+         type(VF),intent(inout) :: temp_F1,temp_F2,temp_E
          type(SF),intent(inout) :: temp_CC
-         call advect_U(temp_F1,U,U_E,m,.false.,temp_E,temp_CC)
-         call multiply(Ustar,temp_F1,-1.0_cp) ! Because advect_div gives positive
-         call lap(temp_F1,U,m)
-         ! call lap_centered(temp_F1,U,m) ! Seems to work better for stitching, but O(dx^1) on boundaries
-         call multiply(temp_F1,1.0_cp/Re)
-         call add(Ustar,temp_F1)
-         call add(Ustar,F)
-         call zeroWall_conditional(Ustar,m,U)
-         call multiply(Ustar,dt)
-         call add(Ustar,U)
-         call assign(temp_F1,0.0_cp)
-         call subtract(temp_F1%x,1.0_cp) ! mpg
+         call advect_U(temp_F2,U,U_E,m,.false.,temp_E,temp_CC)
+         call multiply(temp_F1,temp_F2,-1.0_cp) ! Because advect_div gives positive
+         call lap(temp_F2,U,m)
+         ! call lap_centered(temp_F2,U,m) ! Seems to work better for stitching, but O(dx^1) on boundaries
+         call multiply(temp_F2,1.0_cp/Re)
+         call add(temp_F1,temp_F2)
+         call add(temp_F1,F)
+         call assign_wall_Dirichlet(temp_F1,0.0_cp,U)
          call multiply(temp_F1,dt)
-         call subtract(U,Ustar,temp_F1)
-         call apply_BCs(U,m)
+         call add(temp_F1,U)
+         call assign(temp_F2,0.0_cp)
+         call subtract(temp_F2%x,1.0_cp) ! mpg
+         call multiply(temp_F2,dt)
+         call subtract(U,temp_F1,temp_F2)
+         call apply_BCs(U)
        end subroutine
 
-       subroutine Euler_GS_Donor(GS,U,U_E,p,F,m,Re,dt,&
-         Ustar,temp_F,temp_CC,temp_E,compute_norms)
+       subroutine Euler_GS_Donor(GS,U,Ustar,U_E,p,F,m,Re,dt,&
+         temp_F1,temp_F2,temp_CC,temp_E,compute_norms)
          implicit none
          type(GS_Poisson_SF),intent(inout) :: GS
          type(SF),intent(inout) :: p
-         type(VF),intent(inout) :: U
+         type(VF),intent(inout) :: U,Ustar
          type(TF),intent(inout) :: U_E
          type(VF),intent(in) :: F
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: Re,dt
-         type(VF),intent(inout) :: Ustar,temp_F,temp_E
+         type(VF),intent(inout) :: temp_F1,temp_F2,temp_E
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
-         call advect_U(temp_F,U,U_E,m,.false.,temp_E,temp_CC)
-         call multiply(Ustar,temp_F,-1.0_cp) ! Because advect_div gives positive
-         ! call lap(temp_F,U,m)
-         call lap_centered(temp_F,U,m) ! Seems to work better for stitching, but O(dx^1) on boundaries
-         call multiply(temp_F,1.0_cp/Re)
-         call add(Ustar,temp_F)
-         call add(Ustar,F)
-         call zeroWall_conditional(Ustar,m,U)
-         call multiply(Ustar,dt)
-         call add(Ustar,U)
-         call div(temp_CC,Ustar,m)
-         call multiply(temp_CC,1.0_cp/dt)
-         call zeroGhostPoints(temp_CC)
-         call solve(GS,p,temp_CC,m,compute_norms)
-         call grad(temp_F,p,m)
-         call subtract(temp_F%x,1.0_cp) ! mpg
-         call multiply(temp_F,dt)
-         call subtract(U,Ustar,temp_F)
-         call apply_BCs(U,m)
+         call advect_U(temp_F2,U,U_E,m,.false.,temp_E,temp_CC)
+         call multiply(temp_F1,temp_F2,-1.0_cp) ! Because advect_div gives positive
+         ! call lap(temp_F2,U,m)
+         call lap_centered(temp_F2,U,m) ! Seems to work better for stitching, but O(dx^1) on boundaries
+         call multiply(temp_F2,1.0_cp/Re)
+         call add(temp_F1,temp_F2)
+         call add(temp_F1,F)
+         call assign_wall_Dirichlet(temp_F1,0.0_cp,U)
+         call multiply(temp_F1,dt)
+         call add(U,temp_F1)
+         call assign(Ustar,U)
+         call clean_div(GS,U,Ustar,p,m,temp_F2,temp_CC,compute_norms)
        end subroutine
 
-       subroutine Euler_GS_Donor_mpg(GS,U,U_E,p,F,mpg,m,Re,dt,&
-         Ustar,temp_F,temp_CC,temp_E,compute_norms)
+       subroutine Euler_GS_Donor_mpg(GS,U,Ustar,U_E,p,F,mpg,m,Re,dt,&
+         temp_F1,temp_F2,temp_CC,temp_E,compute_norms)
          implicit none
          type(GS_Poisson_SF),intent(inout) :: GS
          type(SF),intent(inout) :: p
-         type(VF),intent(inout) :: U
+         type(VF),intent(inout) :: U,Ustar
          type(TF),intent(inout) :: U_E
          type(VF),intent(in) :: F,mpg
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: Re,dt
-         type(VF),intent(inout) :: Ustar,temp_F,temp_E
+         type(VF),intent(inout) :: temp_F1,temp_F2,temp_E
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
-         call advect_U(temp_F,U,U_E,m,.false.,temp_E,temp_CC)
-         call multiply(Ustar,temp_F,-1.0_cp) ! Because advect_div gives positive
-         call lap(temp_F,U,m)
-         call multiply(temp_F,1.0_cp/Re)
-         call add(Ustar,temp_F)
-         call add(Ustar,F)
-         call zeroWall_conditional(Ustar,m,U)
-         call multiply(Ustar,dt)
-         call add(Ustar,U)
-         call div(temp_CC,Ustar,m)
-         call multiply(temp_CC,1.0_cp/dt)
-         call zeroGhostPoints(temp_CC)
-         call solve(GS,p,temp_CC,m,compute_norms)
-         call grad(temp_F,p,m)
-         call subtract(temp_F,mpg)
-         call multiply(temp_F,dt)
-         call subtract(U,Ustar,temp_F)
-         call apply_BCs(U,m)
+         call advect_U(temp_F2,U,U_E,m,.false.,temp_E,temp_CC)
+         call multiply(temp_F1,temp_F2,-1.0_cp) ! Because advect_div gives positive
+         call lap(temp_F2,U,m)
+         call multiply(temp_F2,1.0_cp/Re)
+         call add(temp_F1,temp_F2)
+         call add(temp_F1,F)
+         call assign_wall_Dirichlet(temp_F1,0.0_cp,U)
+         call multiply(temp_F1,dt)
+         call add(U,temp_F1)
+         call assign(Ustar,U)
+         call clean_div(GS,U,Ustar,p,mpg,m,temp_F2,temp_CC,compute_norms)
        end subroutine
 
        end module

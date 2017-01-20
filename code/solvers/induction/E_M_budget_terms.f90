@@ -1,7 +1,6 @@
        module E_M_budget_terms_mod
        use current_precision_mod
        use mesh_mod
-       use domain_mod
        use SF_mod
        use VF_mod
        use TF_mod
@@ -101,14 +100,14 @@
          ! Compute uxB in E = j/sig - uxB
          call face2Face(TF_F1,U,m,SF_CC) ! U to tensor field
          call face2Face(TF_F2,B,m,SF_CC) ! B to tensor field
-         call cross(VF_F,TF_F1,TF_F2) ! uxB
+         call cross_product(VF_F,TF_F1,TF_F2) ! uxB
          call face2Face(TF_F1,VF_F,m,SF_CC) ! uxB to tensor field
          call edge2Face_no_diag(TF_F3,J,m) ! J to tensor field
          call multiply(TF_F3%x,sigmaInv_F) ! J/sig
          call multiply(TF_F3%y,sigmaInv_F) ! J/sig
          call multiply(TF_F3%z,sigmaInv_F) ! J/sig
          call subtract(TF_F3,TF_F1) ! E = j/sig - uxB
-         call cross(VF_F,TF_F3,TF_F2) ! F = E x B
+         call cross_product(VF_F,TF_F3,TF_F2) ! F = E x B
          call div(e,VF_F,m)
          call multiply(e,scale)
        end subroutine

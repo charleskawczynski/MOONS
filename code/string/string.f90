@@ -19,9 +19,10 @@
 
       public :: get_str,str ! str does not require length
       public :: len,match,match_index
-      public :: compress,append
+      public :: compress,append,prepend
       public :: get_char,set_char
       public :: remove_element
+      public :: identical
 
       interface init;                 module procedure init_size;                      end interface
       interface init;                 module procedure init_string;                    end interface
@@ -34,6 +35,8 @@
 
       interface append;               module procedure app_string_char;                end interface
       interface append;               module procedure app_string_string;              end interface
+      interface prepend;              module procedure prep_string_char;               end interface
+      interface prepend;              module procedure prep_string_string;             end interface
       interface compress;             module procedure compress_string;                end interface
       interface len;                  module procedure str_len_string;                 end interface
       interface str;                  module procedure get_str_short;                  end interface
@@ -43,6 +46,10 @@
       interface get_char;             module procedure get_char_string;                end interface
       interface set_char;             module procedure set_char_string;                end interface
       interface remove_element;       module procedure remove_element_string;          end interface
+      interface identical;            module procedure identical_string_string;        end interface
+      interface identical;            module procedure identical_string_char;          end interface
+
+      interface insist_allocated;     module procedure insist_allocated_string;        end interface
 
       type char
         private
@@ -83,7 +90,7 @@
         type(string),intent(inout) :: a
         type(string),intent(in) :: b
         integer :: i
-        call check_allocated(b,'init_copy')
+        call insist_allocated(b,'init_copy')
         call init(a,b%n)
         do i=1,b%n
         call init_copy_char(a%s(i),b%s(i))
@@ -116,11 +123,8 @@
         implicit none
         type(string),intent(in) :: st
         integer,intent(in) :: un
-        integer :: i
-        call check_allocated(st,'export_string')
-        do i=1,st%n
-          write(un,'(A1)',advance='no') st%s(i)%c
-        enddo
+        call insist_allocated(st,'export_string')
+        write(un,*) str(st)
       end subroutine
 
       subroutine import_string(s,un)
@@ -170,6 +174,24 @@
         call append(a,str(b))
       end subroutine
 
+      subroutine prep_string_char(a,b)
+        implicit none
+        type(string),intent(inout) :: a
+        character(len=*),intent(in) :: b
+        type(string) :: temp
+        call init(temp,b)
+        call append(temp,a)
+        call init(a,temp)
+        call delete(temp)
+      end subroutine
+
+      subroutine prep_string_string(a,b)
+        implicit none
+        type(string),intent(inout) :: a
+        type(string),intent(in) :: b
+        call prepend(a,str(b))
+      end subroutine
+
       subroutine compress_string(st)
         implicit none
         type(string),intent(inout) :: st
@@ -215,6 +237,34 @@
         call delete(temp)
       end subroutine
 
+      function identical_string_string(A,B) result(L)
+        implicit none
+        type(string),intent(in) :: A,B
+        logical :: L
+        integer :: i
+        call insist_allocated(A,'A identical_string_string')
+        call insist_allocated(B,'B identical_string_string')
+        L = .false.
+        if (A%n.eq.B%n) then
+          L = .true.
+          do i=1,A%n
+            if (A%s(i)%c.eq.B%s(i)%c) L = .false.
+          enddo
+        endif
+      end function
+
+      function identical_string_char(A,B) result(L)
+        implicit none
+        type(string),intent(in) :: A
+        character(len=*),intent(in) :: B
+        type(string) :: temp
+        logical :: L
+        call insist_allocated(A,'A identical_string_string')
+        call init(temp,B)
+        L = identical(A,temp)
+        call delete(temp)
+      end function
+
       function get_char_string(st,i) result(c)
         implicit none
         type(string),intent(in) :: st
@@ -249,7 +299,7 @@
         integer,intent(in) :: n
         character(len=n) :: str
         integer :: i
-        call check_allocated(st,'get_str_string')
+        call insist_allocated(st,'get_str_string')
         if (st%n.lt.1) stop 'Error: st%n.lt.0 in get_str_string in string.f90'
         if (n.lt.1) stop 'Error: n.lt.1 in get_str_string in string.f90'
         do i=1,st%n
@@ -330,7 +380,7 @@
       !   L = string_allocated(st).and.valid_length(st)
       ! end function
 
-      subroutine check_allocated(st,s)
+      subroutine insist_allocated_string(st,s)
         implicit none
         type(string),intent(in) :: st
         character(len=*),intent(in) :: s
@@ -342,18 +392,5 @@
           stop 'Done'
         endif
       end subroutine
-
-      ! subroutine insist_allocated(st,s)
-      !   implicit none
-      !   type(string),intent(in) :: st
-      !   character(len=*),intent(in) :: s
-      !   if (.not.string_allocated(st)) then
-      !     write(*,*) 'Error: string must be allocated in '//s//' in string.f90'
-      !     stop 'Done'
-      !   elseif (.not.valid_length(st)) then
-      !     write(*,*) 'Error: string must have a valid length in '//s//' in string.f90'
-      !     stop 'Done'
-      !   endif
-      ! end subroutine
 
       end module

@@ -9,7 +9,7 @@
        use ops_discrete_mod
        use ops_advect_mod
        use ops_norms_mod
-       
+
        implicit none
        private
 

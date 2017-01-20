@@ -1,11 +1,11 @@
        module ops_discrete_mod
-       ! 
-       ! Directions are frequently used in this code. 
-       ! For clarity, some diagrams here show how the 
+       !
+       ! Directions are frequently used in this code.
+       ! For clarity, some diagrams here show how the
        ! directions are defined.
-       ! 
+       !
        ! faceDir = 1 (x)
-       ! 
+       !
        !                       z
        !                y      |
        !                 \   __|____
@@ -14,11 +14,11 @@
        !      faceDir --->  \  |      |
        !                     \ |      |
        !                      \|______|_____ x
-       ! 
-       ! 
-       ! 
+       !
+       !
+       !
        ! edgeDir = 1 (x)
-       ! 
+       !
        !                       z
        !                y      |
        !                 \   __|____
@@ -28,11 +28,12 @@
        !                     \ |      |
        !                      \|______|_____ x
        !                        -------> edgeDir
-       ! 
-       ! 
+       !
+       !
        use current_precision_mod
        use ops_del_mod
        use mesh_mod
+       use data_location_mod
        use SF_mod
        use VF_mod
        use TF_mod
@@ -42,18 +43,15 @@
        implicit none
 
        private
-
-       public :: cross
-       interface cross;           module procedure collocatedCross_RF;        end interface
-       interface cross;           module procedure collocatedCross_SF;        end interface
-       interface cross;           module procedure collocatedCross_VF;        end interface
-       interface cross;           module procedure collocatedCross_TF;        end interface
-
        public :: lap
        interface lap;             module procedure lapUniformCoeff_SF;        end interface
        interface lap;             module procedure lapUniformCoeff_VF;        end interface
        interface lap;             module procedure lapVarCoeff_SF;            end interface
        interface lap;             module procedure lapVarCoeff_VF;            end interface
+
+       public :: lap_component
+       interface lap_component;   module procedure lap_component_SF;          end interface
+       interface lap_component;   module procedure lap_component_VF;          end interface
 
        public :: lap_centered
        interface lap_centered;    module procedure lap_centered_SF_dynamic;   end interface
@@ -68,6 +66,10 @@
        interface grad;            module procedure grad_VF;                   end interface
        interface grad;            module procedure grad_TF;                   end interface
 
+       public :: grad_component
+       interface grad_component;  module procedure grad_component_SF;         end interface
+       interface grad_component;  module procedure grad_component_VF;         end interface
+
        public :: divGrad
        interface divGrad;         module procedure divGrad_VF;                end interface
 
@@ -75,7 +77,7 @@
        interface curl;            module procedure curl_SF;                   end interface
        interface curl;            module procedure curl_VF;                   end interface
        interface curl;            module procedure curl_TF;                   end interface
-       
+
        public :: curl_parallel
        interface curl_parallel;   module procedure curl_TF_Parallel;          end interface
 
@@ -93,79 +95,9 @@
 
        ! *********************************************************************************
        ! *********************************************************************************
-       ! ***************************** REAL FIELD ROUTINES *******************************
-       ! *********************************************************************************
-       ! *********************************************************************************
-
-       subroutine collocatedCross_RF(AcrossB,Ax,Ay,Az,Bx,By,Bz,sx,sy,sz,dir)
-         ! This routine computes the ith component of A x B on a collocated mesh
-         ! dir = (1,2,3)
-         implicit none
-         real(cp),dimension(:,:,:),intent(inout) :: AcrossB
-         real(cp),dimension(:,:,:),intent(in) :: Ax,Ay,Az,Bx,By,Bz
-         integer,dimension(3),intent(in) :: sx,sy,sz
-         integer,intent(in) :: dir
-         integer :: i,j,k
-#ifdef _DEBUG_DISCRETE_OPS_
-         integer,dimension(3) :: sAx,sAy,sAz,sBx,sBy,sBz
-         sAx = shape(Ax); sAy = shape(Ay); sAz = shape(Az)
-         sBx = shape(Bx); sBy = shape(By); sBz = shape(Bz)
-         if (sAx(1).ne.sBx(1)) stop 'Error: sAx(1).ne.sBx(1) in collocatedCross_RF in ops_discrete.f90'
-         if (sAx(2).ne.sBx(2)) stop 'Error: sAx(2).ne.sBx(2) in collocatedCross_RF in ops_discrete.f90'
-         if (sAx(3).ne.sBx(3)) stop 'Error: sAx(3).ne.sBx(3) in collocatedCross_RF in ops_discrete.f90'
-
-         if (sAy(1).ne.sBy(1)) stop 'Error: sAy(1).ne.sBy(1) in collocatedCross_RF in ops_discrete.f90'
-         if (sAy(2).ne.sBy(2)) stop 'Error: sAy(2).ne.sBy(2) in collocatedCross_RF in ops_discrete.f90'
-         if (sAy(3).ne.sBy(3)) stop 'Error: sAy(3).ne.sBy(3) in collocatedCross_RF in ops_discrete.f90'
-
-         if (sAz(1).ne.sBz(1)) stop 'Error: sAz(1).ne.sBz(1) in collocatedCross_RF in ops_discrete.f90'
-         if (sAz(2).ne.sBz(2)) stop 'Error: sAz(2).ne.sBz(2) in collocatedCross_RF in ops_discrete.f90'
-         if (sAz(3).ne.sBz(3)) stop 'Error: sAz(3).ne.sBz(3) in collocatedCross_RF in ops_discrete.f90'
-#endif
-         select case (dir)
-         case (1)
-           !$OMP PARALLEL DO
-           do k=1,sy(3); do j=1,sy(2); do i=1,sy(1)
-             AcrossB(i,j,k) = Ay(i,j,k)*Bz(i,j,k) - Az(i,j,k)*By(i,j,k)
-           enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-         case (2)
-           !$OMP PARALLEL DO
-           do k=1,sz(3); do j=1,sz(2); do i=1,sz(1)
-             AcrossB(i,j,k) = -(Ax(i,j,k)*Bz(i,j,k) - Az(i,j,k)*Bx(i,j,k))
-           enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-         case (3)
-           !$OMP PARALLEL DO
-           do k=1,sx(3); do j=1,sx(2); do i=1,sx(1)
-             AcrossB(i,j,k) = Ax(i,j,k)*By(i,j,k) - Ay(i,j,k)*Bx(i,j,k)
-           enddo; enddo; enddo
-           !$OMP END PARALLEL DO
-         case default; stop 'Error: dir must = 1,2,3 in collocatedCross_RF in ops_discrete.f90.'
-         end select
-       end subroutine
-
-       ! *********************************************************************************
-       ! *********************************************************************************
        ! *************************** SCALAR FIELD ROUTINES *******************************
        ! *********************************************************************************
        ! *********************************************************************************
-
-       subroutine collocatedCross_SF(AcrossB,Ax,Ay,Az,Bx,By,Bz,dir)
-         ! This routine computes the ith component of A x B on a collocated mesh
-         ! dir = (1,2,3)
-         implicit none
-         type(SF),intent(inout) :: AcrossB
-         type(SF),intent(in) :: Ax,Ay,Az,Bx,By,Bz
-         integer,intent(in) :: dir
-         integer :: i
-         do i=1,AcrossB%s
-           call cross(AcrossB%RF(i)%f,&
-           Ax%RF(i)%f,Ay%RF(i)%f,Az%RF(i)%f,&
-           Bx%RF(i)%f,By%RF(i)%f,Bz%RF(i)%f,&
-           Ax%RF(i)%s,Ay%RF(i)%s,Az%RF(i)%s,dir)
-         enddo
-       end subroutine
 
        subroutine lapUniformCoeff_SF(lapU,u,m)
          implicit none
@@ -173,9 +105,29 @@
          type(SF),intent(in) :: u
          type(mesh),intent(in) :: m
          type(del) :: d
-         call d%assign(lapU,u,m,2,1,0) ! Padding avoids calcs on fictive cells
-            call d%add(lapU,u,m,2,2,0) ! Padding avoids calcs on fictive cells
-            call d%add(lapU,u,m,2,3,0) ! Padding avoids calcs on fictive cells
+         call d%assign(lapU,u,m,2,1,0)
+            call d%add(lapU,u,m,2,2,0)
+            call d%add(lapU,u,m,2,3,0)
+       end subroutine
+
+       subroutine lap_component_SF(lapU,u,m,dir)
+         implicit none
+         type(SF),intent(inout) :: lapU
+         type(SF),intent(in) :: u
+         type(mesh),intent(in) :: m
+         integer,intent(in) :: dir
+         type(del) :: d
+         call d%assign(lapU,u,m,2,dir,0)
+       end subroutine
+
+       subroutine lap_component_VF(lapU,u,m)
+         implicit none
+         type(VF),intent(inout) :: lapU
+         type(SF),intent(in) :: u
+         type(mesh),intent(in) :: m
+         call lap_component(lapU%x,u,m,1)
+         call lap_component(lapU%y,u,m,2)
+         call lap_component(lapU%z,u,m,3)
        end subroutine
 
        subroutine lap_centered_SF_given_both(lapU,U,m,tempx,tempy,tempz)
@@ -197,25 +149,25 @@
          type(mesh),intent(in) :: m
          type(TF) :: TF_temp
          type(VF) :: VF_temp
-         if     (U%is_CC) then
+         if     (is_CC(U)) then
            call init_Face(VF_temp,m)
            call lap_centered_SF_given_both(lapU%x,U%x,m,VF_temp%x,VF_temp%y,VF_temp%z)
            call lap_centered_SF_given_both(lapU%y,U%y,m,VF_temp%x,VF_temp%y,VF_temp%z)
            call lap_centered_SF_given_both(lapU%z,U%z,m,VF_temp%x,VF_temp%y,VF_temp%z)
            call delete(VF_temp)
-         elseif (U%is_Node) then
+         elseif (is_Node(U)) then
            call init_Edge(VF_temp,m)
            call lap_centered_SF_given_both(lapU%x,U%x,m,VF_temp%x,VF_temp%y,VF_temp%z)
            call lap_centered_SF_given_both(lapU%y,U%y,m,VF_temp%x,VF_temp%y,VF_temp%z)
            call lap_centered_SF_given_both(lapU%z,U%z,m,VF_temp%x,VF_temp%y,VF_temp%z)
            call delete(VF_temp)
-         elseif (U%is_Face) then
+         elseif (is_Face(U)) then
            call init_Face_compliment(TF_temp,m)
            call lap_centered_SF_given_both(lapU%x,U%x,m,TF_temp%x%x,TF_temp%x%y,TF_temp%x%z)
            call lap_centered_SF_given_both(lapU%y,U%y,m,TF_temp%y%x,TF_temp%y%y,TF_temp%y%z)
            call lap_centered_SF_given_both(lapU%z,U%z,m,TF_temp%z%x,TF_temp%z%y,TF_temp%z%z)
            call delete(TF_temp)
-         elseif (U%is_Edge) then
+         elseif (is_Edge(U)) then
            call init_Edge_compliment(TF_temp,m)
            call lap_centered_SF_given_both(lapU%x,U%x,m,TF_temp%x%x,TF_temp%x%y,TF_temp%x%z)
            call lap_centered_SF_given_both(lapU%y,U%y,m,TF_temp%y%x,TF_temp%y%y,TF_temp%y%z)
@@ -232,25 +184,25 @@
          type(mesh),intent(in) :: m
          type(TF) :: TF_temp
          type(VF) :: VF_temp
-         if     (U%is_CC) then
+         if     (is_CC(U%DL)) then
            call init_Face(VF_temp,m)
            call lap_centered_SF_given_both(lapU,U,m,VF_temp%x,VF_temp%y,VF_temp%z)
            call delete(VF_temp)
-         elseif (U%is_Node) then
+         elseif (is_Node(U%DL)) then
            call init_Edge(VF_temp,m)
            call lap_centered_SF_given_both(lapU,U,m,VF_temp%x,VF_temp%y,VF_temp%z)
            call delete(VF_temp)
-         elseif (U%is_Face) then
+         elseif (is_Face(U%DL)) then
            call init_Face_compliment(TF_temp,m)
-           select case (U%face)
+           select case (get_Face(U%DL))
            case (1); call lap_centered_SF_given_both(lapU,U,m,TF_temp%x%x,TF_temp%x%y,TF_temp%x%z)
            case (2); call lap_centered_SF_given_both(lapU,U,m,TF_temp%y%x,TF_temp%y%y,TF_temp%y%z)
            case (3); call lap_centered_SF_given_both(lapU,U,m,TF_temp%z%x,TF_temp%z%y,TF_temp%z%z)
            end select
            call delete(TF_temp)
-         elseif (U%is_Edge) then
+         elseif (is_Edge(U%DL)) then
            call init_Edge_compliment(TF_temp,m)
-           select case (U%edge)
+           select case (get_Edge(U%DL))
            case (1); call lap_centered_SF_given_both(lapU,U,m,TF_temp%x%x,TF_temp%x%y,TF_temp%x%z)
            case (2); call lap_centered_SF_given_both(lapU,U,m,TF_temp%y%x,TF_temp%y%y,TF_temp%y%z)
            case (3); call lap_centered_SF_given_both(lapU,U,m,TF_temp%z%x,TF_temp%z%y,TF_temp%z%z)
@@ -285,7 +237,7 @@
 
          ! Note that padding above does not zero wall normal values
          ! from being calculated. Removing ghost nodes is still necessary:
-         call zeroGhostPoints(divU) ! padding avoids boundaries
+         call assign_ghost_XPeriodic(divU,0.0_cp) ! padding avoids boundaries
        end subroutine
 
        subroutine grad_SF(gradx,grady,gradz,u,m)
@@ -294,13 +246,33 @@
          type(SF),intent(in) :: u
          type(mesh),intent(in) :: m
          type(del) :: d
-         call d%assign(gradx,u,m,1,1,1) ! Padding avoids calcs on fictive cells
-         call d%assign(grady,u,m,1,2,1) ! Padding avoids calcs on fictive cells
-         call d%assign(gradz,u,m,1,3,1) ! Padding avoids calcs on fictive cells
+         call d%assign(gradx,u,m,1,1,0) ! Padding avoids calcs on fictive cells
+         call d%assign(grady,u,m,1,2,0) ! Padding avoids calcs on fictive cells
+         call d%assign(gradz,u,m,1,3,0) ! Padding avoids calcs on fictive cells
+       end subroutine
+
+       subroutine grad_component_SF(grad,u,m,dir)
+         implicit none
+         type(SF),intent(inout) :: grad
+         type(SF),intent(in) :: u
+         type(mesh),intent(in) :: m
+         integer,intent(in) :: dir
+         type(del) :: d
+         call d%assign(grad,u,m,1,dir,0)
+       end subroutine
+
+       subroutine grad_component_VF(grad,u,m)
+         implicit none
+         type(VF),intent(inout) :: grad
+         type(VF),intent(in) :: u
+         type(mesh),intent(in) :: m
+         call grad_component(grad%x,u%x,m,1)
+         call grad_component(grad%y,u%y,m,2)
+         call grad_component(grad%z,u%z,m,3)
        end subroutine
 
        subroutine curl_SF(curlU,u,v,w,m,dir)
-         ! curl_RF computes curlU (component dir) of
+         ! curl_GF computes curlU (component dir) of
          ! the collocated u,v,w field.
          implicit none
          type(SF),intent(inout) :: curlU
@@ -328,7 +300,7 @@
          !
          !     if dir1 == dir2  --> Error (call Laplacian instead)
          !     if dir1 ≠ dir2   --> see below
-         ! 
+         !
          implicit none
          type(SF),intent(inout) :: mix,temp
          type(SF),intent(in) :: f
@@ -337,7 +309,7 @@
          type(del) :: d
 #if _DEBUG_DISCRETE_OPS_
          if (dir1.eq.dir2) then
-           write(*,*) 'Error: dir1=dir2 in mixed_uniformCoeff_RF in ops_discrete.f90'
+           write(*,*) 'Error: dir1=dir2 in mixed_uniformCoeff_GF in ops_discrete.f90'
            stop 'Call laplacian operator instead.'
          endif
 #endif
@@ -354,9 +326,9 @@
          !
          !     if dir1 == dir2  --> Error (call laplacian instead)
          !     if dir1 ≠ dir2   --> see below
-         ! 
+         !
          ! NOTE: k must live in same domain as df/dxi
-         ! 
+         !
          implicit none
          type(SF),intent(inout) :: mix,temp
          type(SF),intent(in) :: f,k
@@ -365,7 +337,7 @@
          type(del) :: d
 #if _DEBUG_DISCRETE_OPS_
          if (dir1.eq.dir2) then
-           write(*,*) 'Error: dir1=dir2 in mixed_variableCoeff_RF in ops_discrete.f90'
+           write(*,*) 'Error: dir1=dir2 in mixed_variableCoeff_GF in ops_discrete.f90'
            stop 'Call laplacian operator instead.'
          endif
 #endif
@@ -379,37 +351,6 @@
        ! ******************************* VECTOR ROUTINES *********************************
        ! *********************************************************************************
        ! *********************************************************************************
-
-       subroutine collocatedCross_VF(AcrossB,A,B)
-         ! NOTE: The diagonal are not used. The diagonal is:
-         !       Ax,Bx for dir = 1
-         !       Ay,By for dir = 2
-         !       Az,Bz for dir = 3
-         implicit none
-         type(VF),intent(inout) :: AcrossB
-         type(VF),intent(in) :: A,B
-         call cross(AcrossB%x,A%x,A%y,A%z,B%x,B%y,B%z,1)
-         call cross(AcrossB%y,A%x,A%y,A%z,B%x,B%y,B%z,2)
-         call cross(AcrossB%z,A%x,A%y,A%z,B%x,B%y,B%z,3)
-       end subroutine
-
-       subroutine collocatedCross_TF(AcrossB,A,B)
-         ! First index refers to vector direction.
-         ! Second index refers to vector location.
-         !      For example, in A%x%y, the direction of the vector
-         !      will be in x, and it will be located on whatever 
-         !      location is defined by the y-component (y-face for face data
-         !      or y-edge for edge data).
-         ! Since this is a collocated operation, the second
-         ! index should be the same (data should be collocated).
-         ! NOTE: The diagonal, xx,yy,zz are not used.
-         implicit none
-         type(VF),intent(inout) :: AcrossB
-         type(TF),intent(in) :: A,B
-         call cross(AcrossB%x,A%x%x,A%y%x,A%z%x,B%x%x,B%y%x,B%z%x,1)
-         call cross(AcrossB%y,A%x%y,A%y%y,A%z%y,B%x%y,B%y%y,B%z%y,2)
-         call cross(AcrossB%z,A%x%z,A%y%z,A%z%z,B%x%z,B%y%z,B%z%z,3)
-       end subroutine
 
        subroutine lapUniformCoeff_VF(lapU,u,m)
          implicit none
@@ -462,12 +403,12 @@
        subroutine divGrad_VF(divGradU,U,m,temp_TF)
          ! This routine achieves consecutive staggered derivatives
          ! to compute lap(U). If U lives on the cell face, then
-         ! 
+         !
          !            _          _
          !           |  CC E  E   |
          ! temp_TF = |  E  CC E   |
          !           |_ E  E  CC _|
-         ! 
+         !
          implicit none
          type(VF),intent(inout) :: divGradU
          type(VF),intent(in) :: U
@@ -528,9 +469,9 @@
        subroutine curlcurlCoeff_VF(curlcurlU,U,k,temp,m)
          ! Computes
          !     ∇x(k∇x)
-         ! 
+         !
          ! NOTE: curl(U) will live at the same location as k
-         ! 
+         !
          implicit none
          type(VF),intent(inout) :: curlcurlU
          type(VF),intent(inout) :: temp
@@ -544,9 +485,9 @@
        subroutine curlcurlUniform_VF(curlcurlU,U,temp,m)
          ! Computes
          !     ∇x∇x
-         ! 
+         !
          ! NOTE: curl(U) will live at the same location as k
-         ! 
+         !
          implicit none
          type(VF),intent(inout) :: curlcurlU
          type(VF),intent(inout) :: temp

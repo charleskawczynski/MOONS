@@ -8,12 +8,12 @@
       ! Input:
       !     u            = initial guess for u
       !     f            = RHS of above equation
-      !     u_bcs        = boundary conditions for u. Refer to BCs_mod for more info.
+      !     u_bcs        = boundary conditions for u. Refer to boundary_conditions_mod for more info.
       !     m            = contains mesh information (dhc,dhn)
       !     ss           = solver settings (specifies max iterations, tolerance etc.)
       !     displayTF    = print residuals to screen (T,F)
-      ! 
-      ! 
+      !
+      !
       ! There are 3 iteration numbers that must be set:
       !      1) Number of V-Cycles - defined by maxIterations in ss
       !      2) Iterations per cycle - call setIterationsPerLevel()
@@ -23,7 +23,7 @@
       use grid_mod
       use mesh_mod
       use SF_mod
-      use BCs_mod
+      use boundary_conditions_mod
       use solverSettings_mod
       use apply_BCs_mod
       use norms_mod
@@ -58,7 +58,8 @@
 
         integer :: n_iter
         integer :: n_levels
-        logical :: displayTF,MG_init
+        logical :: displayTF = .false.
+        logical :: MG_init = .false.
       end type
 
       interface init;       module procedure initMultiGrid;    end interface
@@ -83,7 +84,7 @@
         mg(:)%n_levels = size(mg)
         ! mg(:)%displayTF = displayTF
         mg(:)%displayTF = displayTF
-        s = u%RF(1)%s
+        s = u%BF(1)%GF%s
 
         ! ******************** Check size of data ********************
         if (u%is_Node) then
@@ -98,7 +99,7 @@
         enddo
         write(*,*) 'Multigrid levels:'
         do j = 1,mg(1)%n_levels
-          write(*,*) 'N_cells of grid 1 level ',j,' = ',(/(mg(j)%m%g(1)%c(i)%sc,i=1,3)/)-2
+          write(*,*) 'N_cells of grid 1 level ',j,' = ',(/(mg(j)%m%B(1)%g%c(i)%sc,i=1,3)/)-2
         enddo
 
         ! ******************** Initialize fields ********************
@@ -126,12 +127,12 @@
 
         ! ******************** Initialize intermediate fields ********************
         ! THIS NEEDS TO BE FIXED: need to use intermediate fields for each
-        ! Maybe call them 
+        ! Maybe call them
         !          temp_rpx (restricted/prolongated in x)
         !          temp_rpy (restricted/prolongated in y)
-        ! 
+        !
         ! Need to choose a convention, which mesh do these transition fields live?
-        ! 
+        !
         call init(mg(1)%m_rx,m_base)
         call init(mg(1)%m_rxy,m_base)
         do i = 1,mg(1)%n_levels

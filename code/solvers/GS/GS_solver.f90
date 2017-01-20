@@ -3,9 +3,9 @@
       ! solves the poisson equation:
       !     u_xx + u_yy + u_zz = f
       ! for a given f, mesh (m) using the Gauss-Seidel (GS) method
-      ! 
+      !
       ! Note that the variant of Gauss-Seidel/GS called
-      ! "red-black" Gauss-Seidel is used, where the fields are 
+      ! "red-black" Gauss-Seidel is used, where the fields are
       ! traversed in a 3D checkerboarding manner.
       !
       ! Input:
@@ -13,13 +13,12 @@
       !     f            = RHS of above equation
       !     m            = contains mesh information (dhc,dhn)
       !     compute_norm = print residuals to screen (T,F)
-      ! 
+      !
       ! Flags: (_PARALLELIZE_GS_,_EXPORT_GS_SF_CONVERGENCE_)
       use current_precision_mod
       use mesh_mod
       use apply_BCs_mod
-      use apply_stitches_mod
-      use BCs_mod
+      use boundary_conditions_mod
       use norms_mod
       use ops_discrete_mod
       use ops_aux_mod
@@ -29,7 +28,6 @@
       implicit none
 
       real(cp) :: tol_abs = 10.0_cp**(-12.0_cp)
-      character(len=19) :: norm_fmt = '(I10,6E40.28E3,I10)'
 
       private
       public :: solve_GS
@@ -67,11 +65,11 @@
         if (compute_norm) then
           call lap_centered(lapu,u,m)
           call subtract(res,lapu,f)
-          call zeroGhostPoints(res)
-          call compute(norm0,res,vol)
+          call assign_ghost_XPeriodic(res,0.0_cp)
+          call compute(norm0,res,vol,m%MP%volume)
         endif
 
-        call apply_BCs(u,m)
+        call apply_BCs(u)
         i_earlyExit=0
         if (.not.sqrt(norm0%L2).lt.tol_abs) then ! Only do PCG if necessary!
           skip_loop = .false.
@@ -88,16 +86,16 @@
             call innerLoop(u,f,m,p,d,D_inv,gt,(/1,0,1/)) ! Odd in even plane
             call innerLoop(u,f,m,p,d,D_inv,gt,(/1,1,0/)) ! Odd in even plane
             !$OMP END PARALLEL
-            call apply_BCs(u,m)
+            call apply_BCs(u)
             N_iter = N_iter + 1
 
             if (mod(i,n_skip_check_res).eq.0) then
               call lap_centered(lapu,u,m)
               call subtract(res,lapu,f)
-              call zeroGhostPoints(res)
-              call compute(norm,res,vol)
+              call assign_ghost_XPeriodic(res,0.0_cp)
+              call compute(norm,res,vol,m%MP%volume)
 #ifdef _EXPORT_GS_SF_CONVERGENCE_
-              write(un,norm_fmt) N_iter,norm%L1,norm%L2 ,norm%Linf ,&
+              write(un,*) N_iter,norm%L1,norm%L2 ,norm%Linf ,&
                                        norm0%L1,norm0%L2,norm0%Linf,i-1
 #endif
               if ((norm%L2/norm0%L2.lt.tol).or.(norm%L2.lt.tol_abs)) then; i_earlyExit=1; exit; endif
@@ -115,9 +113,10 @@
           if (.not.skip_loop) then
             call lap_centered(lapu,u,m)
             call subtract(res,lapu,f)
-            call zeroGhostPoints(res)
-            call compute(norm,res,vol); call print(norm,'GS_SF Residuals for '//name)
-            write(un,norm_fmt) N_iter,norm%L1,norm%L2 ,norm%Linf ,&
+            call assign_ghost_XPeriodic(res,0.0_cp)
+            call compute(norm,res,vol,m%MP%volume)
+            call print(norm,'GS_SF Residuals for '//name)
+            write(un,*) N_iter,norm%L1,norm%L2 ,norm%Linf ,&
                                      norm0%L1,norm0%L2,norm0%Linf,i-1+i_earlyExit
             write(*,*) 'GS_SF iterations (executed/max) = ',i-1+i_earlyExit,n
             write(*,*) 'GS_SF exit condition = ',norm%L2/norm0%L2
@@ -151,11 +150,11 @@
         if (compute_norm) then
           call lap(lapu,u,m)
           call subtract(res,lapu,f)
-          call zeroGhostPoints(res)
-          call compute(norm0,res,vol)
+          call assign_ghost_XPeriodic(res,0.0_cp)
+          call compute(norm0,res,vol,m%MP%volume)
         endif
 
-        call apply_BCs(u,m)
+        call apply_BCs(u)
         i_earlyExit=0
         if (.not.sqrt(norm0%L2).lt.tol_abs) then ! Only do PCG if necessary!
           skip_loop = .false.
@@ -172,16 +171,16 @@
             call innerLoop(u,f,m,p,d,D_inv,gtx,gty,gtz,(/1,0,1/)) ! Odd in even plane
             call innerLoop(u,f,m,p,d,D_inv,gtx,gty,gtz,(/1,1,0/)) ! Odd in even plane
             !$OMP END PARALLEL
-            call apply_BCs(u,m)
+            call apply_BCs(u)
             N_iter = N_iter + 1
 
             if (mod(i,n_skip_check_res).eq.0) then
               call lap(lapu,u,m)
               call subtract(res,lapu,f)
-              call zeroGhostPoints(res)
-              call compute(norm,res,vol)
+              call assign_ghost_XPeriodic(res,0.0_cp)
+              call compute(norm,res,vol,m%MP%volume)
 #ifdef _EXPORT_GS_SF_CONVERGENCE_
-              write(un,norm_fmt) N_iter,norm%L1,norm%L2,norm%Linf,&
+              write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,&
                                  norm0%L1,norm0%L2,norm0%Linf,i-1
 #endif
               if ((norm%L2/norm0%L2.lt.tol).or.(norm%L2.lt.tol_abs)) then; i_earlyExit=1; exit; endif
@@ -199,9 +198,10 @@
           if (.not.skip_loop) then
             call lap(lapu,u,m)
             call subtract(res,lapu,f)
-            call zeroGhostPoints(res)
-            call compute(norm,res,vol); call print(norm,'GS_SF Residuals for '//name)
-              write(un,norm_fmt) N_iter,norm%L1,norm%L2,norm%Linf,&
+            call assign_ghost_XPeriodic(res,0.0_cp)
+            call compute(norm,res,vol,m%MP%volume)
+            call print(norm,'GS_SF Residuals for '//name)
+              write(un,*) N_iter,norm%L1,norm%L2,norm%Linf,&
                                  norm0%L1,norm0%L2,norm0%Linf,i-1
             write(*,*) 'GS_VF iterations (executed/max) = ',i-1+i_earlyExit,n
             write(*,*) 'GS_VF exit condition = ',norm%L2/norm0%L2
@@ -222,12 +222,15 @@
         integer,dimension(3),intent(in) :: gt
         integer :: i
         do i=1,m%s
-          call redBlack(u%RF(i)%f,f%RF(i)%f,D_inv%RF(i)%f,u%RF(i)%s,&
-          p%g(i)%c(1)%dhn,p%g(i)%c(2)%dhn,p%g(i)%c(3)%dhn,&
-          d%g(i)%c(1)%dhn,d%g(i)%c(2)%dhn,d%g(i)%c(3)%dhn,&
+          call redBlack(u%BF(i)%GF%f,f%BF(i)%GF%f,D_inv%BF(i)%GF%f,u%BF(i)%GF%s,&
+          p%B(i)%g%c(1)%dhn%f,&
+          p%B(i)%g%c(2)%dhn%f,&
+          p%B(i)%g%c(3)%dhn%f,&
+          d%B(i)%g%c(1)%dhn%f,&
+          d%B(i)%g%c(2)%dhn%f,&
+          d%B(i)%g%c(3)%dhn%f,&
           gt,odd)
-          ! call apply_stitches(u,m)
-          call apply_BCs(u,m)
+          call apply_BCs(u)
         enddo
       end subroutine
 
@@ -240,15 +243,18 @@
         integer,dimension(3),intent(in) :: gtx,gty,gtz
         integer :: i
         do i=1,m%s
-          call redBlack(u%x%RF(i)%f,u%y%RF(i)%f,u%z%RF(i)%f,&
-                        f%x%RF(i)%f,f%y%RF(i)%f,f%z%RF(i)%f,&
-                        D_inv%x%RF(i)%f,D_inv%y%RF(i)%f,D_inv%z%RF(i)%f,&
-                        u%x%RF(i)%s,u%y%RF(i)%s,u%z%RF(i)%s,&
-          p%g(i)%c(1)%dhn,p%g(i)%c(2)%dhn,p%g(i)%c(3)%dhn,&
-          d%g(i)%c(1)%dhn,d%g(i)%c(2)%dhn,d%g(i)%c(3)%dhn,&
+          call redBlack(u%x%BF(i)%GF%f,u%y%BF(i)%GF%f,u%z%BF(i)%GF%f,&
+                        f%x%BF(i)%GF%f,f%y%BF(i)%GF%f,f%z%BF(i)%GF%f,&
+                        D_inv%x%BF(i)%GF%f,D_inv%y%BF(i)%GF%f,D_inv%z%BF(i)%GF%f,&
+                        u%x%BF(i)%GF%s,u%y%BF(i)%GF%s,u%z%BF(i)%GF%s,&
+          p%B(i)%g%c(1)%dhn%f,&
+          p%B(i)%g%c(2)%dhn%f,&
+          p%B(i)%g%c(3)%dhn%f,&
+          d%B(i)%g%c(1)%dhn%f,&
+          d%B(i)%g%c(2)%dhn%f,&
+          d%B(i)%g%c(3)%dhn%f,&
           gtx,gty,gtz,odd)
-          ! call apply_stitches(u,m)
-          call apply_BCs(u,m)
+          call apply_BCs(u)
         enddo
       end subroutine
 

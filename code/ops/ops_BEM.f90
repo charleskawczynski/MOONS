@@ -2,11 +2,12 @@
        use current_precision_mod
        use ops_del_mod
        use mesh_mod
-       use domain_mod
+       use mesh_domain_mod
        use ops_embedExtract_mod
        use VF_mod
        use SF_mod
        use index_mapping_mod
+       use constants_mod
 
        implicit none
 
@@ -18,15 +19,13 @@
 
        public :: compute_phi_pseudo_time_marching
 
-       real(cp),parameter :: PI = 3.141592653589793238462643383279502884197169399375105820974_cp
-
        contains
 
        function boundaryFlux_VF(u,m) result(BF)
          ! Computes
-         ! 
+         !
          !   BF = ∫∫ u•n dA
-         ! 
+         !
          implicit none
          type(VF),intent(in) :: u
          type(mesh),intent(in) :: m
@@ -35,58 +34,58 @@
          BFtemp = 0.0_cp ! temp is necessary for reduction
          BF = 0.0_cp
          do t=1,m%s
-           if (.not.m%g(t)%st_faces(1)%TF) then
+           ! if (.not.m%B(t)%g%st_faces(1)%TF) then
              !$OMP PARALLEL DO SHARED(m), REDUCTION(+:BFtemp)
-             do k=2,u%x%RF(t)%s(3)-1; do j=2,u%x%RF(t)%s(2)-1
-               BFtemp = BFtemp + u%x%RF(t)%f(2,j,k)*m%g(t)%c(2)%dhn(j)*m%g(t)%c(3)%dhn(k)
+             do k=2,u%x%BF(t)%GF%s(3)-1; do j=2,u%x%BF(t)%GF%s(2)-1
+               BFtemp = BFtemp + u%x%BF(t)%GF%f(2,j,k)*m%B(t)%g%c(2)%dhn(j)*m%B(t)%g%c(3)%dhn(k)
              enddo; enddo
              !$OMP END PARALLEL DO
              BF = BF + BFtemp; BFtemp = 0.0_cp
-           endif
-           if (.not.m%g(t)%st_faces(2)%TF) then
+           ! endif
+           ! if (.not.m%B(t)%g%st_faces(2)%TF) then
              !$OMP PARALLEL DO SHARED(m), REDUCTION(+:BFtemp)
-             do k=2,u%x%RF(t)%s(3)-1; do j=2,u%x%RF(t)%s(2)-1
-               BFtemp = BFtemp + u%x%RF(t)%f(u%x%RF(t)%s(1)-1,j,k)*m%g(t)%c(2)%dhn(j)*m%g(t)%c(3)%dhn(k)
+             do k=2,u%x%BF(t)%GF%s(3)-1; do j=2,u%x%BF(t)%GF%s(2)-1
+               BFtemp = BFtemp + u%x%BF(t)%GF%f(u%x%BF(t)%GF%s(1)-1,j,k)*m%B(t)%g%c(2)%dhn(j)*m%B(t)%g%c(3)%dhn(k)
              enddo; enddo
              !$OMP END PARALLEL DO
              BF = BF + BFtemp; BFtemp = 0.0_cp
-           endif
+           ! endif
          enddo
          do t=1,m%s
-           if (.not.m%g(t)%st_faces(3)%TF) then
+           ! if (.not.m%B(t)%g%st_faces(3)%TF) then
              !$OMP PARALLEL DO SHARED(m), REDUCTION(+:BFtemp)
-             do k=2,u%y%RF(t)%s(3)-1; do i=2,u%y%RF(t)%s(1)-1
-               BFtemp = BFtemp + u%y%RF(t)%f(i,2,k)*m%g(t)%c(1)%dhn(i)*m%g(t)%c(3)%dhn(k)
+             do k=2,u%y%BF(t)%GF%s(3)-1; do i=2,u%y%BF(t)%GF%s(1)-1
+               BFtemp = BFtemp + u%y%BF(t)%GF%f(i,2,k)*m%B(t)%g%c(1)%dhn(i)*m%B(t)%g%c(3)%dhn(k)
              enddo; enddo
              !$OMP END PARALLEL DO
              BF = BF + BFtemp; BFtemp = 0.0_cp
-           endif
-           if (.not.m%g(t)%st_faces(4)%TF) then
+           ! endif
+           ! if (.not.m%B(t)%g%st_faces(4)%TF) then
              !$OMP PARALLEL DO SHARED(m), REDUCTION(+:BFtemp)
-             do k=2,u%y%RF(t)%s(3)-1; do i=2,u%y%RF(t)%s(1)-1
-               BFtemp = BFtemp + u%y%RF(t)%f(i,u%y%RF(t)%s(2)-1,k)*m%g(t)%c(1)%dhn(i)*m%g(t)%c(3)%dhn(k)
+             do k=2,u%y%BF(t)%GF%s(3)-1; do i=2,u%y%BF(t)%GF%s(1)-1
+               BFtemp = BFtemp + u%y%BF(t)%GF%f(i,u%y%BF(t)%GF%s(2)-1,k)*m%B(t)%g%c(1)%dhn(i)*m%B(t)%g%c(3)%dhn(k)
              enddo; enddo
              !$OMP END PARALLEL DO
              BF = BF + BFtemp; BFtemp = 0.0_cp
-           endif
+           ! endif
          enddo
          do t=1,m%s
-           if (.not.m%g(t)%st_faces(5)%TF) then
+           ! if (.not.m%B(t)%g%st_faces(5)%TF) then
              !$OMP PARALLEL DO SHARED(m), REDUCTION(+:BFtemp)
-             do j=2,u%z%RF(t)%s(2)-1; do i=2,u%z%RF(t)%s(1)-1
-               BFtemp = BFtemp + u%z%RF(t)%f(i,j,2)*m%g(t)%c(1)%dhn(i)*m%g(t)%c(2)%dhn(j)
+             do j=2,u%z%BF(t)%GF%s(2)-1; do i=2,u%z%BF(t)%GF%s(1)-1
+               BFtemp = BFtemp + u%z%BF(t)%GF%f(i,j,2)*m%B(t)%g%c(1)%dhn(i)*m%B(t)%g%c(2)%dhn(j)
              enddo; enddo
              !$OMP END PARALLEL DO
              BF = BF + BFtemp; BFtemp = 0.0_cp
-           endif
-           if (.not.m%g(t)%st_faces(6)%TF) then
+           ! endif
+           ! if (.not.m%B(t)%g%st_faces(6)%TF) then
              !$OMP PARALLEL DO SHARED(m), REDUCTION(+:BFtemp)
-             do j=2,u%z%RF(t)%s(2)-1; do i=2,u%z%RF(t)%s(1)-1
-               BFtemp = BFtemp + u%z%RF(t)%f(i,j,u%z%RF(t)%s(3)-1)*m%g(t)%c(1)%dhn(i)*m%g(t)%c(2)%dhn(j)
+             do j=2,u%z%BF(t)%GF%s(2)-1; do i=2,u%z%BF(t)%GF%s(1)-1
+               BFtemp = BFtemp + u%z%BF(t)%GF%f(i,j,u%z%BF(t)%GF%s(3)-1)*m%B(t)%g%c(1)%dhn(i)*m%B(t)%g%c(2)%dhn(j)
              enddo; enddo
              !$OMP END PARALLEL DO
              BF = BF + BFtemp; BFtemp = 0.0_cp
-           endif
+           ! endif
          enddo
        end function
 
@@ -94,17 +93,21 @@
        ! ******************************* VECTOR ROUTINES *********************************
        ! *********************************************************************************
 
-       function boundaryFlux_VF_SD(f,D) result(BF)
+       function boundaryFlux_VF_SD(f,m,MD) result(BF)
          implicit none
          type(VF),intent(in) :: f
-         type(domain),intent(in) :: D
+         type(mesh),intent(in) :: m
+         type(mesh_domain),intent(in) :: MD
          real(cp) :: BF
          type(VF) :: temp
+         type(mesh) :: m_temp
+         call init_other(m_temp,m,MD)
          if (.not.f%is_Face) stop 'Error: Boundary flux must be computed on face in boundaryFlux_VF_SD in ops_aux.f90'
-         call init_Face(temp,D%m_in)
-         call extractFace(temp,f,D)
-         BF = boundaryFlux(temp,D%m_in)
+         call init_Face(temp,m_temp)
+         call extractFace(temp,f,MD)
+         BF = boundaryFlux(temp,m_temp)
          call delete(temp)
+         call delete(m_temp)
        end function
 
        ! is this right???
@@ -182,8 +185,8 @@
           do i=1,phi%numEl
             call get_3D_index(i_3D,j_3D,k_3D,t_3D,m,i)
             call phi_integral(temp,phi,B,m,i)
-            phi%RF(t_3D)%f(i_3D,j_3D,k_3D) = temp%RF(t_3D)%f(i_3D,j_3D,k_3D)
-            ! phi%RF(t_3D)%f(i_3D,j_3D,k_3D) = phi_integral_func(phi,B,m,i)
+            phi%BF(t_3D)%GF%f(i_3D,j_3D,k_3D) = temp%BF(t_3D)%GF%f(i_3D,j_3D,k_3D)
+            ! phi%BF(t_3D)%GF%f(i_3D,j_3D,k_3D) = phi_integral_func(phi,B,m,i)
           enddo
         end subroutine
 
@@ -215,7 +218,7 @@
             temp = temp + G_ij**(3.0_cp)*dot_n(m,t_3D,x-y)*dA*phij
             temp = temp + G_ij*dA*dot_n(m,t_3D,Bj)
           enddo
-          phi_i%RF(t_3D)%f(i_3D,j_3D,k_3D) = temp*0.5_cp*PI
+          phi_i%BF(t_3D)%GF%f(i_3D,j_3D,k_3D) = temp*0.5_cp*PI
         end subroutine
 
         ! function phi_integral_func(phi,B,m,i) result(phi_xi)
@@ -303,9 +306,9 @@
           real(cp) :: x
           integer :: N_s
           N_s = 1
-              if (m%g(t_3D)%c(1)%N.eq.N_s) then; x = f(1)
-          elseif (m%g(t_3D)%c(2)%N.eq.N_s) then; x = f(2)
-          elseif (m%g(t_3D)%c(3)%N.eq.N_s) then; x = f(3)
+              if (m%B(t_3D)%g%c(1)%N.eq.N_s) then; x = f(1)
+          elseif (m%B(t_3D)%g%c(2)%N.eq.N_s) then; x = f(2)
+          elseif (m%B(t_3D)%g%c(3)%N.eq.N_s) then; x = f(3)
           else; stop 'Error: bad input to dot_n in ops_BEM.f90'
           endif
         end function
@@ -319,9 +322,12 @@
           real(cp),dimension(3) :: x
           integer :: N_s
           N_s = 1
-              if (m%g(t_3D)%c(1)%N.eq.N_s) then; x=(/m%g(t_3D)%c(1)%hn(i_3D),m%g(t_3D)%c(2)%hc(j_3D),m%g(t_3D)%c(3)%hc(k_3D)/)
-          elseif (m%g(t_3D)%c(2)%N.eq.N_s) then; x=(/m%g(t_3D)%c(1)%hc(i_3D),m%g(t_3D)%c(2)%hn(j_3D),m%g(t_3D)%c(3)%hc(k_3D)/)
-          elseif (m%g(t_3D)%c(3)%N.eq.N_s) then; x=(/m%g(t_3D)%c(1)%hc(i_3D),m%g(t_3D)%c(2)%hc(j_3D),m%g(t_3D)%c(3)%hn(k_3D)/)
+              if (m%B(t_3D)%g%c(1)%N.eq.N_s) then; x=(/m%B(t_3D)%g%c(1)%hn(i_3D),&
+          m%B(t_3D)%g%c(2)%hc(j_3D),m%B(t_3D)%g%c(3)%hc(k_3D)/)
+          elseif (m%B(t_3D)%g%c(2)%N.eq.N_s) then; x=(/m%B(t_3D)%g%c(1)%hc(i_3D),&
+          m%B(t_3D)%g%c(2)%hn(j_3D),m%B(t_3D)%g%c(3)%hc(k_3D)/)
+          elseif (m%B(t_3D)%g%c(3)%N.eq.N_s) then; x=(/m%B(t_3D)%g%c(1)%hc(i_3D),&
+          m%B(t_3D)%g%c(2)%hc(j_3D),m%B(t_3D)%g%c(3)%hn(k_3D)/)
           else; stop 'Error: x not found in get_x_on_surface in ops_BEM.f90'
           endif
         end function

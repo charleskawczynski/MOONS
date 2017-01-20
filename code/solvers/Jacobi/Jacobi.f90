@@ -1,20 +1,21 @@
       module Jacobi_mod
       use current_precision_mod
       use mesh_mod
-      use domain_mod
+      use mesh_domain_mod
       use norms_mod
       use ops_discrete_mod
       use ops_aux_mod
       use string_mod
       use SF_mod
       use VF_mod
-      use IO_SF_mod
+      use IO_export_mod
       use IO_tools_mod
       use matrix_free_params_mod
       use matrix_free_operators_mod
       use Jacobi_solver_mod
       use matrix_mod
       use preconditioners_mod
+      use diagonals_mod
 
       implicit none
 
@@ -27,14 +28,14 @@
         type(mesh) :: m
         type(VF) :: Ax,res,Dinv,D,k,tempk,vol,x_interior
         type(norms) :: norm
-        type(domain) :: D_interior
+        type(mesh_domain) :: D_interior
         type(string) :: name
         type(matrix_free_params) :: MFP
         integer :: un,n_skip_check_res,N_iter ! unit to export norm
         real(cp) :: tol
         procedure(op_VF),pointer,nopass :: operator
       end type
-      
+
       interface init;        module procedure init_Jacobi;       end interface
       interface solve;       module procedure solve_Jacobi_VF;   end interface
       interface delete;      module procedure delete_Jacobi;     end interface
@@ -49,7 +50,7 @@
         type(VF),intent(in) :: x,x_interior
         type(VF),intent(in) :: k
         type(mesh),intent(in) :: m
-        type(domain),intent(in) :: D_interior
+        type(mesh_domain),intent(in) :: D_interior
         type(matrix_free_params),intent(in) :: MFP
         real(cp),intent(in) :: tol
         integer,intent(in) :: n_skip_check_res
@@ -85,10 +86,10 @@
           call export_matrix(JAC%D,dir,'JAC_VF_diag_'//name)
         endif
 
-        call diag_Lap_VF(JAC%D,m)
+        call diag_Lap(JAC%D,m)
         call assign(JAC%Dinv,JAC%D)
         call invert(JAC%Dinv)
-        call zeroghostpoints(JAC%Dinv)
+        call assign_ghost_XPeriodic(JAC%Dinv,0.0_cp)
       end subroutine
 
       subroutine solve_Jacobi_VF(JAC,x,f,m,n,compute_norm)

@@ -10,9 +10,8 @@
 
        private
        public :: apply_stitches
-
-       interface apply_stitches;    module procedure apply_stitches_VF;     end interface
-       interface apply_stitches;    module procedure apply_stitches_SF;     end interface
+       interface apply_stitches; module procedure apply_stitches_VF; end interface
+       interface apply_stitches; module procedure apply_stitches_SF; end interface
 
        contains
 

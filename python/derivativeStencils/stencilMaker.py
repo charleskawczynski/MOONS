@@ -5,7 +5,7 @@ from itertools import *
 from math import factorial
 
 class stencilMaker:
-    
+
     def __init__(self,nLeft,nRight,nonUniformGrid,substituteDH,multiLine):
         self.nLeft = nLeft
         self.nRight = nRight
@@ -54,9 +54,9 @@ class stencilMaker:
                 elif k==0:
                     dhk = '\\Delta h_{i}'
                 self.Sdhk.append(Symbol(dhk))
-                
+
                 self.dhUniform = Symbol('{\\Delta h}')
-            
+
             self.nUnknowns = self.n+2 # To include truncation error
             for k in range(0,self.nUnknowns):
                 if (k==0):
@@ -89,7 +89,7 @@ class stencilMaker:
                             else:
                                 temp.append(self.dhUniform)
                     self.Sak[i] = self.Sak[i].replace(self.Sak[i],sum(temp))
-        
+
                 for j in range(self.nLeft,0): # Search Left
                     temp = []
                     i = j - self.nLeft
@@ -101,7 +101,7 @@ class stencilMaker:
                             else:
                                 temp.append(-self.dhUniform)
                     self.Sak[i] = self.Sak[i].replace(self.Sak[i],sum(temp))
-        
+
     def solveSystem(self):
         self.RHS = [];self.LHS = [];self.EQ = [];
         # **************************** CONSTRUCT LHS ******************************
@@ -132,7 +132,7 @@ class stencilMaker:
         SS = [];
         for k in range(0,len(self.SL)):
             SS.append(str(self.SL[k][0]) + ' = ' + str(self.SL[k][1]))
-    
+
     def exportLatexSetup(self):
         print ' ------------ EXPORTING LATEX SETUP'
         # ***************** EQS SOLVED WITHOUT TRUNCATION ******************
@@ -177,12 +177,12 @@ class stencilMaker:
                 f.write(' , ')
         f.write('\n \\end{equation}')
         f.close()
-        
+
     def exportAllTruncations(self):
         self.exportTruncation('dfdx_Truncation',1)
         self.exportTruncation('d2fdx2_Truncation',2)
         print ' ------------ FINISHED'
-        
+
     def exportTruncation(self,filename,nthDerivative):
         print ' ------------ EXPORTING ' + filename
         # **************** 1ST DERIVATIVE TRUNCATION **********************
@@ -210,7 +210,7 @@ class stencilMaker:
     def exportLatexSolution(self,filename,nthDerivative):
         # This routine exports the solution with factoring
         print ' ------------ EXPORTING ' + filename
-        # ************************ 1ST DERIVATIVE ************************* 
+        # ************************ 1ST DERIVATIVE *************************
         f = open('latex/'+filename+'.tex','w')
         if self.multiLine:
             f.write('\\begin{multline} \n'); f.write('\\begin{aligned} \n')
@@ -235,7 +235,7 @@ class stencilMaker:
         for k in range(0,len(coeffs)):
             R.append('\left('+latex(simplify(coeffs[k]))+'\\right)'+latex(self.Sfk_all[k]) + '+'+tail)
         R = ' '.join(R)
-        
+
         num = 4 if self.multiLine else 1
         p = L + ' = ' + R[:-num] # last plus sign, space and \\
         f.write(p)
@@ -249,7 +249,7 @@ class stencilMaker:
         # This routine exports the solution without factoring, it may
         # be useful for debugging
         print ' ------------ EXPORTING ' + filename
-        # ************************ 1ST DERIVATIVE ************************* 
+        # ************************ 1ST DERIVATIVE *************************
         f = open('latex/'+filename+'.tex','w')
         f.write('\\begin{equation} \n')
         for k in range(0,len(self.SL)):

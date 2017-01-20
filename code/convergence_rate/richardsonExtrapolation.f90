@@ -1,20 +1,20 @@
        module richardsonExtrapolation_mod
-       ! 
+       !
        ! The following analysis closely followed work by
-       ! 
-       !      Roache, P. J. Quantification of Uncertainty in Computational 
+       !
+       !      Roache, P. J. Quantification of Uncertainty in Computational
        !      Fluid Dynamics. Annu. Rev. Fluid Mech. 29, 123–160 (1997).
        ! and
-       !      De Vahl Davis, G. Natural convection of air in a square cavity: a 
+       !      De Vahl Davis, G. Natural convection of air in a square cavity: a
        !      benchmark solution. Int. J. Num. Methods Fluids 3, 249–264 (1983).
-       ! 
+       !
        ! Index 1 indicates finest mesh.
        ! Index Nsims indicates coarsest mesh.
-       ! 
+       !
        ! Very good tutorial for convergence rates:
        ! http://www.grc.nasa.gov/WWW/wind/valid/tutorial/spatconv.html
-       ! 
-       ! 
+       !
+       !
        ! NOTE:
        !        It appears that computeGCI_Coarse is supposed to be computed using
        !            GCI = (Fs * abs(eps) * r**p ) / (r**p - real(1.0,cp))
@@ -25,6 +25,7 @@
        !        approach from this example, and doing so seems to yield very good
        !        and sensible results.
        use current_precision_mod
+       use richardsonExtrapolation_funcs_mod
        use IO_tools_mod
        use IO_SF_mod
        use IO_VF_mod
@@ -41,7 +42,7 @@
        public :: richardsonExtrapolation
        public :: reportResults
        public :: computeRE
-      
+
        interface computeRE;    module procedure computeRE_VF;                 end interface
        ! interface computeRE;    module procedure computeRE_RealfromExisting;   end interface
 
@@ -51,7 +52,7 @@
          type(norms) :: p
          type(norms) :: AR ! Should be ~ 1 if in asymptotic range
        end type
-      
+
        contains
 
        subroutine reportResults(RE,name,directory,Nsims,N)
@@ -95,21 +96,20 @@
          type(norms),dimension(:),intent(in) :: e
          integer,dimension(:),intent(in) :: N
          character(len=*),intent(in) :: dir,name
-         integer :: temp,s,sn,i
+         integer :: un,s,sn,i
          s = size(e); sn = size(N)
 
-         temp = new_and_open(dir,name)
+         un = new_and_open(dir,name)
 
          if (sn.eq.s) then
-           write(temp,'(7(A10))') 'N','L1','L2','Linf'
+           write(un,*) 'N','L1','L2','Linf'
            do i=1,s
-             write(temp,'(1I5,4'//arrfmt//')') N(i),e(i)%L1, e(i)%L2, e(i)%Linf
+             write(un,*) N(i),e(i)%L1, e(i)%L2, e(i)%Linf
            enddo
          elseif (sn.eq.s+2) then
-           write(temp,'(6(A10))') 'N1','N2','N3','L1','L2','Linf'
+           write(un,*) 'N1','N2','N3','L1','L2','Linf'
            do i=1,s
-             write(temp,'(3I5,3'//arrfmt//')') N(i),N(i+1),N(i+2),&
-                                               e(i)%L1, e(i)%L2, e(i)%Linf
+             write(un,*) N(i),N(i+1),N(i+2),e(i)%L1,e(i)%L2,e(i)%Linf
            enddo
          else
            stop 'Error: unknown size in exportREList in richardsonExtrapolation.f90'
@@ -144,27 +144,27 @@
 
        function computeRE_Real(f1,f2,f3,m1,m3,r,dir,name) result (RE)
          ! Computes the properties of RE, which include
-         ! 
+         !
          !            |f3 - f2|   /
          !    p = log ---------  / log (maxval(r))
          !            |f2 - f1| /
-         ! 
+         !
          !    e_12 = |f2 - f1|
          !    e_23 = |f3 - f2|
-         ! 
+         !
          !             |f2 - f1|
          !    GCI_12 = ---------
          !               |f1|
-         ! 
+         !
          !             |f3 - f2|
          !    GCI_23 = ---------
          !               |f2|
-         ! 
-         ! Note that 
+         !
+         ! Note that
          !      f1 is the finest mesh
          !      f3 is the coarsest mesh
          !      mesh refinement means that maxval(r) must > 1 for at least one direction
-         ! 
+         !
          implicit none
          type(SF),intent(in) :: f1,f2,f3 ! Cell corner data, (f1 -> finest, f3-> coarsest)
          type(mesh),intent(in) :: m1,m3 ! Mesh for f3
@@ -196,7 +196,7 @@
          RE%GCI_12 = computeGCI_norms(f2_f1,f1_f0,RE%p,r0,Fs,.true.) ! GCI = Fs*|f_2 - f_1|/|f_1|
          ! Coarse GCI
          RE%GCI_23 = computeGCI_norms(f3_f2,f2_f0,RE%p,r0,Fs,.false.) ! GCI = Fs*|f_3 - f_2|/|f_2|
-         
+
          RE%AR = computeAsymtoticRange_Norms(RE%GCI_12,RE%GCI_23,RE%p,r0)
          call delete(f0)
        end function
@@ -209,24 +209,24 @@
 
        function computeMGError(f1,f2,r1,r2,m,dir,name,plotTF) result(n)
          ! Computes
-         ! 
+         !
          !    e = f2 - f1
-         ! 
-         ! On the mesh defined by the shape s. The mesh taken from 
+         !
+         ! On the mesh defined by the shape s. The mesh taken from
          ! f1 and f2 depend on the refinement factors r1 and r2.
-         ! 
+         !
          ! Note that
-         ! 
+         !
          !     r must >= 1
          !     shape(f1)/r1 should = s
          !     shape(f2)/r2 should = s
-         ! 
+         !
          !     r1(dir) = 1 --> f1 need not skip mesh points along direction dir in mesh
          !     r1(dir) = 2 --> f1 needs to skip every other mesh point along direction dir in mesh
-         ! 
+         !
          !     r2(dir) = 1 --> f2 need not skip mesh points along direction dir in mesh
          !     r2(dir) = 2 --> f2 needs to skip every other mesh point along direction dir in mesh
-         ! 
+         !
          implicit none
          type(SF),intent(in) :: f2,f1
          integer,dimension(3),intent(in) :: r1,r2
@@ -239,18 +239,25 @@
 
          call init_Node(e,m)
          do t = 1,e%s
+#ifdef _PARALLELIZE_RICHARDSONEXTRAPOLATION_
            !$OMP PARALLEL DO PRIVATE(i1,j1,k1,i2,j2,k2)
-           do k=2,e%RF(t)%s(3)-1
+
+#endif
+
+           do k=2,e%BF(t)%GF%s(3)-1
              k1 = 2 + (k-2)*r1(3); k2 = 2 + (k-2)*r2(3)
-             do j=2,e%RF(t)%s(2)-1
+             do j=2,e%BF(t)%GF%s(2)-1
               j1 = 2 + (j-2)*r1(2); j2 = 2 + (j-2)*r2(2)
-               do i=2,e%RF(t)%s(1)-1
+               do i=2,e%BF(t)%GF%s(1)-1
                i1 = 2 + (i-2)*r1(1); i2 = 2 + (i-2)*r2(1)
-             e%RF(t)%f(i,j,k) = f2%RF(t)%f(i2,j2,k2) - f1%RF(t)%f(i1,j1,k1)
+             e%BF(t)%GF%f(i,j,k) = f2%BF(t)%GF%f(i2,j2,k2) - f1%BF(t)%GF%f(i1,j1,k1)
            enddo;enddo;enddo
+#ifdef _PARALLELIZE_RICHARDSONEXTRAPOLATION_
            !$OMP END PARALLEL DO
+
+#endif
          enddo
-         call zeroGhostPoints(e)
+         call assign_ghost_XPeriodic(e,0.0_cp)
          if (plotTF) call export_3D_1C(m,e,dir,'MG_Error_'//name,0)
 
          call init(vol,e)
@@ -258,126 +265,6 @@
          call compute(n,e,vol)
          call delete(vol)
          call delete(e)
-       end function
-
-       ! *******************************************************************************
-       ! *******************************************************************************
-       ! *************************** ORDER OF CONVERGENCE (p) **************************
-       ! *******************************************************************************
-       ! *******************************************************************************
-
-       function richardsonExtrap_norms(num,denom,r) result(p)
-         ! Computes
-         ! 
-         !            |f3 - f2|   /
-         !    p = log ---------  / log (r)
-         !            |f2 - f1| /
-         ! 
-         ! Note that r must > 1
-         implicit none
-         type(norms),intent(in) :: num,denom
-         real(cp),intent(in) :: r
-         type(norms) :: p
-         p%L1   = richardsonExtrap_Real(num%L1  ,denom%L1,  r)
-         p%L2   = richardsonExtrap_Real(num%L2  ,denom%L2,  r)
-         p%Linf = richardsonExtrap_Real(num%Linf,denom%Linf,r)
-       end function
-
-       function richardsonExtrap_Real(num,denom,r) result(p)
-         ! Computes
-         ! 
-         !            |f3 - f2|   /
-         !    p = log ---------  / log (r)
-         !            |f2 - f1| /
-         ! 
-         ! Note that r must > 1
-         implicit none
-         real(cp),intent(in) :: num,denom,r
-         real(cp) :: p
-         p = log( abs(num) / abs(denom) )/log(r)
-       end function
-
-       ! *******************************************************************************
-       ! *******************************************************************************
-       ! ************************* GRID CONVERGECNE INDEX (GCI) ************************
-       ! *******************************************************************************
-       ! *******************************************************************************
-
-       function computeGCI_norms(num,denom,p,r,Fs,fine) result(GCI)
-         ! Computes
-         ! 
-         !     GCI = (Fs * abs(num/denom) ) / (r**p - 1.0_cp)
-         ! 
-         implicit none
-         type(norms),intent(in) :: num,denom,p
-         real(cp),intent(in) :: r,Fs
-         logical,intent(in) :: fine
-         type(norms) :: GCI
-         GCI%L1   = computeGCI_Real(Fs,num%L1  /denom%L1  ,p%L1  ,r,fine)
-         GCI%L2   = computeGCI_Real(Fs,num%L2  /denom%L2  ,p%L2  ,r,fine)
-         GCI%Linf = computeGCI_Real(Fs,num%Linf/denom%Linf,p%Linf,r,fine)
-       end function
-
-       function computeGCI_Real(Fs,eps,p,r,fine) result(GCI)
-         implicit none
-         real(cp),intent(in) :: Fs,eps,p,r
-         logical,intent(in) :: fine
-         real(cp) :: GCI
-         if (fine) then; GCI = computeGCI_Fine(Fs,eps,r,p)
-         else;           GCI = computeGCI_Coarse(Fs,eps,r,p)
-         endif
-       end function
-
-       function computeGCI_Coarse(Fs,eps,p,r) result(GCI)
-         ! It appears that this is supposed to be computed using
-         !     GCI = (Fs * abs(eps) * r**p ) / (r**p - 1.0_cp)
-         ! but the example on NASA's site,
-         ! http://www.grc.nasa.gov/WWW/wind/valid/tutorial/spatconv.html
-         ! shows that this is not the case, and there seem to be
-         ! inconsistencies with GCI_23 vs GCI_coarse. So I've adopted the
-         ! approach from this example, and doing so seems to yield very good
-         ! and sensible results.
-         implicit none
-         real(cp),intent(in) :: Fs,eps,p,r
-         real(cp) :: GCI
-         GCI = (Fs * abs(eps)) / (r**p - 1.0_cp)
-       end function
-
-       function computeGCI_Fine(Fs,eps,p,r) result(GCI)
-         implicit none
-         real(cp),intent(in) :: Fs,eps,p,r
-         real(cp) :: GCI
-         GCI = (Fs * abs(eps)) / (r**p - 1.0_cp)
-       end function
-
-       ! *******************************************************************************
-       ! *******************************************************************************
-       ! **************************** ASYMPTOTIC RANGE (AR) ****************************
-       ! *******************************************************************************
-       ! *******************************************************************************
-
-       function computeAsymtoticRange_Norms(GCI_12,GCI_23,p,r) result(AR)
-         implicit none
-         type(norms),intent(in) :: GCI_12,GCI_23,p
-         real(cp),intent(in) :: r
-         type(norms) :: AR
-         AR%L1   = computeAsymtoticRange_Real(GCI_12%L1  ,GCI_23%L1  ,p%L1  ,r)
-         AR%L2   = computeAsymtoticRange_Real(GCI_12%L2  ,GCI_23%L2  ,p%L2  ,r)
-         AR%Linf = computeAsymtoticRange_Real(GCI_12%Linf,GCI_23%Linf,p%Linf,r)
-       end function
-
-       function computeAsymtoticRange_Real(GCI_12,GCI_23,p,r) result(AR)
-         ! Computes
-         !      
-         !      AR = alpha/r^p
-         !
-         ! Where
-         !      alpha = |eps_23|/|eps_12|
-         ! 
-         implicit none
-         real(cp),intent(in) :: GCI_12,GCI_23,p,r
-         real(cp) :: AR
-         AR = GCI_23/((r**p)*GCI_12)
        end function
 
        end module

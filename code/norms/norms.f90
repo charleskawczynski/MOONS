@@ -3,7 +3,7 @@
        !     L(1)
        !     L(2)
        !     L(∞)
-       ! 
+       !
        ! Interfaces:
        ! compute(e,u,vol)  = L(n) = volume⁻¹ ( ∫∫∫ | u(i,j,k)ⁿ | dx dy dz )ᵝ, β=1/n
        ! compute(e,u)      = L(n) = ( ΣΣΣ | u(i,j,k)ⁿ | )ᵝ, β=1/n
@@ -13,25 +13,37 @@
        use grid_mod
        use mesh_mod
        use ops_norms_mod
-       use RF_mod
+       use GF_mod
        use SF_mod
        use VF_mod
        implicit none
 
        private
-       public :: norms,init
-       public :: print,export
+       public :: norms
+       public :: init,delete,display,print,export,import ! Essentials
        public :: compute
 
        type norms
-         real(cp) :: L1,L2,Linf
+         real(cp) :: L1 = 0.0_cp
+         real(cp) :: L2 = 0.0_cp
+         real(cp) :: Linf = 0.0_cp
        end type
 
        interface init;            module procedure init_norms;             end interface
-       interface init;            module procedure print_copy;             end interface
+       interface init;            module procedure init_copy_norms;        end interface
+       interface delete;          module procedure delete_norms;           end interface
+       interface display;         module procedure display_norms1;         end interface
+       interface display;         module procedure display_norms2;         end interface
+       interface display;         module procedure display_norms1_name;    end interface
+       interface display;         module procedure display_norms2_name;    end interface
+       interface print;           module procedure print_norms1;           end interface
+       interface print;           module procedure print_norms2;           end interface
+       interface print;           module procedure print_norms1_name;      end interface
+       interface print;           module procedure print_norms2_name;      end interface
        interface export;          module procedure export_norms;           end interface
-       interface export;          module procedure export_norms_dir;       end interface
-       interface print;           module procedure print_norms;            end interface
+       interface export;          module procedure export_norms_wrapper;   end interface
+       interface import;          module procedure import_norms;           end interface
+       interface import;          module procedure import_norms_wrapper;   end interface
 
        interface compute;         module procedure compute_norms_vol_SF;   end interface
        interface compute;         module procedure compute_norms_SF;       end interface
@@ -41,75 +53,168 @@
        contains
 
        ! **************************************************************
-       ! **************************** INIT ****************************
+       ! ************************** ESSENTIALS ************************
        ! **************************************************************
 
        subroutine init_norms(e)
          implicit none
          type(norms),intent(inout) :: e
-         e%L1 = 0.0_cp; e%L2 = 0.0_cp; e%Linf = 0.0_cp
+         e%L1 = 0.0_cp
+         e%L2 = 0.0_cp
+         e%Linf = 0.0_cp
        end subroutine
 
-       subroutine print_copy(eCopy,e)
+       subroutine init_copy_norms(e,e_in)
          implicit none
-         type(norms),intent(inout) :: eCopy
-         type(norms),intent(in) :: e
-         eCopy%L1 = e%L1; eCopy%L2 = e%L2; eCopy%Linf = e%Linf
+         type(norms),intent(inout) :: e
+         type(norms),intent(in) :: e_in
+         e%L1 = e_in%L1
+         e%L2 = e_in%L2
+         e%Linf = e_in%Linf
        end subroutine
 
-       ! **************************************************************
-       ! *********************** PRINT / EXPORT ***********************
-       ! **************************************************************
+       subroutine delete_norms(e)
+         implicit none
+         type(norms),intent(inout) :: e
+         e%L1 = 0.0_cp
+         e%L2 = 0.0_cp
+         e%Linf = 0.0_cp
+       end subroutine
 
-       subroutine print_norms(norm,name)
+       subroutine display_norms1_name(norm,un,name)
+         implicit none
+         type(norms),intent(in) :: norm
+         integer,intent(in) :: un
+         character(len=*),intent(in) :: name
+         write(un,*) '+++++++++++++ '//name//' +++++++++++++'
+         write(un,*) 'L1 = ',norm%L1
+         write(un,*) 'L2 = ',norm%L2
+         write(un,*) 'Linf = ',norm%Linf
+         write(un,*) '++++++++++++++++++++++++++++++++++++++'
+       end subroutine
+
+       subroutine display_norms2_name(n1,n2,un,name)
+         implicit none
+         type(norms),intent(in) :: n1,n2
+         integer,intent(in) :: un
+         character(len=*),intent(in) :: name
+         write(un,*) '+++++++++++++ '//name//' +++++++++++++'
+         write(un,*) 'L1 = ',n1%L1,n2%L1
+         write(un,*) 'L2 = ',n1%L2,n2%L2
+         write(un,*) 'Linf = ',n1%Linf,n2%Linf
+         write(un,*) '++++++++++++++++++++++++++++++++++++++'
+       end subroutine
+
+       subroutine display_norms1(norm,un)
+         implicit none
+         type(norms),intent(in) :: norm
+         integer,intent(in) :: un
+         write(un,*) 'L1 = ',norm%L1
+         write(un,*) 'L2 = ',norm%L2
+         write(un,*) 'Linf = ',norm%Linf
+       end subroutine
+
+       subroutine display_norms2(n1,n2,un)
+         implicit none
+         type(norms),intent(in) :: n1,n2
+         integer,intent(in) :: un
+         write(un,*) 'L1 = ',n1%L1,n2%L1
+         write(un,*) 'L2 = ',n1%L2,n2%L2
+         write(un,*) 'Linf = ',n1%Linf,n2%Linf
+       end subroutine
+
+       subroutine print_norms1_name(norm,name)
          implicit none
          type(norms),intent(in) :: norm
          character(len=*),intent(in) :: name
-         call export_norms(norm,name,6)
+         call display(norm,6,name)
        end subroutine
 
-       subroutine export_norms_dir(norm,dir,name)
+       subroutine print_norms2_name(n1,n2,name)
+         implicit none
+         type(norms),intent(in) :: n1,n2
+         character(len=*),intent(in) :: name
+         call display(n1,n2,6,name)
+       end subroutine
+
+       subroutine print_norms1(norm)
+         implicit none
+         type(norms),intent(in) :: norm
+         call display(norm,6)
+       end subroutine
+
+       subroutine print_norms2(n1,n2)
+         implicit none
+         type(norms),intent(in) :: n1,n2
+         call display(n1,n2,6)
+       end subroutine
+
+       subroutine export_norms(norm,un)
+         implicit none
+         type(norms),intent(in) :: norm
+         integer,intent(in) :: un
+         write(un,*) 'L1 = ';   write(un,*) norm%L1
+         write(un,*) 'L2 = ';   write(un,*) norm%L2
+         write(un,*) 'Linf = '; write(un,*) norm%Linf
+       end subroutine
+
+       subroutine import_norms(norm,un)
+         implicit none
+         type(norms),intent(inout) :: norm
+         integer,intent(in) :: un
+         read(un,*) norm%L1
+         read(un,*) norm%L2
+         read(un,*) norm%Linf
+       end subroutine
+
+       subroutine export_norms_wrapper(norm,dir,name)
          implicit none
          type(norms),intent(in) :: norm
          character(len=*),intent(in) :: dir,name
          integer :: un
          un = new_and_open(dir,'norms_'//name)
-         call export_norms(norm,name,un)
+         write(un,*) '--------------------------------- '//name
+         call export(norm,un)
+         write(un,*) '--------------------------------- '
          call close_and_message(un,dir,name)
        end subroutine
 
-       subroutine export_norms(norm,name,un)
+       subroutine import_norms_wrapper(norm,dir,name)
          implicit none
-         type(norms),intent(in) :: norm
-         integer,intent(in) :: un
-         character(len=*),intent(in) :: name
-         write(un,*) '++++++++++++++ '//name//' +++++++++++++++'
-         write(un,*) 'L1 = ',norm%L1
-         write(un,*) 'L2 = ',norm%L2
-         write(un,*) 'Linf = ',norm%Linf
-         write(un,*) '++++++++++++++++++++++++++++++++++++++++++++++++++++++++'
+         type(norms),intent(inout) :: norm
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = open_to_read(dir,'norms_'//name)
+         read(un,*)
+         call import(norm,un)
+         read(un,*)
+         call close_and_message(un,dir,name)
        end subroutine
 
        ! **************************************************************
        ! ************************ COMPUTATIONS ************************
        ! **************************************************************
 
-       subroutine compute_norms_vol_SF(e,u,vol)
+       subroutine compute_norms_vol_SF(e,u,vol,tot_vol)
          implicit none
          type(norms),intent(inout) :: e
          type(SF),intent(in) :: u,vol
-         call Ln(e%L1,u,1.0_cp,vol); e%L1 = e%L1/vol%vol
-         call Ln(e%L2,u,2.0_cp,vol); e%L2 = (e%L2**0.5_cp)/vol%vol
-         e%Linf = maxabs(u)
+         real(cp),intent(in) :: tot_vol
+         call Ln(e%L1,u,1.0_cp,vol); e%L1 = e%L1/tot_vol
+         call Ln(e%L2,u,2.0_cp,vol); e%L2 = (e%L2**0.5_cp)/tot_vol
+         e%Linf = amax(u)
        end subroutine
 
-       subroutine compute_norms_vol_VF(e,u,vol)
+       subroutine compute_norms_vol_VF(e,u,vol,tot_vol)
          implicit none
          type(norms),intent(inout) :: e
          type(VF),intent(in) :: u,vol
-         call Ln(e%L1,u,1.0_cp,vol); e%L1 = e%L1/vol%x%vol
-         call Ln(e%L2,u,2.0_cp,vol); e%L2 = (e%L2**0.5_cp)/vol%x%vol
-         e%Linf = maxabs(u)
+         real(cp),intent(in) :: tot_vol
+         call Ln(e%L1,u,1.0_cp,vol)
+         call Ln(e%L2,u,2.0_cp,vol)
+         e%L1 = e%L1/tot_vol
+         e%L2 = (e%L2**0.5_cp)/tot_vol
+         e%Linf = amax(u)
        end subroutine
 
        subroutine compute_norms_SF(e,u)
@@ -119,7 +224,7 @@
          call Ln(e%L1,u,1.0_cp)
          call Ln(e%L2,u,2.0_cp)
          e%L2 = e%L2**0.5_cp
-         e%Linf = maxabs(u)
+         e%Linf = amax(u)
        end subroutine
 
        subroutine compute_norms_VF(e,u)
@@ -129,7 +234,7 @@
          call Ln(e%L1,u,1.0_cp)
          call Ln(e%L2,u,2.0_cp)
          e%L2 = e%L2**0.5_cp
-         e%Linf = maxabs(u)
+         e%Linf = amax(u)
        end subroutine
 
        end module

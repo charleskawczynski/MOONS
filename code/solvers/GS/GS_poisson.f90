@@ -3,9 +3,9 @@
       ! solves the poisson equation:
       !     u_xx + u_yy + u_zz = f
       ! for a given f, mesh (m) using the Gauss-Seidel (GS) method
-      ! 
+      !
       ! Note that the variant of Gauss-Seidel/GS called
-      ! "red-black" Gauss-Seidel is used, where the fields are 
+      ! "red-black" Gauss-Seidel is used, where the fields are
       ! traversed in a 3D checkerboarding manner.
       !
       ! Input:
@@ -13,13 +13,12 @@
       !     f            = RHS of above equation
       !     m            = contains mesh information (dhc,dhn)
       !     compute_norm    = print residuals to screen (T,F)
-      ! 
+      !
       ! Flags: (_PARALLELIZE_GS_,_EXPORT_GS_CONVERGENCE_)
       use current_precision_mod
       use mesh_mod
       use apply_BCs_mod
-      use apply_stitches_mod
-      use BCs_mod
+      use boundary_conditions_mod
       use string_mod
       use norms_mod
       use ops_discrete_mod
@@ -28,6 +27,7 @@
       use VF_mod
       use IO_tools_mod
       use preconditioners_mod
+      use diagonals_mod
       use GS_solver_mod
       use iter_solver_params_mod
       implicit none
@@ -41,7 +41,7 @@
         integer :: un,N_iter
         type(norms) :: norm
         type(string) :: name
-        logical :: setCoeff
+        logical :: setCoeff = .false.
         type(iter_solver_params) :: ISP
 
         type(SF) :: vol,lapu,res,f,D_inv ! cell volume, laplacian, residual, Diagonal inverse
@@ -53,13 +53,13 @@
         integer :: un,N_iter
         type(norms) :: norm
         type(string) :: name
-        logical :: setCoeff
+        logical :: setCoeff = .false.
         type(iter_solver_params) :: ISP
-          
+
         type(VF) :: vol,lapu,res,f,D_inv ! cell volume, laplacian, residual, Diagonal inverse
         integer,dimension(3) :: gtx,gty,gtz,sx,sy,sz
       end type
-      
+
       interface init;         module procedure init_GS_SF;           end interface
       interface init;         module procedure init_GS_VF;           end interface
       interface delete;       module procedure delete_GS_SF;         end interface
@@ -77,7 +77,6 @@
         type(mesh),intent(in) :: m
         character(len=*),intent(in) :: dir,name
         integer :: i,t
-        
         call init(GS%ISP,ISP)
         call init(GS%p,m)
         call init(GS%d,m)
@@ -89,18 +88,18 @@
         GS%un = new_and_open(dir,'norm_GS_SF_'//str(GS%name))
         call tecHeader(str(GS%name),GS%un,.false.)
 
-        if (u%is_CC) then
+        if (is_CC(u%DL)) then
           do t=1,m%s; do i=1,3
-            call init(GS%p%g(t),m%g(t)%c(i)%hc,i) ! mesh made from cc --> p%dhn is dhc
+            call init(GS%p%B(t)%g,m%B(t)%g%c(i)%hc%f,i) ! mesh made from cc --> p%dhn is dhc
             GS%gt(i) = 1
           enddo; enddo
-        elseif(u%is_Node) then
+        elseif(is_Node(u%DL)) then
           do t=1,m%s; do i=1,3
-            call init(GS%p%g(t),m%g(t)%c(i)%hc,i) ! mesh made from cc --> p%dhn is dhc
+            call init(GS%p%B(t)%g,m%B(t)%g%c(i)%hc%f,i) ! mesh made from cc --> p%dhn is dhc
               GS%gt(i) = 0
           enddo; enddo
-        elseif (u%is_Face) then
-        elseif (u%is_Edge) then
+        elseif (is_Face(u%DL)) then
+        elseif (is_Edge(u%DL)) then
         else; stop 'Error: mesh type was not determined in GS.f90'
         endif
 
@@ -109,7 +108,7 @@
         call init(GS%res,u)
         call init(GS%D_inv,u)
 
-        call diag_Lap_SF(GS%D_inv,m)
+        call diag_Lap(GS%D_inv,m)
         call invert(GS%D_inv)
 
         GS%N_iter = 1
@@ -123,7 +122,7 @@
         type(mesh),intent(in) :: m
         character(len=*),intent(in) :: dir,name
         integer :: i,t
-        
+
         call init(GS%ISP,ISP)
         call init(GS%p,m)
         call init(GS%d,m)
@@ -135,22 +134,22 @@
         GS%un = new_and_open(dir,'norm_GS_SF_'//str(GS%name))
         call tecHeader(str(GS%name),GS%un,.true.)
 
-        if (u%is_CC) then
+        if (is_CC(u)) then
           do t=1,m%s; do i=1,3
-            call init(GS%p%g(t),m%g(t)%c(i)%hc,i) ! mesh made from cc --> p%dhn is dhc
+            call init(GS%p%B(t)%g,m%B(t)%g%c(i)%hc%f,i) ! mesh made from cc --> p%dhn is dhc
               GS%gtx(i) = 1; GS%gty(i) = 1; GS%gtz(i) = 1
           enddo; enddo
-        elseif(u%is_Node) then
+        elseif(is_Node(u)) then
           do t=1,m%s; do i=1,3
-            call init(GS%p%g(t),m%g(t)%c(i)%hc,i) ! mesh made from cc --> p%dhn is dhc
+            call init(GS%p%B(t)%g,m%B(t)%g%c(i)%hc%f,i) ! mesh made from cc --> p%dhn is dhc
               GS%gtx(i) = 0; GS%gty(i) = 0; GS%gtz(i) = 0
           enddo; enddo
-        elseif (u%is_Face) then
+        elseif (is_Face(u)) then
           do t=1,m%s; do i=1,3
-            call init(GS%p%g(t),m%g(t)%c(i)%hc,i) ! mesh made from cc --> p%dhn is dhc
+            call init(GS%p%B(t)%g,m%B(t)%g%c(i)%hc%f,i) ! mesh made from cc --> p%dhn is dhc
               GS%gtx(i) = 0; GS%gty(i) = 0; GS%gtz(i) = 0
           enddo; enddo
-        elseif (u%is_Edge) then
+        elseif (is_Edge(u)) then
         else; stop 'Error: mesh type was not determined in GS.f90'
         endif
 
@@ -159,7 +158,7 @@
         call init(GS%res,u)
         call init(GS%D_inv,u)
 
-        call diag_Lap_VF(GS%D_inv,m)
+        call diag_Lap(GS%D_inv,m)
         call invert(GS%D_inv)
 
         GS%N_iter = 1

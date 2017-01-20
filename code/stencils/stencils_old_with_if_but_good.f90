@@ -1,6 +1,5 @@
       module stencils_mod
       use current_precision_mod
-      use triDiag_mod
       implicit none
       private
       public :: stag_assign

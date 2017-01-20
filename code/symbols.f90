@@ -1,14 +1,19 @@
 Greek Letters
+alpha 						α
+beta 						β
+gamma 						γ
 Partial 					∂
 Sigma						σ
 Theta                       θ
 Delta                       Δ
 mu                          μ
+nu                          ν
 rho                         ρ
 Phi                         Φ
 phi                         φ
 pi                          π
-
+Zeta                        ξ
+Xi							Χ
 
 Math Operators
 Nabla                       ∇
@@ -22,6 +27,7 @@ One half					½
 Not equal					≠
 
 Superscript / Subscript
+Superscript zero			₀
 Superscript beta			ᵝ
 Superscript minus           ⁻
 Superscript plus            ⁺

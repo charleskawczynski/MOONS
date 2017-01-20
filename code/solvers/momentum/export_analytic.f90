@@ -13,7 +13,7 @@
        public :: export_Shercliff
        public :: export_Hunt
        public :: export_SH
-       
+
        contains
 
        subroutine export_Shercliff(m,u_numerical,Ha,dpdh,dir,DT)
@@ -30,21 +30,21 @@
          if (m%s.gt.1) stop 'Error: attempting export_SH with m%s>1 in export_analytic.f90'
          call init_Face(temp,m,dir)
          select case (dir)
-         case (1); do i=1,m%g(1)%c(dir)%sn
-         temp%RF(1)%f(i,:,:) = Shercliff_profile(m%g(1)%c(2),m%g(1)%c(3),m%g(1)%c(2)%sc,m%g(1)%c(3)%sc,Ha,mu,dpdh)
+         case (1); do i=1,m%B(1)%g%c(dir)%sn
+         temp%BF(1)%GF%f(i,:,:) = Shercliff_profile(m%B(1)%g%c(2),m%B(1)%g%c(3),m%B(1)%g%c(2)%sc,m%B(1)%g%c(3)%sc,Ha,mu,dpdh)
          enddo
-         case (2); do i=1,m%g(1)%c(dir)%sn
-         temp%RF(1)%f(:,i,:) = Shercliff_profile(m%g(1)%c(1),m%g(1)%c(3),m%g(1)%c(1)%sc,m%g(1)%c(3)%sc,Ha,mu,dpdh)
+         case (2); do i=1,m%B(1)%g%c(dir)%sn
+         temp%BF(1)%GF%f(:,i,:) = Shercliff_profile(m%B(1)%g%c(1),m%B(1)%g%c(3),m%B(1)%g%c(1)%sc,m%B(1)%g%c(3)%sc,Ha,mu,dpdh)
          enddo
-         case (3); do i=1,m%g(1)%c(dir)%sn
-         temp%RF(1)%f(:,:,i) = Shercliff_profile(m%g(1)%c(1),m%g(1)%c(2),m%g(1)%c(1)%sc,m%g(1)%c(2)%sc,Ha,mu,dpdh)
+         case (3); do i=1,m%B(1)%g%c(dir)%sn
+         temp%BF(1)%GF%f(:,:,i) = Shercliff_profile(m%B(1)%g%c(1),m%B(1)%g%c(2),m%B(1)%g%c(1)%sc,m%B(1)%g%c(2)%sc,Ha,mu,dpdh)
          enddo
          case default; stop 'Error: dir must = 1,2,3 in export_SH in export_analytic.f90'
          end select
-         call export_raw(m,temp,str(DT%U),'Shercliff_analytic',0)
-         call export_raw(m,u_numerical,str(DT%U),'Shercliff_numerical',0)
-         call export_processed(m,temp,str(DT%U),'Shercliff_analytic',1)
-         call export_processed(m,u_numerical,str(DT%U),'Shercliff_numerical',1)
+         call export_raw(m,temp,str(DT%U%field),'Shercliff_analytic',0)
+         call export_raw(m,u_numerical,str(DT%U%field),'Shercliff_numerical',0)
+         call export_processed(m,temp,str(DT%U%field),'Shercliff_analytic',1)
+         call export_processed(m,u_numerical,str(DT%U%field),'Shercliff_numerical',1)
          call delete(temp)
        end subroutine
 
@@ -63,21 +63,21 @@
          if (m%s.gt.1) stop 'Error: attempting export_SH with m%s>1 in export_analytic.f90'
          call init_Face(temp,m,dir)
          select case (dir)
-         case (1); do i=1,m%g(1)%c(dir)%sn
-         temp%RF(1)%f(i,:,:) = Hunt_profile(m%g(1)%c(2),m%g(1)%c(3),m%g(1)%c(2)%sc,m%g(1)%c(3)%sc,Ha,mu,dpdh)
+         case (1); do i=1,m%B(1)%g%c(dir)%sn
+         temp%BF(1)%GF%f(i,:,:) = Hunt_profile(m%B(1)%g%c(2),m%B(1)%g%c(3),m%B(1)%g%c(2)%sc,m%B(1)%g%c(3)%sc,Ha,mu,dpdh)
          enddo
-         case (2); do i=1,m%g(1)%c(dir)%sn
-         temp%RF(1)%f(:,i,:) = Hunt_profile(m%g(1)%c(1),m%g(1)%c(3),m%g(1)%c(1)%sc,m%g(1)%c(3)%sc,Ha,mu,dpdh)
+         case (2); do i=1,m%B(1)%g%c(dir)%sn
+         temp%BF(1)%GF%f(:,i,:) = Hunt_profile(m%B(1)%g%c(1),m%B(1)%g%c(3),m%B(1)%g%c(1)%sc,m%B(1)%g%c(3)%sc,Ha,mu,dpdh)
          enddo
-         case (3); do i=1,m%g(1)%c(dir)%sn
-         temp%RF(1)%f(:,:,i) = Hunt_profile(m%g(1)%c(1),m%g(1)%c(2),m%g(1)%c(1)%sc,m%g(1)%c(2)%sc,Ha,mu,dpdh)
+         case (3); do i=1,m%B(1)%g%c(dir)%sn
+         temp%BF(1)%GF%f(:,:,i) = Hunt_profile(m%B(1)%g%c(1),m%B(1)%g%c(2),m%B(1)%g%c(1)%sc,m%B(1)%g%c(2)%sc,Ha,mu,dpdh)
          enddo
          case default; stop 'Error: dir must = 1,2,3 in export_SH in export_analytic.f90'
          end select
-         call export_raw(m,temp,str(DT%U),'Hunt_analytic',0)
-         call export_raw(m,u_numerical,str(DT%U),'Hunt_numerical',0)
-         call export_processed(m,temp,str(DT%U),'Hunt_analytic',1)
-         call export_processed(m,u_numerical,str(DT%U),'Hunt_numerical',1)
+         call export_raw(m,temp,str(DT%U%field),'Hunt_analytic',0)
+         call export_raw(m,u_numerical,str(DT%U%field),'Hunt_numerical',0)
+         call export_processed(m,temp,str(DT%U%field),'Hunt_analytic',1)
+         call export_processed(m,u_numerical,str(DT%U%field),'Hunt_numerical',1)
          call delete(temp)
        end subroutine
 
@@ -95,21 +95,21 @@
          if (m%s.gt.1) stop 'Error: attempting export_SH with m%s>1 in export_analytic.f90'
          call init_Face(temp,m,dir)
          select case (dir)
-         case (1); do i=1,m%g(1)%c(dir)%sn
-         temp%RF(1)%f(i,:,:) = SH_profile(m%g(1)%c(2),m%g(1)%c(3),m%g(1)%c(2)%sc,m%g(1)%c(3)%sc,d_B,Ha,mu,dpdh)
+         case (1); do i=1,m%B(1)%g%c(dir)%sn
+         temp%BF(1)%GF%f(i,:,:) = SH_profile(m%B(1)%g%c(2),m%B(1)%g%c(3),m%B(1)%g%c(2)%sc,m%B(1)%g%c(3)%sc,d_B,Ha,mu,dpdh)
          enddo
-         case (2); do i=1,m%g(1)%c(dir)%sn
-         temp%RF(1)%f(:,i,:) = SH_profile(m%g(1)%c(1),m%g(1)%c(3),m%g(1)%c(1)%sc,m%g(1)%c(3)%sc,d_B,Ha,mu,dpdh)
+         case (2); do i=1,m%B(1)%g%c(dir)%sn
+         temp%BF(1)%GF%f(:,i,:) = SH_profile(m%B(1)%g%c(1),m%B(1)%g%c(3),m%B(1)%g%c(1)%sc,m%B(1)%g%c(3)%sc,d_B,Ha,mu,dpdh)
          enddo
-         case (3); do i=1,m%g(1)%c(dir)%sn
-         temp%RF(1)%f(:,:,i) = SH_profile(m%g(1)%c(1),m%g(1)%c(2),m%g(1)%c(1)%sc,m%g(1)%c(2)%sc,d_B,Ha,mu,dpdh)
+         case (3); do i=1,m%B(1)%g%c(dir)%sn
+         temp%BF(1)%GF%f(:,:,i) = SH_profile(m%B(1)%g%c(1),m%B(1)%g%c(2),m%B(1)%g%c(1)%sc,m%B(1)%g%c(2)%sc,d_B,Ha,mu,dpdh)
          enddo
          case default; stop 'Error: dir must = 1,2,3 in export_SH in export_analytic.f90'
          end select
-         call export_raw(m,temp,str(DT%U),'SH_analytic',0)
-         call export_raw(m,u_numerical,str(DT%U),'SH_numerical',0)
-         call export_processed(m,temp,str(DT%U),'SH_analytic',1)
-         call export_processed(m,u_numerical,str(DT%U),'SH_numerical',1)
+         call export_raw(m,temp,str(DT%U%field),'SH_analytic',0)
+         call export_raw(m,u_numerical,str(DT%U%field),'SH_numerical',0)
+         call export_processed(m,temp,str(DT%U%field),'SH_analytic',1)
+         call export_processed(m,u_numerical,str(DT%U%field),'SH_numerical',1)
          call delete(temp)
        end subroutine
 

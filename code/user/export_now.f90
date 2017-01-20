@@ -14,13 +14,14 @@
        interface update;   module procedure update_EN;   end interface
 
        type step
-         logical :: this,next
+         logical :: this = .false.
+         logical :: next = .false.
        end type
 
        type export_now
          type(step) :: U,B,T,all
          type(string) :: dir,name
-         logical :: any_next
+         logical :: any_next = .false.
          integer :: un
        end type
 

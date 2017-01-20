@@ -51,11 +51,11 @@
         call init(s,dir//name//dot_dat)
         un = new_unit()
         ! open(un,file=str(s),pad='YES',action='readwrite')
-        call attemp_to_open_to_write(un,s)
+        call attempt_to_open_to_write(un,s)
         call delete(s)
       end function
 
-      subroutine attemp_to_open_to_write(un,s)
+      subroutine attempt_to_open_to_write(un,s)
         implicit none
         integer,intent(in) :: un
         type(string),intent(in) :: s
@@ -68,7 +68,7 @@
         enddo
         if (failed) then
           write(*,*) 'Error: tried to open file but failed!!'
-          stop 'Done in attemp_to_open_to_write in IO_tools.f90'
+          stop 'Done in attempt_to_open_to_write in IO_tools.f90'
         endif
       end subroutine
 
@@ -85,9 +85,9 @@
         call check_file_open(dir,name,'close_and_message')
 #endif
         close(un)
-        ! #ifndef _OPTIMIZE_IO_TOOLS_
+#ifndef _OPTIMIZE_IO_TOOLS_
         write(*,*) '+++ Closed file ' // dir // name
-        ! #endif
+#endif
       end subroutine
 
       ! **************************** REWIND ****************************
@@ -139,12 +139,14 @@
         implicit none
         character(len=*),intent(in) :: dir,name
         integer :: un
+        type(string) :: s
+        call init(s,dir//name//dot_dat)
 #ifdef _DEBUG_IO_TOOLS_
         call check_file_exists(dir,name,'open_to_append')
         call check_file_closed(dir,name,'open_to_append')
 #endif
         un = new_unit()
-        open(unit=un,status='old',action='write',position='append')
+        open(unit=un,file=str(s),status='old',action='write',position='append')
       end function
 
       end module

@@ -8,12 +8,12 @@
       ! Input:
       !     u            = initial guess for u
       !     f            = RHS of above equation
-      !     u_bcs        = boundary conditions for u. Refer to BCs_mod for more info.
+      !     u_bcs        = boundary conditions for u. Refer to boundary_conditions_mod for more info.
       !     g            = contains grid information (dhc,dhn)
       !     ss           = solver settings (specifies max iterations, tolerance etc.)
       !     displayTF    = print residuals to screen (T,F)
-      ! 
-      ! 
+      !
+      !
       ! There are 3 iteration numbers that must be set:
       !      1) Number of V-Cycles - defined by maxIterations in ss
       !      2) Iterations per cycle - call setIterationsPerLevel()
@@ -23,7 +23,7 @@
       use grid_mod
       use SF_mod
       use VF_mod
-      use BCs_mod
+      use boundary_conditions_mod
       use solverSettings_mod
       use applyBCs_mod
       use norms_mod
@@ -54,7 +54,8 @@
         type(norms) :: norm
         type(solverSettings) :: ss
         integer :: nLevels
-        logical :: displayTF,MG_init
+        logical :: displayTF = .false.
+        logical :: MG_init = .false.
       end type
 
       interface init;       module procedure initMultiGrid;    end interface
@@ -81,7 +82,7 @@
         mg(:)%nLevels = size(mg)
         ! mg(:)%displayTF = displayTF
         mg(:)%displayTF = .false.
-        s = u%RF(1)%s
+        s = u%BF(1)%GF%s
 
         ! ******************** Check size of data ********************
         if (all((/(s(i).eq.g_base%c(i)%sn,i=1,3)/))) then
@@ -126,12 +127,12 @@
 
         ! ******************** Initialize intermediate fields ********************
         ! THIS NEEDS TO BE FIXED: need to use intermediate fields for each
-        ! Maybe call them 
+        ! Maybe call them
         !          temp_rpx (restricted/prolongated in x)
         !          temp_rpy (restricted/prolongated in y)
-        ! 
+        !
         ! Need to choose a convention, which grid do these transition fields live?
-        ! 
+        !
         call init(mg(1)%g_rx,g_base)
         call init(mg(1)%g_rxy,g_base)
         do i = 1,mg(1)%nLevels
@@ -302,7 +303,7 @@
           call subtract(mg(1)%res,mg(1)%f,mg(1)%lapU)
 
           ! Zero boundary values
-          call zeroGhostPoints(mg(1)%res)
+          call assign_ghost_XPeriodic(mg(1)%res,0.0_cp)
 
           ! 3) Begin decending into coarser grids, starting at level 2
           ! V-Cycle: Given whatever is needed, find, "exactly" the error
@@ -320,7 +321,7 @@
 #ifdef _EXPORT_MG_CONVERGENCE_
             call compute_Au(mg(1)%lapu,mg(1)%u,mg(1)%sigma,mg(1)%g)
             call subtract(mg(1)%res,mg(1)%lapu,mg(1)%f)
-            call zeroGhostPoints(mg(1)%res)
+            call assign_ghost_XPeriodic(mg(1)%res,0.0_cp)
             call compute(norm,mg(1)%res,mg(1)%g)
             write(NU,*) norm%L1,norm%L2,norm%Linf
 #endif
@@ -344,7 +345,7 @@
 
           call compute_Au(mg(1)%lapu,u,mg(1)%sigma,g)
           call subtract(mg(1)%res,mg(1)%lapu,mg(1)%f)
-          call zeroGhostPoints(mg(1)%res)
+          call assign_ghost_XPeriodic(mg(1)%res,0.0_cp)
           call compute(norm,mg(1)%res,mg(1)%g)
           call print(norm,'MG Residuals for '//trim(adjustl(getName(ss))))
         endif
@@ -381,7 +382,7 @@
           call compute_Au(mg(j+1)%lapU,mg(j+1)%u,mg(j+1)%sigma,mg(j+1)%g)
           call subtract(mg(j+1)%res,mg(j+1)%f,mg(j+1)%lapU)
           ! Zero boundary values
-          call zeroGhostPoints(mg(j+1)%res)
+          call assign_ghost_XPeriodic(mg(j+1)%res,0.0_cp)
 
           ! 4) Decend to coarser level
           call Vcycle(mg,j+1)
@@ -395,7 +396,7 @@
           ! 6) Final smoothing sweeps
           call solve(SOR,mg(j+1)%u,mg(j+1)%f,mg(j+1)%sigma,mg(j+1)%g,&
             mg(j+1)%ss,mg(j+1)%norm,mg(j+1)%displayTF)
-          ! The solution on any grid above the 
+          ! The solution on any grid above the
           ! base grid is the error!
           call assign(mg(j+1)%e,mg(j+1)%u)
 
@@ -406,8 +407,8 @@
           call solve(SOR,mg(j+1)%u,mg(j+1)%f,mg(j+1)%sigma,mg(j+1)%g,&
             mg(j+1)%ss,mg(j+1)%norm,mg(j+1)%displayTF)
 
-          ! The solution on any grid above the 
-          ! base grid is the correction on the 
+          ! The solution on any grid above the
+          ! base grid is the correction on the
           ! finer grid!
           call assign(mg(j+1)%e,mg(j+1)%u)
         endif

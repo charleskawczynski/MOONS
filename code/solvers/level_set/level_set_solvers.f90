@@ -10,7 +10,6 @@
        use ops_advect_mod
        use ops_norms_mod
        use apply_BCs_mod
-       use apply_BCs_implicit_mod
        use apply_stitches_mod
        
        implicit none

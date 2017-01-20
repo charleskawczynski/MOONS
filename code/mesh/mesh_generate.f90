@@ -1,13 +1,12 @@
        module mesh_generate_mod
        use current_precision_mod
        use mesh_mod
-       use mesh_simple_geometries_mod
-       use mesh_BC_geometries_mod
-       use mesh_complex_geometries_mod
+       use mesh_benchmark_geometries_mod
        use dir_tree_mod
        use string_mod
        use path_mod
-       use domain_mod
+       use mesh_domain_mod
+       use sim_params_mod
        implicit none
 
        private
@@ -15,66 +14,13 @@
 
        contains
 
-       subroutine mesh_generate(m_mom,m_ind,D_sigma,DT,Ha,tw,include_vacuum)
+       subroutine mesh_generate(m_mom,m_ind,MD_sigma,SP)
          implicit none
          type(mesh),intent(inout) :: m_mom,m_ind
-         type(domain),intent(inout) :: D_sigma
-         real(cp),intent(in) :: Ha,tw
-         logical,intent(in) :: include_vacuum
-         type(dir_tree),intent(in) :: DT
-         ! call cube_uniform(m_mom)
-         ! call extend_cube_uniform(m_ind,m_mom)
-         ! call init(D_sigma,m_mom,m_ind)
-
-         ! call cube_uniform(m_mom)
-         ! call init(m_ind,m_mom)
-         ! call init(D_sigma,m_mom,m_ind)
-
-         ! call cube(m_mom)
-         ! call init(m_ind,m_mom)
-         ! call init(D_sigma,m_mom,m_ind)
-
-         ! call cube(m_mom)
-         ! call extend_cube(m_ind,m_mom)
-         ! call init(D_sigma,m_mom,m_ind)
-
-         ! call flow_past_square(m_mom)
-         ! call flow_past_square(m_ind)
-         ! call init(D_sigma,m_mom,m_ind)
-
-         call BC_sim_mom(m_mom,Ha)
-         call BC_sim_ind(m_ind,m_mom,D_sigma,Ha,tw,include_vacuum)
-         ! call BC_sim_mom_proper_insulate(m_mom,Ha,DT)
-         ! call BC_sim_ind_proper_insulate(m_ind,m_mom,D_sigma,DT,Ha,tw,include_vacuum)
-
-         ! call straight_duct_fluid(m_mom)
-         ! call duct_with_vacuum(m_ind,m_mom,D_sigma)
-
-         ! call matrix_export_mesh(m_mom)
-
-         ! call straight_duct_fluid(m_mom)
-         ! call init(m_ind,m_mom)
-         ! call init(D_sigma,m_mom,m_ind)
-
-         ! call ins_sep_channel_Tyler(m_mom)
-         ! call ins_sep_channel_Tyler(m_mom)
-         ! call init(m_ind,m_mom)
-         ! call init(D_sigma,m_mom,m_ind)
-
-         ! call cube(m_mom)
-         ! call LDC_2D_2domains_vertical_z(m_mom)
-         ! call LDC_2D_2domains_horizontal_z(m_mom)
-         ! call LDC_2D_4domains(m_mom)
-         ! call LDC_2D_9domains_uniform(m_mom)
-         ! call flow_past_square(m_mom)
-         ! call duct_2D_2domains(m_mom)
-         ! call init(m_ind,m_mom)
-         ! call init(D_sigma,m_mom,m_ind)
-
-         ! call straight_duct_fluid(m_mom)
-         ! call Hunt_duct_magnetic(m_ind,m_mom,D_sigma)
-         ! call Shercliff_duct_magnetic(m_ind,m_mom,D_sigma)
+         type(mesh_domain),intent(inout) :: MD_sigma
+         type(sim_params),intent(in) :: SP
+         call geometry_BMC(m_mom,m_ind,SP%MQP,MD_sigma,&
+         SP%DP%Re,SP%DP%Ha,SP%GP%tw,SP%include_vacuum,SP%GP%geometry)
        end subroutine
-
 
        end module

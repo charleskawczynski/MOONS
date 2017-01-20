@@ -1,8 +1,7 @@
       module matrix_mod
       use current_precision_mod
       use IO_tools_mod
-      use IO_SF_mod
-      use IO_VF_mod
+      use IO_export_mod
       use mesh_mod
       use ops_discrete_mod
       use ops_aux_mod
@@ -66,16 +65,16 @@
         call init(temp,x)
         write(*,*) ' ---------------- SYMMETRY TEST --------------- '//name
         write(*,*) 'System size = ',x%numEl
-        call noise(u); call zeroGhostPoints(u)
-        call noise(v); call zeroGhostPoints(v)
+        call random_noise(u); call assign_ghost_XPeriodic(u,0.0_cp)
+        call random_noise(v); call assign_ghost_XPeriodic(v,0.0_cp)
         call init_BCs(u,x)
         call init_BCs(v,x)
         call operator(Au,u,k,m,MFP,tempk)
         call multiply(Au,vol)
         call operator(Av,v,k,m,MFP,tempk)
         call multiply(Av,vol)
-        dot_vAu = dot_product(v,Au,m,x,temp)
-        dot_uAv = dot_product(u,Av,m,x,temp)
+        dot_vAu = dot_product(v,Au,x,temp)
+        dot_uAv = dot_product(u,Av,x,temp)
         write(*,*) '(v,Au) = ',dot_vAu
         write(*,*) '(u,Av) = ',dot_uAv
         write(*,*) 'Symmetry error = ',abs(dot_vAu-dot_uAv)
@@ -101,16 +100,16 @@
         call init(temp,x)
         write(*,*) ' ---------------- SYMMETRY TEST --------------- '//name
         write(*,*) 'System size = ',x%x%numEl+x%y%numEl+x%z%numEl
-        call noise(u); call zeroGhostPoints(u)
-        call noise(v); call zeroGhostPoints(v)
+        call random_noise(u); call assign_ghost_XPeriodic(u,0.0_cp)
+        call random_noise(v); call assign_ghost_XPeriodic(v,0.0_cp)
         call init_BCs(u,x)
         call init_BCs(v,x)
         call operator(Au,u,k,m,MFP,tempk)
         call multiply(Au,vol)
         call operator(Av,v,k,m,MFP,tempk)
         call multiply(Av,vol)
-        dot_vAu = dot_product(v,Au,m,x,temp)
-        dot_uAv = dot_product(u,Av,m,x,temp)
+        dot_vAu = dot_product(v,Au,x,temp)
+        dot_uAv = dot_product(u,Av,x,temp)
         write(*,*) '(v,Au) = ',dot_vAu
         write(*,*) '(u,Av) = ',dot_uAv
         write(*,*) 'Symmetry error = ',abs(dot_vAu-dot_uAv)
@@ -196,7 +195,7 @@
         logical,dimension(3) :: L
         logical :: L_any
         integer :: k
-        do k=1,3;L(k)=((p(k).eq.1).and.((i(k).eq.1).or.(i(k).eq.U%RF(t)%s(k)))); enddo
+        do k=1,3;L(k)=((p(k).eq.1).and.((i(k).eq.1).or.(i(k).eq.u%BF(t)%GF%s(k)))); enddo
         L_any = any(L)
       end function
 
@@ -209,9 +208,9 @@
         logical :: L_any
         integer :: k
         select case(comp)
-        case(1); do k=1,3;L(k)=((p(k).eq.1).and.((i(k).eq.1).or.(i(k).eq.U%x%RF(t)%s(k)))); enddo
-        case(2); do k=1,3;L(k)=((p(k).eq.1).and.((i(k).eq.1).or.(i(k).eq.U%y%RF(t)%s(k)))); enddo
-        case(3); do k=1,3;L(k)=((p(k).eq.1).and.((i(k).eq.1).or.(i(k).eq.U%z%RF(t)%s(k)))); enddo
+        case(1); do k=1,3;L(k)=((p(k).eq.1).and.((i(k).eq.1).or.(i(k).eq.u%x%BF(t)%GF%s(k)))); enddo
+        case(2); do k=1,3;L(k)=((p(k).eq.1).and.((i(k).eq.1).or.(i(k).eq.u%y%BF(t)%GF%s(k)))); enddo
+        case(3); do k=1,3;L(k)=((p(k).eq.1).and.((i(k).eq.1).or.(i(k).eq.u%z%BF(t)%GF%s(k)))); enddo
         case default; stop 'Error: dir must =1,2,3 in cycle_TF_VF in matrix.f90'
         end select
         L_any = any(L)
@@ -306,8 +305,8 @@
         integer,intent(in) :: un,px,py,pz
         integer :: i,j,k,t
         if (U%numEl.gt.un_max) stop 'Error: trying to export HUGE matrix in export_transpose_SF in matrix.f90'
-        do t=1,U%s; do k=1+pz,U%RF(t)%s(3)-pz; do j=1+py,U%RF(t)%s(2)-py; do i=1+px,U%RF(t)%s(1)-px
-        write(un,'(F20.13,T2)',advance='no') U%RF(t)%f(i,j,k)
+        do t=1,U%s; do k=1+pz,u%BF(t)%GF%s(3)-pz; do j=1+py,u%BF(t)%GF%s(2)-py; do i=1+px,u%BF(t)%GF%s(1)-px
+        write(un,'(F20.13,T2)',advance='no') u%BF(t)%GF%f(i,j,k)
         enddo; enddo; enddo; enddo
         write(un,*) ''
       end subroutine
@@ -320,14 +319,14 @@
         if (U%x%numEl.gt.un_max) stop 'Error: trying to export HUGE matrix in export_transpose_VF in matrix.f90'
         if (U%y%numEl.gt.un_max) stop 'Error: trying to export HUGE matrix in export_transpose_VF in matrix.f90'
         if (U%z%numEl.gt.un_max) stop 'Error: trying to export HUGE matrix in export_transpose_VF in matrix.f90'
-        do t=1,U%x%s; do k=1+pz,U%x%RF(t)%s(3)-pz; do j=1+py,U%x%RF(t)%s(2)-py; do i=1+px,U%x%RF(t)%s(1)-px
-        write(un,'(F15.8,T2)',advance='no') U%x%RF(t)%f(i,j,k)
+        do t=1,U%x%s; do k=1+pz,u%x%BF(t)%GF%s(3)-pz; do j=1+py,u%x%BF(t)%GF%s(2)-py; do i=1+px,u%x%BF(t)%GF%s(1)-px
+        write(un,'(F15.8,T2)',advance='no') u%x%BF(t)%GF%f(i,j,k)
         enddo; enddo; enddo; enddo
-        do t=1,U%y%s; do k=1+pz,U%y%RF(t)%s(3)-pz; do j=1+py,U%y%RF(t)%s(2)-py; do i=1+px,U%y%RF(t)%s(1)-px
-        write(un,'(F15.8,T2)',advance='no') U%y%RF(t)%f(i,j,k)
+        do t=1,U%y%s; do k=1+pz,u%y%BF(t)%GF%s(3)-pz; do j=1+py,u%y%BF(t)%GF%s(2)-py; do i=1+px,u%y%BF(t)%GF%s(1)-px
+        write(un,'(F15.8,T2)',advance='no') u%y%BF(t)%GF%f(i,j,k)
         enddo; enddo; enddo; enddo
-        do t=1,U%z%s; do k=1+pz,U%z%RF(t)%s(3)-pz; do j=1+py,U%z%RF(t)%s(2)-py; do i=1+px,U%z%RF(t)%s(1)-px
-        write(un,'(F15.8,T2)',advance='no') U%z%RF(t)%f(i,j,k)
+        do t=1,U%z%s; do k=1+pz,u%z%BF(t)%GF%s(3)-pz; do j=1+py,u%z%BF(t)%GF%s(2)-py; do i=1+px,u%z%BF(t)%GF%s(1)-px
+        write(un,'(F15.8,T2)',advance='no') u%z%BF(t)%GF%f(i,j,k)
         enddo; enddo; enddo; enddo
         write(un,*) ''
       end subroutine
@@ -375,7 +374,7 @@
         integer,intent(in) :: col
         integer :: i,j,k,t
         call get_3D_index(i,j,k,t,D,col)
-        D%RF(t)%f(i,j,k) = Aun%RF(t)%f(i,j,k)
+        D%BF(t)%GF%f(i,j,k) = Aun%BF(t)%GF%f(i,j,k)
       end subroutine
 
       subroutine get_diagonal_VF(operator,D,x,k,vol,m,MFP,tempk)
@@ -445,9 +444,9 @@
         integer,intent(in) :: col,component
         integer :: i,j,k,t
         select case (component)
-        case (1); call get_3D_index(i,j,k,t,D%x,col); D%x%RF(t)%f(i,j,k) = Aun%x%RF(t)%f(i,j,k)
-        case (2); call get_3D_index(i,j,k,t,D%y,col); D%y%RF(t)%f(i,j,k) = Aun%y%RF(t)%f(i,j,k)
-        case (3); call get_3D_index(i,j,k,t,D%z,col); D%z%RF(t)%f(i,j,k) = Aun%z%RF(t)%f(i,j,k)
+        case (1); call get_3D_index(i,j,k,t,D%x,col); D%x%BF(t)%GF%f(i,j,k) = Aun%x%BF(t)%GF%f(i,j,k)
+        case (2); call get_3D_index(i,j,k,t,D%y,col); D%y%BF(t)%GF%f(i,j,k) = Aun%y%BF(t)%GF%f(i,j,k)
+        case (3); call get_3D_index(i,j,k,t,D%z,col); D%z%BF(t)%GF%f(i,j,k) = Aun%z%BF(t)%GF%f(i,j,k)
         case default; stop 'Error: dir must = 1,2,3 in define_ith_diag_VF in matrix.f90'
         end select
       end subroutine

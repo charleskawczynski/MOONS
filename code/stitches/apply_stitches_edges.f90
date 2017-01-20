@@ -1,7 +1,7 @@
        module apply_stitches_edges_mod
        use current_precision_mod
        use face_edge_corner_indexing_mod
-       use RF_mod
+       use GF_mod
        use SF_mod
        use VF_mod
        use mesh_mod
@@ -30,7 +30,7 @@
          type(mesh),intent(in) :: m
          integer :: i,k,x,y,z
          integer,dimension(4) :: e
-         ! The second if statement is commented because in app_E, 
+         ! The second if statement is commented because in app_E,
          ! both minmin and maxmax, e.g., are assigned, and so calling
          ! maxmax would be redundant and is uneccesary.
          ! These if statements were left here for readability purposes.
@@ -38,34 +38,34 @@
            call C0_N1_tensor(U,x,y,z)
            do i=1,m%s; do k=1,3
            e = edges_given_dir(k)
-           if (m%g(i)%st_edges(e(1))%TF) call app_E(U%RF(i),U%RF(m%g(i)%st_edges(e(1))%ID),1,k,x,y,z)
-           if (m%g(i)%st_edges(e(2))%TF) call app_E(U%RF(i),U%RF(m%g(i)%st_edges(e(2))%ID),2,k,x,y,z)
-           if (m%g(i)%st_edges(e(3))%TF) call app_E(U%RF(i),U%RF(m%g(i)%st_edges(e(3))%ID),3,k,x,y,z)
-           if (m%g(i)%st_edges(e(4))%TF) call app_E(U%RF(i),U%RF(m%g(i)%st_edges(e(4))%ID),4,k,x,y,z)
+           if (m%B(i)%g%st_edges(e(1))%TF) call app_E(U%BF(i)%GF,U%GF(m%B(i)%g%st_edges(e(1))%ID),1,k,x,y,z)
+           if (m%B(i)%g%st_edges(e(2))%TF) call app_E(U%BF(i)%GF,U%GF(m%B(i)%g%st_edges(e(2))%ID),2,k,x,y,z)
+           if (m%B(i)%g%st_edges(e(3))%TF) call app_E(U%BF(i)%GF,U%GF(m%B(i)%g%st_edges(e(3))%ID),3,k,x,y,z)
+           if (m%B(i)%g%st_edges(e(4))%TF) call app_E(U%BF(i)%GF,U%GF(m%B(i)%g%st_edges(e(4))%ID),4,k,x,y,z)
            enddo; enddo
          endif
        end subroutine
 
        subroutine app_E(U,V,edge,dir,px,py,pz)
-         ! 
-         !                |       *       |        
-         !                |       *       |   g2   
-         !                |       *       |        
+         !
+         !                |       *       |
+         !                |       *       |   g2
+         !                |       *       |
          !        -------- ------- ---F---N--------
-         !                |       *       |        
-         !                |       *   C   F        
-         !                |       *       |        
+         !                |       *       |
+         !                |       *   C   F
+         !                |       *       |
          !        ******** ******* ******* ********  * = physical boundary
-         !                |       *       |        
-         !                F   C   *       |        
-         !                |       *       |        
+         !                |       *       |
+         !                F   C   *       |
+         !                |       *       |
          !        --------N---F--- ------- --------
-         !                |       *       |        
-         !           g1   |       *       |        
-         !                |       *       |        
-         ! 
+         !                |       *       |
+         !           g1   |       *       |
+         !                |       *       |
+         !
          implicit none
-         type(realField),intent(inout) :: U,V
+         type(grid_field),intent(inout) :: U,V
          integer,intent(in) :: edge,dir,px,py,pz
          select case (dir)
          case (1)

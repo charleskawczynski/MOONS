@@ -12,7 +12,6 @@
 \usepackage{subfigure}
 \usepackage{setspace}
 \usepackage{tabularx,ragged2e,booktabs,caption}
-\usepackage{bbding}
 
 
 \setlength{\oddsidemargin}{0.1in}
@@ -49,7 +48,7 @@ University of California Los Angeles, USA\\
 \begin{itemize}
 \item Write prospectus, and refer to http://fire.pppl.gov/fpa\_annual\_meet.html
 \begin{itemize}
-\item Code development and benchmarking \Checkmark
+\item Code development and benchmarking
 \item Investigate validity of pseudo-vacuum BCs compared with real vacuum BCs
 \item Finite $Re_m$ Shercliff / Hunt flows, analytic solutions / perturbation analysis for secondary flow
 \item SK flow, analytic solutions / perturbation analysis for secondary flow
@@ -84,8 +83,6 @@ University of California Los Angeles, USA\\
 \item Finalize energy budget in code
 \item restart  mesh? to make energy budget easier?
 \item restart solution to make easier
-\item brainstorm what to plot
-\item way to detect $\delta_{Ha}$?
 \item Use thin wall BC for driven cavity
 \item 2nd order forward diff may be necessary to get higher accuracy since the BC is partly Neumann.
 \item Remove color: symbols. filled/empty = RV/PV. Arrows for components. (left,up,right) = (z,y,x)
@@ -138,7 +135,6 @@ PRL: A new two-dimensional fully coupled MHD model problem with closing currents
 \subsection{BEM}
 \begin{itemize}
 \setlength\itemsep{-1em}
-\item Make coordinates capable of handling a zero-cell, two ghost point mesh \Checkmark
 \item Make ops capable of handling a zero-cell mesh
 \item stitching is needed so that diffusion can traverse between different grids.
 \item need to look into methods to solve equation
@@ -159,7 +155,6 @@ PRL: A new two-dimensional fully coupled MHD model problem with closing currents
 \setlength\itemsep{-1em}
 \item Gaps in mesh generation + grid stretch-parameter match. Needs to be generalized, simple + easy to use.
 \item Make a uniform grid option for boundary layers (maybe make a function for this)
-\item betaRobertsRight(hmin,hmax,L,dh) - is this dh on the left side or right side? I think betaRoberts routines need a dh1 or dhend input, because when connecting, betaRobertsRight makes stretching occur on right-side, but needs dh on right side, which is a problem for con\_APP\_Roberts\_R.
 \end{itemize}
 
 \subsection{SF / VF / TF}
@@ -177,7 +172,6 @@ PRL: A new two-dimensional fully coupled MHD model problem with closing currents
 \item Fix IO\_tools.f90. Pick better names and separate into IO tools and conversion (int2str, etc.)
 \item Re-consider HDF5
 \item Figure out how to view time in tecplot as animation runs
-\item FIX THE NAME OF THE PROBES. THEY ARE TOTALLY INCONSISTENT.
 \end{itemize}
 
 \subsection{Exception handling}
@@ -201,7 +195,6 @@ PRL: A new two-dimensional fully coupled MHD model problem with closing currents
 \item Try to incorporate anti-symmetric BCs again...
 \item Remove allocation in lap\_centered. May require changing matrix-free operator interface. Brainstorm.
 \item Look to improve performance of apply\_edges
-\item Consider replacing applyBCs with assign using embedExtract
 \item Profile to find latest bottle necks
 \item Try out pre-processor directive '-ftree -parallelize -loops=n' = split loops into n-threads
 \item Consider using pre-processor directives instead of if statements, this needs to be organized on a large level.
@@ -210,7 +203,7 @@ PRL: A new two-dimensional fully coupled MHD model problem with closing currents
 \subsection{Makefile}
 \begin{itemize}
 \setlength\itemsep{-1em}
-\item Need to clean up directory. Many unused and old files exist in folders and knowing which files are grabbed by the compiler is not clear. Maybe consider making an "old" folder for backed-up old files.
+\item 
 \end{itemize}
 
 \subsection{Complex Geometry}
@@ -265,14 +258,12 @@ velocity (likely u=0 inside). More tests could be done this way.
 \begin{itemize}
 \setlength\itemsep{-1em}
 \item Need to re-develop restart capability... This will require some thought.
-\item This is complex. What should be restarted and what should be re-configured?
-\item Can every module have a "natural" restart capability? YES! \Checkmark But they require more thought for solvers.
+\item Restart capability is complex. What should be restarted and what should be re-configured?
+\item Can every module have a "natural" restart capability? YES! But they require more thought for solvers.
 \item Should source terms in momentum solver be fixed? This way, restart can be used with a parameter.
 \item Should the momentum\_solver be picked with a compiler flag?
 \item momentum import + override inputs? or inputs imported so MHD solver parameters stay the same?
 \item Decide on format of input file (what parameters will be set in input file and what will be coded)
-\item Right now, there are many things that will (likely) break when MOONS tries to restart a simulation. Restarting may require manual overrides on certain things, so generalizing restart for many modules is difficult.
-\item rethink how to use printPhysicalMinMax in momentum,induction,energy display routines
 \end{itemize}
 
 \section{Ideas}
@@ -297,7 +288,6 @@ velocity (likely u=0 inside). More tests could be done this way.
 \item Use higher order spatial operators! (stencils.f90 / interpOps.f90 / applyBCs.f90)
 \item Use hgiher order time marching methods! (RK4 maybe?)
 \item Consider making applyFaceBCs, applyEdgeBCs, applyCornerBCs and interpolate appropriately. This seems like the most general and care-free approach. At least implement the capability, and offer for using applyFaceBCs in a non-arbitrary order.
-\item Consider passing MFP into PCG solver, this way, different coefficients can be used with the same PCG object.
 \end{itemize}
 
 \subsection{Dimensionless Groups}
@@ -332,18 +322,65 @@ $Ra = t_k t_{\nu} / t_f^2$ Where $t_f$ is the free fall time $ = \sqrt{ H/(\alph
 \begin{itemize}
 \setlength\itemsep{-1em}
 \item delete emails and organize dropbox
-\item look into optical Nand gates
-\item get veggie / fruit recipes
-\item get tablet for refrigerator?
-\item email google glass (July 17th) - Matlab $\rightarrow$ c++, paid please and computer provided?
 \item prep / post tutoring flyers
-\item make birthday wishlist
-\item convert to charleskawczynski ?
 \item organize photos and make slideshow
 \item delete duplicate photos
-\item sign up for 596 for the fall
 \item return Christa's sketchers (if possible)
-\item look up transient solution on workstation, delete results
+\end{itemize}
+
+\section{Today}
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item how many flops does my code achieve?
+\item what parameter space can I explore for plasma disruptions?
+% 
+\item
+\item look at workstation results
+\item write up new matrix for first paper
+\item
+% 
+\item Fix datarace.
+\item rethink MOONS derivative routines, any better hash approaches?
+\item modify stencils to account for periodic BCs
+\item Clean up files not compiled in code directory
+\item get wine for Friday
+\item read papers open in mendeley
+\item fix mendeley links to files
+\end{itemize}
+
+\section{Code changes to make}
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item add restart to PE, and use this to separate tec export and restart export
+\item make "array" class and use it in coordinates and triDiag (maybe)
+\item change stencils.f90 to sparse\_mult and use L,D,U only (so that stencils must be combined at beginning)
+\item delete more matlab scripts / convert to python
+\item migrate to using DL only: (make CC,N,F,E private in SF and VF, then replace with DL)
+\item make mirror for (coordinates,grid,mesh,GF,BF,SF,VF) for export\_raw\_symmetric(...,mirror dir)
+\item make mirror for (coordinates,grid,mesh,GF,BF,SF,VF) for export\_raw\_antisymmetric(...,mirror dir)
+\item Remove (get\_ghost,get\_interior) from coordinates
+\item 
+\item move all routines that use i,j,k indexes to GF and make all of these callable from BF, then SF.
+\item This may not be necessary for 1D operations, since GF requires 3D scalar info.
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item preconditioners
+\item interp
+\item del
+\end{itemize}
+\end{itemize}
+
+\section{Before starting next NME simulations}
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item Need to checkout a lot of old files on workstation.
+\item I introduced the "outside" parallelization, which still has a datarace.
+\item However, the new geometry was introduced since the last commit, and the grid\_extend, which is needed in the new geometry.
+\item Look for any other things that are needed, and checkout what is necessary to return to a safe version.
+\item Once ready, start new NME on workstation
+\item Then start writing new paper, this will likely take as long as the sims themselves if all run in parallel (only 8)
+\item Start new sims and continue with current version on my PC.
+\item PCG is provably convergent for all SPD systems "https://e-reports-ext.llnl.gov/pdf/310656.pdf"
 \end{itemize}
 
 \end{document}

@@ -1,50 +1,92 @@
        module grid_mod
       ! Pre-processor directives: (_DEBUG_COORDINATES_)
        use current_precision_mod
+       use array_mod
+       use data_location_mod
+       use face_edge_corner_indexing_mod
        use IO_tools_mod
        use coordinates_mod
-       use stitch_mod
-       use stitch_face_mod
-       use stitch_edge_mod
-       use stitch_corner_mod
        implicit none
 
        private
        public :: grid
        public :: init,delete,display,print,export,import ! Essentials
-       public :: restrict,restrict_x,restrict_xy
-       public :: initProps,display_stitches
+
+       public :: restrict_x,restrict_xy ! specifically for MG
+
+       public :: restrict
+       public :: prolongate
+
+       public :: initProps
+       public :: snip,pop
+
+       public :: mirror_about_hmin
+       public :: mirror_about_hmax
+
+       public :: get_shape
+
+       public :: get_coordinates_h
+       public :: get_coordinates_dh
+       public :: get_coordinates_dual_h
+       public :: get_coordinates_dual_dh
+
+       public :: get_face_GI
+       public :: get_edge_GI
+       public :: get_corner_GI
+       public :: get_face_b
+       public :: get_edge_b
+       public :: get_corner_b
 
 #ifdef _DEBUG_COORDINATES_
-      public :: checkGrid
+       public :: checkGrid
 #endif
 
        type grid
          type(coordinates),dimension(3) :: c ! hn,hc,dhn,dhc / dhMin,maxRange
-         type(stitch),dimension(6)   :: st_faces   ! Face-stitches
-         type(stitch),dimension(12)   :: st_edges   ! Edge-stitch
-         type(stitch),dimension(8)   :: st_corners   ! Corner-stitch
-         ! Properties
-         real(cp) :: dhMin,dhMax,maxRange,volume
-         integer :: N_cells
-         logical :: defined
+         real(cp) :: volume
+         logical :: defined = .false.
        end type
 
-       interface init;               module procedure initGridCopy;            end interface
-       interface init;               module procedure initGrid1;               end interface
-       interface init;               module procedure initGrid2;               end interface
-       interface delete;             module procedure deleteGrid;              end interface
-       interface display;            module procedure display_grid;            end interface
-       interface print;              module procedure print_Grid;              end interface
-       interface export;             module procedure export_Grid;             end interface
-       interface import;             module procedure import_Grid;             end interface
+       interface init;                     module procedure initGridCopy;               end interface
+       interface init;                     module procedure initGrid1;                  end interface
+       interface init;                     module procedure initGrid2;                  end interface
+       interface delete;                   module procedure deleteGrid;                 end interface
+       interface display;                  module procedure display_grid;               end interface
+       interface print;                    module procedure print_Grid;                 end interface
+       interface export;                   module procedure export_Grid;                end interface
+       interface import;                   module procedure import_Grid;                end interface
 
-       interface initProps;          module procedure initProps_grid;          end interface
-       interface display_stitches;   module procedure display_grid_stitches;   end interface
-       interface restrict;           module procedure restrictGrid1;           end interface
-       interface restrict;           module procedure restrictGrid3;           end interface
-       interface restrict_x;         module procedure restrictGrid_x;          end interface
-       interface restrict_xy;        module procedure restrictGrid_xy;         end interface
+       interface initProps;                module procedure initProps_grid;             end interface
+
+       interface restrict;                 module procedure restrictGrid1;              end interface
+       interface restrict;                 module procedure restrictGrid3;              end interface
+       interface restrict_x;               module procedure restrictGrid_x;             end interface
+       interface restrict_xy;              module procedure restrictGrid_xy;            end interface
+
+       interface restrict;                 module procedure restrict_dir_g;             end interface
+       interface prolongate;               module procedure prolongate_dir_g;           end interface
+
+       interface snip;                     module procedure snip_grid;                  end interface
+       interface pop;                      module procedure pop_grid;                   end interface
+
+       interface mirror_about_hmin;        module procedure mirror_about_hmin_g;        end interface
+       interface mirror_about_hmax;        module procedure mirror_about_hmax_g;        end interface
+
+       interface get_shape;                module procedure get_shape_g;                end interface
+
+       interface get_face_GI;              module procedure get_face_GI_grid;           end interface
+       interface get_edge_GI;              module procedure get_edge_GI_grid;           end interface
+       interface get_corner_GI;            module procedure get_corner_GI_grid;         end interface
+
+       interface get_face_b;               module procedure get_face_grid_b;            end interface
+       interface get_face_b;               module procedure get_face_grid_b_IO;         end interface
+       interface get_edge_b;               module procedure get_edge_grid_b;            end interface
+       interface get_corner_b;             module procedure get_corner_grid_b;          end interface
+
+       interface get_coordinates_h;        module procedure get_coordinates_h_g;        end interface
+       interface get_coordinates_dh;       module procedure get_coordinates_dh_g;       end interface
+       interface get_coordinates_dual_h;   module procedure get_coordinates_dual_h_g;   end interface
+       interface get_coordinates_dual_dh;  module procedure get_coordinates_dual_dh_g;  end interface
 
 
        contains
@@ -59,9 +101,6 @@
          type(grid),intent(in) :: f
          integer :: i
          do i=1,3;  call init(g%c(i),f%c(i));                   enddo
-         do i=1,6;  call init(g%st_faces(i),f%st_faces(i));     enddo
-         do i=1,12; call init(g%st_edges(i),f%st_edges(i));     enddo
-         do i=1,8;  call init(g%st_corners(i),f%st_corners(i)); enddo
          call initProps(g)
          if (.not.g%defined) stop 'Error: tried copying grid that was not fully defined'
        end subroutine
@@ -73,7 +112,7 @@
          integer,intent(in) :: dir
          integer :: i
          call init(g%c(dir),h,size(h))
-         if (all((/(allocated(g%c(i)%hn),i=1,3)/))) then
+         if (all((/(allocated(g%c(i)%hn%f),i=1,3)/))) then
            call initProps(g)
 #ifdef _DEBUG_COORDINATES_
            call checkGrid(g)
@@ -96,9 +135,6 @@
          type(grid),intent(inout) :: g
          integer :: i
          do i=1,3;  call delete(g%c(i));          enddo
-         do i=1,6;  call delete(g%st_faces(i));   enddo
-         do i=1,12; call delete(g%st_edges(i));   enddo
-         do i=1,8;  call delete(g%st_corners(i)); enddo
          call initProps(g)
          ! write(*,*) 'Grid deleted'
        end subroutine
@@ -117,7 +153,6 @@
          write(un,*) 'N_cells_x,stretching_x = ',g%c(1)%N,g%c(1)%dhMax-g%c(1)%dhMin
          write(un,*) 'N_cells_y,stretching_y = ',g%c(2)%N,g%c(2)%dhMax-g%c(2)%dhMin
          write(un,*) 'N_cells_z,stretching_z = ',g%c(3)%N,g%c(3)%dhMax-g%c(3)%dhMin
-         ! call display_grid_stitches(g,un)
        end subroutine
 
        subroutine print_Grid(g)
@@ -132,19 +167,7 @@
          integer,intent(in) :: un
          integer :: i
          write(un,*) 'volume,defined = ';         write(un,*) g%volume,g%defined
-         write(un,*) 'min/max(h)_x = ';           write(un,*) (/g%c(1)%hmin,g%c(1)%hmax/)
-         write(un,*) 'min/max(h)_y = ';           write(un,*) (/g%c(2)%hmin,g%c(2)%hmax/)
-         write(un,*) 'min/max(h)_z = ';           write(un,*) (/g%c(3)%hmin,g%c(3)%hmax/)
-         write(un,*) 'min/max(dh)_x = ';          write(un,*) (/g%c(1)%dhMin,g%c(1)%dhMax/)
-         write(un,*) 'min/max(dh)_y = ';          write(un,*) (/g%c(2)%dhMin,g%c(2)%dhMax/)
-         write(un,*) 'min/max(dh)_z = ';          write(un,*) (/g%c(3)%dhMin,g%c(3)%dhMax/)
-         write(un,*) 'N_cells_x = '; write(un,*) g%c(1)%N
-         write(un,*) 'N_cells_y = '; write(un,*) g%c(2)%N
-         write(un,*) 'N_cells_z = '; write(un,*) g%c(3)%N
          do i = 1,3;  call export(g%c(i),un);          enddo
-         do i = 1,6;  call export(g%st_faces(i),un);   enddo
-         do i = 1,12; call export(g%st_edges(i),un);   enddo
-         do i = 1,8;  call export(g%st_corners(i),un); enddo
        end subroutine
 
        subroutine import_grid(g,un) ! Import / Export must mirror
@@ -153,20 +176,8 @@
          integer,intent(in) :: un
          integer :: i
          read(un,*); read(un,*) g%volume,g%defined
-         read(un,*); read(un,*) g%c(1)%hmin,g%c(1)%hmax
-         read(un,*); read(un,*) g%c(2)%hmin,g%c(2)%hmax
-         read(un,*); read(un,*) g%c(3)%hmin,g%c(3)%hmax
-         read(un,*); read(un,*) g%c(1)%dhMin,g%c(1)%dhMax
-         read(un,*); read(un,*) g%c(2)%dhMin,g%c(2)%dhMax
-         read(un,*); read(un,*) g%c(3)%dhMin,g%c(3)%dhMax
-         read(un,*); read(un,*) g%c(1)%N
-         read(un,*); read(un,*) g%c(2)%N
-         read(un,*); read(un,*) g%c(3)%N
          do i = 1,3;  call import(g%c(i),un);          enddo
-         do i = 1,6;  call import(g%st_faces(i),un);   enddo
-         do i = 1,12; call import(g%st_edges(i),un);   enddo
-         do i = 1,8;  call import(g%st_corners(i),un); enddo
-         call initProps_grid(g)
+         call initProps(g)
        end subroutine
 
        ! **********************************************************
@@ -177,14 +188,10 @@
          implicit none
          type(grid),intent(inout) :: g
          integer :: i
-         g%dhMin = minval((/g%c(1)%dhMin,g%c(2)%dhMin,g%c(3)%dhMin/))
-         g%dhMax = maxval((/g%c(1)%dhMax,g%c(2)%dhMax,g%c(3)%dhMax/))
-         g%maxRange = maxval((/g%c(1)%maxRange,g%c(2)%maxRange,g%c(3)%maxRange/))
          g%volume = g%c(1)%maxRange*g%c(2)%maxRange*g%c(3)%maxRange
-         g%N_cells = g%c(1)%N + g%c(2)%N + g%c(3)%N
          g%defined = all((/(g%c(i)%defined,i=1,3)/))
        end subroutine
-        
+
        ! ------------------- restrict (for multigrid) --------------
 
        subroutine restrictGrid1(r,g,dir)
@@ -214,6 +221,70 @@
          call restrict(r%c(2),g%c(2))
        end subroutine
 
+       ! ***********************************************************
+       ! ******************* RESTRICT / PROLONGATE *****************
+       ! ***********************************************************
+
+       subroutine restrict_dir_g(g,dir)
+         type(grid),intent(inout) :: g
+         integer,intent(in) :: dir
+         call restrict(g%c(dir))
+       end subroutine
+
+       subroutine prolongate_dir_g(g,dir)
+         type(grid),intent(inout) :: g
+         integer,intent(in) :: dir
+         call prolongate(g%c(dir))
+       end subroutine
+
+       ! ***********************************************************
+       ! ***********************************************************
+       ! ***********************************************************
+
+       subroutine pop_grid(g,dir) ! Removes the last index from the grid
+         implicit none
+         type(grid),intent(inout) :: g
+         integer,intent(in) :: dir
+         call pop(g%c(dir))
+       end subroutine
+
+       subroutine mirror_about_hmin_g(g,dir)
+         implicit none
+         type(grid),intent(inout) :: g
+         integer,intent(in) :: dir
+         call mirror_about_hmin(g%c(dir))
+       end subroutine
+
+       subroutine mirror_about_hmax_g(g,dir)
+         implicit none
+         type(grid),intent(inout) :: g
+         integer,intent(in) :: dir
+         call mirror_about_hmax(g%c(dir))
+       end subroutine
+
+       function get_shape_g(g,DL) result(s)
+         implicit none
+         type(grid),intent(in) :: g
+         type(data_location),intent(in) :: DL
+         integer,dimension(3) :: s
+         integer :: i
+         do i=1,3
+             if ( N_along(DL,i)) then; s(i) = g%c(i)%sn
+         elseif (CC_along(DL,i)) then; s(i) = g%c(i)%sc
+         !     if ( N_along(DL,i)) then; s(i) = g%c(i)%h(1)%N
+         ! elseif (CC_along(DL,i)) then; s(i) = g%c(i)%h(2)%N
+         else; stop 'Error: bad DL in get_shape_g in grid.f90'
+         endif
+         enddo
+       end function
+
+       subroutine snip_grid(g,dir) ! Removes the first index from the grid
+         implicit none
+         type(grid),intent(inout) :: g
+         integer,intent(in) :: dir
+         call snip(g%c(dir))
+       end subroutine
+
        ! ---------------------------------------------- check grid
 
 #ifdef _DEBUG_COORDINATES_
@@ -225,32 +296,141 @@
        end subroutine
 #endif
 
-       subroutine display_grid_stitches(g,un)
+       ! *********************************************************************
+       ! *********************************************************************
+       ! ******************** GET SURFACE / EDGE / CORNER ********************
+       ! *********************************************************************
+       ! *********************************************************************
+
+       subroutine get_face_GI_grid(g,g_in,face)
          implicit none
-         type(grid), intent(in) :: g
-         integer,intent(in) :: un
-         integer :: i
-         write(un,*) 'st_faces = ',(/(g%st_faces(i)%TF,i=1,6)/)
-         write(un,*) 'st_edges = ',(/(g%st_edges(i)%TF,i=1,12)/)
-         write(un,*) 'st_corners = ',(/(g%st_edges(i)%TF,i=1,8)/)
-         
-         ! do i=1,6
-         !   if (g%st_faces(i)%TF) write(un,*) 'st_face_id (i,ID)=',i,g%st_faces(i)%ID
-         ! enddo
-
-         do i=1,12
-           if (g%st_edges(i)%TF) write(un,*) 'st_edge_id (i,ID)=',i,g%st_edges(i)%ID
-         enddo
-
-         ! write(un,*) 'stitches_edge (minmin) = ',(/(g%st_edge%minmin(i),i=1,3)/)
-         ! write(un,*) 'stitches_edge (minmax) = ',(/(g%st_edge%minmax(i),i=1,3)/)
-         ! write(un,*) 'stitches_edge (maxmin) = ',(/(g%st_edge%maxmin(i),i=1,3)/)
-         ! write(un,*) 'stitches_edge (maxmax) = ',(/(g%st_edge%maxmax(i),i=1,3)/)
-
-         ! write(un,*) 'stitches_corner (minmin) = ',g%st_corner%minmin
-         ! write(un,*) 'stitches_corner (minmax) = ',(/(g%st_corner%minmax(i),i=1,3)/)
-         ! write(un,*) 'stitches_corner (maxmin) = ',(/(g%st_corner%maxmin(i),i=1,3)/)
-         ! write(un,*) 'stitches_corner (maxmax) = ',g%st_corner%maxmax
+         type(grid),intent(inout) :: g
+         type(grid),intent(in) :: g_in
+         integer,intent(in) :: face
+         call init(g,g_in)
+         if (min_face(face)) call get_GI(g%c(dir_given_face(face)),-1)
+         if (max_face(face)) call get_GI(g%c(dir_given_face(face)), 1)
        end subroutine
 
-       end module
+       subroutine get_edge_GI_grid(g,g_in,edge)
+         implicit none
+         type(grid),intent(inout) :: g
+         type(grid),intent(in) :: g_in
+         integer,intent(in) :: edge
+         type(grid) :: temp
+         integer,dimension(2) :: f
+         f = adj_faces_given_edge(edge)
+         call get_face_GI(temp,g_in,f(1))
+         call get_face_GI(g,temp,f(2))
+       end subroutine
+
+       subroutine get_corner_GI_grid(g,g_in,corner)
+         implicit none
+         type(grid),intent(inout) :: g
+         type(grid),intent(in) :: g_in
+         integer,intent(in) :: corner
+         type(grid) :: A,B
+         integer,dimension(3) :: f
+         f = adj_faces_given_corner(corner)
+         call get_face_GI(A,g_in,f(1))
+         call get_face_GI(B,A,f(2))
+         call get_face_GI(g,B,f(3))
+       end subroutine
+
+       subroutine get_face_grid_b(g,g_in,face)
+         implicit none
+         type(grid),intent(inout) :: g
+         type(grid),intent(in) :: g_in
+         integer,intent(in) :: face
+         call init(g,g_in)
+         if (min_face(face)) call get_boundary(g%c(dir_given_face(face)),-1)
+         if (max_face(face)) call get_boundary(g%c(dir_given_face(face)), 1)
+       end subroutine
+       subroutine get_face_grid_b_IO(g,face)
+         implicit none
+         type(grid),intent(inout) :: g
+         integer,intent(in) :: face
+         if (min_face(face)) call get_boundary(g%c(dir_given_face(face)),-1)
+         if (max_face(face)) call get_boundary(g%c(dir_given_face(face)), 1)
+       end subroutine
+       subroutine get_edge_grid_b(g,g_in,edge)
+         implicit none
+         type(grid),intent(inout) :: g
+         type(grid),intent(in) :: g_in
+         integer,intent(in) :: edge
+         type(grid) :: temp
+         integer,dimension(2) :: f
+         f = adj_faces_given_edge(edge)
+         call get_face_b(temp,g_in,f(1))
+         call get_face_b(g,temp,f(2))
+       end subroutine
+       subroutine get_corner_grid_b(g,g_in,corner)
+         implicit none
+         type(grid),intent(inout) :: g
+         type(grid),intent(in) :: g_in
+         integer,intent(in) :: corner
+         type(grid) :: A,B
+         integer,dimension(3) :: f
+         f = adj_faces_given_corner(corner)
+         call get_face_b(A,g_in,f(1))
+         call get_face_b(B,A,f(2))
+         call get_face_b(g,B,f(3))
+       end subroutine
+
+      subroutine get_coordinates_h_g(h,g,DL)
+        implicit none
+        type(array),dimension(3),intent(inout) :: h
+        type(grid),intent(in) :: g
+        type(data_location),intent(in) :: DL
+        integer :: i
+        do i=1,3
+            if ( N_along(DL,i)) then; call init(h(i),g%c(i)%hn)
+        elseif (CC_along(DL,i)) then; call init(h(i),g%c(i)%hc)
+        else; stop 'Error: bad DL in get_coordinates_h_g in grid.f90'
+        endif
+        enddo
+      end subroutine
+
+      subroutine get_coordinates_dh_g(h,g,DL)
+        implicit none
+        type(array),dimension(3),intent(inout) :: h
+        type(grid),intent(in) :: g
+        type(data_location),intent(in) :: DL
+        integer :: i
+        do i=1,3
+            if ( N_along(DL,i)) then; call init(h(i),g%c(i)%dhn)
+        elseif (CC_along(DL,i)) then; call init(h(i),g%c(i)%dhc)
+        else; stop 'Error: bad DL in get_coordinates_dh_g in grid.f90'
+        endif
+        enddo
+      end subroutine
+
+      subroutine get_coordinates_dual_h_g(h,g,DL)
+        implicit none
+        type(array),dimension(3),intent(inout) :: h
+        type(grid),intent(in) :: g
+        type(data_location),intent(in) :: DL
+        integer :: i
+        do i=1,3
+            if ( N_along(DL,i)) then; call init(h(i),g%c(i)%hc)
+        elseif (CC_along(DL,i)) then; call init(h(i),g%c(i)%hn)
+        else; stop 'Error: bad DL in get_coordinates_dual_h_g in grid.f90'
+        endif
+        enddo
+      end subroutine
+
+      subroutine get_coordinates_dual_dh_g(h,g,DL)
+        implicit none
+        type(array),dimension(3),intent(inout) :: h
+        type(grid),intent(in) :: g
+        type(data_location),intent(in) :: DL
+        integer :: i
+        do i=1,3
+            if ( N_along(DL,i)) then; call init(h(i),g%c(i)%dhc)
+        elseif (CC_along(DL,i)) then; call init(h(i),g%c(i)%dhn)
+        else; stop 'Error: bad DL in get_coordinates_dual_dh_g in grid.f90'
+        endif
+        enddo
+      end subroutine
+
+      end module

@@ -21,7 +21,7 @@
 \setlength{\topmargin}{-1in}     %\topmargin: gap above header
 \setlength{\headheight}{0in}     %\headheight: height of header
 \setlength{\topskip}{0in}        %\topskip: between header and text
-% \setlength{\headsep}{0in}        
+% \setlength{\headsep}{0in}
 \setlength{\textheight}{525pt}   %\textheight: height of main text
 \setlength{\textwidth}{10in}    % \textwidth: width of text
 \setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
@@ -54,7 +54,7 @@ The following document explains how the stencils must be adjusted to achieve a c
 Consider the Laplace stencil,
 
 \begin{equation}
-   \left(\frac{\partial^2 u}{\partial x^2}\right)_{1} = 
+   \left(\frac{\partial^2 u}{\partial x^2}\right)_{1} =
    \frac{u_g - 2 u_1 + u_{2}}{\Delta x^2} = f_1
 \end{equation}
 Where $u_g,u_1,u_2$ are the ghost, first interior and second interior cells. This Laplacian operator may be written in matrix form as
@@ -80,7 +80,7 @@ Consider Dirichlet BCs, $u_g$ may be computed observing that the boundary value 
 \end{equation}
 So our Laplacian stencil becomes:
 \begin{equation}
-   \left(\frac{\partial^2 u}{\partial x^2}\right)_{1} = 
+   \left(\frac{\partial^2 u}{\partial x^2}\right)_{1} =
    \frac{(2 u_b - u_1) - 2 u_1 + u_{2}}{\Delta x^2} = f_1
 \end{equation}
 This boundary point must be moved to the RHS to maintain a consistent matrix-vector multiplication. Therefore our equation changes:
@@ -122,7 +122,7 @@ Consider Neumann BCs, $u_g$ may be computed by writing the equation for the firs
 \end{equation}
 So our Laplacian stencil becomes:
 \begin{equation}
-   \left(\frac{\partial^2 u}{\partial x^2}\right)_{1} = 
+   \left(\frac{\partial^2 u}{\partial x^2}\right)_{1} =
    \frac{(u_1 + n \theta \Delta x) - 2 u_1 + u_{2}}{\Delta x^2} = f_1
 \end{equation}
 This boundary information must be moved to the RHS to maintain a consistent matrix-vector multiplication. Therefore our equation changes:
@@ -168,7 +168,7 @@ Consider periodic BCs, $u_g$ may is known on the ghost point since it wraps arou
 \end{equation}
 So our Laplacian stencil becomes:
 \begin{equation}
-   \left(\frac{\partial^2 u}{\partial x^2}\right)_{1} = 
+   \left(\frac{\partial^2 u}{\partial x^2}\right)_{1} =
    \frac{- 2 u_1 + u_{2}}{\Delta x^2} = f_1 - \frac{{u_i}_{opp}}{\Delta x^2}
 \end{equation}
 This boundary information must be moved to the RHS to maintain a consistent matrix-vector multiplication. However, we must still see the matrix $A$:
@@ -198,7 +198,7 @@ A = \frac{1}{\Delta x^2} \left[\begin{array}{ccccccccc}
 \section{Node data}
 Consider the Laplace stencil,
 \begin{equation}
-   \left(\frac{\partial^2 u}{\partial x^2}\right)_{boundary} = 
+   \left(\frac{\partial^2 u}{\partial x^2}\right)_{boundary} =
    \frac{u_g - 2 u_b + u_i}{\Delta x^2} = f_b
 \end{equation}
 Where $u_g,u_b,u_i$ are the ghost, boundary and first interior node points. This Laplacian operator may be written in matrix form as
@@ -217,12 +217,12 @@ Simple linear interpolation will not provide a consistent system to solve using 
 \subsection{Dirichlet}
 Consider Dirichlet BCs, $u_b$ IS KNOWN, AND THE SOLVE IS ONLY FROM $u_i$ ONWARD. Therefore, the only equation we must consider is at location $i$:
 \begin{equation}
-   \left(\frac{\partial^2 u}{\partial x^2}\right)_{i} = 
+   \left(\frac{\partial^2 u}{\partial x^2}\right)_{i} =
    \frac{u_b - 2 u_i + u_{i+1}}{\Delta x^2} = f_i
 \end{equation}
 If we were to write an equation for the boundary point, we could write
 \begin{equation}
-   \left(\frac{\partial^2 u}{\partial x^2}\right)_{b} = 
+   \left(\frac{\partial^2 u}{\partial x^2}\right)_{b} =
    \frac{u_g - 2 u_b + u_{i}}{\Delta x^2} = f_b
    \rightarrow
    u_g  = 2 u_b - u_{i} - \Delta x^2 f_b
@@ -233,12 +233,12 @@ If we insist $f_b=0$ then we have a simplified version:
 \end{equation}
 So the equation changes to
 \begin{equation}
-   \left(\frac{\partial^2 u}{\partial x^2}\right)_{b} = 
+   \left(\frac{\partial^2 u}{\partial x^2}\right)_{b} =
    0 = 0
 \end{equation}
-And we may remove it from our system, BUT the matrix is no longer symmetric since interior stencils are used on the interior domain where the equations are solved. Let's move the last boundary point in equation 
+And we may remove it from our system, BUT the matrix is no longer symmetric since interior stencils are used on the interior domain where the equations are solved. Let's move the last boundary point in equation
 \begin{equation}
-   \left(\frac{\partial^2 u}{\partial x^2}\right)_{i} = 
+   \left(\frac{\partial^2 u}{\partial x^2}\right)_{i} =
    \frac{u_b - 2 u_i + u_{i+1}}{\Delta x^2} = f_i
    \rightarrow
    \frac{- 2 u_i + u_{i+1}}{\Delta x^2} = f_i - \frac{u_b}{\Delta x^2}
@@ -278,7 +278,7 @@ Consider Neumann BCs, $u_g$ may be computed by writing the equation for the firs
 \end{equation}
 So our Laplacian stencil becomes:
 \begin{equation}
-   \left(\frac{\partial^2 u}{\partial x^2}\right)_{b} = 
+   \left(\frac{\partial^2 u}{\partial x^2}\right)_{b} =
    \frac{(u_i + 2 n \theta \Delta x) - 2 u_b + u_i}{\Delta x^2} = f_b
 \end{equation}
 This boundary information must be moved to the RHS to maintain a consistent matrix-vector multiplication. Therefore our equation changes:
@@ -326,9 +326,12 @@ Which means the equation is
 Note that the mean must be subtracted from the RHS AFTER dividing by the factor of 2. To apply this division correctly with applying BCs, we may use the following definition for $u_g$ to achieve solving the same equation:
 \begin{equation}
   \boxed{
-  u_g = u_b + n\theta \Delta x
+  u_g = u_i, \qquad
+  f_{b} = f_{b} - \frac{2n\theta \Delta x}{\Delta x^2}, \qquad
+  (Au)_{b} = \frac{1}{2} (Au)_{b}
   }
 \end{equation}
+This way, we ultimately have:
 \begin{equation}
    \frac{u_g - 2 u_b + u_i}{\Delta x^2} = f_b
    \qquad \rightarrow \qquad
@@ -339,7 +342,7 @@ Note that the mean must be subtracted from the RHS AFTER dividing by the factor 
 \subsection{Periodic}
 Consider periodic BCs, $u_g$ is the first interior node on the opposite side of the domain, which is known. Forcing on the wall-coincident nodes must match up naturally. The derivatives are computed using interior stencils on the boundary as:
 \begin{equation}
-   \left(\frac{\partial^2 u}{\partial x^2}\right)_{b} = 
+   \left(\frac{\partial^2 u}{\partial x^2}\right)_{b} =
    \frac{u_g - 2 u_b + u_{i}}{\Delta x^2} = f_b
 \end{equation}
 Since the ghost node is part of the unknowns on the opposite side of the domain interior, the matrix $A$ becomes (a circulant one):

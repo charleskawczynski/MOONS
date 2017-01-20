@@ -1,12 +1,12 @@
       module ops_dct_mod
-      ! Returns the Discrete Cosine Transform of the scalar field, f, wrt direction 
+      ! Returns the Discrete Cosine Transform of the scalar field, f, wrt direction
       ! dir (1,2,3) which corresponds to (x,y,z).
-      ! 
+      !
       ! Flags: (fopenmp,_DEBUG_DCT_)
-      ! 
+      !
       ! Implementation:
       ! call apply(omega,f,g,dir,pad)
-      ! 
+      !
       ! INPUT:
       !     f            = f(x,y,z)
       !     g            = grid (g%c(1,2,3)%dhn, g%c(1,2,3)%dhc)
@@ -24,20 +24,18 @@
       use current_precision_mod
       use grid_mod
       use ops_fft_mod
+      use constants_mod
       implicit none
 
       private
       public :: dct,dct1D
       interface dct;    module procedure applyDCT3D;    end interface
 
-       ! real(cp),parameter :: PI = 3.1415926535897932384626433832795028841971693993751058_cp
-       real(cp),parameter :: PI = 4.0_cp*atan(1.0_cp)
-
       contains
 
       subroutine dct1D(x)
         ! DCT    Discrete cosine transform of type II
-        ! 
+        !
         !        Y = dct(X) returns the discrete cosine transform of X,
         !        based on the staggered-grid definition
         !                    N
@@ -45,7 +43,7 @@
         !                   j=1
         !        The vector Y is the same size as X and contains the
         !        discrete cosine transform coefficients.
-        ! 
+        !
         real(cp),    dimension(:), intent(inout)  :: x
         complex(cp), dimension(:), allocatable    :: xx,e
         integer                                   :: N,k
@@ -112,7 +110,7 @@
 
 #ifdef _DEBUG_DCT_
       subroutine checkDimensions(s1,s2,dir)
-        ! This routine makes sure that the shapes s1 and s2 
+        ! This routine makes sure that the shapes s1 and s2
         ! are equal for orthogonal directions to dir, which
         ! must be the case for all derivatives in del.
         implicit none

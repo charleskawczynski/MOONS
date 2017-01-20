@@ -1,180 +1,122 @@
       module PCG_aux_mod
       use current_precision_mod
       use mesh_mod
+      use apply_BCs_mod
+      use ops_discrete_mod
+      use ops_aux_mod
       use SF_mod
       use VF_mod
+      use matrix_free_params_mod
+      use matrix_free_operators_mod
       implicit none
 
       private
+      public :: modify_RHS
+      interface modify_RHS; module procedure modify_RHS_SF; end interface
+      interface modify_RHS; module procedure modify_RHS_VF; end interface
 
-      public :: modify_forcing1
-      interface modify_forcing1;             module procedure modify_forcing1_SF;              end interface
-      interface modify_forcing1;             module procedure modify_forcing1_VF;              end interface
+      public :: compute_Ax_BC
+      interface compute_Ax_BC; module procedure compute_Ax_BC_MF_SF; end interface
+      interface compute_Ax_BC; module procedure compute_Ax_BC_MF_VF; end interface
 
-      public :: zeroGhostPoints_conditional
-      interface zeroGhostPoints_conditional; module procedure zeroGhostPoints_conditional_SF;  end interface
-      interface zeroGhostPoints_conditional; module procedure zeroGhostPoints_conditional_VF;  end interface
-
-      public :: assign_ghost_if_periodic
-      interface assign_ghost_if_periodic;    module procedure assign_ghost_if_periodic_SF;     end interface
-      interface assign_ghost_if_periodic;    module procedure assign_ghost_if_periodic_VF;     end interface
+      interface compute_x_BC; module procedure compute_x_BC_SF; end interface
+      interface compute_x_BC; module procedure compute_x_BC_VF; end interface
 
       contains
 
-      subroutine modify_forcing1_SF(f_mod,f,m,x)
+      subroutine modify_RHS_SF(operator,operator_explicit,x,b,vol,k,m,&
+        MFP,tempx,tempk,Ax,r,p)
         implicit none
-        type(SF),intent(inout) :: f_mod
-        type(SF),intent(in) :: f
-        type(mesh),intent(in) :: m
-        type(SF),intent(in) :: x
-        integer :: i
-        if (f%N_along(1).and.(.not.m%plane_x)) then
-          do i=1,m%s
-            if (.not.m%g(i)%st_faces(1)%TF) then
-              if (x%RF(i)%b%f(1)%b%Neumann) then
-                f_mod%RF(i)%f(2,:,:) = f%RF(i)%f(2,:,:)/2.0_cp
-              elseif (x%RF(i)%b%f(1)%b%Dirichlet) then
-                f_mod%RF(i)%f(2,:,:) = 0.0_cp
-              endif
-            endif
-            if (.not.m%g(i)%st_faces(2)%TF) then
-              if (x%RF(i)%b%f(2)%b%Neumann) then
-                f_mod%RF(i)%f(f%RF(i)%s(1)-1,:,:) = f%RF(i)%f(f%RF(i)%s(1)-1,:,:)/2.0_cp
-              elseif (x%RF(i)%b%f(2)%b%Dirichlet) then
-                f_mod%RF(i)%f(f%RF(i)%s(1)-1,:,:) = 0.0_cp
-              endif
-            endif
-          enddo
-        endif
-        if (f%N_along(2).and.(.not.m%plane_y)) then
-          do i=1,m%s
-            if (.not.m%g(i)%st_faces(3)%TF) then
-              if (x%RF(i)%b%f(3)%b%Neumann) then
-                f_mod%RF(i)%f(:,2,:) = f%RF(i)%f(:,2,:)/2.0_cp
-              elseif (x%RF(i)%b%f(3)%b%Dirichlet) then
-                f_mod%RF(i)%f(:,2,:) = 0.0_cp
-              endif
-            endif
-            if (.not.m%g(i)%st_faces(4)%TF) then
-              if (x%RF(i)%b%f(4)%b%Neumann) then
-                f_mod%RF(i)%f(:,f%RF(i)%s(2)-1,:) = f%RF(i)%f(:,f%RF(i)%s(2)-1,:)/2.0_cp
-              elseif (x%RF(i)%b%f(4)%b%Dirichlet) then
-                f_mod%RF(i)%f(:,f%RF(i)%s(2)-1,:) = 0.0_cp
-              endif
-            endif
-          enddo
-        endif
-        if (f%N_along(3).and.(.not.m%plane_z)) then
-          do i=1,m%s
-            if (.not.m%g(i)%st_faces(5)%TF) then
-              if (x%RF(i)%b%f(5)%b%Neumann) then
-                f_mod%RF(i)%f(:,:,2) = f%RF(i)%f(:,:,2)/2.0_cp
-              elseif (x%RF(i)%b%f(5)%b%Dirichlet) then
-                f_mod%RF(i)%f(:,:,2) = 0.0_cp
-              endif
-            endif
-            if (.not.m%g(i)%st_faces(6)%TF) then
-              if (x%RF(i)%b%f(6)%b%Neumann) then
-                f_mod%RF(i)%f(:,:,f%RF(i)%s(3)-1) = f%RF(i)%f(:,:,f%RF(i)%s(3)-1)/2.0_cp
-              elseif (x%RF(i)%b%f(6)%b%Dirichlet) then
-                f_mod%RF(i)%f(:,:,f%RF(i)%s(3)-1) = 0.0_cp
-              endif
-            endif
-          enddo
-        endif
-      end subroutine
-
-      subroutine assign_ghost_if_periodic_SF(xg,x,m)
-        implicit none
-        type(SF),intent(inout) :: xg
-        type(SF),intent(in) :: x
-        type(mesh),intent(in) :: m
-        integer :: i
-        if (x%CC_along(1).and.(.not.m%plane_x)) then
-        do i=1,m%s
-          if (.not.m%g(i)%st_faces(1)%TF.and.xg%RF(i)%b%f(1)%b%periodic) then
-            xg%RF(i)%f(1,:,:) = x%RF(i)%f(1,:,:)
-          endif
-          if (.not.m%g(i)%st_faces(2)%TF.and.xg%RF(i)%b%f(2)%b%periodic) then
-            xg%RF(i)%f(xg%RF(i)%s(1),:,:) = x%RF(i)%f(x%RF(i)%s(1),:,:)
-          endif
-        enddo
-        endif
-        if (x%CC_along(2).and.(.not.m%plane_y)) then
-        do i=1,m%s
-          if (.not.m%g(i)%st_faces(3)%TF.and.xg%RF(i)%b%f(3)%b%periodic) then
-            xg%RF(i)%f(:,1,:) = x%RF(i)%f(:,1,:)
-          endif
-          if (.not.m%g(i)%st_faces(4)%TF.and.xg%RF(i)%b%f(4)%b%periodic) then
-            xg%RF(i)%f(:,xg%RF(i)%s(2),:) = x%RF(i)%f(:,x%RF(i)%s(2),:)
-          endif
-        enddo
-        endif
-        if (x%CC_along(3).and.(.not.m%plane_z)) then
-        do i=1,m%s
-          if (.not.m%g(i)%st_faces(5)%TF.and.xg%RF(i)%b%f(5)%b%periodic) then
-            xg%RF(i)%f(:,:,1) = x%RF(i)%f(:,:,1)
-          endif
-          if (.not.m%g(i)%st_faces(6)%TF.and.xg%RF(i)%b%f(6)%b%periodic) then
-            xg%RF(i)%f(:,:,xg%RF(i)%s(3)) = x%RF(i)%f(:,:,x%RF(i)%s(3))
-          endif
-        enddo
-        endif
-      end subroutine
-
-      subroutine modify_forcing1_VF(f_mod,f,m,x)
-        implicit none
-        type(VF),intent(inout) :: f_mod
-        type(VF),intent(in) :: f
-        type(mesh),intent(in) :: m
-        type(VF),intent(in) :: x
-        call modify_forcing1_SF(f_mod%x,f%x,m,x%x)
-        call modify_forcing1_SF(f_mod%y,f%y,m,x%y)
-        call modify_forcing1_SF(f_mod%z,f%z,m,x%z)
-      end subroutine
-
-      subroutine assign_ghost_if_periodic_VF(xg,x,m)
-        implicit none
-        type(VF),intent(inout) :: xg
-        type(VF),intent(in) :: x
-        type(mesh),intent(in) :: m
-        call assign_ghost_if_periodic_SF(xg%x,x%x,m)
-        call assign_ghost_if_periodic_SF(xg%y,x%y,m)
-        call assign_ghost_if_periodic_SF(xg%z,x%z,m)
-      end subroutine
-
-      subroutine zeroGhostPoints_conditional_SF(x,m)
-        implicit none
+        procedure(op_SF) :: operator
+        procedure(op_SF_explicit) :: operator_explicit
         type(SF),intent(inout) :: x
+        type(SF),intent(in) :: b,vol
+        type(VF),intent(in) :: k
+        type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
-        integer :: i
-        if (x%N_along(1)) then
-          do i=1,m%s
-            if ((.not.m%g(i)%st_faces(1)%TF).and.(.not.x%RF(i)%b%f(1)%b%periodic)) x%RF(i)%f(1,:,:) = 0.0_cp
-            if ((.not.m%g(i)%st_faces(2)%TF).and.(.not.x%RF(i)%b%f(2)%b%periodic)) x%RF(i)%f(x%RF(i)%s(1),:,:) = 0.0_cp
-          enddo
-        endif
-        if (x%N_along(2)) then
-          do i=1,m%s
-            if ((.not.m%g(i)%st_faces(3)%TF).and.(.not.x%RF(i)%b%f(3)%b%periodic)) x%RF(i)%f(:,1,:) = 0.0_cp
-            if ((.not.m%g(i)%st_faces(4)%TF).and.(.not.x%RF(i)%b%f(4)%b%periodic)) x%RF(i)%f(:,x%RF(i)%s(2),:) = 0.0_cp
-          enddo
-        endif
-        if (x%N_along(3)) then
-          do i=1,m%s
-            if ((.not.m%g(i)%st_faces(5)%TF).and.(.not.x%RF(i)%b%f(5)%b%periodic)) x%RF(i)%f(:,:,1) = 0.0_cp
-            if ((.not.m%g(i)%st_faces(6)%TF).and.(.not.x%RF(i)%b%f(6)%b%periodic)) x%RF(i)%f(:,:,x%RF(i)%s(3)) = 0.0_cp
-          enddo
-        endif
+        type(matrix_free_params),intent(in) :: MFP
+        type(SF),intent(inout) :: tempx,Ax,r,p
+        call assign(r,b)                              ! r = b
+        call multiply_wall_Neumann(r,0.5_cp,x)        ! r = b_mod
+        if (x%all_Neumann) call subtract_physical_mean(r,vol,tempx) ! Not sure correct loc
+        call compute_Ax_BC(operator_explicit,tempx,p,x,k,m,MFP,tempk)
+        call subtract(r,tempx)                        ! r = (b_mod - Ax_BC - Ax)
+        ! if (x%all_Neumann) call subtract_physical_mean(r,vol,tempx) ! Not sure correct loc
+        call operator(Ax,x,k,m,MFP,tempk)
+        call multiply_wall_Neumann(Ax,0.5_cp,x)
+        call subtract(r,Ax)                           ! r = (b_mod - Ax_BC - Ax_mod)
+        call multiply(r,vol)                          ! r = vol*(b_mod - Ax_BC - Ax_mod)
+        if (.not.is_CC(x)) call assign_wall_Dirichlet(r,0.0_cp,x)
       end subroutine
 
-      subroutine zeroGhostPoints_conditional_VF(x,m)
+      subroutine modify_RHS_VF(operator,operator_explicit,x,b,vol,k,m,&
+        MFP,tempx,tempk,Ax,r,p)
         implicit none
+        procedure(op_VF) :: operator
+        procedure(op_VF_explicit) :: operator_explicit
         type(VF),intent(inout) :: x
+        type(VF),intent(in) :: b,vol
+        type(VF),intent(in) :: k
+        type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
-        call zeroGhostPoints_conditional_SF(x%x,m)
-        call zeroGhostPoints_conditional_SF(x%y,m)
-        call zeroGhostPoints_conditional_SF(x%z,m)
+        type(matrix_free_params),intent(in) :: MFP
+        type(VF),intent(inout) :: tempx,Ax,r,p
+        call assign(r,b)                              ! r = b
+        call multiply_wall_Neumann(r,0.5_cp,x)        ! r = b_mod
+        ! if (x%all_Neumann) call subtract_physical_mean(r,vol,tempx) ! Not sure correct loc
+        call compute_Ax_BC(operator_explicit,tempx,p,x,k,m,MFP,tempk)
+        call subtract(r,tempx)                        ! r = (b_mod - Ax_BC - Ax)
+        ! if (x%all_Neumann) call subtract_physical_mean(r,vol,tempx) ! Not sure correct loc
+        call operator(Ax,x,k,m,MFP,tempk)
+        call multiply_wall_Neumann(Ax,0.5_cp,x)
+        call subtract(r,Ax)                           ! r = (b_mod - Ax_BC - Ax_mod)
+        call multiply(r,vol)                          ! r = vol*(b_mod - Ax_BC - Ax_mod)
+        if (.not.is_CC(x)) call assign_wall_Dirichlet(r,0.0_cp,x)
+      end subroutine
+
+      subroutine compute_Ax_BC_MF_SF(operator_explicit,Ax_BC,p,x,k,m,MFP,tempk)
+        implicit none
+        procedure(op_SF_explicit) :: operator_explicit
+        type(SF),intent(inout) :: Ax_BC,p
+        type(VF),intent(inout) :: tempk
+        type(VF),intent(in) :: k
+        type(SF),intent(in) :: x
+        type(matrix_free_params),intent(in) :: MFP
+        type(mesh),intent(in) :: m
+        call compute_x_BC(p)
+        call operator_explicit(Ax_BC,p,k,m,MFP,tempk)
+        call assign_wall_Dirichlet(Ax_BC,0.0_cp,x)
+        call assign_ghost_XPeriodic(Ax_BC,0.0_cp,x)
+      end subroutine
+
+      subroutine compute_Ax_BC_MF_VF(operator_explicit,Ax_BC,p,x,k,m,MFP,tempk)
+        implicit none
+        procedure(op_VF_explicit) :: operator_explicit
+        type(VF),intent(inout) :: Ax_BC,p
+        type(VF),intent(inout) :: tempk
+        type(VF),intent(in) :: k,x
+        type(matrix_free_params),intent(in) :: MFP
+        type(mesh),intent(in) :: m
+        call compute_x_BC(p)
+        call operator_explicit(Ax_BC,p,k,m,MFP,tempk)
+        call assign_wall_Dirichlet(Ax_BC,0.0_cp,x)
+        call assign_ghost_XPeriodic(Ax_BC,0.0_cp,x)
+      end subroutine
+
+      subroutine compute_x_BC_SF(p)
+        implicit none
+        type(SF),intent(inout) :: p
+        call assign(p,0.0_cp)
+        call apply_BCs(p)
+        call assign_ghost_N_XPeriodic(p,0.0_cp)
+      end subroutine
+
+      subroutine compute_x_BC_VF(p)
+        implicit none
+        type(VF),intent(inout) :: p
+        call assign(p,0.0_cp)
+        call apply_BCs(p)
+        call assign_ghost_N_XPeriodic(p,0.0_cp)
       end subroutine
 
       end module
