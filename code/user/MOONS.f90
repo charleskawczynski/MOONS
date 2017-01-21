@@ -49,6 +49,7 @@
 
 #ifdef fopenmp
          call omp_set_num_threads(12) ! Set number of openMP threads
+
 #endif
 
          call init(DT,dir_target)  ! Initialize + make directory tree
@@ -88,7 +89,8 @@
          if (SP%EL%export_meshes) call export_mesh(mesh_mom,str(DT%meshes),'mesh_mom',1)
          if (SP%EL%export_meshes) call export_mesh(MD_sigma%m_R2,str(DT%meshes),'mesh_MD_sigma',1)
          if (SP%EL%export_meshes) call export_mesh(mesh_ind,str(DT%meshes),'mesh_ind',1)
-         if (SP%stop_after_mesh_export) then
+
+         if (SP%FCL%stop_after_mesh_export) then
            stop 'Exported meshes. Turn off stop_after_mesh_export in sim_params.f90 to run sim.'
          endif
 
@@ -105,6 +107,7 @@
          call delete(MD_sigma)
 
          ! ********************* EXPORT RAW ICs *************************
+
          if (SP%EL%export_ICs.and.SP%VS%U%SS%initialize) call export_tec(nrg,DT)
          if (SP%EL%export_ICs.and.SP%VS%T%SS%initialize) call export_tec(ind,DT)
          if (SP%EL%export_ICs.and.SP%VS%B%SS%initialize) call export_tec(mom,DT,mom%temp_F1)
@@ -114,36 +117,39 @@
          if (SP%VS%B%SS%initialize) call print(ind%m)
 
          ! ******************** PREP TIME START/STOP ********************
-         if (SP%stop_before_solve) then
+
+         if (SP%FCL%stop_before_solve) then
            stop 'Exported ICs. Turn off stop_before_solve in sim_params.f90 to run sim.'
          endif
-         if (.not.SP%post_process_only) call MHDSolver(nrg,mom,ind,DT,SP,SP%coupled)
+         if (.not.SP%FCL%post_process_only) call MHDSolver(nrg,mom,ind,DT,SP,SP%coupled)
 
-         ! if (post_process_only) then
+         if (SP%FCL%post_process_only) then
            write(*,*) ' *********************** POST PROCESSING ***********************'
            write(*,*) ' *********************** POST PROCESSING ***********************'
            write(*,*) ' *********************** POST PROCESSING ***********************'
+
            write(*,*) ' COMPUTING VORTICITY-STREAMFUNCTION:'
-           ! call export_vorticity_streamfunction(mom%U,mom%m,DT)
-           ! if (solveMomentum.and.solveInduction) then
-             write(*,*) ' COMPUTING ENERGY BUDGETS:'
+           if (SP%VS%U%SS%initialize.and.SP%EL%export_vort_SF) then
+            call export_vorticity_streamfunction(mom%U,mom%m,DT)
+           endif
+           write(*,*) ' COMPUTING ENERGY BUDGETS:'
+           if (SP%VS%U%SS%initialize.and.SP%VS%B%SS%initialize) then
              write(*,*) '       KINETIC ENERGY BUDGET - STARTED'
-             ! call compute_E_K_Budget(mom,ind%B,ind%B0,ind%J,ind%MD_fluid,ind%Rem,DT)
+             call compute_export_E_K_Budget(mom,ind%B,ind%B0,ind%J,ind%MD_fluid,ind%Rem,DT)
              write(*,*) '       KINETIC ENERGY BUDGET - COMPLETE'
              write(*,*) '       MAGNETIC ENERGY BUDGET - STARTED'
-             ! call compute_E_M_budget(ind,mom%U,ind%MD_fluid,mom%Re,mom%Ha,DT)
+             call compute_export_E_M_budget(ind,mom%U,ind%MD_fluid,mom%Re,mom%Ha,DT)
              write(*,*) '       MAGNETIC ENERGY BUDGET - COMPLETE'
-           ! endif
-
-           if (SP%EL%export_analytic) call export_SH(mom%m,mom%U%x,SP%DP%Ha,0.0_cp,-1.0_cp,1,DT)
-         ! else
+           endif
+           if (SP%VS%U%SS%initialize.and.SP%EL%export_analytic) then
+             call export_SH(mom%m,mom%U%x,SP%DP%Ha,0.0_cp,-1.0_cp,1,DT)
+           endif
+         else
            write(*,*) ' ******************** COMPUTATIONS COMPLETE ********************'
            write(*,*) ' ******************** COMPUTATIONS COMPLETE ********************'
            write(*,*) ' ******************** COMPUTATIONS COMPLETE ********************'
-         ! endif
-
+         endif
          ! ******************* DELETE ALLOCATED DERIVED TYPES ***********
-
          call delete(nrg)
          call delete(mom)
          call delete(ind)

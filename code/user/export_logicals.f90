@@ -8,6 +8,7 @@
      type export_logicals
        logical :: export_analytic = .false.
        logical :: export_meshes = .false.
+       logical :: export_vort_SF = .false.
        logical :: export_mat_props = .false.
        logical :: export_cell_volume = .false.
        logical :: export_ICs = .false.
@@ -32,6 +33,7 @@
        type(export_logicals),intent(in) :: EL_in
        EL%export_analytic        = EL_in%export_analytic
        EL%export_meshes          = EL_in%export_meshes
+       EL%export_vort_SF         = EL_in%export_vort_SF
        EL%export_mat_props       = EL_in%export_mat_props
        EL%export_ICs             = EL_in%export_ICs
        EL%export_cell_volume     = EL_in%export_cell_volume
@@ -46,6 +48,7 @@
        type(export_logicals),intent(inout) :: EL
        EL%export_analytic        = .false.
        EL%export_meshes          = .false.
+       EL%export_vort_SF         = .false.
        EL%export_mat_props       = .false.
        EL%export_ICs             = .false.
        EL%export_cell_volume     = .false.
@@ -61,6 +64,7 @@
        integer,intent(in) :: un
        write(un,*) 'export_analytic    = ',EL%export_analytic
        write(un,*) 'export_meshes      = ',EL%export_meshes
+       write(un,*) 'export_vort_SF     = ',EL%export_vort_SF
        write(un,*) 'export_mat_props   = ',EL%export_mat_props
        write(un,*) 'export_ICs         = ',EL%export_ICs
        write(un,*) 'export_cell_volume = ',EL%export_cell_volume
@@ -82,6 +86,7 @@
        integer,intent(in) :: un
        write(un,*) EL%export_analytic
        write(un,*) EL%export_meshes
+       write(un,*) EL%export_vort_SF
        write(un,*) EL%export_mat_props
        write(un,*) EL%export_ICs
        write(un,*) EL%export_cell_volume
@@ -97,6 +102,7 @@
        integer,intent(in) :: un
        read(un,*) EL%export_analytic
        read(un,*) EL%export_meshes
+       read(un,*) EL%export_vort_SF
        read(un,*) EL%export_mat_props
        read(un,*) EL%export_ICs
        read(un,*) EL%export_cell_volume

@@ -149,10 +149,17 @@
          hmax(3) = 0.0_cp
          beta = Re_Ha_BL(Re*buffer,Ha*buffer,hmin,hmax)
          beta_y = Re_Ha_BL(Re*buffer_y,Ha*buffer_y,hmin,hmax)
-         N = (/38,38,19/)
-         N_w = 6
-         N_v = 14
-         N_extra = 8 ! since no wall domain above lid
+
+         ! Very Coarse
+         N = (/28,28,14/); N_w = 6; N_v = 10
+         ! Coarse
+         ! N = (/30,30,15/); N_w = 8; N_v = 14
+         ! Moderate
+         ! N = (/40,40,20/); N_w = 10; N_v = 16
+         ! Fine
+         ! N = (/50,50,25/); N_w = 12; N_v = 18
+
+         N_extra = N_w ! since no wall domain above lid
          N_top_half = ceiling(N(2)/2.0_cp)+5
          N_bottom_half = ceiling(N(2)/2.0_cp)
 

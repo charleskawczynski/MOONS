@@ -63,7 +63,7 @@
        private
        public :: induction
        public :: init,delete,display,print,export,import ! Essentials
-       public :: solve,export_tec,compute_E_M_budget
+       public :: solve,export_tec,compute_export_E_M_budget
 
        public :: prolongate
 
@@ -239,12 +239,12 @@
 
          call compute_J_ind(ind)
 
-         call init(ind%probe_dB0dt(1),str(DT%B%energy),'dB0dt_x',ind%SP%VS%B%SS%restart,SP,.true.)
-         call init(ind%probe_dB0dt(2),str(DT%B%energy),'dB0dt_y',ind%SP%VS%B%SS%restart,SP,.true.)
-         call init(ind%probe_dB0dt(3),str(DT%B%energy),'dB0dt_z',ind%SP%VS%B%SS%restart,SP,.true.)
-         call init(ind%probe_B0(1)   ,str(DT%B%energy),'B0_x',   ind%SP%VS%B%SS%restart,SP,.true.)
-         call init(ind%probe_B0(2)   ,str(DT%B%energy),'B0_y',   ind%SP%VS%B%SS%restart,SP,.true.)
-         call init(ind%probe_B0(3)   ,str(DT%B%energy),'B0_z',   ind%SP%VS%B%SS%restart,SP,.true.)
+         if (ind%SP%unsteady_B0) call init(ind%probe_dB0dt(1),str(DT%B%energy),'dB0dt_x',ind%SP%VS%B%SS%restart,SP,.true.)
+         if (ind%SP%unsteady_B0) call init(ind%probe_dB0dt(2),str(DT%B%energy),'dB0dt_y',ind%SP%VS%B%SS%restart,SP,.true.)
+         if (ind%SP%unsteady_B0) call init(ind%probe_dB0dt(3),str(DT%B%energy),'dB0dt_z',ind%SP%VS%B%SS%restart,SP,.true.)
+         if (ind%SP%unsteady_B0) call init(ind%probe_B0(1)   ,str(DT%B%energy),'B0_x',   ind%SP%VS%B%SS%restart,SP,.true.)
+         if (ind%SP%unsteady_B0) call init(ind%probe_B0(2)   ,str(DT%B%energy),'B0_y',   ind%SP%VS%B%SS%restart,SP,.true.)
+         if (ind%SP%unsteady_B0) call init(ind%probe_B0(3)   ,str(DT%B%energy),'B0_z',   ind%SP%VS%B%SS%restart,SP,.true.)
          call init(ind%probe_divB,str(DT%B%residual),'transient_divB',ind%SP%VS%B%SS%restart,SP,.true.)
          call init(ind%probe_divJ,str(DT%J%residual),'transient_divJ',ind%SP%VS%B%SS%restart,SP,.true.)
          call init(ind%JE,        str(DT%J%energy),'JE',            ind%SP%VS%B%SS%restart,SP,.true.)
@@ -474,12 +474,12 @@
          call compute_divBJ(ind%divB,ind%divJ,ind%B,ind%J,ind%m)
          call Ln(temp,ind%divB,2.0_cp,ind%m); call export(ind%probe_divB,ind%TMP,temp)
          call Ln(temp,ind%divJ,2.0_cp,ind%m); call export(ind%probe_divJ,ind%TMP,temp)
-         call export(ind%probe_dB0dt(1),ind%TMP,ind%dB0dt%x%BF(1)%GF%f(1,1,1))
-         call export(ind%probe_dB0dt(2),ind%TMP,ind%dB0dt%y%BF(1)%GF%f(1,1,1))
-         call export(ind%probe_dB0dt(3),ind%TMP,ind%dB0dt%z%BF(1)%GF%f(1,1,1))
-         call export(ind%probe_B0(1),ind%TMP,ind%B0%x%BF(1)%GF%f(1,1,1))
-         call export(ind%probe_B0(2),ind%TMP,ind%B0%y%BF(1)%GF%f(1,1,1))
-         call export(ind%probe_B0(3),ind%TMP,ind%B0%z%BF(1)%GF%f(1,1,1))
+         if (ind%SP%unsteady_B0) call export(ind%probe_dB0dt(1),ind%TMP,ind%dB0dt%x%BF(1)%GF%f(1,1,1))
+         if (ind%SP%unsteady_B0) call export(ind%probe_dB0dt(2),ind%TMP,ind%dB0dt%y%BF(1)%GF%f(1,1,1))
+         if (ind%SP%unsteady_B0) call export(ind%probe_dB0dt(3),ind%TMP,ind%dB0dt%z%BF(1)%GF%f(1,1,1))
+         if (ind%SP%unsteady_B0) call export(ind%probe_B0(1),ind%TMP,ind%B0%x%BF(1)%GF%f(1,1,1))
+         if (ind%SP%unsteady_B0) call export(ind%probe_B0(2),ind%TMP,ind%B0%y%BF(1)%GF%f(1,1,1))
+         if (ind%SP%unsteady_B0) call export(ind%probe_B0(3),ind%TMP,ind%B0%z%BF(1)%GF%f(1,1,1))
          call add(ind%temp_F1,ind%B,ind%B0)
          call face2cellCenter(ind%temp_CC,ind%temp_F1,ind%m)
          call compute_Total_Energy(ind%ME(1),ind%temp_CC,ind%TMP,ind%m)
@@ -617,7 +617,7 @@
          endif
        end subroutine
 
-       subroutine compute_E_M_budget(ind,U,MD_fluid,Re,Ha,DT)
+       subroutine compute_export_E_M_budget(ind,U,MD_fluid,Re,Ha,DT)
          implicit none
          type(induction),intent(inout) :: ind
          type(VF),intent(in) :: U

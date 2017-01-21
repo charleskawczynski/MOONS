@@ -66,7 +66,7 @@
        public :: momentum
        public :: init,delete,display,print,export,import ! Essentials
 
-       public :: solve,export_tec,compute_E_K_Budget
+       public :: solve,export_tec,compute_export_E_K_Budget
        public :: prolongate
 
        type momentum
@@ -484,7 +484,6 @@
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
-         ! call computeKineticEnergy(mom,mom%m,F)
          if (PE%transient_0D) call export_transient1(mom)
          if (PE%transient_2D) call export_transient2(mom,DT)
 
@@ -500,7 +499,7 @@
          endif
        end subroutine
 
-       subroutine compute_E_K_Budget(mom,B,B0,J,MD_fluid,Rem,DT)
+       subroutine compute_export_E_K_Budget(mom,B,B0,J,MD_fluid,Rem,DT)
          implicit none
          type(dir_tree),intent(in) :: DT
          type(momentum),intent(inout) :: mom

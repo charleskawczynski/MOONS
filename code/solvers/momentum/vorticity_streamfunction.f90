@@ -13,11 +13,14 @@
        use matrix_free_params_mod
        use preconditioners_mod
        use iter_solver_params_mod
+       use ops_mirror_field_mod
+       use sim_params_mod
 
        implicit none
        private
 
        public :: export_vorticity_streamfunction
+       public :: export_vorticity_streamfunction_wrapper
 
        contains
 
@@ -31,6 +34,23 @@
          call curl(omega,U,m)
          call multiply(omega,-1.0_cp)
          call solve(PCG,psi,omega,m,compute_norms)
+       end subroutine
+
+       subroutine export_vorticity_streamfunction_wrapper(U,m,DT,SP)
+         implicit none
+         type(VF),intent(in) :: U
+         type(mesh),intent(in) :: m
+         type(dir_tree),intent(in) :: DT
+         type(sim_params),intent(in) :: SP
+         type(VF) :: U_temp
+         type(mesh) :: m_temp
+         if (SP%EL%export_symmetric) then
+         call mirror_field(m_temp,U_temp,m,U,6,(/1.0_cp,1.0_cp,1.0_cp/))
+         call export_vorticity_streamfunction(U_temp,m_temp,DT)
+         call delete(U_temp)
+         call delete(m_temp)
+         else; call export_vorticity_streamfunction(U,m,DT)
+         endif
        end subroutine
 
        subroutine export_vorticity_streamfunction(U,m,DT)
