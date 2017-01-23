@@ -8,10 +8,25 @@
        implicit none
        private
        public :: mirror_field
-       interface mirror_field;  module procedure mirror_field_SF;  end interface
-       interface mirror_field;  module procedure mirror_field_VF;  end interface
+       interface mirror_field;  module procedure mirror_field_SF;    end interface
+       interface mirror_field;  module procedure mirror_field_VF;    end interface
+
+       public :: mirror_mesh
+       interface mirror_mesh;  module procedure mirror_mesh_MF;  end interface
 
        contains
+
+       subroutine mirror_mesh_MF(m_mirror,m,face)
+         implicit none
+         type(mesh),intent(inout) :: m_mirror
+         type(mesh),intent(in) :: m
+         integer,intent(in) :: face
+         integer :: d
+         call init(m_mirror,m)
+         d = dir_given_face(face)
+         if (min_face(face)) call mirror_about_hmin(m_mirror,d)
+         if (max_face(face)) call mirror_about_hmax(m_mirror,d)
+       end subroutine
 
        subroutine mirror_field_SF(m_mirror,x_mirror,m,x,face,mirror_sign)
          implicit none

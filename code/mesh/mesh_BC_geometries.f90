@@ -150,14 +150,17 @@
          beta = Re_Ha_BL(Re*buffer,Ha*buffer,hmin,hmax)
          beta_y = Re_Ha_BL(Re*buffer_y,Ha*buffer_y,hmin,hmax)
 
-         ! Very Coarse
-         N = (/28,28,14/); N_w = 6; N_v = 10
-         ! Coarse
-         ! N = (/30,30,15/); N_w = 8; N_v = 14
-         ! Moderate
-         ! N = (/40,40,20/); N_w = 10; N_v = 16
-         ! Fine
-         ! N = (/50,50,25/); N_w = 12; N_v = 18
+         ! N = (/30,30,15/); N_w = 8; N_v = 14 ! Coarse
+         N = (/40,40,20/); N_w = 10; N_v = 16 ! Moderates
+         ! N = (/50,50,25/); N_w = 12; N_v = 18 ! Fine
+
+         ! New MRS:
+         ! N = 30; N(3)=N(1)/2; N_w = 8;  N_v = 14 ! Coarse
+         ! N = 44; N(3)=N(1)/2; N_w = 12; N_v = 18 ! Moderates
+         ! N = 58; N(3)=N(1)/2; N_w = 14; N_v = 22 ! Fine
+
+         ! High Ha
+         ! N = 58; N(3)=N(1)/2; N_w = 14; N_v = 22 ! Fine
 
          N_extra = N_w ! since no wall domain above lid
          N_top_half = ceiling(N(2)/2.0_cp)+5

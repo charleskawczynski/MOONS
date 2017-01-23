@@ -204,6 +204,13 @@
          write(*,*) '     U BCs applied'
 
          call init(mom%Ustar,mom%U)
+         if (mom%SP%VS%U%SS%restart) then
+           ! call import_3D_1C(mom%m,mom%Ustar%x,str(DT%U%field),'Ustarf_x',0)
+           ! call import_3D_1C(mom%m,mom%Ustar%y,str(DT%U%field),'Ustarf_y',0)
+           ! call import_3D_1C(mom%m,mom%Ustar%z,str(DT%U%field),'Ustarf_z',0)
+         else
+           call assign(mom%Ustar,mom%U)
+         endif
          call assign(mom%Ustar,mom%U)
          write(*,*) '     Intermediate field initialized'
 
@@ -380,16 +387,16 @@
          else
            write(*,*) 'export_tec_momentum_no_ext at mom%TMP%n_step = ',mom%TMP%n_step
            call export_processed(mom%m,mom%U,str(DT%U%field),'U',1)
-           call export_processed(mom%m,mom%Ustar,str(DT%U%field),'Ustar',1)
 
            if (.not.mom%SP%EL%export_soln_only) then
              call export_processed(mom%m,mom%p,str(DT%p%field),'p',1)
              call export_raw(mom%m,mom%U,str(DT%U%field),'U',0)
              call export_raw(mom%m,mom%p,str(DT%p%field),'p',0)
+             call export_raw(mom%m,mom%Ustar,str(DT%U%field),'Ustar',1)
              ! call export_raw(mom%m,mom%PCG_U%r,str(DT%U%field),'PCG_U_residual',0)
              if (mom%SP%EL%export_symmetric) then
-              call export_processed(mom%m,mom%U,str(DT%U%field),'U',1,6,(/1.0_cp,1.0_cp,1.0_cp/))
-              call export_processed(mom%m,mom%p,str(DT%p%field),'p',1,6,1.0_cp)
+              call export_processed(mom%m,mom%U,str(DT%U%field),'U',1,mom%SP%MP%mirror_face,mom%SP%MP%mirror_sign)
+              call export_processed(mom%m,mom%p,str(DT%p%field),'p',1,mom%SP%MP%mirror_face,1.0_cp)
              endif
              call export_raw(mom%m,mom%divU,str(DT%U%field),'divU',1)
              ! call export_processed(mom%m,mom%temp_E,str(DT%U%field),'vorticity',1)

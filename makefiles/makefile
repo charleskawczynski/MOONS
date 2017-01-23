@@ -412,6 +412,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)user$(PS)var_set.f90\
 	$(SRC_DIR)$(PS)user$(PS)print_export.f90\
 	$(SRC_DIR)$(PS)user$(PS)momentum_forces.f90\
+	$(SRC_DIR)$(PS)user$(PS)mirror_props.f90\
 	$(SRC_DIR)$(PS)user$(PS)flow_control_logicals.f90\
 	$(SRC_DIR)$(PS)user$(PS)sim_params.f90\
 	$(SRC_DIR)$(PS)user$(PS)kill_switch.f90\

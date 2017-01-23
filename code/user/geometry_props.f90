@@ -14,7 +14,6 @@
          integer,dimension(6) :: apply_BC_order    ! Initialized
        end type
 
-       interface init;    module procedure init_GP;           end interface
        interface init;    module procedure init_copy_GP;      end interface
        interface delete;  module procedure delete_GP;         end interface
        interface display; module procedure display_GP;        end interface
@@ -29,19 +28,6 @@
        ! ****************************************************************
        ! ************************** ESSENTIALS **************************
        ! ****************************************************************
-
-       subroutine init_GP(GP,geometry,tw,periodic_dir,apply_BC_order)
-         implicit none
-         type(geometry_props),intent(inout) :: GP
-         integer,intent(in) :: geometry
-         real(cp),intent(in) :: tw
-         integer,dimension(3),intent(in) :: periodic_dir
-         integer,dimension(6),intent(in) :: apply_BC_order
-         GP%geometry       = geometry
-         GP%tw             = tw
-         GP%periodic_dir   = periodic_dir
-         GP%apply_BC_order = apply_BC_order
-       end subroutine
 
        subroutine init_copy_GP(GP,GP_in)
          implicit none

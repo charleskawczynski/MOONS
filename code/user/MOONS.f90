@@ -19,6 +19,8 @@
        use time_marching_params_mod
        use sim_params_mod
        use export_raw_processed_symmetry_mod
+       use export_raw_processed_mod
+       use ops_mirror_field_mod
 
        use energy_mod
        use momentum_mod
@@ -39,7 +41,7 @@
          type(momentum) :: mom
          type(induction) :: ind
          type(energy) :: nrg
-         type(mesh) :: mesh_mom,mesh_ind
+         type(mesh) :: mesh_mom,mesh_ind,m_temp
          ! type(mesh) :: mesh_ind_interior
          ! ********************** MEDIUM VARIABLES **********************
          type(mesh_domain) :: MD_fluid,MD_sigma
@@ -66,9 +68,9 @@
            call import(MD_sigma,str(DT%restart),'MD_sigma')
          else
            call mesh_generate(mesh_mom,mesh_ind,MD_sigma,SP)
-           if (SP%EL%export_meshes) call export(mesh_mom,str(DT%restart),'mesh_mom')
-           if (SP%EL%export_meshes) call export(mesh_ind,str(DT%restart),'mesh_ind')
-           if (SP%EL%export_meshes) call export(MD_sigma,str(DT%restart),'MD_sigma')
+           call export(mesh_mom,str(DT%restart),'mesh_mom')
+           call export(mesh_ind,str(DT%restart),'mesh_ind')
+           call export(MD_sigma,str(DT%restart),'MD_sigma')
          endif
          ! call init(mesh_ind_interior,MD_sigma%m_R2)
 
@@ -86,9 +88,20 @@
          endif
 
          ! ******************** EXPORT GRIDS **************************** Export mesh (to plot)
-         if (SP%EL%export_meshes) call export_mesh(mesh_mom,str(DT%meshes),'mesh_mom',1)
-         if (SP%EL%export_meshes) call export_mesh(MD_sigma%m_R2,str(DT%meshes),'mesh_MD_sigma',1)
-         if (SP%EL%export_meshes) call export_mesh(mesh_ind,str(DT%meshes),'mesh_ind',1)
+         if (SP%EL%export_meshes) then
+           call export_mesh(mesh_mom,str(DT%meshes),'mesh_mom',1)
+           call export_mesh(MD_sigma%m_R2,str(DT%meshes),'mesh_MD_sigma',1)
+           call export_mesh(mesh_ind,str(DT%meshes),'mesh_ind',1)
+         if (SP%MP%mirror) then
+           call mirror_mesh(m_temp,mesh_mom,SP%MP%mirror_face)
+           call export_mesh(m_temp,str(DT%meshes),'mesh_mom_mirror',1)
+           call mirror_mesh(m_temp,MD_sigma%m_R1,SP%MP%mirror_face)
+           call export_mesh(m_temp,str(DT%meshes),'mesh_MD_sigma_mirror',1)
+           call mirror_mesh(m_temp,mesh_ind,SP%MP%mirror_face)
+           call export_mesh(m_temp,str(DT%meshes),'mesh_ind_mirror',1)
+           call delete(m_temp)
+         endif
+         endif
 
          if (SP%FCL%stop_after_mesh_export) then
            stop 'Exported meshes. Turn off stop_after_mesh_export in sim_params.f90 to run sim.'
@@ -130,7 +143,7 @@
 
            write(*,*) ' COMPUTING VORTICITY-STREAMFUNCTION:'
            if (SP%VS%U%SS%initialize.and.SP%EL%export_vort_SF) then
-            call export_vorticity_streamfunction(mom%U,mom%m,DT)
+            call export_vorticity_streamfunction_wrapper(mom%U,mom%m,DT,SP)
            endif
            write(*,*) ' COMPUTING ENERGY BUDGETS:'
            if (SP%VS%U%SS%initialize.and.SP%VS%B%SS%initialize) then

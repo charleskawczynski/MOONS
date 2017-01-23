@@ -213,6 +213,13 @@
          call apply_BCs(ind%B);                           write(*,*) '     BCs applied'
 
          call init(ind%Bstar,ind%B)
+         if (ind%SP%VS%B%SS%restart) then
+           ! call import_3D_1C(ind%m,ind%Bstar%x,str(DT%B%field),'Bstarf_x',0)
+           ! call import_3D_1C(ind%m,ind%Bstar%y,str(DT%B%field),'Bstarf_y',0)
+           ! call import_3D_1C(ind%m,ind%Bstar%z,str(DT%B%field),'Bstarf_z',0)
+         else; call assign(ind%Bstar,ind%B)
+         endif
+
          call assign(ind%Bstar,ind%B)
          write(*,*) '     Intermediate B-field initialized'
 
@@ -442,15 +449,15 @@
            if (ind%SP%VS%B%SS%solve) then
              write(*,*) 'export_tec_induction at ind%TMP%n_step = ',ind%TMP%n_step
              call export_processed(ind%m,ind%B,str(DT%B%field),'B',1)
-             call export_raw(ind%m,ind%phi,str(DT%phi%field),'phi',1)
+             call export_raw(ind%m,ind%phi,str(DT%phi%field),'phi',0)
+             call export_raw(ind%m,ind%Bstar,str(DT%B%field),'Bstar',0)
              call export_processed(ind%m,ind%phi ,str(DT%phi%field),'phi',1)
              if (.not.ind%SP%EL%export_soln_only) then
              if (ind%SP%EL%export_symmetric) then
-               call export_processed(ind%m,ind%B,str(DT%B%field),'B',1,6,(/-1.0_cp,-1.0_cp,1.0_cp/))
-               call export_processed(ind%m,ind%J,str(DT%J%field),'J',1,6,(/-1.0_cp,-1.0_cp,1.0_cp/))
+             call export_processed(ind%m,ind%B,str(DT%B%field),'B',1,ind%SP%MP%mirror_face,ind%SP%MP%mirror_sign_a)
+             call export_processed(ind%m,ind%J,str(DT%J%field),'J',1,ind%SP%MP%mirror_face,ind%SP%MP%mirror_sign_a)
              endif
              call export_raw(ind%m,ind%B ,str(DT%B%field),'B',0)
-             call export_raw(ind%m,ind%Bstar,str(DT%B%field),'Bstar',0)
              call export_raw(ind%m,ind%divB ,str(DT%B%field),'divB',0)
              call export_raw(ind%m,ind%J ,str(DT%J%field),'J',0)
              call export_processed(ind%m,ind%J ,str(DT%J%field),'J',1)

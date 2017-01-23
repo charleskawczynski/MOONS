@@ -16,6 +16,7 @@
      use print_export_mod
      use momentum_forces_mod
      use geometry_props_mod
+     use mirror_props_mod
      implicit none
 
      private
@@ -44,6 +45,7 @@
        type(print_export) :: PE
        type(momentum_forces) :: MF
        type(geometry_props) :: GP
+       type(mirror_props) :: MP
 
        logical :: restart_all
 
@@ -66,11 +68,11 @@
        real(cp) :: time,dtime
        SP%restart_all                = F ! restart sim (requires no code changes)
 
-       SP%FCL%post_process_only      = F ! Skip solver loop and just post-process results
-       SP%FCL%post_process           = F ! not used anywhere
+       SP%FCL%post_process_only      = T ! Skip solver loop and just post-process results
+       SP%FCL%post_process           = T ! not used anywhere
        SP%FCL%stop_after_mesh_export = F !
        SP%FCL%stop_before_solve      = F ! Just export ICs, do not run simulation
-       SP%FCL%skip_solver_loop       = F ! not used anywhere
+       SP%FCL%skip_solver_loop       = T ! not used anywhere
 
        SP%EL%export_analytic         = F ! Export analytic solutions (MOONS.f90)
        SP%EL%export_meshes           = T ! Export all meshes before starting simulation
@@ -90,12 +92,12 @@
        SP%matrix_based               = F ! Solve induction equation
        SP%unsteady_B0                = F ! Add unsteady applied field to induction eq.
 
-       time                          = 200.0_cp
+       time                          = 100.0_cp
        dtime                         = 1.0_cp*pow(-2)
 
        SP%DP%Re                      = 4.0_cp*pow(2)
        SP%DP%Ha                      = 2.0_cp*pow(1)
-       SP%DP%Rem                     = 5.0_cp*pow(0)
+       SP%DP%Rem                     = 1.0_cp*pow(2)
        SP%DP%cw                      = 0.0_cp
        SP%DP%sig_local_over_sig_f    = pow(-3)
        SP%DP%Gr                      = 0.0_cp
@@ -106,10 +108,12 @@
        SP%GP%tw                      = 0.05_cp
        SP%GP%geometry                = 14
        SP%GP%periodic_dir            = (/0,0,0/)
-
        SP%GP%apply_BC_order          = (/3,4,5,6,1,2/) ! good for LDC
        ! SP%GP%apply_BC_order       = (/5,6,3,4,1,2/) ! good for periodic in z?
        ! SP%GP%apply_BC_order       = (/3,4,1,2,5,6/) ! good for periodic in z?
+
+       ! call init(MP,mirror,mirror_face)
+       call init(SP%MP,T,6)
 
        ! init(DMR,dynamic_refinement,n_max_refinements,n_history,SS_tol,SS_tol_final,dt_reduction_factor)
        call init(SP%DMR,F,2,2,pow(-1),pow(-6),1.2_cp)
@@ -130,11 +134,11 @@
 
        ! call init(SS,initialize,solve,restart,solve_method)
        call init(SP%VS%T%SS,  F,F,F,0)
-       call init(SP%VS%U%SS,  T,T,F,3)
-       call init(SP%VS%P%SS,  T,T,F,1)
-       call init(SP%VS%B%SS,  T,T,F,3)
+       call init(SP%VS%U%SS,  T,T,T,3)
+       call init(SP%VS%P%SS,  T,T,T,1)
+       call init(SP%VS%B%SS,  T,T,T,3)
        call init(SP%VS%B0%SS, T,T,F,0)
-       call init(SP%VS%phi%SS,T,T,F,0)
+       call init(SP%VS%phi%SS,T,T,T,0)
 
        ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,export_convergence,dir,name)
        call init(SP%VS%T%ISP,  5  ,pow(-6),pow(-13),100,F,str(DT%ISP),'ISP_T')
@@ -166,7 +170,7 @@
          call couple_time_step(SP%VS%B0%TMP ,SP%coupled)
          call couple_time_step(SP%VS%phi%TMP,SP%coupled)
        endif
-       call export_import_SS(SP%VS)
+       ! call export_import_SS(SP%VS)
        if (.not.SP%finite_Rem) SP%DP%Rem = 1.0_cp
        if (SP%coupled%n_step_stop.lt.1) stop 'Error: coupled%n_step_stop<1 in sim_params.f90'
       end subroutine
@@ -183,6 +187,7 @@
        SP%unsteady_B0            = SP_in%unsteady_B0
        call init(SP%FCL,    SP_in%FCL)
        call init(SP%GP,     SP_in%GP)
+       call init(SP%MP,     SP_in%MP)
        call init(SP%EL,     SP_in%EL)
        call init(SP%VS,     SP_in%VS)
        call init(SP%MF,     SP_in%MF)
@@ -197,6 +202,7 @@
        implicit none
        type(sim_params),intent(inout) :: SP
        call delete(SP%GP)
+       call delete(SP%MP)
        call delete(SP%EL)
        call delete(SP%VS)
        call delete(SP%MF)
@@ -219,6 +225,7 @@
        write(un,*) 'unsteady_B0            = ',SP%unsteady_B0
        call display(SP%FCL,un)
        call display(SP%GP,un)
+       call display(SP%MP,un)
        call display(SP%EL,un)
        call display(SP%MF,un)
        call display(SP%VS,un)
@@ -257,6 +264,7 @@
        write(un,*) SP%unsteady_B0
        call export(SP%FCL,un)
        call export(SP%GP,un)
+       call export(SP%MP,un)
        call export(SP%EL,un)
        call export(SP%MF,un)
        call export(SP%VS,un)
@@ -279,6 +287,7 @@
        read(un,*) SP%unsteady_B0
        call import(SP%FCL,un)
        call import(SP%GP,un)
+       call import(SP%MP,un)
        call import(SP%EL,un)
        call import(SP%MF,un)
        call import(SP%VS,un)
