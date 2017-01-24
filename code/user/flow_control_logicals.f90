@@ -26,31 +26,31 @@
        implicit none
        type(flow_control_logicals),intent(inout) :: FCL
        type(flow_control_logicals),intent(in) :: FCL_in
-       FCL%post_process_only        = FCL_in%post_process_only
-       FCL%post_process          = FCL_in%post_process
-       FCL%skip_solver_loop         = FCL_in%skip_solver_loop
-       FCL%stop_before_solve       = FCL_in%stop_before_solve
-       FCL%stop_after_mesh_export     = FCL_in%stop_after_mesh_export
+       FCL%post_process_only      = FCL_in%post_process_only
+       FCL%post_process           = FCL_in%post_process
+       FCL%skip_solver_loop       = FCL_in%skip_solver_loop
+       FCL%stop_before_solve      = FCL_in%stop_before_solve
+       FCL%stop_after_mesh_export = FCL_in%stop_after_mesh_export
      end subroutine
 
      subroutine delete_FCL(FCL)
        implicit none
        type(flow_control_logicals),intent(inout) :: FCL
-       FCL%post_process_only        = .false.
-       FCL%post_process          = .false.
-       FCL%skip_solver_loop         = .false.
-       FCL%stop_before_solve       = .false.
-       FCL%stop_after_mesh_export     = .false.
+       FCL%post_process_only      = .false.
+       FCL%post_process           = .false.
+       FCL%skip_solver_loop       = .false.
+       FCL%stop_before_solve      = .false.
+       FCL%stop_after_mesh_export = .false.
      end subroutine
 
      subroutine display_FCL(FCL,un)
        implicit none
        type(flow_control_logicals),intent(in) :: FCL
        integer,intent(in) :: un
-       write(un,*) 'post_process_only    = ',FCL%post_process_only
-       write(un,*) 'post_process      = ',FCL%post_process
-       write(un,*) 'skip_solver_loop     = ',FCL%skip_solver_loop
-       write(un,*) 'stop_before_solve   = ',FCL%stop_before_solve
+       write(un,*) 'post_process_only      = ',FCL%post_process_only
+       write(un,*) 'post_process           = ',FCL%post_process
+       write(un,*) 'skip_solver_loop       = ',FCL%skip_solver_loop
+       write(un,*) 'stop_before_solve      = ',FCL%stop_before_solve
        write(un,*) 'stop_after_mesh_export = ',FCL%stop_after_mesh_export
      end subroutine
 

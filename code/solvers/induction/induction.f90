@@ -202,7 +202,7 @@
 
          call init_B0_field(ind%B0,m,ind%SP,str(DT%B%field))
          call init_B_field(ind%B,m,ind%SP,str(DT%B%field))
-         call init_phi_field(ind%phi,m,ind%SP,str(DT%phi%field))
+         ! call init_phi_field(ind%phi,m,ind%SP,str(DT%phi%field))
 
          if (ind%SP%unsteady_B0) call assign_B0_vs_t(ind%B0,ind%TMP)
 

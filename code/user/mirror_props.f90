@@ -43,6 +43,7 @@
          dir = dir_given_face(mirror_face)
          MP%mirror_sign_a = -MP%mirror_sign
          MP%mirror_sign_a(dir) = 1.0_cp
+         MP%mirror_sign(dir) = -1.0_cp
        end subroutine
 
        subroutine init_copy_MP(MP,GP_in)
