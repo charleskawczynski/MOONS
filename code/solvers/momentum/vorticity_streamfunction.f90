@@ -45,7 +45,7 @@
          type(VF) :: U_temp
          type(mesh) :: m_temp
          if (SP%EL%export_symmetric) then
-         call mirror_field(m_temp,U_temp,m,U,SP%MP%mirror_face,SP%MP%mirror_sign)
+         call mirror_field(m_temp,U_temp,m,U,SP%MP)
          call export_vorticity_streamfunction(U_temp,m_temp,DT)
          call delete(U_temp)
          call delete(m_temp)
@@ -63,7 +63,6 @@
          type(iter_solver_params) :: ISP
          type(matrix_free_params) :: MFP
          call init(ISP,10000,pow(-15),pow(-15),1,.true.,str(DT%ISP),'vorticity_streamfunction')
-         call export_raw(m,U  ,str(DT%U%field),'U_for_stream_function',1)
 
          call init_Edge(omega,m)
          call init_Edge(psi,m)
@@ -83,7 +82,6 @@
 
          call export_processed(m,psi  ,str(DT%U%field),'streamfunction',1)
          call export_processed(m,omega,str(DT%U%field),'vorticity'     ,1)
-         call export_raw(m,PCG%r,str(DT%U%field),'stream_function_residual',1)
 
          call delete(omega)
          call delete(temp_dummy)

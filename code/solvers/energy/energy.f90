@@ -66,21 +66,13 @@
 
          type(mesh) :: m
          type(mesh_domain) :: MD
-         type(matrix_free_params) :: MFP
-
-         type(time_marching_params) :: TMP
-         type(iter_solver_params) :: ISP_T
 
          type(PCG_Solver_SF) :: PCG_T
          type(sim_params) :: SP
 
-         integer :: nstep             ! Nth time step
-         integer :: N_nrg             ! Maximum number iterations in solving T (if iterative)
-         real(cp) :: dTime            ! Time step
-         real(cp) :: time             ! Time
-         real(cp) :: tol_nrg             ! Time
+         type(time_marching_params) :: TMP
+         type(iter_solver_params) :: ISP_T
 
-         real(cp) :: Re,Pr,Ec,Ha  ! Reynolds, Prandtl, Eckert, Hartmann
          logical :: suppress_warning
        end type
 
@@ -95,7 +87,6 @@
        interface export_transient; module procedure export_transient_nrg; end interface
        interface export_tec;       module procedure export_tec_energy;    end interface
 
-       interface set_MFP;          module procedure set_MFP_energy;       end interface
        interface prolongate;       module procedure prolongate_energy;    end interface
 
        contains
@@ -116,10 +107,6 @@
          write(*,*) 'Initializing energy:'
          call init(nrg%TMP,SP%VS%T%TMP)
          call init(nrg%ISP_T,SP%VS%T%ISP)
-         nrg%Re = SP%DP%Re
-         nrg%Pr = SP%DP%Pr
-         nrg%Ec = SP%DP%Ec
-         nrg%Ha = SP%DP%Ha
          call init(nrg%SP,SP)
 
          call init(nrg%m,m)
@@ -165,14 +152,13 @@
          call delete(k_cc)
          write(*,*) '     Materials initialized'
 
-         call init(nrg%probe_divQ,str(DT%T%residual),'probe_divQ',nrg%SP%VS%T%SS%restart,SP,.true.)
+         call init(nrg%Probe_divQ,str(DT%T%residual),'probe_divQ',nrg%SP%VS%T%SS%restart,SP,.true.)
 
-         call set_MFP(nrg)
          call init(nrg%PCG_T,nrg_diffusion,nrg_diffusion_explicit,prec_lap_SF,nrg%m,&
-         nrg%ISP_T,nrg%MFP,nrg%T,nrg%temp_F,str(DT%T%residual),'T',.false.,.false.)
+         nrg%ISP_T,nrg%SP%VS%T%MFP,nrg%T,nrg%temp_F,str(DT%T%residual),'T',.false.,.false.)
 
          temp_unit = new_and_open(str(DT%params),'info_nrg')
-         call print(nrg)
+         call display(nrg,temp_unit)
          call close_and_message(temp_unit,str(DT%params),'info_nrg')
 
          write(*,*) '     probes initialized'
@@ -197,10 +183,11 @@
 
          call delete(nrg%divQ)
 
-         call delete(nrg%probe_divQ)
+         call delete(nrg%Probe_divQ)
          call delete(nrg%m)
          call delete(nrg%MD)
          call delete(nrg%PCG_T)
+         call delete(nrg%SP)
 
          call delete(nrg%TMP)
          call delete(nrg%ISP_T)
@@ -215,8 +202,8 @@
          write(un,*) '**************************************************************'
          write(un,*) '*************************** ENERGY ***************************'
          write(un,*) '**************************************************************'
-         write(un,*) 'Re,Pr = ',nrg%Re,nrg%Pr
-         write(un,*) 'Ec,Ha = ',nrg%Ec,nrg%Ha
+         write(un,*) 'Re,Pr = ',nrg%SP%DP%Re,nrg%SP%DP%Pr
+         write(un,*) 'Ec,Ha = ',nrg%SP%DP%Ec,nrg%SP%DP%Ha
          write(un,*) 't,dt = ',nrg%TMP%t,nrg%TMP%dt
          write(un,*) 'solveTMethod,N_nrg = ',nrg%SP%VS%T%SS%solve_method,nrg%ISP_T%iter_max
          write(un,*) 'tol_nrg = ',nrg%ISP_T%tol_rel
@@ -237,17 +224,8 @@
          implicit none
          type(energy),intent(in) :: nrg
          type(dir_tree),intent(in) :: DT
-         integer :: un
          call export(nrg%TMP)
          call export(nrg%ISP_T)
-
-         un = new_and_open(str(DT%restart),'nrg_restart')
-         write(un,*) nrg%Re,nrg%Pr,nrg%Ha,nrg%Ec
-         call close_and_message(un,str(DT%restart),'nrg_restart')
-
-         un = new_and_open(str(DT%restart),'nrg_MFP')
-         call export(nrg%MFP,un)
-         call close_and_message(un,str(DT%restart),'nrg_MFP')
 
          call export(nrg%T   ,str(DT%restart),'T_nrg')
          call export(nrg%U_F ,str(DT%restart),'U_nrg')
@@ -258,17 +236,8 @@
          implicit none
          type(energy),intent(inout) :: nrg
          type(dir_tree),intent(in) :: DT
-         integer :: un
          call import(nrg%TMP)
          call import(nrg%ISP_T)
-
-         un = open_to_read(str(DT%restart),'nrg_restart')
-         read(un,*) nrg%Re,nrg%Pr,nrg%Ha,nrg%Ec
-         call close_and_message(un,str(DT%restart),'nrg_restart')
-
-         un = open_to_read(str(DT%restart),'nrg_MFP')
-         call import(nrg%MFP,un)
-         call close_and_message(un,str(DT%restart),'nrg_MFP')
 
          call import(nrg%T   ,str(DT%restart),'T_nrg')
          call import(nrg%U_F ,str(DT%restart),'U_nrg')
@@ -297,13 +266,7 @@
          type(energy),intent(inout) :: nrg
          real(cp) :: temp
          call assign_ghost_XPeriodic(nrg%divQ,0.0_cp)
-         call Ln(temp,nrg%divQ,2.0_cp,nrg%m); call export(nrg%probe_divQ,nrg%TMP,temp)
-       end subroutine
-
-       subroutine set_MFP_energy(nrg)
-         implicit none
-         type(energy),intent(inout) :: nrg
-         nrg%MFP%coeff = -0.5_cp*nrg%TMP%dt/(nrg%Re*nrg%Pr)
+         call Ln(temp,nrg%divQ,2.0_cp,nrg%m); call export(nrg%Probe_divQ,nrg%TMP,temp)
        end subroutine
 
        subroutine solve_energy(nrg,U,PE,EN,DT)
@@ -320,27 +283,27 @@
 
          select case (nrg%SP%VS%T%SS%solve_method)
          case (1)
-         call explicitEuler(nrg%T,nrg%U_F,nrg%TMP%dt,nrg%Re,&
-         nrg%Pr,nrg%m,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
+         call explicitEuler(nrg%T,nrg%U_F,nrg%TMP%dt,nrg%SP%DP%Re,&
+         nrg%SP%DP%Pr,nrg%m,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
 
          case (2) ! O2 time marching
-         call explicitEuler(nrg%T,nrg%U_F,nrg%TMP%dt,nrg%Re,&
-         nrg%Pr,nrg%m,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
+         call explicitEuler(nrg%T,nrg%U_F,nrg%TMP%dt,nrg%SP%DP%Re,&
+         nrg%SP%DP%Pr,nrg%m,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
 
          case (3) ! Diffusion implicit
-         call diffusion_implicit(nrg%PCG_T,nrg%T,nrg%U_F,nrg%TMP%dt,nrg%Re,&
-         nrg%Pr,nrg%m,PE%transient_0D,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
+         call diffusion_implicit(nrg%PCG_T,nrg%T,nrg%U_F,nrg%TMP%dt,nrg%SP%DP%Re,&
+         nrg%SP%DP%Pr,nrg%m,PE%transient_0D,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
 
          case (4)
-         if (nrg%TMP%n_step.le.1) call volumetric_heating_equation(nrg%Q_source,nrg%m,nrg%Re,nrg%Pr)
+         if (nrg%TMP%n_step.le.1) call volumetric_heating_equation(nrg%Q_source,nrg%m,nrg%SP%DP%Re,nrg%SP%DP%Pr)
 
-         call explicitEuler_with_source(nrg%T,nrg%U_F,nrg%TMP%dt,nrg%Re,&
-         nrg%Pr,nrg%m,nrg%Q_source,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
+         call explicitEuler_with_source(nrg%T,nrg%U_F,nrg%TMP%dt,nrg%SP%DP%Re,&
+         nrg%SP%DP%Pr,nrg%m,nrg%Q_source,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
 
          case (5)
-         if (nrg%TMP%n_step.le.1) call volumetric_heating_equation(nrg%Q_source,nrg%m,nrg%Re,nrg%Pr)
-         call CN_with_source(nrg%PCG_T,nrg%T,nrg%U_F,nrg%TMP%dt,nrg%Re,&
-         nrg%Pr,nrg%m,nrg%Q_source,PE%transient_0D,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
+         if (nrg%TMP%n_step.le.1) call volumetric_heating_equation(nrg%Q_source,nrg%m,nrg%SP%DP%Re,nrg%SP%DP%Pr)
+         call CN_with_source(nrg%PCG_T,nrg%T,nrg%U_F,nrg%TMP%dt,nrg%SP%DP%Re,&
+         nrg%SP%DP%Pr,nrg%m,nrg%Q_source,PE%transient_0D,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
 
          case default; stop 'Erorr: bad solveTMethod value in solve_energy in energy.f90'
          end select
@@ -395,8 +358,8 @@
              call prolongate(nrg%divQ,nrg%m,dir(i))
              call prolongate(nrg%Q_source,nrg%m,dir(i))
 
-             call set_MFP(nrg)
-             call prolongate(nrg%PCG_T,nrg%m,nrg%k,nrg%MFP,dir(i))
+             call prolongate(nrg%SP%VS%T%MFP,nrg%SP%DMR%dt_reduction_factor)
+             call prolongate(nrg%PCG_T,nrg%m,nrg%k,nrg%SP%VS%T%MFP,dir(i))
            endif
          enddo
 

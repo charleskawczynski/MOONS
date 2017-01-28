@@ -150,8 +150,8 @@
        end subroutine
 
        subroutine Viscous_Dissipation(e,U_CC,m,scale,TF_CC1,TF_CC2)
-         ! Computes: e = scale ∇u • ∇u = ∂_i u_j ∂_j u_i = ∂_i u_x ∂_x u_i + 
-         !                                                   ∂_i u_y ∂_y u_i + 
+         ! Computes: e = scale ∇u • ∇u = ∂_i u_j ∂_j u_i = ∂_i u_x ∂_x u_i +
+         !                                                   ∂_i u_y ∂_y u_i +
          !                                                   ∂_i u_z ∂_z u_i
          implicit none
          type(SF),intent(inout) :: e

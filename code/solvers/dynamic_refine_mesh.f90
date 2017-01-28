@@ -26,7 +26,7 @@
 
        contains
 
-       subroutine dynamic_refine_mesh(nrg,mom,ind,DT,SP,coupled,sc,F,PE,RM,KS,&
+       subroutine dynamic_refine_mesh(nrg,mom,ind,DT,SP,coupled,sc,F,Fnm1,PE,RM,KS,&
          refine_mesh_now_all)
          implicit none
          type(energy),intent(inout) :: nrg
@@ -36,7 +36,7 @@
          type(sim_params),intent(in) :: SP
          type(time_marching_params),intent(inout) :: coupled
          type(stop_clock),intent(inout) :: sc
-         type(VF),intent(inout) :: F
+         type(VF),intent(inout) :: F,Fnm1
          type(print_export),intent(inout) :: PE
          type(refine_mesh),intent(inout) :: RM
          type(kill_switch),intent(inout) :: KS
@@ -80,7 +80,7 @@
            endif
            if (SP%VS%U%SS%initialize) then
              call prolongate(mom%TMP,SP%DMR%dt_reduction_factor)
-             call prolongate(mom,F,DT,RM,refine_mesh_now_all)
+             call prolongate(mom,F,Fnm1,DT,RM,refine_mesh_now_all)
            endif
            if (SP%VS%B%SS%initialize) then
              call prolongate(ind%TMP,SP%DMR%dt_reduction_factor)

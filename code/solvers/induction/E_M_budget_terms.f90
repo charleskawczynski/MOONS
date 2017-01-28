@@ -18,7 +18,7 @@
        implicit none
 
        private
-       public :: unsteady,  export_unsteady
+       public :: unsteady,  export_Unsteady
        public :: Joule_Heat,export_Joule_Heat
        public :: Poynting,  export_Poynting
 

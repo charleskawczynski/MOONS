@@ -18,6 +18,7 @@
        public :: init,delete,display,print,export,import ! Essentials
 
        public :: init_FEC
+       public :: init_vol
        public :: init_apply_BC_order
 
        public :: restrict
@@ -72,6 +73,8 @@
 
        interface init_Laplacian_SF;  module procedure init_Laplacian_SF_SB;     end interface
        interface init_Laplacian_SF;  module procedure init_Laplacian_SF_SB_VP;  end interface
+
+       interface init_vol;           module procedure init_vol_block;           end interface
 
        contains
 

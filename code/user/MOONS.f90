@@ -13,6 +13,7 @@
        use path_mod
        use dir_tree_mod
        use export_analytic_mod
+       use mirror_props_mod
        use vorticity_streamfunction_mod
 
        use iter_solver_params_mod
@@ -93,11 +94,11 @@
            call export_mesh(MD_sigma%m_R2,str(DT%meshes),'mesh_MD_sigma',1)
            call export_mesh(mesh_ind,str(DT%meshes),'mesh_ind',1)
          if (SP%MP%mirror) then
-           call mirror_mesh(m_temp,mesh_mom,SP%MP%mirror_face)
+           call mirror_mesh(m_temp,mesh_mom,SP%MP)
            call export_mesh(m_temp,str(DT%meshes),'mesh_mom_mirror',1)
-           call mirror_mesh(m_temp,MD_sigma%m_R1,SP%MP%mirror_face)
+           call mirror_mesh(m_temp,MD_sigma%m_R1,SP%MP)
            call export_mesh(m_temp,str(DT%meshes),'mesh_MD_sigma_mirror',1)
-           call mirror_mesh(m_temp,mesh_ind,SP%MP%mirror_face)
+           call mirror_mesh(m_temp,mesh_ind,SP%MP)
            call export_mesh(m_temp,str(DT%meshes),'mesh_ind_mirror',1)
            call delete(m_temp)
          endif
@@ -143,15 +144,19 @@
 
            write(*,*) ' COMPUTING VORTICITY-STREAMFUNCTION:'
            if (SP%VS%U%SS%initialize.and.SP%EL%export_vort_SF) then
-            call export_vorticity_streamfunction_wrapper(mom%U,mom%m,DT,SP)
+           call export_vorticity_streamfunction_wrapper(mom%U,mom%m,DT,SP)
+
+           call export_processed(mom%m,mom%U,str(DT%U%field),'U',1,mom%SP%MP)
+           call export_processed(ind%m,ind%B,str(DT%B%field),'B',1,anti_mirror(ind%SP%MP))
+           call export_processed(ind%m,ind%J,str(DT%J%field),'J',1,ind%SP%MP)
            endif
            write(*,*) ' COMPUTING ENERGY BUDGETS:'
            if (SP%VS%U%SS%initialize.and.SP%VS%B%SS%initialize) then
              write(*,*) '       KINETIC ENERGY BUDGET - STARTED'
-             call compute_export_E_K_Budget(mom,ind%B,ind%B0,ind%J,ind%MD_fluid,ind%Rem,DT)
+             call compute_export_E_K_Budget(mom,ind%B,ind%B0,ind%J,ind%MD_fluid,DT)
              write(*,*) '       KINETIC ENERGY BUDGET - COMPLETE'
              write(*,*) '       MAGNETIC ENERGY BUDGET - STARTED'
-             call compute_export_E_M_budget(ind,mom%U,ind%MD_fluid,mom%Re,mom%Ha,DT)
+             call compute_export_E_M_budget(ind,mom%U,DT)
              write(*,*) '       MAGNETIC ENERGY BUDGET - COMPLETE'
            endif
            if (SP%VS%U%SS%initialize.and.SP%EL%export_analytic) then

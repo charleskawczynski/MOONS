@@ -8,6 +8,8 @@
        public :: mirror_props
        public :: init,delete,display,print,export,import ! essentials
 
+       public :: anti_mirror
+
        type mirror_props
          logical :: mirror = .false.
          integer :: mirror_face = 0
@@ -24,6 +26,8 @@
        interface import;         module procedure import_MP;         end interface
        interface export;         module procedure export_MP_wrapper; end interface
        interface import;         module procedure import_MP_wrapper; end interface
+
+       interface anti_mirror;    module procedure anti_mirror_MP;    end interface
 
        contains
 
@@ -124,5 +128,16 @@
        ! ****************************************************************
        ! **************************** OTHER *****************************
        ! ****************************************************************
+
+       function anti_mirror_MP(MP_in) result(MP)
+         implicit none
+         type(mirror_props),intent(in) :: MP_in
+         real(cp),dimension(3) :: temp
+         type(mirror_props) :: MP
+         call init(MP,MP_in)
+         temp = MP%mirror_sign
+         MP%mirror_sign = MP%mirror_sign_a
+         MP%mirror_sign_a = temp
+       end function
 
        end module

@@ -151,7 +151,7 @@
          beta_y = Re_Ha_BL(Re*buffer_y,Ha*buffer_y,hmin,hmax)
 
          ! N = (/30,30,15/); N_w = 8; N_v = 14 ! Coarse
-         N = (/40,40,20/); N_w = 10; N_v = 16 ! Moderates
+         ! N = (/40,40,20/); N_w = 10; N_v = 16 ! Moderates
          ! N = (/50,50,25/); N_w = 12; N_v = 18 ! Fine
 
          ! New MRS:
@@ -161,6 +161,9 @@
 
          ! High Ha
          ! N = 58; N(3)=N(1)/2; N_w = 14; N_v = 22 ! Fine
+
+         ! Ha=1000
+         N = 70; N(3)=N(1)/2; N_w = 18; N_v = 24 ! Fine
 
          N_extra = N_w ! since no wall domain above lid
          N_top_half = ceiling(N(2)/2.0_cp)+5

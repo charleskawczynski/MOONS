@@ -18,26 +18,28 @@
 
        contains
 
-       subroutine compute_TKE(K_energy,U_CC,m)
+       subroutine compute_TKE(K_energy,U_CC,m,scale)
          implicit none
          real(cp),intent(inout) :: K_energy
          type(VF),intent(inout) :: U_CC
          type(mesh),intent(in) :: m
+         real(cp),intent(in) :: scale
          call assign_ghost_XPeriodic(U_CC,0.0_cp) ! norms now includes ghost points
          call Ln(K_energy,U_CC,2.0_cp,m)
-         K_energy = 0.5_cp*K_energy ! KE = 1/2 int(u^2) dV
+         K_energy = scale*0.5_cp*K_energy ! KE = 1/2 int(u^2) dV
        end subroutine
 
-       subroutine compute_TKE_2C(K_energy,A,B,m,temp)
+       subroutine compute_TKE_2C(K_energy,A,B,m,scale,temp)
          implicit none
          real(cp),intent(inout) :: K_energy
          type(SF),intent(inout) :: temp
          type(SF),intent(in) :: A,B
          type(mesh),intent(in) :: m
+         real(cp),intent(in) :: scale
          call add(temp,A,B)
          call assign_ghost_XPeriodic(temp,0.0_cp) ! norms now includes ghost points
          call Ln(K_energy,temp,2.0_cp,m)
-         K_energy = 0.5_cp*K_energy ! KE = 1/2 int(u^2) dV
+         K_energy = scale*0.5_cp*K_energy ! KE = 1/2 int(u^2) dV
        end subroutine
 
        subroutine compute_CoFoRe_grid(Co_grid,Fo_grid,Re_grid,U_CC,m,dt,Re)

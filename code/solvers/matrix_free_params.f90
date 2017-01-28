@@ -6,12 +6,16 @@
       public :: matrix_free_params
       public :: init,delete,display,print,export,import ! Essentials
 
-      interface init;     module procedure init_MFP;      end interface
-      interface delete;   module procedure delete_MFP;    end interface
-      interface display;  module procedure display_MFP;   end interface
-      interface print;    module procedure print_MFP;     end interface
-      interface export;   module procedure export_MFP;    end interface
-      interface import;   module procedure import_MFP;    end interface
+      public :: prolongate
+
+      interface init;       module procedure init_MFP;       end interface
+      interface delete;     module procedure delete_MFP;     end interface
+      interface display;    module procedure display_MFP;    end interface
+      interface print;      module procedure print_MFP;      end interface
+      interface export;     module procedure export_MFP;     end interface
+      interface import;     module procedure import_MFP;     end interface
+
+      interface prolongate; module procedure prolongate_MFP; end interface
 
       type matrix_free_params
         logical :: suppress_warning = .true.
@@ -63,6 +67,13 @@
         integer,intent(in) :: un
         read(un,*) ; read(un,*) m%suppress_warning
         read(un,*) ; read(un,*) m%coeff
+      end subroutine
+
+      subroutine prolongate_MFP(m,coeff_multiplication_factor)
+        implicit none
+        type(matrix_free_params),intent(inout) :: m
+        real(cp),intent(in) :: coeff_multiplication_factor
+        m%coeff = coeff_multiplication_factor*m%coeff
       end subroutine
 
       end module

@@ -68,14 +68,14 @@
        real(cp) :: time,dtime
        SP%restart_all                = F ! restart sim (requires no code changes)
 
-       SP%FCL%post_process_only      = T ! Skip solver loop and just post-process results
+       SP%FCL%post_process_only      = F ! Skip solver loop and just post-process results
        SP%FCL%post_process           = T ! not used anywhere
        SP%FCL%stop_after_mesh_export = F !
        SP%FCL%stop_before_solve      = F ! Just export ICs, do not run simulation
-       SP%FCL%skip_solver_loop       = T ! not used anywhere
+       SP%FCL%skip_solver_loop       = F ! not used anywhere
 
        SP%EL%export_analytic         = F ! Export analytic solutions (MOONS.f90)
-       SP%EL%export_meshes           = T ! Export all meshes before starting simulation
+       SP%EL%export_meshes           = F ! Export all meshes before starting simulation
        SP%EL%export_vort_SF          = T ! Export vorticity-stream-function after simulation
        SP%EL%export_mat_props        = F ! Export material properties before starting simulation
        SP%EL%export_ICs              = F ! Export Post-Processed ICs before starting simulation
@@ -92,28 +92,8 @@
        SP%matrix_based               = F ! Solve induction equation
        SP%unsteady_B0                = F ! Add unsteady applied field to induction eq.
 
-       time                          = 100.0_cp
-       dtime                         = 1.0_cp*pow(-2)
-
-       SP%DP%Re                      = 4.0_cp*pow(2)
-       SP%DP%Ha                      = 2.0_cp*pow(1)
-       SP%DP%Rem                     = 1.0_cp*pow(2)
-       SP%DP%cw                      = 0.0_cp
-       SP%DP%sig_local_over_sig_f    = pow(-3)
-       SP%DP%Gr                      = 0.0_cp
-       SP%DP%Pr                      = 0.01_cp
-       SP%DP%Fr                      = 1.0_cp
-       SP%DP%Ec                      = 0.0_cp
-
-       SP%GP%tw                      = 0.05_cp
-       SP%GP%geometry                = 14
-       SP%GP%periodic_dir            = (/0,0,0/)
-       SP%GP%apply_BC_order          = (/3,4,5,6,1,2/) ! good for LDC
-       ! SP%GP%apply_BC_order       = (/5,6,3,4,1,2/) ! good for periodic in z?
-       ! SP%GP%apply_BC_order       = (/3,4,1,2,5,6/) ! good for periodic in z?
-
        ! call init(MP,mirror,mirror_face)
-       call init(SP%MP,T,6)
+       call init(SP%MP,T,6) ! Must be defined before KE_scale,ME_scale,JE_scale
 
        ! init(DMR,dynamic_refinement,n_max_refinements,n_history,SS_tol,SS_tol_final,dt_reduction_factor)
        call init(SP%DMR,F,2,2,pow(-1),pow(-6),1.2_cp)
@@ -123,6 +103,39 @@
 
        ! call init(MQP,auto_find_N,max_mesh_stretch_ratio,N_max_points_add)
        call init(SP%MQP,F,2.0_cp,50)
+
+       time                          = 1000.0_cp
+       dtime                         = 1.0_cp*pow(-4)
+
+       SP%DP%Re                      = 4.0_cp*pow(2)
+       SP%DP%Ha                      = 1.0_cp*pow(3)
+       SP%DP%Rem                     = 1.0_cp*pow(2)
+       SP%DP%cw                      = 0.0_cp
+       SP%DP%sig_local_over_sig_f    = pow(-3)
+       SP%DP%Gr                      = 0.0_cp
+       SP%DP%Pr                      = 0.01_cp
+       SP%DP%Fr                      = 1.0_cp
+       SP%DP%Ec                      = 0.0_cp
+
+       SP%DP%N                       = SP%DP%Ha**2.0_cp/SP%DP%Re
+       SP%DP%Al                      = SP%DP%N/SP%DP%Rem
+       SP%DP%tau                     = SP%DP%Re/SP%DP%Ha
+       SP%DP%L_eta                   = SP%DP%Re**(-0.75_cp)
+       SP%DP%U_eta                   = SP%DP%Re**(-0.25_cp)
+       SP%DP%t_eta                   = SP%DP%Re**(-0.50_cp)
+       SP%DP%KE_scale                = 1.0_cp
+       SP%DP%ME_scale                = SP%DP%Al
+       SP%DP%JE_scale                = SP%DP%N*2.0_cp ! x2 because (J^2/sigma) not (1/2 J^2/sigma)
+       if (SP%MP%mirror) SP%DP%KE_scale = SP%DP%KE_scale*2.0_cp
+       if (SP%MP%mirror) SP%DP%ME_scale = SP%DP%ME_scale*2.0_cp
+       if (SP%MP%mirror) SP%DP%JE_scale = SP%DP%JE_scale*2.0_cp
+
+       SP%GP%tw                      = 0.05_cp
+       SP%GP%geometry                = 14
+       SP%GP%periodic_dir            = (/0,0,0/)
+       SP%GP%apply_BC_order          = (/3,4,5,6,1,2/) ! good for LDC
+       ! SP%GP%apply_BC_order       = (/5,6,3,4,1,2/) ! good for periodic in z?
+       ! SP%GP%apply_BC_order       = (/3,4,1,2,5,6/) ! good for periodic in z?
 
        ! call init_IC_BC(var,IC,BC)
        call init_IC_BC(SP%VS%T,  0,0)
@@ -134,11 +147,11 @@
 
        ! call init(SS,initialize,solve,restart,solve_method)
        call init(SP%VS%T%SS,  F,F,F,0)
-       call init(SP%VS%U%SS,  T,T,T,3)
-       call init(SP%VS%P%SS,  T,T,T,1)
-       call init(SP%VS%B%SS,  T,T,T,3)
+       call init(SP%VS%U%SS,  T,T,F,3)
+       call init(SP%VS%P%SS,  T,T,F,1)
+       call init(SP%VS%B%SS,  T,T,F,3)
        call init(SP%VS%B0%SS, T,T,F,0)
-       call init(SP%VS%phi%SS,T,T,T,0)
+       call init(SP%VS%phi%SS,T,T,F,0)
 
        ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,export_convergence,dir,name)
        call init(SP%VS%T%ISP,  5  ,pow(-6),pow(-13),100,F,str(DT%ISP),'ISP_T')
@@ -156,6 +169,15 @@
        call init(SP%VS%B%TMP,  1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_B')
        call init(SP%VS%B0%TMP, 1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_B0')
        call init(SP%VS%phi%TMP,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_phi')
+
+       ! Matrix-free parameters:
+       if (SP%finite_Rem) then; SP%VS%B%MFP%coeff = SP%VS%B%TMP%dt/SP%DP%Rem ! Backward Euler
+       else;                    SP%VS%B%MFP%coeff = SP%VS%B%TMP%dt           ! Backward Euler
+       endif
+       SP%VS%U%MFP%coeff   = -0.5_cp*SP%VS%U%TMP%dt/SP%DP%Re            ! Crank Nicholson
+       SP%VS%T%MFP%coeff   = -0.5_cp*SP%VS%T%TMP%dt/(SP%DP%Re*SP%DP%Pr) ! Crank Nicholson
+       SP%VS%phi%MFP%coeff = 0.0_cp ! Poisson, coefficient unused
+       SP%VS%p%MFP%coeff   = 0.0_cp ! Poisson, coefficient unused
 
        SP%MF%JCrossB             = T ! add JCrossB      to momentum equation
        SP%MF%Q2D_JCrossB         = F ! add Q2D JCrossB  to momentum equation

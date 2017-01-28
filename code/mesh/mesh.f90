@@ -268,6 +268,7 @@
          endif
          m%MP%N_cells = 0; m%MP%N_cells_tot = 0; m%MP%volume = 0.0_cp
          do i=1,m%s; m%MP%volume = m%MP%volume + m%B(i)%g%volume; enddo
+         do i=1,m%s; call init_vol(m%B(i)); enddo
          do i=1,m%s;do j=1,3; m%MP%N_cells(j) = m%MP%N_cells(j) + m%B(i)%g%c(j)%N; enddo; enddo
          do i=1,m%s;m%MP%N_cells_tot=m%MP%N_cells_tot+m%B(i)%g%c(1)%N*m%B(i)%g%c(2)%N*m%B(i)%g%c(3)%N;enddo
 

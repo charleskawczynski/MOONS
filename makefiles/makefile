@@ -1,6 +1,6 @@
 # **************** RUN CONFIGURATION *******************
-# RELEASE = 'DEBUG'
-RELEASE = 'OPTIMIZE'
+RELEASE = 'DEBUG'
+# RELEASE = 'OPTIMIZE'
 # RELEASE = 'PROFILE'
 USE_OPEN_MP = 'TRUE'
 PARALLELIZE_3D_OPS = 'TRUE'
@@ -43,7 +43,7 @@ MKE = gmake
 SRC_DIR = ..$(PS)code
 
 ifeq ($(CLUSTER),'PC_CK')
-	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS1
+	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS2
 endif
 
 ifeq ($(CLUSTER),'Workstation_CK')
@@ -408,6 +408,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)boundary_conditions.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)BF$(PS)BF.f90\
 	$(SRC_DIR)$(PS)block$(PS)mesh_block.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_params.f90\
 	$(SRC_DIR)$(PS)user$(PS)var.f90\
 	$(SRC_DIR)$(PS)user$(PS)var_set.f90\
 	$(SRC_DIR)$(PS)user$(PS)print_export.f90\
@@ -456,7 +457,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)ops$(PS)ops_advect.f90\
 	$(SRC_DIR)$(PS)probes$(PS)probe.f90\
 	$(SRC_DIR)$(PS)time_statistics$(PS)time_statistics.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_params.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_operators.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)matrix_based_operators.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)BC_funcs.f90\
@@ -497,6 +497,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum_aux.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_aux.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)Mike_Ulrickson_data.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)assign_B0_vs_t.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)curl_curl_B.f90\
@@ -510,7 +511,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_B_interior.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_J_interior.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_Sigma.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_aux.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)dynamic_refine_mesh.f90\

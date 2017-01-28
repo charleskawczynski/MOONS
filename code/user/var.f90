@@ -2,6 +2,7 @@
        use solver_settings_mod
        use time_marching_params_mod
        use iter_solver_params_mod
+       use matrix_free_params_mod
        implicit none
 
        private
@@ -14,11 +15,11 @@
          integer :: IC = 0
          integer :: BC = 0
          type(solver_settings) :: SS
+         type(matrix_free_params) :: MFP
          type(time_marching_params) :: TMP
          type(iter_solver_params) :: ISP
        end type
 
-       interface init;      module procedure init_V;      end interface
        interface init;      module procedure init_copy_V; end interface
        interface init_IC_BC;module procedure init_IC_BC_V;end interface
        interface delete;    module procedure delete_V;    end interface
@@ -32,20 +33,6 @@
        ! **********************************************************
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
-
-       subroutine init_V(V,SS,TMP,ISP,IC,BC)
-         implicit none
-         type(var),intent(inout) :: V
-         type(solver_settings),intent(in) :: SS
-         type(time_marching_params),intent(in) :: TMP
-         type(iter_solver_params),intent(in) :: ISP
-         integer,intent(in) :: IC,BC
-         call init(V%SS,SS)
-         call init(V%TMP,TMP)
-         call init(V%ISP,ISP)
-         V%IC = IC
-         V%BC = BC
-       end subroutine
 
        subroutine init_IC_BC_V(V,IC,BC)
          implicit none
@@ -62,6 +49,7 @@
          call init(V%SS,V_in%SS)
          call init(V%TMP,V_in%TMP)
          call init(V%ISP,V_in%ISP)
+         call init(V%MFP,V_in%MFP)
          V%IC = V_in%IC
          V%BC = V_in%BC
        end subroutine
@@ -74,6 +62,7 @@
          call delete(V%SS)
          call delete(V%TMP)
          call delete(V%ISP)
+         call delete(V%MFP)
        end subroutine
 
        subroutine export_V(V,un)
@@ -85,6 +74,7 @@
          call export(V%SS,un)
          call export(V%TMP,un)
          call export(V%ISP,un)
+         call export(V%MFP,un)
        end subroutine
 
        subroutine import_V(V,un)
@@ -96,6 +86,7 @@
          call import(V%SS,un)
          call import(V%TMP,un)
          call import(V%ISP,un)
+         call import(V%MFP,un)
        end subroutine
 
        subroutine display_V(V,un)
@@ -107,6 +98,7 @@
          call display(V%SS,un)
          call display(V%TMP,un)
          call display(V%ISP,un)
+         call display(V%MFP,un)
        end subroutine
 
        subroutine print_V(V)

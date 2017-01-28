@@ -96,6 +96,7 @@
 
         interface init;                     module procedure init_VF_copy_VF;               end interface
         interface init;                     module procedure init_VF_copy_SF;               end interface
+        interface init;                     module procedure init_DL_VF;                    end interface
         interface init;                     module procedure init_VF_copy_VF_mesh;          end interface
         interface delete;                   module procedure delete_VF;                     end interface
         interface display;                  module procedure display_VF;                    end interface
@@ -261,6 +262,16 @@
           type(VF),intent(inout) :: f1
           type(SF),intent(in) :: f2
           call init(f1%x,f2); call init(f1%y,f2); call init(f1%z,f2)
+        end subroutine
+
+        subroutine init_DL_VF(f,m,DL)
+          implicit none
+          type(VF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          type(data_location),dimension(3),intent(in) :: DL
+          call init(f%x,m,DL(1))
+          call init(f%y,m,DL(2))
+          call init(f%z,m,DL(3))
         end subroutine
 
         subroutine delete_VF(f)
