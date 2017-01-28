@@ -491,6 +491,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_U_BCs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_P_BCs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_U_field.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_Ustar_field.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_P_field.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)E_K_budget_terms.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)E_K_budget.f90\
@@ -507,6 +508,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_B_BCs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_phi_field.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_B_field.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_Bstar_field.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_B0_field.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_B_interior.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_J_interior.f90\

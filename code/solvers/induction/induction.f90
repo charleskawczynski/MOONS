@@ -20,6 +20,7 @@
 
        use mesh_stencils_mod
        use init_B_BCs_mod
+       use init_Bstar_field_mod
        use init_phi_BCs_mod
        use init_B_field_mod
        use init_phi_field_mod
@@ -201,15 +202,8 @@
          call assign_ghost_XPeriodic(ind%B_interior,0.0_cp)
          call apply_BCs(ind%B);                           write(*,*) '     BCs applied'
 
-         ! call init_Bstar_field(ind%Bstar,m,ind%SP,str(DT%B%field))
          call init(ind%Bstar,ind%B)
-         if (ind%SP%VS%B%SS%restart) then
-           ! call import_3D_1C(ind%m,ind%Bstar%x,str(DT%B%field),'Bstarf_x',0)
-           ! call import_3D_1C(ind%m,ind%Bstar%y,str(DT%B%field),'Bstarf_y',0)
-           ! call import_3D_1C(ind%m,ind%Bstar%z,str(DT%B%field),'Bstarf_z',0)
-         else; call assign(ind%Bstar,ind%B)
-         endif
-         call assign(ind%Bstar,ind%B)
+         call init_Bstar_field(ind%Bstar,m,ind%B,ind%SP,str(DT%B%field))
 
          write(*,*) '     Intermediate B-field initialized'
 

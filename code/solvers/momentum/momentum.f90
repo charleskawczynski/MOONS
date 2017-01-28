@@ -18,6 +18,7 @@
        use momentum_solver_mod
        use momentum_aux_mod
        use init_P_BCs_mod
+       use init_Ustar_field_mod
        use init_U_BCs_mod
        use init_U_Field_mod
        use init_P_Field_mod
@@ -181,15 +182,7 @@
          write(*,*) '     U BCs applied'
 
          call init(mom%Ustar,mom%U)
-         ! call init_Ustar_field(mom%Ustar,m,mom%SP,str(DT%U%field))
-         if (mom%SP%VS%U%SS%restart) then
-           ! call import_3D_1C(mom%m,mom%Ustar%x,str(DT%U%field),'Ustarf_x',0)
-           ! call import_3D_1C(mom%m,mom%Ustar%y,str(DT%U%field),'Ustarf_y',0)
-           ! call import_3D_1C(mom%m,mom%Ustar%z,str(DT%U%field),'Ustarf_z',0)
-         else
-           call assign(mom%Ustar,mom%U)
-         endif
-         call assign(mom%Ustar,mom%U)
+         call init_Ustar_field(mom%Ustar,mom%m,mom%U,mom%SP,str(DT%U%field))
          write(*,*) '     Intermediate field initialized'
 
          write(*,*) '     about to assemble Laplacian matrices'
