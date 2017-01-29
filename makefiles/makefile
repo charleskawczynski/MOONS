@@ -1,6 +1,6 @@
 # **************** RUN CONFIGURATION *******************
-# RELEASE = 'DEBUG'
-RELEASE = 'OPTIMIZE'
+RELEASE = 'DEBUG'
+# RELEASE = 'OPTIMIZE'
 # RELEASE = 'PROFILE'
 USE_OPEN_MP = 'TRUE'
 PARALLELIZE_3D_OPS = 'TRUE'
@@ -43,13 +43,18 @@ MKE = gmake
 SRC_DIR = ..$(PS)code
 
 ifeq ($(CLUSTER),'PC_CK')
-	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS2
+	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS3
 endif
 
 ifeq ($(CLUSTER),'Workstation_CK')
-	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)Rem_study$(PS)MOONS_Rem7
-	TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)selected_cases$(PS)case_3
-	# TARGET_DIR = D:$(PS)CHARLIE$(PS)MOONS$(PS)MOONS8
+	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)MOONS5
+	TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)NME_new_fast$(PS)MOONS8_correct
+	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)NME_new_fast$(PS)mesh_refinement_study$(PS)coarse
+	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)NME_new_fast$(PS)mesh_refinement_study$(PS)moderate
+	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)NME_new_fast$(PS)mesh_refinement_study$(PS)fine
+	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)NME_new_fast$(PS)sigma_study$(PS)sig1em2
+	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)NME_new_fast$(PS)sigma_study$(PS)sig1em3
+	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)NME_new_fast$(PS)sigma_study$(PS)sig1em4
 endif
 
 ifeq ($(CLUSTER),'Hoffman2')
@@ -410,10 +415,13 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)boundary_conditions.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)BF$(PS)BF.f90\
 	$(SRC_DIR)$(PS)block$(PS)mesh_block.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_params.f90\
 	$(SRC_DIR)$(PS)user$(PS)var.f90\
 	$(SRC_DIR)$(PS)user$(PS)var_set.f90\
 	$(SRC_DIR)$(PS)user$(PS)print_export.f90\
 	$(SRC_DIR)$(PS)user$(PS)momentum_forces.f90\
+	$(SRC_DIR)$(PS)user$(PS)mirror_props.f90\
+	$(SRC_DIR)$(PS)user$(PS)flow_control_logicals.f90\
 	$(SRC_DIR)$(PS)user$(PS)sim_params.f90\
 	$(SRC_DIR)$(PS)user$(PS)kill_switch.f90\
 	$(SRC_DIR)$(PS)user$(PS)export_now.f90\
@@ -448,6 +456,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)BCs$(PS)apply$(PS)apply_BCs_implicit.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_embedExtract.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_interp.f90\
+	$(SRC_DIR)$(PS)ops$(PS)ops_mirror_field.f90\
 	$(SRC_DIR)$(PS)IO$(PS)export_raw_processed.f90\
 	$(SRC_DIR)$(PS)IO$(PS)export_raw_processed_symmetry.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_aux.f90\
@@ -455,7 +464,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)ops$(PS)ops_advect.f90\
 	$(SRC_DIR)$(PS)probes$(PS)probe.f90\
 	$(SRC_DIR)$(PS)time_statistics$(PS)time_statistics.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_params.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_operators.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)matrix_based_operators.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)BC_funcs.f90\
@@ -478,6 +486,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)clean_divergence.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_T_BCs.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_gravity_field.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_T_field.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_K.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)energy_aux.f90\
@@ -490,12 +499,14 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_U_BCs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_P_BCs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_U_field.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_Ustar_field.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_P_field.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)E_K_budget_terms.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)E_K_budget.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum_aux.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_aux.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)Mike_Ulrickson_data.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)assign_B0_vs_t.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)curl_curl_B.f90\
@@ -505,11 +516,11 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_B_BCs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_phi_field.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_B_field.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_Bstar_field.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_B0_field.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_B_interior.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_J_interior.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_Sigma.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_aux.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)dynamic_refine_mesh.f90\

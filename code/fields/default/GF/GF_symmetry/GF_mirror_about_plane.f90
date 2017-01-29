@@ -73,7 +73,7 @@
             i_temp = temp%s(1)-i+1
             call assign_plane_x(temp,U,i_temp,i_reverse)
           enddo
-          do i=1,U%s(1)
+          do i=1+N_along_dir,U%s(1)
             i_reverse = U%s(1)-i+1
             call assign_plane_x(temp,U,i,i_reverse)
             call multiply_plane_x(temp,mirror_sign,i)
@@ -95,7 +95,7 @@
             i_temp = temp%s(2)-i+1
             call assign_plane_y(temp,U,i_temp,i_reverse)
           enddo
-          do i=1,U%s(2)
+          do i=1+N_along_dir,U%s(2)
             i_reverse = U%s(2)-i+1
             call assign_plane_y(temp,U,i,i_reverse)
             call multiply_plane_y(temp,mirror_sign,i)
@@ -117,7 +117,7 @@
             i_temp = temp%s(3)-i+1
             call assign_plane_z(temp,U,i_temp,i_reverse)
           enddo
-          do i=1,U%s(3)
+          do i=1+N_along_dir,U%s(3)
             i_reverse = U%s(3)-i+1
             call assign_plane_z(temp,U,i,i_reverse)
             call multiply_plane_z(temp,mirror_sign,i)
@@ -137,7 +137,7 @@
           do i=1,U%s(1)
             call assign_plane_x(temp,U,i,i)
           enddo
-          do i=1,U%s(1)
+          do i=1,U%s(1)-N_along_dir
             i_reverse = U%s(1)-i+1
             i_temp = temp%s(1)-i+1
             call assign_plane_x(temp,U,i_temp,i)
@@ -158,7 +158,7 @@
           do i=1,U%s(2)
             call assign_plane_y(temp,U,i,i)
           enddo
-          do i=1,U%s(2)
+          do i=1,U%s(2)-N_along_dir
             i_reverse = U%s(2)-i+1
             i_temp = temp%s(2)-i+1
             call assign_plane_y(temp,U,i_temp,i)
@@ -179,7 +179,7 @@
           do i=1,U%s(3)
             call assign_plane_z(temp,U,i,i)
           enddo
-          do i=1,U%s(3)
+          do i=1,U%s(3)-N_along_dir
             i_reverse = U%s(3)-i+1
             i_temp = temp%s(3)-i+1
             call assign_plane_z(temp,U,i_temp,i)

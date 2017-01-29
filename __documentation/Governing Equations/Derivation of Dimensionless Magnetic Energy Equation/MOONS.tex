@@ -16,7 +16,7 @@
 
 \newcommand{\A}{\mathbf{A}}
 \newcommand{\B}{\mathbf{B}}
-\newcommand{\C}{\mathbf{C}}
+\renewcommand{\C}{\mathbf{C}}
 \newcommand{\PD}{\partial}
 \newcommand{\BM}{\frac{\mathbf{B}}{\mu}}
 \newcommand{\J}{\mathbf{j}}
@@ -24,7 +24,7 @@
 \newcommand{\N}{\mathbf{n}}
 \newcommand{\JS}{\frac{\mathbf{j}}{\sigma}}
 \newcommand{\JSS}{\frac{\mathbf{j}^2}{\sigma}}
-\newcommand{\U}{\mathbf{u}}
+\renewcommand{\U}{\mathbf{u}}
 \newcommand{\SII}{\sigma^{-1}}
 \newcommand{\SI}{\sigma}
 \newcommand{\M}{\mu}
@@ -38,7 +38,7 @@
 \setlength{\topmargin}{-1in}     %\topmargin: gap above header
 \setlength{\headheight}{0in}     %\headheight: height of header
 \setlength{\topskip}{0in}        %\topskip: between header and text
-\setlength{\headsep}{0in}        
+\setlength{\headsep}{0in}
 \setlength{\textheight}{692pt}   %\textheight: height of main text
 \setlength{\textwidth}{7.5in}    % \textwidth: width of text
 \setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
@@ -87,9 +87,9 @@ Let's analyze each term, but first, let's define
 \end{equation}
 
 \subsection{Transient term}
-We have, for constant $\mu$, 
+We have, for constant $\mu$,
 \begin{equation}
-	\frac{\PD}{\PD t} \frac{\B^2}{\mu} = 2 \BM \DOT \frac{\PD \B}{\PD t} 
+	\frac{\PD}{\PD t} \frac{\B^2}{\mu} = 2 \BM \DOT \frac{\PD \B}{\PD t}
 \end{equation}
 Therefore
 \begin{equation}
@@ -109,14 +109,14 @@ Using the vector identity
 \end{equation}
 We may write
 \begin{equation}
-	\nabla \DOT \left(\JS \times \BM \right) = 
-	\BM \DOT \nabla \times \JS - \JS \DOT \nabla \times \BM = 
+	\nabla \DOT \left(\JS \times \BM \right) =
+	\BM \DOT \nabla \times \JS - \JS \DOT \nabla \times \BM =
 	\BM \DOT \nabla \times \JS - \JSS
 \end{equation}
 Therefore
 \begin{equation}
 	\boxed{
-	\BM \DOT \nabla \times \JS = 
+	\BM \DOT \nabla \times \JS =
 	\left\{ \nabla \DOT \left(\JS \times \BM \right) + \JSS \right\}
 	}
 \end{equation}
@@ -144,14 +144,14 @@ We have
 Applying Ohm's law to the second term on the RHS, we have
 \begin{equation}
 	\BM \DOT \nabla \times (\U \times \B) = -
-	\U \DOT (\J \times \B) - 
+	\U \DOT (\J \times \B) -
 	\nabla \DOT \left(\BM \times \left(\JS - \E \right) \right)
 \end{equation}
 And separating the two last terms and swapping cross product orders, we have
 \begin{equation}
 	\boxed{
 	\BM \DOT \nabla \times (\U \times \B) = -
-	\U \DOT (\J \times \B) + 
+	\U \DOT (\J \times \B) +
 	\nabla \DOT \left(\JS \times \BM \right) -
 	\nabla \DOT \left(\E \times \BM \right)
 	}
@@ -160,26 +160,26 @@ And separating the two last terms and swapping cross product orders, we have
 \section{Resulting Lorentz force term}
 The Lorentz force term that appears may be broken down into several terms. We can do this by decomposing the Lorentz force into magnetic pressure and maxwell stresses.
 \begin{equation}
-	\U \DOT (\J \times \B) = 
-	\U \DOT \left[(\B \DOT \nabla) \left( \BM \right) \right] 
+	\U \DOT (\J \times \B) =
+	\U \DOT \left[(\B \DOT \nabla) \left( \BM \right) \right]
 	- (\U \DOT \nabla) \frac{\B^2}{2\mu}
 \end{equation}
 Now, we can see that the magnetic pressure term looks like power associated with convection of the magnetic field. It would be nice to have a diffusion term. Let's try:
 \begin{align}
 	\frac{\PD}{\PD x_j} \frac{\PD}{\PD x_j} \frac{\B^2}{2 \mu}
 	& =
-	\frac{\PD}{\PD x_j} 
+	\frac{\PD}{\PD x_j}
 	\left[
-	\frac{\B}{2\mu} \frac{\PD}{\PD x_j} \B +  
+	\frac{\B}{2\mu} \frac{\PD}{\PD x_j} \B +
 	\frac{\B}{2} \frac{\PD}{\PD x_j} \BM
 	\right] \\
 	& =
-	\frac{\B}{2\mu} \frac{\PD^2 \B}{\PD x_jx_j} + 
-	\frac{\PD}{\PD x_j} \BM \frac{\PD}{\PD x_j} \frac{\B}{2} + 
-	\frac{\B}{2} \frac{\PD^2 }{\PD x_jx_j} \BM + 
+	\frac{\B}{2\mu} \frac{\PD^2 \B}{\PD x_jx_j} +
+	\frac{\PD}{\PD x_j} \BM \frac{\PD}{\PD x_j} \frac{\B}{2} +
+	\frac{\B}{2} \frac{\PD^2 }{\PD x_jx_j} \BM +
 	\frac{\PD}{\PD x_j} \frac{\B}{2} \frac{\PD}{\PD x_j} \BM \\
 	& =
-	\frac{\B}{\mu} \frac{\PD^2 \B}{\PD x_jx_j} + 
+	\frac{\B}{\mu} \frac{\PD^2 \B}{\PD x_jx_j} +
 	\frac{\PD}{\PD x_j} \BM \frac{\PD}{\PD x_j} \B \qquad \text{for uniform $\mu$} \\
 	& = \BM \nabla^2 \B + \mu \left(\nabla \left( \BM \right) \right)^2
 \end{align}
@@ -187,18 +187,18 @@ Now, we can see that the magnetic pressure term looks like power associated with
 \begin{align}
 	\frac{\PD}{\PD x_j} \frac{\PD}{\PD x_j} \frac{B_i^2}{2 \mu}
 	& =
-	\frac{\PD}{\PD x_j} 
+	\frac{\PD}{\PD x_j}
 	\left[
-	\frac{B_i}{2\mu} \frac{\PD}{\PD x_j} B_i +  
+	\frac{B_i}{2\mu} \frac{\PD}{\PD x_j} B_i +
 	\frac{B_i}{2} \frac{\PD}{\PD x_j} \frac{B_i}{\mu}
 	\right] \\
 	& =
-	\frac{B_i}{2\mu} \frac{\PD^2 B_i}{\PD x_jx_j} + 
-	\frac{\PD}{\PD x_j} \frac{B_i}{\mu} \frac{\PD}{\PD x_j} \frac{B_i}{2} + 
-	\frac{B_i}{2} \frac{\PD^2 }{\PD x_jx_j} \frac{B_i}{\mu} + 
+	\frac{B_i}{2\mu} \frac{\PD^2 B_i}{\PD x_jx_j} +
+	\frac{\PD}{\PD x_j} \frac{B_i}{\mu} \frac{\PD}{\PD x_j} \frac{B_i}{2} +
+	\frac{B_i}{2} \frac{\PD^2 }{\PD x_jx_j} \frac{B_i}{\mu} +
 	\frac{\PD}{\PD x_j} \frac{B_i}{2} \frac{\PD}{\PD x_j} \frac{B_i}{\mu} \\
 	& =
-	\frac{B_i}{\mu} \frac{\PD^2 B_i}{\PD x_jx_j} + 
+	\frac{B_i}{\mu} \frac{\PD^2 B_i}{\PD x_jx_j} +
 	\frac{\PD}{\PD x_j} \frac{B_i}{\mu} \frac{\PD}{\PD x_j} B_i \qquad \text{for uniform $\mu$} \\
 	& = \frac{B_i}{\mu} \nabla^2 B_i + \mu \left(\nabla \left( \frac{B_i}{\mu} \right) \right)^2
 \end{align}
@@ -206,9 +206,9 @@ Now, we can see that the magnetic pressure term looks like power associated with
 \section{Magnetic Energy Equation}
 Putting it all together, we have
 \begin{equation}
-	\frac{\PD E_m}{\PD t} + 
+	\frac{\PD E_m}{\PD t} +
 	\left\{ \nabla \DOT \left(\JS \times \BM \right) + \JSS \right\} =
-	- \U \DOT (\J \times \B) + 
+	- \U \DOT (\J \times \B) +
 	\nabla \DOT \left(\JS \times \BM \right) -
 	\nabla \DOT \left(\E \times \BM \right)
 \end{equation}
@@ -299,7 +299,7 @@ Since the flux of a curl over a closed surface is identically zero (since there 
 Therefore we have
 \begin{equation}
 	\boxed{
-	\Phi_P = \oiint \left( \E \times \BM \right) \DOT \N dA = \Phi_1 + \Phi_2 = 
+	\Phi_P = \oiint \left( \E \times \BM \right) \DOT \N dA = \Phi_1 + \Phi_2 =
 	\underbrace{\oiint (\varphi \J) \DOT \N dA}_{\Phi_1} +
 	\underbrace{- \oiint \left( \frac{\PD \A}{\PD t} \times \BM \right) \DOT \N dA}_{\Phi_2}
 	}
@@ -359,7 +359,7 @@ Trivially $0 = 0$, since $\B^0$ is constant and uniform.
 \begin{equation}
 	\underbrace{\int \frac{\PD }{\PD t} \frac{{\B^{ind}}^2}{2 \mu} dV}_
 	{\substack{\text{Time rate of}\\\text{change of $E_M$}}}
-	= 
+	=
 	\underbrace{\oiint \left( \frac{\PD \A^{ind}}{\PD t} \times \frac{\B^{0} + \B^{ind}}{\mu} \right)\DOT \N dA }_
 	{\substack{\text{Power of second}\\\text{Poynting term $\mathcal P_{P_2}$}}}
 	- \underbrace{\int \U \DOT (\J \times \left[ \B^0 + \B^{ind} \right]) dV}_

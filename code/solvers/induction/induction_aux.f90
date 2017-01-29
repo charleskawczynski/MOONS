@@ -15,6 +15,8 @@
        use ops_discrete_mod
        use probe_mod
        use ops_norms_mod
+       use dimensionless_params_mod
+       use data_location_mod
 
        implicit none
 
@@ -28,10 +30,12 @@
        public :: embedVelocity_E
        public :: embedVelocity_F
        public :: embedVelocity_CC
+       public :: set_sigma_inv_SF
+       public :: set_sigma_inv_VF
 
        contains
 
-       subroutine compute_AddJCrossB(jcrossB,B,B0,J,m,D_fluid,Ha,Re,finite_Rem,&
+       subroutine compute_AddJCrossB(jcrossB,B,B0,J,m,D_fluid,N,finite_Rem,&
          temp_CC,temp_F,temp_F1_TF,temp_F2_TF,temp)
          implicit none
          type(VF),intent(inout) :: jcrossB,temp
@@ -39,17 +43,17 @@
          type(VF),intent(in) :: J
          type(mesh),intent(in) :: m
          type(mesh_domain),intent(in) :: D_fluid
-         real(cp),intent(in) :: Ha,Re
+         real(cp),intent(in) :: N
          logical,intent(in) :: finite_Rem
          type(SF),intent(inout) :: temp_CC
          type(VF),intent(inout) :: temp_F
          type(TF),intent(inout) :: temp_F1_TF,temp_F2_TF
-         call compute_JCrossB(temp,B,B0,J,m,D_fluid,Ha,Re,finite_Rem,&
+         call compute_JCrossB(temp,B,B0,J,m,D_fluid,N,finite_Rem,&
          temp_CC,temp_F,temp_F1_TF,temp_F2_TF)
          call add(jcrossB,temp)
        end subroutine
 
-       subroutine compute_JCrossB(jCrossB,B,B0,J,m,D_fluid,Ha,Re,finite_Rem,&
+       subroutine compute_JCrossB(jCrossB,B,B0,J,m,D_fluid,N,finite_Rem,&
          temp_CC,temp_F,temp_F1_TF,temp_F2_TF)
          ! computes
          !
@@ -61,7 +65,7 @@
          type(VF),intent(in) :: B,B0,J
          type(mesh),intent(in) :: m
          type(mesh_domain),intent(in) :: D_fluid
-         real(cp),intent(in) :: Ha,Re
+         real(cp),intent(in) :: N
          logical,intent(in) :: finite_Rem
          type(SF),intent(inout) :: temp_CC
          type(TF),intent(inout) :: temp_F1_TF,temp_F2_TF
@@ -72,26 +76,26 @@
          call cross_product(temp_F,temp_F1_TF,temp_F2_TF)
          call extractFace(jCrossB,temp_F,D_fluid)
          call assign_ghost_XPeriodic(jCrossB,0.0_cp)
-         call multiply(jCrossB,Ha**2.0_cp/Re)
+         call multiply(jCrossB,N)
        end subroutine
 
-       subroutine compute_add_Q2D_JCrossB(Q2D_JCrossB,U,Ha,Re,temp_F)
+       subroutine compute_add_Q2D_JCrossB(Q2D_JCrossB,U,tau,temp_F)
          implicit none
          type(VF),intent(inout) :: Q2D_JCrossB,temp_F
          type(VF),intent(in) :: U
-         real(cp),intent(in) :: Ha,Re
-         call compute_Q2D_JCrossB(temp_F,U,Ha,Re)
+         real(cp),intent(in) :: tau
+         call compute_Q2D_JCrossB(temp_F,U,tau)
          call add(Q2D_JCrossB,temp_F)
        end subroutine
 
-       subroutine compute_Q2D_JCrossB(Q2D_JCrossB,U,Ha,Re)
+       subroutine compute_Q2D_JCrossB(Q2D_JCrossB,U,tau)
          ! computes: Q2D_JCrossB = -U/tau, tau = Re/Ha
          implicit none
          type(VF),intent(inout) :: Q2D_JCrossB
          type(VF),intent(in) :: U
-         real(cp),intent(in) :: Ha,Re
+         real(cp),intent(in) :: tau
          call assign(Q2D_JCrossB,U)
-         call multiply(Q2D_JCrossB,-1.0_cp/(Re/Ha))
+         call multiply(Q2D_JCrossB,-1.0_cp/tau)
        end subroutine
 
        subroutine compute_divBJ(divB,divJ,B,J,m)
@@ -114,34 +118,36 @@
          if (finite_Rem) call multiply(J,1.0_cp/Rem)
        end subroutine
 
-       subroutine compute_Total_Energy_Domain(energy,field,TMP,m,MD)
+       subroutine compute_Total_Energy_Domain(energy,field,TMP,m,scale,MD)
          implicit none
          type(probe),intent(inout) :: energy
          type(VF),intent(in) :: field
          type(time_marching_params),intent(in) :: TMP
          type(mesh),intent(in) :: m
          type(mesh_domain),intent(in) :: MD
+         real(cp),intent(in) :: scale
          type(VF) :: temp_VF
          real(cp) :: temp
          call init_CC(temp_VF,m,MD)
          call extractCC(temp_VF,field,MD)
          call assign_ghost_XPeriodic(temp_VF,0.0_cp)
          call Ln(temp,temp_VF,2.0_cp,m,MD)
-         temp = 0.5_cp*temp
+         temp = scale*0.5_cp*temp
          call delete(temp_VF)
          call export(energy,TMP,temp)
        end subroutine
 
-       subroutine compute_Total_Energy(energy,field,TMP,m)
+       subroutine compute_Total_Energy(energy,field,TMP,m,scale)
          implicit none
          type(probe),intent(inout) :: energy
          type(VF),intent(inout) :: field
          type(time_marching_params),intent(in) :: TMP
          type(mesh),intent(in) :: m
+         real(cp),intent(in) :: scale
          real(cp) :: temp
          call assign_ghost_XPeriodic(field,0.0_cp) ! norms now includes ghost points
          call Ln(temp,field,2.0_cp,m)
-         temp = 0.5_cp*temp
+         temp = scale*0.5_cp*temp
          call export(energy,TMP,temp)
        end subroutine
 
@@ -169,6 +175,34 @@
          type(VF),intent(in) :: U_CC ! Momentum edge velocity
          type(mesh_domain),intent(in) :: D_fluid
          call embedCC(U_cct,U_CC,D_fluid)
+       end subroutine
+
+       subroutine set_sigma_inv_SF(sigma_inv,m_ind,MD_sigma,DP)
+         implicit none
+         type(SF),intent(inout) :: sigma_inv
+         type(mesh),intent(in) :: m_ind
+         type(mesh_domain),intent(in) :: MD_sigma
+         type(dimensionless_params),intent(in) :: DP
+         type(SF) :: sigma_inv_temp
+         call init(sigma_inv_temp,m_ind,get_DL(sigma_inv))
+         call assign(sigma_inv_temp,1.0_cp)
+         call assign(sigma_inv,1.0_cp/DP%sig_local_over_sig_f)
+         call embed(sigma_inv,sigma_inv_temp,MD_sigma)
+         call delete(sigma_inv_temp)
+       end subroutine
+
+       subroutine set_sigma_inv_VF(sigma_inv,m_ind,MD_sigma,DP)
+         implicit none
+         type(VF),intent(inout) :: sigma_inv
+         type(mesh),intent(in) :: m_ind
+         type(mesh_domain),intent(in) :: MD_sigma
+         type(dimensionless_params),intent(in) :: DP
+         type(VF) :: sigma_inv_temp
+         call init(sigma_inv_temp,m_ind,get_DL(sigma_inv))
+         call assign(sigma_inv_temp,1.0_cp)
+         call assign(sigma_inv,1.0_cp/DP%sig_local_over_sig_f)
+         call embed(sigma_inv,sigma_inv_temp,MD_sigma)
+         call delete(sigma_inv_temp)
        end subroutine
 
        end module

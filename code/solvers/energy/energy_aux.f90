@@ -121,17 +121,17 @@
          !$OMP END PARALLEL DO
        end subroutine
 
-       subroutine volumetric_heating_equation(Q_CC,m,Re,Pr)
+       subroutine volumetric_heating_equation(Q_CC,m,Pe)
          implicit none
          type(SF),intent(inout) :: Q_CC
          type(mesh),intent(in) :: m
-         real(cp),intent(in) :: Re,Pr
+         real(cp),intent(in) :: Pe
          integer :: t,i,j,k
          real(cp) :: a,L,m_,F
          a = 1.0_cp
          L = 1.0_cp
          m_ = a/L
-         F = 2.0_cp*m_/(1.0_cp-exp(-2.0_cp*m_)) /Re/Pr
+         F = 2.0_cp*m_/(1.0_cp-exp(-2.0_cp*m_)) /Pe
          !$OMP PARALLEL DO
          do t=1,m%s; do k=1,Q_CC%BF(t)%GF%s(3); do j=1,Q_CC%BF(t)%GF%s(2); do i=1,Q_CC%BF(t)%GF%s(1)
          Q_CC%BF(t)%GF%f(i,j,k) = F*exp(-m_*(m%B(t)%g%c(2)%hc%f(j)+1.0_cp))

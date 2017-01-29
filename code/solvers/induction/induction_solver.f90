@@ -41,6 +41,7 @@
 
        ! Implicit time marching methods (diffusion implicit)
        public :: ind_PCG_BE_EE_cleanB_PCG
+       public :: ind_PCG_CN_AB2_cleanB_PCG
 
        contains
 
@@ -113,8 +114,8 @@
          enddo
        end subroutine
 
-       subroutine ind_PCG_BE_EE_cleanB_PCG(PCG_B,PCG_cleanB,B,Bstar,phi,B0,U_E,F,m,&
-         N_multistep,dt,compute_norms,temp_F1,temp_F2,temp_E,temp_E_TF,temp_CC,temp_CC_VF)
+       subroutine ind_PCG_BE_EE_cleanB_PCG(PCG_B,PCG_cleanB,B,Bstar,phi,B0,U_E,&
+         F,m,dt,compute_norms,temp_F1,temp_F2,temp_E,temp_E_TF,temp_CC,temp_CC_VF)
          ! Solves:    ∂B/∂t = ∇x(ux(B⁰+B)) - Rem⁻¹∇x(σ⁻¹∇xB)
          ! Computes:  B (above)
          ! Method:    Preconditioned Conjugate Gradient Method (induction equation)
@@ -131,19 +132,51 @@
          type(VF),intent(inout) :: temp_F1,temp_F2,temp_E,temp_CC_VF
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: dt
-         integer,intent(in) :: N_multistep
          logical,intent(in) :: compute_norms
-         integer :: i
-         do i=1,N_multistep
-           call add(temp_F2,B,B0) ! Since finite Rem
-           call advect_B(temp_F1,U_E,temp_F2,m,temp_E_TF,temp_E)
-           call multiply(temp_F1,dt)
-           call add(temp_F1,B)
-           call add_product(temp_F1,F,dt)
-           call solve(PCG_B,Bstar,temp_F1,m,compute_norms)
-           call clean_div(PCG_cleanB,B,Bstar,phi,m,temp_F1,temp_CC,compute_norms)
-           call update_intermediate_field_BCs(Bstar,B,phi,m,temp_F1,temp_F2,temp_CC_VF)
-         enddo
+         call add(temp_F2,B,B0) ! Since finite Rem
+         call advect_B(temp_F1,U_E,temp_F2,m,temp_E_TF,temp_E)
+         call multiply(temp_F1,dt)
+         call add(temp_F1,B)
+         call add_product(temp_F1,F,dt)
+         call solve(PCG_B,Bstar,temp_F1,m,compute_norms)
+         call clean_div(PCG_cleanB,B,Bstar,phi,m,temp_F1,temp_CC,compute_norms)
+         call update_intermediate_field_BCs(Bstar,B,phi,m,temp_F1,temp_F2,temp_CC_VF)
+       end subroutine
+
+       subroutine ind_PCG_CN_AB2_cleanB_PCG(PCG_B,PCG_cleanB,B,Bstar,phi,B0,U_E,&
+         J,sigmaInv_E,curlUCrossB,curlUCrossB_nm1,F,m,dt,compute_norms,temp_F1,&
+         temp_F2,temp_E,temp_E_TF,temp_CC,temp_CC_VF)
+         ! Solves:    (B^n-B^{n+1})/dt+.5 Rem⁻¹∇x(σ⁻¹∇xB^{n+1})=AB2(∇x(ux(B⁰^n+B^n)))-.5 Rem⁻¹∇x(σ⁻¹∇xB^n)
+         ! Computes:  B (above)
+         ! Method:    PCG Method (induction equation)
+         !            PCG Method (elliptic cleaning procedure)
+         ! Info:      cell face => B,B0,cell edge => J,sigmaInv_E,U_E,Finite Rem
+         implicit none
+         type(PCG_solver_VF),intent(inout) :: PCG_B
+         type(PCG_solver_SF),intent(inout) :: PCG_cleanB
+         type(VF),intent(inout) :: B,Bstar
+         type(VF),intent(in) :: B0,F,J,sigmaInv_E
+         type(TF),intent(in) :: U_E
+         type(SF),intent(inout) :: temp_CC,phi
+         type(TF),intent(inout) :: temp_E_TF
+         type(VF),intent(inout) :: temp_F1,temp_F2,temp_E,temp_CC_VF,curlUCrossB,curlUCrossB_nm1
+         type(mesh),intent(in) :: m
+         real(cp),intent(in) :: dt
+         logical,intent(in) :: compute_norms
+         call assign(curlUCrossB_nm1,curlUCrossB)
+         call add(temp_F2,B,B0) ! Since finite Rem
+         call advect_B(curlUCrossB,U_E,temp_F2,m,temp_E_TF,temp_E)
+         call AB2(temp_F1,curlUCrossB,curlUCrossB_nm1)
+         call multiply(temp_E,J,sigmaInv_E)
+         call curl(temp_F2,temp_E,m)
+         call multiply(temp_F2,0.5_cp)
+         call add(temp_F1,temp_F2)
+         call multiply(temp_F1,dt)
+         call add(temp_F1,B)
+         call add_product(temp_F1,F,dt)
+         call solve(PCG_B,Bstar,temp_F1,m,compute_norms)
+         call clean_div(PCG_cleanB,B,Bstar,phi,m,temp_F1,temp_CC,compute_norms)
+         call update_intermediate_field_BCs(Bstar,B,phi,m,temp_F1,temp_F2,temp_CC_VF)
        end subroutine
 
        subroutine CT_Finite_Rem_interior_solved(PCG_cleanB,B,Bstar,B_interior,curlE,&

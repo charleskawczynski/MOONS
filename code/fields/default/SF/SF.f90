@@ -24,6 +24,8 @@
         public :: is_Face
         public :: is_Edge
 
+        public :: get_DL
+
         public :: volume
         public :: sine_waves
         public :: cosine_waves
@@ -95,6 +97,7 @@
         end type
 
         interface init;                     module procedure init_SF_copy;                 end interface
+        interface init;                     module procedure init_DL_SF;                   end interface
         interface init;                     module procedure init_SF_copy_mesh;            end interface
         interface delete;                   module procedure delete_SF;                    end interface
         interface display;                  module procedure display_SF;                   end interface
@@ -136,6 +139,8 @@
         interface is_Node;                  module procedure is_Node_SF;                   end interface
         interface is_Face;                  module procedure is_Face_SF;                   end interface
         interface is_Edge;                  module procedure is_Edge_SF;                   end interface
+
+        interface get_DL;                   module procedure get_DL_SF;                    end interface
 
         interface volume;                   module procedure volume_SF;                    end interface
         interface sine_waves;               module procedure sine_waves_SF;                end interface
@@ -264,6 +269,19 @@
           f%numPhysEl = f_in%numPhysEl
           f%vol = f_in%vol
           f%all_neumann = f_in%all_Neumann
+        end subroutine
+
+        subroutine init_DL_SF(f,m,DL)
+          implicit none
+          type(SF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          type(data_location),intent(in) :: DL
+                if (is_CC(DL)) then; call init_CC(f,m)
+          elseif (is_Node(DL)) then; call init_Node(f,m)
+          elseif (is_Face(DL)) then; call init_Face(f,m,get_Face(DL))
+          elseif (is_Edge(DL)) then; call init_Edge(f,m,get_Edge(DL))
+          else; stop 'Error: Bad DL in SF.f90'
+          endif
         end subroutine
 
         subroutine init_SF_copy_mesh(f,f_in,m)
@@ -584,6 +602,13 @@
           type(SF),intent(in) :: u
           logical :: L
           L = is_Edge(u%DL)
+        end function
+
+        function get_DL_SF(u) result(DL)
+          implicit none
+          type(SF),intent(in) :: u
+          type(data_location) :: DL
+          DL = u%DL
         end function
 
         subroutine volume_SF(u,m) ! Computes: volume(x(i),y(j),z(k)) = dx(i) dy(j) dz(k)

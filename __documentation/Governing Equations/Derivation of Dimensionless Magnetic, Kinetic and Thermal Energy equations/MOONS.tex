@@ -18,7 +18,7 @@
 \newcommand{\A}{\mathbf{A}}
 \newcommand{\B}{\mathbf{B}}
 \newcommand{\MC}{\mathcal}
-\newcommand{\C}{\mathbf{C}}
+\renewcommand{\C}{\mathbf{C}}
 \newcommand{\PD}{\partial}
 \newcommand{\BM}{\frac{\mathbf{B}}{\mu}}
 \newcommand{\J}{\mathbf{j}}
@@ -27,7 +27,7 @@
 \newcommand{\N}{\mathbf{n}}
 \newcommand{\JS}{\frac{\mathbf{j}}{\sigma}}
 \newcommand{\JSS}{\frac{\mathbf{j}^2}{\sigma}}
-\newcommand{\U}{\mathbf{u}}
+\renewcommand{\U}{\mathbf{u}}
 \newcommand{\SII}{\sigma^{-1}}
 \newcommand{\SI}{\sigma}
 \newcommand{\M}{\mu}
@@ -41,7 +41,7 @@
 \setlength{\topmargin}{-1in}     %\topmargin: gap above header
 \setlength{\headheight}{0in}     %\headheight: height of header
 \setlength{\topskip}{0in}        %\topskip: between header and text
-\setlength{\headsep}{0in}        
+\setlength{\headsep}{0in}
 \setlength{\textheight}{692pt}   %\textheight: height of main text
 \setlength{\textwidth}{7.5in}    % \textwidth: width of text
 \setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
@@ -78,11 +78,11 @@ University of California Los Angeles, USA\\
 \subsubsection{Variation 1}
 \begin{equation}
 	\boxed{
-	\underbrace{\frac{\PD E_K}{\PD t}}_{\substack{\text{Time rate $\dot{\MC E}$ of} \\ \text{change of $E_K$}}} + 
+	\underbrace{\frac{\PD E_K}{\PD t}}_{\substack{\text{Time rate $\dot{\MC E}$ of} \\ \text{change of $E_K$}}} +
 	\underbrace{u_j \frac{\PD E_K}{\PD x_j}}_
 	{\substack{\text{Convection } \MC C_K \\\text{of $E_K$}}}
 	+
-	\underbrace{\frac{\PD}{\PD x_i} \left( u_i p - 2 \mu u_j S_{ij} \right)}_{\text{Transport } \MC T} = 
+	\underbrace{\frac{\PD}{\PD x_i} \left( u_i p - 2 \mu u_j S_{ij} \right)}_{\text{Transport } \MC T} =
 	- \underbrace{2 \mu S_{ij} S_{ij}}_{\substack{\text{Viscous } \\ \text{dissipation } \varepsilon_v}}
 	+ \underbrace{u_i B_j \frac{\PD}{\PD x_j} \frac{B_i}{\mu}}_
 	{\substack{\text{Power $\MC P_{m}$ of}\\\text{maxwell stresses}}}
@@ -93,11 +93,11 @@ University of California Los Angeles, USA\\
 \subsubsection{Variation 2}
 \begin{equation}
 	\boxed{
-	\underbrace{\frac{\PD E_K}{\PD t}}_{\substack{\text{Time rate $\dot{\MC E}$ of} \\ \text{change of $E_K$}}} + 
+	\underbrace{\frac{\PD E_K}{\PD t}}_{\substack{\text{Time rate $\dot{\MC E}$ of} \\ \text{change of $E_K$}}} +
 	\underbrace{u_j \frac{\PD E_K}{\PD x_j}}_
 	{\substack{\text{Convection } \MC C_K \\\text{of $E_K$}}}
-	= 
-	- \underbrace{\frac{\PD (u_i p)}{\PD x_i}}_{\text{Pressure } \MC P} 
+	=
+	- \underbrace{\frac{\PD (u_i p)}{\PD x_i}}_{\text{Pressure } \MC P}
 	+ \underbrace{ \mu \frac{\PD^2 E_K}{\PD x_j^2} }_{\substack{\text{Diffusion } \MC D_K \\ \text{of $E_K$ }}}
 	- \underbrace{\mu \frac{\PD u_i}{\PD x_j}\frac{\PD u_i}{\PD x_j} }_{\substack{\text{Viscous } \\ \text{dissipation } \varepsilon_v'}}
 	+ \underbrace{u_i B_j \frac{\PD}{\PD x_j} \frac{B_i}{\mu}}_
@@ -129,8 +129,8 @@ University of California Los Angeles, USA\\
 	\boxed{
 	\underbrace{\frac{\PD T}{\PD t}}_{\substack{\text{Time rate $\MC E_T$ of} \\ \text{change of $E_T$}}} +
 	\underbrace{(\U \DOT \nabla) T}_{\substack{\text{Convection $\MC C_T$ of} \\ \text{thermal energy}}}
-	= 
-	\underbrace{\nabla \DOT (k \nabla T)}_{\substack{\text{Thermal} \\ \text{diffusion } \MC D_T}} + 
+	=
+	\underbrace{\nabla \DOT (k \nabla T)}_{\substack{\text{Thermal} \\ \text{diffusion } \MC D_T}} +
 	\underbrace{\JSS}_
 	{\substack{\text{Joule}\\\text{dissipation}\\\text{$\MC E_J$}}} +
 	\underbrace{2 \mu S_{ij}S_{ij}}_{\substack{\text{Viscous } \\ \text{dissipation } \varepsilon_v}} +

@@ -90,8 +90,10 @@
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
         suppress_warning = is_CC(k)
-        call grad(tempk,x,m)
-        call div(Ax,tempk,m)
+        suppress_warning = is_CC(tempk)
+        call lap_centered(Ax,x,m)
+        ! call grad(tempk,x,m)
+        ! call div(Ax,tempk,m)
       end subroutine
       subroutine Lap_uniform_SF(Ax,x,k,m,MFP,tempk)
         ! COMPUTES:
@@ -102,12 +104,8 @@
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
-        logical :: suppress_warning
-        suppress_warning = MFP%suppress_warning
-        suppress_warning = is_CC(k)
         call apply_BCs_implicit(x)
-        call grad(tempk,x,m)
-        call div(Ax,tempk,m)
+        call Lap_uniform_SF_explicit(Ax,x,k,m,MFP,tempk)
       end subroutine
 
       subroutine Lap_uniform_VF_explicit(Ax,x,k,m,MFP,tempk)
@@ -135,13 +133,8 @@
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
-        logical :: suppress_warning
-        suppress_warning = MFP%suppress_warning
-        suppress_warning = is_CC(k)
-        suppress_warning = is_CC(tempk)
         call apply_BCs_implicit(x)
-        call lap_centered(Ax,x,m) ! Involves dynamic allocations
-        ! call lap(Ax,x,m)
+        call Lap_uniform_VF_explicit(Ax,x,k,m,MFP,tempk)
       end subroutine
 
       subroutine Lap_nonuniform_props_explicit(Ax,x,k,m,MFP,tempk)
@@ -168,12 +161,8 @@
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
-        logical :: suppress_warning
-        suppress_warning = MFP%suppress_warning
         call apply_BCs_implicit(x)
-        call grad(tempk,x,m)
-        call multiply(tempk,k)
-        call div(Ax,tempk,m)
+        call Lap_nonuniform_props_explicit(Ax,x,k,m,MFP,tempk)
       end subroutine
 
       subroutine ind_diffusion_explicit(Ax,x,k,m,MFP,tempk)
@@ -201,11 +190,7 @@
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         call apply_BCs_implicit(x)
-        call curl(tempk,x,m)
-        call multiply(tempk,k)
-        call curl(Ax,tempk,m)
-        call multiply(Ax,MFP%coeff)
-        call add(Ax,x)
+        call ind_diffusion_explicit(Ax,x,k,m,MFP,tempk)
       end subroutine
 
       subroutine nrg_diffusion_explicit(Ax,x,k,m,MFP,tempk)
@@ -233,11 +218,7 @@
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         call apply_BCs_implicit(x)
-        call grad(tempk,x,m)
-        call multiply(tempk,k)
-        call div(Ax,tempk,m)
-        call multiply(Ax,MFP%coeff)
-        call add(Ax,x)
+        call nrg_diffusion_explicit(Ax,x,k,m,MFP,tempk)
       end subroutine
 
       subroutine mom_diffusion_explicit(Ax,x,k,m,MFP,tempk)
@@ -271,19 +252,8 @@
         type(VF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
-        logical :: suppress_warning
-        suppress_warning = is_CC(k)
-        suppress_warning = is_CC(tempk)
         call apply_BCs_implicit(x)
-        ! lap_centered is a very bad and expensive routine. It needs
-        ! to be updated (a VF is allocated and deallocated inside).
-        ! The reason this is not as simple as the laplacian operator
-        ! is because U is staggered, and so k (the intermediate location),
-        ! is staggered AND different for each component, which cannot be
-        ! achieved by a scalar field.
-        call lap_centered(Ax,x,m)
-        call multiply(Ax,MFP%coeff)
-        call add(Ax,x)
+        call mom_diffusion_explicit(Ax,x,k,m,MFP,tempk)
       end subroutine
 
       end module

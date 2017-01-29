@@ -184,8 +184,8 @@
          implicit none
          type(time_marching_params),intent(inout) :: TMP
          real(cp),intent(in) :: dt_reduction_factor
-         TMP%dt = TMP%dt*1.0_cp/dt_reduction_factor
-         TMP%n_step_stop = TMP%n_step_stop*ceiling(dt_reduction_factor)
+         TMP%dt = TMP%dt*dt_reduction_factor
+         TMP%n_step_stop = TMP%n_step_stop*ceiling(1.0_cp/dt_reduction_factor)
          TMP%t_final = TMP%dt*real(TMP%n_step_stop,cp)
        end subroutine
 

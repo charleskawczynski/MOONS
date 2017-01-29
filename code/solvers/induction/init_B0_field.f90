@@ -29,7 +29,7 @@
          else
            select case(preset_ID)
            case (0)
-           case (1); call uniform_B_field(B0,3)
+           case (1); call uniform_B_field(B0,SP%uniform_B0_dir)
            case (2); call initFringingField_Sergey(B0,m,3,1)
            case (3); call initFringingField_ALEX(B0,m,3,1)
            case (4); call initField_Bandaru(B0,m,2)

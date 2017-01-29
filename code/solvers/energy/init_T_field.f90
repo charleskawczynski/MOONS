@@ -38,10 +38,7 @@
          character(len=*),intent(in) :: dir
          type(mesh),intent(in) :: m
          type(SF),intent(inout) :: T
-         type(mesh) :: temp
-         call init(temp,m)
-         call import_3D_1C(temp,T,dir,'Tc',1)
-         call delete(temp)
+         call import_3D_1C(m,T,dir,'Tc',0)
        end subroutine
 
        subroutine uniformTfield(T)

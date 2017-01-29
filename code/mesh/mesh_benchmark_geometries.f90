@@ -42,7 +42,8 @@
          case (13); call MHD_3D_LDC_BC_symmetric(  m_mom,m_ind,MQP,MD_sigma,Re,Ha,tw,include_vacuum)
          case (14); call MHD_3D_LDC_BC_symmetric_fine_top(m_mom,m_ind,MQP,MD_sigma,Re,Ha,tw,include_vacuum)
          case (15); call MHD_3D_NSC_PD(            m_mom,m_ind,MQP,MD_sigma,Re,Ha)
-         case (16); call user_defined(             m_mom,m_ind,MQP,MD_sigma)
+         case (16); call MHD_3D_LDC_Salah(         m_mom,m_ind,MQP,MD_sigma,Re,Ha)
+         case (17); call user_defined(             m_mom,m_ind,MQP,MD_sigma)
          case default; stop 'Error: bad BMC_geometry in mesh_benchmark_geometries.f90'
          end select
        end subroutine
@@ -251,6 +252,33 @@
          i = 1; call ext_uniform_IO(g,N(i),i)
          i = 2; call ext_uniform_IO(g,N(i),i)
          i = 3; call ext_uniform_IO(g,N(i),i)
+         call init(m_ind,g)
+         call init_props(m_ind)
+         call patch(m_ind)
+         call delete(g)
+         call init(MD_sigma,m_mom,m_ind)
+       end subroutine
+
+       subroutine MHD_3D_LDC_Salah(m_mom,m_ind,MQP,MD_sigma,Re,Ha)
+         implicit none
+         type(mesh),intent(inout) :: m_mom,m_ind
+         type(mesh_quality_params),intent(in) :: MQP
+         type(mesh_domain),intent(inout) :: MD_sigma
+         real(cp),intent(in) :: Re,Ha
+         type(grid) :: g
+         real(cp),dimension(3) :: hmin,hmax,beta
+         integer :: i
+         integer,dimension(3) :: N
+         call delete(m_mom); call delete(m_ind)
+         N = 50; hmin = -0.5_cp; hmax =  0.5_cp
+         beta = Re_Ha_BL(Re,Ha,hmin,hmax)
+         i= 1; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
+         i= 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
+         i= 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
+         call add(m_mom,g)
+         call init_props(m_mom)
+         call patch(m_mom)
+         call init(g,m_mom%B(1)%g)
          call init(m_ind,g)
          call init_props(m_ind)
          call patch(m_ind)
