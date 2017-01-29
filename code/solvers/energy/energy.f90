@@ -26,6 +26,7 @@
        use energy_solver_mod
        use init_T_BCs_mod
        use init_T_field_mod
+       use init_gravity_field_mod
        use init_K_mod
 
        use iter_solver_params_mod
@@ -70,9 +71,6 @@
          type(PCG_Solver_SF) :: PCG_T
          type(sim_params) :: SP
 
-         type(time_marching_params) :: TMP
-         type(iter_solver_params) :: ISP_T
-
          logical :: suppress_warning
        end type
 
@@ -105,8 +103,6 @@
          integer :: temp_unit
          type(SF) :: k_cc,vol_CC
          write(*,*) 'Initializing energy:'
-         call init(nrg%TMP,SP%VS%T%TMP)
-         call init(nrg%ISP_T,SP%VS%T%ISP)
          call init(nrg%SP,SP)
 
          call init(nrg%m,m)
@@ -140,7 +136,8 @@
          if (nrg%SP%VS%T%SS%solve) call export_BCs(nrg%T,str(DT%T%BCs),'T')
          write(*,*) '     BCs initialized'
 
-         call init_T_field(nrg%T,m,nrg%SP,str(DT%T%residual))
+         call init_T_field(nrg%T,m,nrg%SP,str(DT%T%field))
+         call init_gravity_field(nrg%gravity,m,nrg%SP,str(DT%T%field))
          write(*,*) '     T-field initialized'
 
          call apply_BCs(nrg%T)
@@ -155,7 +152,7 @@
          call init(nrg%Probe_divQ,str(DT%T%residual),'probe_divQ',nrg%SP%VS%T%SS%restart,SP,.true.)
 
          call init(nrg%PCG_T,nrg_diffusion,nrg_diffusion_explicit,prec_lap_SF,nrg%m,&
-         nrg%ISP_T,nrg%SP%VS%T%MFP,nrg%T,nrg%temp_F,str(DT%T%residual),'T',.false.,.false.)
+         nrg%SP%VS%T%ISP,nrg%SP%VS%T%MFP,nrg%T,nrg%temp_F,str(DT%T%residual),'T',.false.,.false.)
 
          temp_unit = new_and_open(str(DT%params),'info_nrg')
          call display(nrg,temp_unit)
@@ -189,9 +186,6 @@
          call delete(nrg%PCG_T)
          call delete(nrg%SP)
 
-         call delete(nrg%TMP)
-         call delete(nrg%ISP_T)
-
          write(*,*) 'energy object deleted'
        end subroutine
 
@@ -202,11 +196,11 @@
          write(un,*) '**************************************************************'
          write(un,*) '*************************** ENERGY ***************************'
          write(un,*) '**************************************************************'
-         write(un,*) 'Re,Pr = ',nrg%SP%DP%Re,nrg%SP%DP%Pr
+         write(un,*) 'Pe = ',nrg%SP%DP%Pe
          write(un,*) 'Ec,Ha = ',nrg%SP%DP%Ec,nrg%SP%DP%Ha
-         write(un,*) 't,dt = ',nrg%TMP%t,nrg%TMP%dt
-         write(un,*) 'solveTMethod,N_nrg = ',nrg%SP%VS%T%SS%solve_method,nrg%ISP_T%iter_max
-         write(un,*) 'tol_nrg = ',nrg%ISP_T%tol_rel
+         write(un,*) 't,dt = ',nrg%SP%VS%T%TMP%t,nrg%SP%VS%T%TMP%dt
+         write(un,*) 'solveTMethod,N_nrg = ',nrg%SP%VS%T%SS%solve_method,nrg%SP%VS%T%ISP%iter_max
+         write(un,*) 'tol_nrg = ',nrg%SP%VS%T%ISP%tol_rel
          call displayPhysicalMinMax(nrg%T,'T',un)
          call displayPhysicalMinMax(nrg%divQ,'divQ',un)
          write(un,*) ''
@@ -224,24 +218,18 @@
          implicit none
          type(energy),intent(in) :: nrg
          type(dir_tree),intent(in) :: DT
-         call export(nrg%TMP)
-         call export(nrg%ISP_T)
-
-         call export(nrg%T   ,str(DT%restart),'T_nrg')
-         call export(nrg%U_F ,str(DT%restart),'U_nrg')
-         call export(nrg%k   ,str(DT%restart),'k_nrg')
+         call export(nrg%T   ,str(DT%T%restart),'T_nrg')
+         call export(nrg%U_F ,str(DT%T%restart),'U_nrg')
+         call export(nrg%k   ,str(DT%T%restart),'k_nrg')
        end subroutine
 
        subroutine import_energy(nrg,DT)
          implicit none
          type(energy),intent(inout) :: nrg
          type(dir_tree),intent(in) :: DT
-         call import(nrg%TMP)
-         call import(nrg%ISP_T)
-
-         call import(nrg%T   ,str(DT%restart),'T_nrg')
-         call import(nrg%U_F ,str(DT%restart),'U_nrg')
-         call import(nrg%k   ,str(DT%restart),'k_nrg')
+         call import(nrg%T   ,str(DT%T%restart),'T_nrg')
+         call import(nrg%U_F ,str(DT%T%restart),'U_nrg')
+         call import(nrg%k   ,str(DT%T%restart),'k_nrg')
        end subroutine
 
        ! **********************************************************
@@ -253,7 +241,7 @@
          type(energy),intent(inout) :: nrg
          type(dir_tree),intent(in) :: DT
          if (nrg%SP%VS%T%SS%solve) then
-           write(*,*) 'export_tec_energy at nrg%TMP%n_step = ',nrg%TMP%n_step
+           write(*,*) 'export_tec_energy at nrg%SP%VS%T%TMP%n_step = ',nrg%SP%VS%T%TMP%n_step
            call export_processed(nrg%m,nrg%T,str(DT%T%field),'T',0)
            call export_raw(nrg%m,nrg%T,str(DT%T%field),'T',0)
            call export_raw(nrg%m,nrg%divQ,str(DT%T%field),'divQ',0)
@@ -266,7 +254,7 @@
          type(energy),intent(inout) :: nrg
          real(cp) :: temp
          call assign_ghost_XPeriodic(nrg%divQ,0.0_cp)
-         call Ln(temp,nrg%divQ,2.0_cp,nrg%m); call export(nrg%Probe_divQ,nrg%TMP,temp)
+         call Ln(temp,nrg%divQ,2.0_cp,nrg%m); call export(nrg%Probe_divQ,nrg%SP%VS%T%TMP,temp)
        end subroutine
 
        subroutine solve_energy(nrg,U,PE,EN,DT)
@@ -277,37 +265,40 @@
          type(export_now),intent(in) :: EN
          type(dir_tree),intent(in) :: DT
 
-         call assign(nrg%gravity%x,1.0_cp)
-
          call embed_velocity_F(nrg%U_F,U,nrg%MD)
 
          select case (nrg%SP%VS%T%SS%solve_method)
          case (1)
-         call explicitEuler(nrg%T,nrg%U_F,nrg%TMP%dt,nrg%SP%DP%Re,&
-         nrg%SP%DP%Pr,nrg%m,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
+         call explicitEuler(nrg%T,nrg%U_F,nrg%SP%VS%T%TMP%dt,&
+         nrg%SP%DP%Pe,nrg%m,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
 
          case (2) ! O2 time marching
-         call explicitEuler(nrg%T,nrg%U_F,nrg%TMP%dt,nrg%SP%DP%Re,&
-         nrg%SP%DP%Pr,nrg%m,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
+         call explicitEuler(nrg%T,nrg%U_F,nrg%SP%VS%T%TMP%dt,&
+         nrg%SP%DP%Pe,nrg%m,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
 
          case (3) ! Diffusion implicit
-         call diffusion_implicit(nrg%PCG_T,nrg%T,nrg%U_F,nrg%TMP%dt,nrg%SP%DP%Re,&
-         nrg%SP%DP%Pr,nrg%m,PE%transient_0D,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
+         call diffusion_implicit(nrg%PCG_T,nrg%T,nrg%U_F,nrg%SP%VS%T%TMP%dt,&
+         nrg%SP%DP%Pe,nrg%m,PE%transient_0D,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
 
          case (4)
-         if (nrg%TMP%n_step.le.1) call volumetric_heating_equation(nrg%Q_source,nrg%m,nrg%SP%DP%Re,nrg%SP%DP%Pr)
+         if (nrg%SP%VS%T%TMP%n_step.le.1) then
+           call volumetric_heating_equation(nrg%Q_source,nrg%m,nrg%SP%DP%Pe)
+         endif
 
-         call explicitEuler_with_source(nrg%T,nrg%U_F,nrg%TMP%dt,nrg%SP%DP%Re,&
-         nrg%SP%DP%Pr,nrg%m,nrg%Q_source,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
+         call explicitEuler_with_source(nrg%T,nrg%U_F,nrg%SP%VS%T%TMP%dt,&
+         nrg%SP%DP%Pe,nrg%m,nrg%Q_source,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
 
          case (5)
-         if (nrg%TMP%n_step.le.1) call volumetric_heating_equation(nrg%Q_source,nrg%m,nrg%SP%DP%Re,nrg%SP%DP%Pr)
-         call CN_with_source(nrg%PCG_T,nrg%T,nrg%U_F,nrg%TMP%dt,nrg%SP%DP%Re,&
-         nrg%SP%DP%Pr,nrg%m,nrg%Q_source,PE%transient_0D,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
+         if (nrg%SP%VS%T%TMP%n_step.le.1) then
+           call volumetric_heating_equation(nrg%Q_source,nrg%m,nrg%SP%DP%Pe)
+         endif
+         call CN_with_source(nrg%PCG_T,nrg%T,nrg%U_F,nrg%SP%VS%T%TMP%dt,&
+         nrg%SP%DP%Pe,nrg%m,nrg%Q_source,PE%transient_0D,nrg%temp_CC1,&
+         nrg%temp_CC2,nrg%temp_F)
 
          case default; stop 'Erorr: bad solveTMethod value in solve_energy in energy.f90'
          end select
-         call iterate_step(nrg%TMP)
+         call iterate_step(nrg%SP%VS%T%TMP)
 
          ! ********************* POST SOLUTION COMPUTATIONS *********************
 

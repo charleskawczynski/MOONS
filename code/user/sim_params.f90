@@ -55,6 +55,8 @@
        logical :: couple_time_steps
        logical :: finite_Rem
        logical :: include_vacuum
+       integer :: uniform_B0_dir
+       integer :: uniform_gravity_dir
      end type
 
      contains
@@ -66,18 +68,16 @@
        logical,parameter :: T = .true.
        logical,parameter :: F = .false.
        real(cp) :: time,dtime
-       SP%restart_all                = F ! restart sim (requires no code changes)
 
-       SP%FCL%post_process_only      = F ! Skip solver loop and just post-process results
-       SP%FCL%post_process           = T ! not used anywhere
        SP%FCL%stop_after_mesh_export = F !
        SP%FCL%stop_before_solve      = F ! Just export ICs, do not run simulation
        SP%FCL%skip_solver_loop       = F ! not used anywhere
+       SP%FCL%post_process           = T ! not used anywhere
 
        SP%EL%export_analytic         = F ! Export analytic solutions (MOONS.f90)
-       SP%EL%export_meshes           = F ! Export all meshes before starting simulation
+       SP%EL%export_meshes           = T ! Export all meshes before starting simulation
        SP%EL%export_vort_SF          = T ! Export vorticity-stream-function after simulation
-       SP%EL%export_mat_props        = F ! Export material properties before starting simulation
+       SP%EL%export_mat_props        = T ! Export material properties before starting simulation
        SP%EL%export_ICs              = F ! Export Post-Processed ICs before starting simulation
        SP%EL%export_cell_volume      = F ! Export cell volumes for each mesh
        SP%EL%export_planar           = F ! Export 2D data when N_cell = 1 along given direction
@@ -85,9 +85,12 @@
        SP%EL%export_mesh_block       = F ! Export mesh blocks to FECs
        SP%EL%export_soln_only        = F ! Export processed solution only
 
+       SP%restart_all                = F ! restart sim (requires no code changes)
        SP%couple_time_steps          = T ! Ensures all dt are equal to coupled%dt
-       SP%finite_Rem                 = T ! Ensures all dt are equal to coupled%dt
-       SP%include_vacuum             = T ! Ensures all dt are equal to coupled%dt
+       SP%finite_Rem                 = F ! Ensures all dt are equal to coupled%dt
+       SP%include_vacuum             = F ! Ensures all dt are equal to coupled%dt
+       SP%uniform_gravity_dir        = 1 ! Uniform gravity field direction
+       SP%uniform_B0_dir             = 3 ! Uniform applied field direction
 
        SP%matrix_based               = F ! Solve induction equation
        SP%unsteady_B0                = F ! Add unsteady applied field to induction eq.
@@ -96,7 +99,7 @@
        call init(SP%MP,T,6) ! Must be defined before KE_scale,ME_scale,JE_scale
 
        ! init(DMR,dynamic_refinement,n_max_refinements,n_history,SS_tol,SS_tol_final,dt_reduction_factor)
-       call init(SP%DMR,F,2,2,pow(-1),pow(-6),1.2_cp)
+       call init(SP%DMR,F,2,2,pow(-1),pow(-6),0.8_cp)
 
        ! call init(PE,i_info,i_transient_0D,i_transient_2D,i_solution,export_planar,dir,name)
        call init(SP%PE,2,2,4,6,F,str(DT%PE),'PE')
@@ -105,11 +108,18 @@
        call init(SP%MQP,F,2.0_cp,50)
 
        time                          = 1000.0_cp
-       dtime                         = 1.0_cp*pow(-4)
+       dtime                         = 2.0_cp*pow(-4)
+
+       SP%GP%tw                      = 0.05_cp
+       SP%GP%geometry                = 14
+       SP%GP%periodic_dir            = (/0,0,0/)
+       SP%GP%apply_BC_order          = (/3,4,5,6,1,2/) ! good for LDC
+       ! SP%GP%apply_BC_order       = (/5,6,3,4,1,2/) ! good for periodic in z?
+       ! SP%GP%apply_BC_order       = (/3,4,1,2,5,6/) ! good for periodic in z?
 
        SP%DP%Re                      = 4.0_cp*pow(2)
        SP%DP%Ha                      = 1.0_cp*pow(3)
-       SP%DP%Rem                     = 1.0_cp*pow(2)
+       SP%DP%Rem                     = 1.0_cp*pow(0)
        SP%DP%cw                      = 0.0_cp
        SP%DP%sig_local_over_sig_f    = pow(-3)
        SP%DP%Gr                      = 0.0_cp
@@ -119,6 +129,7 @@
 
        SP%DP%N                       = SP%DP%Ha**2.0_cp/SP%DP%Re
        SP%DP%Al                      = SP%DP%N/SP%DP%Rem
+       SP%DP%Pe                      = SP%DP%Pr*SP%DP%Re
        SP%DP%tau                     = SP%DP%Re/SP%DP%Ha
        SP%DP%L_eta                   = SP%DP%Re**(-0.75_cp)
        SP%DP%U_eta                   = SP%DP%Re**(-0.25_cp)
@@ -130,18 +141,11 @@
        if (SP%MP%mirror) SP%DP%ME_scale = SP%DP%ME_scale*2.0_cp
        if (SP%MP%mirror) SP%DP%JE_scale = SP%DP%JE_scale*2.0_cp
 
-       SP%GP%tw                      = 0.05_cp
-       SP%GP%geometry                = 14
-       SP%GP%periodic_dir            = (/0,0,0/)
-       SP%GP%apply_BC_order          = (/3,4,5,6,1,2/) ! good for LDC
-       ! SP%GP%apply_BC_order       = (/5,6,3,4,1,2/) ! good for periodic in z?
-       ! SP%GP%apply_BC_order       = (/3,4,1,2,5,6/) ! good for periodic in z?
-
        ! call init_IC_BC(var,IC,BC)
        call init_IC_BC(SP%VS%T,  0,0)
        call init_IC_BC(SP%VS%U,  0,2)
        call init_IC_BC(SP%VS%P,  0,0)
-       call init_IC_BC(SP%VS%B,  0,7)
+       call init_IC_BC(SP%VS%B,  0,8)
        call init_IC_BC(SP%VS%B0, 1,0)
        call init_IC_BC(SP%VS%phi,0,0)
 
@@ -171,8 +175,11 @@
        call init(SP%VS%phi%TMP,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_phi')
 
        ! Matrix-free parameters:
-       if (SP%finite_Rem) then; SP%VS%B%MFP%coeff = SP%VS%B%TMP%dt/SP%DP%Rem ! Backward Euler
-       else;                    SP%VS%B%MFP%coeff = SP%VS%B%TMP%dt           ! Backward Euler
+       if (SP%finite_Rem) then
+       SP%VS%B%MFP%coeff   = SP%VS%B%TMP%dt/SP%DP%Rem        ! Backward Euler
+       ! SP%VS%B%MFP%coeff   = SP%VS%B%TMP%dt/SP%DP%Rem*0.5_cp ! Crank Nicholson
+       else
+       SP%VS%B%MFP%coeff   = SP%VS%B%TMP%dt           ! Backward Euler
        endif
        SP%VS%U%MFP%coeff   = -0.5_cp*SP%VS%U%TMP%dt/SP%DP%Re            ! Crank Nicholson
        SP%VS%T%MFP%coeff   = -0.5_cp*SP%VS%T%TMP%dt/(SP%DP%Re*SP%DP%Pr) ! Crank Nicholson
@@ -205,6 +212,8 @@
        SP%couple_time_steps      = SP_in%couple_time_steps
        SP%finite_Rem             = SP_in%finite_Rem
        SP%include_vacuum         = SP_in%include_vacuum
+       SP%uniform_B0_dir         = SP_in%uniform_B0_dir
+       SP%uniform_gravity_dir    = SP_in%uniform_gravity_dir
        SP%matrix_based           = SP_in%matrix_based
        SP%unsteady_B0            = SP_in%unsteady_B0
        call init(SP%FCL,    SP_in%FCL)
@@ -243,6 +252,8 @@
        write(un,*) 'couple_time_steps      = ',SP%couple_time_steps
        write(un,*) 'finite_Rem             = ',SP%finite_Rem
        write(un,*) 'include_vacuum         = ',SP%include_vacuum
+       write(un,*) 'uniform_B0_dir         = ',SP%uniform_B0_dir
+       write(un,*) 'uniform_gravity_dir    = ',SP%uniform_gravity_dir
        write(un,*) 'matrix_based           = ',SP%matrix_based
        write(un,*) 'unsteady_B0            = ',SP%unsteady_B0
        call display(SP%FCL,un)
@@ -282,6 +293,8 @@
        write(un,*) SP%couple_time_steps
        write(un,*) SP%finite_Rem
        write(un,*) SP%include_vacuum
+       write(un,*) SP%uniform_B0_dir
+       write(un,*) SP%uniform_gravity_dir
        write(un,*) SP%matrix_based
        write(un,*) SP%unsteady_B0
        call export(SP%FCL,un)
@@ -305,6 +318,8 @@
        read(un,*) SP%couple_time_steps
        read(un,*) SP%finite_Rem
        read(un,*) SP%include_vacuum
+       read(un,*) SP%uniform_B0_dir
+       read(un,*) SP%uniform_gravity_dir
        read(un,*) SP%matrix_based
        read(un,*) SP%unsteady_B0
        call import(SP%FCL,un)

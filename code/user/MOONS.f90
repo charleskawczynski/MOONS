@@ -124,7 +124,7 @@
 
          if (SP%EL%export_ICs.and.SP%VS%U%SS%initialize) call export_tec(nrg,DT)
          if (SP%EL%export_ICs.and.SP%VS%T%SS%initialize) call export_tec(ind,DT)
-         if (SP%EL%export_ICs.and.SP%VS%B%SS%initialize) call export_tec(mom,DT,mom%temp_F1)
+         if (SP%EL%export_ICs.and.SP%VS%B%SS%initialize) call export_tec(mom,DT)
 
          if (SP%VS%U%SS%initialize) call print(nrg%m)
          if (SP%VS%T%SS%initialize) call print(mom%m)
@@ -135,9 +135,9 @@
          if (SP%FCL%stop_before_solve) then
            stop 'Exported ICs. Turn off stop_before_solve in sim_params.f90 to run sim.'
          endif
-         if (.not.SP%FCL%post_process_only) call MHDSolver(nrg,mom,ind,DT,SP,SP%coupled)
+         if (.not.SP%FCL%skip_solver_loop) call MHDSolver(nrg,mom,ind,DT,SP,SP%coupled)
 
-         if (SP%FCL%post_process_only) then
+         if (SP%FCL%post_process) then
            write(*,*) ' *********************** POST PROCESSING ***********************'
            write(*,*) ' *********************** POST PROCESSING ***********************'
            write(*,*) ' *********************** POST PROCESSING ***********************'
@@ -145,10 +145,6 @@
            write(*,*) ' COMPUTING VORTICITY-STREAMFUNCTION:'
            if (SP%VS%U%SS%initialize.and.SP%EL%export_vort_SF) then
            call export_vorticity_streamfunction_wrapper(mom%U,mom%m,DT,SP)
-
-           call export_processed(mom%m,mom%U,str(DT%U%field),'U',1,mom%SP%MP)
-           call export_processed(ind%m,ind%B,str(DT%B%field),'B',1,anti_mirror(ind%SP%MP))
-           call export_processed(ind%m,ind%J,str(DT%J%field),'J',1,ind%SP%MP)
            endif
            write(*,*) ' COMPUTING ENERGY BUDGETS:'
            if (SP%VS%U%SS%initialize.and.SP%VS%B%SS%initialize) then

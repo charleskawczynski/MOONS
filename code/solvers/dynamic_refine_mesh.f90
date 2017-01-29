@@ -33,7 +33,7 @@
          type(momentum),intent(inout) :: mom
          type(induction),intent(inout) :: ind
          type(dir_tree),intent(in) :: DT
-         type(sim_params),intent(in) :: SP
+         type(sim_params),intent(inout) :: SP
          type(time_marching_params),intent(inout) :: coupled
          type(stop_clock),intent(inout) :: sc
          type(VF),intent(inout) :: F,Fnm1
@@ -75,15 +75,15 @@
            write(*,*) 'SP%n_max_refinements = ',SP%DMR%n_max_refinements
            call prolongate(RM)
            if (SP%VS%T%SS%initialize) then
-             call prolongate(nrg%TMP,SP%DMR%dt_reduction_factor)
+             call prolongate(SP%VS%T%TMP,SP%DMR%dt_reduction_factor)
              call prolongate(nrg,DT,RM,refine_mesh_now_all)
            endif
            if (SP%VS%U%SS%initialize) then
-             call prolongate(mom%TMP,SP%DMR%dt_reduction_factor)
+             call prolongate(SP%VS%U%TMP,SP%DMR%dt_reduction_factor)
              call prolongate(mom,F,Fnm1,DT,RM,refine_mesh_now_all)
            endif
            if (SP%VS%B%SS%initialize) then
-             call prolongate(ind%TMP,SP%DMR%dt_reduction_factor)
+             call prolongate(SP%VS%B%TMP,SP%DMR%dt_reduction_factor)
              call prolongate(ind,DT,RM,refine_mesh_now_all)
            endif
            call prolongate(coupled,SP%DMR%dt_reduction_factor)

@@ -23,28 +23,28 @@
 
        contains
 
-       subroutine explicitEuler(T,U_F,dt,Re,Pr,m,temp_CC1,temp_CC2,temp_F)
+       subroutine explicitEuler(T,U_F,dt,Pe,m,temp_CC1,temp_CC2,temp_F)
          ! Solves
          !             ∂T/∂t + (u • ∇)T = ∇²T
          implicit none
          type(SF),intent(inout) :: T,temp_CC1,temp_CC2
          type(mesh),intent(in) :: m
          type(VF),intent(in) :: U_F
-         real(cp),intent(in) :: dt,Re,Pr
+         real(cp),intent(in) :: dt,Pe
          type(VF),intent(inout) :: temp_F
          call cellCenter2Face(temp_F,T,m)
          call multiply(temp_F,U_F)
          call div(temp_CC1,temp_F,m)
          call multiply(temp_CC1,-1.0_cp)
          call lap(temp_CC2,T,m)
-         call multiply(temp_CC2,1.0_cp/(Re*Pr))
+         call multiply(temp_CC2,1.0_cp/Pe)
          call add(temp_CC1,temp_CC2)
          call multiply(temp_CC1,dt)
          call add(T,temp_CC1)
          call apply_BCs(T)
        end subroutine
 
-       subroutine explicitEuler_with_source(T,U_F,dt,Re,Pr,m,Q_CC,temp_CC1,temp_CC2,temp_F)
+       subroutine explicitEuler_with_source(T,U_F,dt,Pe,m,Q_CC,temp_CC1,temp_CC2,temp_F)
          ! Solves
          !             ∂T/∂t + (u • ∇)T = ∇²T + Q
          implicit none
@@ -52,14 +52,14 @@
          type(mesh),intent(in) :: m
          type(VF),intent(in) :: U_F
          type(SF),intent(in) :: Q_CC
-         real(cp),intent(in) :: dt,Re,Pr
+         real(cp),intent(in) :: dt,Pe
          type(VF),intent(inout) :: temp_F
          call cellCenter2Face(temp_F,T,m)
          call multiply(temp_F,U_F)
          call div(temp_CC1,temp_F,m)
          call multiply(temp_CC1,-1.0_cp)
          call lap(temp_CC2,T,m)
-         call multiply(temp_CC2,1.0_cp/(Re*Pr))
+         call multiply(temp_CC2,1.0_cp/Pe)
          call add(temp_CC1,temp_CC2)
          call add(temp_CC1,Q_CC)
          call multiply(temp_CC1,dt)
@@ -68,7 +68,7 @@
          call subtract_mean_along_dir(T,m,1,temp_CC1)
        end subroutine
 
-       subroutine CN_with_source(PCG,T,U_F,dt,Re,Pr,m,Q_source,compute_norms,&
+       subroutine CN_with_source(PCG,T,U_F,dt,Pe,m,Q_source,compute_norms,&
          temp_CC1,temp_CC2,temp_F)
          ! Solves
          !             ∂T/∂t + (u • ∇)T = ∇²T + j²/σ + Φ
@@ -78,7 +78,7 @@
          type(SF),intent(inout) :: Q_source
          type(mesh),intent(in) :: m
          type(VF),intent(in) :: U_F
-         real(cp),intent(in) :: dt,Re,Pr
+         real(cp),intent(in) :: dt,Pe
          type(VF),intent(inout) :: temp_F
          logical,intent(in) :: compute_norms
          call cellCenter2Face(temp_F,T,m)
@@ -86,7 +86,7 @@
          call div(temp_CC1,temp_F,m)
          call multiply(temp_CC1,-1.0_cp)
          call lap(temp_CC2,T,m)
-         call multiply(temp_CC2,0.5_cp/(Re*Pr))
+         call multiply(temp_CC2,0.5_cp/Pe)
          call add(temp_CC1,temp_CC2)
          call add(temp_CC1,Q_source)
          call multiply(temp_CC1,dt)
@@ -94,7 +94,7 @@
          call subtract_mean_along_dir(T,m,1,temp_CC1)
        end subroutine
 
-       subroutine diffusion_implicit(PCG,T,U_F,dt,Re,Pr,m,compute_norms,temp_CC1,temp_CC2,temp_F)
+       subroutine diffusion_implicit(PCG,T,U_F,dt,Pe,m,compute_norms,temp_CC1,temp_CC2,temp_F)
          ! Solves
          !             ∂T/∂t + (u • ∇)T = ∇²T + j²/σ + Φ
          implicit none
@@ -102,7 +102,7 @@
          type(SF),intent(inout) :: T,temp_CC1,temp_CC2
          type(mesh),intent(in) :: m
          type(VF),intent(in) :: U_F
-         real(cp),intent(in) :: dt,Re,Pr
+         real(cp),intent(in) :: dt,Pe
          type(VF),intent(inout) :: temp_F
          logical,intent(in) :: compute_norms
          call cellCenter2Face(temp_F,T,m)
@@ -110,24 +110,24 @@
          call div(temp_CC1,temp_F,m)
          call multiply(temp_CC1,-1.0_cp)
          call lap(temp_CC2,T,m)
-         call multiply(temp_CC2,0.5_cp/(Re*Pr))
+         call multiply(temp_CC2,0.5_cp/Pe)
          call add(temp_CC1,temp_CC2)
          call multiply(temp_CC1,dt)
          call solve(PCG,T,temp_CC1,m,compute_norms)
        end subroutine
 
-       subroutine all_terms_explicit(T,U_F,U_CC,J_CC,sigmaInv_CC,dt,Re,Pr,m,&
+       subroutine all_terms_explicit(T,U_F,U_CC,J_CC,sigmaInv_CC,dt,Pe,m,&
          temp_CC1,temp_CC2,temp_F,temp_CC_TF1,temp_CC_TF2)
          ! Solves
          !             ∂T/∂t + (u • ∇)T = ∇²T + j²/σ + Φ
-         ! 
+         !
          implicit none
          type(SF),intent(inout) :: T,temp_CC1,temp_CC2
          type(SF),intent(in) :: sigmaInv_CC
          type(mesh),intent(in) :: m
          type(VF),intent(in) :: U_F,U_CC,J_CC
          TYPE(TF),intent(inout) :: temp_CC_TF1,temp_CC_TF2
-         real(cp),intent(in) :: dt,Re,Pr
+         real(cp),intent(in) :: dt,Pe
          type(VF),intent(inout) :: temp_F
          ! Convection
          call cellCenter2Face(temp_F,T,m)
@@ -136,7 +136,7 @@
          call multiply(temp_CC1,-1.0_cp)
          ! Thermal diffusion
          call lap(temp_CC2,T,m)
-         call multiply(temp_CC2,1.0_cp/(Re*Pr))
+         call multiply(temp_CC2,1.0_cp/Pe)
          call add(temp_CC1,temp_CC2)
           ! Joule dissipation
          call multiply(temp_CC_TF2%x,J_CC,sigmaInv_CC)

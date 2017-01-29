@@ -33,7 +33,7 @@
          type(momentum),intent(inout) :: mom
          type(induction),intent(inout) :: ind
          type(dir_tree),intent(in) :: DT
-         type(sim_params),intent(in) :: SP
+         type(sim_params),intent(inout) :: SP
          type(time_marching_params),intent(inout) :: coupled
          type(stop_clock) :: sc
          type(VF) :: F,Fnm1 ! Forces added to momentum equation
@@ -131,14 +131,14 @@
          ! ***************************************************************
          ! ********** FINISHED SOLVING MHD EQUATIONS *********************
          ! ***************************************************************
-         if (SP%VS%T%SS%initialize) call export(nrg%TMP)
-         if (SP%VS%U%SS%initialize) call export(mom%TMP)
-         if (SP%VS%B%SS%initialize) call export(ind%TMP)
+         if (SP%VS%T%SS%initialize) call export(SP%VS%T%TMP)
+         if (SP%VS%U%SS%initialize) call export(SP%VS%U%TMP)
+         if (SP%VS%B%SS%initialize) call export(SP%VS%B%TMP)
          call export(coupled)
 
          ! **************** EXPORT ONE FINAL TIME ***********************
          if (SP%VS%T%SS%initialize) call export_tec(nrg,DT)
-         if (SP%VS%U%SS%initialize) call export_tec(mom,DT,F)
+         if (SP%VS%U%SS%initialize) call export_tec(mom,DT,F,Fnm1)
          if (SP%VS%B%SS%initialize) call export_tec(ind,DT)
 
          call delete(PE)
@@ -146,6 +146,7 @@
          call delete(EN)
          call delete(KS)
          call delete(F)
+         call delete(Fnm1)
          call delete(RM)
        end subroutine
 

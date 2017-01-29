@@ -21,6 +21,7 @@
          real(cp) :: Gr = 0.0_cp
          real(cp) :: Fr = 0.0_cp
          real(cp) :: Pr = 0.0_cp
+         real(cp) :: Pe = 0.0_cp
          real(cp) :: Ec = 0.0_cp
          real(cp) :: Rem = 0.0_cp
          real(cp) :: cw = 0.0_cp
@@ -49,6 +50,7 @@
          DP%sig_local_over_sig_f = DP_in%sig_local_over_sig_f
          DP%Gr         = DP_in%Gr
          DP%Pr         = DP_in%Pr
+         DP%Pe         = DP_in%Pe
          DP%Fr         = DP_in%Fr
          DP%Ec         = DP_in%Ec
          DP%KE_scale   = DP_in%KE_scale
@@ -72,6 +74,7 @@
          DP%sig_local_over_sig_f = 0.0_cp
          DP%Gr         = 0.0_cp
          DP%Pr         = 0.0_cp
+         DP%Pe         = 0.0_cp
          DP%Fr         = 0.0_cp
          DP%Ec         = 0.0_cp
          DP%KE_scale   = 0.0_cp
@@ -96,6 +99,7 @@
          write(un,*) 'sig_local_over_sig_f = ',DP%sig_local_over_sig_f
          write(un,*) 'Gr                   = ',DP%Gr
          write(un,*) 'Pr                   = ',DP%Pr
+         write(un,*) 'Pe                   = ',DP%Pe
          write(un,*) 'Fr                   = ',DP%Fr
          write(un,*) 'Ec                   = ',DP%Ec
          write(un,*) 'KE_scale             = ',DP%KE_scale
@@ -126,6 +130,7 @@
          write(un,*) DP%sig_local_over_sig_f
          write(un,*) DP%Gr
          write(un,*) DP%Pr
+         write(un,*) DP%Pe
          write(un,*) DP%Fr
          write(un,*) DP%Ec
          write(un,*) DP%KE_scale
@@ -150,6 +155,7 @@
          read(un,*) DP%sig_local_over_sig_f
          read(un,*) DP%Gr
          read(un,*) DP%Pr
+         read(un,*) DP%Pe
          read(un,*) DP%Fr
          read(un,*) DP%Ec
          read(un,*) DP%KE_scale

@@ -299,7 +299,7 @@
          call import(mom%ISP_P)
          if (.not.mom%SP%EL%export_soln_only) then
            call import(mom%U     ,str(DT%U%restart),'U')
-           ! call import(mom%Unm1  ,str(DT%U%restart),'Unm1')
+           call import(mom%Unm1  ,str(DT%U%restart),'Unm1')
            call import(mom%p     ,str(DT%p%restart),'p')
          endif
        end subroutine
@@ -308,14 +308,15 @@
        ! **********************************************************
        ! **********************************************************
 
-       subroutine export_tec_momentum(mom,DT,F)
+       subroutine export_tec_momentum(mom,DT,F,Fnm1)
          implicit none
          type(momentum),intent(inout) :: mom
-         type(VF),intent(in) :: F
+         type(VF),intent(in) :: F,Fnm1
          type(dir_tree),intent(in) :: DT
          if (.not.mom%SP%EL%export_soln_only) then
          if (mom%SP%VS%B%SS%solve.or.mom%SP%VS%T%SS%solve) then
            call export_raw(mom%m,F,str(DT%U%field),'F_external',0)
+           call export_raw(mom%m,Fnm1,str(DT%U%field),'Fnm1_external',0)
          endif
          endif
          call export_tec_momentum_no_ext(mom,DT)
@@ -438,7 +439,7 @@
          if (PE%solution.or.EN%U%this.or.EN%all%this) then
            ! call curl(mom%temp_E,mom%U,m)
            call export(mom,DT)
-           call export_tec(mom,DT,F)
+           call export_tec(mom,DT,F,Fnm1)
          endif
        end subroutine
 
