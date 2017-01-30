@@ -19,32 +19,40 @@
 
       type matrix_free_params
         logical :: suppress_warning = .true.
+        real(cp) :: theta = 0.0_cp
         real(cp) :: coeff = 0.0_cp
+        real(cp) :: coeff_explicit = 0.0_cp
       end type
 
       contains
 
-      subroutine init_MFP(m_out,m_in)
+      subroutine init_MFP(m,m_in)
         implicit none
-        type(matrix_free_params),intent(inout) :: m_out
+        type(matrix_free_params),intent(inout) :: m
         type(matrix_free_params),intent(in) :: m_in
-        m_out%suppress_warning = m_in%suppress_warning
-        m_out%coeff = m_in%coeff
+        m%suppress_warning = m_in%suppress_warning
+        m%theta          = m_in%theta
+        m%coeff          = m_in%coeff
+        m%coeff_explicit = m_in%coeff_explicit
       end subroutine
 
       subroutine delete_MFP(m)
         implicit none
         type(matrix_free_params),intent(inout) :: m
         m%suppress_warning = .true.
-        m%coeff = 0.0_cp
+        m%theta          = 0.0_cp
+        m%coeff          = 0.0_cp
+        m%coeff_explicit = 0.0_cp
       end subroutine
 
       subroutine display_MFP(m,un)
         implicit none
         type(matrix_free_params),intent(in) :: m
         integer,intent(in) :: un
-        write(un,*) 'suppress_warning=',m%suppress_warning
-        write(un,*) 'coeff=',m%coeff
+        write(un,*) 'suppress_warning = ',m%suppress_warning
+        write(un,*) 'theta            = ',m%theta
+        write(un,*) 'coeff            = ',m%coeff
+        write(un,*) 'coeff_explicit   = ',m%coeff_explicit
       end subroutine
 
       subroutine print_MFP(m)
@@ -58,7 +66,9 @@
         type(matrix_free_params),intent(in) :: m
         integer,intent(in) :: un
         write(un,*) 'suppress_warning = '; write(un,*) m%suppress_warning
-        write(un,*) 'coeff = ';            write(un,*) m%coeff
+        write(un,*) 'theta            = '; write(un,*) m%theta
+        write(un,*) 'coeff            = '; write(un,*) m%coeff
+        write(un,*) 'coeff_explicit   = '; write(un,*) m%coeff_explicit
       end subroutine
 
       subroutine import_MFP(m,un)
@@ -66,7 +76,9 @@
         type(matrix_free_params),intent(inout) :: m
         integer,intent(in) :: un
         read(un,*) ; read(un,*) m%suppress_warning
+        read(un,*) ; read(un,*) m%theta
         read(un,*) ; read(un,*) m%coeff
+        read(un,*) ; read(un,*) m%coeff_explicit
       end subroutine
 
       subroutine prolongate_MFP(m,coeff_multiplication_factor)
@@ -74,6 +86,7 @@
         type(matrix_free_params),intent(inout) :: m
         real(cp),intent(in) :: coeff_multiplication_factor
         m%coeff = coeff_multiplication_factor*m%coeff
+        m%coeff_explicit = coeff_multiplication_factor*m%coeff_explicit
       end subroutine
 
       end module

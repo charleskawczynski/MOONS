@@ -18,6 +18,8 @@
          type(matrix_free_params) :: MFP
          type(time_marching_params) :: TMP
          type(iter_solver_params) :: ISP
+         ! type(dir_group) :: DG
+         ! type(export_now) :: EN
        end type
 
        interface init;      module procedure init_copy_V; end interface

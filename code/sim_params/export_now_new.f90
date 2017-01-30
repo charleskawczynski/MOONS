@@ -19,7 +19,7 @@
        end type
 
        type export_now
-         type(step) :: U,B,T,rho,all
+         type(step) :: X,all
          type(string) :: dir,name
          logical :: any_next = .false.
          integer :: un
@@ -45,10 +45,7 @@
          implicit none
          type(export_now),intent(inout) :: EN
          character(len=*),intent(in) :: dir,name
-         call delete_step(EN%T)
-         call delete_step(EN%rho)
-         call delete_step(EN%U)
-         call delete_step(EN%B)
+         call delete_step(EN%X)
          call delete_step(EN%all)
          EN%any_next = .false.
 
@@ -59,10 +56,7 @@
        subroutine delete_EN(EN)
          implicit none
          type(export_now),intent(inout) :: EN
-         call delete_step(EN%T)
-         call delete_step(EN%rho)
-         call delete_step(EN%U)
-         call delete_step(EN%B)
+         call delete_step(EN%X)
          call delete_step(EN%all)
          EN%any_next = .false.
 
@@ -75,10 +69,7 @@
          type(export_now),intent(inout) :: EN
          integer :: un
          un = new_and_open(str(EN%dir),str(EN%name))
-         write(un,*) 'T_next   = '; write(un,*) EN%T%next
-         write(un,*) 'rho_next = '; write(un,*) EN%rho%next
-         write(un,*) 'U_next   = '; write(un,*) EN%U%next
-         write(un,*) 'B_next   = '; write(un,*) EN%B%next
+         write(un,*) 'X_next = ';   write(un,*) EN%X%next
          write(un,*) 'all_next = '; write(un,*) EN%all%next
          close(un)
        end subroutine
@@ -88,10 +79,7 @@
          type(export_now),intent(inout) :: EN
          integer :: un
          un = open_to_read(str(EN%dir),str(EN%name))
-         read(un,*) ; read(un,*) EN%T%next
-         read(un,*) ; read(un,*) EN%rho%next
-         read(un,*) ; read(un,*) EN%U%next
-         read(un,*) ; read(un,*) EN%B%next
+         read(un,*) ; read(un,*) EN%X%next
          read(un,*) ; read(un,*) EN%all%next
          close(un)
        end subroutine
@@ -99,11 +87,8 @@
        subroutine update_EN(EN)
          implicit none
          type(export_now),intent(inout) :: EN
-         EN%any_next = any((/EN%T%next,EN%rho%next,EN%U%next,EN%B%next,EN%all%next/))
-         call update_step(EN%T)
-         call update_step(EN%rho)
-         call update_step(EN%U)
-         call update_step(EN%B)
+         EN%any_next = any((/EN%X%next,EN%all%next/))
+         call update_step(EN%X)
          call update_step(EN%all)
        end subroutine
 

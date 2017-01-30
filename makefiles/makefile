@@ -1,6 +1,6 @@
 # **************** RUN CONFIGURATION *******************
-RELEASE = 'DEBUG'
-# RELEASE = 'OPTIMIZE'
+# RELEASE = 'DEBUG'
+RELEASE = 'OPTIMIZE'
 # RELEASE = 'PROFILE'
 USE_OPEN_MP = 'TRUE'
 PARALLELIZE_3D_OPS = 'TRUE'
@@ -13,6 +13,9 @@ CLUSTER = 'PC_CK'
 # On Hoffman / DOE, run "module load gcc/4.9.3" in terminal before compile
 # CLUSTER = 'Hoffman2'
 # CLUSTER = 'DOE'
+# ************* MAKE CONFIGURATION ******************
+MKE = gmake
+# MKE = make
 # ****************** OS SETTINGS ********************
 ifdef SystemRoot
 	OS_USED = 'OS_WINDOWS'
@@ -35,15 +38,11 @@ ifeq ($(CLUSTER),$(filter $(CLUSTER),'Hoffman2'))
 	PS_clean = $(strip /)
 endif
 
-# ************* MAKE CONFIGURATION ******************
-
-MKE = gmake
-# MKE = make
 # ************* DIRECTORY SETTINGS ******************
 SRC_DIR = ..$(PS)code
 
 ifeq ($(CLUSTER),'PC_CK')
-	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS3
+	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS2
 endif
 
 ifeq ($(CLUSTER),'Workstation_CK')
@@ -241,7 +240,6 @@ TARGET = $(TARGET_DIR)$(PS)MOONS.exe
 # **************** INCLUDE PATHS ********************
 VPATH =\
 	$(TARGET_DIR)\
-	$(SRC_DIR)$(PS)associative_array\
 	$(SRC_DIR)$(PS)block\
 	$(SRC_DIR)$(PS)BCs\
 	$(SRC_DIR)$(PS)BCs$(PS)apply\
@@ -279,9 +277,11 @@ VPATH =\
 	$(SRC_DIR)$(PS)norms\
 	$(SRC_DIR)$(PS)ops\
 	$(SRC_DIR)$(PS)probes\
-	$(SRC_DIR)$(PS)solvers\
 	$(SRC_DIR)$(PS)procedure_array\
+	$(SRC_DIR)$(PS)sim_params\
+	$(SRC_DIR)$(PS)solvers\
 	$(SRC_DIR)$(PS)solvers$(PS)energy\
+	$(SRC_DIR)$(PS)solvers$(PS)density\
 	$(SRC_DIR)$(PS)solvers$(PS)FFT\
 	$(SRC_DIR)$(PS)solvers$(PS)GS\
 	$(SRC_DIR)$(PS)solvers$(PS)induction\
@@ -291,6 +291,7 @@ VPATH =\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG\
 	$(SRC_DIR)$(PS)solvers$(PS)PSE\
 	$(SRC_DIR)$(PS)solvers$(PS)SOR\
+	$(SRC_DIR)$(PS)solvers$(PS)preconditioners\
 	$(SRC_DIR)$(PS)sparse\
 	$(SRC_DIR)$(PS)stencils\
 	$(SRC_DIR)$(PS)stitches\
@@ -317,19 +318,16 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)IO$(PS)inquire_funcs.f90\
 	$(SRC_DIR)$(PS)IO$(PS)IO_check.f90\
 	$(SRC_DIR)$(PS)IO$(PS)IO_tools.f90\
-	$(SRC_DIR)$(PS)user$(PS)preset_ID.f90\
-	$(SRC_DIR)$(PS)associative_array$(PS)key_value_pair.f90\
-	$(SRC_DIR)$(PS)associative_array$(PS)associative_array.f90\
-	$(SRC_DIR)$(PS)user$(PS)export_logicals.f90\
-	$(SRC_DIR)$(PS)user$(PS)dimensionless_params.f90\
-	$(SRC_DIR)$(PS)user$(PS)geometry_props.f90\
-	$(SRC_DIR)$(PS)user$(PS)mesh_quality_params.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)solver_settings.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)time_marching_params.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)iter_solver_params.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)dynamic_mesh_refinement.f90\
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Zone.f90\
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Header.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)export_logicals.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)dimensionless_params.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)geometry_props.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)mesh_quality_params.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)iter_solver_params.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)solver_settings.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)time_marching_params.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)dynamic_mesh_refinement.f90\
 	$(SRC_DIR)$(PS)table$(PS)table.f90\
 	$(SRC_DIR)$(PS)directory$(PS)path.f90\
 	$(SRC_DIR)$(PS)directory$(PS)dir_group.f90\
@@ -415,14 +413,14 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)boundary_conditions.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)BF$(PS)BF.f90\
 	$(SRC_DIR)$(PS)block$(PS)mesh_block.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_params.f90\
-	$(SRC_DIR)$(PS)user$(PS)var.f90\
-	$(SRC_DIR)$(PS)user$(PS)var_set.f90\
-	$(SRC_DIR)$(PS)user$(PS)print_export.f90\
-	$(SRC_DIR)$(PS)user$(PS)momentum_forces.f90\
-	$(SRC_DIR)$(PS)user$(PS)mirror_props.f90\
-	$(SRC_DIR)$(PS)user$(PS)flow_control_logicals.f90\
-	$(SRC_DIR)$(PS)user$(PS)sim_params.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)matrix_free_params.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)var.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)var_set.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)print_export.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)momentum_forces.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)mirror_props.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)flow_control_logicals.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)sim_params.f90\
 	$(SRC_DIR)$(PS)user$(PS)kill_switch.f90\
 	$(SRC_DIR)$(PS)user$(PS)export_now.f90\
 	$(SRC_DIR)$(PS)user$(PS)refine_mesh.f90\
@@ -466,9 +464,9 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)time_statistics$(PS)time_statistics.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_operators.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)matrix_based_operators.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)BC_funcs.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)diagonals.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)preconditioners.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)BC_funcs.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)preconditioners$(PS)diagonals.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)preconditioners$(PS)preconditioners.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)AB2.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)update_intermediate_field_BCs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)compute_energy.f90\
@@ -485,6 +483,10 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)clean_divergence.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)density$(PS)init_rho_BCs.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)density$(PS)init_rho_field.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)density$(PS)density_solver.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)density$(PS)density.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_T_BCs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_gravity_field.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_T_field.f90\
@@ -525,6 +527,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)dynamic_refine_mesh.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)MHDSolver.f90\
+	$(SRC_DIR)$(PS)user$(PS)export_mesh_aux.f90\
 	$(SRC_DIR)$(PS)user$(PS)MOONS.f90
 
 SRCS_F += $(TARGET_DIR)$(PS)parametricStudy.f90

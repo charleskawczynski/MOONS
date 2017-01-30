@@ -17,6 +17,7 @@
        use PCG_mod
        use GS_poisson_mod
        use matrix_free_operators_mod
+       use matrix_free_params_mod
        use clean_divergence_mod
        use update_intermediate_field_BCs_mod
 
@@ -40,7 +41,7 @@
        contains
 
        subroutine CN_AB2_PPE_PCG_mom_PCG(mom_PCG,PPE_PCG,U,Ustar,Unm1,U_E,p,F,Fnm1,m,&
-         Re,dt,temp_F1,temp_F2,temp_CC,temp_CC_VF,temp_E,compute_norms)
+         MFP,Re,dt,temp_F1,temp_F2,temp_CC,temp_CC_VF,temp_E,compute_norms)
          implicit none
          type(PCG_solver_VF),intent(inout) :: mom_PCG
          type(PCG_solver_SF),intent(inout) :: PPE_PCG
@@ -50,20 +51,21 @@
          type(VF),intent(in) :: F,Fnm1
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: Re,dt
+         type(matrix_free_params),intent(in) :: MFP
          type(VF),intent(inout) :: temp_F1,temp_F2,temp_E
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
          call advect_U(temp_F1,U,U_E,m,.false.,temp_E,temp_CC)
          call advect_U(temp_F2,Unm1,U_E,m,.true.,temp_E,temp_CC)
          call AB2_overwrite(temp_F1,temp_F2)
-         call multiply(temp_F1,-1.0_cp) ! Because advect_div gives positive
+         call multiply(temp_F1,-dt) ! Because advect_div gives positive
          ! call lap(temp_F2,U,m)
          call lap_centered(temp_F2,U,m)
-         call multiply(temp_F2,0.5_cp/Re)
+         call multiply(temp_F2,MFP%coeff_explicit)
          call add(temp_F1,temp_F2)
          call AB2(temp_F2,F,Fnm1)
+         call multiply(temp_F2,dt)
          call add(temp_F1,temp_F2)
-         call multiply(temp_F1,dt)
          call assign_wall_Dirichlet(temp_F1,0.0_cp,U)
          call add(temp_F1,U)
          call assign(Unm1,U)

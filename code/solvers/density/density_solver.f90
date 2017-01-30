@@ -15,9 +15,8 @@
        use ops_norms_mod
        use apply_BCs_mod
        use PCG_mod
-       use GS_poisson_mod
        use matrix_free_operators_mod
-       
+
        implicit none
        private
 
@@ -43,11 +42,9 @@
          call cellCenter2Face(temp_F,rho,m)
          call multiply(temp_F,U)
          call div(temp_CC1,temp_F,m)
-         call multiply(temp_CC1,-1.0_cp)
-         call multiply(temp_CC1,dt)
+         call multiply(temp_CC1,-dt)
          call add(rho,temp_CC1)
-         call apply_BCs(rho,m)
+         call apply_BCs(rho)
        end subroutine
-
 
        end module

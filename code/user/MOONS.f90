@@ -15,6 +15,7 @@
        use export_analytic_mod
        use mirror_props_mod
        use vorticity_streamfunction_mod
+       use export_mesh_aux_mod
 
        use iter_solver_params_mod
        use time_marching_params_mod
@@ -23,6 +24,7 @@
        use export_raw_processed_mod
        use ops_mirror_field_mod
 
+       ! use density_mod
        use energy_mod
        use momentum_mod
        use induction_mod
@@ -42,8 +44,9 @@
          type(momentum) :: mom
          type(induction) :: ind
          type(energy) :: nrg
-         type(mesh) :: mesh_mom,mesh_ind,m_temp
-         ! type(mesh) :: mesh_ind_interior
+         ! type(density) :: dens
+         type(mesh) :: m_mom,m_ind,m_temp
+         ! type(mesh) :: m_ind_interior
          ! ********************** MEDIUM VARIABLES **********************
          type(mesh_domain) :: MD_fluid,MD_sigma
          type(dir_tree) :: DT
@@ -64,24 +67,26 @@
 
          ! ************************************************************** Initialize mesh + domains
          if (SP%restart_all) then
-           call import(mesh_mom,str(DT%restart),'mesh_mom')
-           call import(mesh_ind,str(DT%restart),'mesh_ind')
+           call import(m_mom,str(DT%restart),'m_mom')
+           call import(m_ind,str(DT%restart),'m_ind')
            call import(MD_sigma,str(DT%restart),'MD_sigma')
          else
-           call mesh_generate(mesh_mom,mesh_ind,MD_sigma,SP)
-           call export(mesh_mom,str(DT%restart),'mesh_mom')
-           call export(mesh_ind,str(DT%restart),'mesh_ind')
+           call mesh_generate(m_mom,m_ind,MD_sigma,SP)
+           call export(m_mom,str(DT%restart),'m_mom')
+           call export(m_ind,str(DT%restart),'m_ind')
            call export(MD_sigma,str(DT%restart),'MD_sigma')
          endif
-         ! call init(mesh_ind_interior,MD_sigma%m_R2)
 
-         if (SP%VS%U%SS%initialize) then; call init_props(mesh_mom); call patch(mesh_mom); endif
-         if (SP%VS%B%SS%initialize) then; call init_props(mesh_ind); call patch(mesh_ind); endif
-         if (SP%VS%U%SS%initialize) then; call init_apply_BC_order(mesh_mom,SP%GP%apply_BC_order); endif
-         if (SP%VS%B%SS%initialize) then; call init_apply_BC_order(mesh_ind,SP%GP%apply_BC_order); endif
+         ! call init(m_ind_interior,MD_sigma%m_R2)
+         call export_mesh_aux(SP,DT,m_mom,m_ind)
+
+         if (SP%VS%U%SS%initialize) then; call init_props(m_mom); call patch(m_mom); endif
+         if (SP%VS%B%SS%initialize) then; call init_props(m_ind); call patch(m_ind); endif
+         if (SP%VS%U%SS%initialize) then; call init_apply_BC_order(m_mom,SP%GP%apply_BC_order); endif
+         if (SP%VS%B%SS%initialize) then; call init_apply_BC_order(m_ind,SP%GP%apply_BC_order); endif
 
          if (SP%VS%U%SS%initialize.and.SP%VS%B%SS%initialize) then
-           call init(MD_fluid,mesh_mom,mesh_ind) ! Domain,interior,exterior
+           call init(MD_fluid,m_mom,m_ind) ! Domain,interior,exterior
            call init_props(MD_fluid%m_R1); call patch(MD_fluid%m_R1)
            call init_props(MD_fluid%m_R2); call patch(MD_fluid%m_R2)
            call init_props(MD_sigma%m_R1); call patch(MD_sigma%m_R1)
@@ -90,15 +95,15 @@
 
          ! ******************** EXPORT GRIDS **************************** Export mesh (to plot)
          if (SP%EL%export_meshes) then
-           call export_mesh(mesh_mom,str(DT%meshes),'mesh_mom',1)
+           call export_mesh(m_mom,str(DT%meshes),'m_mom',1)
            call export_mesh(MD_sigma%m_R2,str(DT%meshes),'mesh_MD_sigma',1)
-           call export_mesh(mesh_ind,str(DT%meshes),'mesh_ind',1)
+           call export_mesh(m_ind,str(DT%meshes),'m_ind',1)
          if (SP%MP%mirror) then
-           call mirror_mesh(m_temp,mesh_mom,SP%MP)
+           call mirror_mesh(m_temp,m_mom,SP%MP)
            call export_mesh(m_temp,str(DT%meshes),'mesh_mom_mirror',1)
            call mirror_mesh(m_temp,MD_sigma%m_R1,SP%MP)
            call export_mesh(m_temp,str(DT%meshes),'mesh_MD_sigma_mirror',1)
-           call mirror_mesh(m_temp,mesh_ind,SP%MP)
+           call mirror_mesh(m_temp,m_ind,SP%MP)
            call export_mesh(m_temp,str(DT%meshes),'mesh_ind_mirror',1)
            call delete(m_temp)
          endif
@@ -109,14 +114,14 @@
          endif
 
          ! Initialize energy,momentum,induction
-         if (SP%VS%U%SS%initialize) call init(mom,mesh_mom,SP,DT)
-         if (SP%VS%T%SS%initialize) call init(nrg,mesh_ind,SP,DT,MD_fluid)
-         if (SP%VS%B%SS%initialize) call init(ind,mesh_ind,SP,DT,MD_fluid,MD_sigma)
+         if (SP%VS%U%SS%initialize) call init(mom,m_mom,SP,DT)
+         if (SP%VS%T%SS%initialize) call init(nrg,m_ind,SP,DT,MD_fluid)
+         if (SP%VS%B%SS%initialize) call init(ind,m_ind,SP,DT,MD_fluid,MD_sigma)
 
          ! Clean up constructor copies
-         call delete(mesh_mom)
-         call delete(mesh_ind)
-         ! call delete(mesh_ind_interior)
+         call delete(m_mom)
+         call delete(m_ind)
+         ! call delete(m_ind_interior)
          call delete(MD_fluid)
          call delete(MD_sigma)
 

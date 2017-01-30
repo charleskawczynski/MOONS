@@ -1,177 +1,216 @@
        module level_set_mod
        use current_precision_mod
-
-       use boundary_conditions_mod
-       use mesh_mod
+       use sim_params_mod
+       use IO_tools_mod
+       use IO_export_mod
+       use IO_import_mod
+       use export_raw_processed_mod
        use SF_mod
        use VF_mod
-       use TF_mod
-       use domain_mod
+       use mesh_mod
+       use mesh_domain_mod
+       use dir_tree_mod
        use string_mod
        use path_mod
-       use dir_tree_mod
+       use print_export_mod
+       use export_now_mod
+       use matrix_free_params_mod
+       use matrix_free_operators_mod
+       use preconditioners_mod
 
        use level_set_solver_mod
-       use init_LSBCs_mod
-       use init_LSField_mod
+       use init_phi_LS_BCs_mod
+       use init_phi_LS_field_mod
 
-       use IO_tools_mod
-       use IO_SF_mod
-       use IO_VF_mod
-       use export_raw_processed_mod
-       use print_export_mod
+       use iter_solver_params_mod
+       use time_marching_params_mod
 
+       use ops_embedExtract_mod
        use norms_mod
-       use ops_norms_mod
-       use ops_discrete_mod
-       use ops_del_mod
        use ops_aux_mod
        use ops_interp_mod
        use ops_discrete_mod
-       use ops_embedExtract_mod
-
+       use boundary_conditions_mod
        use apply_BCs_mod
-       use apply_stitches_mod
+
+       use probe_mod
+       use ops_norms_mod
 
        implicit none
-       private
 
-       public :: level_set,init,delete,solve
-       public :: export,export_transient
+       private
+       public :: level_set
+       public :: init,delete,display,print,export,import ! Essentials
+       public :: solve,export_tec
 
        type level_set
-         ! phi is a scalar field, but it must live on the cell face (like sigma on the cell edge)
-         type(SF) :: phi
+         ! --- Vector fields ---
+         type(SF) :: phi_LS,temp_CC1   ! CC data
+         type(VF) :: temp_F,k              ! Face data
+         type(VF) :: U_F                   ! Face data
+         ! --- Scalar fields ---
+
          type(mesh) :: m
-         integer :: N_PPE,N_LS
-         real(cp) :: tol_PPE,tol_LS
-         integer :: nstep
-         real(cp) :: dTime,t
+         type(mesh_domain) :: MD
+
+         type(sim_params) :: SP
        end type
 
-       interface init;                module procedure initlevel_set;               end interface
-       interface delete;              module procedure deletelevel_set;             end interface
-       interface solve;               module procedure solve_level_set;             end interface
-       interface export;              module procedure export_level_set;            end interface
-       interface export_transient;     module procedure level_setexport_transient;    end interface
+       interface init;               module procedure init_level_set;             end interface
+       interface delete;             module procedure delete_level_set;           end interface
+       interface display;            module procedure display_level_set;          end interface
+       interface print;              module procedure print_level_set;            end interface
+       interface export;             module procedure export_level_set;           end interface
+       interface import;             module procedure import_level_set;           end interface
+
+       interface solve;              module procedure solve_level_set;            end interface
+       interface export_tec;         module procedure export_tec_level_set;       end interface
 
        contains
 
-       ! ******************* INIT/DELETE ***********************
+       ! **********************************************************
+       ! ********************* ESSENTIALS *************************
+       ! **********************************************************
 
-       subroutine initlevel_set(LS,m,N_LS,tol_LS,dTime,DT)
+       subroutine init_level_set(LS,m,SP,MD,DT)
          implicit none
          type(level_set),intent(inout) :: LS
          type(mesh),intent(in) :: m
-         integer,intent(in) :: N_LS
-         real(cp),intent(in) :: tol_LS
-         real(cp),intent(in) :: dTime
+         type(mesh_domain),intent(in) :: MD
+         type(sim_params),intent(in) :: SP
          type(dir_tree),intent(in) :: DT
          integer :: temp_unit
          write(*,*) 'Initializing level_set:'
-
-         LS%dTime = dTime
-         LS%N_LS = N_LS
-         LS%tol_LS = tol_LS
+         call init(LS%SP,SP)
 
          call init(LS%m,m)
-         call init_CC(LS%phi,m,0.0_cp)
+         call init(LS%MD,MD)
 
+         call init_CC(LS%phi_LS,m,0.0_cp)
+         call init_Face(LS%temp_F,m,0.0_cp)
+
+         call init_Face(LS%k,m,0.0_cp)
+         call init_Face(LS%U_F,m,0.0_cp)
+         call init_CC(LS%temp_CC1,m,0.0_cp)
          write(*,*) '     Fields allocated'
 
-         call init_LSBCs(LS%phi,m)
+         ! --- Initialize Fields ---
+         call init_phi_LS_BCs(LS%phi_LS,m,LS%SP)
+         if (LS%SP%VS%phi_LS%SS%solve) call print_BCs(LS%phi_LS,'phi_LS')
+         if (LS%SP%VS%phi_LS%SS%solve) call export_BCs(LS%phi_LS,str(DT%phi_LS%BCs),'phi_LS')
          write(*,*) '     BCs initialized'
-         if (solvelevel_set) call print_BCs(LS%phi,'LS')
-         if (solvelevel_set) call export_BCs(LS%phi,str(DT%params),'LS')
 
-         call init_LSfield(LS%phi,m,str(DT%LS))
-         write(*,*) '     Field initialized'
+         call init_phi_LS_field(LS%phi_LS,m,LS%SP,str(DT%phi_LS%field))
+         write(*,*) '     phi_LS-field initialized'
 
-         call apply_BCs(LS%phi,m)
-         call apply_stitches(LS%phi,m)
-         write(*,*) '     phi BCs applied'
+         call apply_BCs(LS%phi_LS)
+         write(*,*) '     BCs applied'
 
-         if (restartPhi) then
-         call readLastStepFromFile(LS%nstep,str(DT%params),'nstep_LS')
-         else; LS%nstep = 0
-         endif
+         temp_unit = new_and_open(str(DT%params),'info_nrg')
+         call display(LS,temp_unit)
+         call close_and_message(temp_unit,str(DT%params),'info_nrg')
 
-         temp_unit = new_and_open(str(DT%params),'info_LS')
-         call level_setInfo(LS,temp_unit)
-         close(temp_unit)
-         LS%t = 0.0_cp
-         write(*,*) '     Solver settings initialized'
+         write(*,*) '     probes initialized'
          write(*,*) '     Finished'
-         write(*,*) ''
        end subroutine
 
-       subroutine deletelevel_set(LS)
+       subroutine delete_level_set(LS)
          implicit none
          type(level_set),intent(inout) :: LS
-         call delete(LS%phi)
+
+         call delete(LS%phi_LS)
+         call delete(LS%temp_F)
+         call delete(LS%k)
+         call delete(LS%temp_CC1)
+
+         call delete(LS%U_F)
+
+         call delete(LS%m)
+         call delete(LS%MD)
+
          write(*,*) 'level_set object deleted'
        end subroutine
 
-       ! ******************* EXPORT ****************************
-
-       subroutine level_setexport_transient(LS)
-         implicit none
-         type(level_set),intent(inout) :: LS
-       end subroutine
-
-       subroutine export_level_set(LS,m,F,DT)
-         implicit none
-         type(level_set),intent(in) :: LS
-         type(mesh),intent(in) :: m
-         type(VF),intent(in) :: F
-         type(dir_tree),intent(in) :: DT
-         if (.not.(restartPhi.and.(.not.solvelevel_set))) then
-           write(*,*) 'Exporting Solutions for U at LS%nstep = ',LS%nstep
-           call export_processed(m,LS%phi,str(DT%LS),'phi',1)
-           call export_raw(m,LS%phi,str(DT%LS),'phi',0)
-           write(*,*) '     finished'
-         endif
-       end subroutine
-
-       subroutine level_setInfo(LS,un) ! Use un = 6 to print to screen
+       subroutine display_level_set(LS,un)
          implicit none
          type(level_set),intent(in) :: LS
          integer,intent(in) :: un
          write(un,*) '**************************************************************'
-         write(un,*) '************************* Level Set **************************'
+         write(un,*) '*************************** level_set ***************************'
          write(un,*) '**************************************************************'
-         write(un,*) 't,dt = ',LS%t,LS%dTime
-         write(un,*) 'solveLSMethod,N_LS = ',solveLSMethod,LS%N_LS
-         write(un,*) 'tol_LS,tol_PPE = ',LS%tol_LS,LS%tol_PPE
-         write(un,*) 'nstep = ',LS%nstep
+         write(un,*) 't,dt = ',LS%SP%VS%phi_LS%TMP%t,LS%SP%VS%phi_LS%TMP%dt
+         write(un,*) 'solveTMethod,N_LS = ',LS%SP%VS%phi_LS%SS%solve_method,LS%SP%VS%phi_LS%ISP%iter_max
+         write(un,*) 'tol_LS = ',LS%SP%VS%phi_LS%ISP%tol_rel
+         call displayPhysicalMinMax(LS%phi_LS,'phi_LS',un)
          write(un,*) ''
-         call export(LS%m,un)
-         write(*,*) ''
+         call print(LS%m)
+         write(un,*) ''
        end subroutine
 
-       ! ******************* SOLVER ****************************
+       subroutine print_level_set(LS)
+         implicit none
+         type(level_set),intent(in) :: LS
+         call display(LS,6)
+       end subroutine
 
-       subroutine solve_level_set(LS,F,PE,EN,DT)
+       subroutine export_level_set(LS,DT)
+         implicit none
+         type(level_set),intent(in) :: LS
+         type(dir_tree),intent(in) :: DT
+         call export(LS%phi_LS ,str(DT%phi_LS%restart),'phi_LS')
+         call export(LS%U_F    ,str(DT%phi_LS%restart),'U_LS')
+         call export(LS%k      ,str(DT%phi_LS%restart),'k_LS')
+       end subroutine
+
+       subroutine import_level_set(LS,DT)
          implicit none
          type(level_set),intent(inout) :: LS
-         type(VF),intent(in) :: F
+         type(dir_tree),intent(in) :: DT
+         call import(LS%phi_LS ,str(DT%phi_LS%restart),'phi_LS')
+         call import(LS%U_F    ,str(DT%phi_LS%restart),'U_LS')
+         call import(LS%k      ,str(DT%phi_LS%restart),'k_LS')
+       end subroutine
+
+       ! **********************************************************
+       ! **********************************************************
+       ! **********************************************************
+
+       subroutine export_tec_level_set(LS,DT)
+         implicit none
+         type(level_set),intent(inout) :: LS
+         type(dir_tree),intent(in) :: DT
+         if (LS%SP%VS%phi_LS%SS%solve) then
+           write(*,*) 'export_tec_level_set at n_step = ',LS%SP%VS%phi_LS%TMP%n_step
+           call export_processed(LS%m,LS%phi_LS,str(DT%phi_LS%field),'phi_LS',0)
+           call export_raw(LS%m,LS%phi_LS,str(DT%phi_LS%field),'phi_LS',0)
+           write(*,*) '     finished'
+         endif
+       end subroutine
+
+       subroutine solve_level_set(LS,U,PE,EN,DT)
+         implicit none
+         type(level_set),intent(inout) :: LS
+         type(VF),intent(in) :: U
          type(print_export),intent(in) :: PE
          type(export_now),intent(in) :: EN
          type(dir_tree),intent(in) :: DT
 
-         select case(solveLSMethod)
-         case (1); call Euler_LS(LS%phi,U,m,dt,temp_F,temp_CC)
-         case default; stop 'Error: solveLSMethod must = 1,2 in level_set.f90.'
+         call embedFace(LS%U_F,U,LS%MD)
+
+         select case (LS%SP%VS%phi_LS%SS%solve_method)
+         case (1); call Euler_LS(LS%phi_LS,LS%U_F,LS%SP%VS%phi_LS%TMP%dt,LS%m,LS%temp_CC1,LS%temp_F)
+
+         case default; stop 'Erorr: bad solveTMethod value in solve_level_set in level_set.f90'
          end select
-         LS%t = LS%t + LS%dTime
-         LS%nstep = LS%nstep + 1
+         call iterate_step(LS%SP%VS%phi_LS%TMP)
+
+         ! ********************* POST SOLUTION COMPUTATIONS *********************
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
-         if (PE%info) call level_setInfo(LS,6)
-         if (PE%solution.or.EN%level_set%this.or.EN%all%this) then
-           ! call curl(LS%temp_E,LS%U,m)
-           call export(LS,LS%m,F,DT)
+         if (PE%info) call print(LS)
+         if (PE%solution.or.EN%phi_LS%this.or.EN%all%this) then
+           call export_tec(LS,DT)
          endif
        end subroutine
 

@@ -21,7 +21,6 @@
        public :: volumetric_heating_intro
        public :: volumetric_heating_equation
        public :: compute_divQ
-       public :: embed_velocity_F
 
        contains
 
@@ -138,14 +137,6 @@
          enddo; enddo; enddo; enddo
          !$OMP END PARALLEL DO
          ! call subtract_physical_mean(Q_CC)
-       end subroutine
-
-       subroutine embed_velocity_F(U_Ft,U_Fi,MD)
-         implicit none
-         type(VF),intent(inout) :: U_Ft
-         type(VF),intent(in) :: U_Fi ! Raw momentum velocity
-         type(mesh_domain),intent(in) :: MD
-         call embedFace(U_Ft,U_Fi,MD)
        end subroutine
 
        end module

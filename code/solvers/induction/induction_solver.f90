@@ -17,6 +17,7 @@
        use norms_mod
        use AB2_mod
        use compute_energy_mod
+       use matrix_free_params_mod
        use GS_Poisson_mod
        use PCG_mod
        use Jacobi_mod
@@ -144,7 +145,7 @@
        end subroutine
 
        subroutine ind_PCG_CN_AB2_cleanB_PCG(PCG_B,PCG_cleanB,B,Bstar,phi,B0,U_E,&
-         J,sigmaInv_E,curlUCrossB,curlUCrossB_nm1,F,m,dt,compute_norms,temp_F1,&
+         J,sigmaInv_E,curlUCrossB,curlUCrossB_nm1,F,m,MFP,dt,compute_norms,temp_F1,&
          temp_F2,temp_E,temp_E_TF,temp_CC,temp_CC_VF)
          ! Solves:    (B^n-B^{n+1})/dt+.5 Rem⁻¹∇x(σ⁻¹∇xB^{n+1})=AB2(∇x(ux(B⁰^n+B^n)))-.5 Rem⁻¹∇x(σ⁻¹∇xB^n)
          ! Computes:  B (above)
@@ -162,6 +163,7 @@
          type(VF),intent(inout) :: temp_F1,temp_F2,temp_E,temp_CC_VF,curlUCrossB,curlUCrossB_nm1
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: dt
+         type(matrix_free_params),intent(in) :: MFP
          logical,intent(in) :: compute_norms
          call assign(curlUCrossB_nm1,curlUCrossB)
          call add(temp_F2,B,B0) ! Since finite Rem
@@ -169,7 +171,7 @@
          call AB2(temp_F1,curlUCrossB,curlUCrossB_nm1)
          call multiply(temp_E,J,sigmaInv_E)
          call curl(temp_F2,temp_E,m)
-         call multiply(temp_F2,0.5_cp)
+         call multiply(temp_F2,MFP%coeff_explicit)
          call add(temp_F1,temp_F2)
          call multiply(temp_F1,dt)
          call add(temp_F1,B)

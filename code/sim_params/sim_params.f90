@@ -87,8 +87,8 @@
 
        SP%restart_all                = F ! restart sim (requires no code changes)
        SP%couple_time_steps          = T ! Ensures all dt are equal to coupled%dt
-       SP%finite_Rem                 = F ! Ensures all dt are equal to coupled%dt
-       SP%include_vacuum             = F ! Ensures all dt are equal to coupled%dt
+       SP%finite_Rem                 = T ! Ensures all dt are equal to coupled%dt
+       SP%include_vacuum             = T ! Ensures all dt are equal to coupled%dt
        SP%uniform_gravity_dir        = 1 ! Uniform gravity field direction
        SP%uniform_B0_dir             = 3 ! Uniform applied field direction
 
@@ -107,7 +107,7 @@
        ! call init(MQP,auto_find_N,max_mesh_stretch_ratio,N_max_points_add)
        call init(SP%MQP,F,2.0_cp,50)
 
-       time                          = 1000.0_cp
+       time                          = 10000.0_cp
        dtime                         = 2.0_cp*pow(-4)
 
        SP%GP%tw                      = 0.05_cp
@@ -118,8 +118,8 @@
        ! SP%GP%apply_BC_order       = (/3,4,1,2,5,6/) ! good for periodic in z?
 
        SP%DP%Re                      = 4.0_cp*pow(2)
-       SP%DP%Ha                      = 1.0_cp*pow(3)
-       SP%DP%Rem                     = 1.0_cp*pow(0)
+       SP%DP%Ha                      = 5.0_cp*pow(2)
+       SP%DP%Rem                     = 1.0_cp*pow(2)
        SP%DP%cw                      = 0.0_cp
        SP%DP%sig_local_over_sig_f    = pow(-3)
        SP%DP%Gr                      = 0.0_cp
@@ -145,9 +145,10 @@
        call init_IC_BC(SP%VS%T,  0,0)
        call init_IC_BC(SP%VS%U,  0,2)
        call init_IC_BC(SP%VS%P,  0,0)
-       call init_IC_BC(SP%VS%B,  0,8)
+       call init_IC_BC(SP%VS%B,  0,7)
        call init_IC_BC(SP%VS%B0, 1,0)
        call init_IC_BC(SP%VS%phi,0,0)
+       call init_IC_BC(SP%VS%rho,0,0)
 
        ! call init(SS,initialize,solve,restart,solve_method)
        call init(SP%VS%T%SS,  F,F,F,0)
@@ -156,6 +157,7 @@
        call init(SP%VS%B%SS,  T,T,F,3)
        call init(SP%VS%B0%SS, T,T,F,0)
        call init(SP%VS%phi%SS,T,T,F,0)
+       call init(SP%VS%rho%SS,T,T,F,0)
 
        ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,export_convergence,dir,name)
        call init(SP%VS%T%ISP,  5  ,pow(-6),pow(-13),100,F,str(DT%ISP),'ISP_T')
@@ -164,6 +166,7 @@
        call init(SP%VS%B%ISP,  100,pow(-6),pow(-13),100,F,str(DT%ISP),'ISP_B')
        call init(SP%VS%B0%ISP, 5  ,pow(-6),pow(-13),100,F,str(DT%ISP),'ISP_B0')
        call init(SP%VS%phi%ISP,5  ,pow(-6),pow(-13),100,F,str(DT%ISP),'ISP_phi')
+       call init(SP%VS%rho%ISP,5  ,pow(-6),pow(-13),100,F,str(DT%ISP),'ISP_rho')
 
        ! call init(TMP,multistep_iter,n_step_stop,dtime,dir,name)
        call init(SP%coupled,1,ceiling(time/dtime,li),dtime,str(DT%TMP), 'TMP_coupled')
@@ -173,18 +176,23 @@
        call init(SP%VS%B%TMP,  1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_B')
        call init(SP%VS%B0%TMP, 1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_B0')
        call init(SP%VS%phi%TMP,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_phi')
+       call init(SP%VS%rho%TMP,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_rho')
 
        ! Matrix-free parameters:
-       if (SP%finite_Rem) then
-       SP%VS%B%MFP%coeff   = SP%VS%B%TMP%dt/SP%DP%Rem        ! Backward Euler
-       ! SP%VS%B%MFP%coeff   = SP%VS%B%TMP%dt/SP%DP%Rem*0.5_cp ! Crank Nicholson
-       else
-       SP%VS%B%MFP%coeff   = SP%VS%B%TMP%dt           ! Backward Euler
-       endif
-       SP%VS%U%MFP%coeff   = -0.5_cp*SP%VS%U%TMP%dt/SP%DP%Re            ! Crank Nicholson
-       SP%VS%T%MFP%coeff   = -0.5_cp*SP%VS%T%TMP%dt/(SP%DP%Re*SP%DP%Pr) ! Crank Nicholson
+       SP%VS%B%MFP%theta = 1.0_cp ! 1 = Backward Euler, .5 = Crank Nicholson
+       SP%VS%U%MFP%theta = 0.5_cp ! 1 = Backward Euler, .5 = Crank Nicholson
+       SP%VS%T%MFP%theta = 0.5_cp ! 1 = Backward Euler, .5 = Crank Nicholson
+       SP%VS%B%MFP%coeff   = SP%VS%B%MFP%theta*SP%VS%B%TMP%dt          ! LHS diffusion coeff
+       SP%VS%U%MFP%coeff   =-SP%VS%U%MFP%theta*SP%VS%U%TMP%dt/SP%DP%Re ! LHS diffusion coeff
+       SP%VS%T%MFP%coeff   =-SP%VS%T%MFP%theta*SP%VS%T%TMP%dt/SP%DP%Pe ! LHS diffusion coeff
        SP%VS%phi%MFP%coeff = 0.0_cp ! Poisson, coefficient unused
        SP%VS%p%MFP%coeff   = 0.0_cp ! Poisson, coefficient unused
+       SP%VS%rho%MFP%coeff = 0.0_cp ! Poisson, coefficient unused
+
+       SP%VS%B%MFP%coeff_explicit = -SP%VS%B%MFP%coeff*(1.0_cp-SP%VS%B%MFP%theta)
+       SP%VS%U%MFP%coeff_explicit = -SP%VS%U%MFP%coeff*(1.0_cp-SP%VS%U%MFP%theta)
+       SP%VS%T%MFP%coeff_explicit = -SP%VS%T%MFP%coeff*(1.0_cp-SP%VS%T%MFP%theta)
+       if (SP%finite_Rem) SP%VS%B%MFP%coeff = SP%VS%B%MFP%coeff/SP%DP%Rem
 
        SP%MF%JCrossB             = T ! add JCrossB      to momentum equation
        SP%MF%Q2D_JCrossB         = F ! add Q2D JCrossB  to momentum equation
@@ -198,6 +206,7 @@
          call couple_time_step(SP%VS%B%TMP  ,SP%coupled)
          call couple_time_step(SP%VS%B0%TMP ,SP%coupled)
          call couple_time_step(SP%VS%phi%TMP,SP%coupled)
+         call couple_time_step(SP%VS%rho%TMP,SP%coupled)
        endif
        ! call export_import_SS(SP%VS)
        if (.not.SP%finite_Rem) SP%DP%Rem = 1.0_cp
