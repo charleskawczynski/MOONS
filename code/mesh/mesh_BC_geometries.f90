@@ -144,7 +144,7 @@
          real(cp) :: tf,Gamma_v
          call delete(m_mom)
          buffer = 3.0_cp
-         buffer_y = 13.0_cp
+         buffer_y = 6.0_cp
          hmin = -1.0_cp; hmax = 1.0_cp; center = 0.0_cp
          hmax(3) = 0.0_cp
          beta = Re_Ha_BL(Re*buffer,Ha*buffer,hmin,hmax)
@@ -163,7 +163,10 @@
          ! N = 58; N(3)=N(1)/2; N_w = 14; N_v = 22 ! Fine
 
          ! Ha=1000
-         N = 70; N(3)=N(1)/2; N_w = 18; N_v = 24 ! Fine
+         ! N = 70; N(3)=N(1)/2; N_w = 20; N_v = 24 ! Fine
+
+         ! Ha=500
+         N = 60; N(3)=N(1)/2; N_w = 16; N_v = 22 ! Fine
 
          N_extra = N_w ! since no wall domain above lid
          N_top_half = ceiling(N(2)/2.0_cp)+5

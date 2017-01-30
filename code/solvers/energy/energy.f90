@@ -101,7 +101,7 @@
          type(sim_params),intent(in) :: SP
          type(dir_tree),intent(in) :: DT
          integer :: temp_unit
-         type(SF) :: k_cc,vol_CC
+         type(SF) :: k_cc
          write(*,*) 'Initializing energy:'
          call init(nrg%SP,SP)
 
@@ -122,12 +122,6 @@
 
          ! --- Scalar Fields ---
          call init_CC(nrg%divQ,m)
-         call init_CC(vol_CC,m)
-         call volume(vol_CC,m)
-         if (nrg%SP%EL%export_cell_volume) then
-           call export_raw(nrg%m,vol_CC,str(DT%meshes),'mom_cell_volume',0)
-         endif
-         call delete(vol_CC)
          write(*,*) '     Fields allocated'
 
          ! --- Initialize Fields ---
@@ -265,7 +259,7 @@
          type(export_now),intent(in) :: EN
          type(dir_tree),intent(in) :: DT
 
-         call embed_velocity_F(nrg%U_F,U,nrg%MD)
+         call embedFace(nrg%U_F,U,nrg%MD)
 
          select case (nrg%SP%VS%T%SS%solve_method)
          case (1)
@@ -313,7 +307,7 @@
          if (PE%info) call print(nrg)
 
          if (PE%solution.or.EN%T%this.or.EN%all%this) then
-           call export(nrg,DT)
+           ! call export(nrg,DT)
            call export_tec(nrg,DT)
          endif
        end subroutine

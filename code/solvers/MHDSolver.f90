@@ -69,7 +69,7 @@
              if (refine_mesh_now_all.or.RM%any_next) PE%transient_0D = .true.
            endif
 
-           ! if (SP%solveDensity)    call solve(dens,mom%U,  PE,EN,DT)
+           ! if (SP%VS%rho%SS%solve)    call solve(dens,mom%U,  PE,EN,DT)
            if (SP%VS%T%SS%solve) call solve(nrg,mom%U,  PE,EN,DT)
            if (SP%VS%U%SS%solve) call solve(mom,F,Fnm1, PE,EN,DT)
            if (SP%VS%B%SS%solve) call solve(ind,mom%U_E,PE,EN,DT)

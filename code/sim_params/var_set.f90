@@ -10,10 +10,9 @@
        public :: export_import_SS
 
        type var_set
-         type(var) :: T,U,p,B,B0,phi
+         type(var) :: T,U,p,B,B0,phi,rho
        end type
 
-       interface init;             module procedure init_VS;             end interface
        interface init;             module procedure init_copy_VS;        end interface
        interface delete;           module procedure delete_VS;           end interface
        interface export;           module procedure export_VS;           end interface
@@ -29,18 +28,6 @@
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-       subroutine init_VS(VS,T,U,P,B,B0,phi)
-         implicit none
-         type(var_set),intent(inout) :: VS
-         type(var),intent(in) :: T,U,P,B,B0,phi
-         call init(VS%T,T)
-         call init(VS%U,U)
-         call init(VS%P,P)
-         call init(VS%B,B)
-         call init(VS%B0,B0)
-         call init(VS%phi,phi)
-       end subroutine
-
        subroutine init_copy_VS(VS,VS_in)
          implicit none
          type(var_set),intent(inout) :: VS
@@ -51,6 +38,7 @@
          call init(VS%B,VS_in%B)
          call init(VS%B0,VS_in%B0)
          call init(VS%phi,VS_in%phi)
+         call init(VS%rho,VS_in%rho)
        end subroutine
 
        subroutine delete_VS(VS)
@@ -62,6 +50,7 @@
          call delete(VS%B)
          call delete(VS%B0)
          call delete(VS%phi)
+         call delete(VS%rho)
        end subroutine
 
        subroutine export_VS(VS,un)
@@ -74,6 +63,7 @@
          call export(VS%B,un)
          call export(VS%B0,un)
          call export(VS%phi,un)
+         call export(VS%rho,un)
        end subroutine
 
        subroutine import_VS(VS,un)
@@ -86,6 +76,7 @@
          call import(VS%B,un)
          call import(VS%B0,un)
          call import(VS%phi,un)
+         call import(VS%rho,un)
        end subroutine
 
        subroutine display_VS(VS,un)
@@ -98,6 +89,7 @@
          write(un,*) '---------- VAR B ----------';   call display(VS%B,un)
          write(un,*) '---------- VAR B0 ----------';  call display(VS%B0,un)
          write(un,*) '---------- VAR phi ----------'; call display(VS%phi,un)
+         write(un,*) '---------- VAR rho ----------'; call display(VS%rho,un)
          write(un,*) '-----------------------------'
        end subroutine
 
@@ -116,6 +108,7 @@
          if(VS%B%SS%restart) then;  call import(VS%B%ISP);  else;call export(VS%B%ISP);  endif
          if(VS%B0%SS%restart) then; call import(VS%B0%ISP); else;call export(VS%B0%ISP); endif
          if(VS%phi%SS%restart) then;call import(VS%phi%ISP);else;call export(VS%phi%ISP);endif
+         if(VS%rho%SS%restart) then;call import(VS%rho%ISP);else;call export(VS%rho%ISP);endif
 
          if(VS%T%SS%restart) then;  call import(VS%T%TMP);  else;call export(VS%T%TMP);  endif
          if(VS%U%SS%restart) then;  call import(VS%U%TMP);  else;call export(VS%U%TMP);  endif
@@ -123,6 +116,7 @@
          if(VS%B%SS%restart) then;  call import(VS%B%TMP);  else;call export(VS%B%TMP);  endif
          if(VS%B0%SS%restart) then; call import(VS%B0%TMP); else;call export(VS%B0%TMP); endif
          if(VS%phi%SS%restart) then;call import(VS%phi%TMP);else;call export(VS%phi%TMP);endif
+         if(VS%rho%SS%restart) then;call import(VS%rho%TMP);else;call export(VS%rho%TMP);endif
        end subroutine
 
        end module
