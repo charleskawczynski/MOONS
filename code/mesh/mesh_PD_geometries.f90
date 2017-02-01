@@ -11,6 +11,7 @@
        use mesh_domain_mod
        use mesh_mod
        use mesh_quality_params_mod
+       use dimensionless_params_mod
        implicit none
 
        private
@@ -18,12 +19,12 @@
 
        contains
 
-       subroutine MHD_3D_NSC_PD(m_mom,m_ind,MQP,MD_sigma,Re,Ha)
+       subroutine MHD_3D_NSC_PD(m_mom,m_ind,MQP,MD_sigma,DP)
          implicit none
          type(mesh),intent(inout) :: m_mom,m_ind
          type(mesh_quality_params),intent(in) :: MQP
          type(mesh_domain),intent(inout) :: MD_sigma
-         real(cp),intent(in) :: Re,Ha
+         type(dimensionless_params),intent(in) :: DP
          type(grid) :: g
          real(cp),dimension(3) :: hmin,hmax,beta
          integer,dimension(3) :: N
@@ -32,7 +33,7 @@
          hmin = -1.0_cp; hmax = 1.0_cp
          hmin(3) = -5.0_cp
          hmax(3) = 5.0_cp
-         beta = Re_Ha_BL(Re,Ha,hmin,hmax)
+         beta = Re_Ha_BL(DP%Re,DP%Ha,hmin,hmax)
          N = (/50,50,100/)
          i = 1; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
          i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)

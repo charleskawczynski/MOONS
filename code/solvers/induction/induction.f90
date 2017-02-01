@@ -395,10 +395,8 @@
              call export_raw(ind%m,ind%U_E%x  ,str(DT%B%field),'U_E_x',0)
              call export_raw(ind%m,ind%U_E%y  ,str(DT%B%field),'U_E_y',0)
              call export_raw(ind%m,ind%U_E%z  ,str(DT%B%field),'U_E_z',0)
-             ! call export_processed(ind%m,ind%B0,str(DT%B%field),'B0',1)
+             call export_processed(ind%m,ind%B0,str(DT%B%field),'B0',1)
              ! call embedFace(ind%B,ind%B_interior,ind%MD_sigma)
-             ! call export_processed(ind%m,ind%B ,str(DT%B%field),'B_final',1)
-             ! call export_raw(ind%m,ind%B ,str(DT%B%field),'B_final',0)
              endif
              write(*,*) '     finished'
            endif
