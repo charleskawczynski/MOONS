@@ -70,28 +70,26 @@
            call import(m_mom,str(DT%restart),'m_mom')
            call import(m_ind,str(DT%restart),'m_ind')
            call import(MD_sigma,str(DT%restart),'MD_sigma')
+           call import(MD_fluid,str(DT%restart),'MD_fluid')
          else
            call mesh_generate(m_mom,m_ind,MD_sigma,SP)
-           call export(m_mom,str(DT%restart),'m_mom')
-           call export(m_ind,str(DT%restart),'m_ind')
-           call export(MD_sigma,str(DT%restart),'MD_sigma')
+           ! call init(m_ind_interior,MD_sigma%m_R2)
+
+           if (SP%VS%U%SS%initialize) then; call init_props(m_mom); call patch(m_mom); endif
+           if (SP%VS%B%SS%initialize) then; call init_props(m_ind); call patch(m_ind); endif
+           if (SP%VS%U%SS%initialize) then; call init_apply_BC_order(m_mom,SP%GP%apply_BC_order); endif
+           if (SP%VS%B%SS%initialize) then; call init_apply_BC_order(m_ind,SP%GP%apply_BC_order); endif
+
+           if (SP%VS%U%SS%initialize.and.SP%VS%B%SS%initialize) then
+             call init(MD_fluid,m_mom,m_ind) ! Domain,interior,exterior
+             call init_props(MD_fluid%m_R1); call patch(MD_fluid%m_R1)
+             call init_props(MD_fluid%m_R2); call patch(MD_fluid%m_R2)
+             call init_props(MD_sigma%m_R1); call patch(MD_sigma%m_R1)
+             call init_props(MD_sigma%m_R2); call patch(MD_sigma%m_R2)
+           endif
          endif
 
-         ! call init(m_ind_interior,MD_sigma%m_R2)
          call export_mesh_aux(SP,DT,m_mom,m_ind)
-
-         if (SP%VS%U%SS%initialize) then; call init_props(m_mom); call patch(m_mom); endif
-         if (SP%VS%B%SS%initialize) then; call init_props(m_ind); call patch(m_ind); endif
-         if (SP%VS%U%SS%initialize) then; call init_apply_BC_order(m_mom,SP%GP%apply_BC_order); endif
-         if (SP%VS%B%SS%initialize) then; call init_apply_BC_order(m_ind,SP%GP%apply_BC_order); endif
-
-         if (SP%VS%U%SS%initialize.and.SP%VS%B%SS%initialize) then
-           call init(MD_fluid,m_mom,m_ind) ! Domain,interior,exterior
-           call init_props(MD_fluid%m_R1); call patch(MD_fluid%m_R1)
-           call init_props(MD_fluid%m_R2); call patch(MD_fluid%m_R2)
-           call init_props(MD_sigma%m_R1); call patch(MD_sigma%m_R1)
-           call init_props(MD_sigma%m_R2); call patch(MD_sigma%m_R2)
-         endif
 
          ! ******************** EXPORT GRIDS **************************** Export mesh (to plot)
          if (SP%EL%export_meshes) then
@@ -163,11 +161,16 @@
            if (SP%VS%U%SS%initialize.and.SP%EL%export_analytic) then
              call export_SH(mom%m,mom%U%x,SP%DP%Ha,0.0_cp,-1.0_cp,1,DT)
            endif
-         else
-           write(*,*) ' ******************** COMPUTATIONS COMPLETE ********************'
-           write(*,*) ' ******************** COMPUTATIONS COMPLETE ********************'
-           write(*,*) ' ******************** COMPUTATIONS COMPLETE ********************'
          endif
+
+         call export(m_mom,str(DT%restart),'m_mom')
+         call export(m_ind,str(DT%restart),'m_ind')
+         call export(MD_sigma,str(DT%restart),'MD_sigma')
+         call export(MD_fluid,str(DT%restart),'MD_fluid')
+
+         write(*,*) ' ******************** COMPUTATIONS COMPLETE ********************'
+         write(*,*) ' ******************** COMPUTATIONS COMPLETE ********************'
+         write(*,*) ' ******************** COMPUTATIONS COMPLETE ********************'
          ! ******************* DELETE ALLOCATED DERIVED TYPES ***********
          call delete(nrg)
          call delete(mom)

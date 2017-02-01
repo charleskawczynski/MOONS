@@ -328,8 +328,10 @@
          call export(mom%probe_KE,mom%SP%VS%U%TMP,temp)
 
          if (mom%m%MP%plane_any) then
-           call compute_TKE_2C(temp,mom%U_CC%y,mom%U_CC%z,mom%m,scale,mom%temp_CC)
-           call export(mom%probe_KE_2C,mom%SP%VS%U%TMP,temp)
+         if (mom%m%MP%plane(1)) call compute_TKE_2C(temp,mom%U_CC%y,mom%U_CC%z,mom%m,scale,mom%temp_CC)
+         if (mom%m%MP%plane(2)) call compute_TKE_2C(temp,mom%U_CC%x,mom%U_CC%z,mom%m,scale,mom%temp_CC)
+         if (mom%m%MP%plane(3)) call compute_TKE_2C(temp,mom%U_CC%x,mom%U_CC%y,mom%m,scale,mom%temp_CC)
+         call export(mom%probe_KE_2C,mom%SP%VS%U%TMP,temp)
          endif
          call div(mom%divU,mom%U,mom%m)
          call Ln(temp,mom%divU,2.0_cp,mom%m)

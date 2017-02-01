@@ -53,6 +53,7 @@
          case (13); call LDC_4_domains(U)
          case (14); call duct_flow_2D_2domains(U)
          case (15); call LDC_9_domains(U)
+         case (16); call LDC_at_ymax_Shatrov_smooth(U,m)
          case default; stop 'Error: bad preset_ID in init_UBCs.f90'
          end select
          call make_periodic(U,m,periodic_dir)
@@ -74,6 +75,16 @@
          n = 18.0_cp
          ! smooth_lid_GF(U,g,DL,plane,n)
          call smooth_lid(U%x%BF(1)%BCs%face%b(4),m%B(1)%fb(4),U%x%DL,2,n)
+       end subroutine
+
+       subroutine LDC_at_ymax_Shatrov_smooth(U,m)
+         implicit none
+         type(VF),intent(inout) :: U
+         type(mesh),intent(in) :: m
+         real(cp) :: k_lid
+         call init(U%x%BF(1)%BCs,1.0_cp,4)
+         k_lid = 80.0_cp
+         call smooth_lid(U%x%BF(1)%BCs%face%b(4),m%B(1)%fb(4),U%x%DL,2,k_lid)
        end subroutine
 
        subroutine LDC_at_ymax_symmetric_zmax(U)

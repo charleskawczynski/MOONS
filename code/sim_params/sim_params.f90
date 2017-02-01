@@ -68,6 +68,8 @@
        logical,parameter :: T = .true.
        logical,parameter :: F = .false.
        real(cp) :: time,dtime
+       logical :: RV_BCs
+       RV_BCs = T
 
        SP%FCL%stop_after_mesh_export = F !
        SP%FCL%stop_before_solve      = F ! Just export ICs, do not run simulation
@@ -75,9 +77,9 @@
        SP%FCL%post_process           = T ! not used anywhere
 
        SP%EL%export_analytic         = F ! Export analytic solutions (MOONS.f90)
-       SP%EL%export_meshes           = T ! Export all meshes before starting simulation
+       SP%EL%export_meshes           = F ! Export all meshes before starting simulation
        SP%EL%export_vort_SF          = T ! Export vorticity-stream-function after simulation
-       SP%EL%export_mat_props        = T ! Export material properties before starting simulation
+       SP%EL%export_mat_props        = F ! Export material properties before starting simulation
        SP%EL%export_ICs              = F ! Export Post-Processed ICs before starting simulation
        SP%EL%export_cell_volume      = F ! Export cell volumes for each mesh
        SP%EL%export_planar           = F ! Export 2D data when N_cell = 1 along given direction
@@ -86,11 +88,11 @@
        SP%EL%export_soln_only        = F ! Export processed solution only
 
        SP%restart_all                = F ! restart sim (requires no code changes)
-       SP%couple_time_steps          = T ! Ensures all dt are equal to coupled%dt
-       SP%finite_Rem                 = T ! Ensures all dt are equal to coupled%dt
-       SP%include_vacuum             = T ! Ensures all dt are equal to coupled%dt
        SP%uniform_gravity_dir        = 1 ! Uniform gravity field direction
        SP%uniform_B0_dir             = 3 ! Uniform applied field direction
+       SP%couple_time_steps          = RV_BCs ! Ensures all dt are equal to coupled%dt
+       SP%finite_Rem                 = RV_BCs ! Ensures all dt are equal to coupled%dt
+       SP%include_vacuum             = RV_BCs ! Ensures all dt are equal to coupled%dt
 
        SP%matrix_based               = F ! Solve induction equation
        SP%unsteady_B0                = F ! Add unsteady applied field to induction eq.
@@ -105,20 +107,22 @@
        call init(SP%PE,2,2,4,6,F,str(DT%PE),'PE')
 
        ! call init(MQP,auto_find_N,max_mesh_stretch_ratio,N_max_points_add)
-       call init(SP%MQP,F,2.0_cp,50)
+       call init(SP%MQP,T,2.0_cp,50)
 
        time                          = 10000.0_cp
-       dtime                         = 2.0_cp*pow(-4)
+       dtime                         = 1.0_cp*pow(-5)
 
        SP%GP%tw                      = 0.05_cp
-       SP%GP%geometry                = 14
+       SP%GP%geometry                = 15
        SP%GP%periodic_dir            = (/0,0,0/)
        SP%GP%apply_BC_order          = (/3,4,5,6,1,2/) ! good for LDC
        ! SP%GP%apply_BC_order       = (/5,6,3,4,1,2/) ! good for periodic in z?
        ! SP%GP%apply_BC_order       = (/3,4,1,2,5,6/) ! good for periodic in z?
 
+       call delete(SP%DP)
        SP%DP%Re                      = 4.0_cp*pow(2)
-       SP%DP%Ha                      = 5.0_cp*pow(2)
+       SP%DP%Ha                      = 1.0_cp*pow(4)
+       ! SP%DP%N                       = 4.0_cp*pow(-1)
        SP%DP%Rem                     = 1.0_cp*pow(2)
        SP%DP%cw                      = 0.0_cp
        SP%DP%sig_local_over_sig_f    = pow(-3)
@@ -128,6 +132,7 @@
        SP%DP%Ec                      = 0.0_cp
 
        SP%DP%N                       = SP%DP%Ha**2.0_cp/SP%DP%Re
+       ! SP%DP%Ha                      = (SP%DP%N*SP%DP%Re)**0.5_cp
        SP%DP%Al                      = SP%DP%N/SP%DP%Rem
        SP%DP%Pe                      = SP%DP%Pr*SP%DP%Re
        SP%DP%tau                     = SP%DP%Re/SP%DP%Ha
@@ -145,7 +150,8 @@
        call init_IC_BC(SP%VS%T,  0,0)
        call init_IC_BC(SP%VS%U,  0,2)
        call init_IC_BC(SP%VS%P,  0,0)
-       call init_IC_BC(SP%VS%B,  0,7)
+       if (     RV_BCs) call init_IC_BC(SP%VS%B,  0,7)
+       if (.not.RV_BCs) call init_IC_BC(SP%VS%B,  0,8)
        call init_IC_BC(SP%VS%B0, 1,0)
        call init_IC_BC(SP%VS%phi,0,0)
        call init_IC_BC(SP%VS%rho,0,0)
@@ -157,13 +163,14 @@
        call init(SP%VS%B%SS,  T,T,F,3)
        call init(SP%VS%B0%SS, T,T,F,0)
        call init(SP%VS%phi%SS,T,T,F,0)
-       call init(SP%VS%rho%SS,T,T,F,0)
+       call init(SP%VS%rho%SS,F,F,F,0)
 
        ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,export_convergence,dir,name)
        call init(SP%VS%T%ISP,  5  ,pow(-6),pow(-13),100,F,str(DT%ISP),'ISP_T')
        call init(SP%VS%U%ISP,  5  ,pow(-6),pow(-13),100,F,str(DT%ISP),'ISP_U')
        call init(SP%VS%P%ISP,  5  ,pow(-6),pow(-13),100,F,str(DT%ISP),'ISP_P')
-       call init(SP%VS%B%ISP,  100,pow(-6),pow(-13),100,F,str(DT%ISP),'ISP_B')
+       if (     RV_BCs) call init(SP%VS%B%ISP,  20 ,pow(-6),pow(-13),100,F,str(DT%ISP),'ISP_B')
+       if (.not.RV_BCs) call init(SP%VS%B%ISP,  5  ,pow(-6),pow(-13),100,F,str(DT%ISP),'ISP_B')
        call init(SP%VS%B0%ISP, 5  ,pow(-6),pow(-13),100,F,str(DT%ISP),'ISP_B0')
        call init(SP%VS%phi%ISP,5  ,pow(-6),pow(-13),100,F,str(DT%ISP),'ISP_phi')
        call init(SP%VS%rho%ISP,5  ,pow(-6),pow(-13),100,F,str(DT%ISP),'ISP_rho')
@@ -210,8 +217,22 @@
        endif
        ! call export_import_SS(SP%VS)
        if (.not.SP%finite_Rem) SP%DP%Rem = 1.0_cp
-       if (SP%coupled%n_step_stop.lt.1) stop 'Error: coupled%n_step_stop<1 in sim_params.f90'
+       call sanity_check(SP)
       end subroutine
+
+     subroutine sanity_check(SP)
+       implicit none
+       type(sim_params),intent(in) :: SP
+       if (SP%coupled%n_step_stop.lt.1) stop 'Error: coupled%n_step_stop<1 in sim_params.f90'
+       if (SP%VS%T%SS%solve  .and.(.not.SP%VS%T%SS%initialize))   stop 'Error: solve but not init? T'
+       if (SP%VS%U%SS%solve  .and.(.not.SP%VS%U%SS%initialize))   stop 'Error: solve but not init? U'
+       if (SP%VS%P%SS%solve  .and.(.not.SP%VS%P%SS%initialize))   stop 'Error: solve but not init? P'
+       if (SP%VS%B%SS%solve  .and.(.not.SP%VS%B%SS%initialize))   stop 'Error: solve but not init? B'
+       if (SP%VS%B0%SS%solve .and.(.not.SP%VS%B0%SS%initialize))  stop 'Error: solve but not init? B0'
+       if (SP%VS%phi%SS%solve.and.(.not.SP%VS%phi%SS%initialize)) stop 'Error: solve but not init? phi'
+       if (SP%VS%rho%SS%solve.and.(.not.SP%VS%rho%SS%initialize)) stop 'Error: solve but not init? rho'
+       if (SP%MF%JCrossB.and.(.not.SP%VS%B%SS%initialize)) stop 'Error: JCrossB but no init B?'
+     end subroutine
 
      subroutine init_SP_copy(SP,SP_in)
        implicit none

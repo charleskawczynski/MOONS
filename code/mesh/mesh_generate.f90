@@ -19,8 +19,8 @@
          type(mesh),intent(inout) :: m_mom,m_ind
          type(mesh_domain),intent(inout) :: MD_sigma
          type(sim_params),intent(in) :: SP
-         call geometry_BMC(m_mom,m_ind,SP%MQP,MD_sigma,&
-         SP%DP%Re,SP%DP%Ha,SP%GP%tw,SP%include_vacuum,SP%GP%geometry)
+         call geometry_BMC(m_mom,m_ind,SP%MQP,MD_sigma,SP%DP,&
+         SP%GP%tw,SP%include_vacuum,SP%GP%geometry)
        end subroutine
 
        end module

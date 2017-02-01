@@ -21,8 +21,10 @@
        implicit none
 
        private
-       public :: compute_AddJCrossB, compute_add_Q2D_JCrossB
-       public :: compute_JCrossB, compute_Q2D_JCrossB
+       public :: compute_AddJCrossB
+       public :: compute_JCrossB
+       public :: compute_add_Q2D_JCrossB
+       public :: compute_Q2D_JCrossB
        public :: compute_divBJ
        public :: compute_J
        public :: compute_Total_Energy_Domain

@@ -11,6 +11,7 @@
        use mesh_domain_mod
        use mesh_mod
        use mesh_quality_params_mod
+       use dimensionless_params_mod
        implicit none
 
        private
@@ -20,12 +21,13 @@
 
        contains
 
-       subroutine MHD_3D_LDC_BC(m_mom,m_ind,MQP,MD_sigma,Re,Ha,tw,include_vacuum)
+       subroutine MHD_3D_LDC_BC(m_mom,m_ind,MQP,MD_sigma,DP,tw,include_vacuum)
          implicit none
          type(mesh),intent(inout) :: m_mom,m_ind
          type(mesh_quality_params),intent(in) :: MQP
          type(mesh_domain),intent(inout) :: MD_sigma
-         real(cp),intent(in) :: Re,Ha,tw
+         type(dimensionless_params),intent(in) :: DP
+         real(cp),intent(in) :: tw
          logical,intent(in) :: include_vacuum
          type(mesh) :: m_sigma
          type(grid) :: g
@@ -34,7 +36,7 @@
          integer :: i,N_w,N_v,N_extra
          real(cp) :: tf,Gamma_v
          call delete(m_mom); call delete(m_ind)
-         hmin = -1.0_cp; hmax = 1.0_cp; beta = Re_Ha_BL(Re,Ha,hmin,hmax)
+         hmin = -1.0_cp; hmax = 1.0_cp; beta = Re_Ha_BL(DP%Re,DP%Ha,hmin,hmax)
          N = (/30,30,30/)
          N_v = 12
          N_w = 4
@@ -72,12 +74,13 @@
          call delete(g)
        end subroutine
 
-       subroutine MHD_3D_LDC_BC_symmetric(m_mom,m_ind,MQP,MD_sigma,Re,Ha,tw,include_vacuum)
+       subroutine MHD_3D_LDC_BC_symmetric(m_mom,m_ind,MQP,MD_sigma,DP,tw,include_vacuum)
          implicit none
          type(mesh),intent(inout) :: m_mom,m_ind
          type(mesh_quality_params),intent(in) :: MQP
          type(mesh_domain),intent(inout) :: MD_sigma
-         real(cp),intent(in) :: Re,Ha,tw
+         type(dimensionless_params),intent(in) :: DP
+         real(cp),intent(in) :: tw
          logical,intent(in) :: include_vacuum
          type(mesh) :: m_sigma
          type(grid) :: g
@@ -86,7 +89,7 @@
          integer :: i,N_w,N_v,N_extra
          real(cp) :: tf,Gamma_v
          call delete(m_mom)
-         hmin = -1.0_cp; hmax = 1.0_cp; beta = Re_Ha_BL(Re,Ha,hmin,hmax)
+         hmin = -1.0_cp; hmax = 1.0_cp; beta = Re_Ha_BL(DP%Re,DP%Ha,hmin,hmax)
          hmax(3) = 0.0_cp
          ! N = (/15,15,10/)
          N = (/32,32,16/)
@@ -127,12 +130,13 @@
          call delete(g)
        end subroutine
 
-       subroutine MHD_3D_LDC_BC_symmetric_fine_top(m_mom,m_ind,MQP,MD_sigma,Re,Ha,tw,include_vacuum)
+       subroutine MHD_3D_LDC_BC_symmetric_fine_top(m_mom,m_ind,MQP,MD_sigma,DP,tw,include_vacuum)
          implicit none
          type(mesh),intent(inout) :: m_mom,m_ind
          type(mesh_quality_params),intent(in) :: MQP
          type(mesh_domain),intent(inout) :: MD_sigma
-         real(cp),intent(in) :: Re,Ha,tw
+         type(dimensionless_params),intent(in) :: DP
+         real(cp),intent(in) :: tw
          logical,intent(in) :: include_vacuum
          type(mesh) :: m_sigma
          type(grid) :: g
@@ -143,16 +147,17 @@
          integer :: i,N_w,N_v,N_extra
          real(cp) :: tf,Gamma_v
          call delete(m_mom)
-         buffer = 3.0_cp
-         buffer_y = 6.0_cp
+         buffer = 1.0_cp
+         buffer_y = 1.0_cp
          hmin = -1.0_cp; hmax = 1.0_cp; center = 0.0_cp
          hmax(3) = 0.0_cp
-         beta = Re_Ha_BL(Re*buffer,Ha*buffer,hmin,hmax)
-         beta_y = Re_Ha_BL(Re*buffer_y,Ha*buffer_y,hmin,hmax)
+         beta = Re_Ha_BL(DP%Re*buffer,DP%Ha*buffer,hmin,hmax)
+         beta_y = Re_Ha_BL(DP%Re*buffer_y,DP%Ha*buffer_y,hmin,hmax)
 
          ! N = (/30,30,15/); N_w = 8; N_v = 14 ! Coarse
          ! N = (/40,40,20/); N_w = 10; N_v = 16 ! Moderates
          ! N = (/50,50,25/); N_w = 12; N_v = 18 ! Fine
+         N = 30; N(3)=N(1)/2; N_w = 4;  N_v = 8 ! Physics search mesh
 
          ! New MRS:
          ! N = 30; N(3)=N(1)/2; N_w = 8;  N_v = 14 ! Coarse
@@ -166,7 +171,7 @@
          ! N = 70; N(3)=N(1)/2; N_w = 20; N_v = 24 ! Fine
 
          ! Ha=500
-         N = 60; N(3)=N(1)/2; N_w = 16; N_v = 22 ! Fine
+         ! N = 60; N(3)=N(1)/2; N_w = 16; N_v = 22 ! Fine
 
          N_extra = N_w ! since no wall domain above lid
          N_top_half = ceiling(N(2)/2.0_cp)+5

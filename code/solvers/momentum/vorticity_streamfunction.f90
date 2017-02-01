@@ -15,6 +15,7 @@
        use iter_solver_params_mod
        use ops_mirror_field_mod
        use sim_params_mod
+       use BC_funcs_mod
 
        implicit none
        private
@@ -46,18 +47,19 @@
          type(mesh) :: m_temp
          if (SP%EL%export_symmetric) then
          call mirror_field(m_temp,U_temp,m,U,SP%MP)
-         call export_vorticity_streamfunction(U_temp,m_temp,DT)
+         call export_vorticity_streamfunction(U_temp,m_temp,DT,SP)
          call delete(U_temp)
          call delete(m_temp)
-         else; call export_vorticity_streamfunction(U,m,DT)
+         else; call export_vorticity_streamfunction(U,m,DT,SP)
          endif
        end subroutine
 
-       subroutine export_vorticity_streamfunction(U,m,DT)
+       subroutine export_vorticity_streamfunction(U,m,DT,SP)
          implicit none
          type(VF),intent(in) :: U
          type(mesh),intent(in) :: m
          type(dir_tree),intent(in) :: DT
+         type(sim_params),intent(in) :: SP
          type(VF) :: psi,omega,temp_dummy
          type(PCG_solver_VF) :: PCG
          type(iter_solver_params) :: ISP
@@ -73,6 +75,7 @@
          call init_BC_mesh(psi%z,m);    call init_BCs(psi%z,0.0_cp)
          call init_BC_Dirichlet(psi)
          call init_BC_props(psi)
+         call make_periodic(psi,m,SP%GP%periodic_dir)
 
          ! Make sure that Lap_uniform_VF does not
          call init(PCG,Lap_uniform_VF,Lap_uniform_VF_explicit,prec_Lap_VF,m,&
