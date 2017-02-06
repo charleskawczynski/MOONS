@@ -6,7 +6,10 @@ Linf = zeros(N_inner,1);
 r=b;
 r = multiply_wall_Neumann(r,0.5,x);
 tempx = compute_Ax_BC_MF(operator_explicit,x,c);
-Ax = operator(x,c);
+Ax = operator(x,c,true);
+disp('x = '); disp(num2str(x.vals'))
+disp('Ax = '); disp(num2str(Ax.vals'))
+disp('tempx = '); disp(num2str(tempx.vals'))
 Ax_BC = tempx.vals + Ax.vals;
 disp(['max(abs(Ax_BC)) = ' num2str(max(abs(Ax_BC)))])
 % multiply_wall_Neumann is inside operator
@@ -37,7 +40,7 @@ for i = 1:N_inner
    alpha = rhok/(p.vals'*Ax.vals);
    x.vals = x.vals + alpha*p.vals;
    r.vals = r.vals - alpha*Ax.vals;
-   x = apply_BCs(x,c,x);
+   x = apply_BCs(x,c);
    z.vals = r.vals;
    rhokp1 = z.vals'*r.vals;
    beta = rhokp1/rhok;
@@ -48,6 +51,7 @@ for i = 1:N_inner
    L1(i) = norms.L1;
    L2(i) = norms.L2;
    Linf(i) = norms.Linf;
+   if L2(i)<1e-10 break
 end
 
 % Ax = operator(x,c);

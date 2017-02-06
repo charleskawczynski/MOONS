@@ -9,7 +9,7 @@ close all;
 N_cells = 20;                 % number of cells
 print_full = true;            % print matrices
 p = 2;                        % wavenumber, b = cos(p*pi*x), b = sin(p*pi*x)
-N_total = 40;
+N_total = N_cells+1;
 N_inner = 2*N_cells;          % iterations inside CG
 N_outer = 1;                  % restarts CG
 

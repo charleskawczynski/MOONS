@@ -20,8 +20,8 @@ disp(['cond     (c,n) = ' num2str(cond_c) ' , ' num2str(cond_n)])
 BS.x.c.vals(z.c) = Ac(z.c,z.c)\bc(z.c);
 BS.x.n.vals(z.n) = An(z.n,z.n)\bn(z.n);
 
-BS.x.c = apply_BCs(BS.x.c,c,BS.x.c);
-BS.x.n = apply_BCs(BS.x.n,c,BS.x.n);
+BS.x.c = apply_BCs(BS.x.c,c);
+BS.x.n = apply_BCs(BS.x.n,c);
 
 BS.r.c.vals(z.c) = Ac(z.c,z.c)*BS.x.c.vals(z.c)-bc(z.c);
 BS.r.n.vals(z.n) = An(z.n,z.n)*BS.x.n.vals(z.n)-bn(z.n);

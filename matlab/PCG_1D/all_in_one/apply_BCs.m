@@ -1,6 +1,5 @@
-function u = apply_BCs(u,c,u_BCs)
+function u = apply_BCs(u,c)
 f = u.vals;
-f_BCs = u_BCs.vals;
 ub1 = u.BCs.bc1.val;
 ub2 = u.BCs.bc2.val;
 if u.DL.is_N

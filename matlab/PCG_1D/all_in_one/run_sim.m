@@ -29,12 +29,12 @@ b.c = BC_modification(b.c,u.c,A.c,c,'b.c');
 b.n = BC_modification(b.n,u.n,A.n,c,'b.n');
 
 %% REMOVE NULLSPACE FOR PURE NEUMANN
-b = nullspace_modification(b,BCs,'b');
 b_initial = nullspace_modification(b_initial,BCs,'b_initial');
-if BCs.bc1.type.Periodic && BCs.bc2.type.Periodic
-	b_initial.n.vals(end-1:end) = 0;
-	b.n.vals(end-1:end) = 0;
-end
+b = nullspace_modification(b,BCs,'b');
+b.c = assign_single_periodic_wall(b.c,0,BCs);
+b.n = assign_single_periodic_wall(b.n,0,BCs);
+b_initial.c = assign_single_periodic_wall(b_initial.c,0,BCs);
+b_initial.n = assign_single_periodic_wall(b_initial.n,0,BCs);
 
 %% PREPARE CG FOR NUMERICAL SOLUTION
 CG_MIT = init_CG(u,A);
@@ -47,8 +47,6 @@ BS = init_CG(u,A);
 
 BS = soln_backslash(BS,b,A,c); % EXACT SOLUTION (BACKSLASH)
 for iter=1:N_outer; CG_MIT = soln_CG_MIT(CG_MIT,b,N_inner,BCs); end
-CG_MIT.x.c = apply_BCs(CG_MIT.x.c,c,CG_MIT.x.c);
-CG_MIT.x.n = apply_BCs(CG_MIT.x.n,c,CG_MIT.x.n);
 for iter=1:N_outer; CG_CK = soln_CG_CK(CG_CK,@Laplacian,@Laplacian_explicit,b_initial,N_inner,c); end
 
 % ***********************************************************************************
@@ -60,6 +58,13 @@ u = nullspace_modification(u,BCs,'u');
 CG_MIT.x = nullspace_modification(CG_MIT.x,BCs,'u CG MIT');
 CG_CK.x  = nullspace_modification(CG_CK.x, BCs, 'u CG CK');
 BS.x     = nullspace_modification(BS.x,    BCs,    'u BS');
+
+CG_MIT.x.c = apply_BCs(CG_MIT.x.c,c);
+CG_MIT.x.n = apply_BCs(CG_MIT.x.n,c);
+CG_CK.x.c = apply_BCs(CG_CK.x.c,c);
+CG_CK.x.n = apply_BCs(CG_CK.x.n,c);
+BS.x.c = apply_BCs(BS.x.c,c);
+BS.x.n = apply_BCs(BS.x.n,c);
 
 u_ana.c    = analytic(u.c,c.h.c,forceType,BCs,p);
 u_ana.n    = analytic(u.n,c.h.n,forceType,BCs,p);
@@ -74,7 +79,8 @@ new_fig(           [2 2 2],c.h,b,'b','Modified forcing')
 new_fig(           [2 2 3],c.h,BS.x,'u','Backslash solution')
 new_fig(           [2 2 4],c.h,BS.r,'r','Backslash residual') % (should be zero)
 
-new_fig_compare(   [1 1 1],c.h,BS.x,'BS',u_ana,'analytic','Backslash vs analytic')
+new_fig_compare(   [2 1 1],c.h,BS.x,'BS',u_ana,'analytic','Backslash vs analytic')
+new_fig_compare(   [2 1 2],c.h,CG_CK.x,'CK',u_ana,'analytic','CK vs analytic')
 % new_fig(           [1 1 1],c.h,CG_CK.p,'p','p in CG_CK') % (should be zero)
 
 % new_fig(           [2 2 1],c.h,BS.x_initial,'u','BS')
