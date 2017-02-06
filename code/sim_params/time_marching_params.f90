@@ -11,6 +11,7 @@
        public :: couple_time_step
        public :: prolongate
        public :: update_dt
+       public :: update_dt_CFL
 
        type time_marching_params
          integer(li) :: n_step = 0         ! nth time step
@@ -18,6 +19,7 @@
          integer(li) :: n_step_start = 0   ! nth time step to start
          integer :: multistep_iter = 0     ! nth time step to start
          real(cp) :: t = 0.0_cp            ! time, or pseudo time
+         real(cp) :: C_max = 0.0_cp        ! C_max number
          real(cp) :: t_final = 0.0_cp      ! finale time, or final pseudo time
          real(cp) :: dt = 0.0_cp           ! time step, or pseudo time step
          integer :: un = 0                 ! file unit
@@ -39,6 +41,7 @@
 
        interface prolongate;       module procedure prolongate_TMP;       end interface
        interface update_dt;        module procedure update_dt_TMP;        end interface
+       interface update_dt_CFL;    module procedure update_dt_CFL_TMP;    end interface
 
        contains
 
@@ -58,6 +61,7 @@
          TMP%multistep_iter = multistep_iter
          TMP%n_step_stop = n_step_stop
          TMP%t = 0.0_cp
+         TMP%C_max = 0.1_cp
          TMP%dt = dt
          TMP%t_final = TMP%dt*real(TMP%n_step_stop,cp)
          call init(TMP%dir,dir)
@@ -73,6 +77,7 @@
          TMP%n_step_stop = TMP_in%n_step_stop
          TMP%multistep_iter = TMP_in%multistep_iter
          TMP%t = TMP_in%t
+         TMP%C_max = TMP_in%C_max
          TMP%t_final = TMP_in%t_final
          TMP%dt = TMP_in%dt
          call init(TMP%dir,TMP_in%dir)
@@ -88,6 +93,7 @@
          TMP%n_step_stop = 1
          TMP%multistep_iter = 0
          TMP%t = 0.0_cp
+         TMP%C_max = 0.0_cp
          TMP%t_final = 0.0_cp
          TMP%dt = 10.0_cp**(-10.0_cp)
          call delete(TMP%dir)
@@ -103,6 +109,7 @@
          write(un,*) 'n_step_start   = '; write(un,*) TMP%n_step_start
          write(un,*) 'n_step         = '; write(un,*) TMP%n_step
          write(un,*) 'n_step_stop    = '; write(un,*) TMP%n_step_stop
+         write(un,*) 'C_max          = '; write(un,*) TMP%C_max
          write(un,*) 't              = '; write(un,*) TMP%t
          write(un,*) 't_final        = '; write(un,*) TMP%t_final
          write(un,*) 'dt             = '; write(un,*) TMP%dt
@@ -125,6 +132,7 @@
          read(un,*); read(un,*) TMP%n_step_start
          read(un,*); read(un,*) TMP%n_step
          read(un,*); read(un,*) TMP%n_step_stop
+         read(un,*); read(un,*) TMP%C_max
          read(un,*); read(un,*) TMP%t
          read(un,*); read(un,*) TMP%t_final
          read(un,*); read(un,*) TMP%dt
@@ -149,6 +157,7 @@
          write(un,*) 'n_step_start   = ',TMP%n_step_start
          write(un,*) 'n_step         = ',TMP%n_step
          write(un,*) 'n_step_stop    = ',TMP%n_step_stop
+         write(un,*) 'C_max          = ',TMP%C_max
          write(un,*) 't              = ',TMP%t
          write(un,*) 't_final        = ',TMP%t_final
          write(un,*) 'dt             = ',TMP%dt
@@ -177,6 +186,7 @@
          TMP%dt = coupled%dt
          TMP%n_step_start = coupled%n_step_start
          TMP%n_step_stop = coupled%n_step_stop
+         TMP%C_max = coupled%C_max
          TMP%n_step = coupled%n_step
        end subroutine
 
@@ -185,6 +195,7 @@
          type(time_marching_params),intent(inout) :: TMP
          real(cp),intent(in) :: dt_reduction_factor
          TMP%dt = TMP%dt*dt_reduction_factor
+         TMP%C_max = TMP%C_max*dt_reduction_factor
          TMP%n_step_stop = TMP%n_step_stop*ceiling(1.0_cp/dt_reduction_factor)
          TMP%t_final = TMP%dt*real(TMP%n_step_stop,cp)
        end subroutine
@@ -194,6 +205,14 @@
          type(time_marching_params),intent(inout) :: TMP
          real(cp),intent(in) :: dt
          TMP%dt = dt
+         TMP%n_step_stop = ceiling(TMP%t_final/TMP%dt)
+       end subroutine
+
+       subroutine update_dt_CFL_TMP(TMP,CFL)
+         implicit none
+         type(time_marching_params),intent(inout) :: TMP
+         real(cp),intent(in) :: CFL
+         TMP%dt = TMP%C_max/(CFL/TMP%dt)
          TMP%n_step_stop = ceiling(TMP%t_final/TMP%dt)
        end subroutine
 

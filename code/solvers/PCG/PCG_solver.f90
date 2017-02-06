@@ -51,6 +51,7 @@
         type(norms) :: res_norm0
         real(cp) :: alpha,rhok,rhokp1 ! betak = rhokp1/rhok
         integer :: i
+        ! call assign_BC_vals(p,x)
         call modify_RHS(operator,operator_explicit,x,b,vol,k,m,MFP,tempx,tempk,Ax,r,p)
 
         ! ********************* START PCG ALGORITHM *********************
@@ -74,12 +75,11 @@
             call update_iter(ISP)
             call add_product(r,Ax,-alpha) ! r = r - alpha Ap
 
-            ! if (check_res(ISP)) then
+            if (check_res(ISP)) then
               res_norm%L2 = sqrt(abs(dot_product(r,r,x,tempx)))
               call update_exit_loop(ISP,res_norm%L2,res_norm0%L2)
               if (any(ISP%exit_loop)) exit
-            ! endif
-            call update_check_res(ISP)
+            endif
             if (ISP%export_convergence) call compute_export_norms(un_convergence,res_norm0,res_norm,ISP,r)
 
             call multiply(z,Minv,r)
@@ -90,7 +90,6 @@
           enddo
         else; call apply_BCs(x); call update_iter(ISP)
         endif
-        call update_last_iter(ISP)
 
         call check_nans(res_norm0,res_norm,ISP,'check_nans after loop for '//name)
 
@@ -121,6 +120,7 @@
         integer :: i
         type(norms) :: res_norm0
         real(cp) :: alpha,rhok,rhokp1 ! betak = rhokp1/rhok
+        ! call assign_BC_vals(p,x)
         call modify_RHS(operator,operator_explicit,x,b,vol,k,m,MFP,tempx,tempk,Ax,r,p)
 
         ! ********************* START PCG ALGORITHM *********************
@@ -144,12 +144,11 @@
             call update_iter(ISP)
             call add_product(r,Ax,-alpha) ! r = r - alpha Ap
 
-            ! if (check_res(ISP)) then
+            if (check_res(ISP)) then
               res_norm%L2 = sqrt(abs(dot_product(r,r,x,tempx)))
               call update_exit_loop(ISP,res_norm%L2,res_norm0%L2)
               if (any(ISP%exit_loop)) exit
-            ! endif
-            call update_check_res(ISP)
+            endif
             if (ISP%export_convergence) call compute_export_norms(un_convergence,res_norm0,res_norm,ISP,r)
 
             call multiply(z,Minv,r)
@@ -160,7 +159,6 @@
           enddo
         else; call apply_BCs(x); call update_iter(ISP)
         endif
-        call update_last_iter(ISP)
 
         call check_nans(res_norm0,res_norm,ISP,'check_nans after loop for '//name)
 
@@ -198,8 +196,12 @@
         integer,intent(in) :: un
         type(norms),intent(in) :: res_norm0,res_norm
         type(iter_solver_params),intent(in) :: ISP
+        real(cp) :: rel
+        if (equal(res_norm0%L2,0.0_cp)) then; rel = res_norm%L2/res_norm0%L2
+        else;                                 rel = res_norm%L2
+        endif
         write(un,*) ISP%iter_total,&
-                    res_norm%L2/res_norm0%L2,&
+                    rel,&
                     res_norm%L1,&
                     res_norm%L2,&
                     res_norm%Linf,&
@@ -231,11 +233,13 @@
         type(iter_solver_params),intent(in) :: ISP
         type(norms),intent(in) :: res_norm,res_norm0
         character(len=*),intent(in) :: name
-        write(*,*) '-------------- '//name//' --------------'
-        call print(res_norm0,res_norm,'res_norm0,res_norm')
+        real(cp) :: rel
+        if (equal(res_norm0%L2,0.0_cp)) then; rel = res_norm%L2/res_norm0%L2
+        else;                                 rel = res_norm%L2
+        endif
+        call print(res_norm0,res_norm,name//' res_norm0,res_norm')
         call print_exit_loop(ISP)
-        write(*,*) 'iterations (executed/max) = ',ISP%iter_per_call,ISP%iter_max
-        write(*,*) 'relative error = ',res_norm%L2/res_norm0%L2
+        write(*,*) 'iter_executed,rel error = ',ISP%iter_per_call,rel
         write(*,*) '----------------------------------------'
       end subroutine
 

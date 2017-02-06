@@ -1,6 +1,6 @@
 function x = save_x_BC(x)
-if x.is_CC
+if x.DL.is_CC
     x.vals = save_i_from_ends(x.vals,0);
-elseif x.is_N
+elseif x.DL.is_N
     x.vals = save_i_from_ends(x.vals,1);
 end

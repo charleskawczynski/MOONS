@@ -37,7 +37,7 @@
          select case (preset_ID)
          case (0);
          case (1); call pseudo_vacuum(B,m)
-         case (2); call initBandaru(B)
+         case (2); call init_Bandaru(B)
          case (3); call periodic_duct_flow(B,m)
          case (4); call thin_wall(B,m,cw)
          case (5); call thin_wall_LDC(B,m,cw)
@@ -108,13 +108,17 @@
          enddo
        end subroutine
 
-       subroutine initBandaru(B)
+       subroutine init_Bandaru(B)
          implicit none
          type(VF),intent(inout) :: B
+         call init_periodic(B%x%BF(1)%BCs,1)
+         call init_periodic(B%y%BF(1)%BCs,1)
+         call init_periodic(B%z%BF(1)%BCs,1)
+         call init_periodic(B%x%BF(1)%BCs,2)
+         call init_periodic(B%y%BF(1)%BCs,2)
+         call init_periodic(B%z%BF(1)%BCs,2)
          call init_Neumann(B%x%BF(1)%BCs,5)
          call init_Neumann(B%x%BF(1)%BCs,6)
-         call init(B%x%BF(1)%BCs,0.0_cp,5)
-         call init(B%x%BF(1)%BCs,0.0_cp,6)
        end subroutine
 
        subroutine thin_wall(B,m,cw)

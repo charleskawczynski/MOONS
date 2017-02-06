@@ -41,7 +41,7 @@
        contains
 
        subroutine CN_AB2_PPE_PCG_mom_PCG(mom_PCG,PPE_PCG,U,Ustar,Unm1,U_E,p,F,Fnm1,m,&
-         MFP,Re,dt,temp_F1,temp_F2,temp_CC,temp_CC_VF,temp_E,compute_norms)
+         MFP,dt,temp_F1,temp_F2,temp_CC,temp_CC_VF,temp_E,compute_norms)
          implicit none
          type(PCG_solver_VF),intent(inout) :: mom_PCG
          type(PCG_solver_SF),intent(inout) :: PPE_PCG
@@ -50,7 +50,7 @@
          type(TF),intent(inout) :: U_E
          type(VF),intent(in) :: F,Fnm1
          type(mesh),intent(in) :: m
-         real(cp),intent(in) :: Re,dt
+         real(cp),intent(in) :: dt
          type(matrix_free_params),intent(in) :: MFP
          type(VF),intent(inout) :: temp_F1,temp_F2,temp_E
          type(SF),intent(inout) :: temp_CC

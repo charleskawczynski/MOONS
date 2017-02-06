@@ -42,7 +42,7 @@ endif
 SRC_DIR = ..$(PS)code
 
 ifeq ($(CLUSTER),'PC_CK')
-	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS1
+	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS2
 endif
 
 ifeq ($(CLUSTER),'Workstation_CK')
@@ -151,6 +151,7 @@ FC_DEBUG += -D_DEBUG_EMBEDEXTRACT_
 FC_DEBUG += -D_DEBUG_DATA_LOCATION_
 FC_DEBUG += -D_DEBUG_ARRAY_
 FC_DEBUG += -D_DEBUG_GF_
+FC_DEBUG += -D_DEBUG_BF_
 FC_DEBUG += -D_DEBUG_OPS_NORMS_
 FC_DEBUG += -D_DEBUG_SF_
 FC_DEBUG += -D_DEBUG_VF_
@@ -263,6 +264,8 @@ VPATH =\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_restrict_prolongate\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_interp_extrap\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_symmetry\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_CFL_number\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_Fourier_number\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)BF\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)SF\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)VF\
@@ -364,6 +367,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_assign_wall.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_multiply_plane.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_multiply_wall.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_assign_ghost_periodic.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_interp_extrap$(PS)GF_extrap.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_interp_extrap$(PS)GF_interp.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_restrict_prolongate$(PS)GF_restrict.f90\
@@ -373,6 +377,8 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_export_import$(PS)GF_import.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_embed_extract$(PS)GF_embed_extract.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_distributions.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_CFL_number$(PS)GF_CFL_number.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_Fourier_number$(PS)GF_Fourier_number.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_diagonals.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_plane_sum.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_plane_mean.f90\
@@ -427,6 +433,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)domain$(PS)mesh_domain.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_PD_geometries.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_BC_geometries.f90\
+	$(SRC_DIR)$(PS)mesh$(PS)mesh_complex_BC_geometries.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_benchmark_geometries.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_generate.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)SF$(PS)SF.f90\
@@ -451,6 +458,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)ops$(PS)ops_del.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)check_BCs.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply$(PS)apply_BCs.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)apply$(PS)apply_periodic_BCs.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply$(PS)apply_BCs_implicit.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_embedExtract.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_interp.f90\

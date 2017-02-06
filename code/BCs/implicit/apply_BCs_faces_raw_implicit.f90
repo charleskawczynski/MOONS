@@ -99,36 +99,34 @@
 #endif
        end subroutine
 
-       subroutine apply_Periodic_C_implicit(ug,ui_opp,x,y,p)
+       subroutine apply_Periodic_C_implicit(ug,x,y,p)
          implicit none
          integer,intent(in) :: x,y,p
          real(cp),dimension(x,y),intent(inout) :: ug
-         real(cp),dimension(x,y),intent(in) :: ui_opp
          integer :: i,j
 #ifdef _PARALLELIZE_APPLY_BCS_FACES_RAW_
         !$OMP PARALLEL DO
 
 #endif
          do j=1+p,y-p; do i=1+p,x-p
-         ug(i,j) = ui_opp(i,j)
+         ug(i,j) = 0.0_cp
          enddo; enddo
 #ifdef _PARALLELIZE_APPLY_BCS_FACES_RAW_
         !$OMP END PARALLEL DO
 
 #endif
        end subroutine
-       subroutine apply_Periodic_N_implicit(ug,ui_opp,x,y,p)
+       subroutine apply_Periodic_N_implicit(ug,x,y,p)
          implicit none
          integer,intent(in) :: x,y,p
          real(cp),dimension(x,y),intent(inout) :: ug
-         real(cp),dimension(x,y),intent(in) :: ui_opp
          integer :: i,j
 #ifdef _PARALLELIZE_APPLY_BCS_FACES_RAW_
         !$OMP PARALLEL DO
 
 #endif
          do j=1+p,y-p; do i=1+p,x-p
-         ug(i,j) = ui_opp(i,j)
+         ug(i,j) = 0.0_cp
          enddo; enddo
 #ifdef _PARALLELIZE_APPLY_BCS_FACES_RAW_
         !$OMP END PARALLEL DO

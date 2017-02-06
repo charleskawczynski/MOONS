@@ -172,7 +172,7 @@
          do i=1,6; call init_mixed(FSD%G(i)%M,FSD%G(i)%C,FSD%G(i)%N,DL); enddo
          do i=1,6; call init_mixed(FSD%B(i)%M,FSD%B(i)%C,FSD%B(i)%N,DL); enddo
          do i=1,6; call init_mixed(FSD%I(i)%M,FSD%I(i)%C,FSD%I(i)%N,DL); enddo
-         do i=1,6; call init_mixed(FSD%I_OPP(i)%M,FSD%I_OPP(i)%C,FSD%I(i)%N,DL); enddo
+         do i=1,6; call init_mixed(FSD%I_OPP(i)%M,FSD%I_OPP(i)%C,FSD%I_OPP(i)%N,DL); enddo
        end subroutine
 
        end module

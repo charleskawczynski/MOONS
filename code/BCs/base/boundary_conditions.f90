@@ -438,13 +438,19 @@
 
          if (CC_along(BC%DL,dir)) then
            call remove(BC%PA_face_BCs,face)
-           call add(BC%PA_face_BCs,Periodic_C,face)
+           if (is_prescribed(BC%face%bct(face))) then
+                 call add(BC%PA_face_BCs,Periodic_C_prescribed,face)
+           else; call add(BC%PA_face_BCs,Periodic_C,face)
+           endif
            call remove(BC%PA_face_implicit_BCs,face)
            call add(BC%PA_face_implicit_BCs,Periodic_C_implicit,face)
          endif
          if ( N_along(BC%DL,dir)) then
            call remove(BC%PA_face_BCs,face)
-           call add(BC%PA_face_BCs,Periodic_N,face)
+           if (is_prescribed(BC%face%bct(face))) then
+                 call add(BC%PA_face_BCs,Periodic_N_prescribed,face)
+           else; call add(BC%PA_face_BCs,Periodic_N,face)
+           endif
            call remove(BC%PA_face_implicit_BCs,face)
            call add(BC%PA_face_implicit_BCs,Periodic_N_implicit,face)
          endif

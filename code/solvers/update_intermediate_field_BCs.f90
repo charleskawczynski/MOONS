@@ -4,6 +4,7 @@
        use SF_mod
        use VF_mod
        use ops_interp_mod
+       use apply_periodic_BCs_mod
        use ops_discrete_mod
 
        implicit none
@@ -20,15 +21,15 @@
          type(VF),intent(in) :: X
          type(mesh),intent(in) :: m
          ! Dirichlet
-         call grad(temp_F1,phi,m)         ! phi-component
-         call add(temp_F1,X)              ! U  -component
+         call grad(temp_F1,phi,m)           ! phi-component
+         call add(temp_F1,X)                ! U  -component
          call assign_Dirichlet_BCs(Xstar,temp_F1)
+         call assign_Periodic_BCs(Xstar,temp_F1)
 
          ! Neumann
          call lap_component(temp_CC,phi,m)
          call extrap(temp_CC,m)
          call cellCenter2Face(temp_F2,temp_CC,m)
-
          call grad_component(temp_F1,X,m) ! U  -component
          call add(temp_F1,temp_F2)        ! phi-component
          call assign_Neumann_BCs(Xstar,temp_F1)

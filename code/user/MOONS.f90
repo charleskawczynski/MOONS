@@ -94,15 +94,15 @@
          ! ******************** EXPORT GRIDS **************************** Export mesh (to plot)
          if (SP%EL%export_meshes) then
            call export_mesh(m_mom,str(DT%meshes),'m_mom',1)
-           call export_mesh(MD_sigma%m_R2,str(DT%meshes),'mesh_MD_sigma',1)
            call export_mesh(m_ind,str(DT%meshes),'m_ind',1)
+           call export_mesh(MD_sigma%m_R2,str(DT%meshes),'mesh_MD_sigma',1)
          if (SP%MP%mirror) then
            call mirror_mesh(m_temp,m_mom,SP%MP)
            call export_mesh(m_temp,str(DT%meshes),'mesh_mom_mirror',1)
-           call mirror_mesh(m_temp,MD_sigma%m_R1,SP%MP)
-           call export_mesh(m_temp,str(DT%meshes),'mesh_MD_sigma_mirror',1)
            call mirror_mesh(m_temp,m_ind,SP%MP)
            call export_mesh(m_temp,str(DT%meshes),'mesh_ind_mirror',1)
+           call mirror_mesh(m_temp,MD_sigma%m_R1,SP%MP)
+           call export_mesh(m_temp,str(DT%meshes),'mesh_MD_sigma_mirror',1)
            call delete(m_temp)
          endif
          endif

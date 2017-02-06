@@ -191,6 +191,7 @@
          call apply_BCs(ind%B);                           write(*,*) '     BCs applied'
 
          call init(ind%Bstar,ind%B)
+         call set_prescribed_BCs(ind%Bstar)
          call init_Bstar_field(ind%Bstar,m,ind%B,ind%SP,str(DT%B%field))
 
          write(*,*) '     Intermediate B-field initialized'
@@ -209,25 +210,25 @@
 
          call compute_J_ind(ind)
 
-         if (ind%SP%unsteady_B0) call init(ind%probe_dB0dt(1),str(DT%B%energy),'dB0dt_x',ind%SP%VS%B%SS%restart,SP,.true.)
-         if (ind%SP%unsteady_B0) call init(ind%probe_dB0dt(2),str(DT%B%energy),'dB0dt_y',ind%SP%VS%B%SS%restart,SP,.true.)
-         if (ind%SP%unsteady_B0) call init(ind%probe_dB0dt(3),str(DT%B%energy),'dB0dt_z',ind%SP%VS%B%SS%restart,SP,.true.)
-         if (ind%SP%unsteady_B0) call init(ind%probe_B0(1)   ,str(DT%B%energy),'B0_x',   ind%SP%VS%B%SS%restart,SP,.true.)
-         if (ind%SP%unsteady_B0) call init(ind%probe_B0(2)   ,str(DT%B%energy),'B0_y',   ind%SP%VS%B%SS%restart,SP,.true.)
-         if (ind%SP%unsteady_B0) call init(ind%probe_B0(3)   ,str(DT%B%energy),'B0_z',   ind%SP%VS%B%SS%restart,SP,.true.)
-         call init(ind%probe_divB,str(DT%B%residual),'transient_divB',ind%SP%VS%B%SS%restart,SP,.true.)
-         call init(ind%probe_divJ,str(DT%J%residual),'transient_divJ',ind%SP%VS%B%SS%restart,SP,.true.)
-         call init(ind%JE,        str(DT%J%energy),'JE',            ind%SP%VS%B%SS%restart,SP,.true.)
-         call init(ind%JE_fluid,  str(DT%J%energy),'JE_fluid',      ind%SP%VS%B%SS%restart,SP,.true.)
-         call init(ind%ME(1)          ,str(DT%B%energy),'ME',           ind%SP%VS%B%SS%restart,SP,.false.)
-         call init(ind%ME_fluid(1)    ,str(DT%B%energy),'ME_fluid',     ind%SP%VS%B%SS%restart,SP,.false.)
-         call init(ind%ME_conductor(1),str(DT%B%energy),'ME_conductor', ind%SP%VS%B%SS%restart,SP,.false.)
-         call init(ind%ME(2)          ,str(DT%B%energy),'ME0',          ind%SP%VS%B%SS%restart,SP,.false.)
-         call init(ind%ME_fluid(2)    ,str(DT%B%energy),'ME0_fluid',    ind%SP%VS%B%SS%restart,SP,.false.)
-         call init(ind%ME_conductor(2),str(DT%B%energy),'ME0_conductor',ind%SP%VS%B%SS%restart,SP,.false.)
-         call init(ind%ME(3)          ,str(DT%B%energy),'ME1',          ind%SP%VS%B%SS%restart,SP,.false.)
-         call init(ind%ME_fluid(3)    ,str(DT%B%energy),'ME1_fluid',    ind%SP%VS%B%SS%restart,SP,.false.)
-         call init(ind%ME_conductor(3),str(DT%B%energy),'ME1_conductor',ind%SP%VS%B%SS%restart,SP,.false.)
+         if (ind%SP%unsteady_B0) call init(ind%probe_dB0dt(1),str(DT%B%energy),'dB0dt_x',ind%SP%VS%B%SS%restart,SP%DMR,.true.)
+         if (ind%SP%unsteady_B0) call init(ind%probe_dB0dt(2),str(DT%B%energy),'dB0dt_y',ind%SP%VS%B%SS%restart,SP%DMR,.true.)
+         if (ind%SP%unsteady_B0) call init(ind%probe_dB0dt(3),str(DT%B%energy),'dB0dt_z',ind%SP%VS%B%SS%restart,SP%DMR,.true.)
+         if (ind%SP%unsteady_B0) call init(ind%probe_B0(1)   ,str(DT%B%energy),'B0_x',   ind%SP%VS%B%SS%restart,SP%DMR,.true.)
+         if (ind%SP%unsteady_B0) call init(ind%probe_B0(2)   ,str(DT%B%energy),'B0_y',   ind%SP%VS%B%SS%restart,SP%DMR,.true.)
+         if (ind%SP%unsteady_B0) call init(ind%probe_B0(3)   ,str(DT%B%energy),'B0_z',   ind%SP%VS%B%SS%restart,SP%DMR,.true.)
+         call init(ind%probe_divB,str(DT%B%residual),'transient_divB',ind%SP%VS%B%SS%restart,SP%DMR,.true.)
+         call init(ind%probe_divJ,str(DT%J%residual),'transient_divJ',ind%SP%VS%B%SS%restart,SP%DMR,.true.)
+         call init(ind%JE,        str(DT%J%energy),'JE',            ind%SP%VS%B%SS%restart,SP%DMR,.true.)
+         call init(ind%JE_fluid,  str(DT%J%energy),'JE_fluid',      ind%SP%VS%B%SS%restart,SP%DMR,.true.)
+         call init(ind%ME(1)          ,str(DT%B%energy),'ME',           ind%SP%VS%B%SS%restart,SP%DMR,.false.)
+         call init(ind%ME_fluid(1)    ,str(DT%B%energy),'ME_fluid',     ind%SP%VS%B%SS%restart,SP%DMR,.false.)
+         call init(ind%ME_conductor(1),str(DT%B%energy),'ME_conductor', ind%SP%VS%B%SS%restart,SP%DMR,.false.)
+         call init(ind%ME(2)          ,str(DT%B%energy),'ME0',          ind%SP%VS%B%SS%restart,SP%DMR,.false.)
+         call init(ind%ME_fluid(2)    ,str(DT%B%energy),'ME0_fluid',    ind%SP%VS%B%SS%restart,SP%DMR,.false.)
+         call init(ind%ME_conductor(2),str(DT%B%energy),'ME0_conductor',ind%SP%VS%B%SS%restart,SP%DMR,.false.)
+         call init(ind%ME(3)          ,str(DT%B%energy),'ME1',          ind%SP%VS%B%SS%restart,SP%DMR,.false.)
+         call init(ind%ME_fluid(3)    ,str(DT%B%energy),'ME1_fluid',    ind%SP%VS%B%SS%restart,SP%DMR,.false.)
+         call init(ind%ME_conductor(3),str(DT%B%energy),'ME1_conductor',ind%SP%VS%B%SS%restart,SP%DMR,.false.)
 
          write(*,*) '     B/J probes initialized'
 
@@ -316,20 +317,18 @@
          write(un,*) '**************************************************************'
          write(un,*) '************************** MAGNETIC **************************'
          write(un,*) '**************************************************************'
-         write(un,*) 'Rem,finite_Rem = ',ind%SP%DP%Rem,ind%SP%finite_Rem
+         write(un,*) 'Rem,finite_Rem,include_vacuum = ',ind%SP%DP%Rem,ind%SP%finite_Rem,ind%SP%include_vacuum
          write(un,*) 't,dt = ',ind%SP%VS%B%TMP%t,ind%SP%VS%B%TMP%dt
          write(un,*) 'solveBMethod,N_ind,N_cleanB = ',ind%SP%VS%B%SS%solve_method,&
          ind%SP%VS%B%ISP%iter_max,ind%SP%VS%phi%ISP%iter_max
          write(un,*) 'tol_ind,tol_cleanB = ',ind%SP%VS%B%ISP%tol_rel,ind%SP%VS%phi%ISP%tol_rel
          write(un,*) 'nstep,ME = ',ind%SP%VS%B%TMP%n_step,get_data(ind%ME(1))
-         write(un,*) 'include_vacuum = ',ind%SP%include_vacuum
          ! call displayPhysicalMinMax(ind%dB0dt,'dB0dt',un)
          ! call displayPhysicalMinMax(ind%B0,'B0',un)
          call displayPhysicalMinMax(ind%divB,'divB',un)
          call displayPhysicalMinMax(ind%divJ,'divJ',un)
          write(un,*) ''
          call display(ind%m,un)
-         write(un,*) ''
        end subroutine
 
        subroutine print_induction(ind)

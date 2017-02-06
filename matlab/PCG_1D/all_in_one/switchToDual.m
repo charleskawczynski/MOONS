@@ -1,9 +1,9 @@
 function x = switchToDual(x)
-if x.is_CC
-    x.is_CC = false;
-    x.is_N = true;
-elseif x.is_N
-    x.is_N = false;
-    x.is_CC = true;
+if x.DL.is_CC
+    x.DL.is_CC = false;
+    x.DL.is_N = true;
+elseif x.DL.is_N
+    x.DL.is_N = false;
+    x.DL.is_CC = true;
 end
 end

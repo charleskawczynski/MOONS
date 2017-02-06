@@ -181,15 +181,13 @@
         write(un,*) '******************* KNOWN WALL CLOCK TIME INFO *********************'
         call negative_time_elapsed_reported(sc)
 
-        write(un,*) 'Iterations (complete) = ',sc%N
+        temp = sc%t_passed; call getTimeWithUnits(temp,u,sc%uc)
+        write(un,*) 'Completed (iter,time) = ',sc%N,temp,' (', u,')'
 
         temp = sc%seconds_per_iter; call getTimeWithUnits(temp,u,sc%uc)
         write(un,*) 'Time (seconds/iteration) = ',temp,' (', u,')'
 
-        write(un,*) 'Iterations per (s,m,h,d) = ',sc%iterPerSec,sc%iterPerMin,sc%iterPerHour,sc%iterPerDay
-
-        temp = sc%t_passed; call getTimeWithUnits(temp,u,sc%uc)
-        write(un,*) 'Time (Total passed) = ',temp,' (', u,')'
+        write(un,*) 'Iter per (s,m,h,d) = ',sc%iterPerSec,sc%iterPerMin,sc%iterPerHour,sc%iterPerDay
 
         temp2 = (/sc%iterPerHour,sc%iterPerDay/)*TMP%dt
         write(un,*) 'Convective units/(h,d) = ',temp2
@@ -204,7 +202,7 @@
         write(un,*) ''
         write(un,*) '***************** ESTIMATED WALL CLOCK TIME INFO *******************'
 
-        write(un,*) 'Iterations (remaining/max) = ',sc%NRemaining,sc%Nmax
+        write(un,*) 'Iter (remaining/max) = ',sc%NRemaining,sc%Nmax
 
         temp = sc%estimated_total; call getTimeWithUnits(temp,u,sc%uc)
         write(un,*) 'Time (total) = ',temp,' (', u,')'

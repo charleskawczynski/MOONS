@@ -161,6 +161,7 @@
          write(*,*) '     U BCs applied'
 
          call init(mom%Ustar,mom%U)
+         call set_prescribed_BCs(mom%Ustar)
          call init_Ustar_field(mom%Ustar,mom%m,mom%U,mom%SP,str(DT%U%field))
          write(*,*) '     Intermediate field initialized'
 
@@ -171,10 +172,10 @@
          call face2edge_no_diag(mom%U_E,mom%U,mom%m)
          write(*,*) '     Interpolated fields initialized'
 
-         call init(mom%probe_divU,str(DT%U%residual),'probe_divU',mom%SP%VS%U%SS%restart,SP,.true.)
-         call init(mom%probe_KE,str(DT%U%energy),'KE',mom%SP%VS%U%SS%restart,SP,.false.)
+         call init(mom%probe_divU,str(DT%U%residual),'probe_divU',mom%SP%VS%U%SS%restart,SP%DMR,.true.)
+         call init(mom%probe_KE,str(DT%U%energy),'KE',mom%SP%VS%U%SS%restart,SP%DMR,.false.)
          if (m%MP%plane_any) then
-          call init(mom%probe_KE_2C,str(DT%U%energy),'KE_2C',mom%SP%VS%U%SS%restart,SP,.false.)
+          call init(mom%probe_KE_2C,str(DT%U%energy),'KE_2C',mom%SP%VS%U%SS%restart,SP%DMR,.false.)
          endif
          write(*,*) '     momentum probes initialized'
 
@@ -241,9 +242,9 @@
          write(un,*) 'nstep,KE = ',mom%SP%VS%U%TMP%n_step,get_data(mom%probe_KE)
          ! call displayPhysicalMinMax(mom%U,'U',un)
          call displayPhysicalMinMax(mom%divU,'divU',un)
+         write(un,*) 'CFL = ',CFL_number(mom%U_CC,mom%m,mom%SP%VS%U%TMP%dt)
          write(un,*) ''
          call display(mom%m,un)
-         write(*,*) ''
        end subroutine
 
        subroutine print_momentum(mom)
@@ -384,7 +385,7 @@
            PE%transient_0D)
          case (3)
            call CN_AB2_PPE_PCG_mom_PCG(mom%PCG_U,mom%PCG_p,mom%U,mom%Ustar,mom%Unm1,&
-           mom%U_E,mom%p,F,Fnm1,mom%m,mom%SP%VS%U%MFP,mom%SP%DP%Re,mom%SP%VS%U%TMP%dt,mom%temp_F1,&
+           mom%U_E,mom%p,F,Fnm1,mom%m,mom%SP%VS%U%MFP,mom%SP%VS%U%TMP%dt,mom%temp_F1,&
            mom%temp_F2,mom%temp_CC,mom%temp_CC_VF,mom%temp_E,PE%transient_0D)
          case (4)
            call Euler_Donor_no_PPE(mom%U,mom%U_E,F,mom%m,mom%SP%DP%Re,mom%SP%VS%U%TMP%dt,&

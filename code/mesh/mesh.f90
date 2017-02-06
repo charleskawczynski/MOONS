@@ -54,7 +54,7 @@
        interface init_props;          module procedure init_props_mesh;         end interface
        interface init_apply_BC_order; module procedure init_apply_BC_order_mesh;end interface
        interface init_FEC;            module procedure init_FEC_mesh;           end interface
-       interface patch;               module procedure patch_grids;             end interface
+       interface patch;               module procedure patch_blocks;             end interface
 
        interface restrict;            module procedure restrictmesh1;           end interface
        interface restrict;            module procedure restrictmesh3;           end interface
@@ -298,11 +298,11 @@
          do i=1,m%s; call init_FEC(m%B(i)); enddo
        end subroutine
 
-       subroutine patch_grids(m)
+       subroutine patch_blocks(m)
          implicit none
          type(mesh),intent(inout) :: m
          real(cp) :: tol
-         call insist_allocated_mesh(m,'patch_grids')
+         call insist_allocated_mesh(m,'patch_blocks')
          call remove_stitches(m)
          if (m%s.gt.1) then
            tol = 0.01_cp
@@ -315,7 +315,7 @@
        end subroutine
 
        subroutine patch_Faces(m,tol) ! 6 faces per grid
-         ! Find grids who share a face.
+         ! Find blocks that share a face.
          implicit none
          type(mesh),intent(inout) :: m
          real(cp),intent(in) :: tol
@@ -333,6 +333,7 @@
 
              if (all(TF_face)) then
                f = normal_faces_given_dir(k)
+               ! call stitch_faces(m%B(i),m%B(j),f(1),f(2))
              endif
            endif
          enddo; enddo; enddo

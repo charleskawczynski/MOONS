@@ -45,17 +45,22 @@
         public :: random_noise
 
         public :: assign_BCs
+        public :: assign_BC_vals
         public :: assign_Neumann_BCs
         public :: assign_Dirichlet_BCs
+        public :: assign_Periodic_BCs
         public :: multiply_Neumann_BCs
         public :: assign_ghost_XPeriodic
         public :: assign_ghost_N_XPeriodic
         public :: assign_wall_Dirichlet
         public :: multiply_wall_Neumann
+        public :: set_prescribed_BCs
 
         public :: symmetry_error_x,symmetry_local_x
         public :: symmetry_error_y,symmetry_local_y
         public :: symmetry_error_z,symmetry_local_z
+
+        public :: CFL_number
 
         public :: dot_product,dot
         public :: cross_product
@@ -138,9 +143,13 @@
         interface symmetry_local_y;         module procedure symmetry_local_y_VF;           end interface
         interface symmetry_local_z;         module procedure symmetry_local_z_VF;           end interface
 
+        interface CFL_number;               module procedure CFL_number_VF;                 end interface
+
         interface assign_BCs;               module procedure assign_BCs_VF;                 end interface
+        interface assign_BC_vals;           module procedure assign_BC_vals_VF;             end interface
         interface assign_Neumann_BCs;       module procedure assign_Neumann_BCs_VF;         end interface
         interface assign_Dirichlet_BCs;     module procedure assign_Dirichlet_BCs_VF;       end interface
+        interface assign_Periodic_BCs;      module procedure assign_Periodic_BCs_VF;        end interface
         interface multiply_Neumann_BCs;     module procedure multiply_Neumann_BCs_VF;       end interface
         interface assign_ghost_XPeriodic;   module procedure assign_ghost_XPeriodic_VF;     end interface
         interface assign_ghost_XPeriodic;   module procedure assign_ghost_XPeriodic_VF2;    end interface
@@ -150,6 +159,7 @@
         interface assign_wall_Dirichlet;    module procedure assign_wall_Dirichlet_VF2;     end interface
         interface multiply_wall_Neumann;    module procedure multiply_wall_Neumann_VF;      end interface
         interface multiply_wall_Neumann;    module procedure multiply_wall_Neumann_VF2;     end interface
+        interface set_prescribed_BCs;       module procedure set_prescribed_BCs_VF;         end interface
 
         interface dot_product;              module procedure dot_product_VF;                end interface
         interface dot;                      module procedure dot_VF_SF;                     end interface
@@ -1071,6 +1081,24 @@
           call symmetry_local_z(A%z)
         end subroutine
 
+        function CFL_number_VF(A,m,dt) result(CFL)
+          implicit none
+          type(VF),intent(in) :: A
+          type(mesh),intent(in) :: m
+          real(cp),intent(in) :: dt
+          real(cp) :: CFL
+          CFL = CFL_number(A%x,A%y,A%z,m,dt)
+        end function
+
+        subroutine assign_BC_vals_VF(A,B)
+          implicit none
+          type(VF),intent(inout) :: A
+          type(VF),intent(in) :: B
+          call assign_BC_vals(A%x,B%x)
+          call assign_BC_vals(A%y,B%y)
+          call assign_BC_vals(A%z,B%z)
+        end subroutine
+
         subroutine assign_BCs_VF(A,B)
           implicit none
           type(VF),intent(inout) :: A
@@ -1094,6 +1122,14 @@
           call assign_Dirichlet_BCs(A%x,B%x)
           call assign_Dirichlet_BCs(A%y,B%y)
           call assign_Dirichlet_BCs(A%z,B%z)
+        end subroutine
+        subroutine assign_Periodic_BCs_VF(A,B)
+          implicit none
+          type(VF),intent(inout) :: A
+          type(VF),intent(in) :: B
+          call assign_Periodic_BCs(A%x,B%x)
+          call assign_Periodic_BCs(A%y,B%y)
+          call assign_Periodic_BCs(A%z,B%z)
         end subroutine
         subroutine multiply_Neumann_BCs_VF(A,val)
           implicit none
@@ -1176,5 +1212,12 @@
           call multiply_wall_Neumann(A%z,val,A_with_BCs%z)
         end subroutine
 
+        subroutine set_prescribed_BCs_VF(A)
+          implicit none
+          type(VF),intent(inout) :: A
+          call set_prescribed_BCs(A%x)
+          call set_prescribed_BCs(A%y)
+          call set_prescribed_BCs(A%z)
+        end subroutine
 
       end module

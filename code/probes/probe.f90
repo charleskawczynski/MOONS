@@ -12,6 +12,7 @@
        use sim_params_mod
        use fmt_mod
        use time_marching_params_mod
+       use dynamic_mesh_refinement_mod
        use is_nan_mod
 
        implicit none
@@ -29,7 +30,7 @@
          logical,dimension(:),allocatable :: SS_reached_final  ! d(data)/dt < tol history-finest mesh
          real(cp) :: d = 0.0_cp                                ! data
          real(cp) :: d_data_dt = 0.0_cp                        ! change in data over time (Euler)
-         real(cp) :: d_amax = 0.0_cp                            ! max(d) over time
+         real(cp) :: d_amax = 0.0_cp                           ! max(d) over time
          real(cp) :: t = 0.0_cp                                ! time
          real(cp) :: dt = 0.0_cp                               ! delta time
          integer :: un = 0                                     ! file unit
@@ -56,13 +57,13 @@
 
        contains
 
-       subroutine init_probe(p,dir,name,restart,SP,simple)
+       subroutine init_probe(p,dir,name,restart,DMR,simple)
          implicit none
          type(probe),intent(inout) :: p
          character(len=*),intent(in) :: dir
          character(len=*),intent(in) :: name
          logical,intent(in) :: restart,simple
-         type(sim_params),intent(in) :: SP
+         type(dynamic_mesh_refinement),intent(in) :: DMR
          type(string) :: s
          call delete(p)
          call init(p%dir,dir)
@@ -87,17 +88,17 @@
            ! call import(p,dir,name) ! obviously need this.
          else; stop 'Error: no case found in init_probe in probe.f90'
          endif
-         p%n_history = SP%DMR%n_history
+         p%n_history = DMR%n_history
          if (p%n_history.lt.2) then
           write(*,*) 'Error: probe history must > 2 for probe '//name
           stop 'Done'
          endif
 
          p%n_step = 0
-         p%SS_tol = SP%DMR%SS_tol
-         p%SS_tol_final = SP%DMR%SS_tol_final
-         allocate(p%SS_reached(SP%DMR%n_history)); p%SS_reached = .false.
-         allocate(p%SS_reached_final(SP%DMR%n_history)); p%SS_reached_final = .false.
+         p%SS_tol = DMR%SS_tol
+         p%SS_tol_final = DMR%SS_tol_final
+         allocate(p%SS_reached(DMR%n_history)); p%SS_reached = .false.
+         allocate(p%SS_reached_final(DMR%n_history)); p%SS_reached_final = .false.
          p%infinity = huge(1.0_cp)
          p%d_amax = 0.0_cp
        end subroutine

@@ -16,6 +16,7 @@
         use GF_plane_sum_mod
         use GF_symmetry_error_mod
         use GF_assign_ghost_mod
+        use GF_assign_ghost_periodic_mod
         use GF_assign_wall_mod
         use GF_multiply_plane_mod
         use GF_cross_product_mod
@@ -28,6 +29,8 @@
         use GF_mirror_about_plane_mod
         use GF_restrict_mod
         use GF_prolongate_mod
+        use GF_CFL_number_mod
+        use GF_Fourier_number_mod
 
         implicit none
         private
@@ -104,6 +107,10 @@
         public :: assign_ghost_ymax,assign_wall_ymax,multiply_wall_ymax
         public :: assign_ghost_zmax,assign_wall_zmax,multiply_wall_zmax
 
+        public :: assign_ghost_periodic_xmin
+        public :: assign_ghost_periodic_ymin
+        public :: assign_ghost_periodic_zmin
+
         public :: assign_ghost_xmin_xmax
         public :: assign_ghost_ymin_ymax
         public :: assign_ghost_zmin_zmax
@@ -118,6 +125,9 @@
 
         public :: prolongate_C,restrict_C
         public :: prolongate_N,restrict_N
+
+        public :: CFL_number
+        public :: Fourier_number
 
         public :: insist_allocated
         public :: insist_shape_staggered

@@ -1,16 +1,16 @@
-function [x r L1 L2 Linf] = CG_CK_raw(operator,operator_explicit,x,b,N_inner,vol,c)
+function [x r L1 L2 Linf] = CG_CK_raw(operator,operator_explicit,x,b,p,N_inner,vol,c)
 L1 = zeros(N_inner,1);
 L2 = zeros(N_inner,1);
 Linf = zeros(N_inner,1);
-p=x;
 
 r=b;
 r = multiply_wall_Neumann(r,0.5,x);
 tempx = compute_Ax_BC_MF(operator_explicit,x,c);
-r.vals = r.vals - tempx.vals;
 Ax = operator(x,c);
+Ax_BC = tempx.vals + Ax.vals;
+disp(['max(abs(Ax_BC)) = ' num2str(max(abs(Ax_BC)))])
 % multiply_wall_Neumann is inside operator
-r.vals = r.vals - Ax.vals;
+r.vals = r.vals - Ax_BC;
 r.vals = vol.*r.vals;
 r = assign_wall_Dirichlet(r,0,x);
 
@@ -37,7 +37,7 @@ for i = 1:N_inner
    alpha = rhok/(p.vals'*Ax.vals);
    x.vals = x.vals + alpha*p.vals;
    r.vals = r.vals - alpha*Ax.vals;
-   x = apply_BCs(x,c);
+   x = apply_BCs(x,c,x);
    z.vals = r.vals;
    rhokp1 = z.vals'*r.vals;
    beta = rhokp1/rhok;

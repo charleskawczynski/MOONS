@@ -173,13 +173,13 @@ So our Laplacian stencil becomes:
 \end{equation}
 This boundary information must be moved to the RHS to maintain a consistent matrix-vector multiplication. However, we must still see the matrix $A$:
 \[ A = \frac{1}{\Delta x^2} \left[\begin{array}{ccccccccc}
-1  & 1     &           &           &           &           &           &         &  0 \\
-1  & -2    & 1         &           &           &           &           &         &    \\
+1  & 1     &           &           &           &           &           & 0       &  0 \\
+1  & -2    & 1         &           &           &           &           & 0       &  0 \\
    & 1     & -2        & 1         &           &           &           &         &    \\
    &       &           & \ddots    & \ddots    & \ddots    &           &         &    \\
    &       &           &           &           & 1         & -2        & 1       &    \\
-   &       &           &           &           &           &  1        & -2      &  1 \\
-0  &       &           &           &           &           &           & 1       &  1 \\
+0  & 0     &           &           &           &           &  1        & -2      &  1 \\
+0  & 0     &           &           &           &           &           & 1       &  1 \\
 \end{array} \right]
 \rightarrow
 A = \frac{1}{\Delta x^2} \left[\begin{array}{ccccccccc}
@@ -193,6 +193,7 @@ A = \frac{1}{\Delta x^2} \left[\begin{array}{ccccccccc}
 \end{array} \right]
 \]
 
+Although the matrix does not appear circulant, the periodic part is moved to the RHS.
 
 \newpage
 \section{Node data}
@@ -345,6 +346,16 @@ Consider periodic BCs, $u_g$ is the first interior node on the opposite side of 
    \left(\frac{\partial^2 u}{\partial x^2}\right)_{b} =
    \frac{u_g - 2 u_b + u_{i}}{\Delta x^2} = f_b
 \end{equation}
+We also know that
+\begin{equation}
+  u_g = u_{i,opp}
+\end{equation}
+Moving the opposite part to the RHS, we have
+\begin{equation}
+   \left(\frac{\partial^2 u}{\partial x^2}\right)_{b} =
+   \frac{- 2 u_b + u_{i}}{\Delta x^2} = f_b - \frac{- u_g}{\Delta x^2}
+\end{equation}
+
 Since the ghost node is part of the unknowns on the opposite side of the domain interior, the matrix $A$ becomes (a circulant one):
 \[ A = \frac{1}{\Delta x^2}
 \left[\begin{array}{ccccccccc}

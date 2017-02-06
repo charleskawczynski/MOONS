@@ -74,6 +74,8 @@
            if (SP%VS%U%SS%solve) call solve(mom,F,Fnm1, PE,EN,DT)
            if (SP%VS%B%SS%solve) call solve(ind,mom%U_E,PE,EN,DT)
 
+           if (SP%MF%mean_pressure_grad) call compute_Add_MPG(mom%U,mom%SP%VS%U%TMP,SP%mpg_dir)
+
            if (SP%DMR%dynamic_refinement.or.RM%any_next) then
              call dynamic_refine_mesh(nrg,mom,ind,DT,SP,coupled,sc,F,Fnm1,PE,RM,KS,refine_mesh_now_all)
            endif
@@ -88,6 +90,7 @@
                                      ind%temp_F1,ind%temp_F1_TF,&
                                      ind%temp_F2_TF,mom%temp_F1)
            endif
+
            if (SP%MF%Q2D_JCrossB) then
              call compute_add_Q2D_JCrossB(F,mom%U,mom%SP%DP%tau,mom%temp_F1)
            endif

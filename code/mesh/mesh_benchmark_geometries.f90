@@ -10,6 +10,7 @@
        use constants_mod
        use mesh_PD_geometries_mod
        use mesh_BC_geometries_mod
+       use mesh_complex_BC_geometries_mod
        use mesh_quality_params_mod
        use dimensionless_params_mod
        implicit none
@@ -46,7 +47,8 @@
          case (15); call MHD_3D_LDC_BC_symmetric_fine_top(m_mom,m_ind,MQP,MD_sigma,DP,tw,include_vacuum)
          case (16); call MHD_3D_NSC_PD(            m_mom,m_ind,MQP,MD_sigma,DP)
          case (17); call MHD_3D_LDC_Salah(         m_mom,m_ind,MQP,MD_sigma,DP)
-         case (18); call user_defined(             m_mom,m_ind,MQP,MD_sigma,DP)
+         case (18); call MHD_3D_LDC_BC_symmetric_fine_top_new(m_mom,m_ind,MQP,MD_sigma,DP,tw,include_vacuum)
+         case (19); call user_defined(             m_mom,m_ind,MQP,MD_sigma,DP)
          case default; stop 'Error: bad BMC_geometry in mesh_benchmark_geometries.f90'
          end select
        end subroutine

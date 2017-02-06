@@ -5,9 +5,11 @@
        use time_marching_params_mod
        use string_mod
        use mesh_mod
+       use probe_mod
        use SF_mod
        use VF_mod
        use TF_mod
+       use dynamic_mesh_refinement_mod
        use export_raw_processed_mod
 
        implicit none
@@ -23,6 +25,7 @@
        type time_statistics_SF
          type(string) :: dir,name
          type(SF) :: U_ave
+         type(probe) :: L2_mean
          type(SF) :: RMS
          real(cp) :: period = 0.0_cp
          real(cp) :: t_start = 0.0_cp
@@ -34,6 +37,7 @@
        type time_statistics_VF
          type(string) :: dir,name
          type(VF) :: U_ave
+         type(probe) :: L2_mean
          type(VF) :: RMS
          type(TF) :: stresses
          real(cp) :: period = 0.0_cp
@@ -56,11 +60,12 @@
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-       subroutine init_TS_SF(TS,U,t_start,t_stop,dir,name,pad)
+       subroutine init_TS_SF(TS,U,t_start,t_stop,DMR,dir,name,pad)
          implicit none
          type(time_statistics_SF),intent(inout) :: TS
          type(SF),intent(in) :: U
          real(cp),intent(in) :: t_start,t_stop
+         type(dynamic_mesh_refinement),intent(in) :: DMR
          character(len=*),intent(in) :: dir,name
          integer,intent(in) :: pad
          TS%period = t_stop - t_start
@@ -71,6 +76,7 @@
          TS%t_stop = t_stop
          TS%pad = pad
          TS%exported_statistics = .false.
+         call init(TS%L2_mean,dir,name,.false.,DMR,.true.)
          call init(TS%U_ave,U)
          call init(TS%RMS,U)
          call init(TS%dir,dir)

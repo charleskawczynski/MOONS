@@ -56,6 +56,7 @@
        logical :: finite_Rem
        logical :: include_vacuum
        integer :: uniform_B0_dir
+       integer :: mpg_dir
        integer :: uniform_gravity_dir
      end type
 
@@ -83,22 +84,23 @@
        SP%EL%export_ICs              = F ! Export Post-Processed ICs before starting simulation
        SP%EL%export_cell_volume      = F ! Export cell volumes for each mesh
        SP%EL%export_planar           = F ! Export 2D data when N_cell = 1 along given direction
-       SP%EL%export_symmetric        = T !
+       SP%EL%export_symmetric        = F !
        SP%EL%export_mesh_block       = F ! Export mesh blocks to FECs
        SP%EL%export_soln_only        = F ! Export processed solution only
 
        SP%restart_all                = F ! restart sim (requires no code changes)
        SP%uniform_gravity_dir        = 1 ! Uniform gravity field direction
        SP%uniform_B0_dir             = 3 ! Uniform applied field direction
-       SP%couple_time_steps          = RV_BCs ! Ensures all dt are equal to coupled%dt
-       SP%finite_Rem                 = RV_BCs ! Ensures all dt are equal to coupled%dt
-       SP%include_vacuum             = RV_BCs ! Ensures all dt are equal to coupled%dt
+       SP%mpg_dir                    = 1 ! Uniform applied field direction
+       SP%couple_time_steps          = T ! Ensures all dt are equal to coupled%dt
+       SP%finite_Rem                 = T ! Ensures all dt are equal to coupled%dt
+       SP%include_vacuum             = F ! Ensures all dt are equal to coupled%dt
 
        SP%matrix_based               = F ! Solve induction equation
        SP%unsteady_B0                = F ! Add unsteady applied field to induction eq.
 
        ! call init(MP,mirror,mirror_face)
-       call init(SP%MP,T,6) ! Must be defined before KE_scale,ME_scale,JE_scale
+       call init(SP%MP,F,6) ! Must be defined before KE_scale,ME_scale,JE_scale
 
        ! init(DMR,dynamic_refinement,n_max_refinements,n_history,SS_tol,SS_tol_final,dt_reduction_factor)
        call init(SP%DMR,F,2,2,pow(-1),pow(-6),0.8_cp)
@@ -107,23 +109,26 @@
        call init(SP%PE,2,2,4,6,F,str(DT%PE),'PE')
 
        ! call init(MQP,auto_find_N,max_mesh_stretch_ratio,N_max_points_add)
-       call init(SP%MQP,T,2.0_cp,50)
+       call init(SP%MQP,F,2.0_cp,50)
 
        time                          = 10000.0_cp
-       dtime                         = 1.0_cp*pow(-5)
+       dtime                         = 2.0_cp*pow(-4)
 
        SP%GP%tw                      = 0.05_cp
-       SP%GP%geometry                = 15
-       SP%GP%periodic_dir            = (/0,0,0/)
-       SP%GP%apply_BC_order          = (/3,4,5,6,1,2/) ! good for LDC
+       SP%GP%geometry                = 7
+       SP%GP%periodic_dir            = (/0,1,0/)
+       ! SP%GP%apply_BC_order          = (/3,4,5,6,1,2/) ! good for LDC
+       ! SP%GP%apply_BC_order       = (/3,4,5,6,1,2/) ! good for periodic in y?
+       SP%GP%apply_BC_order       = (/5,6,1,2,3,4/) ! good for periodic in y?
        ! SP%GP%apply_BC_order       = (/5,6,3,4,1,2/) ! good for periodic in z?
        ! SP%GP%apply_BC_order       = (/3,4,1,2,5,6/) ! good for periodic in z?
 
        call delete(SP%DP)
-       SP%DP%Re                      = 4.0_cp*pow(2)
-       SP%DP%Ha                      = 1.0_cp*pow(4)
+       SP%DP%Re                      = 2.0_cp*pow(2)
+       ! SP%DP%Ha                      = 1.0_cp*pow(4)
+       SP%DP%Ha                      = sqrt(1.0_cp/(0.3_cp)*SP%DP%Re)
        ! SP%DP%N                       = 4.0_cp*pow(-1)
-       SP%DP%Rem                     = 1.0_cp*pow(2)
+       SP%DP%Rem                     = 1.0_cp*pow(0)
        SP%DP%cw                      = 0.0_cp
        SP%DP%sig_local_over_sig_f    = pow(-3)
        SP%DP%Gr                      = 0.0_cp
@@ -148,11 +153,12 @@
 
        ! call init_IC_BC(var,IC,BC)
        call init_IC_BC(SP%VS%T,  0,0)
-       call init_IC_BC(SP%VS%U,  0,2)
-       call init_IC_BC(SP%VS%P,  0,0)
-       if (     RV_BCs) call init_IC_BC(SP%VS%B,  0,7)
-       if (.not.RV_BCs) call init_IC_BC(SP%VS%B,  0,8)
-       call init_IC_BC(SP%VS%B0, 1,0)
+       call init_IC_BC(SP%VS%U,  0,6)
+       call init_IC_BC(SP%VS%P,  0,2)
+       ! if (     RV_BCs) call init_IC_BC(SP%VS%B,  0,7)
+       ! if (.not.RV_BCs) call init_IC_BC(SP%VS%B,  0,8)
+       call init_IC_BC(SP%VS%B,  0,2)
+       call init_IC_BC(SP%VS%B0, 4,0)
        call init_IC_BC(SP%VS%phi,0,0)
        call init_IC_BC(SP%VS%rho,0,0)
 
@@ -166,14 +172,15 @@
        call init(SP%VS%rho%SS,F,F,F,0)
 
        ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,export_convergence,dir,name)
-       call init(SP%VS%T%ISP,  5  ,pow(-6),pow(-13),100,F,str(DT%ISP),'ISP_T')
-       call init(SP%VS%U%ISP,  5  ,pow(-6),pow(-13),100,F,str(DT%ISP),'ISP_U')
-       call init(SP%VS%P%ISP,  5  ,pow(-6),pow(-13),100,F,str(DT%ISP),'ISP_P')
-       if (     RV_BCs) call init(SP%VS%B%ISP,  20 ,pow(-6),pow(-13),100,F,str(DT%ISP),'ISP_B')
-       if (.not.RV_BCs) call init(SP%VS%B%ISP,  5  ,pow(-6),pow(-13),100,F,str(DT%ISP),'ISP_B')
-       call init(SP%VS%B0%ISP, 5  ,pow(-6),pow(-13),100,F,str(DT%ISP),'ISP_B0')
-       call init(SP%VS%phi%ISP,5  ,pow(-6),pow(-13),100,F,str(DT%ISP),'ISP_phi')
-       call init(SP%VS%rho%ISP,5  ,pow(-6),pow(-13),100,F,str(DT%ISP),'ISP_rho')
+       call init(SP%VS%T%ISP,  5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_T')
+       call init(SP%VS%U%ISP,  5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_U')
+       call init(SP%VS%P%ISP,  5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_P')
+       ! if (     RV_BCs) call init(SP%VS%B%ISP,  20 ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_B')
+       ! if (.not.RV_BCs) call init(SP%VS%B%ISP,  5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_B')
+       call init(SP%VS%B%ISP,  5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_B')
+       call init(SP%VS%B0%ISP, 5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_B0')
+       call init(SP%VS%phi%ISP,5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_phi')
+       call init(SP%VS%rho%ISP,5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_rho')
 
        ! call init(TMP,multistep_iter,n_step_stop,dtime,dir,name)
        call init(SP%coupled,1,ceiling(time/dtime,li),dtime,str(DT%TMP), 'TMP_coupled')
@@ -202,6 +209,7 @@
        if (SP%finite_Rem) SP%VS%B%MFP%coeff = SP%VS%B%MFP%coeff/SP%DP%Rem
 
        SP%MF%JCrossB             = T ! add JCrossB      to momentum equation
+       SP%MF%mean_pressure_grad  = T ! add JCrossB      to momentum equation
        SP%MF%Q2D_JCrossB         = F ! add Q2D JCrossB  to momentum equation
        SP%MF%Buoyancy            = F ! add Buoyancy     to momentum equation
        SP%MF%Gravity             = F ! add Gravity      to momentum equation
@@ -232,6 +240,7 @@
        if (SP%VS%phi%SS%solve.and.(.not.SP%VS%phi%SS%initialize)) stop 'Error: solve but not init? phi'
        if (SP%VS%rho%SS%solve.and.(.not.SP%VS%rho%SS%initialize)) stop 'Error: solve but not init? rho'
        if (SP%MF%JCrossB.and.(.not.SP%VS%B%SS%initialize)) stop 'Error: JCrossB but no init B?'
+       if (SP%MF%mean_pressure_grad.and.(.not.SP%VS%U%SS%initialize)) stop 'Error: mean_pressure_grad but no init U?'
      end subroutine
 
      subroutine init_SP_copy(SP,SP_in)
@@ -243,6 +252,7 @@
        SP%finite_Rem             = SP_in%finite_Rem
        SP%include_vacuum         = SP_in%include_vacuum
        SP%uniform_B0_dir         = SP_in%uniform_B0_dir
+       SP%mpg_dir                = SP_in%mpg_dir
        SP%uniform_gravity_dir    = SP_in%uniform_gravity_dir
        SP%matrix_based           = SP_in%matrix_based
        SP%unsteady_B0            = SP_in%unsteady_B0
@@ -283,6 +293,7 @@
        write(un,*) 'finite_Rem             = ',SP%finite_Rem
        write(un,*) 'include_vacuum         = ',SP%include_vacuum
        write(un,*) 'uniform_B0_dir         = ',SP%uniform_B0_dir
+       write(un,*) 'mpg_dir                = ',SP%mpg_dir
        write(un,*) 'uniform_gravity_dir    = ',SP%uniform_gravity_dir
        write(un,*) 'matrix_based           = ',SP%matrix_based
        write(un,*) 'unsteady_B0            = ',SP%unsteady_B0
@@ -324,6 +335,7 @@
        write(un,*) SP%finite_Rem
        write(un,*) SP%include_vacuum
        write(un,*) SP%uniform_B0_dir
+       write(un,*) SP%mpg_dir
        write(un,*) SP%uniform_gravity_dir
        write(un,*) SP%matrix_based
        write(un,*) SP%unsteady_B0
@@ -349,6 +361,7 @@
        read(un,*) SP%finite_Rem
        read(un,*) SP%include_vacuum
        read(un,*) SP%uniform_B0_dir
+       read(un,*) SP%mpg_dir
        read(un,*) SP%uniform_gravity_dir
        read(un,*) SP%matrix_based
        read(un,*) SP%unsteady_B0
