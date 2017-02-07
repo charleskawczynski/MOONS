@@ -41,6 +41,7 @@
         public :: multiply_Neumann_BCs
         public :: assign_ghost_XPeriodic
         public :: assign_ghost_N_XPeriodic
+        public :: assign_wall_Periodic_single
         public :: assign_wall_Dirichlet
         public :: multiply_wall_Neumann
         public :: set_prescribed_BCs
@@ -84,85 +85,88 @@
           type(procedure_array_plane_op) :: PA_assign_ghost_XPeriodic
           type(procedure_array_plane_op) :: PA_assign_ghost_N_XPeriodic
           type(procedure_array_plane_op) :: PA_assign_wall_Dirichlet
+          type(procedure_array_plane_op) :: PA_assign_wall_Periodic_single
           type(procedure_array_plane_op) :: PA_multiply_wall_Neumann
         end type
 
-       interface init_CC;                  module procedure init_CC_BF;                   end interface
-       interface init_Face;                module procedure init_Face_BF;                 end interface
-       interface init_Edge;                module procedure init_Edge_BF;                 end interface
-       interface init_Node;                module procedure init_Node_BF;                 end interface
-       interface init;                     module procedure init_copy_BF;                 end interface
-       interface delete;                   module procedure delete_BF;                    end interface
-       interface display;                  module procedure display_BF;                   end interface
-       interface print;                    module procedure print_BF;                     end interface
-       interface export;                   module procedure export_BF;                    end interface
-       interface import;                   module procedure import_BF;                    end interface
+       interface init_CC;                     module procedure init_CC_BF;                      end interface
+       interface init_Face;                   module procedure init_Face_BF;                    end interface
+       interface init_Edge;                   module procedure init_Edge_BF;                    end interface
+       interface init_Node;                   module procedure init_Node_BF;                    end interface
+       interface init;                        module procedure init_copy_BF;                    end interface
+       interface delete;                      module procedure delete_BF;                       end interface
+       interface display;                     module procedure display_BF;                      end interface
+       interface print;                       module procedure print_BF;                        end interface
+       interface export;                      module procedure export_BF;                       end interface
+       interface import;                      module procedure import_BF;                       end interface
 
-       interface init_BCs;                 module procedure init_BC_val;                  end interface
-       interface init_BCs;                 module procedure init_BC_block_DL;             end interface
-       interface init_BC_props;            module procedure init_BC_props_BF;             end interface
+       interface init_BCs;                    module procedure init_BC_val;                     end interface
+       interface init_BCs;                    module procedure init_BC_block_DL;                end interface
+       interface init_BC_props;               module procedure init_BC_props_BF;                end interface
 
-       interface volume;                   module procedure volume_DL_BF;                 end interface
-       interface volume;                   module procedure volume_BF;                    end interface
-       interface cosine_waves;             module procedure cosine_waves_BF;              end interface
-       interface sine_waves;               module procedure sine_waves_BF;                end interface
-       interface random_noise;             module procedure random_noise_BF;              end interface
-       interface random_noise;             module procedure random_noise_BF_dir;          end interface
-       interface cross_product_x;          module procedure cross_product_x_BF;           end interface
-       interface cross_product_y;          module procedure cross_product_y_BF;           end interface
-       interface cross_product_z;          module procedure cross_product_z_BF;           end interface
+       interface volume;                      module procedure volume_DL_BF;                    end interface
+       interface volume;                      module procedure volume_BF;                       end interface
+       interface cosine_waves;                module procedure cosine_waves_BF;                 end interface
+       interface sine_waves;                  module procedure sine_waves_BF;                   end interface
+       interface random_noise;                module procedure random_noise_BF;                 end interface
+       interface random_noise;                module procedure random_noise_BF_dir;             end interface
+       interface cross_product_x;             module procedure cross_product_x_BF;              end interface
+       interface cross_product_y;             module procedure cross_product_y_BF;              end interface
+       interface cross_product_z;             module procedure cross_product_z_BF;              end interface
 
-       interface CFL_number;               module procedure CFL_number_BF;                end interface
+       interface CFL_number;                  module procedure CFL_number_BF;                   end interface
 
-       interface square;                   module procedure square_BF;                    end interface
-       interface square_root;              module procedure square_root_BF;               end interface
-       interface abs;                      module procedure abs_BF;                       end interface
-       interface insist_amax_lt_tol;       module procedure insist_amax_lt_tol_BF;        end interface
+       interface square;                      module procedure square_BF;                       end interface
+       interface square_root;                 module procedure square_root_BF;                  end interface
+       interface abs;                         module procedure abs_BF;                          end interface
+       interface insist_amax_lt_tol;          module procedure insist_amax_lt_tol_BF;           end interface
 
-       interface assign_BCs;               module procedure assign_BCs_BF;                end interface
-       interface assign_BC_vals;           module procedure assign_BC_vals_BF;            end interface
-       interface assign_Neumann_BCs;       module procedure assign_Neumann_BCs_BF;        end interface
-       interface assign_Dirichlet_BCs;     module procedure assign_Dirichlet_BCs_BF;      end interface
-       interface assign_Periodic_BCs;      module procedure assign_Periodic_BCs_BF;       end interface
-       interface multiply_Neumann_BCs;     module procedure multiply_Neumann_BCs_BF;      end interface
-       interface assign_ghost_XPeriodic;   module procedure assign_ghost_XPeriodic_BF;    end interface
-       interface assign_ghost_XPeriodic;   module procedure assign_ghost_XPeriodic_BF2;   end interface
-       interface assign_ghost_N_XPeriodic; module procedure assign_ghost_N_XPeriodic_BF;  end interface
-       interface assign_ghost_N_XPeriodic; module procedure assign_ghost_N_XPeriodic_BF2; end interface
-       interface assign_wall_Dirichlet;    module procedure assign_wall_Dirichlet_BF;     end interface
-       interface assign_wall_Dirichlet;    module procedure assign_wall_Dirichlet_BF2;    end interface
-       interface multiply_wall_Neumann;    module procedure multiply_wall_Neumann_BF;     end interface
-       interface multiply_wall_Neumann;    module procedure multiply_wall_Neumann_BF2;    end interface
-       interface set_prescribed_BCs;       module procedure set_prescribed_BCs_BF;        end interface
+       interface assign_BCs;                  module procedure assign_BCs_BF;                   end interface
+       interface assign_BC_vals;              module procedure assign_BC_vals_BF;               end interface
+       interface assign_Neumann_BCs;          module procedure assign_Neumann_BCs_BF;           end interface
+       interface assign_Dirichlet_BCs;        module procedure assign_Dirichlet_BCs_BF;         end interface
+       interface assign_Periodic_BCs;         module procedure assign_Periodic_BCs_BF;          end interface
+       interface multiply_Neumann_BCs;        module procedure multiply_Neumann_BCs_BF;         end interface
+       interface assign_ghost_XPeriodic;      module procedure assign_ghost_XPeriodic_BF;       end interface
+       interface assign_ghost_XPeriodic;      module procedure assign_ghost_XPeriodic_BF2;      end interface
+       interface assign_ghost_N_XPeriodic;    module procedure assign_ghost_N_XPeriodic_BF;     end interface
+       interface assign_ghost_N_XPeriodic;    module procedure assign_ghost_N_XPeriodic_BF2;    end interface
+       interface assign_wall_Periodic_single; module procedure assign_wall_Periodic_single_BF;  end interface
+       interface assign_wall_Periodic_single; module procedure assign_wall_Periodic_single_BF2; end interface
+       interface assign_wall_Dirichlet;       module procedure assign_wall_Dirichlet_BF;        end interface
+       interface assign_wall_Dirichlet;       module procedure assign_wall_Dirichlet_BF2;       end interface
+       interface multiply_wall_Neumann;       module procedure multiply_wall_Neumann_BF;        end interface
+       interface multiply_wall_Neumann;       module procedure multiply_wall_Neumann_BF2;       end interface
+       interface set_prescribed_BCs;          module procedure set_prescribed_BCs_BF;           end interface
 
-       interface plane_sum_x;              module procedure plane_sum_x_BF;               end interface
-       interface plane_sum_y;              module procedure plane_sum_y_BF;               end interface
-       interface plane_sum_z;              module procedure plane_sum_z_BF;               end interface
-       interface boundary_flux;            module procedure boundary_flux_BF;             end interface
+       interface plane_sum_x;                 module procedure plane_sum_x_BF;                  end interface
+       interface plane_sum_y;                 module procedure plane_sum_y_BF;                  end interface
+       interface plane_sum_z;                 module procedure plane_sum_z_BF;                  end interface
+       interface boundary_flux;               module procedure boundary_flux_BF;                end interface
 
-       interface assign_ghost_xmin_xmax;   module procedure assign_ghost_xmin_xmax_BF;    end interface
-       interface assign_ghost_ymin_ymax;   module procedure assign_ghost_ymin_ymax_BF;    end interface
-       interface assign_ghost_zmin_zmax;   module procedure assign_ghost_zmin_zmax_BF;    end interface
+       interface assign_ghost_xmin_xmax;      module procedure assign_ghost_xmin_xmax_BF;       end interface
+       interface assign_ghost_ymin_ymax;      module procedure assign_ghost_ymin_ymax_BF;       end interface
+       interface assign_ghost_zmin_zmax;      module procedure assign_ghost_zmin_zmax_BF;       end interface
 
-       interface mirror_about_hmin;        module procedure mirror_about_hmin_BF;         end interface
-       interface mirror_about_hmax;        module procedure mirror_about_hmax_BF;         end interface
+       interface mirror_about_hmin;           module procedure mirror_about_hmin_BF;            end interface
+       interface mirror_about_hmax;           module procedure mirror_about_hmax_BF;            end interface
 
-       interface symmetry_error_x;         module procedure symmetry_error_x_BF;          end interface
-       interface symmetry_error_y;         module procedure symmetry_error_y_BF;          end interface
-       interface symmetry_error_z;         module procedure symmetry_error_z_BF;          end interface
+       interface symmetry_error_x;            module procedure symmetry_error_x_BF;             end interface
+       interface symmetry_error_y;            module procedure symmetry_error_y_BF;             end interface
+       interface symmetry_error_z;            module procedure symmetry_error_z_BF;             end interface
 
-       interface symmetry_local_x;         module procedure symmetry_local_x_BF;          end interface
-       interface symmetry_local_y;         module procedure symmetry_local_y_BF;          end interface
-       interface symmetry_local_z;         module procedure symmetry_local_z_BF;          end interface
+       interface symmetry_local_x;            module procedure symmetry_local_x_BF;             end interface
+       interface symmetry_local_y;            module procedure symmetry_local_y_BF;             end interface
+       interface symmetry_local_z;            module procedure symmetry_local_z_BF;             end interface
 
-       interface restrict;                 module procedure restrict_BF;                  end interface
-       interface restrict;                 module procedure restrict_reset_BF;            end interface
-       interface prolongate;               module procedure prolongate_BF;                end interface
-       interface prolongate;               module procedure prolongate_reset_BF;          end interface
+       interface restrict;                    module procedure restrict_BF;                     end interface
+       interface restrict;                    module procedure restrict_reset_BF;               end interface
+       interface prolongate;                  module procedure prolongate_BF;                   end interface
+       interface prolongate;                  module procedure prolongate_reset_BF;             end interface
 
-       interface laplacian_matrix_based;   module procedure laplacian_matrix_based_VF_BF; end interface
-       interface laplacian_matrix_based;   module procedure laplacian_matrix_based_SF_BF; end interface
-       interface curl_curl_matrix_based;   module procedure curl_curl_matrix_based_BF;    end interface
+       interface laplacian_matrix_based;      module procedure laplacian_matrix_based_VF_BF;    end interface
+       interface laplacian_matrix_based;      module procedure laplacian_matrix_based_SF_BF;    end interface
+       interface curl_curl_matrix_based;      module procedure curl_curl_matrix_based_BF;       end interface
 
        contains
 
@@ -179,6 +183,7 @@
          call set_assign_ghost_all_faces(BF)
          call set_assign_wall_Dirichlet(BF)
          call set_multiply_wall_Neumann(BF)
+         call set_assign_wall_Periodic_single_BF(BF)
        end subroutine
 
        subroutine init_Face_BF(BF,B,dir)
@@ -191,6 +196,7 @@
          call set_assign_ghost_all_faces(BF)
          call set_assign_wall_Dirichlet(BF)
          call set_multiply_wall_Neumann(BF)
+         call set_assign_wall_Periodic_single_BF(BF)
        end subroutine
 
        subroutine init_Edge_BF(BF,B,dir)
@@ -203,6 +209,7 @@
          call set_assign_ghost_all_faces(BF)
          call set_assign_wall_Dirichlet(BF)
          call set_multiply_wall_Neumann(BF)
+         call set_assign_wall_Periodic_single_BF(BF)
        end subroutine
 
        subroutine init_Node_BF(BF,B)
@@ -214,6 +221,7 @@
          call set_assign_ghost_all_faces(BF)
          call set_assign_wall_Dirichlet(BF)
          call set_multiply_wall_Neumann(BF)
+         call set_assign_wall_Periodic_single_BF(BF)
        end subroutine
 
        subroutine set_assign_ghost_all_faces(BF)
@@ -295,6 +303,32 @@
          endif
        end subroutine
 
+       subroutine set_assign_wall_Periodic_single_BF(BF)
+         implicit none
+         type(block_field),intent(inout) :: BF
+         logical,dimension(4) :: L
+         call delete(BF%PA_assign_wall_Periodic_single)
+         if (defined(BF%BCs)) then
+           L(1) = N_along(BF%DL,1)
+           L(2) = is_Periodic(BF%BCs%face%bct(1))
+           L(3) = is_Periodic(BF%BCs%face%bct(2))
+           L(4) = BF%GF%s(1).gt.4
+           if (all(L)) call add(BF%PA_assign_wall_Periodic_single,assign_wall_xmax,2)
+
+           L(1) = N_along(BF%DL,2)
+           L(2) = is_Periodic(BF%BCs%face%bct(3))
+           L(3) = is_Periodic(BF%BCs%face%bct(4))
+           L(4) = BF%GF%s(2).gt.4
+           if (all(L)) call add(BF%PA_assign_wall_Periodic_single,assign_wall_ymax,4)
+
+           L(1) = N_along(BF%DL,3)
+           L(2) = is_Periodic(BF%BCs%face%bct(5))
+           L(3) = is_Periodic(BF%BCs%face%bct(6))
+           L(4) = BF%GF%s(3).gt.4
+           if (all(L)) call add(BF%PA_assign_wall_Periodic_single,assign_wall_zmax,6)
+         endif
+       end subroutine
+
        subroutine set_multiply_wall_Neumann(BF)
          implicit none
          type(block_field),intent(inout) :: BF
@@ -335,6 +369,7 @@
          call init(BF%PA_assign_ghost_XPeriodic,BF_in%PA_assign_ghost_XPeriodic)
          call init(BF%PA_assign_ghost_N_XPeriodic,BF_in%PA_assign_ghost_N_XPeriodic)
          call init(BF%PA_assign_wall_Dirichlet,BF_in%PA_assign_wall_Dirichlet)
+         call init(BF%PA_assign_wall_Periodic_single,BF_in%PA_assign_wall_Periodic_single)
          call init(BF%PA_multiply_wall_Neumann,BF_in%PA_multiply_wall_Neumann)
        end subroutine
 
@@ -347,6 +382,7 @@
          call delete(BF%PA_assign_ghost_XPeriodic)
          call delete(BF%PA_assign_ghost_N_XPeriodic)
          call delete(BF%PA_assign_wall_Dirichlet)
+         call delete(BF%PA_assign_wall_Periodic_single)
          call delete(BF%PA_multiply_wall_Neumann)
        end subroutine
 
@@ -407,6 +443,7 @@
          call set_assign_ghost_all_faces(BF)
          call set_assign_wall_Dirichlet(BF)
          call set_multiply_wall_Neumann(BF)
+         call set_assign_wall_Periodic_single_BF(BF)
        end subroutine
 
        subroutine volume_DL_BF(u,B,DL) ! Computes: volume(x(i),y(j),z(k)) = dx(i) dy(j) dz(k)
@@ -642,7 +679,7 @@
          real(cp),intent(in) :: val
          type(block_field),intent(in) :: u_with_BCs
          integer :: i
-         if (u%PA_assign_ghost_XPeriodic%defined) then
+         if (u_with_BCs%PA_assign_ghost_XPeriodic%defined) then
 #ifdef _PARALLELIZE_BF_PLANE_
          !$OMP PARALLEL DO
 
@@ -682,7 +719,7 @@
          real(cp),intent(in) :: val
          type(block_field),intent(in) :: u_with_BCs
          integer :: i
-         if (u%PA_assign_ghost_N_XPeriodic%defined) then
+         if (u_with_BCs%PA_assign_ghost_N_XPeriodic%defined) then
 #ifdef _PARALLELIZE_BF_PLANE_
          !$OMP PARALLEL DO
 
@@ -723,13 +760,54 @@
          type(block_field),intent(in) :: u_with_BCs
          real(cp),intent(in) :: val
          integer :: i
-         if (u%PA_assign_wall_Dirichlet%defined) then
+         if (u_with_BCs%PA_assign_wall_Dirichlet%defined) then
 #ifdef _PARALLELIZE_BF_PLANE_
          !$OMP PARALLEL DO
 
 #endif
          do i=1,u_with_BCs%PA_assign_wall_Dirichlet%N
          call u_with_BCs%PA_assign_wall_Dirichlet%SP(i)%P(u%GF,val)
+         enddo
+#ifdef _PARALLELIZE_BF_PLANE_
+         !$OMP END PARALLEL DO
+
+#endif
+         endif
+       end subroutine
+
+       subroutine assign_wall_Periodic_single_BF(u,val)
+         implicit none
+         type(block_field),intent(inout) :: u
+         real(cp),intent(in) :: val
+         integer :: i
+         if (u%PA_assign_wall_Periodic_single%defined) then
+#ifdef _PARALLELIZE_BF_PLANE_
+         !$OMP PARALLEL DO
+
+#endif
+         do i=1,u%PA_assign_wall_Periodic_single%N
+         call u%PA_assign_wall_Periodic_single%SP(i)%P(u%GF,val)
+         enddo
+#ifdef _PARALLELIZE_BF_PLANE_
+         !$OMP END PARALLEL DO
+
+#endif
+         endif
+       end subroutine
+
+       subroutine assign_wall_Periodic_single_BF2(u,val,u_with_BCs)
+         implicit none
+         type(block_field),intent(inout) :: u
+         type(block_field),intent(in) :: u_with_BCs
+         real(cp),intent(in) :: val
+         integer :: i
+         if (u_with_BCs%PA_assign_wall_Periodic_single%defined) then
+#ifdef _PARALLELIZE_BF_PLANE_
+         !$OMP PARALLEL DO
+
+#endif
+         do i=1,u_with_BCs%PA_assign_wall_Periodic_single%N
+         call u_with_BCs%PA_assign_wall_Periodic_single%SP(i)%P(u%GF,val)
          enddo
 #ifdef _PARALLELIZE_BF_PLANE_
          !$OMP END PARALLEL DO
@@ -764,7 +842,7 @@
          type(block_field),intent(in) :: u_with_BCs
          real(cp),intent(in) :: val
          integer :: i
-         if (u%PA_multiply_wall_Neumann%defined) then
+         if (u_with_BCs%PA_multiply_wall_Neumann%defined) then
 #ifdef _PARALLELIZE_BF_PLANE_
          !$OMP PARALLEL DO
 

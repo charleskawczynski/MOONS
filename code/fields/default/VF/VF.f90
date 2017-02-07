@@ -53,6 +53,7 @@
         public :: assign_ghost_XPeriodic
         public :: assign_ghost_N_XPeriodic
         public :: assign_wall_Dirichlet
+        public :: assign_wall_Periodic_single
         public :: multiply_wall_Neumann
         public :: set_prescribed_BCs
 
@@ -157,6 +158,8 @@
         interface assign_ghost_N_XPeriodic; module procedure assign_ghost_N_XPeriodic_VF2;  end interface
         interface assign_wall_Dirichlet;    module procedure assign_wall_Dirichlet_VF;      end interface
         interface assign_wall_Dirichlet;    module procedure assign_wall_Dirichlet_VF2;     end interface
+        interface assign_wall_Periodic_single; module procedure assign_wall_Periodic_single_VF;      end interface
+        interface assign_wall_Periodic_single; module procedure assign_wall_Periodic_single_VF2;     end interface
         interface multiply_wall_Neumann;    module procedure multiply_wall_Neumann_VF;      end interface
         interface multiply_wall_Neumann;    module procedure multiply_wall_Neumann_VF2;     end interface
         interface set_prescribed_BCs;       module procedure set_prescribed_BCs_VF;         end interface
@@ -1192,6 +1195,24 @@
           call assign_wall_Dirichlet(A%x,val,A_with_BCs%x)
           call assign_wall_Dirichlet(A%y,val,A_with_BCs%y)
           call assign_wall_Dirichlet(A%z,val,A_with_BCs%z)
+        end subroutine
+
+        subroutine assign_wall_Periodic_single_VF(A,val)
+          implicit none
+          type(VF),intent(inout) :: A
+          real(cp),intent(in) :: val
+          call assign_wall_Periodic_single(A%x,val)
+          call assign_wall_Periodic_single(A%y,val)
+          call assign_wall_Periodic_single(A%z,val)
+        end subroutine
+        subroutine assign_wall_Periodic_single_VF2(A,val,A_with_BCs)
+          implicit none
+          type(VF),intent(inout) :: A
+          type(VF),intent(in) :: A_with_BCs
+          real(cp),intent(in) :: val
+          call assign_wall_Periodic_single(A%x,val,A_with_BCs%x)
+          call assign_wall_Periodic_single(A%y,val,A_with_BCs%y)
+          call assign_wall_Periodic_single(A%z,val,A_with_BCs%z)
         end subroutine
 
         subroutine multiply_wall_Neumann_VF(A,val)

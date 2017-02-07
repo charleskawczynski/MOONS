@@ -51,6 +51,8 @@
 
        logical :: matrix_based
        logical :: unsteady_B0
+       logical :: prescribed_periodic_BCs
+       logical :: print_every_MHD_step
 
        logical :: couple_time_steps
        logical :: finite_Rem
@@ -76,6 +78,7 @@
        SP%FCL%stop_before_solve      = F ! Just export ICs, do not run simulation
        SP%FCL%skip_solver_loop       = F ! not used anywhere
        SP%FCL%post_process           = T ! not used anywhere
+       SP%FCL%Poisson_test           = F ! not used anywhere
 
        SP%EL%export_analytic         = F ! Export analytic solutions (MOONS.f90)
        SP%EL%export_meshes           = F ! Export all meshes before starting simulation
@@ -98,6 +101,8 @@
 
        SP%matrix_based               = F ! Solve induction equation
        SP%unsteady_B0                = F ! Add unsteady applied field to induction eq.
+       SP%prescribed_periodic_BCs    = T ! Add unsteady applied field to induction eq.
+       SP%print_every_MHD_step       = F ! Add unsteady applied field to induction eq.
 
        ! call init(MP,mirror,mirror_face)
        call init(SP%MP,F,6) ! Must be defined before KE_scale,ME_scale,JE_scale
@@ -256,6 +261,8 @@
        SP%uniform_gravity_dir    = SP_in%uniform_gravity_dir
        SP%matrix_based           = SP_in%matrix_based
        SP%unsteady_B0            = SP_in%unsteady_B0
+       SP%prescribed_periodic_BCs= SP_in%prescribed_periodic_BCs
+       SP%print_every_MHD_step   = SP_in%print_every_MHD_step
        call init(SP%FCL,    SP_in%FCL)
        call init(SP%GP,     SP_in%GP)
        call init(SP%MP,     SP_in%MP)
@@ -297,6 +304,8 @@
        write(un,*) 'uniform_gravity_dir    = ',SP%uniform_gravity_dir
        write(un,*) 'matrix_based           = ',SP%matrix_based
        write(un,*) 'unsteady_B0            = ',SP%unsteady_B0
+       write(un,*) 'prescribed_periodic_BCs= ',SP%prescribed_periodic_BCs
+       write(un,*) 'print_every_MHD_step   = ',SP%print_every_MHD_step
        call display(SP%FCL,un)
        call display(SP%GP,un)
        call display(SP%MP,un)
@@ -339,6 +348,8 @@
        write(un,*) SP%uniform_gravity_dir
        write(un,*) SP%matrix_based
        write(un,*) SP%unsteady_B0
+       write(un,*) SP%prescribed_periodic_BCs
+       write(un,*) SP%print_every_MHD_step
        call export(SP%FCL,un)
        call export(SP%GP,un)
        call export(SP%MP,un)
@@ -365,6 +376,8 @@
        read(un,*) SP%uniform_gravity_dir
        read(un,*) SP%matrix_based
        read(un,*) SP%unsteady_B0
+       read(un,*) SP%prescribed_periodic_BCs
+       read(un,*) SP%print_every_MHD_step
        call import(SP%FCL,un)
        call import(SP%GP,un)
        call import(SP%MP,un)

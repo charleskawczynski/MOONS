@@ -31,10 +31,10 @@ b.n = BC_modification(b.n,u.n,A.n,c,'b.n');
 %% REMOVE NULLSPACE FOR PURE NEUMANN
 b_initial = nullspace_modification(b_initial,BCs,'b_initial');
 b = nullspace_modification(b,BCs,'b');
-b.c = assign_single_periodic_wall(b.c,0,BCs);
-b.n = assign_single_periodic_wall(b.n,0,BCs);
-b_initial.c = assign_single_periodic_wall(b_initial.c,0,BCs);
-b_initial.n = assign_single_periodic_wall(b_initial.n,0,BCs);
+b.c = assign_wall_Periodic_single(b.c,0,BCs);
+b.n = assign_wall_Periodic_single(b.n,0,BCs);
+b_initial.c = assign_wall_Periodic_single(b_initial.c,0,BCs);
+b_initial.n = assign_wall_Periodic_single(b_initial.n,0,BCs);
 
 %% PREPARE CG FOR NUMERICAL SOLUTION
 CG_MIT = init_CG(u,A);

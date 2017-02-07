@@ -1,4 +1,4 @@
-function Ax = Laplacian(x,c,check_result)
+function Ax = Laplacian(x,c)
 temp = x;
 temp = apply_BCs_implicit(temp,c);
 Ax = Laplacian_explicit(temp,c);

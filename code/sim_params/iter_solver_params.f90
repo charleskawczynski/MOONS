@@ -123,6 +123,7 @@
          write(un,*) 'tol_rel = ';              write(un,*) ISP%tol_rel
          write(un,*) 'tol_abs = ';              write(un,*) ISP%tol_abs
          write(un,*) 'n_skip_check_res = ';     write(un,*) ISP%n_skip_check_res
+         write(un,*) 'export_convergence = ';   write(un,*) ISP%export_convergence
          write(un,*) 'exit_loop = ';            write(un,*) ISP%exit_loop
        end subroutine
 
@@ -145,6 +146,7 @@
          read(un,*); read(un,*) ISP%tol_rel
          read(un,*); read(un,*) ISP%tol_abs
          read(un,*); read(un,*) ISP%n_skip_check_res
+         read(un,*); read(un,*) ISP%export_convergence
          read(un,*); read(un,*) ISP%exit_loop
        end subroutine
 

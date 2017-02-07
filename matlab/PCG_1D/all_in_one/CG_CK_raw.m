@@ -6,12 +6,8 @@ Linf = zeros(N_inner,1);
 r=b;
 r = multiply_wall_Neumann(r,0.5,x);
 tempx = compute_Ax_BC_MF(operator_explicit,x,c);
-Ax = operator(x,c,true);
-disp('x = '); disp(num2str(x.vals'))
-disp('Ax = '); disp(num2str(Ax.vals'))
-disp('tempx = '); disp(num2str(tempx.vals'))
+Ax = operator(x,c);
 Ax_BC = tempx.vals + Ax.vals;
-disp(['max(abs(Ax_BC)) = ' num2str(max(abs(Ax_BC)))])
 % multiply_wall_Neumann is inside operator
 r.vals = r.vals - Ax_BC;
 r.vals = vol.*r.vals;
@@ -34,6 +30,7 @@ for i = 1:N_inner
    Ax = operator(p,c);
    % Ax = multiply_wall_Neumann(Ax,0.5,x); % Needs to be present when not in operator
    Ax = assign_wall_Dirichlet(Ax,0,x);
+   Ax = assign_wall_Periodic_single(Ax,0,x.BCs)
    Ax.vals = Ax.vals.*vol;
    % ghost points are not tracked by Ax since it's multiplied by vol and,
    % therefore, ghost points of r may not be updated, nor z nor p.

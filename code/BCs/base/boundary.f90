@@ -198,9 +198,10 @@
          integer :: i,col_width,precision
          if (B%BCL%defined) then
            precision = 4; col_width = 10
-           call export_table('ID      :',(/(i,i=1,B%n)/),col_width,un)
-           call export_table('Type    :',(/(get_bctype(B%bct(i)),i=1,B%n)/),col_width,un)
-           call export_table('meanVal :',(/(get_mean_value(B%bct(i)),i=1,B%n)/),col_width,precision,un)
+           call export_table('ID         :',(/(i,i=1,B%n)/),col_width,un)
+           call export_table('Type       :',(/(get_bctype(B%bct(i)),i=1,B%n)/),col_width,un)
+           call export_table('meanVal    :',(/(get_mean_value(B%bct(i)),i=1,B%n)/),col_width,precision,un)
+           call export_table('prescribed :',(/(is_prescribed(B%bct(i)),i=1,B%n)/),col_width,un)
          endif
        end subroutine
 

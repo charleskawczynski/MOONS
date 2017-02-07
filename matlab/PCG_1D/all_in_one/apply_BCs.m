@@ -16,7 +16,6 @@ if u.DL.is_N
     if (u.BCs.bc1.type.Periodic && u.BCs.bc2.type.Periodic)
         f(1) = f(end-2);
         f(end-1) = f(2);
-        f(end) = 0;
     end
 elseif u.DL.is_CC
     if (u.BCs.bc1.type.Dirichlet); f(1) = 2*ub1 - f(2);

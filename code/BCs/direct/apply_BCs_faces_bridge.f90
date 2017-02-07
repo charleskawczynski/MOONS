@@ -4,32 +4,6 @@
        use GF_mod
        use face_SD_mod
 
-       ! From apply_BCs_faces_raw.f90:
-       !       call apply_Dirichlet_C(ug,ui,bvals,x,y,p)
-       !       call apply_Dirichlet_N(ug,ub,ui,bvals,x,y,p)
-       !       call apply_Neumann_C(ug,ui,bvals,dh,nhat,x,y,p)
-       !       call apply_Neumann_N(ug,ui,bvals,dh,nhat,x,y,p)
-       !       call apply_Periodic_C(ug,ui_opp,x,y,p)
-       !       call apply_Periodic_N(ug,ui_opp,x,y,p)
-       !       call apply_Robin_C(ug,ui,bvals,dh,nhat,x,y,p)
-       !       call apply_Symmetric_C(ug,ui,x,y,p)
-       !       call apply_Symmetric_N(ug,ui,x,y,p)
-       !       call apply_antisymmetric_C(ug,ui,x,y,p)
-       !       call apply_antisymmetric_N(ug,ui,x,y,p)
-
-       ! From here:
-       !       call Dirichlet_C(GF,surf,FSD,face)
-       !       call Dirichlet_N(GF,surf,FSD,face)
-       !       call Neumann_C(GF,surf,FSD,face)
-       !       call Neumann_N(GF,surf,FSD,face)
-       !       call Periodic_C(GF,surf,FSD,face)
-       !       call Periodic_N(GF,surf,FSD,face)
-       !       call Robin_C(GF,surf,FSD,face)
-       !       call apply_Symmetric_C(GF,surf,FSD,face)
-       !       call apply_Symmetric_N(GF,surf,FSD,face)
-       !       call apply_antisymmetric_C(GF,surf,FSD,face)
-       !       call apply_antisymmetric_N(GF,surf,FSD,face)
-
        implicit none
        private
        public :: apply_face_BC_op
@@ -254,10 +228,10 @@
          type(face_SD),intent(in) :: FSD
          integer,intent(in) :: face
          call F_Periodic_N_GF(GF,surf,&
-                              FSD%G(face)%M(1:3)%i2(1),&
-                              FSD%G(face)%M(1:3)%i2(2),&
-                              FSD%I_OPP(face)%M(1:3)%i2(1),&
-                              FSD%I_OPP(face)%M(1:3)%i2(2),&
+                              FSD%G_periodic_N(face)%M(1:3)%i2(1),&
+                              FSD%G_periodic_N(face)%M(1:3)%i2(2),&
+                              FSD%I_OPP_periodic_N(face)%M(1:3)%i2(1),&
+                              FSD%I_OPP_periodic_N(face)%M(1:3)%i2(2),&
                               FSD%i_2D(face)%i,&
                               0)
        end subroutine

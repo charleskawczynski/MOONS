@@ -15,6 +15,7 @@
        use export_analytic_mod
        use mirror_props_mod
        use vorticity_streamfunction_mod
+       use Poisson_test_mod
        use export_mesh_aux_mod
 
        use iter_solver_params_mod
@@ -139,6 +140,10 @@
            stop 'Exported ICs. Turn off stop_before_solve in sim_params.f90 to run sim.'
          endif
          if (.not.SP%FCL%skip_solver_loop) call MHDSolver(nrg,mom,ind,DT,SP,SP%coupled)
+
+         if (SP%FCL%Poisson_test) then
+           if (SP%VS%U%SS%initialize) call Poisson_test(mom%U,mom%p,mom%m,DT,SP)
+         endif
 
          if (SP%FCL%post_process) then
            write(*,*) ' *********************** POST PROCESSING ***********************'

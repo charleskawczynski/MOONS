@@ -443,7 +443,10 @@
            else; call add(BC%PA_face_BCs,Periodic_C,face)
            endif
            call remove(BC%PA_face_implicit_BCs,face)
-           call add(BC%PA_face_implicit_BCs,Periodic_C_implicit,face)
+           if (is_prescribed(BC%face%bct(face))) then
+                 call add(BC%PA_face_implicit_BCs,Periodic_C_prescribed_implicit,face)
+           else; call add(BC%PA_face_implicit_BCs,Periodic_C_implicit,face)
+           endif
          endif
          if ( N_along(BC%DL,dir)) then
            call remove(BC%PA_face_BCs,face)
@@ -452,7 +455,10 @@
            else; call add(BC%PA_face_BCs,Periodic_N,face)
            endif
            call remove(BC%PA_face_implicit_BCs,face)
-           call add(BC%PA_face_implicit_BCs,Periodic_N_implicit,face)
+           if (is_prescribed(BC%face%bct(face))) then
+                 call add(BC%PA_face_implicit_BCs,Periodic_N_prescribed_implicit,face)
+           else; call add(BC%PA_face_implicit_BCs,Periodic_N_implicit,face)
+           endif
          endif
 
          BC%BCL%BCT_defined = .true.

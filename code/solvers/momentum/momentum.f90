@@ -161,7 +161,7 @@
          write(*,*) '     U BCs applied'
 
          call init(mom%Ustar,mom%U)
-         call set_prescribed_BCs(mom%Ustar)
+         if (SP%prescribed_periodic_BCs) call set_prescribed_BCs(mom%Ustar)
          call init_Ustar_field(mom%Ustar,mom%m,mom%U,mom%SP,str(DT%U%field))
          write(*,*) '     Intermediate field initialized'
 
@@ -313,7 +313,7 @@
               call export_processed(mom%m,mom%U,str(DT%U%field),'U',1,mom%SP%MP)
               call export_processed(mom%m,mom%p,str(DT%p%field),'p',1,mom%SP%MP)
              endif
-             call export_raw(mom%m,mom%divU,str(DT%U%field),'divU',1)
+             call export_raw(mom%m,mom%divU,str(DT%U%field),'divU',0)
              write(*,*) '     finished'
            endif
          endif

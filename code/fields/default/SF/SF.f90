@@ -49,6 +49,7 @@
         public :: assign_BC_vals
         public :: assign_Neumann_BCs
         public :: assign_Dirichlet_BCs
+        public :: assign_wall_Periodic_single
         public :: assign_Periodic_BCs
         public :: multiply_Neumann_BCs
         public :: assign_ghost_XPeriodic
@@ -169,6 +170,8 @@
         interface assign_ghost_N_XPeriodic; module procedure assign_ghost_N_XPeriodic_SF2; end interface
         interface assign_wall_Dirichlet;    module procedure assign_wall_Dirichlet_SF;     end interface
         interface assign_wall_Dirichlet;    module procedure assign_wall_Dirichlet_SF2;    end interface
+        interface assign_wall_Periodic_single;     module procedure assign_wall_Periodic_single_SF;      end interface
+        interface assign_wall_Periodic_single;     module procedure assign_wall_Periodic_single_SF2;      end interface
         interface multiply_wall_Neumann;    module procedure multiply_wall_Neumann_SF;     end interface
         interface multiply_wall_Neumann;    module procedure multiply_wall_Neumann_SF2;    end interface
         interface set_prescribed_BCs;       module procedure set_prescribed_BCs_SF;        end interface
@@ -787,6 +790,22 @@
           type(SF),intent(in) :: u_with_BCs
           integer :: i
           do i=1,u%s; call assign_wall_Dirichlet(u%BF(i),val,u_with_BCs%BF(i)); enddo
+        end subroutine
+
+        subroutine assign_wall_Periodic_single_SF(u,val)
+          implicit none
+          type(SF),intent(inout) :: u
+          real(cp),intent(in) :: val
+          integer :: i
+          do i=1,u%s; call assign_wall_Periodic_single(u%BF(i),val); enddo
+        end subroutine
+        subroutine assign_wall_Periodic_single_SF2(u,val,u_with_BCs)
+          implicit none
+          type(SF),intent(inout) :: u
+          real(cp),intent(in) :: val
+          type(SF),intent(in) :: u_with_BCs
+          integer :: i
+          do i=1,u%s; call assign_wall_Periodic_single(u%BF(i),val,u_with_BCs%BF(i)); enddo
         end subroutine
 
         subroutine multiply_wall_Neumann_SF(u,val)
