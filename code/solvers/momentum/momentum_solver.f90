@@ -31,6 +31,7 @@
        ! 4) Mean pressure gradient (included or not)
 
        public :: CN_AB2_PPE_PCG_mom_PCG
+       public :: O2_BD_CN_AB2_PPE_PCG_mom_PCG
        public :: CN_AB2_PPE_GS_mom_PCG
 
        public :: Euler_PCG_Donor
@@ -70,6 +71,30 @@
          call add(temp_F1,U)
          call assign(Unm1,U)
 
+         call solve(mom_PCG,Ustar,temp_F1,m,compute_norms) ! Solve for U*
+         call clean_div(PPE_PCG,U,Ustar,p,m,temp_F2,temp_CC,compute_norms)
+         call update_intermediate_field_BCs(Ustar,U,p,m,temp_F1,temp_F2,temp_CC_VF)
+       end subroutine
+
+       subroutine O2_BD_CN_AB2_PPE_PCG_mom_PCG(mom_PCG,PPE_PCG,U,Ustar,Unm1,p,F,Fnm1,m,&
+         dt,temp_F1,temp_F2,temp_CC,temp_CC_VF,compute_norms)
+         implicit none
+         type(PCG_solver_VF),intent(inout) :: mom_PCG
+         type(PCG_solver_SF),intent(inout) :: PPE_PCG
+         type(SF),intent(inout) :: p
+         type(VF),intent(inout) :: U,Ustar,Unm1,temp_CC_VF
+         type(VF),intent(in) :: F,Fnm1
+         type(mesh),intent(in) :: m
+         real(cp),intent(in) :: dt
+         type(VF),intent(inout) :: temp_F1,temp_F2
+         type(SF),intent(inout) :: temp_CC
+         logical,intent(in) :: compute_norms
+         call AB2(temp_F1,F,Fnm1)
+         call multiply(temp_F1,dt)
+         call assign_wall_Dirichlet(temp_F1,0.0_cp,U)
+         call add_product(temp_F1,U,4.0_cp/3.0_cp)
+         call add_product(temp_F1,Unm1,-1.0_cp/3.0_cp)
+         call assign(Unm1,U)
          call solve(mom_PCG,Ustar,temp_F1,m,compute_norms) ! Solve for U*
          call clean_div(PPE_PCG,U,Ustar,p,m,temp_F2,temp_CC,compute_norms)
          call update_intermediate_field_BCs(Ustar,U,p,m,temp_F1,temp_F2,temp_CC_VF)

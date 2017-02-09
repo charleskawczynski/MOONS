@@ -328,7 +328,8 @@
          integer,dimension(3) :: N
          integer :: i
          call delete(m_mom)
-         N = (/64,1,64/); hmin = -1.0_cp; hmax = 1.0_cp
+         N = (/64,1,64/);   hmin = -1.0_cp; hmax = 1.0_cp ! Approximate
+         ! N = (/129,1,129/); hmin = -1.0_cp; hmax = 1.0_cp ! DNS
          hmin(2) = -0.5_cp; hmax(2) = 0.5_cp
          hmin(1) = 0.0_cp; hmax(1) = 2.0_cp*PI
          beta = Re_Ha_BL(DP%Re,DP%Ha,hmin,hmax)

@@ -26,6 +26,7 @@
        use matrix_free_operators_mod
        use face_SD_mod
        use datatype_conversion_mod
+       use time_statistics_mod
 
        use IO_tools_mod
        use IO_export_mod
@@ -90,6 +91,7 @@
          type(mesh) :: m
          type(sim_params) :: SP
          type(probe) :: probe_KE,probe_KE_2C,probe_divU
+         type(time_statistics_VF) :: TS
        end type
 
        interface init;                 module procedure init_mom;                   end interface
@@ -178,6 +180,7 @@
           call init(mom%probe_KE_2C,str(DT%U%energy),'KE_2C',mom%SP%VS%U%SS%restart,SP%DMR,.false.)
          endif
          write(*,*) '     momentum probes initialized'
+         ! call init(mom%TS,mom%m,mom%U,t_start,t_stop,DT%U%field,'U',0)
 
          ! Initialize interior solvers
          call init(mom%GS_p,mom%p,mom%m,mom%SP%VS%P%ISP,str(DT%p%residual),'p')

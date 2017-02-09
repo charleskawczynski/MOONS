@@ -42,7 +42,7 @@ endif
 SRC_DIR = ..$(PS)code
 
 ifeq ($(CLUSTER),'PC_CK')
-	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS2
+	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS7
 endif
 
 ifeq ($(CLUSTER),'Workstation_CK')
@@ -419,6 +419,8 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)boundary_conditions.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)BF$(PS)BF.f90\
 	$(SRC_DIR)$(PS)block$(PS)mesh_block.f90\
+	$(SRC_DIR)$(PS)time_statistics$(PS)stats_period.f90\
+	$(SRC_DIR)$(PS)time_statistics$(PS)time_statistics_params.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)matrix_free_params.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)var.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)var_set.f90\
@@ -469,10 +471,10 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_advect.f90\
 	$(SRC_DIR)$(PS)probes$(PS)probe.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)BC_funcs.f90\
 	$(SRC_DIR)$(PS)time_statistics$(PS)time_statistics.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_operators.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)matrix_based_operators.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)BC_funcs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)preconditioners$(PS)diagonals.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)preconditioners$(PS)preconditioners.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)AB2.f90\

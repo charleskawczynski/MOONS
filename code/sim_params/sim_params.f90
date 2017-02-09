@@ -17,6 +17,7 @@
      use momentum_forces_mod
      use geometry_props_mod
      use mirror_props_mod
+     use time_statistics_params_mod
      implicit none
 
      private
@@ -46,6 +47,7 @@
        type(momentum_forces) :: MF
        type(geometry_props) :: GP
        type(mirror_props) :: MP
+       type(time_statistics_params) :: TSP
 
        logical :: restart_all
 
@@ -116,8 +118,11 @@
        ! call init(MQP,auto_find_N,max_mesh_stretch_ratio,N_max_points_add)
        call init(SP%MQP,F,2.0_cp,50)
 
+       ! call init(TSP,t_start,t_stop)
+       call init(SP%TSP,0.0_cp,10.0_cp)
+
        time                          = 10000.0_cp
-       dtime                         = 2.0_cp*pow(-4)
+       dtime                         = 5.0_cp*pow(-4)
 
        SP%GP%tw                      = 0.05_cp
        SP%GP%geometry                = 7
@@ -130,19 +135,21 @@
 
        call delete(SP%DP)
        SP%DP%Re                      = 2.0_cp*pow(2)
-       ! SP%DP%Ha                      = 1.0_cp*pow(4)
-       SP%DP%Ha                      = sqrt(1.0_cp/(0.3_cp)*SP%DP%Re)
-       ! SP%DP%N                       = 4.0_cp*pow(-1)
+       SP%DP%Q                       = 7.0_cp*pow(-1)
        SP%DP%Rem                     = 1.0_cp*pow(0)
+       ! SP%DP%Ha                      = 1.0_cp*pow(4)
+       SP%DP%N                       = 1.0_cp/SP%DP%Q
+       ! SP%DP%N                       = 1.0_cp*pow(-1)
        SP%DP%cw                      = 0.0_cp
-       SP%DP%sig_local_over_sig_f    = pow(-3)
+       SP%DP%sig_local_over_sig_f    = 1.0_cp*pow(-3)
        SP%DP%Gr                      = 0.0_cp
        SP%DP%Pr                      = 0.01_cp
        SP%DP%Fr                      = 1.0_cp
        SP%DP%Ec                      = 0.0_cp
 
-       SP%DP%N                       = SP%DP%Ha**2.0_cp/SP%DP%Re
-       ! SP%DP%Ha                      = (SP%DP%N*SP%DP%Re)**0.5_cp
+       ! SP%DP%N                       = SP%DP%Ha**2.0_cp/SP%DP%Re
+       ! SP%DP%Ha                      = (1.0_cp/SP%DP%Q*SP%DP%Re)**0.5_cp
+       SP%DP%Ha                      = (SP%DP%N*SP%DP%Re)**0.5_cp
        SP%DP%Al                      = SP%DP%N/SP%DP%Rem
        SP%DP%Pe                      = SP%DP%Pr*SP%DP%Re
        SP%DP%tau                     = SP%DP%Re/SP%DP%Ha
@@ -171,7 +178,7 @@
        call init(SP%VS%T%SS,  F,F,F,0)
        call init(SP%VS%U%SS,  T,T,F,3)
        call init(SP%VS%P%SS,  T,T,F,1)
-       call init(SP%VS%B%SS,  T,T,F,3)
+       call init(SP%VS%B%SS,  T,T,F,4)
        call init(SP%VS%B0%SS, T,T,F,0)
        call init(SP%VS%phi%SS,T,T,F,0)
        call init(SP%VS%rho%SS,F,F,F,0)
@@ -198,20 +205,34 @@
        call init(SP%VS%rho%TMP,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_rho')
 
        ! Matrix-free parameters:
-       SP%VS%B%MFP%theta = 1.0_cp ! 1 = Backward Euler, .5 = Crank Nicholson
+       SP%VS%B%MFP%theta = 0.5_cp ! 1 = Backward Euler, .5 = Crank Nicholson
        SP%VS%U%MFP%theta = 0.5_cp ! 1 = Backward Euler, .5 = Crank Nicholson
        SP%VS%T%MFP%theta = 0.5_cp ! 1 = Backward Euler, .5 = Crank Nicholson
-       SP%VS%B%MFP%coeff   = SP%VS%B%MFP%theta*SP%VS%B%TMP%dt          ! LHS diffusion coeff
-       SP%VS%U%MFP%coeff   =-SP%VS%U%MFP%theta*SP%VS%U%TMP%dt/SP%DP%Re ! LHS diffusion coeff
-       SP%VS%T%MFP%coeff   =-SP%VS%T%MFP%theta*SP%VS%T%TMP%dt/SP%DP%Pe ! LHS diffusion coeff
+       if (SP%VS%B%SS%solve_method.eq.3) SP%VS%B%MFP%theta = 1.0_cp ! 1 = Backward Euler, .5 = Crank Nicholson
+
+       SP%VS%B%MFP%alpha   = SP%VS%B%TMP%dt          ! Diffusion coefficient
+       SP%VS%U%MFP%alpha   = SP%VS%U%TMP%dt/SP%DP%Re ! Diffusion coefficient
+       SP%VS%T%MFP%alpha   = SP%VS%T%TMP%dt/SP%DP%Pe ! Diffusion coefficient
+       if (SP%finite_Rem) SP%VS%B%MFP%alpha = SP%VS%B%MFP%alpha/SP%DP%Rem
+
+       SP%VS%B%MFP%coeff   =  SP%VS%B%MFP%alpha*SP%VS%B%MFP%theta ! LHS diffusion coefficient
+       SP%VS%U%MFP%coeff   = -SP%VS%U%MFP%alpha*SP%VS%U%MFP%theta ! LHS diffusion coefficient
+       SP%VS%T%MFP%coeff   = -SP%VS%T%MFP%alpha*SP%VS%T%MFP%theta ! LHS diffusion coefficient
        SP%VS%phi%MFP%coeff = 0.0_cp ! Poisson, coefficient unused
        SP%VS%p%MFP%coeff   = 0.0_cp ! Poisson, coefficient unused
        SP%VS%rho%MFP%coeff = 0.0_cp ! Poisson, coefficient unused
 
-       SP%VS%B%MFP%coeff_explicit = -SP%VS%B%MFP%coeff*(1.0_cp-SP%VS%B%MFP%theta)
-       SP%VS%U%MFP%coeff_explicit = -SP%VS%U%MFP%coeff*(1.0_cp-SP%VS%U%MFP%theta)
-       SP%VS%T%MFP%coeff_explicit = -SP%VS%T%MFP%coeff*(1.0_cp-SP%VS%T%MFP%theta)
-       if (SP%finite_Rem) SP%VS%B%MFP%coeff = SP%VS%B%MFP%coeff/SP%DP%Rem
+       SP%VS%B%MFP%coeff_explicit = -SP%VS%B%MFP%alpha*(1.0_cp-SP%VS%B%MFP%theta) ! RHS diffusion coefficient
+       SP%VS%U%MFP%coeff_explicit =  SP%VS%U%MFP%alpha*(1.0_cp-SP%VS%U%MFP%theta) ! RHS diffusion coefficient
+       SP%VS%T%MFP%coeff_explicit =  SP%VS%T%MFP%alpha*(1.0_cp-SP%VS%T%MFP%theta) ! RHS diffusion coefficient
+       SP%VS%phi%MFP%coeff = 0.0_cp ! Poisson, coefficient unused
+       SP%VS%p%MFP%coeff   = 0.0_cp ! Poisson, coefficient unused
+       SP%VS%rho%MFP%coeff = 0.0_cp ! Poisson, coefficient unused
+       ! J, which includes Rem, is passed into solver as explicit source term:
+       if (SP%finite_Rem) SP%VS%B%MFP%coeff_explicit = SP%VS%B%MFP%coeff_explicit*SP%DP%Rem
+
+       ! The following is needed only if curl-curl(B) is used, opposed to J in solver.
+       ! if (SP%finite_Rem) SP%VS%B%MFP%coeff_explicit = SP%VS%B%MFP%coeff_explicit/SP%DP%Rem
 
        SP%MF%JCrossB             = T ! add JCrossB      to momentum equation
        SP%MF%mean_pressure_grad  = T ! add JCrossB      to momentum equation
@@ -273,6 +294,7 @@
        call init(SP%coupled,SP_in%coupled)
        call init(SP%DMR,    SP_in%DMR)
        call init(SP%MQP,    SP_in%MQP)
+       call init(SP%TSP,    SP_in%TSP)
        call init(SP%PE,     SP_in%PE)
       end subroutine
 
@@ -288,6 +310,7 @@
        call delete(SP%coupled)
        call delete(SP%DMR)
        call delete(SP%MQP)
+       call delete(SP%TSP)
        call delete(SP%PE)
       end subroutine
 
@@ -315,6 +338,7 @@
        call display(SP%DP,un)
        call display(SP%DMR,un)
        call display(SP%MQP,un)
+       call display(SP%TSP,un)
        call display(SP%PE,un)
        call display(SP%coupled,un)
       end subroutine
@@ -359,6 +383,7 @@
        call export(SP%DP,un)
        call export(SP%DMR,un)
        call export(SP%MQP,un)
+       call export(SP%TSP,un)
        call export(SP%PE,un)
        call export(SP%coupled,un)
       end subroutine
@@ -387,6 +412,7 @@
        call import(SP%DP,un)
        call import(SP%DMR,un)
        call import(SP%MQP,un)
+       call import(SP%TSP,un)
        call import(SP%PE,un)
        call import(SP%coupled,un)
       end subroutine

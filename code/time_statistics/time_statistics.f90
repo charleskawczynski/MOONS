@@ -4,11 +4,14 @@
        use ops_interp_mod
        use time_marching_params_mod
        use string_mod
+       use datatype_conversion_mod
        use mesh_mod
        use probe_mod
        use SF_mod
        use VF_mod
        use TF_mod
+       use stats_period_mod
+       use time_statistics_params_mod
        use dynamic_mesh_refinement_mod
        use export_raw_processed_mod
 
@@ -27,11 +30,7 @@
          type(SF) :: U_ave
          type(probe) :: L2_mean
          type(SF) :: RMS
-         real(cp) :: period = 0.0_cp
-         real(cp) :: t_start = 0.0_cp
-         real(cp) :: t_stop = 0.0_cp
-         integer :: pad = 0
-         logical :: exported_statistics = .false.
+         type(time_statistics_params) :: TSP
        end type
 
        type time_statistics_VF
@@ -40,11 +39,7 @@
          type(probe) :: L2_mean
          type(VF) :: RMS
          type(TF) :: stresses
-         real(cp) :: period = 0.0_cp
-         real(cp) :: t_start = 0.0_cp
-         real(cp) :: t_stop = 0.0_cp
-         integer :: pad = 0
-         logical :: exported_statistics = .false.
+         type(time_statistics_params) :: TSP
        end type
 
        interface init;     module procedure init_TS_SF;      end interface
@@ -60,22 +55,17 @@
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-       subroutine init_TS_SF(TS,U,t_start,t_stop,DMR,dir,name,pad)
+       subroutine init_TS_SF(TS,m,U,TMP,TSP,DMR,dir,name)
          implicit none
          type(time_statistics_SF),intent(inout) :: TS
+         type(mesh),intent(in) :: m
          type(SF),intent(in) :: U
-         real(cp),intent(in) :: t_start,t_stop
+         type(time_marching_params),intent(in) :: TMP
+         type(time_statistics_params),intent(in) :: TSP
          type(dynamic_mesh_refinement),intent(in) :: DMR
          character(len=*),intent(in) :: dir,name
-         integer,intent(in) :: pad
-         TS%period = t_stop - t_start
-         if (TS%period.le.0.0_cp) then
-           stop 'Error: time_statistics period must > 0 in time_statistics.f90'
-         endif
-         TS%t_start = t_start
-         TS%t_stop = t_stop
-         TS%pad = pad
-         TS%exported_statistics = .false.
+         call init(TS%TSP,TSP)
+         call set_coefficient(TS%TSP,TMP%dt/TSP%O1_stats%period/m%MP%volume)
          call init(TS%L2_mean,dir,name,.false.,DMR,.true.)
          call init(TS%U_ave,U)
          call init(TS%RMS,U)
@@ -85,22 +75,16 @@
          call assign(TS%RMS,U)
        end subroutine
 
-       subroutine init_TS_VF(TS,m,U,t_start,t_stop,dir,name,pad)
+       subroutine init_TS_VF(TS,m,U,TMP,TSP,dir,name)
          implicit none
          type(time_statistics_VF),intent(inout) :: TS
          type(mesh),intent(in) :: m
          type(VF),intent(in) :: U
-         real(cp),intent(in) :: t_start,t_stop
+         type(time_marching_params),intent(in) :: TMP
+         type(time_statistics_params),intent(in) :: TSP
          character(len=*),intent(in) :: dir,name
-         integer,intent(in) :: pad
-         TS%period = t_stop - t_start
-         if (TS%period.le.0.0_cp) then
-           stop 'Error: time_statistics period must > 0 in time_statistics.f90'
-         endif
-         TS%t_start = t_start
-         TS%t_stop = t_stop
-         TS%pad = pad
-         TS%exported_statistics = .false.
+         call init(TS%TSP,TSP)
+         call set_coefficient(TS%TSP,TMP%dt/TSP%O1_stats%period/m%MP%volume)
          call init(TS%U_ave,U)
          call init(TS%RMS,U)
          call init_CC(TS%stresses,m)
@@ -113,28 +97,22 @@
        subroutine delete_TS_SF(TS)
          implicit none
          type(time_statistics_SF),intent(inout) :: TS
+         call delete(TS%TSP)
          call delete(TS%U_ave)
          call delete(TS%RMS)
          call delete(TS%dir)
          call delete(TS%name)
-         TS%t_start = 0.0_cp
-         TS%t_stop = 0.0_cp
-         TS%pad = 0
-         TS%exported_statistics = .false.
        end subroutine
 
        subroutine delete_TS_VF(TS)
          implicit none
          type(time_statistics_VF),intent(inout) :: TS
+         call delete(TS%TSP)
          call delete(TS%U_ave)
          call delete(TS%RMS)
          call delete(TS%dir)
          call delete(TS%name)
          call delete(TS%stresses)
-         TS%t_start = 0.0_cp
-         TS%t_stop = 0.0_cp
-         TS%pad = 0
-         TS%exported_statistics = .false.
        end subroutine
 
        subroutine update_TS_SF(TS,m,U,TMP,temp)
@@ -144,39 +122,50 @@
          type(mesh),intent(in) :: m
          type(SF),intent(in) :: U
          type(SF),intent(inout) :: temp
-         call add_product(TS%U_ave,U,TMP%dt/TS%period)
-         call assign(temp,U)
-         call square(temp)
-         call add_product(TS%RMS,temp,TMP%dt/TS%period)
+         type(string) :: s
+         call update(TS%TSP,TMP)
 
-         if ((TMP%t.gt.TS%t_stop).and.(.not.TS%exported_statistics)) then
+         if (TS%TSP%O1_stats%compute_stats) then ! Compute 1st order statistics (ubar)
+           call add_product(TS%U_ave,U,TS%TSP%coefficient)
+           call assign(temp,U)
+           call square(temp)
+           call add_product(TS%RMS,temp,TS%TSP%coefficient)
+           call update(TS%TSP,TMP)
+         endif
+
+         if (TS%TSP%O1_stats%export_stats) then
+           call init(s,'_t='//cp2str(TMP%t))
            call square_root(TS%RMS)
            call subtract(temp,U,TS%U_ave)
-           call export_processed(m,TS%RMS  ,str(TS%dir),str(TS%name)//'_RMS',TS%pad)
-           call export_processed(m,TS%U_ave,str(TS%dir),str(TS%name)//'_time_average',TS%pad)
-           call export_processed(m,U       ,str(TS%dir),str(TS%name)//'_instant'     ,TS%pad)
-           call export_processed(m,temp    ,str(TS%dir),str(TS%name)//'_fluctuating' ,TS%pad)
-           TS%exported_statistics = .true.
+           call export_processed(m,TS%RMS  ,str(TS%dir),str(TS%name)//'_RMS'//str(s)         ,1)
+           call export_processed(m,TS%U_ave,str(TS%dir),str(TS%name)//'_time_average'//str(s),1)
+           call export_processed(m,U       ,str(TS%dir),str(TS%name)//'_instant'//str(s)     ,1)
+           call export_processed(m,temp    ,str(TS%dir),str(TS%name)//'_fluctuating'//str(s) ,1)
+           call set_exported_stats(TS%TSP%O1_stats)
+           call delete(s)
          endif
        end subroutine
 
-       subroutine update_TS_VF(TS,m,U,TMP,temp,temp_CC,TF_CC)
+       subroutine update_TS_VF(TS,m,U,p,TMP,temp,temp_CC,TF_CC)
          implicit none
          type(time_statistics_VF),intent(inout) :: TS
          type(time_marching_params),intent(in) :: TMP
          type(mesh),intent(in) :: m
          type(VF),intent(in) :: U
+         type(VF),intent(in) :: p
          type(VF),intent(inout) :: temp,temp_CC
          type(TF),intent(inout) :: TF_CC
+         type(string) :: s
 
-         ! 1st order statistics (ubar)
-         call add_product(TS%U_ave,U,TMP%dt/TS%period)
-         call assign(temp,U)
-         call square(temp)
-         call add_product(TS%RMS,temp,TMP%dt/TS%period)
+         call update(TS%TSP,TMP)
+         if (TS%TSP%O1_stats%compute_stats) then ! Compute 1st order statistics (ubar)
+           call add_product(TS%U_ave,U,TS%TSP%coefficient)
+           call assign(temp,U)
+           call square(temp)
+           call add_product(TS%RMS,temp,TS%TSP%coefficient)
+         endif
 
-         if ((TMP%t.gt.TS%t_start).and.(TMP%t.lt.TS%t_stop)) then
-           ! 2nd order statistics (Reynolds stresses)
+         if (TS%TSP%O2_stats%compute_stats) then ! 2nd order statistics (Reynolds stresses)
            call subtract(temp,U,TS%U_ave) ! fluctuating
            call face2cellcenter(temp_CC,temp,m)
            call multiply(TF_CC%x%x,temp_CC%x,temp_CC%x)
@@ -188,19 +177,29 @@
            call multiply(TF_CC%z%x,temp_CC%z,temp_CC%x)
            call multiply(TF_CC%z%y,temp_CC%z,temp_CC%y)
            call multiply(TF_CC%z%z,temp_CC%z,temp_CC%z)
-           call add_product(TS%stresses,TF_CC,TMP%dt/TS%period)
+           call add_product(TS%stresses,TF_CC,TS%TSP%coefficient)
+
          endif
-         if ((TMP%t.gt.TS%t_stop).and.(.not.TS%exported_statistics)) then
+
+         if (TS%TSP%O1_stats%export_stats) then
+           call init(s,'_t='//cp2str(TMP%t))
            call square_root(TS%RMS)
            call subtract(temp,U,TS%U_ave)
-           call export_processed(m,TS%RMS  ,str(TS%dir),str(TS%name)//'_RMS',TS%pad)
-           call export_processed(m,TS%U_ave,str(TS%dir),str(TS%name)//'_time_average',TS%pad)
-           call export_processed(m,U       ,str(TS%dir),str(TS%name)//'_instant'     ,TS%pad)
-           call export_processed(m,temp    ,str(TS%dir),str(TS%name)//'_fluctuating' ,TS%pad)
-           call export_processed(m,TS%stresses%x,str(TS%dir),str(TS%name)//'_Rx' ,TS%pad)
-           call export_processed(m,TS%stresses%y,str(TS%dir),str(TS%name)//'_Ry' ,TS%pad)
-           call export_processed(m,TS%stresses%z,str(TS%dir),str(TS%name)//'_Rz' ,TS%pad)
-           TS%exported_statistics = .true.
+           call export_processed(m,TS%RMS  ,str(TS%dir),str(TS%name)//'_RMS'//str(s),1)
+           call export_processed(m,TS%U_ave,str(TS%dir),str(TS%name)//'_time_average'//str(s),1)
+           call export_processed(m,U       ,str(TS%dir),str(TS%name)//'_instant'//str(s)     ,1)
+           call export_processed(m,temp    ,str(TS%dir),str(TS%name)//'_fluctuating'//str(s) ,1)
+           call set_exported_stats(TS%TSP%O1_stats)
+           call delete(s)
+         endif
+
+         if (TS%TSP%O2_stats%export_stats) then
+           call init(s,'_t='//cp2str(TMP%t))
+           call export_processed(m,TS%stresses%x,str(TS%dir),str(TS%name)//'_Rx'//str(s),1)
+           call export_processed(m,TS%stresses%y,str(TS%dir),str(TS%name)//'_Ry'//str(s),1)
+           call export_processed(m,TS%stresses%z,str(TS%dir),str(TS%name)//'_Rz'//str(s),1)
+           call set_exported_stats(TS%TSP%O2_stats)
+           call delete(s)
          endif
        end subroutine
 

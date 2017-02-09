@@ -169,13 +169,17 @@
          call add(temp_F2,B,B0) ! Since finite Rem
          call advect_B(curlUCrossB,U_E,temp_F2,m,temp_E_TF,temp_E)
          call AB2(temp_F1,curlUCrossB,curlUCrossB_nm1)
+         call multiply(temp_F1,dt)
+
          call multiply(temp_E,J,sigmaInv_E)
          call curl(temp_F2,temp_E,m)
          call multiply(temp_F2,MFP%coeff_explicit)
          call add(temp_F1,temp_F2)
-         call multiply(temp_F1,dt)
+
+         call AB2(temp_F2,F,F)
+         call add_product(temp_F1,temp_F2,dt)
+
          call add(temp_F1,B)
-         call add_product(temp_F1,F,dt)
          call solve(PCG_B,Bstar,temp_F1,m,compute_norms)
          call clean_div(PCG_cleanB,B,Bstar,phi,m,temp_F1,temp_CC,compute_norms)
          call update_intermediate_field_BCs(Bstar,B,phi,m,temp_F1,temp_F2,temp_CC_VF)
