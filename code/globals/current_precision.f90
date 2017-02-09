@@ -35,7 +35,7 @@
          real(cp),intent(in) :: A,B
          real(cp) :: tol
          logical :: L
-         tol = 10.0_cp*epsilon(1.0_cp)
+         tol = 100.0_cp*epsilon(1.0_cp)
          L = abs(A-B).lt.tol
        end function
 

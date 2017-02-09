@@ -26,20 +26,24 @@
       public :: init,delete
       public :: solve
       public :: prolongate
+      public :: update_preconditioner
 
       logical :: verifyPreconditioner = .false.
 
-      interface init;       module procedure init_PCG_SF;        end interface
-      interface init;       module procedure init_PCG_VF;        end interface
+      interface init;                  module procedure init_PCG_SF;                  end interface
+      interface init;                  module procedure init_PCG_VF;                  end interface
 
-      interface solve;      module procedure solve_PCG_SF;       end interface
-      interface solve;      module procedure solve_PCG_VF;       end interface
+      interface solve;                 module procedure solve_PCG_SF;                 end interface
+      interface solve;                 module procedure solve_PCG_VF;                 end interface
 
-      interface prolongate; module procedure prolongate_PCG_SF;  end interface
-      interface prolongate; module procedure prolongate_PCG_VF;  end interface
+      interface prolongate;            module procedure prolongate_PCG_SF;            end interface
+      interface prolongate;            module procedure prolongate_PCG_VF;            end interface
 
-      interface delete;     module procedure delete_PCG_SF;      end interface
-      interface delete;     module procedure delete_PCG_VF;      end interface
+      interface update_preconditioner; module procedure update_preconditioner_PCG_SF; end interface
+      interface update_preconditioner; module procedure update_preconditioner_PCG_VF; end interface
+
+      interface delete;                module procedure delete_PCG_SF;                end interface
+      interface delete;                module procedure delete_PCG_VF;                end interface
 
       type PCG_solver_SF
         type(matrix_free_params) :: MFP
@@ -321,6 +325,24 @@
         call init(PCG%MFP,MFP)
         call PCG%prec(PCG%Minv,m,PCG%k,PCG%MFP%coeff)
         call volume(PCG%vol,m)
+      end subroutine
+
+      subroutine update_preconditioner_PCG_SF(PCG,m,MFP)
+        implicit none
+        type(PCG_solver_SF),intent(inout) :: PCG
+        type(mesh),intent(in) :: m
+        type(matrix_free_params),intent(in) :: MFP
+        call init(PCG%MFP,MFP)
+        call PCG%prec(PCG%Minv,m,PCG%k,PCG%MFP%coeff)
+      end subroutine
+
+      subroutine update_preconditioner_PCG_VF(PCG,m,MFP)
+        implicit none
+        type(PCG_solver_VF),intent(inout) :: PCG
+        type(mesh),intent(in) :: m
+        type(matrix_free_params),intent(in) :: MFP
+        call init(PCG%MFP,MFP)
+        call PCG%prec(PCG%Minv,m,PCG%k,PCG%MFP%coeff)
       end subroutine
 
       end module

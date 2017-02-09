@@ -1,9 +1,11 @@
        module grid_connect_mod
        use current_precision_mod
-       use coordinates_mod
        use array_mod
+       use coordinates_mod
        use grid_mod
+       use mesh_quality_params_mod
        use coordinate_distribution_funcs_mod
+       use coordinate_distribution_funcs_iterate_mod
        use coordinate_stretch_param_match_mod
        implicit none
 
@@ -49,51 +51,72 @@
          call process(g,a,dir)
        end subroutine
 
-       subroutine con_prep_Roberts_L(g,g_in,L,N,dir)
+       subroutine con_prep_Roberts_L(g,g_in,L,N,dir,MQP)
          implicit none
          type(grid),intent(inout) :: g
          type(grid),intent(in) :: g_in
+         type(mesh_quality_params),intent(in) :: MQP
          real(cp),intent(in) :: L
          integer,intent(in) :: N,dir
          real(cp) :: beta,hmin
          type(array) :: a
+         integer :: i,N_final
          call check_N(N,'con_prep_Roberts_L')
          call init(g,g_in)
+         N_final = N
          hmin = g_in%c(dir)%hmin
-         beta = beta_dh_small(hmin - L,hmin,N,g_in%c(dir)%dhn%f(1))
-         call init(a,robertsLeft(hmin-L,hmin,N,beta))
+         do i=1,MQP%N_iter
+           beta = beta_dh_small(hmin - L,hmin,N_final,g_in%c(dir)%dhn%f(1))
+           call init(a,robertsLeft(hmin-L,hmin,N_final,beta))
+           N_final = a%N
+           if (needs_more_points(a,MQP)) then; N_final=N_final+1; else; exit; endif
+         enddo
          call process(g,a,dir)
        end subroutine
 
-       subroutine con_prep_Roberts_R(g,g_in,L,N,dir)
+       subroutine con_prep_Roberts_R(g,g_in,L,N,dir,MQP)
          implicit none
          type(grid),intent(inout) :: g
          type(grid),intent(in) :: g_in
+         type(mesh_quality_params),intent(in) :: MQP
          real(cp),intent(in) :: L
          integer,intent(in) :: N,dir
          real(cp) :: beta,hmin
          type(array) :: a
+         integer :: i,N_final
          call check_N(N,'con_prep_Roberts_R')
          call init(g,g_in)
+         N_final = N
          hmin = g_in%c(dir)%hmin
-         beta = beta_dh_small(hmin - L,hmin,N,g_in%c(dir)%dhn%f(1))
-         call init(a,robertsRight(hmin-L,hmin,N,beta))
+         do i=1,MQP%N_iter
+           beta = beta_dh_small(hmin - L,hmin,N_final,g_in%c(dir)%dhn%f(1))
+           call init(a,robertsRight(hmin-L,hmin,N_final,beta))
+           N_final = a%N
+           if (needs_more_points(a,MQP)) then; N_final=N_final+1; else; exit; endif
+         enddo
          call process(g,a,dir)
        end subroutine
 
-       subroutine con_prep_Roberts_B(g,g_in,L,N,dir)
+       subroutine con_prep_Roberts_B(g,g_in,L,N,dir,MQP)
          implicit none
          type(grid),intent(inout) :: g
          type(grid),intent(in) :: g_in
+         type(mesh_quality_params),intent(in) :: MQP
          real(cp),intent(in) :: L
          integer,intent(in) :: N,dir
          real(cp) :: beta,hmin
          type(array) :: a
+         integer :: i,N_final
          call check_N(N,'con_prep_Roberts_B')
          call init(g,g_in)
+         N_final = N
          hmin = g_in%c(dir)%hmin
-         beta = beta_dh_both(hmin - L,hmin,N,g_in%c(dir)%dhn%f(1))
-         call init(a,robertsBoth(hmin-L,hmin,N,beta))
+         do i=1,MQP%N_iter
+           beta = beta_dh_both(hmin - L,hmin,N_final,g_in%c(dir)%dhn%f(1))
+           call init(a,robertsBoth(hmin-L,hmin,N_final,beta))
+           N_final = a%N
+           if (needs_more_points(a,MQP)) then; N_final=N_final+1; else; exit; endif
+         enddo
          call process(g,a,dir)
        end subroutine
 
@@ -113,51 +136,72 @@
          call process(g,a,dir)
        end subroutine
 
-       subroutine con_app_Roberts_L(g,g_in,L,N,dir)
+       subroutine con_app_Roberts_L(g,g_in,L,N,dir,MQP)
          implicit none
          type(grid),intent(inout) :: g
          type(grid),intent(in) :: g_in
+         type(mesh_quality_params),intent(in) :: MQP
          real(cp),intent(in) :: L
          integer,intent(in) :: N,dir
          real(cp) :: beta,hmax
          type(array) :: a
+         integer :: i,N_final
          call check_N(N,'con_app_Roberts_L')
          call init(g,g_in)
+         N_final = N
          hmax = g_in%c(dir)%hmax
-         beta = beta_dh_small(hmax,hmax + L,N,g_in%c(dir)%dhn_e)
-         call init(a,robertsLeft(hmax,hmax + L,N,beta))
+         do i=1,MQP%N_iter
+           beta = beta_dh_small(hmax,hmax + L,N_final,g_in%c(dir)%dhn_e)
+           call init(a,robertsLeft(hmax,hmax + L,N_final,beta))
+           N_final = a%N
+           if (needs_more_points(a,MQP)) then; N_final=N_final+1; else; exit; endif
+         enddo
          call process(g,a,dir)
        end subroutine
 
-       subroutine con_app_Roberts_R(g,g_in,L,N,dir)
+       subroutine con_app_Roberts_R(g,g_in,L,N,dir,MQP)
          implicit none
          type(grid),intent(inout) :: g
          type(grid),intent(in) :: g_in
+         type(mesh_quality_params),intent(in) :: MQP
          real(cp),intent(in) :: L
          integer,intent(in) :: N,dir
          real(cp) :: beta,hmax
          type(array) :: a
+         integer :: i,N_final
          call check_N(N,'con_app_Roberts_R')
          call init(g,g_in)
+         N_final = N
          hmax = g_in%c(dir)%hmax
-         beta = beta_dh_small(hmax,hmax + L,N,g_in%c(dir)%dhn%f(1))
-         call init(a,robertsRight(hmax,hmax + L,N,beta))
+         do i=1,MQP%N_iter
+           beta = beta_dh_small(hmax,hmax + L,N_final,g_in%c(dir)%dhn%f(1))
+           call init(a,robertsRight(hmax,hmax + L,N_final,beta))
+           N_final = a%N
+           if (needs_more_points(a,MQP)) then; N_final=N_final+1; else; exit; endif
+         enddo
          call process(g,a,dir)
        end subroutine
 
-       subroutine con_app_Roberts_B(g,g_in,L,N,dir)
+       subroutine con_app_Roberts_B(g,g_in,L,N,dir,MQP)
          implicit none
          type(grid),intent(inout) :: g
          type(grid),intent(in) :: g_in
+         type(mesh_quality_params),intent(in) :: MQP
          real(cp),intent(in) :: L
          integer,intent(in) :: N,dir
          real(cp) :: beta,hmax
          type(array) :: a
+         integer :: i,N_final
          call check_N(N,'con_app_Roberts_B')
          call init(g,g_in)
+         N_final = N
          hmax = g_in%c(dir)%hmax
-         beta = beta_dh_both(hmax,hmax + L,N,g_in%c(dir)%dhn_e)
-         call init(a,robertsBoth(hmax,hmax + L,N,beta))
+         do i=1,MQP%N_iter
+           beta = beta_dh_both(hmax,hmax + L,N_final,g_in%c(dir)%dhn_e)
+           call init(a,robertsBoth(hmax,hmax + L,N_final,beta))
+           N_final = a%N
+           if (needs_more_points(a,MQP)) then; N_final=N_final+1; else; exit; endif
+         enddo
          call process(g,a,dir)
        end subroutine
 

@@ -577,8 +577,6 @@
             call random_number(r)
             f%f(:,:,k) = r
             enddo
-          case default
-          write(*,*) 'Error: dir must = 1:3 in random_noise_GF_dir in GF_distributions.f90'
           end select
         end subroutine
 

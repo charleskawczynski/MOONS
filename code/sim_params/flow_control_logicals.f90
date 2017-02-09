@@ -10,6 +10,7 @@
        logical :: skip_solver_loop = .false.
        logical :: stop_before_solve = .false.
        logical :: stop_after_mesh_export = .false.
+       logical :: Poisson_test = .false.
      end type
 
      interface init;    module procedure init_copy_FCL; end interface
@@ -29,6 +30,7 @@
        FCL%skip_solver_loop       = FCL_in%skip_solver_loop
        FCL%stop_before_solve      = FCL_in%stop_before_solve
        FCL%stop_after_mesh_export = FCL_in%stop_after_mesh_export
+       FCL%Poisson_test           = FCL_in%Poisson_test
      end subroutine
 
      subroutine delete_FCL(FCL)
@@ -38,6 +40,7 @@
        FCL%skip_solver_loop       = .false.
        FCL%stop_before_solve      = .false.
        FCL%stop_after_mesh_export = .false.
+       FCL%Poisson_test           = .false.
      end subroutine
 
      subroutine display_FCL(FCL,un)
@@ -48,6 +51,7 @@
        write(un,*) 'skip_solver_loop       = ',FCL%skip_solver_loop
        write(un,*) 'stop_before_solve      = ',FCL%stop_before_solve
        write(un,*) 'stop_after_mesh_export = ',FCL%stop_after_mesh_export
+       write(un,*) 'Poisson_test           = ',FCL%Poisson_test
      end subroutine
 
      subroutine print_FCL(FCL)
@@ -64,6 +68,7 @@
        write(un,*) FCL%skip_solver_loop
        write(un,*) FCL%stop_before_solve
        write(un,*) FCL%stop_after_mesh_export
+       write(un,*) FCL%Poisson_test
      end subroutine
 
      subroutine import_FCL(FCL,un)
@@ -74,6 +79,7 @@
        read(un,*) FCL%skip_solver_loop
        read(un,*) FCL%stop_before_solve
        read(un,*) FCL%stop_after_mesh_export
+       read(un,*) FCL%Poisson_test
      end subroutine
 
      end module

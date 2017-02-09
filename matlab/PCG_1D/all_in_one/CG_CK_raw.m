@@ -1,16 +1,15 @@
-function [x r L1 L2 Linf] = CG_CK_raw(operator,operator_explicit,x,b,N_inner,vol,c)
+function [x r L1 L2 Linf] = CG_CK_raw(operator,operator_explicit,x,b,p,N_inner,vol,c)
 L1 = zeros(N_inner,1);
 L2 = zeros(N_inner,1);
 Linf = zeros(N_inner,1);
-p=x;
 
 r=b;
 r = multiply_wall_Neumann(r,0.5,x);
 tempx = compute_Ax_BC_MF(operator_explicit,x,c);
-r.vals = r.vals - tempx.vals;
 Ax = operator(x,c);
+Ax_BC = tempx.vals + Ax.vals;
 % multiply_wall_Neumann is inside operator
-r.vals = r.vals - Ax.vals;
+r.vals = r.vals - Ax_BC;
 r.vals = vol.*r.vals;
 r = assign_wall_Dirichlet(r,0,x);
 
@@ -31,6 +30,7 @@ for i = 1:N_inner
    Ax = operator(p,c);
    % Ax = multiply_wall_Neumann(Ax,0.5,x); % Needs to be present when not in operator
    Ax = assign_wall_Dirichlet(Ax,0,x);
+   Ax = assign_wall_Periodic_single(Ax,0,x.BCs)
    Ax.vals = Ax.vals.*vol;
    % ghost points are not tracked by Ax since it's multiplied by vol and,
    % therefore, ghost points of r may not be updated, nor z nor p.
@@ -48,6 +48,7 @@ for i = 1:N_inner
    L1(i) = norms.L1;
    L2(i) = norms.L2;
    Linf(i) = norms.Linf;
+   if L2(i)<1e-10 break
 end
 
 % Ax = operator(x,c);

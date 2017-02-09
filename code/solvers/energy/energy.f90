@@ -143,7 +143,7 @@
          call delete(k_cc)
          write(*,*) '     Materials initialized'
 
-         call init(nrg%Probe_divQ,str(DT%T%residual),'probe_divQ',nrg%SP%VS%T%SS%restart,SP,.true.)
+         call init(nrg%Probe_divQ,str(DT%T%residual),'probe_divQ',nrg%SP%VS%T%SS%restart,SP%DMR,.true.)
 
          call init(nrg%PCG_T,nrg_diffusion,nrg_diffusion_explicit,prec_lap_SF,nrg%m,&
          nrg%SP%VS%T%ISP,nrg%SP%VS%T%MFP,nrg%T,nrg%temp_F,str(DT%T%residual),'T',.false.,.false.)

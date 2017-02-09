@@ -67,6 +67,7 @@
             call operator(Ax,p,k,m,MFP,tempk)
             call multiply_wall_Neumann(Ax,0.5_cp,x)
             call assign_wall_Dirichlet(Ax,0.0_cp,x)
+            call assign_wall_Periodic_single(Ax,0.0_cp,x)
             call multiply(Ax,vol)
             alpha = rhok/dot_product(p,Ax,x,tempx)
             call add_product(x,p,alpha) ! x = x + alpha p
@@ -74,13 +75,15 @@
             call update_iter(ISP)
             call add_product(r,Ax,-alpha) ! r = r - alpha Ap
 
-            ! if (check_res(ISP)) then
+            if (check_res(ISP)) then
               res_norm%L2 = sqrt(abs(dot_product(r,r,x,tempx)))
               call update_exit_loop(ISP,res_norm%L2,res_norm0%L2)
               if (any(ISP%exit_loop)) exit
-            ! endif
-            call update_check_res(ISP)
-            if (ISP%export_convergence) call compute_export_norms(un_convergence,res_norm0,res_norm,ISP,r)
+            endif
+            if (ISP%export_convergence) then
+              call check_nans(res_norm0,res_norm,ISP,'check_nans before export for '//name)
+              call compute_export_norms(un_convergence,res_norm0,res_norm,ISP,r)
+            endif
 
             call multiply(z,Minv,r)
             rhokp1 = dot_product(z,r,x,tempx)
@@ -90,7 +93,6 @@
           enddo
         else; call apply_BCs(x); call update_iter(ISP)
         endif
-        call update_last_iter(ISP)
 
         call check_nans(res_norm0,res_norm,ISP,'check_nans after loop for '//name)
 
@@ -137,6 +139,7 @@
             call operator(Ax,p,k,m,MFP,tempk)
             call multiply_wall_Neumann(Ax,0.5_cp,x)
             call assign_wall_Dirichlet(Ax,0.0_cp,x)
+            call assign_wall_Periodic_single(Ax,0.0_cp,x)
             call multiply(Ax,vol)
             alpha = rhok/dot_product(p,Ax,x,tempx)
             call add_product(x,p,alpha) ! x = x + alpha p
@@ -144,13 +147,15 @@
             call update_iter(ISP)
             call add_product(r,Ax,-alpha) ! r = r - alpha Ap
 
-            ! if (check_res(ISP)) then
+            if (check_res(ISP)) then
               res_norm%L2 = sqrt(abs(dot_product(r,r,x,tempx)))
               call update_exit_loop(ISP,res_norm%L2,res_norm0%L2)
               if (any(ISP%exit_loop)) exit
-            ! endif
-            call update_check_res(ISP)
-            if (ISP%export_convergence) call compute_export_norms(un_convergence,res_norm0,res_norm,ISP,r)
+            endif
+            if (ISP%export_convergence) then
+              call check_nans(res_norm0,res_norm,ISP,'check_nans before export for '//name)
+              call compute_export_norms(un_convergence,res_norm0,res_norm,ISP,r)
+            endif
 
             call multiply(z,Minv,r)
             rhokp1 = dot_product(z,r,x,tempx)
@@ -160,7 +165,6 @@
           enddo
         else; call apply_BCs(x); call update_iter(ISP)
         endif
-        call update_last_iter(ISP)
 
         call check_nans(res_norm0,res_norm,ISP,'check_nans after loop for '//name)
 
@@ -198,8 +202,11 @@
         integer,intent(in) :: un
         type(norms),intent(in) :: res_norm0,res_norm
         type(iter_solver_params),intent(in) :: ISP
+        real(cp) :: rel
+        call check_nans(res_norm0,res_norm,ISP,'export_norms')
+        rel = compute_relative_norm(res_norm,res_norm0)
         write(un,*) ISP%iter_total,&
-                    res_norm%L2/res_norm0%L2,&
+                    rel,&
                     res_norm%L1,&
                     res_norm%L2,&
                     res_norm%Linf,&
@@ -215,13 +222,24 @@
         type(norms),intent(in) :: res_norm0,res_norm
         type(iter_solver_params),intent(in) :: ISP
         character(len=*),intent(in) :: location
-        if (is_nan(res_norm%L2).or.is_nan(res_norm%Linf)) then
+        logical,dimension(7) :: L
+        real(cp) :: rel
+        rel = compute_relative_norm(res_norm,res_norm0)
+        L(1) = is_nan(res_norm%L1)
+        L(2) = is_nan(res_norm%L2)
+        L(3) = is_nan(res_norm%Linf)
+        L(4) = is_nan(res_norm0%L1)
+        L(5) = is_nan(res_norm0%L2)
+        L(6) = is_nan(res_norm0%Linf)
+        L(7) = is_nan(rel)
+        if (any(L)) then
           write(*,*) 'Error: NaN in ',location
           write(*,*) 'iterations_used = ',ISP%iter_per_call
           write(*,*) 'res_norm%L2 = ',res_norm%L2
           call print(res_norm,'res_norm in '//location)
           call print(res_norm0,'res_norm0 in '//location)
           call print(ISP)
+          write(*,*) 'L=',L
           stop 'Done'
         endif
       end subroutine
@@ -231,12 +249,21 @@
         type(iter_solver_params),intent(in) :: ISP
         type(norms),intent(in) :: res_norm,res_norm0
         character(len=*),intent(in) :: name
-        write(*,*) '-------------- '//name//' --------------'
-        call print(res_norm0,res_norm,'res_norm0,res_norm')
+        real(cp) :: rel
+        rel = compute_relative_norm(res_norm,res_norm0)
+        call print(res_norm0,res_norm,name//' res_norm0,res_norm')
         call print_exit_loop(ISP)
-        write(*,*) 'iterations (executed/max) = ',ISP%iter_per_call,ISP%iter_max
-        write(*,*) 'relative error = ',res_norm%L2/res_norm0%L2
+        write(*,*) 'iter_executed,rel error = ',ISP%iter_per_call,rel
         write(*,*) '----------------------------------------'
       end subroutine
+
+      function compute_relative_norm(res_norm,res_norm0) result(rel)
+        implicit none
+        type(norms),intent(in) :: res_norm,res_norm0
+        real(cp) :: rel
+        if (equal(res_norm0%L2,0.0_cp)) then; rel = res_norm%L2
+        else;                                 rel = res_norm%L2/res_norm0%L2
+        endif
+      end function
 
       end module

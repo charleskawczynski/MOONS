@@ -1,6 +1,7 @@
        module init_B0_field_mod
        use current_precision_mod
        use grid_mod
+       use GF_mod
        use mesh_mod
        use VF_mod
        use IO_import_mod
@@ -32,7 +33,7 @@
            case (1); call uniform_B_field(B0,SP%uniform_B0_dir)
            case (2); call initFringingField_Sergey(B0,m,3,1)
            case (3); call initFringingField_ALEX(B0,m,3,1)
-           case (4); call initField_Bandaru(B0,m,2)
+           case (4); call init_Field_Bandaru(B0,m,2)
            case default; stop 'Error: bad preset_ID in init_B0_field.f90'
            end select
          endif
@@ -70,100 +71,85 @@
          type(VF),intent(inout) :: B
          integer,intent(in) :: applied_dir,fringeDir
          select case (applied_dir)
-         case (1); call initFringe_Sergey(B%x%BF(1)%GF%f,m%B(1)%g,fringeDir)
-         case (2); call initFringe_Sergey(B%y%BF(1)%GF%f,m%B(1)%g,fringeDir)
-         case (3); call initFringe_Sergey(B%z%BF(1)%GF%f,m%B(1)%g,fringeDir)
+         case (1); call init_Fringe_Sergey(B%x%BF(1)%GF,m%B(1)%g,fringeDir)
+         case (2); call init_Fringe_Sergey(B%y%BF(1)%GF,m%B(1)%g,fringeDir)
+         case (3); call init_Fringe_Sergey(B%z%BF(1)%GF,m%B(1)%g,fringeDir)
          case default
          stop 'Error: applied_dir must = 1,2,3 in initFringingField_Sergey.'
          end select
        end subroutine
 
-       subroutine initFringe_Sergey(B,g,dir)
+       subroutine init_Fringe_Sergey(B,g,dir)
          implicit none
          type(grid),intent(in) :: g
-         real(cp),dimension(:,:,:),intent(inout) :: B
+         type(grid_field),intent(inout) :: B
          integer,intent(in) :: dir
-         real(cp),dimension(:),allocatable :: Btemp
-         integer,dimension(3) :: s
+         type(grid_field) :: Btemp
          integer :: i2,i
-         real(cp) :: d
-         real(cp) :: Bstretch,Bshift
-
-         s = shape(B)
-         allocate(Btemp(s(dir)))
-         ! Sergey's fringe:
-         Bstretch = 0.2_cp   ! Fringe slope
-         Bshift = 10.0_cp    ! Fringe location
-
-         do i=1,s(dir)
+         real(cp) :: d,Bstretch,Bshift,temp
+         call init(Btemp,B)
+         Bstretch = 0.2_cp; Bshift = 10.0_cp
+         do i=1,B%s(dir)
            d = dble((g%c(dir)%hc%f(i)-Bshift)/Bstretch)
-           Btemp(i) = (1.0_cp+tanh(d))/2.0_cp
+           temp = (1.0_cp+tanh(d))/2.0_cp
+           call assign_plane(Btemp,temp,i,dir)
          enddo; i2 = 0
-         do i=1+(s(dir)-1)/2,s(dir)
-           Btemp(i) = Btemp(1+(s(dir)+1)/2-i2); i2 = i2+1
+         call assign(B,Btemp)
+         do i=1+(B%s(dir)-1)/2,B%s(dir)
+          call assign_plane(B,Btemp,i,1+(B%s(dir)+1)/2-i2,dir); i2 = i2+1
          enddo
-
-         select case (dir)
-         case (1); do i=1,s(dir); B(i,:,:) = Btemp(i); enddo
-         case (2); do i=1,s(dir); B(:,i,:) = Btemp(i); enddo
-         case (3); do i=1,s(dir); B(:,:,i) = Btemp(i); enddo
-         case default
-         stop 'Error: dir must = 1,2,3 in initFringe_Sergey.'
-         end select
-
-         deallocate(Btemp)
+         call delete(Btemp)
        end subroutine
 
-       subroutine initField_Bandaru(B,m,currentDir)
+       subroutine init_Field_Bandaru(B,m,currentDir)
          implicit none
          type(mesh),intent(in) :: m
          type(VF),intent(inout) :: B
          integer,intent(in) :: currentDir
-         call initField_Bandaru_GF(B%x%BF(1)%GF%f,&
-                                   B%y%BF(1)%GF%f,&
-                                   B%z%BF(1)%GF%f,m%B(1)%g,currentDir)
+         call init_Field_Bandaru_GF(B%x%BF(1)%GF,&
+                                    B%y%BF(1)%GF,&
+                                    B%z%BF(1)%GF,m%B(1)%g,currentDir)
        end subroutine
 
-       subroutine initField_Bandaru_GF(Bx,By,Bz,g,currentDir)
+       subroutine init_Field_Bandaru_GF(Bx,By,Bz,g,currentDir)
          implicit none
+         type(grid_field),intent(inout) :: Bx,By,Bz
          type(grid),intent(in) :: g
-         real(cp),dimension(:,:,:),intent(inout) :: Bx,By,Bz
          integer,intent(in) :: currentDir
-         integer,dimension(3) :: sx,sy,sz
          integer :: i,j,k
-         real(cp) :: ka ! kappa
+         real(cp) :: ka,cosh_ka ! kappa
          ka = 1.0_cp
-         sx = shape(Bx); sy = shape(By); sz = shape(Bz)
+         cosh_ka = cosh(ka)
          select case (currentDir)
          case (1);
-           do i=1,sy(1);do j=1,sy(2);do k=1,sy(3)
-             By(i,j,k) = cos(ka*g%c(3)%hc%f(k)) * &
-                         cosh(ka*g%c(2)%hc%f(j))/cosh(ka)
+           do i=1,By%s(1);do j=1,By%s(2);do k=1,By%s(3)
+             By%f(i,j,k) = cos( ka*g%c(3)%hc%f(k)) * &
+                           cosh(ka*g%c(2)%hn%f(j))/cosh_ka
            enddo;enddo;enddo
-           do i=1,sz(1);do j=1,sz(2);do k=1,sz(3)
-             Bz(i,j,k) =-sin(ka*g%c(3)%hc%f(k)) * &
-                         sinh(ka*g%c(2)%hc%f(j))/cosh(ka)
+           do i=1,Bz%s(1);do j=1,Bz%s(2);do k=1,Bz%s(3)
+             Bz%f(i,j,k) =-sin( ka*g%c(3)%hn%f(k)) * &
+                           sinh(ka*g%c(2)%hc%f(j))/cosh_ka
            enddo;enddo;enddo
          case (2);
-           do i=1,sx(1);do j=1,sx(2);do k=1,sx(3)
-             Bx(i,j,k) =-sin(ka*g%c(1)%hc%f(i)) * &
-                         sinh(ka*g%c(3)%hc%f(k))/cosh(ka)
+           do i=1,Bx%s(1);do j=1,Bx%s(2);do k=1,Bx%s(3)
+             Bx%f(i,j,k) =-sin( ka*g%c(1)%hn%f(i)) * &
+                           sinh(ka*g%c(3)%hc%f(k))/cosh_ka
            enddo;enddo;enddo
-           do i=1,sz(1);do j=1,sz(2);do k=1,sz(3)
-             Bz(i,j,k) = cos(ka*g%c(1)%hc%f(i)) * &
-                         cosh(ka*g%c(3)%hc%f(k))/cosh(ka)
+           do i=1,Bz%s(1);do j=1,Bz%s(2);do k=1,Bz%s(3)
+             Bz%f(i,j,k) = cos( ka*g%c(1)%hc%f(i)) * &
+                           cosh(ka*g%c(3)%hn%f(k))/cosh_ka
            enddo;enddo;enddo
          case (3);
-           do i=1,sx(1);do j=1,sx(2);do k=1,sx(3)
-             Bx(i,j,k) = cos(ka*g%c(2)%hc%f(j)) * &
-                         cosh(ka*g%c(1)%hc%f(i))/cosh(ka)
+           do i=1,Bx%s(1);do j=1,Bx%s(2);do k=1,Bx%s(3)
+             Bx%f(i,j,k) = cos( ka*g%c(2)%hc%f(j)) * &
+                           cosh(ka*g%c(1)%hn%f(i))/cosh_ka
            enddo;enddo;enddo
-           do i=1,sy(1);do j=1,sy(2);do k=1,sy(3)
-             By(i,j,k) =-sin(ka*g%c(2)%hc%f(j)) * &
-                         sinh(ka*g%c(1)%hc%f(i))/cosh(ka)
+           do i=1,By%s(1);do j=1,By%s(2);do k=1,By%s(3)
+             By%f(i,j,k) =-sin( ka*g%c(2)%hn%f(j)) * &
+                           sinh(ka*g%c(1)%hc%f(i))/cosh_ka
            enddo;enddo;enddo
          case default
-         stop 'Error: applied_dir must = 1,2,3 in initField_Bandaru_GF in init_B0_field.'
+         stop 'Error: currentDir must = 1,2,3 in init_Field_Bandaru_GF in init_B0_field.'
          end select
        end subroutine
 
@@ -173,44 +159,27 @@
          type(VF),intent(inout) :: B
          integer,intent(in) :: dir,fringeDir
          select case (dir)
-         case (1); call initFringe_ALEX(B%x%BF(1)%GF%f,m%B(1)%g,fringeDir)
-         case (2); call initFringe_ALEX(B%y%BF(1)%GF%f,m%B(1)%g,fringeDir)
-         case (3); call initFringe_ALEX(B%z%BF(1)%GF%f,m%B(1)%g,fringeDir)
+         case (1); call init_ALEX_Fringe(B%x%BF(1)%GF,m%B(1)%g,fringeDir)
+         case (2); call init_ALEX_Fringe(B%y%BF(1)%GF,m%B(1)%g,fringeDir)
+         case (3); call init_ALEX_Fringe(B%z%BF(1)%GF,m%B(1)%g,fringeDir)
          case default
          stop 'Error: dir must = 1,2,3 in initFringingField_ALEX.'
          end select
        end subroutine
 
-       subroutine initFringe_ALEX(B0,g,dir)
+       subroutine init_ALEX_Fringe(B0,g,dir)
          implicit none
          type(grid),intent(in) :: g
-         real(cp),dimension(:,:,:),intent(inout) :: B0
+         type(grid_field),intent(inout) :: B0
          integer,intent(in) :: dir
-         real(cp),dimension(:),allocatable :: Btemp
-         integer,dimension(3) :: s
-         real(cp) :: d
+         real(cp) :: d,temp,Bstretch,Bshift
          integer :: i
-         real(cp) :: Bstretch,Bshift
-
-         s = shape(B0)
-         allocate(Btemp(s(dir)))
-         ! Sergey's fringe:
-         Bstretch = 0.45_cp   ! stretching parameter
-         Bshift = 12.5_cp     ! shift parameter
-
-         do i=1,s(dir)
+         Bstretch = 0.45_cp; Bshift = 12.5_cp
+         do i=1,B0%s(dir)
            d = dble(g%c(dir)%hc%f(i)-Bshift*Bstretch)
-           Btemp(i) = 0.5_cp*(1.0_cp-tanh(d))
+           temp = 0.5_cp*(1.0_cp-tanh(d))
+           call assign_plane(B0,temp,i,dir)
          enddo
-
-         select case (dir)
-         case (1); do i=1,s(dir); B0(i,:,:) = Btemp(i); enddo
-         case (2); do i=1,s(dir); B0(:,i,:) = Btemp(i); enddo
-         case (3); do i=1,s(dir); B0(:,:,i) = Btemp(i); enddo
-         case default
-         stop 'Error: dir must = 1,2,3 in initFringe.'
-         end select
-         deallocate(Btemp)
        end subroutine
 
        end module

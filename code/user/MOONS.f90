@@ -15,6 +15,7 @@
        use export_analytic_mod
        use mirror_props_mod
        use vorticity_streamfunction_mod
+       use Poisson_test_mod
        use export_mesh_aux_mod
 
        use iter_solver_params_mod
@@ -94,15 +95,15 @@
          ! ******************** EXPORT GRIDS **************************** Export mesh (to plot)
          if (SP%EL%export_meshes) then
            call export_mesh(m_mom,str(DT%meshes),'m_mom',1)
-           call export_mesh(MD_sigma%m_R2,str(DT%meshes),'mesh_MD_sigma',1)
            call export_mesh(m_ind,str(DT%meshes),'m_ind',1)
+           call export_mesh(MD_sigma%m_R2,str(DT%meshes),'mesh_MD_sigma',1)
          if (SP%MP%mirror) then
            call mirror_mesh(m_temp,m_mom,SP%MP)
            call export_mesh(m_temp,str(DT%meshes),'mesh_mom_mirror',1)
-           call mirror_mesh(m_temp,MD_sigma%m_R1,SP%MP)
-           call export_mesh(m_temp,str(DT%meshes),'mesh_MD_sigma_mirror',1)
            call mirror_mesh(m_temp,m_ind,SP%MP)
            call export_mesh(m_temp,str(DT%meshes),'mesh_ind_mirror',1)
+           call mirror_mesh(m_temp,MD_sigma%m_R1,SP%MP)
+           call export_mesh(m_temp,str(DT%meshes),'mesh_MD_sigma_mirror',1)
            call delete(m_temp)
          endif
          endif
@@ -139,6 +140,10 @@
            stop 'Exported ICs. Turn off stop_before_solve in sim_params.f90 to run sim.'
          endif
          if (.not.SP%FCL%skip_solver_loop) call MHDSolver(nrg,mom,ind,DT,SP,SP%coupled)
+
+         if (SP%FCL%Poisson_test) then
+           if (SP%VS%U%SS%initialize) call Poisson_test(mom%U,mom%p,mom%m,DT,SP)
+         endif
 
          if (SP%FCL%post_process) then
            write(*,*) ' *********************** POST PROCESSING ***********************'

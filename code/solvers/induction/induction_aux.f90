@@ -7,6 +7,7 @@
        use time_marching_params_mod
        use mesh_domain_mod
        use mesh_mod
+       use apply_BCs_mod
        use export_raw_processed_mod
        use IO_export_mod
        use norms_mod
@@ -23,6 +24,7 @@
        private
        public :: compute_AddJCrossB
        public :: compute_JCrossB
+       public :: compute_Add_MPG
        public :: compute_add_Q2D_JCrossB
        public :: compute_Q2D_JCrossB
        public :: compute_divBJ
@@ -79,6 +81,19 @@
          call extractFace(jCrossB,temp_F,D_fluid)
          call assign_ghost_XPeriodic(jCrossB,0.0_cp)
          call multiply(jCrossB,N)
+       end subroutine
+
+       subroutine compute_Add_MPG(U,TMP,dir)
+         type(VF),intent(inout) :: U
+         type(time_marching_params),intent(in) :: TMP
+         integer,intent(in) :: dir
+         select case (dir)
+         case (1); call subtract(U%x,-TMP%dt*1.0_cp)
+         case (2); call subtract(U%y,-TMP%dt*1.0_cp)
+         case (3); call subtract(U%z,-TMP%dt*1.0_cp)
+         case default; stop 'Error: dir must = 1:3 in compute_MPG in induction_aux.f90'
+         end select
+         call apply_BCs(U)
        end subroutine
 
        subroutine compute_add_Q2D_JCrossB(Q2D_JCrossB,U,tau,temp_F)

@@ -32,9 +32,11 @@
 
        type face_SD
          type(sub_domain),dimension(6) :: G
+         type(sub_domain),dimension(6) :: G_periodic_N
          type(sub_domain),dimension(6) :: B ! B%C is non-sense here
          type(sub_domain),dimension(6) :: I
          type(sub_domain),dimension(6) :: I_OPP
+         type(sub_domain),dimension(6) :: I_OPP_periodic_N
          type(index_2D),dimension(6) :: i_2D
          real(cp),dimension(6) :: dh,nhat = 0.0_cp
        end type
@@ -62,6 +64,8 @@
            call init(FSD%B(i),temp)
            call init(FSD%I(i),temp)
            call init(FSD%I_OPP(i),temp)
+           call init(FSD%G_periodic_N(i),temp)
+           call init(FSD%I_OPP_periodic_N(i),temp)
            call p_from_boundary_C(FSD%G(i)%C(dir),temp%C(dir),g,g_b(i),dir,tol,1)
            call p_from_boundary_C(FSD%I(i)%C(dir),temp%C(dir),g,g_b(i),dir,tol,2)
 
@@ -77,6 +81,15 @@
            i_opp = opp_face_given_face(i)
            call init(FSD%I_OPP(i_opp),FSD%I(i))
          enddo
+         do i=1,6
+           call init(FSD%I_OPP_periodic_N(i),FSD%I_OPP(i))
+           call init(FSD%G_periodic_N(i),FSD%G(i))
+         enddo
+         do i=1,6
+           i_opp = opp_face_given_face(i)
+           if (max_face(i)) call init(FSD%G_periodic_N(i),FSD%B(i))
+           if (max_face(i)) call init(FSD%I_OPP_periodic_N(i),FSD%B(i_opp))
+         enddo
          call delete(temp)
        end subroutine
 
@@ -88,7 +101,9 @@
          do i=1,6; call init(FSD%G(i),FSD_in%G(i)); enddo
          do i=1,6; call init(FSD%B(i),FSD_in%B(i)); enddo
          do i=1,6; call init(FSD%I(i),FSD_in%I(i)); enddo
+         do i=1,6; call init(FSD%G_periodic_N(i),FSD_in%G_periodic_N(i)); enddo
          do i=1,6; call init(FSD%I_OPP(i),FSD_in%I_OPP(i)); enddo
+         do i=1,6; call init(FSD%I_OPP_periodic_N(i),FSD_in%I_OPP_periodic_N(i)); enddo
          do i=1,6; FSD%i_2D(i)%i = FSD_in%i_2D(i)%i; enddo
          FSD%dh = FSD_in%dh
          FSD%nhat = FSD_in%nhat
@@ -101,7 +116,9 @@
          do i=1,6; call delete(FSD%G(i)); enddo
          do i=1,6; call delete(FSD%B(i)); enddo
          do i=1,6; call delete(FSD%I(i)); enddo
+         do i=1,6; call delete(FSD%G_periodic_N(i)); enddo
          do i=1,6; call delete(FSD%I_OPP(i)); enddo
+         do i=1,6; call delete(FSD%I_OPP_periodic_N(i)); enddo
          do i=1,6; FSD%i_2D(i)%i = 0; enddo
          FSD%dh = 0.0_cp
          FSD%nhat = 0.0_cp
@@ -117,7 +134,9 @@
          do i=1,6; call display(FSD%G(i),'G face '//int2str(i),u); enddo
          do i=1,6; call display(FSD%B(i),'B face '//int2str(i),u); enddo
          do i=1,6; call display(FSD%I(i),'I face '//int2str(i),u); enddo
+         do i=1,6; call display(FSD%G_periodic_N(i),'G_periodic_N face '//int2str(i),u); enddo
          do i=1,6; call display(FSD%I_OPP(i),'I_OPP face '//int2str(i),u); enddo
+         do i=1,6; call display(FSD%I_OPP_periodic_N(i),'I_OPP_periodic_N face '//int2str(i),u); enddo
          write(u,*) 'dh = ',FSD%dh
          write(u,*) 'nhat = ',FSD%nhat
          do i=1,6; write(u,*) 'i_2D = '; write(u,*) FSD%i_2D(i)%i; enddo
@@ -140,11 +159,12 @@
          do i=1,6; call export(FSD%G(i),u); enddo
          do i=1,6; call export(FSD%B(i),u); enddo
          do i=1,6; call export(FSD%I(i),u); enddo
+         do i=1,6; call export(FSD%G_periodic_N(i),u); enddo
          do i=1,6; call export(FSD%I_OPP(i),u); enddo
+         do i=1,6; call export(FSD%I_OPP_periodic_N(i),u); enddo
          write(u,*) 'dh = ';      write(u,*) FSD%dh
          write(u,*) 'nhat = ';    write(u,*) FSD%nhat
          do i=1,6; write(u,*) 'i_2D = '; write(u,*) FSD%i_2D(i)%i; enddo
-         do i=1,6; call export(FSD%I_OPP(i),u); enddo
          write(u,*) ' ********************************* '
        end subroutine
 
@@ -157,7 +177,9 @@
          do i=1,6; call import(FSD%G(i),u); enddo
          do i=1,6; call import(FSD%B(i),u); enddo
          do i=1,6; call import(FSD%I(i),u); enddo
+         do i=1,6; call import(FSD%G_periodic_N(i),u); enddo
          do i=1,6; call import(FSD%I_OPP(i),u); enddo
+         do i=1,6; call import(FSD%I_OPP_periodic_N(i),u); enddo
          read(u,*); write(u,*) FSD%dh
          read(u,*); write(u,*) FSD%nhat
          do i=1,6; read(u,*); read(u,*) FSD%i_2D(i)%i; enddo
@@ -172,7 +194,12 @@
          do i=1,6; call init_mixed(FSD%G(i)%M,FSD%G(i)%C,FSD%G(i)%N,DL); enddo
          do i=1,6; call init_mixed(FSD%B(i)%M,FSD%B(i)%C,FSD%B(i)%N,DL); enddo
          do i=1,6; call init_mixed(FSD%I(i)%M,FSD%I(i)%C,FSD%I(i)%N,DL); enddo
-         do i=1,6; call init_mixed(FSD%I_OPP(i)%M,FSD%I_OPP(i)%C,FSD%I(i)%N,DL); enddo
+         do i=1,6; call init_mixed(FSD%I_OPP(i)%M,FSD%I_OPP(i)%C,FSD%I_OPP(i)%N,DL); enddo
+         do i=1,6; call init_mixed(FSD%G_periodic_N(i)%M,&
+          FSD%G_periodic_N(i)%C,FSD%G_periodic_N(i)%N,DL); enddo
+
+         do i=1,6; call init_mixed(FSD%I_OPP_periodic_N(i)%M,&
+          FSD%I_OPP_periodic_N(i)%C,FSD%I_OPP_periodic_N(i)%N,DL); enddo
        end subroutine
 
        end module

@@ -12,16 +12,23 @@
          implicit none
          real(cp),intent(in) :: f
          logical :: L
-         L = f.ne.f
+         L = f.ne.f.or.is_huge(f)
        end function
 #else
        function is_nan(f) result(L)
          implicit none
          real(cp),intent(in) :: f
          logical :: L
-         L = isnan(f)
+         L = isnan(f).or.is_huge(f)
        end function
 #endif
+
+       function is_huge(f) result(L)
+         implicit none
+         real(cp),intent(in) :: f
+         logical :: L
+         L = f.gt.huge(1.0_cp)
+       end function
 
       ! subroutine check_nans_nans(f,caller)
       !   implicit none
@@ -33,6 +40,5 @@
       !     stop 'Done'
       !   endif
       ! end subroutine
-
 
        end module

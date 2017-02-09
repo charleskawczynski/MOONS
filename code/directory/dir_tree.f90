@@ -25,7 +25,7 @@
         type(path) :: restart_sim,restart1,restart2,restart
 
         type(path) :: unknowns
-        type(dir_group) :: U,B,J,T,p,phi,rho
+        type(dir_group) :: U,B,J,T,p,phi,rho,test
       end type
 
       contains
@@ -71,13 +71,14 @@
         call init(DT%restart,DT%restart1)
 
         call init(DT%unknowns    ,DT%LDC         ,'unknowns'   ,str(DT%PS))
-        call init(DT%U  ,DT%unknowns,'U'  ,str(DT%PS))
-        call init(DT%T  ,DT%unknowns,'T'  ,str(DT%PS))
-        call init(DT%B  ,DT%unknowns,'B'  ,str(DT%PS))
-        call init(DT%J  ,DT%unknowns,'J'  ,str(DT%PS))
-        call init(DT%p  ,DT%unknowns,'p'  ,str(DT%PS))
-        call init(DT%phi,DT%unknowns,'phi',str(DT%PS))
-        call init(DT%rho,DT%unknowns,'rho',str(DT%PS))
+        call init(DT%U   ,DT%unknowns,'U'   ,str(DT%PS))
+        call init(DT%T   ,DT%unknowns,'T'   ,str(DT%PS))
+        call init(DT%B   ,DT%unknowns,'B'   ,str(DT%PS))
+        call init(DT%J   ,DT%unknowns,'J'   ,str(DT%PS))
+        call init(DT%p   ,DT%unknowns,'p'   ,str(DT%PS))
+        call init(DT%phi ,DT%unknowns,'phi' ,str(DT%PS))
+        call init(DT%rho ,DT%unknowns,'rho' ,str(DT%PS))
+        call init(DT%test,DT%unknowns,'test',str(DT%PS))
 
         call make_dir_tree(DT)
         call oldest_modified_file(temp,DT%restart1,DT%restart2,'p.dat')
@@ -115,6 +116,7 @@
         call make_dir_group(DT%p)
         call make_dir_group(DT%phi)
         call make_dir_group(DT%rho)
+        call make_dir_group(DT%test)
       end subroutine
 
       subroutine delete_DT(DT)
@@ -149,6 +151,7 @@
         call delete(DT%p)
         call delete(DT%phi)
         call delete(DT%rho)
+        call delete(DT%test)
       end subroutine
 
       subroutine draw_DT()

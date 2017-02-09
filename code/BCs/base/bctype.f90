@@ -13,6 +13,8 @@
        public :: init_symmetric,     is_symmetric
        public :: init_antisymmetric, is_antisymmetric
        public :: is_defined
+       public :: is_prescribed
+       public :: set_prescribed
 
        public :: get_mean_value
        public :: display_type,display_meanVal,get_bctype
@@ -25,6 +27,7 @@
          logical :: Periodic = .false.
          logical :: symmetric = .false.
          logical :: antisymmetric = .false.
+         logical :: prescribed = .false.
          logical :: defined = .false.
          real(cp) :: meanVal = 0.0_cp
          character(len=1) :: BCT = 'X'
@@ -58,6 +61,8 @@
        interface display_meanVal;     module procedure display_bctype_MV_only; end interface
 
        interface is_defined;          module procedure is_defined_BCT;         end interface
+       interface is_prescribed;       module procedure is_prescribed_BCT;      end interface
+       interface set_prescribed;      module procedure set_prescribed_BCT;     end interface
        interface get_mean_value;      module procedure get_mean_value_BCT;     end interface
 
        contains
@@ -102,6 +107,7 @@
          b_out%symmetric = b_in%symmetric
          b_out%antisymmetric = b_in%antisymmetric
          b_out%defined = b_in%defined
+         b_out%prescribed = b_in%prescribed
          b_out%BCT = b_in%BCT
        end subroutine
 
@@ -115,6 +121,7 @@
          b%symmetric = .false.
          b%antisymmetric = .false.
          b%defined = .false.
+         b%prescribed = .false.
          b%BCT = 'X'
        end subroutine
 
@@ -130,12 +137,13 @@
            stop 'Error: trying to export bctype before defined in bctype.f90'
          endif
          if (L) then
-           write(un,*) 'Dirichlet = ',b%Dirichlet
-           write(un,*) 'Neumann = ',b%Neumann
-           write(un,*) 'Robin = ',b%Robin
-           write(un,*) 'Periodic = ',b%Periodic
-           write(un,*) 'Symmetric = ',b%symmetric
+           write(un,*) 'Dirichlet     = ',b%Dirichlet
+           write(un,*) 'Neumann       = ',b%Neumann
+           write(un,*) 'Robin         = ',b%Robin
+           write(un,*) 'Periodic      = ',b%Periodic
+           write(un,*) 'Symmetric     = ',b%symmetric
            write(un,*) 'Antisymmetric = ',b%antisymmetric
+           write(un,*) 'prescribed    = ',b%prescribed
          else
            ! if (b%Dirichlet)     write(un,*) 'Dirichlet'
            ! if (b%Neumann)       write(un,*) 'Neumann'
@@ -167,6 +175,7 @@
          write(un,*) 'symmetric';      write(un,*) b%symmetric
          write(un,*) 'antisymmetric';  write(un,*) b%antisymmetric
          write(un,*) 'defined';        write(un,*) b%defined
+         write(un,*) 'prescribed';     write(un,*) b%prescribed
          write(un,*) 'meanVal';        write(un,*) b%meanVal
          write(un,*) 'BCT';            write(un,*) b%BCT
        end subroutine
@@ -182,6 +191,7 @@
          read(un,*); read(un,*) b%symmetric
          read(un,*); read(un,*) b%antisymmetric
          read(un,*); read(un,*) b%defined
+         read(un,*); read(un,*) b%prescribed
          read(un,*); read(un,*) b%meanVal
          read(un,*); read(un,*) b%BCT
        end subroutine
@@ -300,6 +310,19 @@
         type(bctype),intent(in) :: BCT
         logical :: L
         L = BCT%defined
+       end function
+
+       subroutine set_prescribed_BCT(BCT)
+         implicit none
+         type(bctype),intent(inout) :: BCT
+         BCT%prescribed = .true.
+       end subroutine
+
+       function is_prescribed_BCT(BCT) result(L)
+        implicit none
+        type(bctype),intent(in) :: BCT
+        logical :: L
+        L = BCT%prescribed
        end function
 
        end module

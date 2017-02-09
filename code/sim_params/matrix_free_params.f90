@@ -20,6 +20,7 @@
       type matrix_free_params
         logical :: suppress_warning = .true.
         real(cp) :: theta = 0.0_cp
+        real(cp) :: alpha = 0.0_cp
         real(cp) :: coeff = 0.0_cp
         real(cp) :: coeff_explicit = 0.0_cp
       end type
@@ -32,6 +33,7 @@
         type(matrix_free_params),intent(in) :: m_in
         m%suppress_warning = m_in%suppress_warning
         m%theta          = m_in%theta
+        m%alpha          = m_in%alpha
         m%coeff          = m_in%coeff
         m%coeff_explicit = m_in%coeff_explicit
       end subroutine
@@ -41,6 +43,7 @@
         type(matrix_free_params),intent(inout) :: m
         m%suppress_warning = .true.
         m%theta          = 0.0_cp
+        m%alpha          = 0.0_cp
         m%coeff          = 0.0_cp
         m%coeff_explicit = 0.0_cp
       end subroutine
@@ -51,6 +54,7 @@
         integer,intent(in) :: un
         write(un,*) 'suppress_warning = ',m%suppress_warning
         write(un,*) 'theta            = ',m%theta
+        write(un,*) 'alpha            = ',m%alpha
         write(un,*) 'coeff            = ',m%coeff
         write(un,*) 'coeff_explicit   = ',m%coeff_explicit
       end subroutine
@@ -67,6 +71,7 @@
         integer,intent(in) :: un
         write(un,*) 'suppress_warning = '; write(un,*) m%suppress_warning
         write(un,*) 'theta            = '; write(un,*) m%theta
+        write(un,*) 'alpha            = '; write(un,*) m%alpha
         write(un,*) 'coeff            = '; write(un,*) m%coeff
         write(un,*) 'coeff_explicit   = '; write(un,*) m%coeff_explicit
       end subroutine
@@ -77,6 +82,7 @@
         integer,intent(in) :: un
         read(un,*) ; read(un,*) m%suppress_warning
         read(un,*) ; read(un,*) m%theta
+        read(un,*) ; read(un,*) m%alpha
         read(un,*) ; read(un,*) m%coeff
         read(un,*) ; read(un,*) m%coeff_explicit
       end subroutine

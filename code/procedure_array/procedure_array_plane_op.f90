@@ -107,7 +107,7 @@
          type(procedure_array_plane_op),intent(inout) :: PA
          integer,intent(in) :: un
          integer :: i
-         read(un,*) 
+         read(un,*)
          read(un,*) PA%N
          do i=1,PA%N; call import(PA%SP(i),un); enddo
        end subroutine

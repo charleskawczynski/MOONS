@@ -45,6 +45,7 @@
         call operator(Ax,x,k,m,MFP,tempk)
         call multiply_wall_Neumann(Ax,0.5_cp,x)
         call subtract(r,Ax)                           ! r = (b_mod - Ax_BC - Ax_mod)
+        call assign_wall_Periodic_single(r,0.0_cp,x)
         call multiply(r,vol)                          ! r = vol*(b_mod - Ax_BC - Ax_mod)
         if (.not.is_CC(x)) call assign_wall_Dirichlet(r,0.0_cp,x)
       end subroutine
@@ -70,6 +71,7 @@
         call operator(Ax,x,k,m,MFP,tempk)
         call multiply_wall_Neumann(Ax,0.5_cp,x)
         call subtract(r,Ax)                           ! r = (b_mod - Ax_BC - Ax_mod)
+        call assign_wall_Periodic_single(r,0.0_cp,x)
         call multiply(r,vol)                          ! r = vol*(b_mod - Ax_BC - Ax_mod)
         if (.not.is_CC(x)) call assign_wall_Dirichlet(r,0.0_cp,x)
       end subroutine

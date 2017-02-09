@@ -46,19 +46,25 @@
         public :: mean_along_dir,subtract_mean_along_dir
 
         public :: assign_BCs
+        public :: assign_BC_vals
         public :: assign_Neumann_BCs
         public :: assign_Dirichlet_BCs
+        public :: assign_wall_Periodic_single
+        public :: assign_Periodic_BCs
         public :: multiply_Neumann_BCs
         public :: assign_ghost_XPeriodic
         public :: assign_ghost_N_XPeriodic
         public :: assign_wall_Dirichlet
         public :: multiply_wall_Neumann
+        public :: set_prescribed_BCs
 
         public :: init_BCs,init_BC_Dirichlet,init_BC_props,init_BC_mesh
         public :: dot_product
         public :: cross_product_x
         public :: cross_product_y
         public :: cross_product_z
+
+        public :: CFL_number
 
         public :: restrict
         public :: prolongate
@@ -153,8 +159,10 @@
         interface curl_curl_matrix_based;   module procedure curl_curl_matrix_based_SF;    end interface
 
         interface assign_BCs;               module procedure assign_BCs_SF;                end interface
+        interface assign_BC_vals;           module procedure assign_BC_vals_SF;            end interface
         interface assign_Neumann_BCs;       module procedure assign_Neumann_BCs_SF;        end interface
         interface assign_Dirichlet_BCs;     module procedure assign_Dirichlet_BCs_SF;      end interface
+        interface assign_Periodic_BCs;      module procedure assign_Periodic_BCs_SF;       end interface
         interface multiply_Neumann_BCs;     module procedure multiply_Neumann_BCs_SF;      end interface
         interface assign_ghost_XPeriodic;   module procedure assign_ghost_XPeriodic_SF;    end interface
         interface assign_ghost_XPeriodic;   module procedure assign_ghost_XPeriodic_SF2;   end interface
@@ -162,8 +170,11 @@
         interface assign_ghost_N_XPeriodic; module procedure assign_ghost_N_XPeriodic_SF2; end interface
         interface assign_wall_Dirichlet;    module procedure assign_wall_Dirichlet_SF;     end interface
         interface assign_wall_Dirichlet;    module procedure assign_wall_Dirichlet_SF2;    end interface
+        interface assign_wall_Periodic_single;     module procedure assign_wall_Periodic_single_SF;      end interface
+        interface assign_wall_Periodic_single;     module procedure assign_wall_Periodic_single_SF2;      end interface
         interface multiply_wall_Neumann;    module procedure multiply_wall_Neumann_SF;     end interface
         interface multiply_wall_Neumann;    module procedure multiply_wall_Neumann_SF2;    end interface
+        interface set_prescribed_BCs;       module procedure set_prescribed_BCs_SF;        end interface
 
         interface plane_sum_x;              module procedure plane_sum_x_SF;               end interface
         interface plane_sum_y;              module procedure plane_sum_y_SF;               end interface
@@ -188,6 +199,8 @@
         interface cross_product_x;          module procedure cross_product_x_SF;           end interface
         interface cross_product_y;          module procedure cross_product_y_SF;           end interface
         interface cross_product_z;          module procedure cross_product_z_SF;           end interface
+
+        interface CFL_number;               module procedure CFL_number_SF;                end interface
 
         interface restrict;                 module procedure restrict_SF;                  end interface
         interface restrict;                 module procedure restrict_reset_SF;            end interface
@@ -687,6 +700,14 @@
                                                   m%B(i)); enddo
         end subroutine
 
+        subroutine assign_BC_vals_SF(A,B)
+          implicit none
+          type(SF),intent(inout) :: A
+          type(SF),intent(in) :: B
+          integer :: i
+          do i=1,A%s; call assign_BC_vals(A%BF(i),B%BF(i)); enddo
+        end subroutine
+
         subroutine assign_BCs_SF(u,f)
           implicit none
           type(SF),intent(inout) :: u
@@ -707,6 +728,13 @@
           type(SF),intent(in) :: f
           integer :: i
           do i=1,u%s; call assign_Dirichlet_BCs(u%BF(i),f%BF(i)); enddo
+        end subroutine
+        subroutine assign_Periodic_BCs_SF(u,f)
+          implicit none
+          type(SF),intent(inout) :: u
+          type(SF),intent(in) :: f
+          integer :: i
+          do i=1,u%s; call assign_Periodic_BCs(u%BF(i),f%BF(i)); enddo
         end subroutine
         subroutine multiply_Neumann_BCs_SF(u,val)
           implicit none
@@ -764,6 +792,22 @@
           do i=1,u%s; call assign_wall_Dirichlet(u%BF(i),val,u_with_BCs%BF(i)); enddo
         end subroutine
 
+        subroutine assign_wall_Periodic_single_SF(u,val)
+          implicit none
+          type(SF),intent(inout) :: u
+          real(cp),intent(in) :: val
+          integer :: i
+          do i=1,u%s; call assign_wall_Periodic_single(u%BF(i),val); enddo
+        end subroutine
+        subroutine assign_wall_Periodic_single_SF2(u,val,u_with_BCs)
+          implicit none
+          type(SF),intent(inout) :: u
+          real(cp),intent(in) :: val
+          type(SF),intent(in) :: u_with_BCs
+          integer :: i
+          do i=1,u%s; call assign_wall_Periodic_single(u%BF(i),val,u_with_BCs%BF(i)); enddo
+        end subroutine
+
         subroutine multiply_wall_Neumann_SF(u,val)
           implicit none
           type(SF),intent(inout) :: u
@@ -778,6 +822,13 @@
           type(SF),intent(in) :: u_with_BCs
           integer :: i
           do i=1,u%s; call multiply_wall_Neumann(u%BF(i),val,u_with_BCs%BF(i)); enddo
+        end subroutine
+
+        subroutine set_prescribed_BCs_SF(u)
+          implicit none
+          type(SF),intent(inout) :: u
+          integer :: i
+          do i=1,u%s; call set_prescribed_BCs(u%BF(i)); enddo
         end subroutine
 
         function plane_sum_x_SF(u,m,p) result(SP)
@@ -1401,6 +1452,19 @@
             call cross_product_z(ACrossB%BF(t),Ax%BF(t),Ay%BF(t),Bx%BF(t),By%BF(t))
           enddo
         end subroutine
+
+        function CFL_number_SF(U_CC,V_CC,W_CC,m,dt) result(CFL)
+          implicit none
+          type(SF),intent(in) :: U_CC,V_CC,W_CC
+          type(mesh),intent(in) :: m
+          real(cp),intent(in) :: dt
+          real(cp) :: CFL
+          integer :: t
+          CFL = 0.0_cp
+          do t=1,m%s
+            CFL = maxval((/CFL,CFL_number(U_CC%BF(t),V_CC%BF(t),W_CC%BF(t),m%B(t),dt)/))
+          enddo
+        end function
 
         subroutine restrict_SF(r,u,m,dir)
           implicit none

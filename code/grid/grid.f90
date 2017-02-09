@@ -64,7 +64,10 @@
        interface restrict_xy;              module procedure restrictGrid_xy;            end interface
 
        interface restrict;                 module procedure restrict_dir_g;             end interface
+       interface restrict;                 module procedure restrict_all_g;             end interface
+       interface restrict;                 module procedure restrict_dir2_g;            end interface
        interface prolongate;               module procedure prolongate_dir_g;           end interface
+       interface prolongate;               module procedure prolongate_all_g;           end interface
 
        interface snip;                     module procedure snip_grid;                  end interface
        interface pop;                      module procedure pop_grid;                   end interface
@@ -225,10 +228,31 @@
        ! ******************* RESTRICT / PROLONGATE *****************
        ! ***********************************************************
 
+       subroutine restrict_all_g(g)
+         type(grid),intent(inout) :: g
+         call restrict(g%c(1))
+         call restrict(g%c(2))
+         call restrict(g%c(3))
+       end subroutine
+
        subroutine restrict_dir_g(g,dir)
          type(grid),intent(inout) :: g
          integer,intent(in) :: dir
          call restrict(g%c(dir))
+       end subroutine
+
+       subroutine restrict_dir2_g(g,dir)
+         type(grid),intent(inout) :: g
+         integer,dimension(2),intent(in) :: dir
+         call restrict(g%c(dir(1)))
+         call restrict(g%c(dir(2)))
+       end subroutine
+
+       subroutine prolongate_all_g(g)
+         type(grid),intent(inout) :: g
+         call prolongate(g%c(1))
+         call prolongate(g%c(2))
+         call prolongate(g%c(3))
        end subroutine
 
        subroutine prolongate_dir_g(g,dir)

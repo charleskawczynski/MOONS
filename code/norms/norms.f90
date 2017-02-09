@@ -86,11 +86,10 @@
          type(norms),intent(in) :: norm
          integer,intent(in) :: un
          character(len=*),intent(in) :: name
-         write(un,*) '+++++++++++++ '//name//' +++++++++++++'
+         write(un,*) ' -------------- '//name//' -------------- '
          write(un,*) 'L1 = ',norm%L1
          write(un,*) 'L2 = ',norm%L2
          write(un,*) 'Linf = ',norm%Linf
-         write(un,*) '++++++++++++++++++++++++++++++++++++++'
        end subroutine
 
        subroutine display_norms2_name(n1,n2,un,name)
@@ -98,11 +97,10 @@
          type(norms),intent(in) :: n1,n2
          integer,intent(in) :: un
          character(len=*),intent(in) :: name
-         write(un,*) '+++++++++++++ '//name//' +++++++++++++'
+         write(un,*) ' -------------- '//name//' -------------- '
          write(un,*) 'L1 = ',n1%L1,n2%L1
          write(un,*) 'L2 = ',n1%L2,n2%L2
          write(un,*) 'Linf = ',n1%Linf,n2%Linf
-         write(un,*) '++++++++++++++++++++++++++++++++++++++'
        end subroutine
 
        subroutine display_norms1(norm,un)
@@ -162,9 +160,9 @@
          implicit none
          type(norms),intent(inout) :: norm
          integer,intent(in) :: un
-         read(un,*) norm%L1
-         read(un,*) norm%L2
-         read(un,*) norm%Linf
+         read(un,*); read(un,*) norm%L1
+         read(un,*); read(un,*) norm%L2
+         read(un,*); read(un,*) norm%Linf
        end subroutine
 
        subroutine export_norms_wrapper(norm,dir,name)

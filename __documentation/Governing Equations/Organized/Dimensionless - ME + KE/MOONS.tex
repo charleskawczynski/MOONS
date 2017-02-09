@@ -22,7 +22,7 @@
 \setlength{\topmargin}{-1in}     %\topmargin: gap above header
 \setlength{\headheight}{0in}     %\headheight: height of header
 \setlength{\topskip}{0in}        %\topskip: between header and text
-\setlength{\headsep}{0in}        
+\setlength{\headsep}{0in}
 \setlength{\textheight}{692pt}   %\textheight: height of main text
 \setlength{\textwidth}{7.5in}    % \textwidth: width of text
 \setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
@@ -50,17 +50,17 @@ The dimensionless kinetic and magnetic energy equations are:
 \begin{equation}\begin{aligned}
 	\frac{\PD E_K}{\PD t}
 	+ \frac{t_c U_c}{L_c} (\U \DOT \DEL) E_K
-	= 
+	=
 	- \frac{t_c p_c}{L_c \rho U_c} \DEL \DOT (\U p)
 	+ \frac{t_c \nu_c}{L_c^2}
 	\left( \nu \DEL^2 E_K -  \mu (\DEL \U) \DOT (\DEL \U) \right)
 	+ \frac{t_c B_c^2}{\rho_c L_c U_c \M_c}
 	( - (\U \DOT \DEL) E_M + \U \DOT (\B \DOT \DEL \H) ) \\
-	\frac{\PD E_M}{\PD t} = 
+	\frac{\PD E_M}{\PD t} =
 	- \frac{t_c J_c^2 \M_c}{\sigma_c B_c^2} \frac{\J^2}{\SI}
 	- \frac{J_c t_c}{L_c \sigma_c B_c} \DEL \DOT \left[\frac{\J}{\SI} \times \H \right]
 	+ \frac{U_c t_c}{L_c}
-	\left( 
+	\left(
 	\DEL \DOT \left[\left(\U \CROSS \B \right) \times \H \right]
 	+ (\U \DOT \DEL) E_M
 	- \U \DOT (\B \DOT \DEL) \H
@@ -80,15 +80,15 @@ We have
 \begin{equation}\boxed{\begin{aligned}
 	\frac{\PD E_K}{\PD t}
 	+ (\U \DOT \DEL) E_K
-	= 
+	=
 	- \DEL \DOT (\U p)
 	+ \frac{1}{Re} ( \nu \DEL^2 E_K -  \mu (\DEL \U) \DOT (\DEL \U) )
 	+ \frac{Ha^2}{Re Re_m} (  - (\U \DOT \DEL) E_M + \U \DOT (\B \DOT \DEL \H) )
 	\\
-	\frac{\PD E_M}{\PD t} = 
+	\frac{\PD E_M}{\PD t} =
 	- Re_m \frac{\J^2}{\SI}
 	- \DEL \DOT \left[\frac{\J}{\SI} \times \H \right]
-	+ 
+	+
 	\DEL \DOT \left[\left(\U \CROSS \B \right) \times \H \right]
 	+ (\U \DOT \DEL) E_M - \U \DOT (\B \DOT \DEL) \H
 \end{aligned}}\end{equation}
@@ -100,26 +100,26 @@ We cannot add these equations yet, because they've been scaled by different coef
 \begin{equation}\begin{aligned}
 	\frac{\PD E_K}{\PD t}
 	+ (\U \DOT \DEL) E_K
-	= 
+	=
 	- \DEL \DOT (\U p)
 	+ \frac{1}{Re} \left( \nu \DEL^2 E_K -  \mu (\DEL \U) \DOT (\DEL \U) \right)
 	+ \frac{Ha^2}{Re Re_m} (  - (\U \DOT \DEL) E_M + \U \DOT (\B \DOT \DEL \H) )
 	\\
-	\frac{Ha^2}{Re Re_m} \frac{\PD E_M}{\PD t} = 
+	\frac{Ha^2}{Re Re_m} \frac{\PD E_M}{\PD t} =
 	- \frac{Ha^2}{Re} \frac{\J^2}{\SI}
 	+ \frac{Ha^2}{Re Re_m} \DEL \DOT \left[\left(\U \CROSS \B - \frac{\J}{\SI} \right) \times \H \right]
 	+ \frac{Ha^2}{Re Re_m} ( + (\U \DOT \DEL) E_M - \U \DOT (\B \DOT \DEL) \H )
 \end{aligned}\end{equation}
 Note that the Poynting term may be written as a flux using Gauss' divergence theorem, and in vacuum domain we have
 \begin{equation}\begin{aligned}
-	\frac{Ha^2}{Re Re_m} \frac{\PD E_M}{\PD t} = 
+	\frac{Ha^2}{Re Re_m} \frac{\PD E_M}{\PD t} =
 	\frac{Ha^2}{Re Re_m} \DEL \DOT \left[\left(\U \CROSS \B - \frac{\J}{\SI} \right) \times \H \right]
 \end{aligned}\end{equation}
 Therefore, we can see that the Poynting term is zero at steady state. Adding these equations, we have
 \begin{equation}\begin{aligned}
 	\frac{\PD \left( E_K + \frac{Ha^2}{Re Re_m} E_M \right)}{\PD t}
 	+ (\U \DOT \DEL) E_K
-	= 
+	=
 	- \DEL \DOT (\U p)
 	+ \frac{1}{Re} \left( \nu \DEL^2 E_K -  \mu (\DEL \U) \DOT (\DEL \U) \right) \\
 	- \frac{Ha^2}{Re} \frac{\J^2}{\SI}
@@ -129,7 +129,7 @@ In terms of the paper, we assume uniform properties, so we have
 \begin{equation}\begin{aligned}
 	\frac{\PD \left( E_K + \frac{Ha^2}{Re Re_m} E_M \right)}{\PD t}
 	+ (\U \DOT \DEL) E_K
-	= 
+	=
 	- \DEL \DOT (\U p)
 	+ \frac{1}{Re} \left( \DEL^2 E_K - (\DEL \U) \DOT (\DEL \U) \right) \\
 	- \frac{Ha^2}{Re} \frac{\J^2}{\SO}

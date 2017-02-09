@@ -1,6 +1,7 @@
 function Ax = Laplacian_explicit(x,c)
 Ax = x;
-temp = del(x,c);
+temp = x;
+temp = del(temp,c);
 temp = switchToDual(temp);
 Ax = del(temp,c);
 Ax = switchToDual(Ax);

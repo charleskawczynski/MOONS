@@ -3,8 +3,10 @@ if (sp(3)==1)
 	figure
 end
 if print_full
-	A = round(A_in*c.dh^2)
-	disp(fig_title),A
+	disp('-----------------------------------------------------------------------')
+	A = round(A_in*c.dh^2);
+	disp([fig_title ' = '])
+	disp(num2str(A))
 else
 	A = round(A_in*c.dh^2);
 end

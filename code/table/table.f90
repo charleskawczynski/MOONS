@@ -1,12 +1,12 @@
        module table_mod
        ! Helps export information in tabular format.
-       ! 
+       !
        ! Example:
-       ! 
+       !
        ! real(cp),dimension(6) :: f
        ! call export_table('Face:',f,number of spaces per column,unit)
-       ! 
-       ! 
+       !
+       !
        use current_precision_mod
        use string_mod
        use string_aux_mod
