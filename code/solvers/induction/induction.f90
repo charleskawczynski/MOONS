@@ -518,10 +518,6 @@
            call assign_B0_vs_t(ind%B0,ind%SP%VS%B%TMP)
            call assign_dB0_dt_vs_t(ind%dB0dt,ind%SP%VS%B%TMP)
            call multiply(ind%dB0dt,-1.0_cp) ! added to RHS
-           call assign(ind%B0%x,0.0_cp)
-           call assign(ind%B0%y,0.0_cp)
-           call assign(ind%dB0dt%x,0.0_cp)
-           call assign(ind%dB0dt%y,0.0_cp)
          else
            call assign(ind%dB0dt,0.0_cp)
          endif

@@ -10,24 +10,21 @@
        public :: init,delete,display,print,export,import ! Essentials
 
        public :: update
-       public :: set_coefficient
 
        type time_statistics_params
          type(stats_period) :: O1_stats
          type(stats_period) :: O2_stats
-         real(cp) :: coefficient = 0.0_cp
        end type
 
-       interface init;            module procedure init_TSP;            end interface
-       interface init;            module procedure init_copy_TSP;       end interface
-       interface delete;          module procedure delete_TSP;          end interface
-       interface display;         module procedure display_TSP;         end interface
-       interface print;           module procedure print_TSP;           end interface
-       interface export;          module procedure export_TSP;          end interface
-       interface import;          module procedure import_TSP;          end interface
+       interface init;                    module procedure init_TSP;                    end interface
+       interface init;                    module procedure init_copy_TSP;               end interface
+       interface delete;                  module procedure delete_TSP;                  end interface
+       interface display;                 module procedure display_TSP;                 end interface
+       interface print;                   module procedure print_TSP;                   end interface
+       interface export;                  module procedure export_TSP;                  end interface
+       interface import;                  module procedure import_TSP;                  end interface
 
-       interface update;          module procedure update_TSP;          end interface
-       interface set_coefficient; module procedure set_coefficient_TSP; end interface
+       interface update;                  module procedure update_TSP;                  end interface
 
        contains
 
@@ -50,7 +47,6 @@
          type(time_statistics_params),intent(in) :: TSP_in
          call init(TSP%O1_stats,TSP_in%O1_stats)
          call init(TSP%O2_stats,TSP_in%O2_stats)
-         TSP%coefficient = TSP_in%coefficient
        end subroutine
 
        subroutine delete_TSP(TSP)
@@ -58,7 +54,6 @@
          type(time_statistics_params),intent(inout) :: TSP
          call delete(TSP%O1_stats)
          call delete(TSP%O2_stats)
-         TSP%coefficient = 0.0_cp
        end subroutine
 
        subroutine display_TSP(TSP,un)
@@ -67,7 +62,6 @@
          integer,intent(in) :: un
          call display(TSP%O1_stats,un)
          call display(TSP%O2_stats,un)
-         write(un,*) 'coefficient = ',TSP%coefficient
        end subroutine
 
        subroutine print_TSP(TSP)
@@ -82,7 +76,6 @@
          integer,intent(in) :: un
          call export(TSP%O1_stats,un)
          call export(TSP%O2_stats,un)
-         write(un,*) 'coefficient = '; write(*,*) TSP%coefficient
        end subroutine
 
        subroutine import_TSP(TSP,un)
@@ -91,7 +84,6 @@
          integer,intent(in) :: un
          call import(TSP%O1_stats,un)
          call import(TSP%O2_stats,un)
-         read(un,*); read(*,*) TSP%coefficient
        end subroutine
 
        ! **********************************************************
@@ -104,13 +96,6 @@
          type(time_marching_params),intent(in) :: TMP
          call update(TSP%O1_stats,TMP)
          call update(TSP%O2_stats,TMP)
-       end subroutine
-
-       subroutine set_coefficient_TSP(TSP,coefficient)
-         implicit none
-         type(time_statistics_params),intent(inout) :: TSP
-         real(cp),intent(in) :: coefficient
-         TSP%coefficient = coefficient
        end subroutine
 
        end module
