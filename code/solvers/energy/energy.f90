@@ -12,7 +12,7 @@
        use dir_tree_mod
        use string_mod
        use path_mod
-       use print_export_mod
+       use export_frequency_mod
        use export_now_mod
        use refine_mesh_mod
 
@@ -48,7 +48,7 @@
        private
        public :: energy
        public :: init,delete,display,print,export,import ! Essentials
-       public :: solve,export_transient,export_tec
+       public :: solve,export_tec
        public :: prolongate
 
        type energy
@@ -74,18 +74,21 @@
          logical :: suppress_warning
        end type
 
-       interface init;             module procedure init_energy;          end interface
-       interface delete;           module procedure delete_energy;        end interface
-       interface display;          module procedure display_energy;       end interface
-       interface print;            module procedure print_energy;         end interface
-       interface export;           module procedure export_energy;        end interface
-       interface import;           module procedure import_energy;        end interface
+       interface init;               module procedure init_energy;            end interface
+       interface delete;             module procedure delete_energy;          end interface
+       interface display;            module procedure display_energy;         end interface
+       interface print;              module procedure print_energy;           end interface
+       interface export;             module procedure export_energy;          end interface
+       interface import;             module procedure import_energy;          end interface
 
-       interface solve;            module procedure solve_energy;         end interface
-       interface export_transient; module procedure export_transient_nrg; end interface
-       interface export_tec;       module procedure export_tec_energy;    end interface
+       interface solve;              module procedure solve_energy;           end interface
+       interface export_unsteady_0D; module procedure export_unsteady_0D_nrg; end interface
+       interface export_unsteady_1D; module procedure export_unsteady_1D_nrg; end interface
+       interface export_unsteady_2D; module procedure export_unsteady_2D_nrg; end interface
+       interface export_unsteady_3D; module procedure export_unsteady_3D_nrg; end interface
+       interface export_tec;         module procedure export_tec_energy;      end interface
 
-       interface prolongate;       module procedure prolongate_energy;    end interface
+       interface prolongate;         module procedure prolongate_energy;      end interface
 
        contains
 
@@ -243,19 +246,54 @@
          endif
        end subroutine
 
-       subroutine export_transient_nrg(nrg)
+       subroutine export_unsteady_0D_nrg(nrg)
          implicit none
          type(energy),intent(inout) :: nrg
          real(cp) :: temp
+         call compute_Q(nrg%temp_F,nrg%T,nrg%k,nrg%m)
+         call compute_divQ(nrg%divQ,nrg%temp_F,nrg%m)
          call assign_ghost_XPeriodic(nrg%divQ,0.0_cp)
-         call Ln(temp,nrg%divQ,2.0_cp,nrg%m); call export(nrg%Probe_divQ,nrg%SP%VS%T%TMP,temp)
+         call Ln(temp,nrg%divQ,2.0_cp,nrg%m)
+         call export(nrg%Probe_divQ,nrg%SP%VS%T%TMP,temp)
        end subroutine
 
-       subroutine solve_energy(nrg,U,PE,EN,DT)
+       subroutine export_unsteady_1D_nrg(nrg,DT)
+         implicit none
+         type(energy),intent(inout) :: nrg
+         type(dir_tree),intent(in) :: DT
+         integer :: dir
+         integer,dimension(2) :: line
+         logical :: L
+         dir  = nrg%SP%VS%T%unsteady_line%dir
+         line = nrg%SP%VS%T%unsteady_line%line
+         L    = nrg%SP%VS%T%unsteady_line%export_ever
+         if (L) call export_processed(nrg%m,nrg%T,str(DT%T%unsteady),'T',0,nrg%SP%VS%T%TMP,dir,line)
+       end subroutine
+
+       subroutine export_unsteady_2D_nrg(nrg,DT)
+         implicit none
+         type(energy),intent(inout) :: nrg
+         type(dir_tree),intent(in) :: DT
+         integer :: dir,plane
+         logical :: L
+         dir   = nrg%SP%VS%T%unsteady_plane%dir
+         plane = nrg%SP%VS%T%unsteady_plane%plane
+         L     = nrg%SP%VS%T%unsteady_plane%export_ever
+         if (L) call export_processed(nrg%m,nrg%T,str(DT%T%unsteady),'T',0,nrg%SP%VS%T%TMP,dir,plane)
+       end subroutine
+
+       subroutine export_unsteady_3D_nrg(nrg,DT)
+         implicit none
+         type(energy),intent(inout) :: nrg
+         type(dir_tree),intent(in) :: DT
+         call export_processed(nrg%m,nrg%T,str(DT%T%unsteady),'T',0,nrg%SP%VS%T%TMP)
+       end subroutine
+
+       subroutine solve_energy(nrg,U,EF,EN,DT)
          implicit none
          type(energy),intent(inout) :: nrg
          type(VF),intent(in) :: U
-         type(print_export),intent(in) :: PE
+         type(export_frequency),intent(in) :: EF
          type(export_now),intent(in) :: EN
          type(dir_tree),intent(in) :: DT
 
@@ -272,7 +310,7 @@
 
          case (3) ! Diffusion implicit
          call diffusion_implicit(nrg%PCG_T,nrg%T,nrg%U_F,nrg%SP%VS%T%TMP%dt,&
-         nrg%SP%DP%Pe,nrg%m,PE%transient_0D,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
+         nrg%SP%DP%Pe,nrg%m,EF%unsteady_0D%export_now,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
 
          case (4)
          if (nrg%SP%VS%T%TMP%n_step.le.1) then
@@ -287,7 +325,7 @@
            call volumetric_heating_equation(nrg%Q_source,nrg%m,nrg%SP%DP%Pe)
          endif
          call CN_with_source(nrg%PCG_T,nrg%T,nrg%U_F,nrg%SP%VS%T%TMP%dt,&
-         nrg%SP%DP%Pe,nrg%m,nrg%Q_source,PE%transient_0D,nrg%temp_CC1,&
+         nrg%SP%DP%Pe,nrg%m,nrg%Q_source,EF%unsteady_0D%export_now,nrg%temp_CC1,&
          nrg%temp_CC2,nrg%temp_F)
 
          case default; stop 'Erorr: bad solveTMethod value in solve_energy in energy.f90'
@@ -298,15 +336,13 @@
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
-         if (PE%transient_0D) then
-           call compute_Q(nrg%temp_F,nrg%T,nrg%k,nrg%m)
-           call compute_divQ(nrg%divQ,nrg%temp_F,nrg%m)
-           call export_transient(nrg)
-         endif
+         if (EF%unsteady_0D%export_now) call export_unsteady_0D(nrg)
+         if (EF%unsteady_1D%export_now) call export_unsteady_1D(nrg,DT)
+         if (EF%unsteady_2D%export_now) call export_unsteady_2D(nrg,DT)
+         if (EF%unsteady_3D%export_now) call export_unsteady_3D(nrg,DT)
+         if (EF%info%export_now) call print(nrg)
 
-         if (PE%info) call print(nrg)
-
-         if (PE%solution.or.EN%T%this.or.EN%all%this) then
+         if (EF%final_solution%export_now.or.EN%T%this.or.EN%all%this) then
            ! call export(nrg,DT)
            call export_tec(nrg,DT)
          endif

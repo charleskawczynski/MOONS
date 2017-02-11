@@ -7,7 +7,7 @@
        use path_mod
        use dir_tree_mod
        use stop_clock_mod
-       use print_export_mod
+       use export_frequency_mod
        use export_now_mod
        use refine_mesh_mod
        use kill_switch_mod
@@ -26,7 +26,7 @@
 
        contains
 
-       subroutine dynamic_refine_mesh(nrg,mom,ind,DT,SP,coupled,sc,F,Fnm1,PE,RM,KS,&
+       subroutine dynamic_refine_mesh(nrg,mom,ind,DT,SP,coupled,sc,F,Fnm1,EF,RM,KS,&
          refine_mesh_now_all)
          implicit none
          type(energy),intent(inout) :: nrg
@@ -37,7 +37,7 @@
          type(time_marching_params),intent(inout) :: coupled
          type(stop_clock),intent(inout) :: sc
          type(VF),intent(inout) :: F,Fnm1
-         type(print_export),intent(inout) :: PE
+         type(export_frequency),intent(inout) :: EF
          type(refine_mesh),intent(inout) :: RM
          type(kill_switch),intent(inout) :: KS
          logical,intent(inout) :: refine_mesh_now_all
@@ -61,7 +61,7 @@
 
          refine_mesh_now_all = all(steady_solution).and.continue_refinement
 
-         if (PE%info) then
+         if (EF%info%export_now) then
            write(*,*) 'steady_solution = ',steady_solution
            write(*,*) 'continue_refinement = ',continue_refinement
            write(*,*) 'RM%i_level = ',RM%i_level

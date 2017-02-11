@@ -12,7 +12,7 @@
        use path_mod
        use export_raw_processed_mod
        use export_raw_processed_symmetry_mod
-       use print_export_mod
+       use export_frequency_mod
        use export_now_mod
        use refine_mesh_mod
        use assign_B0_vs_t_mod
@@ -123,8 +123,10 @@
        interface set_sigma_inv;        module procedure set_sigma_inv_ind;             end interface
        interface init_matrix_based_ops;module procedure init_matrix_based_ops_ind;     end interface
 
-       interface export_transient1;    module procedure export_transient1_ind;         end interface
-       interface export_transient2;    module procedure export_transient2_ind;         end interface
+       interface export_unsteady_0D;    module procedure export_unsteady_0D_ind;       end interface
+       interface export_unsteady_1D;    module procedure export_unsteady_1D_ind;       end interface
+       interface export_unsteady_2D;    module procedure export_unsteady_2D_ind;       end interface
+       interface export_unsteady_3D;    module procedure export_unsteady_3D_ind;       end interface
 
        contains
 
@@ -402,7 +404,7 @@
          endif
        end subroutine
 
-       subroutine export_transient1_ind(ind)
+       subroutine export_unsteady_0D_ind(ind)
          implicit none
          type(induction),intent(inout) :: ind
          real(cp) :: temp,scale
@@ -437,14 +439,45 @@
          call compute_Total_Energy_Domain(ind%JE_fluid,ind%temp_CC,ind%SP%VS%B%TMP,ind%m,scale,ind%MD_fluid)
        end subroutine
 
-       subroutine export_transient2_ind(ind,DT)
+       subroutine export_unsteady_1D_ind(ind,DT)
          implicit none
          type(induction),intent(inout) :: ind
          type(dir_tree),intent(in) :: DT
-         call export_processed(ind%m,ind%B,str(DT%B%transient),'B',1,ind%SP%VS%B%TMP)
-         call export_processed(ind%m,ind%J,str(DT%J%transient),'J',1,ind%SP%VS%B%TMP)
-         ! call export_processed(ind%m,ind%B,str(DT%B%transient),'B',1,ind%SP%VS%B%TMP,3,35)
-         ! call export_processed(ind%m,ind%J,str(DT%J%transient),'J',1,ind%SP%VS%B%TMP,3,35)
+         integer :: dir
+         integer,dimension(2) :: line
+         logical :: L
+         dir  = ind%SP%VS%B%unsteady_line%dir
+         line = ind%SP%VS%B%unsteady_line%line
+         L    = ind%SP%VS%T%unsteady_line%export_ever
+         if (L) call export_processed(ind%m,ind%B,str(DT%B%unsteady),'B',1,ind%SP%VS%B%TMP,dir,line)
+         dir  = ind%SP%VS%B%unsteady_line%dir
+         line = ind%SP%VS%B%unsteady_line%line
+         L    = ind%SP%VS%B%unsteady_line%export_ever
+         if (L) call export_processed(ind%m,ind%J,str(DT%J%unsteady),'J',1,ind%SP%VS%B%TMP,dir,line)
+       end subroutine
+
+       subroutine export_unsteady_2D_ind(ind,DT)
+         implicit none
+         type(induction),intent(inout) :: ind
+         type(dir_tree),intent(in) :: DT
+         integer :: dir,plane
+         logical :: L
+         dir   = ind%SP%VS%B%unsteady_plane%dir
+         plane = ind%SP%VS%B%unsteady_plane%plane
+         L     = ind%SP%VS%B%unsteady_plane%export_ever
+         if (L) call export_processed(ind%m,ind%B,str(DT%B%unsteady),'B',1,ind%SP%VS%B%TMP,dir,plane)
+         dir   = ind%SP%VS%B%unsteady_plane%dir
+         plane = ind%SP%VS%B%unsteady_plane%plane
+         L     = ind%SP%VS%B%unsteady_plane%export_ever
+         if (L) call export_processed(ind%m,ind%J,str(DT%J%unsteady),'J',1,ind%SP%VS%B%TMP,dir,plane)
+       end subroutine
+
+       subroutine export_unsteady_3D_ind(ind,DT)
+         implicit none
+         type(induction),intent(inout) :: ind
+         type(dir_tree),intent(in) :: DT
+         call export_processed(ind%m,ind%B,str(DT%B%unsteady),'B',1,ind%SP%VS%B%TMP)
+         call export_processed(ind%m,ind%J,str(DT%J%unsteady),'J',1,ind%SP%VS%B%TMP)
        end subroutine
 
        subroutine compute_J_ind(ind)
@@ -474,11 +507,11 @@
          call add_curl_curl(ind%m,diffusion_treatment(2))
        end subroutine
 
-       subroutine solve_induction(ind,U,PE,EN,DT)
+       subroutine solve_induction(ind,U,EF,EN,DT)
          implicit none
          type(induction),intent(inout) :: ind
          type(TF),intent(in) :: U
-         type(print_export),intent(in) :: PE
+         type(export_frequency),intent(in) :: EF
          type(export_now),intent(in) :: EN
          type(dir_tree),intent(in) :: DT
          if (ind%SP%VS%U%SS%solve) then;            call embedVelocity_E(ind%U_E,U,ind%MD_fluid)
@@ -506,12 +539,12 @@
          ind%temp_E,ind%temp_E_TF)
          case (3)
          call ind_PCG_BE_EE_cleanB_PCG(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%Bstar,&
-         ind%phi,ind%B0,ind%U_E,ind%dB0dt,ind%m,ind%SP%VS%B%TMP%dt,PE%transient_0D,&
+         ind%phi,ind%B0,ind%U_E,ind%dB0dt,ind%m,ind%SP%VS%B%TMP%dt,EF%unsteady_0D%export_now,&
          ind%temp_F1,ind%temp_F2,ind%temp_E,ind%temp_E_TF,ind%temp_CC_SF,ind%temp_CC)
          case (4)
          call ind_PCG_CN_AB2_cleanB_PCG(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%Bstar,&
          ind%phi,ind%B0,ind%U_E,ind%J,ind%sigmaInv_edge,ind%curlUCrossB,&
-         ind%curlUCrossB_nm1,ind%dB0dt,ind%m,ind%SP%VS%B%MFP,ind%SP%VS%B%TMP%dt,PE%transient_0D,&
+         ind%curlUCrossB_nm1,ind%dB0dt,ind%m,ind%SP%VS%B%MFP,ind%SP%VS%B%TMP%dt,EF%unsteady_0D%export_now,&
          ind%temp_F1,ind%temp_F2,ind%temp_E,ind%temp_E_TF,ind%temp_CC_SF,ind%temp_CC)
          case (5)
          if (ind%SP%VS%B%TMP%n_step.le.1) then
@@ -523,7 +556,7 @@
          endif
          call CT_Finite_Rem_interior_solved(ind%PCG_cleanB,ind%B,ind%Bstar,&
          ind%B_interior,ind%curlE,ind%phi,ind%m,ind%MD_sigma,&
-         ind%SP%VS%B%TMP%multistep_iter,ind%SP%VS%B%TMP%dt,PE%transient_0D,&
+         ind%SP%VS%B%TMP%multistep_iter,ind%SP%VS%B%TMP%dt,EF%unsteady_0D%export_now,&
          ind%temp_CC_SF,ind%temp_F1)
          case default; stop 'Error: bad solveBMethod input solve_induction in induction.f90'
          end select
@@ -533,14 +566,13 @@
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
-         if (PE%transient_0D) call export_transient1(ind)
-         if (PE%transient_2D) call export_transient2(ind,DT)
+         if (EF%unsteady_0D%export_now) call export_unsteady_0D(ind)
+         if (EF%unsteady_1D%export_now) call export_unsteady_1D(ind,DT)
+         if (EF%unsteady_2D%export_now) call export_unsteady_2D(ind,DT)
+         if (EF%unsteady_3D%export_now) call export_unsteady_3D(ind,DT)
+         if (EF%info%export_now) call print(ind)
 
-         ! if (PE%transient_2D) call export_processed_transient_3C(ind%m,ind%B,str(DT%B%transient),'B',1,ind%SP%VS%B%TMP)
-         ! if (PE%transient_2D) call export_processed_transient_2C(ind%m,ind%B,str(DT%B%transient),'B',1,ind%SP%VS%B%TMP)
-
-         if (PE%info) call print(ind)
-         if (PE%solution.or.EN%B%this.or.EN%all%this) then
+         if (EF%final_solution%export_now.or.EN%B%this.or.EN%all%this) then
            ! call export(ind,DT)
            call export_tec(ind,DT)
          endif

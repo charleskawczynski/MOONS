@@ -6,11 +6,19 @@
 
       private
 
-      public :: log2Str,int2Str,int2Str2,num2Str,str2int,intLen
-      public :: cp2str
+      public :: log2Str
+      public :: int2Str
       interface int2Str;      module procedure int2Str_li;       end interface
       interface int2Str;      module procedure int2Str_reg;      end interface
-      ! public :: logical2Str,int2Str,int2Str2,float2Str,str2int,intLen ! change to this eventually
+
+      public :: int2Str2
+      public :: str2int
+      public :: intLen
+      public :: cp2str
+      interface cp2Str;      module procedure cp2Str_string;   end interface
+      ! interface cp2Str;      module procedure cp2Str_raw;      end interface
+
+      ! public :: int2Str,int2Str2,str2int,intLen ! change to this eventually
 
       contains
 
@@ -38,12 +46,21 @@
         s = trim(adjustl(s))
       end function
 
-      function cp2Str(f) result(s)
+      ! function cp2Str_raw(f) result(s)
+      !   implicit none
+      !   real(cp),intent(in) :: f
+      !   character(len=100) :: s
+      !   write(s,'(F40.20)') f
+      !   s = trim(adjustl(s))
+      ! end function
+
+      function cp2Str_string(f) result(s)
         implicit none
         real(cp),intent(in) :: f
-        character(len=15) :: s
-        write(s,'(F15.15)') f
-        s = trim(adjustl(s))
+        type(string) :: s
+        character(len=100) :: a
+        write(a,'(F40.20)') f
+        call init(s,trim(adjustl(a)))
       end function
 
       function int2Str2(i) result(s)
@@ -51,14 +68,6 @@
         integer,intent(in) :: i
         character(len=15) :: s
         write(s,'(I15)') i
-        s = trim(adjustl(s))
-      end function
-
-      function num2Str(i) result(s)
-        implicit none
-        real(cp),intent(in) :: i
-        character(len=15) :: s
-        write(s,'(F15.15)') i
         s = trim(adjustl(s))
       end function
 

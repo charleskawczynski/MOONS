@@ -161,8 +161,8 @@
 
          ! New MRS:
          ! N = 30; N(3)=N(1)/2; N_w = 8;  N_v = 14 ! Coarse
-         ! N = 44; N(3)=N(1)/2; N_w = 12; N_v = 18 ! Moderates
-         ! N = 58; N(3)=N(1)/2; N_w = 14; N_v = 22 ! Fine
+         ! N = 50; N(3)=N(1)/2; N_w = 12; N_v = 18 ! Moderates
+         ! N = 70; N(3)=N(1)/2; N_w = 16; N_v = 22 ! Fine
 
          ! High Ha
          ! N = 58; N(3)=N(1)/2; N_w = 14; N_v = 22 ! Fine

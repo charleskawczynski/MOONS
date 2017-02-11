@@ -3,6 +3,8 @@
        use time_marching_params_mod
        use iter_solver_params_mod
        use matrix_free_params_mod
+       use export_line_mod
+       use export_plane_mod
        implicit none
 
        private
@@ -18,6 +20,8 @@
          type(matrix_free_params) :: MFP
          type(time_marching_params) :: TMP
          type(iter_solver_params) :: ISP
+         type(export_line) :: unsteady_line
+         type(export_plane) :: unsteady_plane
          ! type(dir_group) :: DG
          ! type(export_now) :: EN
        end type
@@ -52,6 +56,8 @@
          call init(V%TMP,V_in%TMP)
          call init(V%ISP,V_in%ISP)
          call init(V%MFP,V_in%MFP)
+         call init(V%unsteady_line,V_in%unsteady_line)
+         call init(V%unsteady_plane,V_in%unsteady_plane)
          V%IC = V_in%IC
          V%BC = V_in%BC
        end subroutine
@@ -65,6 +71,8 @@
          call delete(V%TMP)
          call delete(V%ISP)
          call delete(V%MFP)
+         call delete(V%unsteady_line)
+         call delete(V%unsteady_plane)
        end subroutine
 
        subroutine export_V(V,un)
@@ -77,6 +85,8 @@
          call export(V%TMP,un)
          call export(V%ISP,un)
          call export(V%MFP,un)
+         call export(V%unsteady_line,un)
+         call export(V%unsteady_plane,un)
        end subroutine
 
        subroutine import_V(V,un)
@@ -89,6 +99,8 @@
          call import(V%TMP,un)
          call import(V%ISP,un)
          call import(V%MFP,un)
+         call import(V%unsteady_line,un)
+         call import(V%unsteady_plane,un)
        end subroutine
 
        subroutine display_V(V,un)
@@ -101,6 +113,8 @@
          call display(V%TMP,un)
          call display(V%ISP,un)
          call display(V%MFP,un)
+         call display(V%unsteady_line,un)
+         call display(V%unsteady_plane,un)
        end subroutine
 
        subroutine print_V(V)

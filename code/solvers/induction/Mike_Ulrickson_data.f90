@@ -6,28 +6,28 @@
 
      private
      public :: B_r_mean_normalized
-     public :: B_z_mean_normalized
+     public :: B_p_mean_normalized
      public :: B_maxval
      public :: time_normalized
 
      integer,parameter :: n_points = 58
      real(cp),parameter :: micro_seconds_to_seconds = 10.0_cp**(-6.0_cp)
-     real(cp),parameter :: t_c = 0.00815037247177_cp ! From python script
+     real(cp) :: t_c = 0.00790207929237_cp
 
      contains
 
      subroutine B_r_mean_normalized(B)
        implicit none
        real(cp),dimension(n_points),intent(inout) :: B
-       real(cp),dimension(n_points) :: B_r,B_z
-       call B_r_mean(B); B = B/B_maxval(B_r,B_z)
+       real(cp),dimension(n_points) :: B_r,B_p
+       call B_radial_mean(B); B = B/B_maxval(B_r,B_p)
      end subroutine
 
-     subroutine B_z_mean_normalized(B)
+     subroutine B_p_mean_normalized(B)
        implicit none
        real(cp),dimension(n_points),intent(inout) :: B
-       real(cp),dimension(n_points) :: B_r,B_z
-       call B_z_mean(B); B = B/B_maxval(B_r,B_z)
+       real(cp),dimension(n_points) :: B_r,B_p
+       call B_poloidal_mean(B); B = B/B_maxval(B_r,B_p)
      end subroutine
 
      subroutine time_normalized(t)
@@ -37,16 +37,16 @@
        t = t*micro_seconds_to_seconds/t_c
      end subroutine
 
-     function B_maxval(B_r,B_z) result(B_max)
+     function B_maxval(B_r,B_p) result(B_max)
        implicit none
-       real(cp),dimension(n_points),intent(inout) :: B_r,B_z
+       real(cp),dimension(n_points),intent(inout) :: B_r,B_p
        real(cp) :: B_max
-       call B_z_mean(B_z)
-       call B_r_mean(B_r)
-       B_max = maxval((/B_r,B_z/))
+       call B_poloidal_mean(B_p)
+       call B_radial_mean(B_r)
+       B_max = maxval((/B_r,B_p/))
      end function
 
-     subroutine B_z_mean(B)
+     subroutine B_poloidal_mean(B)
        implicit none
        real(cp),dimension(n_points),intent(inout) :: B
        B(1) = 1.20628735198_cp
@@ -109,7 +109,7 @@
        B(58) = 0.127946587997_cp
      end subroutine
 
-     subroutine B_r_mean(B)
+     subroutine B_radial_mean(B)
        implicit none
        real(cp),dimension(n_points),intent(inout) :: B
        B(1) = 0.116585219499_cp

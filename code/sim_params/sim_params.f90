@@ -13,7 +13,7 @@
      use export_logicals_mod
      use flow_control_logicals_mod
      use mesh_quality_params_mod
-     use print_export_mod
+     use export_frequency_mod
      use momentum_forces_mod
      use geometry_props_mod
      use mirror_props_mod
@@ -43,7 +43,7 @@
        type(dimensionless_params) :: DP
        type(export_logicals) :: EL
        type(flow_control_logicals) :: FCL
-       type(print_export) :: PE
+       type(export_frequency) :: EF
        type(momentum_forces) :: MF
        type(geometry_props) :: GP
        type(mirror_props) :: MP
@@ -112,8 +112,16 @@
        ! init(DMR,dynamic_refinement,n_max_refinements,n_history,SS_tol,SS_tol_final,dt_reduction_factor)
        call init(SP%DMR,F,2,2,pow(-1),pow(-6),0.8_cp)
 
-       ! call init(PE,i_info,i_transient_0D,i_transient_2D,i_solution,export_planar,dir,name)
-       call init(SP%PE,2,2,4,6,F,str(DT%PE),'PE')
+       ! call init(EFP,export_ever,export_first_step,frequency_base,frequency_exp)
+       call init(SP%EF%info          ,T,T,10,1)
+       call init(SP%EF%unsteady_0D   ,T,T,10,2)
+       call init(SP%EF%unsteady_1D   ,T,F,10,2)
+       call init(SP%EF%unsteady_2D   ,T,F,10,2)
+       call init(SP%EF%unsteady_3D   ,F,F,10,4)
+       call init(SP%EF%restart_files ,F,F,10,2)
+       call init(SP%EF%final_solution,F,F,10,6)
+       call init(SP%EF%dir,str(DT%EF))
+       call init(SP%EF%name,'EF')
 
        ! call init(MQP,auto_find_N,max_mesh_stretch_ratio,N_max_points_add)
        call init(SP%MQP,F,2.0_cp,50)
@@ -122,7 +130,7 @@
        call init(SP%TSP,0.0_cp,10.0_cp)
 
        time                          = 10000.0_cp
-       dtime                         = 5.0_cp*pow(-4)
+       dtime                         = 1.0_cp*pow(-3)
 
        SP%GP%tw                      = 0.05_cp
        SP%GP%geometry                = 7
@@ -135,7 +143,7 @@
 
        call delete(SP%DP)
        SP%DP%Re                      = 2.0_cp*pow(2)
-       SP%DP%Q                       = 7.0_cp*pow(-1)
+       SP%DP%Q                       = 3.0_cp*pow(-1)
        SP%DP%Rem                     = 1.0_cp*pow(0)
        ! SP%DP%Ha                      = 1.0_cp*pow(4)
        SP%DP%N                       = 1.0_cp/SP%DP%Q
@@ -162,6 +170,23 @@
        if (SP%MP%mirror) SP%DP%KE_scale = SP%DP%KE_scale*2.0_cp
        if (SP%MP%mirror) SP%DP%ME_scale = SP%DP%ME_scale*2.0_cp
        if (SP%MP%mirror) SP%DP%JE_scale = SP%DP%JE_scale*2.0_cp
+
+       ! Export plane (dir,plane)
+       call init(SP%VS%T%unsteady_plane  ,F,2,1)
+       call init(SP%VS%U%unsteady_plane  ,F,2,1)
+       call init(SP%VS%P%unsteady_plane  ,F,2,1)
+       call init(SP%VS%B%unsteady_plane  ,F,2,1)
+       call init(SP%VS%B0%unsteady_plane ,F,2,1)
+       call init(SP%VS%phi%unsteady_plane,F,2,1)
+       call init(SP%VS%rho%unsteady_plane,F,2,1)
+       ! Export line (dir,line)
+       call init(SP%VS%T%unsteady_line  ,F,1,(/2,34/))
+       call init(SP%VS%U%unsteady_line  ,F,1,(/2,34/))
+       call init(SP%VS%P%unsteady_line  ,F,1,(/2,34/))
+       call init(SP%VS%B%unsteady_line  ,F,1,(/2,34/))
+       call init(SP%VS%B0%unsteady_line ,F,1,(/2,34/))
+       call init(SP%VS%phi%unsteady_line,F,1,(/2,34/))
+       call init(SP%VS%rho%unsteady_line,F,1,(/2,34/))
 
        ! call init_IC_BC(var,IC,BC)
        call init_IC_BC(SP%VS%T,  0,0)
@@ -295,7 +320,7 @@
        call init(SP%DMR,    SP_in%DMR)
        call init(SP%MQP,    SP_in%MQP)
        call init(SP%TSP,    SP_in%TSP)
-       call init(SP%PE,     SP_in%PE)
+       call init(SP%EF,     SP_in%EF)
       end subroutine
 
      subroutine delete_SP(SP)
@@ -311,7 +336,7 @@
        call delete(SP%DMR)
        call delete(SP%MQP)
        call delete(SP%TSP)
-       call delete(SP%PE)
+       call delete(SP%EF)
       end subroutine
 
      subroutine display_SP(SP,un)
@@ -339,7 +364,7 @@
        call display(SP%DMR,un)
        call display(SP%MQP,un)
        call display(SP%TSP,un)
-       call display(SP%PE,un)
+       call display(SP%EF,un)
        call display(SP%coupled,un)
       end subroutine
 
@@ -384,7 +409,7 @@
        call export(SP%DMR,un)
        call export(SP%MQP,un)
        call export(SP%TSP,un)
-       call export(SP%PE,un)
+       call export(SP%EF,un)
        call export(SP%coupled,un)
       end subroutine
 
@@ -413,7 +438,7 @@
        call import(SP%DMR,un)
        call import(SP%MQP,un)
        call import(SP%TSP,un)
-       call import(SP%PE,un)
+       call import(SP%EF,un)
        call import(SP%coupled,un)
       end subroutine
 

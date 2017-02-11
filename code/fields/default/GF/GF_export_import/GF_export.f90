@@ -1,15 +1,17 @@
       module GF_export_mod
       use data_location_mod
+      use string_mod
       use GF_base_mod
       use grid_mod
       use array_mod
+      use datatype_conversion_mod
       use current_precision_mod
       use face_edge_corner_indexing_mod
       use exp_Tecplot_Zone_mod
       implicit none
 
-      logical :: export_mid_plane = .true.
-      logical :: export_mid_line  = .true.
+      logical :: export_mid_plane = .false.
+      logical :: export_mid_line  = .false.
       private
       public :: exp_3D_3C_GF,exp_3D_2C_GF,exp_3D_1C_GF,exp_3D_0C_GF ! 3D Fields
       public :: exp_2D_3C_GF,exp_2D_2C_GF,exp_2D_1C_GF,exp_2D_0C_GF ! 2D Fields
@@ -125,9 +127,8 @@
         s_2D = adj_shape_given_dir(s,dir)
         call exp_Zone_2I(un,s_2D-2*pad,t)
         call get_coordinates_h(h,g,DL)
-        if (export_mid_plane) then; p = g%c(dir)%i_midplane
-        else;                       p = plane
-        endif
+        p = get_p_plane_used(g,dir,plane)
+        call write_tec_comment_plane(un,h,dir,p)
         do j=1+pad,s(d(2))-pad; do i=1+pad,s(d(1))-pad
           i_p = e(1)*p + i*(1-e(1))
           j_p = e(2)*p + (i*(1-e(3)) + j*(1-e(1)))*(1-e(2))
@@ -157,9 +158,8 @@
         s_2D = adj_shape_given_dir(s,dir)
         call exp_Zone_2I(un,s_2D-2*pad,t)
         call get_coordinates_h(h,g,DL)
-        if (export_mid_plane) then; p = g%c(dir)%i_midplane
-        else;                       p = plane
-        endif
+        p = get_p_plane_used(g,dir,plane)
+        call write_tec_comment_plane(un,h,dir,p)
         do j=1+pad,s(d(2))-pad; do i=1+pad,s(d(1))-pad
           i_p = e(1)*p + i*(1-e(1))
           j_p = e(2)*p + (i*(1-e(3)) + j*(1-e(1)))*(1-e(2))
@@ -188,9 +188,8 @@
         s_2D = adj_shape_given_dir(s,dir)
         call exp_Zone_2I(un,s_2D-2*pad,t)
         call get_coordinates_h(h,g,DL)
-        if (export_mid_plane) then; p = g%c(dir)%i_midplane
-        else;                       p = plane
-        endif
+        p = get_p_plane_used(g,dir,plane)
+        call write_tec_comment_plane(un,h,dir,p)
         do j=1+pad,s(d(2))-pad; do i=1+pad,s(d(1))-pad
           i_p = e(1)*p + i*(1-e(1))
           j_p = e(2)*p + (i*(1-e(3)) + j*(1-e(1)))*(1-e(2))
@@ -218,9 +217,8 @@
         s_2D = adj_shape_given_dir(s,dir)
         call exp_Zone_2I(un,s_2D-2*pad,t)
         call get_coordinates_h(h,g,DL)
-        if (export_mid_plane) then; p = g%c(dir)%i_midplane
-        else;                       p = plane
-        endif
+        p = get_p_plane_used(g,dir,plane)
+        call write_tec_comment_plane(un,h,dir,p)
         do j=1+pad,s(d(2))-pad; do i=1+pad,s(d(1))-pad
           i_p = e(1)*p + i*(1-e(1))
           j_p = e(2)*p + (i*(1-e(3)) + j*(1-e(1)))*(1-e(2))
@@ -250,15 +248,13 @@
         s = get_shape(g,DL)
         d = adj_dir_given_dir(dir)
         e = eye_given_dir(dir)
-        i_line(d(1)) = line(d(1))
-        i_line(d(2)) = line(d(2))
+        i_line(d(1)) = line(1)
+        i_line(d(2)) = line(2)
         i_line(dir)  = 0 ! multiplied by zero anyway
         call exp_Zone_1I(un,s(dir)-2*pad,t)
         call get_coordinates_h(h,g,DL)
-        if (export_mid_line) then; i_line_used(d(1)) = g%c(d(1))%i_midplane
-                                   i_line_used(d(2)) = g%c(d(2))%i_midplane
-        else;                      i_line_used = i_line
-        endif
+        i_line_used = get_i_line_used(g,dir,i_line)
+        call write_tec_comment_line(un,h,dir,i_line_used,d)
         do i=1+pad,s(dir)-pad
           i_L = i*e(1)+(1-e(1))*i_line_used(1)
           j_L = i*e(2)+(1-e(2))*i_line_used(2)
@@ -285,15 +281,13 @@
         s = get_shape(g,DL)
         d = adj_dir_given_dir(dir)
         e = eye_given_dir(dir)
-        i_line(d(1)) = line(d(1))
-        i_line(d(2)) = line(d(2))
+        i_line(d(1)) = line(1)
+        i_line(d(2)) = line(2)
         i_line(dir)  = 0 ! multiplied by zero anyway
         call exp_Zone_1I(un,s(dir)-2*pad,t)
         call get_coordinates_h(h,g,DL)
-        if (export_mid_line) then; i_line_used(d(1)) = g%c(d(1))%i_midplane
-                                   i_line_used(d(2)) = g%c(d(2))%i_midplane
-        else;                      i_line_used = i_line
-        endif
+        i_line_used = get_i_line_used(g,dir,i_line)
+        call write_tec_comment_line(un,h,dir,i_line_used,d)
         do i=1+pad,s(dir)-pad
           i_L = i*e(1)+(1-e(1))*i_line_used(1)
           j_L = i*e(2)+(1-e(2))*i_line_used(2)
@@ -319,15 +313,13 @@
         s = get_shape(g,DL)
         d = adj_dir_given_dir(dir)
         e = eye_given_dir(dir)
-        i_line(d(1)) = line(d(1))
-        i_line(d(2)) = line(d(2))
+        i_line(d(1)) = line(1)
+        i_line(d(2)) = line(2)
         i_line(dir)  = 0 ! multiplied by zero anyway
         call exp_Zone_1I(un,s(dir)-2*pad,t)
         call get_coordinates_h(h,g,DL)
-        if (export_mid_line) then; i_line_used(d(1)) = g%c(d(1))%i_midplane
-                                   i_line_used(d(2)) = g%c(d(2))%i_midplane
-        else;                      i_line_used = i_line
-        endif
+        i_line_used = get_i_line_used(g,dir,i_line)
+        call write_tec_comment_line(un,h,dir,i_line_used,d)
         do i=1+pad,s(dir)-pad
           i_L = i*e(1)+(1-e(1))*i_line_used(1)
           j_L = i*e(2)+(1-e(2))*i_line_used(2)
@@ -352,15 +344,13 @@
         s = get_shape(g,DL)
         d = adj_dir_given_dir(dir)
         e = eye_given_dir(dir)
-        i_line(d(1)) = line(d(1))
-        i_line(d(2)) = line(d(2))
+        i_line(d(1)) = line(1)
+        i_line(d(2)) = line(2)
         i_line(dir)  = 0 ! multiplied by zero anyway
         call exp_Zone_1I(un,s(dir)-2*pad,t)
         call get_coordinates_h(h,g,DL)
-        if (export_mid_line) then; i_line_used(d(1)) = g%c(d(1))%i_midplane
-                                   i_line_used(d(2)) = g%c(d(2))%i_midplane
-        else;                      i_line_used = i_line
-        endif
+        i_line_used = get_i_line_used(g,dir,i_line)
+        call write_tec_comment_line(un,h,dir,i_line_used,d)
         do i=1+pad,s(dir)-pad
           i_L = i*e(1)+(1-e(1))*i_line_used(1)
           j_L = i*e(2)+(1-e(2))*i_line_used(2)
@@ -369,6 +359,74 @@
                       u
         enddo
         do i=1,3; call delete(h(i)); enddo
+      end subroutine
+
+      function get_i_line_used(g,dir,i_line) result(i_line_used)
+        implicit none
+        integer,intent(in) :: dir
+        type(grid),intent(in) :: g
+        integer,dimension(3),intent(in) :: i_line
+        integer,dimension(3) :: i_line_used
+        integer,dimension(2) :: d
+        d = adj_dir_given_dir(dir)
+        if (export_mid_line) then; i_line_used(d(1)) = g%c(d(1))%i_midplane
+                                   i_line_used(d(2)) = g%c(d(2))%i_midplane
+        else;                      i_line_used = i_line
+        endif
+      end function
+
+      function get_p_plane_used(g,dir,plane) result(p_plane_used)
+        implicit none
+        type(grid),intent(in) :: g
+        integer,intent(in) :: dir
+        integer,intent(in) :: plane
+        integer :: p_plane_used
+        if (export_mid_plane) then; p_plane_used = g%c(dir)%i_midplane
+        else;                       p_plane_used = plane
+        endif
+      end function
+
+      subroutine write_tec_comment_line(un,h,dir,i_line_used,d)
+        implicit none
+        integer,intent(in) :: un,dir
+        type(array),dimension(3),intent(in) :: h
+        integer,dimension(3),intent(in) :: i_line_used
+        integer,dimension(2),intent(in) :: d
+        integer :: i
+        type(string),dimension(5) :: comment
+        type(string),dimension(2) :: loc
+        character :: c_dir1,c_dir2
+        c_dir1 = xyz_given_dir(d(1))
+        c_dir2 = xyz_given_dir(d(2))
+        call init(loc(1),cp2str(h(d(1))%f(i_line_used(d(1)))))
+        call init(loc(2),cp2str(h(d(2))%f(i_line_used(d(2)))))
+        call init(comment(1),'# Line direction = '//int2str(dir))
+        call init(comment(2),'# Line index('//c_dir1//')  = '//int2str(i_line_used(d(1))))
+        call init(comment(3),'# Line index('//c_dir2//')  = '//int2str(i_line_used(d(2))))
+        call init(comment(4),'# Line location('//c_dir1//')  = '//str(loc(1)))
+        call init(comment(5),'# Line location('//c_dir2//')  = '//str(loc(2)))
+        do i=1,5; call write_formatted(comment(i),un); enddo
+        do i=1,5; call delete(comment(i)); enddo
+        do i=1,2; call delete(loc(i)); enddo
+      end subroutine
+
+      subroutine write_tec_comment_plane(un,h,dir,p_plane_used)
+        implicit none
+        integer,intent(in) :: un,dir
+        type(array),dimension(3),intent(in) :: h
+        integer,intent(in) :: p_plane_used
+        integer :: i
+        type(string),dimension(3) :: comment
+        type(string) :: loc
+        character :: c_dir
+        c_dir = xyz_given_dir(dir)
+        call init(loc,cp2str(h(dir)%f(p_plane_used)))
+        call init(comment(1),'# Plane direction = '//int2str(dir))
+        call init(comment(2),'# Plane index('//c_dir//')  = '//int2str(p_plane_used))
+        call init(comment(3),'# Plane location('//c_dir//')  = '//str(loc))
+        do i=1,3; call write_formatted(comment(i),un); enddo
+        do i=1,3; call delete(comment(i)); enddo
+        call delete(loc)
       end subroutine
 
       end module

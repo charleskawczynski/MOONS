@@ -134,7 +134,8 @@
          endif
 
          if (TS%TSP%O1_stats%export_stats) then
-           call init(s,'_t='//cp2str(TMP%t))
+           call init(s,'_t=')
+           call append(s,cp2str(TMP%t))
            call square_root(TS%RMS)
            call subtract(temp,U,TS%U_ave)
            call export_processed(m,TS%RMS  ,str(TS%dir),str(TS%name)//'_RMS'//str(s)         ,1)
@@ -146,13 +147,12 @@
          endif
        end subroutine
 
-       subroutine update_TS_VF(TS,m,U,p,TMP,temp,temp_CC,TF_CC)
+       subroutine update_TS_VF(TS,m,U,TMP,temp,temp_CC,TF_CC)
          implicit none
          type(time_statistics_VF),intent(inout) :: TS
          type(time_marching_params),intent(in) :: TMP
          type(mesh),intent(in) :: m
          type(VF),intent(in) :: U
-         type(VF),intent(in) :: p
          type(VF),intent(inout) :: temp,temp_CC
          type(TF),intent(inout) :: TF_CC
          type(string) :: s
@@ -178,11 +178,11 @@
            call multiply(TF_CC%z%y,temp_CC%z,temp_CC%y)
            call multiply(TF_CC%z%z,temp_CC%z,temp_CC%z)
            call add_product(TS%stresses,TF_CC,TS%TSP%coefficient)
-
          endif
 
          if (TS%TSP%O1_stats%export_stats) then
-           call init(s,'_t='//cp2str(TMP%t))
+           call init(s,'_t=')
+           call append(s,cp2str(TMP%t))
            call square_root(TS%RMS)
            call subtract(temp,U,TS%U_ave)
            call export_processed(m,TS%RMS  ,str(TS%dir),str(TS%name)//'_RMS'//str(s),1)
@@ -194,7 +194,8 @@
          endif
 
          if (TS%TSP%O2_stats%export_stats) then
-           call init(s,'_t='//cp2str(TMP%t))
+           call init(s,'_t=')
+           call append(s,cp2str(TMP%t))
            call export_processed(m,TS%stresses%x,str(TS%dir),str(TS%name)//'_Rx'//str(s),1)
            call export_processed(m,TS%stresses%y,str(TS%dir),str(TS%name)//'_Ry'//str(s),1)
            call export_processed(m,TS%stresses%z,str(TS%dir),str(TS%name)//'_Rz'//str(s),1)

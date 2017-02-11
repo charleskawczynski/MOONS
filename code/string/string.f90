@@ -17,6 +17,7 @@
       public :: string
       public :: init,delete,display,print,export,import ! Essentials
 
+      public :: write_formatted
       public :: get_str,str ! str does not require length
       public :: len,match,match_index
       public :: compress,append,prepend
@@ -32,6 +33,8 @@
       interface print;                module procedure print_string;                   end interface
       interface export;               module procedure export_string;                  end interface
       interface import;               module procedure import_string;                  end interface
+
+      interface write_formatted;      module procedure write_formatted_string;         end interface
 
       interface append;               module procedure app_string_char;                end interface
       interface append;               module procedure app_string_string;              end interface
@@ -144,6 +147,21 @@
           endif; first_iteration = .false.
         enddo
       end subroutine
+
+      subroutine write_formatted_string(s,un)
+        implicit none
+        integer,intent(in) :: un
+        type(string),intent(in) :: s
+        write(un,'('//int2str(len(s))//'A)') str(s)
+      end subroutine
+
+      function int2Str(i) result(s)
+        implicit none
+        integer,intent(in) :: i
+        character(len=15) :: s
+        write(s,'(I15.15)') i
+        s = trim(adjustl(s))
+      end function
 
       ! **********************************************************
       ! **********************************************************

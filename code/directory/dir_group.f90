@@ -17,7 +17,7 @@
         type(path) :: restart
         type(path) :: energy
         type(path) :: residual
-        type(path) :: transient
+        type(path) :: unsteady
         type(path) :: BCs
       end type
 
@@ -30,13 +30,13 @@
         character(len=*),intent(in) :: name,PS
         type(path) :: temp
         call init(temp,root)
-        call init(DG%base     ,temp   ,name       ,PS)
-        call init(DG%field    ,DG%base,'field'    ,PS)
-        call init(DG%restart  ,DG%base,'restart'  ,PS)
-        call init(DG%energy   ,DG%base,'energy'   ,PS)
-        call init(DG%residual ,DG%base,'residual' ,PS)
-        call init(DG%transient,DG%base,'transient',PS)
-        call init(DG%BCs      ,DG%base,'BCs'      ,PS)
+        call init(DG%base    ,temp   ,name      ,PS)
+        call init(DG%field   ,DG%base,'field'   ,PS)
+        call init(DG%restart ,DG%base,'restart' ,PS)
+        call init(DG%energy  ,DG%base,'energy'  ,PS)
+        call init(DG%residual,DG%base,'residual',PS)
+        call init(DG%unsteady,DG%base,'unsteady',PS)
+        call init(DG%BCs     ,DG%base,'BCs'     ,PS)
         call delete(temp)
       end subroutine
 
@@ -48,7 +48,7 @@
         call make_dir(str(DG%restart))
         call make_dir(str(DG%energy))
         call make_dir(str(DG%residual))
-        call make_dir(str(DG%transient))
+        call make_dir(str(DG%unsteady))
         call make_dir(str(DG%BCs))
       end subroutine
 
@@ -60,7 +60,7 @@
         call delete(DG%restart)
         call delete(DG%energy)
         call delete(DG%residual)
-        call delete(DG%transient)
+        call delete(DG%unsteady)
         call delete(DG%BCs)
       end subroutine
 
