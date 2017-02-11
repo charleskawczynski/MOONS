@@ -70,6 +70,7 @@
         public :: cross_product_z
 
         public :: CFL_number
+        public :: Fourier_number
 
         public :: restrict
         public :: prolongate
@@ -115,6 +116,7 @@
        interface cross_product_z;             module procedure cross_product_z_BF;              end interface
 
        interface CFL_number;                  module procedure CFL_number_BF;                   end interface
+       interface Fourier_number;              module procedure Fourier_number_BF;               end interface
 
        interface square;                      module procedure square_BF;                       end interface
        interface square_root;                 module procedure square_root_BF;                  end interface
@@ -518,6 +520,15 @@
          real(cp),intent(in) :: dt
          real(cp) :: CFL
          CFL = CFL_number(U_CC%GF,V_CC%GF,W_CC%GF,B%g,dt)
+       end function
+
+       function Fourier_number_BF(alpha,B,dt) result(Fourier)
+         implicit none
+         real(cp),intent(in) :: alpha
+         type(block),intent(in) :: B
+         real(cp),intent(in) :: dt
+         real(cp) :: Fourier
+         Fourier = Fourier_number(alpha,B%g,dt)
        end function
 
        subroutine square_BF(u)

@@ -65,6 +65,7 @@
         public :: cross_product_z
 
         public :: CFL_number
+        public :: Fourier_number
 
         public :: restrict
         public :: prolongate
@@ -201,6 +202,7 @@
         interface cross_product_z;          module procedure cross_product_z_SF;           end interface
 
         interface CFL_number;               module procedure CFL_number_SF;                end interface
+        interface Fourier_number;           module procedure Fourier_number_SF;            end interface
 
         interface restrict;                 module procedure restrict_SF;                  end interface
         interface restrict;                 module procedure restrict_reset_SF;            end interface
@@ -1463,6 +1465,19 @@
           CFL = 0.0_cp
           do t=1,m%s
             CFL = maxval((/CFL,CFL_number(U_CC%BF(t),V_CC%BF(t),W_CC%BF(t),m%B(t),dt)/))
+          enddo
+        end function
+
+        function Fourier_number_SF(alpha,m,dt) result(Fourier)
+          implicit none
+          real(cp),intent(in) :: alpha
+          type(mesh),intent(in) :: m
+          real(cp),intent(in) :: dt
+          real(cp) :: Fourier
+          integer :: t
+          Fourier = 0.0_cp
+          do t=1,m%s
+            Fourier = maxval((/Fourier,Fourier_number(alpha,m%B(t),dt)/))
           enddo
         end function
 

@@ -63,7 +63,7 @@
         character(len=*),intent(in) :: name
         integer,dimension(2),intent(in) :: line
         integer :: i
-        call exp_Header_2D_3C(un,dir,name)
+        call exp_Header_1D_3C(un,dir,name)
         do i=1,m%s
         call exp_1D_3C_GF(m%B(i)%g,U%x%DL,i,pad,un,U%x%BF(i)%GF,U%y%BF(i)%GF,U%z%BF(i)%GF,dir,line)
         enddo
@@ -80,7 +80,7 @@
         integer,intent(in) :: pad,un,dir
         character(len=*),intent(in) :: name
         integer :: i
-        call exp_Header_2D_2C(un,dir,name)
+        call exp_Header_3D_2C(un,dir,name)
         select case (dir)
         case(1)
         do i=1,m%s;call exp_3D_2C_GF(m%B(i)%g,U%y%DL,i,pad,un,U%y%BF(i)%GF,U%z%BF(i)%GF);enddo

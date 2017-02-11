@@ -142,7 +142,7 @@
          if (.not.SP%FCL%skip_solver_loop) call MHDSolver(nrg,mom,ind,DT,SP,SP%coupled)
 
          if (SP%FCL%Poisson_test) then
-           if (SP%VS%U%SS%initialize) call Poisson_test(mom%U,mom%p,mom%m,DT,SP)
+           if (SP%VS%U%SS%initialize) call Poisson_test(mom%U,mom%p,mom%m,DT)
          endif
 
          if (SP%FCL%post_process) then

@@ -35,13 +35,14 @@ mat.print_MP()
 
 print '\n***************** KNOWN SCALES *****************'
 L = 0.1
-# tau = abs(7069.62 - 45000.0)*pow(-6) # [s]
-tau = abs(50.0)*pow(-6)           # [s]
-# B0 = 1.00357                           # [T]
+# tau = abs(7069.62 - 45000.0)*pow(-6)    # [s] - Based on Mike Ulrickson's data
+tau = 0.0047                            # [s] - Based on B0/max(dB0/dt)
+# tau = abs(50.0)*pow(-6)                 # [s] - Sergey's suggestion
+# B0 = 1.00357                            # [T]
 # B0 = 0.010357                           # [T]
-B0_T = 0.01
-B0_P = 0.1
-B0 = 0.5*(B0_P+B0_T)
+B0_T = 5
+B0_P = 1
+B0 = B0_P
 print 'L   = '+str(L)
 print 'tau = '+str(tau)
 print 'B0_P  = '+str(B0_P)
@@ -61,10 +62,10 @@ print 'Rex10^-6 = '+str(Re*pow(-6))
 print 'Ha       = '+str(Ha)
 print 'Rem      = '+str(Rem)
 
-print '\n***************** DIMENSIONALIZING PARAMETERS *****************'
+print '\n************ DIMENSIONALIZING PARAMETERS FROM MOONS OUTPUT ************'
 
-U_sim = np.sqrt(pow(-16))
-B_sim = np.sqrt(0.01)
+U_sim = np.sqrt(0.239)
+B_sim = np.sqrt(0.1)
 J_sim = np.sqrt(0.57)
 U_dim = dimensional_U(U_sim,U)
 B_dim = dimensional_B(B_sim,B0)

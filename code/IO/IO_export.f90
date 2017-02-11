@@ -96,9 +96,9 @@
         type(string) :: s
         integer :: un
         call construct_name(s,name,get_DL(U))
-        un = new_and_open(dir,str(s)//'_t='//int2str(TMP%n_step))
+        un = new_and_open(dir,str(s)//'_t='//str(cp2str(TMP%t)))
         call exp_3D_3C(m,pad,un,str(s),U)
-        call close_and_message(un,dir,str(s)//'_t='//int2str(TMP%n_step))
+        call close_and_message(un,dir,str(s)//'_t='//str(cp2str(TMP%t)))
         call delete(s)
       end subroutine
 
@@ -126,9 +126,9 @@
         type(string) :: s
         integer :: un
         call construct_name(s,name,get_DL(U))
-        un = new_and_open(dir,str(s)//'_t='//int2str(TMP%n_step))
+        un = new_and_open(dir,str(s)//'_plane_t='//str(cp2str(TMP%t)))
         call exp_2D_3C(m,pad,un,str(s),U,direction,plane)
-        call close_and_message(un,dir,str(s)//'_t='//int2str(TMP%n_step))
+        call close_and_message(un,dir,str(s)//'_plane_t='//str(cp2str(TMP%t)))
         call delete(s)
       end subroutine
 
@@ -158,9 +158,9 @@
         type(string) :: s
         integer :: un
         call construct_name(s,name,get_DL(U))
-        un = new_and_open(dir,str(s)//'_t='//int2str(TMP%n_step))
+        un = new_and_open(dir,str(s)//'_line_t='//str(cp2str(TMP%t)))
         call exp_1D_3C(m,pad,un,str(s),U,direction,line)
-        call close_and_message(un,dir,str(s)//'_t='//int2str(TMP%n_step))
+        call close_and_message(un,dir,str(s)//'_line_t='//str(cp2str(TMP%t)))
         call delete(s)
       end subroutine
 
@@ -192,9 +192,9 @@
         type(string) :: s
         integer :: un
         call construct_name(s,name,get_DL(U))
-        un = new_and_open(dir,str(s)//'_t='//int2str(TMP%n_step))
+        un = new_and_open(dir,str(s)//'_t='//str(cp2str(TMP%t)))
         call exp_3D_2C(m,pad,un,str(s),U,direction)
-        call close_and_message(un,dir,str(s)//'_t='//int2str(TMP%n_step))
+        call close_and_message(un,dir,str(s)//'_t='//str(cp2str(TMP%t)))
         call delete(s)
       end subroutine
 
@@ -222,9 +222,9 @@
         type(string) :: s
         integer :: un
         call construct_name(s,name,get_DL(U))
-        un = new_and_open(dir,str(s)//'_t='//int2str(TMP%n_step))
+        un = new_and_open(dir,str(s)//'_plane_t='//str(cp2str(TMP%t)))
         call exp_2D_2C(m,pad,un,str(s),U,direction,plane)
-        call close_and_message(un,dir,str(s)//'_t='//int2str(TMP%n_step))
+        call close_and_message(un,dir,str(s)//'_plane_t='//str(cp2str(TMP%t)))
         call delete(s)
       end subroutine
 
@@ -254,9 +254,9 @@
         type(string) :: s
         integer :: un
         call construct_name(s,name,get_DL(U))
-        un = new_and_open(dir,str(s)//'_t='//int2str(TMP%n_step))
+        un = new_and_open(dir,str(s)//'_line_t='//str(cp2str(TMP%t)))
         call exp_1D_2C(m,pad,un,str(s),U,direction,line)
-        call close_and_message(un,dir,str(s)//'_t='//int2str(TMP%n_step))
+        call close_and_message(un,dir,str(s)//'_line_t='//str(cp2str(TMP%t)))
         call delete(s)
       end subroutine
 
@@ -288,9 +288,9 @@
         type(string) :: s
         integer :: un
         call construct_name(s,name,U%DL)
-        un = new_and_open(dir,str(s)//'_t='//int2str(TMP%n_step))
+        un = new_and_open(dir,str(s)//'_t='//str(cp2str(TMP%t)))
         call exp_3D_1C(m,pad,un,str(s),U)
-        call close_and_message(un,dir,str(s)//'_t='//int2str(TMP%n_step))
+        call close_and_message(un,dir,str(s)//'_t='//str(cp2str(TMP%t)))
         call delete(s)
       end subroutine
 
@@ -318,9 +318,9 @@
         type(string) :: s
         integer :: un
         call construct_name(s,name,U%DL)
-        un = new_and_open(dir,str(s)//'_t='//int2str(TMP%n_step))
+        un = new_and_open(dir,str(s)//'_plane_t='//str(cp2str(TMP%t)))
         call exp_2D_1C(m,pad,un,str(s),U,direction,plane)
-        call close_and_message(un,dir,str(s)//'_t='//int2str(TMP%n_step))
+        call close_and_message(un,dir,str(s)//'_plane_t='//str(cp2str(TMP%t)))
         call delete(s)
       end subroutine
 
@@ -350,9 +350,9 @@
         type(string) :: s
         integer :: un
         call construct_name(s,name,U%DL)
-        un = new_and_open(dir,str(s)//'_t='//int2str(TMP%n_step))
+        un = new_and_open(dir,str(s)//'_line_t='//str(cp2str(TMP%t)))
         call exp_1D_1C(m,pad,un,str(s),U,direction,line)
-        call close_and_message(un,dir,str(s)//'_t='//int2str(TMP%n_step))
+        call close_and_message(un,dir,str(s)//'_line_t='//str(cp2str(TMP%t)))
         call delete(s)
       end subroutine
 

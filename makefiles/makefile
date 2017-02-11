@@ -1,6 +1,6 @@
 # **************** RUN CONFIGURATION *******************
-# RELEASE = 'DEBUG'
-RELEASE = 'OPTIMIZE'
+RELEASE = 'DEBUG'
+# RELEASE = 'OPTIMIZE'
 # RELEASE = 'PROFILE'
 USE_OPEN_MP = 'TRUE'
 PARALLELIZE_3D_OPS = 'TRUE'
@@ -42,7 +42,7 @@ endif
 SRC_DIR = ..$(PS)code
 
 ifeq ($(CLUSTER),'PC_CK')
-	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS7
+	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS1
 endif
 
 ifeq ($(CLUSTER),'Workstation_CK')
@@ -330,7 +330,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)sim_params$(PS)iter_solver_params.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)solver_settings.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)time_marching_params.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)dynamic_mesh_refinement.f90\
 	$(SRC_DIR)$(PS)table$(PS)table.f90\
 	$(SRC_DIR)$(PS)directory$(PS)path.f90\
 	$(SRC_DIR)$(PS)directory$(PS)dir_group.f90\
@@ -422,9 +421,12 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)time_statistics$(PS)stats_period.f90\
 	$(SRC_DIR)$(PS)time_statistics$(PS)time_statistics_params.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)matrix_free_params.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)export_line.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)export_plane.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)var.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)var_set.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)print_export.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)export_frequency_params.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)export_frequency.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)momentum_forces.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)mirror_props.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)flow_control_logicals.f90\
@@ -535,7 +537,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_Sigma.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)dynamic_refine_mesh.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)MHDSolver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)Poisson_test.f90\
 	$(SRC_DIR)$(PS)user$(PS)export_mesh_aux.f90\

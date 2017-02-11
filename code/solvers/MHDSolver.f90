@@ -7,12 +7,11 @@
        use path_mod
        use dir_tree_mod
        use stop_clock_mod
-       use print_export_mod
+       use export_frequency_mod
        use export_now_mod
        use refine_mesh_mod
        use kill_switch_mod
        use probe_mod
-       use dynamic_refine_mesh_mod
 
        use time_marching_params_mod
        use energy_mod
@@ -37,7 +36,7 @@
          type(time_marching_params),intent(inout) :: coupled
          type(stop_clock) :: sc
          type(VF) :: F,Fnm1 ! Forces added to momentum equation
-         type(print_export) :: PE
+         type(export_frequency) :: EF
          type(export_now) :: EN
          type(refine_mesh) :: RM
          type(kill_switch) :: KS
@@ -52,7 +51,7 @@
          call init(KS,str(DT%params),'kill_switch'); call export(KS)
          call init(EN,str(DT%export_now),'EN'); call export(EN)
          call init(RM,str(DT%refine_mesh),'RM'); call export(RM)
-         call init(PE,SP%PE); call export(PE)
+         call init(EF,SP%EF); call export(SP%EF)
          call init(sc,coupled%n_step_stop-coupled%n_step,str(DT%wall_clock),'WALL_CLOCK_TIME_INFO')
 
          write(*,*) 'Working directory = ',str(DT%tar)
@@ -62,23 +61,15 @@
          write(*,*) '***************************************************************'
          do while ((.not.KS%terminate_loop).and.(coupled%n_step.lt.coupled%n_step_stop))
            call tic(sc)
-           call update(PE,coupled%n_step)
+           call update(EF,coupled%n_step)
            if (SP%print_every_MHD_step) write(*,*) 'coupled%n_step = ',coupled%n_step
 
-           if (SP%DMR%dynamic_refinement) then
-             if (refine_mesh_now_all.or.RM%any_next) PE%transient_0D = .true.
-           endif
-
-           ! if (SP%VS%rho%SS%solve)    call solve(dens,mom%U,  PE,EN,DT)
-           if (SP%VS%T%SS%solve) call solve(nrg,mom%U,  PE,EN,DT)
-           if (SP%VS%U%SS%solve) call solve(mom,F,Fnm1, PE,EN,DT)
-           if (SP%VS%B%SS%solve) call solve(ind,mom%U_E,PE,EN,DT)
+           ! if (SP%VS%rho%SS%solve)    call solve(dens,mom%U,  EF,EN,DT)
+           if (SP%VS%T%SS%solve) call solve(nrg,mom%U,  EF,EN,DT)
+           if (SP%VS%U%SS%solve) call solve(mom,F,Fnm1, EF,EN,DT)
+           if (SP%VS%B%SS%solve) call solve(ind,mom%U_E,EF,EN,DT)
 
            if (SP%MF%mean_pressure_grad) call compute_Add_MPG(mom%U,mom%SP%VS%U%TMP,SP%mpg_dir)
-
-           if (SP%DMR%dynamic_refinement.or.RM%any_next) then
-             call dynamic_refine_mesh(nrg,mom,ind,DT,SP,coupled,sc,F,Fnm1,PE,RM,KS,refine_mesh_now_all)
-           endif
 
            call assign(Fnm1,F)
            call assign(F,0.0_cp) ! DO NOT REMOVE THIS, FOLLOW THE COMPUTE_ADD PROCEDURE BELOW
@@ -106,7 +97,6 @@
            endif
 
            call iterate_step(coupled)
-           call import(PE)
 
            call import(EN)
            call update(EN)
@@ -117,7 +107,7 @@
            if (RM%any_next) call export(RM)
 
            call toc(sc)
-           if (PE%info) then
+           if (EF%info%export_now) then
              ! oldest_modified_file violates intent, but this
              ! would be better to update outside the solvers,
              ! since it should be updated for all solver variables.
@@ -127,6 +117,7 @@
              write(*,*) 'Working directory = ',str(DT%tar)
              call import(KS)
            endif
+           call import(EF)
          enddo
          call print(sc,coupled)
          call export(sc,coupled)
@@ -144,7 +135,7 @@
          if (SP%VS%U%SS%initialize) call export_tec(mom,DT,F,Fnm1)
          if (SP%VS%B%SS%initialize) call export_tec(ind,DT)
 
-         call delete(PE)
+         call delete(EF)
          call delete(sc)
          call delete(EN)
          call delete(KS)

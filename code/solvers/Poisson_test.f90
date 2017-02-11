@@ -27,33 +27,29 @@
 
        contains
 
-       subroutine Poisson_test(U,p,m,DT,SP)
+       subroutine Poisson_test(U,p,m,DT)
          implicit none
          type(VF),intent(in) :: U
          type(SF),intent(in) :: p
          type(mesh),intent(in) :: m
          type(dir_tree),intent(in) :: DT
-         type(sim_params),intent(in) :: SP
          write(*,*) ' ************************************************************ '
          write(*,*) ' ******************** BEGIN POISSON TEST ******************** '
          write(*,*) ' ************************************************************ '
          write(*,*) ' ------------------------- TEST 1 --------------------------- '
-         call Poisson_test_CC(p,m,DT,SP)     ! Tests residual drop for CC data
+         call Poisson_test_CC(p,m,DT)     ! Tests residual drop for CC data
          write(*,*) ' ------------------------- TEST 2 --------------------------- '
-         call Poisson_test_Face(U,m,DT,SP)   ! Tests residual drop for Face data
-         write(*,*) ' ------------------------- TEST 3 --------------------------- '
-         ! call Poisson_test_cleanU(U,p,m,DT,SP) ! Tests full cleaning procedure w/ intermediate field
+         call Poisson_test_Face(U,m,DT)   ! Tests residual drop for Face data
          write(*,*) ' ************************************************************ '
          write(*,*) ' ********************** END POISSON TEST ******************** '
          write(*,*) ' ************************************************************ '
        end subroutine
 
-       subroutine Poisson_test_CC(p,m,DT,SP)
+       subroutine Poisson_test_CC(p,m,DT)
          implicit none
          type(SF),intent(in) :: p
          type(mesh),intent(in) :: m
          type(dir_tree),intent(in) :: DT
-         type(sim_params),intent(in) :: SP
          type(SF) :: phi,temp_CC
          type(VF) :: temp_F
          type(PCG_solver_SF) :: PCG
@@ -89,12 +85,11 @@
          call delete(MFP)
        end subroutine
 
-       subroutine Poisson_test_Face(X,m,DT,SP)
+       subroutine Poisson_test_Face(X,m,DT)
          implicit none
          type(VF),intent(in) :: X
          type(mesh),intent(in) :: m
          type(dir_tree),intent(in) :: DT
-         type(sim_params),intent(in) :: SP
          type(VF) :: U,temp_F,temp_E
          type(PCG_solver_VF) :: PCG
          type(iter_solver_params) :: ISP
@@ -126,48 +121,6 @@
          call delete(temp_E)
          call delete(temp_F)
          call delete(PCG)
-         call delete(ISP)
-         call delete(MFP)
-       end subroutine
-
-       subroutine Poisson_test_cleanU(X,p,m,DT,SP)
-         implicit none
-         type(VF),intent(in) :: X
-         type(SF),intent(in) :: p
-         type(mesh),intent(in) :: m
-         type(dir_tree),intent(in) :: DT
-         type(sim_params),intent(in) :: SP
-         type(VF) :: U,Ustar,temp_F1,temp_F2,temp_E,temp_CC
-         type(SF) :: divU,phi
-         type(PCG_solver_VF) :: PCG_U
-         type(PCG_solver_SF) :: PCG_P
-         type(iter_solver_params) :: ISP
-         type(matrix_free_params) :: MFP
-         call init(ISP,10000,pow(-15),pow(-15),1,.true.,str(DT%test%field),'CC data')
-         call init(U,X)
-         call init(Ustar,X)
-         call init(phi,p)
-         call init_Face(temp_F1,m)
-         call init_Face(temp_F2,m)
-         call init_Edge(temp_E,m)
-         call init_CC(temp_CC,m)
-         call init_CC(divU,m)
-         call random_noise(Ustar)
-         call apply_BCs(Ustar)
-         call div(divU,Ustar,m)
-         call init(PCG_P,Lap_uniform_SF,Lap_uniform_SF_explicit,prec_Lap_SF,m,&
-         ISP,MFP,phi,temp_E,str(DT%test%residual),'phi',.false.,.false.)
-         call solve(PCG_P,phi,divU,m,.false.)
-         call update_intermediate_field_BCs(Ustar,U,phi,m,temp_F1,temp_F2,temp_CC)
-         call export_processed(m,U    ,str(DT%test%field),'U',1)
-         call export_processed(m,Ustar,str(DT%test%field),'Ustar',1)
-         call delete(U)
-         call delete(Ustar)
-         call delete(divU)
-         call delete(phi)
-         call delete(temp_E)
-         call delete(PCG_P)
-         call delete(PCG_U)
          call delete(ISP)
          call delete(MFP)
        end subroutine

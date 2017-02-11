@@ -33,7 +33,7 @@
        use IO_import_mod
        use export_raw_processed_mod
        use export_raw_processed_symmetry_mod
-       use print_export_mod
+       use export_frequency_mod
        use export_now_mod
        use refine_mesh_mod
 
@@ -69,7 +69,6 @@
        public :: init,delete,display,print,export,import ! Essentials
 
        public :: solve,export_tec,compute_export_E_K_Budget
-       public :: prolongate
 
        type momentum
          logical :: suppress_warning
@@ -96,7 +95,6 @@
 
        interface init;                 module procedure init_mom;                   end interface
        interface delete;               module procedure delete_mom;                 end interface
-       interface prolongate;           module procedure prolongate_mom;             end interface
        interface display;              module procedure display_momentum;           end interface
        interface print;                module procedure print_momentum;             end interface
        interface export;               module procedure export_momentum;            end interface
@@ -107,8 +105,10 @@
        interface solve;                module procedure solve_momentum;             end interface
        interface init_matrix_based_ops;module procedure init_matrix_based_ops_mom;  end interface
 
-       interface export_transient1;    module procedure export_transient1_mom;      end interface
-       interface export_transient2;    module procedure export_transient2_mom;      end interface
+       interface export_unsteady_0D;    module procedure export_unsteady_0D_mom;      end interface
+       interface export_unsteady_1D;    module procedure export_unsteady_1D_mom;      end interface
+       interface export_unsteady_2D;    module procedure export_unsteady_2D_mom;      end interface
+       interface export_unsteady_3D;    module procedure export_unsteady_3D_mom;      end interface
 
        contains
 
@@ -174,10 +174,10 @@
          call face2edge_no_diag(mom%U_E,mom%U,mom%m)
          write(*,*) '     Interpolated fields initialized'
 
-         call init(mom%probe_divU,str(DT%U%residual),'probe_divU',mom%SP%VS%U%SS%restart,SP%DMR,.true.)
-         call init(mom%probe_KE,str(DT%U%energy),'KE',mom%SP%VS%U%SS%restart,SP%DMR,.false.)
+         call init(mom%probe_divU,str(DT%U%residual),'probe_divU',mom%SP%VS%U%SS%restart,.true.)
+         call init(mom%probe_KE,str(DT%U%energy),'KE',mom%SP%VS%U%SS%restart,.false.)
          if (m%MP%plane_any) then
-          call init(mom%probe_KE_2C,str(DT%U%energy),'KE_2C',mom%SP%VS%U%SS%restart,SP%DMR,.false.)
+          call init(mom%probe_KE_2C,str(DT%U%energy),'KE_2C',mom%SP%VS%U%SS%restart,.false.)
          endif
          write(*,*) '     momentum probes initialized'
          ! call init(mom%TS,mom%m,mom%U,t_start,t_stop,DT%U%field,'U',0)
@@ -322,7 +322,7 @@
          endif
        end subroutine
 
-       subroutine export_transient1_mom(mom)
+       subroutine export_unsteady_0D_mom(mom)
          implicit none
          type(momentum),intent(inout) :: mom
          real(cp) :: temp,scale
@@ -342,14 +342,45 @@
          call export(mom%probe_divU,mom%SP%VS%U%TMP,temp)
        end subroutine
 
-       subroutine export_transient2_mom(mom,DT)
+       subroutine export_unsteady_1D_mom(mom,DT)
          implicit none
          type(momentum),intent(inout) :: mom
          type(dir_tree),intent(in) :: DT
-         call export_processed(mom%m,mom%U,str(DT%U%transient),'U',1,mom%SP%VS%U%TMP)
-         call export_processed(mom%m,mom%p,str(DT%P%transient),'p',1,mom%SP%VS%U%TMP)
-         ! call export_processed(mom%m,mom%U,str(DT%U%transient),'U',1,mom%SP%VS%U%TMP,3,24)
-         ! call export_processed(mom%m,mom%p,str(DT%U%transient),'p',1,mom%SP%VS%U%TMP,3,24)
+         integer,dimension(2) :: line
+         integer :: dir
+         logical :: L
+         dir  = mom%SP%VS%U%unsteady_line%dir
+         line = mom%SP%VS%U%unsteady_line%line
+         L    = mom%SP%VS%U%unsteady_line%export_ever
+         if (L) call export_processed(mom%m,mom%U,str(DT%U%unsteady),'U',1,mom%SP%VS%U%TMP,dir,line)
+         dir  = mom%SP%VS%P%unsteady_line%dir
+         line = mom%SP%VS%P%unsteady_line%line
+         L    = mom%SP%VS%P%unsteady_line%export_ever
+         if (L) call export_processed(mom%m,mom%p,str(DT%P%unsteady),'p',1,mom%SP%VS%U%TMP,dir,line)
+       end subroutine
+
+       subroutine export_unsteady_2D_mom(mom,DT)
+         implicit none
+         type(momentum),intent(inout) :: mom
+         type(dir_tree),intent(in) :: DT
+         integer :: dir,plane
+         logical :: L
+         dir   = mom%SP%VS%U%unsteady_plane%dir
+         plane = mom%SP%VS%U%unsteady_plane%plane
+         L     = mom%SP%VS%U%unsteady_plane%export_ever
+         if (L) call export_processed(mom%m,mom%U,str(DT%U%unsteady),'U',1,mom%SP%VS%U%TMP,dir,plane)
+         dir   = mom%SP%VS%P%unsteady_plane%dir
+         plane = mom%SP%VS%P%unsteady_plane%plane
+         L     = mom%SP%VS%P%unsteady_plane%export_ever
+         if (L) call export_processed(mom%m,mom%p,str(DT%P%unsteady),'p',1,mom%SP%VS%U%TMP,dir,plane)
+       end subroutine
+
+       subroutine export_unsteady_3D_mom(mom,DT)
+         implicit none
+         type(momentum),intent(inout) :: mom
+         type(dir_tree),intent(in) :: DT
+         call export_processed(mom%m,mom%U,str(DT%U%unsteady),'U',1,mom%SP%VS%U%TMP)
+         call export_processed(mom%m,mom%p,str(DT%P%unsteady),'p',1,mom%SP%VS%U%TMP)
        end subroutine
 
        subroutine init_matrix_based_ops_mom(mom)
@@ -369,11 +400,11 @@
 
        ! ******************* SOLVER ****************************
 
-       subroutine solve_momentum(mom,F,Fnm1,PE,EN,DT)
+       subroutine solve_momentum(mom,F,Fnm1,EF,EN,DT)
          implicit none
          type(momentum),intent(inout) :: mom
          type(VF),intent(in) :: F,Fnm1
-         type(print_export),intent(in) :: PE
+         type(export_frequency),intent(in) :: EF
          type(export_now),intent(in) :: EN
          type(dir_tree),intent(in) :: DT
 
@@ -381,15 +412,15 @@
          case (1)
            call Euler_PCG_Donor(mom%PCG_P,mom%U,mom%Ustar,mom%U_E,mom%p,F,mom%m,&
            mom%SP%DP%Re,mom%SP%VS%U%TMP%dt,mom%temp_F1,mom%temp_F2,mom%temp_CC,mom%temp_E,&
-           PE%transient_0D)
+           EF%unsteady_0D%export_now)
          case (2)
            call Euler_GS_Donor(mom%GS_p,mom%U,mom%Ustar,mom%U_E,mom%p,F,mom%m,&
            mom%SP%DP%Re,mom%SP%VS%U%TMP%dt,mom%temp_F1,mom%temp_F2,mom%temp_CC,mom%temp_E,&
-           PE%transient_0D)
+           EF%unsteady_0D%export_now)
          case (3)
            call CN_AB2_PPE_PCG_mom_PCG(mom%PCG_U,mom%PCG_p,mom%U,mom%Ustar,mom%Unm1,&
            mom%U_E,mom%p,F,Fnm1,mom%m,mom%SP%VS%U%MFP,mom%SP%VS%U%TMP%dt,mom%temp_F1,&
-           mom%temp_F2,mom%temp_CC,mom%temp_CC_VF,mom%temp_E,PE%transient_0D)
+           mom%temp_F2,mom%temp_CC,mom%temp_CC_VF,mom%temp_E,EF%unsteady_0D%export_now)
          case (4)
            call Euler_Donor_no_PPE(mom%U,mom%U_E,F,mom%m,mom%SP%DP%Re,mom%SP%VS%U%TMP%dt,&
            mom%temp_F1,mom%temp_F2,mom%temp_CC,mom%temp_E)
@@ -406,16 +437,13 @@
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
-         if (PE%transient_0D) call export_transient1(mom)
-         if (PE%transient_2D) call export_transient2(mom,DT)
+         if (EF%unsteady_0D%export_now) call export_unsteady_0D(mom)
+         if (EF%unsteady_1D%export_now) call export_unsteady_1D(mom,DT)
+         if (EF%unsteady_2D%export_now) call export_unsteady_2D(mom,DT)
+         if (EF%unsteady_3D%export_now) call export_unsteady_3D(mom,DT)
+         if (EF%info%export_now) call print(mom)
 
-         ! if (PE%transient_2D) call export_processed_transient_3C(mom%m,mom%U,str(DT%U%transient),'U',1,mom%SP%VS%U%TMP)
-         ! if (PE%transient_2D) call export_processed_transient_2C(mom%m,mom%U,str(DT%U%transient),'U',1,mom%SP%VS%U%TMP)
-
-         if (PE%info) call print(mom)
-
-         if (PE%solution.or.EN%U%this.or.EN%all%this) then
-           ! call curl(mom%temp_E,mom%U,m)
+         if (EF%final_solution%export_now.or.EN%U%this.or.EN%all%this) then
            ! call export(mom,DT)
            call export_tec(mom,DT,F,Fnm1)
          endif
@@ -429,69 +457,6 @@
          type(VF),intent(in) :: B,B0,J
          call E_K_Budget_wrapper(DT,mom%U,mom%Unm1,&
          B,B0,J,mom%p,mom%m,mom%SP%VS%U%TMP,mom%SP%DP,mom%SP%MP,MD_fluid)
-       end subroutine
-
-       subroutine prolongate_mom(mom,F,Fnm1,DT,RM,SS_reached)
-         implicit none
-         type(momentum),intent(inout) :: mom
-         type(VF),intent(inout) :: F,Fnm1
-         type(dir_tree),intent(in) :: DT
-         type(refine_mesh),intent(in) :: RM
-         logical,intent(in) :: SS_reached
-         integer,dimension(3) :: dir
-         type(iter_solver_params) :: temp
-         logical :: clean_exact
-         integer :: i
-         write(*,*) '#################### Prolongating momentum solver ####################'
-         call export_processed(mom%m,mom%U,str(DT%U%field),'U_SS_'//str(RM%level_last),1)
-
-         dir = get_dir(RM)
-         if (SS_reached) dir = (/1,2,3/)
-         do i=1,3
-           if (dir(i).ne.0) then
-             write(*,*) 'Prolongating momentum solver along direction ',i
-             call prolongate(mom%m,dir(i))
-             call prolongate(mom%U_E,mom%m,dir(i))
-             call prolongate(F,mom%m,dir(i))
-             call prolongate(Fnm1,mom%m,dir(i))
-             call prolongate(mom%U,mom%m,dir(i))
-             call prolongate(mom%Ustar,mom%m,dir(i))
-             call prolongate(mom%Unm1,mom%m,dir(i))
-             call prolongate(mom%temp_F1,mom%m,dir(i))
-             call prolongate(mom%temp_F2,mom%m,dir(i))
-             call prolongate(mom%temp_E,mom%m,dir(i))
-             call prolongate(mom%p,mom%m,dir(i))
-             call prolongate(mom%divU,mom%m,dir(i))
-             call prolongate(mom%U_CC,mom%m,dir(i))
-             call prolongate(mom%temp_CC,mom%m,dir(i))
-             call prolongate(mom%temp_CC_VF,mom%m,dir(i))
-             call prolongate(mom%SP%VS%U%MFP,mom%SP%DMR%dt_reduction_factor)
-             call prolongate(mom%PCG_P,mom%m,mom%temp_F1,mom%SP%VS%P%MFP,dir(i))
-             call prolongate(mom%PCG_U,mom%m,mom%temp_E,mom%SP%VS%U%MFP,dir(i))
-           endif
-         enddo
-         call init_U_BCs(mom%U,mom%m,mom%SP) ! Needed (better) if U_BCs is a distribution
-         write(*,*) 'Finished momentum solver prolongation'
-         if (mom%SP%matrix_based) call init_matrix_based_ops(mom)
-         call apply_BCs(mom%U)
-         call export_processed(mom%m,mom%U,str(DT%U%field),'U_prolongated_'//str(RM%level),1)
-
-         clean_exact = .false.
-         call assign(mom%Ustar,mom%U)
-         if (clean_exact) then ! Doesn't seem to help any for hydro flows
-           call init(temp,mom%PCG_P%ISP)
-           call init(mom%PCG_P%ISP,solve_exact(str(DT%U%residual)))
-           call clean_div(mom%PCG_P,mom%U,mom%Ustar,mom%p,mom%m,mom%temp_F1,mom%temp_CC,.true.)
-           call init(mom%PCG_P%ISP,temp)
-           call delete(temp)
-         else
-           call boost(mom%PCG_P%ISP)
-           call clean_div(mom%PCG_P,mom%U,mom%Ustar,mom%p,mom%m,mom%temp_F1,mom%temp_CC,.true.)
-           call reset(mom%PCG_P%ISP)
-         endif
-
-         call export_processed(mom%m,mom%U,str(DT%U%field),'U_cleaned_'//str(RM%level),1)
-         write(*,*) '#############################################################'
        end subroutine
 
        end module

@@ -1,20 +1,15 @@
 Right Now:
   ☐ PD cases
     ☐ Determine actual Re_m,Re,Ha etc
-    ☐ make appropriate changes to slide
-    ☐ Plot source terms to show crudeness
+    ☐ Fix Poloidal,radial,toroidal plots in past PD slides
   ☐ Full BC sims
-    ☐ Plot status of all of them
-    ☐ Do I need o re-perform sigma study?
+    ☐ Perform new mesh refinement study
+    ☐ Look at new parameter spaces with coardse mesh
     ☐ Suggest using previous results instead and simply nix the PV BC cases
       ☐ There are more cases this way, the BC comparison can be more limited in scope.
-      ☐ I think this is a better approach
   ☐
   ☐ Re-develop stiches
-  ☐ Consider making branches for BC sims and PD sims
   ☐ Consider adding a prefix to the output of all "names" (not dir's), so that results can be integrated into the same folder. This may be really useful.
-  ☐ This could also be done in a python script
-  ☐ Start new PD cases and compute resulting Rem,Re etc. after computations
   ☐ Look into Sergey's suggested reference "Jenko - energy balance for plasma disruption"
 
 Long term to do:
@@ -30,8 +25,6 @@ Papers:
 
   Full BC:
     ☐ Email Sergey and ask about sigma study, thin wall BC? Inform about symmetry condition
-    ☐ Start sigma study?
-    ☐ start organizing folder structure and latex directories
     ☐ Plan figures to include
     ☐ Setup high Ha cases
     ☐ Start new sims on workstation

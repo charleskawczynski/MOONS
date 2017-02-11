@@ -20,7 +20,7 @@
 
         type(path) :: tar_p,out_dir,LDC
         type(path) :: mat,meshes,BEM,wall_clock
-        type(path) :: params,ISP,TMP,PE,export_now,refine_mesh
+        type(path) :: params,ISP,TMP,EF,export_now,refine_mesh
         type(path) :: e_budget,e_budget_N,e_budget_C
         type(path) :: restart_sim,restart1,restart2,restart
 
@@ -57,7 +57,7 @@
         call init(DT%wall_clock  ,DT%LDC         ,'wall_clock' ,str(DT%PS))
         call init(DT%TMP         ,DT%params      ,'TMP'        ,str(DT%PS))
         call init(DT%ISP         ,DT%params      ,'ISP'        ,str(DT%PS))
-        call init(DT%PE          ,DT%params      ,'PE'         ,str(DT%PS))
+        call init(DT%EF          ,DT%params      ,'EF'         ,str(DT%PS))
         call init(DT%export_now  ,DT%params      ,'export_now' ,str(DT%PS))
         call init(DT%refine_mesh ,DT%params      ,'refine_mesh',str(DT%PS))
         call init(DT%BEM         ,DT%LDC         ,'BEM'        ,str(DT%PS))
@@ -95,7 +95,7 @@
         call make_dir(str(DT%wall_clock))
         call make_dir(str(DT%ISP))
         call make_dir(str(DT%TMP))
-        call make_dir(str(DT%PE))
+        call make_dir(str(DT%EF))
         call make_dir(str(DT%export_now))
         call make_dir(str(DT%refine_mesh))
         call make_dir(str(DT%e_budget))
@@ -130,7 +130,7 @@
         call delete(DT%wall_clock)
         call delete(DT%ISP)
         call delete(DT%TMP)
-        call delete(DT%PE)
+        call delete(DT%EF)
         call delete(DT%export_now)
         call delete(DT%refine_mesh)
         call delete(DT%mat)

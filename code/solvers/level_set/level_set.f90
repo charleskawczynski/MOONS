@@ -12,7 +12,7 @@
        use dir_tree_mod
        use string_mod
        use path_mod
-       use print_export_mod
+       use export_frequency_mod
        use export_now_mod
        use matrix_free_params_mod
        use matrix_free_operators_mod
@@ -187,11 +187,11 @@
          endif
        end subroutine
 
-       subroutine solve_level_set(LS,U,PE,EN,DT)
+       subroutine solve_level_set(LS,U,EF,EN,DT)
          implicit none
          type(level_set),intent(inout) :: LS
          type(VF),intent(in) :: U
-         type(print_export),intent(in) :: PE
+         type(export_frequency),intent(in) :: EF
          type(export_now),intent(in) :: EN
          type(dir_tree),intent(in) :: DT
 
@@ -208,8 +208,8 @@
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
-         if (PE%info) call print(LS)
-         if (PE%solution.or.EN%phi_LS%this.or.EN%all%this) then
+         if (EF%info%export_now) call print(LS)
+         if (EF%final_solution%export_now.or.EN%phi_LS%this.or.EN%all%this) then
            call export_tec(LS,DT)
          endif
        end subroutine
