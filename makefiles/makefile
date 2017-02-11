@@ -330,7 +330,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)sim_params$(PS)iter_solver_params.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)solver_settings.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)time_marching_params.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)dynamic_mesh_refinement.f90\
 	$(SRC_DIR)$(PS)table$(PS)table.f90\
 	$(SRC_DIR)$(PS)directory$(PS)path.f90\
 	$(SRC_DIR)$(PS)directory$(PS)dir_group.f90\
@@ -538,7 +537,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_Sigma.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)dynamic_refine_mesh.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)MHDSolver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)Poisson_test.f90\
 	$(SRC_DIR)$(PS)user$(PS)export_mesh_aux.f90\

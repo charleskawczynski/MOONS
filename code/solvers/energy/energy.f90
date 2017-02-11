@@ -49,7 +49,6 @@
        public :: energy
        public :: init,delete,display,print,export,import ! Essentials
        public :: solve,export_tec
-       public :: prolongate
 
        type energy
          ! --- Vector fields ---
@@ -87,8 +86,6 @@
        interface export_unsteady_2D; module procedure export_unsteady_2D_nrg; end interface
        interface export_unsteady_3D; module procedure export_unsteady_3D_nrg; end interface
        interface export_tec;         module procedure export_tec_energy;      end interface
-
-       interface prolongate;         module procedure prolongate_energy;      end interface
 
        contains
 
@@ -146,7 +143,7 @@
          call delete(k_cc)
          write(*,*) '     Materials initialized'
 
-         call init(nrg%Probe_divQ,str(DT%T%residual),'probe_divQ',nrg%SP%VS%T%SS%restart,SP%DMR,.true.)
+         call init(nrg%Probe_divQ,str(DT%T%residual),'probe_divQ',nrg%SP%VS%T%SS%restart,.true.)
 
          call init(nrg%PCG_T,nrg_diffusion,nrg_diffusion_explicit,prec_lap_SF,nrg%m,&
          nrg%SP%VS%T%ISP,nrg%SP%VS%T%MFP,nrg%T,nrg%temp_F,str(DT%T%residual),'T',.false.,.false.)
@@ -346,48 +343,6 @@
            ! call export(nrg,DT)
            call export_tec(nrg,DT)
          endif
-       end subroutine
-
-       subroutine prolongate_energy(nrg,DT,RM,SS_reached)
-         implicit none
-         type(energy),intent(inout) :: nrg
-         type(dir_tree),intent(in) :: DT
-         type(refine_mesh),intent(in) :: RM
-         logical,intent(in) :: SS_reached
-         integer,dimension(3) :: dir
-         integer :: i
-         write(*,*) '#################### Prolongating induction solver ####################'
-         call export_processed(nrg%m,nrg%T,str(DT%T%field),'T_SS_'//str(RM%level_last),1)
-
-         dir = get_dir(RM)
-         if (SS_reached) dir = (/1,2,3/)
-         do i=1,3
-           if (dir(i).ne.0) then
-             write(*,*) 'Prolongating energy solver along direction ',i
-             call prolongate(nrg%m,dir(i))
-             call prolongate(nrg%MD,dir(i))
-
-             call prolongate(nrg%T,nrg%m,dir(i))
-             call prolongate(nrg%temp_CC1,nrg%m,dir(i))
-             call prolongate(nrg%temp_CC2,nrg%m,dir(i))
-             call prolongate(nrg%temp_F,nrg%m,dir(i))
-             call prolongate(nrg%k,nrg%m,dir(i))
-             call prolongate(nrg%U_F,nrg%m,dir(i))
-             call prolongate(nrg%gravity,nrg%m,dir(i))
-             call prolongate(nrg%temp_CC1_VF,nrg%m,dir(i))
-             call prolongate(nrg%temp_CC2_VF,nrg%m,dir(i))
-             call prolongate(nrg%divQ,nrg%m,dir(i))
-             call prolongate(nrg%Q_source,nrg%m,dir(i))
-
-             call prolongate(nrg%SP%VS%T%MFP,nrg%SP%DMR%dt_reduction_factor)
-             call prolongate(nrg%PCG_T,nrg%m,nrg%k,nrg%SP%VS%T%MFP,dir(i))
-           endif
-         enddo
-
-         write(*,*) 'Finished nrguction solver prolongation'
-         call apply_BCs(nrg%T)
-         call export_processed(nrg%m,nrg%T,str(DT%T%field),'T_prolongated_'//str(RM%level),1)
-         write(*,*) '#############################################################'
        end subroutine
 
        end module

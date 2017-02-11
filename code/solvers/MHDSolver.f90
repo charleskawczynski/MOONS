@@ -12,7 +12,6 @@
        use refine_mesh_mod
        use kill_switch_mod
        use probe_mod
-       use dynamic_refine_mesh_mod
 
        use time_marching_params_mod
        use energy_mod
@@ -65,20 +64,12 @@
            call update(EF,coupled%n_step)
            if (SP%print_every_MHD_step) write(*,*) 'coupled%n_step = ',coupled%n_step
 
-           if (SP%DMR%dynamic_refinement) then
-             if (refine_mesh_now_all.or.RM%any_next) EF%unsteady_0D%export_now = .true.
-           endif
-
            ! if (SP%VS%rho%SS%solve)    call solve(dens,mom%U,  EF,EN,DT)
            if (SP%VS%T%SS%solve) call solve(nrg,mom%U,  EF,EN,DT)
            if (SP%VS%U%SS%solve) call solve(mom,F,Fnm1, EF,EN,DT)
            if (SP%VS%B%SS%solve) call solve(ind,mom%U_E,EF,EN,DT)
 
            if (SP%MF%mean_pressure_grad) call compute_Add_MPG(mom%U,mom%SP%VS%U%TMP,SP%mpg_dir)
-
-           if (SP%DMR%dynamic_refinement.or.RM%any_next) then
-             call dynamic_refine_mesh(nrg,mom,ind,DT,SP,coupled,sc,F,Fnm1,EF,RM,KS,refine_mesh_now_all)
-           endif
 
            call assign(Fnm1,F)
            call assign(F,0.0_cp) ! DO NOT REMOVE THIS, FOLLOW THE COMPUTE_ADD PROCEDURE BELOW

@@ -7,7 +7,6 @@
      use var_set_mod
      use solver_settings_mod
      use time_marching_params_mod
-     use dynamic_mesh_refinement_mod
      use dir_tree_mod
      use dimensionless_params_mod
      use export_logicals_mod
@@ -39,7 +38,6 @@
        type(var_set) :: VS
        type(mesh_quality_params) :: MQP
        type(time_marching_params) :: coupled
-       type(dynamic_mesh_refinement) :: DMR
        type(dimensionless_params) :: DP
        type(export_logicals) :: EL
        type(flow_control_logicals) :: FCL
@@ -108,9 +106,6 @@
 
        ! call init(MP,mirror,mirror_face)
        call init(SP%MP,F,6) ! Must be defined before KE_scale,ME_scale,JE_scale
-
-       ! init(DMR,dynamic_refinement,n_max_refinements,n_history,SS_tol,SS_tol_final,dt_reduction_factor)
-       call init(SP%DMR,F,2,2,pow(-1),pow(-6),0.8_cp)
 
        ! call init(EFP,export_ever,export_first_step,frequency_base,frequency_exp)
        call init(SP%EF%info          ,T,T,10,1)
@@ -317,7 +312,6 @@
        call init(SP%MF,     SP_in%MF)
        call init(SP%DP,     SP_in%DP)
        call init(SP%coupled,SP_in%coupled)
-       call init(SP%DMR,    SP_in%DMR)
        call init(SP%MQP,    SP_in%MQP)
        call init(SP%TSP,    SP_in%TSP)
        call init(SP%EF,     SP_in%EF)
@@ -333,7 +327,6 @@
        call delete(SP%MF)
        call delete(SP%DP)
        call delete(SP%coupled)
-       call delete(SP%DMR)
        call delete(SP%MQP)
        call delete(SP%TSP)
        call delete(SP%EF)
@@ -361,7 +354,6 @@
        call display(SP%MF,un)
        call display(SP%VS,un)
        call display(SP%DP,un)
-       call display(SP%DMR,un)
        call display(SP%MQP,un)
        call display(SP%TSP,un)
        call display(SP%EF,un)
@@ -406,7 +398,6 @@
        call export(SP%MF,un)
        call export(SP%VS,un)
        call export(SP%DP,un)
-       call export(SP%DMR,un)
        call export(SP%MQP,un)
        call export(SP%TSP,un)
        call export(SP%EF,un)
@@ -435,7 +426,6 @@
        call import(SP%MF,un)
        call import(SP%VS,un)
        call import(SP%DP,un)
-       call import(SP%DMR,un)
        call import(SP%MQP,un)
        call import(SP%TSP,un)
        call import(SP%EF,un)

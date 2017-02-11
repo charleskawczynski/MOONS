@@ -69,7 +69,6 @@
        public :: init,delete,display,print,export,import ! Essentials
 
        public :: solve,export_tec,compute_export_E_K_Budget
-       public :: prolongate
 
        type momentum
          logical :: suppress_warning
@@ -96,7 +95,6 @@
 
        interface init;                 module procedure init_mom;                   end interface
        interface delete;               module procedure delete_mom;                 end interface
-       interface prolongate;           module procedure prolongate_mom;             end interface
        interface display;              module procedure display_momentum;           end interface
        interface print;                module procedure print_momentum;             end interface
        interface export;               module procedure export_momentum;            end interface
@@ -176,10 +174,10 @@
          call face2edge_no_diag(mom%U_E,mom%U,mom%m)
          write(*,*) '     Interpolated fields initialized'
 
-         call init(mom%probe_divU,str(DT%U%residual),'probe_divU',mom%SP%VS%U%SS%restart,SP%DMR,.true.)
-         call init(mom%probe_KE,str(DT%U%energy),'KE',mom%SP%VS%U%SS%restart,SP%DMR,.false.)
+         call init(mom%probe_divU,str(DT%U%residual),'probe_divU',mom%SP%VS%U%SS%restart,.true.)
+         call init(mom%probe_KE,str(DT%U%energy),'KE',mom%SP%VS%U%SS%restart,.false.)
          if (m%MP%plane_any) then
-          call init(mom%probe_KE_2C,str(DT%U%energy),'KE_2C',mom%SP%VS%U%SS%restart,SP%DMR,.false.)
+          call init(mom%probe_KE_2C,str(DT%U%energy),'KE_2C',mom%SP%VS%U%SS%restart,.false.)
          endif
          write(*,*) '     momentum probes initialized'
          ! call init(mom%TS,mom%m,mom%U,t_start,t_stop,DT%U%field,'U',0)
@@ -459,69 +457,6 @@
          type(VF),intent(in) :: B,B0,J
          call E_K_Budget_wrapper(DT,mom%U,mom%Unm1,&
          B,B0,J,mom%p,mom%m,mom%SP%VS%U%TMP,mom%SP%DP,mom%SP%MP,MD_fluid)
-       end subroutine
-
-       subroutine prolongate_mom(mom,F,Fnm1,DT,RM,SS_reached)
-         implicit none
-         type(momentum),intent(inout) :: mom
-         type(VF),intent(inout) :: F,Fnm1
-         type(dir_tree),intent(in) :: DT
-         type(refine_mesh),intent(in) :: RM
-         logical,intent(in) :: SS_reached
-         integer,dimension(3) :: dir
-         type(iter_solver_params) :: temp
-         logical :: clean_exact
-         integer :: i
-         write(*,*) '#################### Prolongating momentum solver ####################'
-         call export_processed(mom%m,mom%U,str(DT%U%field),'U_SS_'//str(RM%level_last),1)
-
-         dir = get_dir(RM)
-         if (SS_reached) dir = (/1,2,3/)
-         do i=1,3
-           if (dir(i).ne.0) then
-             write(*,*) 'Prolongating momentum solver along direction ',i
-             call prolongate(mom%m,dir(i))
-             call prolongate(mom%U_E,mom%m,dir(i))
-             call prolongate(F,mom%m,dir(i))
-             call prolongate(Fnm1,mom%m,dir(i))
-             call prolongate(mom%U,mom%m,dir(i))
-             call prolongate(mom%Ustar,mom%m,dir(i))
-             call prolongate(mom%Unm1,mom%m,dir(i))
-             call prolongate(mom%temp_F1,mom%m,dir(i))
-             call prolongate(mom%temp_F2,mom%m,dir(i))
-             call prolongate(mom%temp_E,mom%m,dir(i))
-             call prolongate(mom%p,mom%m,dir(i))
-             call prolongate(mom%divU,mom%m,dir(i))
-             call prolongate(mom%U_CC,mom%m,dir(i))
-             call prolongate(mom%temp_CC,mom%m,dir(i))
-             call prolongate(mom%temp_CC_VF,mom%m,dir(i))
-             call prolongate(mom%SP%VS%U%MFP,mom%SP%DMR%dt_reduction_factor)
-             call prolongate(mom%PCG_P,mom%m,mom%temp_F1,mom%SP%VS%P%MFP,dir(i))
-             call prolongate(mom%PCG_U,mom%m,mom%temp_E,mom%SP%VS%U%MFP,dir(i))
-           endif
-         enddo
-         call init_U_BCs(mom%U,mom%m,mom%SP) ! Needed (better) if U_BCs is a distribution
-         write(*,*) 'Finished momentum solver prolongation'
-         if (mom%SP%matrix_based) call init_matrix_based_ops(mom)
-         call apply_BCs(mom%U)
-         call export_processed(mom%m,mom%U,str(DT%U%field),'U_prolongated_'//str(RM%level),1)
-
-         clean_exact = .false.
-         call assign(mom%Ustar,mom%U)
-         if (clean_exact) then ! Doesn't seem to help any for hydro flows
-           call init(temp,mom%PCG_P%ISP)
-           call init(mom%PCG_P%ISP,solve_exact(str(DT%U%residual)))
-           call clean_div(mom%PCG_P,mom%U,mom%Ustar,mom%p,mom%m,mom%temp_F1,mom%temp_CC,.true.)
-           call init(mom%PCG_P%ISP,temp)
-           call delete(temp)
-         else
-           call boost(mom%PCG_P%ISP)
-           call clean_div(mom%PCG_P,mom%U,mom%Ustar,mom%p,mom%m,mom%temp_F1,mom%temp_CC,.true.)
-           call reset(mom%PCG_P%ISP)
-         endif
-
-         call export_processed(mom%m,mom%U,str(DT%U%field),'U_cleaned_'//str(RM%level),1)
-         write(*,*) '#############################################################'
        end subroutine
 
        end module

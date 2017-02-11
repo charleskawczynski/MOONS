@@ -12,7 +12,6 @@
        use TF_mod
        use stats_period_mod
        use time_statistics_params_mod
-       use dynamic_mesh_refinement_mod
        use export_raw_processed_mod
 
        implicit none
@@ -55,18 +54,17 @@
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-       subroutine init_TS_SF(TS,m,U,TMP,TSP,DMR,dir,name)
+       subroutine init_TS_SF(TS,m,U,TMP,TSP,dir,name)
          implicit none
          type(time_statistics_SF),intent(inout) :: TS
          type(mesh),intent(in) :: m
          type(SF),intent(in) :: U
          type(time_marching_params),intent(in) :: TMP
          type(time_statistics_params),intent(in) :: TSP
-         type(dynamic_mesh_refinement),intent(in) :: DMR
          character(len=*),intent(in) :: dir,name
          call init(TS%TSP,TSP)
          call set_coefficient(TS%TSP,TMP%dt/TSP%O1_stats%period/m%MP%volume)
-         call init(TS%L2_mean,dir,name,.false.,DMR,.true.)
+         call init(TS%L2_mean,dir,name,.false.,.true.)
          call init(TS%U_ave,U)
          call init(TS%RMS,U)
          call init(TS%dir,dir)
