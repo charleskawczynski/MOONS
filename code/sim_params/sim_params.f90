@@ -97,8 +97,8 @@
        SP%restart_all                = F ! restart sim (requires no code changes)
        SP%uniform_gravity_dir        = 1 ! Uniform gravity field direction
        SP%uniform_B0_dir             = 3 ! Uniform applied field direction
-       SP%mpg_dir                    = 1 ! Uniform applied field direction
-       SP%couple_time_steps          = F ! Ensures all dt are equal to coupled%dt
+       SP%mpg_dir                    = 0 ! Uniform applied field direction
+       SP%couple_time_steps          = T ! Ensures all dt are equal to coupled%dt
        SP%finite_Rem                 = F ! Ensures all dt are equal to coupled%dt
        SP%include_vacuum             = F ! Ensures all dt are equal to coupled%dt
        SP%compute_surface_power      = T ! Compute surface power for LDC
@@ -193,15 +193,15 @@
        ! if (     RV_BCs) call init_IC_BC(SP%VS%B,  0,7)
        ! if (.not.RV_BCs) call init_IC_BC(SP%VS%B,  0,8)
        call init_IC_BC(SP%VS%B,  0,1)
-       call init_IC_BC(SP%VS%B0, 4,0)
+       call init_IC_BC(SP%VS%B0, 1,0)
        call init_IC_BC(SP%VS%phi,0,0)
        call init_IC_BC(SP%VS%rho,0,0)
 
        ! call init(SS        ,initialize,solve,restart,solve_method)
        call init(SP%VS%T%SS  ,F         ,F    ,F      ,0)
-       call init(SP%VS%U%SS  ,T         ,T    ,F      ,7)
+       call init(SP%VS%U%SS  ,T         ,T    ,F      ,4)
        call init(SP%VS%P%SS  ,T         ,T    ,F      ,1)
-       call init(SP%VS%B%SS  ,T         ,T    ,F      ,5)
+       call init(SP%VS%B%SS  ,T         ,T    ,F      ,4)
        call init(SP%VS%B0%SS ,T         ,T    ,F      ,0)
        call init(SP%VS%phi%SS,T         ,T    ,F      ,0)
        call init(SP%VS%rho%SS,F         ,F    ,F      ,0)
@@ -218,11 +218,11 @@
        call init(SP%VS%rho%ISP,5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_rho')
 
        ! call init(TMP,multistep_iter,n_step_stop,dtime,dir,name)
-       call init(SP%coupled,1,ceiling(time/dtime,li),dtime,str(DT%TMP), 'TMP_coupled')
+       call init(SP%coupled,   1 ,ceiling(time/dtime,li),dtime        ,str(DT%TMP),'TMP_coupled')
        call init(SP%VS%T%TMP,  1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_T')
        call init(SP%VS%U%TMP,  1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_U')
        call init(SP%VS%P%TMP,  1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_P')
-       call init(SP%VS%B%TMP,  5 ,SP%coupled%n_step_stop,SP%coupled%dt/pow(2),str(DT%TMP),'TMP_B')
+       call init(SP%VS%B%TMP,  1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_B')
        call init(SP%VS%B0%TMP, 1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_B0')
        call init(SP%VS%phi%TMP,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_phi')
        call init(SP%VS%rho%TMP,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_rho')
@@ -260,22 +260,21 @@
        SP%VS%phi%MFP%coeff_implicit = 0.0_cp ! Poisson, coefficient unused
        SP%VS%p%MFP%coeff_implicit   = 0.0_cp ! Poisson, coefficient unused
        SP%VS%rho%MFP%coeff_implicit = 0.0_cp ! Poisson, coefficient unused
-       SP%VS%B%MFP%coeff_implicit_time_split = SP%VS%B%TMP%dt
-       SP%VS%U%MFP%coeff_implicit_time_split = -SP%VS%U%MFP%coeff_natural*SP%VS%U%TMP%dt
 
        ! The following is needed only if curl-curl(B) is used, opposed to J in solver.
        ! if (SP%finite_Rem) SP%VS%B%MFP%coeff_explicit = SP%VS%B%MFP%coeff_explicit/SP%DP%Rem
 
+       SP%MF%diffusion            = T ! add diffusion              to momentum equation
        SP%MF%advection_convection = F ! add advection (conv form)  to momentum equation
-       SP%MF%advection_divergence = F ! add advection (div  form)  to momentum equation
+       SP%MF%advection_divergence = T ! add advection (div  form)  to momentum equation
        SP%MF%JCrossB              = T ! add JCrossB                to momentum equation
        SP%MF%mean_pressure_grad   = F ! add mean pressure gradient to momentum equation
        SP%MF%Q2D_JCrossB          = F ! add Q2D JCrossB            to momentum equation
        SP%MF%Buoyancy             = F ! add Buoyancy               to momentum equation
        SP%MF%Gravity              = F ! add Gravity                to momentum equation
 
-       SP%INDF%advection          = F ! add advection              to induction equation
-       SP%INDF%diffusion          = F ! add diffusion              to induction equation
+       SP%INDF%advection          = T ! add advection              to induction equation
+       SP%INDF%diffusion          = T ! add diffusion              to induction equation
        SP%INDF%unsteady_B0        = F ! add unsteady_B0            to induction equation
 
        if (SP%couple_time_steps) then

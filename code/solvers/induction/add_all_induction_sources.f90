@@ -35,7 +35,7 @@
            ind%MD_fluid,scale,ind%SP%finite_Rem,ind%temp_F2,ind%temp_E_TF,ind%temp_E)
          endif
          if (SP%INDF%diffusion) then
-           scale = 1.0_cp ! since J includes scale
+           scale = -SP%VS%B%MFP%beta ! since LHS and J includes scale
            call add_curl_J(F,ind%m,ind%J,ind%sigmaInv_edge,scale,ind%temp_F2,ind%temp_E)
          endif
          if (SP%INDF%unsteady_B0) then

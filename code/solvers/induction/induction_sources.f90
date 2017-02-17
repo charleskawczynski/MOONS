@@ -22,8 +22,8 @@
 
        subroutine add_curl_U_cross_B(F,m,U_E_mom,U_E,B0,B,curlUCrossB,MD_fluid,scale,finite_Rem,temp_F,temp_E_TF,temp_E)
          implicit none
-         type(VF),intent(inout) :: F,temp_F,B,B0
-         type(VF),intent(inout) :: curlUCrossB,temp_E
+         type(VF),intent(inout) :: F,temp_F,curlUCrossB,temp_E
+         type(VF),intent(inout) :: B,B0
          type(TF),intent(in) :: U_E_mom
          type(TF),intent(inout) :: U_E,temp_E_TF
          type(mesh),intent(in) :: m

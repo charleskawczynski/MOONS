@@ -46,7 +46,7 @@
            call compute_add_diffusion(F,mom%m,mom%U,scale,mom%temp_F1)
          endif
          if (SP%MF%JCrossB) then
-           scale = mom%SP%DP%N*2.0_cp
+           scale = mom%SP%DP%N
            call compute_add_JCrossB(F,mom%temp_F1,ind%B,ind%B0,ind%J,ind%m,&
                                    ind%MD_fluid,scale,&
                                    ind%SP%finite_Rem,ind%temp_CC,&
