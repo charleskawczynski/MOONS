@@ -1,6 +1,6 @@
 # **************** RUN CONFIGURATION *******************
-RELEASE = 'DEBUG'
-# RELEASE = 'OPTIMIZE'
+# RELEASE = 'DEBUG'
+RELEASE = 'OPTIMIZE'
 # RELEASE = 'PROFILE'
 USE_OPEN_MP = 'TRUE'
 PARALLELIZE_3D_OPS = 'TRUE'
@@ -42,7 +42,7 @@ endif
 SRC_DIR = ..$(PS)code
 
 ifeq ($(CLUSTER),'PC_CK')
-	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS1
+	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS2
 endif
 
 ifeq ($(CLUSTER),'Workstation_CK')
@@ -423,11 +423,13 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)sim_params$(PS)matrix_free_params.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)export_line.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)export_plane.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)export_field.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)var.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)var_set.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)export_frequency_params.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)export_frequency.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)momentum_forces.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)induction_forces.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)mirror_props.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)flow_control_logicals.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)sim_params.f90\
@@ -469,6 +471,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)ops$(PS)ops_mirror_field.f90\
 	$(SRC_DIR)$(PS)IO$(PS)export_raw_processed.f90\
 	$(SRC_DIR)$(PS)IO$(PS)export_raw_processed_symmetry.f90\
+	$(SRC_DIR)$(PS)IO$(PS)export_processed_FPL.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_aux.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_advect.f90\
@@ -495,6 +498,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)clean_divergence.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)time_marching_methods.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)density$(PS)init_rho_BCs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)density$(PS)init_rho_field.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)density$(PS)density_solver.f90\
@@ -517,6 +521,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_P_field.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)E_K_budget_terms.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)E_K_budget.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum_sources.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum_aux.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum.f90\
@@ -535,8 +540,11 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_B_interior.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_J_interior.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_Sigma.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_sources.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)add_all_momentum_sources.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)add_all_induction_sources.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)MHDSolver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)Poisson_test.f90\
 	$(SRC_DIR)$(PS)user$(PS)export_mesh_aux.f90\

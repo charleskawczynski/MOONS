@@ -5,6 +5,8 @@
        use IO_export_mod
        use IO_import_mod
        use export_raw_processed_mod
+       use export_raw_processed_symmetry_mod
+       use export_processed_FPL_mod
        use SF_mod
        use VF_mod
        use mesh_mod
@@ -243,53 +245,47 @@
          endif
        end subroutine
 
-       subroutine export_unsteady_0D_nrg(nrg)
+       subroutine export_unsteady_0D_nrg(nrg,TMP)
          implicit none
          type(energy),intent(inout) :: nrg
+         type(time_marching_params),intent(in) :: TMP
          real(cp) :: temp
          call compute_Q(nrg%temp_F,nrg%T,nrg%k,nrg%m)
          call compute_divQ(nrg%divQ,nrg%temp_F,nrg%m)
          call assign_ghost_XPeriodic(nrg%divQ,0.0_cp)
          call Ln(temp,nrg%divQ,2.0_cp,nrg%m)
-         call export(nrg%Probe_divQ,nrg%SP%VS%T%TMP,temp)
+         call export(nrg%Probe_divQ,TMP,temp)
        end subroutine
 
-       subroutine export_unsteady_1D_nrg(nrg,DT)
+       subroutine export_unsteady_1D_nrg(nrg,TMP,DT)
          implicit none
          type(energy),intent(inout) :: nrg
+         type(time_marching_params),intent(in) :: TMP
          type(dir_tree),intent(in) :: DT
-         integer :: dir
-         integer,dimension(2) :: line
-         logical :: L
-         dir  = nrg%SP%VS%T%unsteady_line%dir
-         line = nrg%SP%VS%T%unsteady_line%line
-         L    = nrg%SP%VS%T%unsteady_line%export_ever
-         if (L) call export_processed(nrg%m,nrg%T,str(DT%T%unsteady),'T',0,nrg%SP%VS%T%TMP,dir,line)
+         call export_processed(nrg%m,nrg%T,str(DT%T%unsteady),'T',0,TMP,nrg%SP%VS%T%unsteady_line)
        end subroutine
 
-       subroutine export_unsteady_2D_nrg(nrg,DT)
+       subroutine export_unsteady_2D_nrg(nrg,TMP,DT)
          implicit none
          type(energy),intent(inout) :: nrg
+         type(time_marching_params),intent(in) :: TMP
          type(dir_tree),intent(in) :: DT
-         integer :: dir,plane
-         logical :: L
-         dir   = nrg%SP%VS%T%unsteady_plane%dir
-         plane = nrg%SP%VS%T%unsteady_plane%plane
-         L     = nrg%SP%VS%T%unsteady_plane%export_ever
-         if (L) call export_processed(nrg%m,nrg%T,str(DT%T%unsteady),'T',0,nrg%SP%VS%T%TMP,dir,plane)
+         call export_processed(nrg%m,nrg%T,str(DT%T%unsteady),'T',0,TMP,nrg%SP%VS%T%unsteady_plane)
        end subroutine
 
-       subroutine export_unsteady_3D_nrg(nrg,DT)
+       subroutine export_unsteady_3D_nrg(nrg,TMP,DT)
          implicit none
          type(energy),intent(inout) :: nrg
+         type(time_marching_params),intent(in) :: TMP
          type(dir_tree),intent(in) :: DT
-         call export_processed(nrg%m,nrg%T,str(DT%T%unsteady),'T',0,nrg%SP%VS%T%TMP)
+         call export_processed(nrg%m,nrg%T,str(DT%T%unsteady),'T',0,TMP,nrg%SP%VS%T%unsteady_field)
        end subroutine
 
-       subroutine solve_energy(nrg,U,EF,EN,DT)
+       subroutine solve_energy(nrg,U,TMP,EF,EN,DT)
          implicit none
          type(energy),intent(inout) :: nrg
          type(VF),intent(in) :: U
+         type(time_marching_params),intent(inout) :: TMP
          type(export_frequency),intent(in) :: EF
          type(export_now),intent(in) :: EN
          type(dir_tree),intent(in) :: DT
@@ -298,45 +294,45 @@
 
          select case (nrg%SP%VS%T%SS%solve_method)
          case (1)
-         call explicitEuler(nrg%T,nrg%U_F,nrg%SP%VS%T%TMP%dt,&
+         call explicitEuler(nrg%T,nrg%U_F,TMP%dt,&
          nrg%SP%DP%Pe,nrg%m,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
 
          case (2) ! O2 time marching
-         call explicitEuler(nrg%T,nrg%U_F,nrg%SP%VS%T%TMP%dt,&
+         call explicitEuler(nrg%T,nrg%U_F,TMP%dt,&
          nrg%SP%DP%Pe,nrg%m,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
 
          case (3) ! Diffusion implicit
-         call diffusion_implicit(nrg%PCG_T,nrg%T,nrg%U_F,nrg%SP%VS%T%TMP%dt,&
+         call diffusion_implicit(nrg%PCG_T,nrg%T,nrg%U_F,TMP%dt,&
          nrg%SP%DP%Pe,nrg%m,EF%unsteady_0D%export_now,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
 
          case (4)
-         if (nrg%SP%VS%T%TMP%n_step.le.1) then
+         if (TMP%n_step.le.1) then
            call volumetric_heating_equation(nrg%Q_source,nrg%m,nrg%SP%DP%Pe)
          endif
 
-         call explicitEuler_with_source(nrg%T,nrg%U_F,nrg%SP%VS%T%TMP%dt,&
+         call explicitEuler_with_source(nrg%T,nrg%U_F,TMP%dt,&
          nrg%SP%DP%Pe,nrg%m,nrg%Q_source,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
 
          case (5)
-         if (nrg%SP%VS%T%TMP%n_step.le.1) then
+         if (TMP%n_step.le.1) then
            call volumetric_heating_equation(nrg%Q_source,nrg%m,nrg%SP%DP%Pe)
          endif
-         call CN_with_source(nrg%PCG_T,nrg%T,nrg%U_F,nrg%SP%VS%T%TMP%dt,&
+         call CN_with_source(nrg%PCG_T,nrg%T,nrg%U_F,TMP%dt,&
          nrg%SP%DP%Pe,nrg%m,nrg%Q_source,EF%unsteady_0D%export_now,nrg%temp_CC1,&
          nrg%temp_CC2,nrg%temp_F)
 
          case default; stop 'Erorr: bad solveTMethod value in solve_energy in energy.f90'
          end select
-         call iterate_step(nrg%SP%VS%T%TMP)
+         call iterate_step(TMP)
 
          ! ********************* POST SOLUTION COMPUTATIONS *********************
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
-         if (EF%unsteady_0D%export_now) call export_unsteady_0D(nrg)
-         if (EF%unsteady_1D%export_now) call export_unsteady_1D(nrg,DT)
-         if (EF%unsteady_2D%export_now) call export_unsteady_2D(nrg,DT)
-         if (EF%unsteady_3D%export_now) call export_unsteady_3D(nrg,DT)
+         if (EF%unsteady_0D%export_now) call export_unsteady_0D(nrg,TMP)
+         if (EF%unsteady_1D%export_now) call export_unsteady_1D(nrg,TMP,DT)
+         if (EF%unsteady_2D%export_now) call export_unsteady_2D(nrg,TMP,DT)
+         if (EF%unsteady_3D%export_now) call export_unsteady_3D(nrg,TMP,DT)
          if (EF%info%export_now) call print(nrg)
 
          if (EF%final_solution%export_now.or.EN%T%this.or.EN%all%this) then

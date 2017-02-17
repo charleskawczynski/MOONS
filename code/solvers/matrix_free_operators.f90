@@ -177,7 +177,7 @@
         call curl(tempk,x,m)
         call multiply(tempk,k)
         call curl(Ax,tempk,m)
-        call multiply(Ax,MFP%coeff)
+        call multiply(Ax,MFP%coeff_implicit_time_split)
         call add(Ax,x)
       end subroutine
       subroutine ind_diffusion(Ax,x,k,m,MFP,tempk)
@@ -205,7 +205,7 @@
         call grad(tempk,x,m)
         call multiply(tempk,k)
         call div(Ax,tempk,m)
-        call multiply(Ax,MFP%coeff)
+        call multiply(Ax,MFP%coeff_implicit_time_split)
         call add(Ax,x)
       end subroutine
       subroutine nrg_diffusion(Ax,x,k,m,MFP,tempk)
@@ -240,7 +240,7 @@
         ! is staggered AND different for each component, which cannot be
         ! achieved by a scalar field.
         call lap_centered(Ax,x,m)
-        call multiply(Ax,MFP%coeff)
+        call multiply(Ax,MFP%coeff_implicit_time_split)
         call add(Ax,x)
       end subroutine
       subroutine mom_diffusion(Ax,x,k,m,MFP,tempk)

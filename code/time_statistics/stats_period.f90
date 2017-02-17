@@ -10,11 +10,13 @@
 
        public :: update
        public :: set_exported_stats
+       public :: add_stat
 
        type stats_period
          real(cp) :: t_start = 0.0_cp
          real(cp) :: t_stop = 0.0_cp
          real(cp) :: period = 0.0_cp
+         integer :: N_stats_collected = 0
          logical :: compute_stats = .false.
          logical :: export_stats = .false.
          logical :: exported_stats = .false.
@@ -30,6 +32,7 @@
 
        interface update;             module procedure update_SP;             end interface
        interface set_exported_stats; module procedure set_exported_stats_SP; end interface
+       interface add_stat;           module procedure add_stat_SP;           end interface
 
        contains
 
@@ -43,46 +46,50 @@
          real(cp),intent(in) :: t_start,t_stop
          SP%period = t_stop - t_start
          if (SP%period.le.0.0_cp) stop 'Error: period must be > 0 in stats_period.f90'
-         SP%t_start = t_start
-         SP%t_stop = t_stop
-         SP%exported_stats = .false.
-         SP%export_stats = .false.
-         SP%compute_stats = .false.
+         SP%t_start           = t_start
+         SP%t_stop            = t_stop
+         SP%exported_stats    = .false.
+         SP%export_stats      = .false.
+         SP%N_stats_collected = 0
+         SP%compute_stats     = .false.
        end subroutine
 
        subroutine init_copy_SP(SP,SP_in)
          implicit none
          type(stats_period),intent(inout) :: SP
          type(stats_period),intent(in) :: SP_in
-         SP%t_start        = SP_in%t_start
-         SP%t_stop         = SP_in%t_stop
-         SP%period         = SP_in%period
-         SP%compute_stats  = SP_in%compute_stats
-         SP%export_stats   = SP_in%export_stats
-         SP%exported_stats = SP_in%exported_stats
+         SP%t_start           = SP_in%t_start
+         SP%t_stop            = SP_in%t_stop
+         SP%period            = SP_in%period
+         SP%N_stats_collected = SP_in%N_stats_collected
+         SP%compute_stats     = SP_in%compute_stats
+         SP%export_stats      = SP_in%export_stats
+         SP%exported_stats    = SP_in%exported_stats
        end subroutine
 
        subroutine delete_SP(SP)
          implicit none
          type(stats_period),intent(inout) :: SP
-         SP%t_start        = 0.0_cp
-         SP%t_stop         = 0.0_cp
-         SP%period         = 0.0_cp
-         SP%compute_stats  = .false.
-         SP%export_stats   = .false.
-         SP%exported_stats = .false.
+         SP%t_start           = 0.0_cp
+         SP%t_stop            = 0.0_cp
+         SP%period            = 0.0_cp
+         SP%N_stats_collected = 0
+         SP%compute_stats     = .false.
+         SP%export_stats      = .false.
+         SP%exported_stats    = .false.
        end subroutine
 
        subroutine display_SP(SP,un)
          implicit none
          type(stats_period),intent(in) :: SP
          integer,intent(in) :: un
-         write(un,*) 't_start        = ',SP%t_start
-         write(un,*) 't_stop         = ',SP%t_stop
-         write(un,*) 'period         = ',SP%period
-         write(un,*) 'compute_stats  = ',SP%compute_stats
-         write(un,*) 'export_stats   = ',SP%export_stats
-         write(un,*) 'exported_stats = ',SP%exported_stats
+         write(un,*) 't_start           = ',SP%t_start
+         write(un,*) 't_stop            = ',SP%t_stop
+         write(un,*) 'period            = ',SP%period
+         write(un,*) 'N_stats_collected = ',SP%N_stats_collected
+         write(un,*) 'compute_stats     = ',SP%compute_stats
+         write(un,*) 'export_stats      = ',SP%export_stats
+         write(un,*) 'exported_stats    = ',SP%exported_stats
        end subroutine
 
        subroutine print_SP(SP)
@@ -95,12 +102,13 @@
          implicit none
          type(stats_period),intent(in) :: SP
          integer,intent(in) :: un
-         write(un,*) 't_start        = '; write(*,*) SP%t_start
-         write(un,*) 't_stop         = '; write(*,*) SP%t_stop
-         write(un,*) 'period         = '; write(*,*) SP%period
-         write(un,*) 'compute_stats  = '; write(*,*) SP%compute_stats
-         write(un,*) 'export_stats   = '; write(*,*) SP%export_stats
-         write(un,*) 'exported_stats = '; write(*,*) SP%exported_stats
+         write(un,*) 't_start           = '; write(*,*) SP%t_start
+         write(un,*) 't_stop            = '; write(*,*) SP%t_stop
+         write(un,*) 'period            = '; write(*,*) SP%period
+         write(un,*) 'N_stats_collected = '; write(*,*) SP%N_stats_collected
+         write(un,*) 'compute_stats     = '; write(*,*) SP%compute_stats
+         write(un,*) 'export_stats      = '; write(*,*) SP%export_stats
+         write(un,*) 'exported_stats    = '; write(*,*) SP%exported_stats
        end subroutine
 
        subroutine import_SP(SP,un)
@@ -110,6 +118,7 @@
          read(un,*); read(*,*) SP%t_start
          read(un,*); read(*,*) SP%t_stop
          read(un,*); read(*,*) SP%period
+         read(un,*); read(*,*) SP%N_stats_collected
          read(un,*); read(*,*) SP%compute_stats
          read(un,*); read(*,*) SP%export_stats
          read(un,*); read(*,*) SP%exported_stats
@@ -123,18 +132,25 @@
          implicit none
          type(stats_period),intent(inout) :: SP
          type(time_marching_params),intent(in) :: TMP
-         logical,dimension(3) :: L
+         logical,dimension(4) :: L
          L(1) = TMP%t.gt.SP%t_start
          L(2) = TMP%t.lt.SP%t_stop
          L(3) = .not.SP%exported_stats
-         SP%export_stats = all(L)
-         SP%compute_stats = L(1).and.L(2)
+         L(4) = TMP%t.gt.SP%t_stop
+         SP%compute_stats = all(L(1:2))
+         SP%export_stats = all(L(3:4))
        end subroutine
 
        subroutine set_exported_stats_SP(SP)
          implicit none
          type(stats_period),intent(inout) :: SP
          SP%exported_stats = .true.
+       end subroutine
+
+       subroutine add_stat_SP(SP)
+         implicit none
+         type(stats_period),intent(inout) :: SP
+         SP%N_stats_collected = SP%N_stats_collected+1
        end subroutine
 
        end module

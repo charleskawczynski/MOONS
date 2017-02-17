@@ -1,0 +1,74 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+%\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+\input{./../path_to_useful_commands.tex}
+\input{\PATHTOUSEFULCOMMANDS}
+
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Solver (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Derivation of Lorentz force decomposition to tensor and pressure}
+We may write the $\J\times \B$ force as
+
+\begin{equation}
+\begin{aligned}
+	\J\times \B
+	&= \epsilon_{ijk} j_j B_k \\
+	&= \epsilon_{ijk} \left( \epsilon_{jmn} \PD_m \frac{B_n}{\mu} B_k \right) \\
+	&= \epsilon_{ijk} \epsilon_{jmn} \left( \PD_m \frac{B_n}{\mu} B_k \right) \\
+	&= \epsilon_{jki} \epsilon_{jmn} \left( \PD_m \frac{B_n}{\mu} B_k \right) \\
+	&= (\delta_{km} \delta_{in} - \delta_{kn} \delta_{im} ) \left( \PD_m \frac{B_n}{\mu} B_k \right) \\
+	&= \left( \PD_k \frac{B_i}{\mu} B_k \right) -
+	\left( \PD_i \frac{B_k}{\mu} B_k \right) \\
+	\J\times \B &= \left( B_k \PD_k \frac{B_i}{\mu} \right) -
+	\left( \PD_i \frac{B_k B_k}{\mu} \right)
+\end{aligned}
+\end{equation}
+In vector notation, this may be written as
+\begin{equation}
+\begin{aligned}
+	\J \times \B
+	&= \B \DOT \DEL \left( \frac{\B}{\mu} \right) - \DEL \DOT \left( \frac{\B \B}{\mu} \right)
+\end{aligned}
+\end{equation}
+
+\end{document}

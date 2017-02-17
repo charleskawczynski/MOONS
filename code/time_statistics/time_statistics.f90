@@ -21,7 +21,8 @@
        public :: time_statistics_SF
        public :: time_statistics_VF
 
-       public :: init,delete,display,print,export,import ! Essentials
+       ! public :: init,delete,display,print,export,import ! Essentials
+       public :: init,delete
 
        public :: update
 
@@ -73,9 +74,9 @@
          call init(TS%RMS,m,get_DL(U))
          call init(TS%dir,dir)
          call init(TS%name,name)
-         call assign(TS%U_sum,U)
-         call assign(TS%U_ave,U)
-         call assign(TS%RMS,U)
+         call assign(TS%U_sum,0.0_cp)
+         call assign(TS%U_ave,0.0_cp)
+         call assign(TS%RMS,0.0_cp)
        end subroutine
 
        subroutine init_TS_VF(TS,m,U,TSP,dir,name)
@@ -95,9 +96,11 @@
          call init_CC(TS%stresses,m)
          call init(TS%dir,dir)
          call init(TS%name,name)
-         call assign(TS%U_sum,U)
-         call assign(TS%U_ave,U)
-         call assign(TS%RMS,U)
+         call assign(TS%U_sum,0.0_cp)
+         call assign(TS%U_ave,0.0_cp)
+         call assign(TS%RMS,0.0_cp)
+         call assign(TS%stresses_sum,0.0_cp)
+         call assign(TS%stresses,0.0_cp)
        end subroutine
 
        subroutine delete_TS_SF(TS)
@@ -135,93 +138,108 @@
          type(SF),intent(in) :: U
          type(SF),intent(inout) :: temp
          real(cp) :: temp_cp
-         call update(TS%TSP,TMP)
-
-         if (TS%TSP%O1_stats%compute_stats) then ! Compute 1st order statistics (ubar)
-           call add_product(TS%U_sum,U,TMP%dt)
-
-           call assign(TS%U_ave,TS%U_sum)
-           call multiply(TS%U_ave,1.0_cp/(TMP%t-TS%TSP%O1_stats%t_start)/m%MP%volume)
-           call Ln(temp_cp,TS%U_ave,2.0_cp,m)
-           call export(TS%L2_U_ave,TMP,temp_cp)
-
-           call assign(temp,U)
-           call square(temp)
-           call add_product(TS%RMS,temp,TMP%dt)
+         if (TS%TSP%collect) then
            call update(TS%TSP,TMP)
-         endif
 
-         if (TS%TSP%O1_stats%export_stats) then
-           call square_root(TS%RMS)
-           call subtract(temp,U,TS%U_ave)
-           call export_processed(m,TS%RMS  ,str(TS%dir),str(TS%name)//'_RMS'         ,1,TMP)
-           call export_processed(m,TS%U_ave,str(TS%dir),str(TS%name)//'_time_average',1,TMP)
-           call export_processed(m,U       ,str(TS%dir),str(TS%name)//'_instant'     ,1,TMP)
-           call export_processed(m,temp    ,str(TS%dir),str(TS%name)//'_fluctuating' ,1,TMP)
-           call set_exported_stats(TS%TSP%O1_stats)
+           if (TS%TSP%O1_stats%compute_stats) then ! Compute 1st order statistics (ubar)
+             call add_product(TS%U_sum,U,TMP%dt)
+
+             call assign(TS%U_ave,TS%U_sum)
+             call multiply(TS%U_ave,get_coeff(TS%TSP%O1_stats,TMP,m))
+             call Ln(temp_cp,TS%U_ave,2.0_cp,m)
+             call export(TS%L2_U_ave,TMP,temp_cp)
+
+             call assign(temp,U)
+             call square(temp)
+             call add_product(TS%RMS,temp,TMP%dt)
+             call update(TS%TSP,TMP)
+           endif
+
+           if (TS%TSP%O1_stats%export_stats) then
+             call square_root(TS%RMS)
+             call subtract(temp,U,TS%U_ave)
+             call export_processed(m,TS%RMS  ,str(TS%dir),str(TS%name)//'_RMS'         ,1,TMP)
+             call export_processed(m,TS%U_ave,str(TS%dir),str(TS%name)//'_time_average',1,TMP)
+             call export_processed(m,U       ,str(TS%dir),str(TS%name)//'_instant'     ,1,TMP)
+             call export_processed(m,temp    ,str(TS%dir),str(TS%name)//'_fluctuating' ,1,TMP)
+             call set_exported_stats(TS%TSP%O1_stats)
+           endif
          endif
        end subroutine
 
-       subroutine update_TS_VF(TS,m,U,TMP,temp,temp_CC,TF_CC)
+       subroutine update_TS_VF(TS,m,U,TMP,temp_VF,temp_CC,TF_CC)
          implicit none
          type(time_statistics_VF),intent(inout) :: TS
          type(time_marching_params),intent(in) :: TMP
          type(mesh),intent(in) :: m
          type(VF),intent(in) :: U
-         type(VF),intent(inout) :: temp,temp_CC
+         type(VF),intent(inout) :: temp_VF,temp_CC
          type(TF),intent(inout) :: TF_CC
          real(cp) :: temp_cp
+         if (TS%TSP%collect) then
 
-         call update(TS%TSP,TMP)
-         if (TS%TSP%O1_stats%compute_stats) then ! Compute 1st order statistics (ubar)
-           call add_product(TS%U_sum,U,TMP%dt)
+           call update(TS%TSP,TMP)
+           if (TS%TSP%O1_stats%compute_stats) then ! Compute 1st order statistics (ubar)
+             call add_product(TS%U_sum,U,TMP%dt)
 
-           call assign(TS%U_ave,TS%U_sum)
-           call multiply(TS%U_ave,1.0_cp/(TMP%t-TS%TSP%O1_stats%t_start)/m%MP%volume)
-           call Ln(temp_cp,TS%U_ave,2.0_cp,m)
-           call export(TS%L2_U_ave,TMP,temp_cp)
+             call assign(TS%U_ave,TS%U_sum)
+             call multiply(TS%U_ave,get_coeff(TS%TSP%O1_stats,TMP,m))
+             call Ln(temp_cp,TS%U_ave,2.0_cp,m)
+             call export(TS%L2_U_ave,TMP,temp_cp)
 
-           call assign(temp,U)
-           call square(temp)
-           call add_product(TS%RMS,temp,TMP%dt)
-         endif
+             call assign(temp_VF,U)
+             call square(temp_VF)
+             call add_product(TS%RMS,temp_VF,TMP%dt)
+             call add_stat(TS%TSP%O1_stats)
+           endif
 
-         if (TS%TSP%O2_stats%compute_stats) then ! 2nd order statistics (Reynolds stresses)
-           call subtract(temp,U,TS%U_ave) ! fluctuating
-           call face2cellcenter(temp_CC,temp,m)
-           call multiply(TF_CC%x%x,temp_CC%x,temp_CC%x)
-           call multiply(TF_CC%x%y,temp_CC%x,temp_CC%y)
-           call multiply(TF_CC%x%z,temp_CC%x,temp_CC%z)
-           call multiply(TF_CC%y%x,temp_CC%y,temp_CC%x)
-           call multiply(TF_CC%y%y,temp_CC%y,temp_CC%y)
-           call multiply(TF_CC%y%z,temp_CC%y,temp_CC%z)
-           call multiply(TF_CC%z%x,temp_CC%z,temp_CC%x)
-           call multiply(TF_CC%z%y,temp_CC%z,temp_CC%y)
-           call multiply(TF_CC%z%z,temp_CC%z,temp_CC%z)
-           call add_product(TS%stresses_sum,TF_CC,TMP%dt)
+           if (TS%TSP%O2_stats%compute_stats) then ! 2nd order statistics (Reynolds stresses)
+             call subtract(temp_VF,U,TS%U_ave) ! fluctuating
+             call face2cellcenter(temp_CC,temp_VF,m)
+             call multiply(TF_CC%x%x,temp_CC%x,temp_CC%x)
+             call multiply(TF_CC%x%y,temp_CC%x,temp_CC%y)
+             call multiply(TF_CC%x%z,temp_CC%x,temp_CC%z)
+             call multiply(TF_CC%y%x,temp_CC%y,temp_CC%x)
+             call multiply(TF_CC%y%y,temp_CC%y,temp_CC%y)
+             call multiply(TF_CC%y%z,temp_CC%y,temp_CC%z)
+             call multiply(TF_CC%z%x,temp_CC%z,temp_CC%x)
+             call multiply(TF_CC%z%y,temp_CC%z,temp_CC%y)
+             call multiply(TF_CC%z%z,temp_CC%z,temp_CC%z)
+             call add_product(TS%stresses_sum,TF_CC,TMP%dt)
 
-           call assign(TS%stresses,TS%stresses_sum)
-           call multiply(TS%stresses,1.0_cp/(TMP%t-TS%TSP%O2_stats%t_start)/m%MP%volume)
-           call Ln(temp_cp,TS%stresses,2.0_cp,m)
-           call export(TS%L2_stresses,TMP,temp_cp)
-         endif
+             call assign(TS%stresses,TS%stresses_sum)
+             call multiply(TS%stresses,get_coeff(TS%TSP%O2_stats,TMP,m))
+             call Ln(temp_cp,TS%stresses,2.0_cp,m)
+             call export(TS%L2_stresses,TMP,temp_cp)
+             call add_stat(TS%TSP%O2_stats)
+           endif
 
-         if (TS%TSP%O1_stats%export_stats) then
-           call square_root(TS%RMS)
-           call subtract(temp,U,TS%U_ave)
-           call export_processed(m,TS%RMS  ,str(TS%dir),str(TS%name)//'_RMS'         ,1,TMP)
-           call export_processed(m,TS%U_ave,str(TS%dir),str(TS%name)//'_time_average',1,TMP)
-           call export_processed(m,U       ,str(TS%dir),str(TS%name)//'_instant'     ,1,TMP)
-           call export_processed(m,temp    ,str(TS%dir),str(TS%name)//'_fluctuating' ,1,TMP)
-           call set_exported_stats(TS%TSP%O1_stats)
-         endif
+           if (TS%TSP%O1_stats%export_stats) then
+             call square_root(TS%RMS)
+             call subtract(temp_VF,U,TS%U_ave)
+             call export_processed(m,TS%RMS  ,str(TS%dir),str(TS%name)//'_RMS'         ,1,TMP)
+             call export_processed(m,TS%U_ave,str(TS%dir),str(TS%name)//'_time_average',1,TMP)
+             call export_processed(m,U       ,str(TS%dir),str(TS%name)//'_instant'     ,1,TMP)
+             call export_processed(m,temp_VF    ,str(TS%dir),str(TS%name)//'_fluctuating' ,1,TMP)
+             call set_exported_stats(TS%TSP%O1_stats)
+           endif
 
-         if (TS%TSP%O2_stats%export_stats) then
-           call export_processed(m,TS%stresses%x,str(TS%dir),str(TS%name)//'_Rx',1,TMP)
-           call export_processed(m,TS%stresses%y,str(TS%dir),str(TS%name)//'_Ry',1,TMP)
-           call export_processed(m,TS%stresses%z,str(TS%dir),str(TS%name)//'_Rz',1,TMP)
-           call set_exported_stats(TS%TSP%O2_stats)
+           if (TS%TSP%O2_stats%export_stats) then
+             call export_processed(m,TS%stresses%x,str(TS%dir),str(TS%name)//'_Rx',1,TMP)
+             call export_processed(m,TS%stresses%y,str(TS%dir),str(TS%name)//'_Ry',1,TMP)
+             call export_processed(m,TS%stresses%z,str(TS%dir),str(TS%name)//'_Rz',1,TMP)
+             call set_exported_stats(TS%TSP%O2_stats)
+           endif
          endif
        end subroutine
+
+       function get_coeff(SP,TMP,m) result(coeff)
+         implicit none
+         type(stats_period),intent(in) :: SP
+         type(time_marching_params),intent(in) :: TMP
+         type(mesh),intent(in) :: m
+         real(cp) :: coeff
+         coeff = 1.0_cp/m%MP%volume/(TMP%t-SP%t_start+TMP%dt)
+       end function
 
        end module

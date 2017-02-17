@@ -51,23 +51,23 @@ University of California Los Angeles, USA\\}
 	\frac{\partial \theta}{\partial t} +
 	\DEL \DOT (\U \theta)
 	=
-	\frac{1}{Re Pr}
+	\frac{1}{Pe}
 	\DEL \DOT (k \DEL \theta) +
-	Re_m Ec Al
+	Ec N
 	\frac{{\J}^2}{\sigma} +
 	\frac{Ec}{Re}
 	\left(
 	\DEL \U
 	-
 	(\DEL \U)^T
-	\right)
+	\right) \DOT
 	(\DEL \U)^T +
 	\dot{Q}
 \end{equation}
 \section{Momentum}
 \begin{equation}
 	\frac{\partial \U}{\partial t} +
-	\DEL \DOT (\U \U^T)
+	\DEL \DOT (\U^T \U)
 	=
 	- \DEL p
 	+ \frac{1}{Re}
@@ -99,6 +99,12 @@ University of California Los Angeles, USA\\}
 	Ec = \frac{U_c^2}{C_{p,c} \theta_c} \qquad
 	Fr = \frac{U_c}{\sqrt{g_c L_c}} \qquad
 \end{equation}
+\begin{equation}
+	N = \frac{Ha^2}{Re} \qquad
+	Pe = Re Pe \qquad
+	Pr_{m} = \frac{Re_m}{Re} \qquad
+	Ra = Gr Pr
+\end{equation}
 \section{Definitions and Non-dimensionalization}
 \begin{equation}
 	[T] = T_c \qquad
@@ -120,14 +126,12 @@ University of California Los Angeles, USA\\}
 	[B] = B_c  \qquad
 	[j] = \sigma_c U_c B_c \qquad
 	[E] = U_c B_c \qquad
-\end{equation}
-
-\begin{equation}
 	[\sigma] = \sigma_c \qquad
 	[\mu] = \mu_c \qquad
+	\bar{\sigma} = \frac{\sigma}{\sigma_c}
+\end{equation}
+\begin{equation}
 	[\dot{Q}] = \rho_c C_{p,c} \theta_c / t_c
 \end{equation}
-
-
 
 \end{document}

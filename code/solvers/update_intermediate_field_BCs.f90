@@ -11,6 +11,7 @@
        private
 
        public :: update_intermediate_field_BCs
+       public :: update_correction_field_BCs
 
        contains
 
@@ -33,6 +34,16 @@
          call grad_component(temp_F1,X,m) ! U  -component
          call add(temp_F1,temp_F2)        ! phi-component
          call assign_Neumann_BCs(Xstar,temp_F1)
+       end subroutine
+
+       subroutine update_correction_field_BCs(phi,Xstar,scale,temp_F1)
+         implicit none
+         type(SF),intent(inout) :: phi
+         type(VF),intent(inout) :: temp_F1
+         type(VF),intent(in) :: Xstar
+         real(cp),intent(in) :: scale
+         ! call multiply(temp_F1,Xstar,scale)
+         ! call assign_Neumann_BCs(phi,temp_F1)
        end subroutine
 
        end module

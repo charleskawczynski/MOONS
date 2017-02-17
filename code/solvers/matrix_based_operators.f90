@@ -203,7 +203,7 @@
         suppress_warning = is_CC(k)
         suppress_warning = is_CC(tempk)
         call laplacian_matrix_based(Ax,x,m)
-        call multiply(Ax,MFP%coeff)
+        call multiply(Ax,MFP%coeff_implicit_time_split)
         call add(Ax,x)
       end subroutine
       subroutine nrg_diffusion(Ax,x,k,m,MFP,tempk)
@@ -232,7 +232,7 @@
         suppress_warning = is_CC(k)
         suppress_warning = is_CC(tempk)
         call laplacian_matrix_based(Ax,x,m)
-        call multiply(Ax,MFP%coeff)
+        call multiply(Ax,MFP%coeff_implicit_time_split)
         call add(Ax,x)
       end subroutine
       subroutine mom_diffusion(Ax,x,k,m,MFP,tempk)

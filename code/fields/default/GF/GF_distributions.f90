@@ -22,6 +22,7 @@
         public :: fringe_SERGEY
         public :: smooth_lid
         public :: smooth_lid_Shatrov
+        public :: smooth_lid_Leriche
         public :: fully_developed_duct_velocity
         public :: isolated_2D_eddy
         public :: single_2D_eddy
@@ -37,6 +38,7 @@
         interface fringe_ALEX;        module procedure fringe_ALEX_GF;        end interface
         interface fringe_SERGEY;      module procedure fringe_SERGEY_GF;      end interface
         interface smooth_lid;         module procedure smooth_lid_GF;         end interface
+        interface smooth_lid_Leriche; module procedure smooth_lid_Leriche_GF; end interface
         interface smooth_lid_Shatrov; module procedure smooth_lid_Shatrov_GF; end interface
         interface random_noise;       module procedure random_noise_GF;       end interface
         interface random_noise;       module procedure random_noise_GF_dir;   end interface
@@ -256,6 +258,38 @@
             xhat = ( h(a(1))%f(i) / L(a(1)) )**n
             yhat = ( h(a(2))%f(j) / L(a(2)) )**n
             U%f(i_p,j_p,k_p) = (1.0_cp - xhat)*(1.0_cp - yhat)
+          enddo
+          enddo
+          enddo
+          do i=1,3; call delete(h(i)); enddo
+        end subroutine
+
+        subroutine smooth_lid_Leriche_GF(U,g,DL,plane,n)
+          implicit none
+          type(grid_field),intent(inout) :: U
+          type(grid),intent(in) :: g
+          type(data_location),intent(in) :: DL
+          integer,intent(in) :: plane
+          real(cp),intent(in) :: n
+          type(array),dimension(3) :: h
+          real(cp),dimension(3) :: L
+          integer,dimension(2) :: a
+          integer,dimension(3) :: e
+          real(cp) :: xhat,yhat
+          integer :: i,j,i_p,j_p,k_p,p
+          call get_coordinates_h(h,g,DL)
+          a = adj_dir_given_dir(plane)
+          e = eye_given_dir(plane)
+          L = (/(g%c(i)%maxRange/2.0_cp,i=1,3)/)
+          do i=1,U%s(a(1))
+          do j=1,U%s(a(2))
+          do p=1,U%s(plane)
+            i_p = e(1)*p + i*(1-e(1))
+            j_p = e(2)*p + (i*(1-e(3)) + j*(1-e(1)))*(1-e(2))
+            k_p = e(3)*p + j*(1-e(3))
+            xhat = ( h(a(1))%f(i) / L(a(1)) )**n
+            yhat = ( h(a(2))%f(j) / L(a(2)) )**n
+            U%f(i_p,j_p,k_p) = ((1.0_cp - xhat)**2.0_cp)*((1.0_cp - yhat)**2.0_cp)
           enddo
           enddo
           enddo

@@ -1,4 +1,14 @@
 Right Now:
+ ☐ 1) prep email to send to abdou about committee
+ ☐ 2*) fix email (wait until ester gets in)
+ ☐ 3*) send email to abdou about committee
+ ☐ 5) Restart High Ha PD case with more PPE iters
+ ☐ 4) Find parameter space in Shatrov for full BC paper
+ ☐ 6) start new full BC shatrov case
+ ☐ 7) start new full BC MRS
+ ☐ 8) Fix broken code
+ ☐ 9) Run Bandaru at Rem=10 to compare fig 14
+
   ☐ PD cases
     ☐ Determine actual Re_m,Re,Ha etc
     ☐ Fix Poloidal,radial,toroidal plots in past PD slides
@@ -36,7 +46,7 @@ Papers:
     ☐ Meet with Sergey to show energy budget terms before post-processing all sims.
     ☐ Read Moreau book about energy transfer, write up some documentation for new implementation
     ☐ Plot KB in vacuum in BC sim, see if that differs more / less then KBi_f.
-    ☐ Look into different forms of JxB ,e,g jxB = B•∇(B/μ) - ∇ (B²/μ)
+    ☐ Look into different forms of JxB ,e,g jxB = B•∇(B/μ) - ∇ (B²/μ) (Page 97 of Davidson)
     ☐ Write a Python script to compare PV & RV BC sims
     ☐ KE & ME eq.
     ☐ Energy budget
@@ -98,6 +108,7 @@ Code development:
   IO:
   ☐ export_raw_processed_mod - remove global vars (from sim params), check correct field is exported.
   ☐ Re-consider HDF5
+  ☐ Consider adding arrays to export_plane,export_line so that multiple planes can be exported at at time. Will need to add "add" routines..
 
   Exception handling:
   ☐ Add face/node/CC/edge checks to ops (interp,advect, etc.).

@@ -162,6 +162,7 @@
         interface assign_BCs;               module procedure assign_BCs_SF;                end interface
         interface assign_BC_vals;           module procedure assign_BC_vals_SF;            end interface
         interface assign_Neumann_BCs;       module procedure assign_Neumann_BCs_SF;        end interface
+        interface assign_Neumann_BCs;       module procedure assign_Neumann_BCs_VF_SF;   end interface
         interface assign_Dirichlet_BCs;     module procedure assign_Dirichlet_BCs_SF;      end interface
         interface assign_Periodic_BCs;      module procedure assign_Periodic_BCs_SF;       end interface
         interface multiply_Neumann_BCs;     module procedure multiply_Neumann_BCs_SF;      end interface
@@ -181,6 +182,7 @@
         interface plane_sum_y;              module procedure plane_sum_y_SF;               end interface
         interface plane_sum_z;              module procedure plane_sum_z_SF;               end interface
         interface boundary_flux;            module procedure boundary_flux_SF;             end interface
+        interface boundary_flux;            module procedure boundary_flux_SF_SF;          end interface
 
         interface symmetry_error_x;         module procedure symmetry_error_x_SF;          end interface
         interface symmetry_error_y;         module procedure symmetry_error_y_SF;          end interface
@@ -724,6 +726,13 @@
           integer :: i
           do i=1,u%s; call assign_Neumann_BCs(u%BF(i),f%BF(i)); enddo
         end subroutine
+        subroutine assign_Neumann_BCs_VF_SF(phi,u,v,w)
+          implicit none
+          type(SF),intent(inout) :: phi
+          type(SF),intent(in) :: u,v,w
+          integer :: i
+          do i=1,u%s; call assign_Neumann_BCs(phi%BF(i),u%BF(i),v%BF(i),w%BF(i)); enddo
+        end subroutine
         subroutine assign_Dirichlet_BCs_SF(u,f)
           implicit none
           type(SF),intent(inout) :: u
@@ -874,6 +883,16 @@
           real(cp) :: BF
           BF = 0.0_cp
           do i=1,m%s; BF = BF + boundary_flux(x%BF(i),y%BF(i),z%BF(i),m%B(i)); enddo
+        end function
+
+        function boundary_flux_SF_SF(phi,m) result(BF)
+          implicit none
+          type(SF),intent(in) :: phi
+          type(mesh),intent(in) :: m
+          integer :: i
+          real(cp) :: BF
+          BF = 0.0_cp
+          do i=1,m%s; BF = BF + boundary_flux(phi%BF(i),m%B(i)); enddo
         end function
 
         function symmetry_error_x_SF(u) result(SE)

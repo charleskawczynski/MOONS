@@ -56,6 +56,8 @@
         public :: fringe_ALEX
         public :: fringe_SERGEY
         public :: smooth_lid
+        public :: smooth_lid_Shatrov
+        public :: smooth_lid_Leriche
         public :: fully_developed_duct_velocity
         public :: isolated_2D_eddy
         public :: single_2D_eddy

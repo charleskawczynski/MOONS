@@ -15,6 +15,7 @@
        use dir_tree_mod
 
        use mesh_stencils_mod
+       use time_marching_methods_mod
        use momentum_solver_mod
        use momentum_aux_mod
        use init_P_BCs_mod
@@ -33,13 +34,13 @@
        use IO_import_mod
        use export_raw_processed_mod
        use export_raw_processed_symmetry_mod
+       use export_processed_FPL_mod
        use export_frequency_mod
        use export_now_mod
        use refine_mesh_mod
 
        use norms_mod
        use ops_norms_mod
-       use ops_discrete_mod
        use ops_del_mod
        use ops_aux_mod
        use ops_interp_mod
@@ -74,10 +75,11 @@
          logical :: suppress_warning
          ! Tensor fields
          type(TF) :: U_E
+         type(TF) :: TF_CC
          ! Vector fields
          type(VF) :: U,Ustar,Unm1
          type(VF) :: U_CC
-         type(VF) :: temp_F1,temp_F2
+         type(VF) :: temp_F1,temp_F2,temp_F3
          type(VF) :: temp_E,temp_CC_VF
          ! Scalar fields
          type(SF) :: p,divU,temp_CC
@@ -89,7 +91,7 @@
 
          type(mesh) :: m
          type(sim_params) :: SP
-         type(probe) :: probe_KE,probe_KE_2C,probe_divU
+         type(probe) :: probe_KE,probe_KE_2C,probe_divU,probe_Q
          type(time_statistics_VF) :: TS
        end type
 
@@ -133,12 +135,14 @@
          call init_Face(mom%Unm1      ,m,0.0_cp)
          call init_Face(mom%temp_F1   ,m,0.0_cp)
          call init_Face(mom%temp_F2   ,m,0.0_cp)
+         call init_Face(mom%temp_F3   ,m,0.0_cp)
          call init_Edge(mom%temp_E    ,m,0.0_cp)
          call init_CC(mom%p           ,m,0.0_cp)
          call init_CC(mom%divU        ,m,0.0_cp)
          call init_CC(mom%U_CC        ,m,0.0_cp)
          call init_CC(mom%temp_CC     ,m,0.0_cp)
          call init_CC(mom%temp_CC_VF  ,m,0.0_cp)
+         call init_CC(mom%TF_CC       ,m,0.0_cp)
 
          write(*,*) '     Fields allocated'
          ! Initialize U-field, P-field and all BCs
@@ -176,11 +180,12 @@
 
          call init(mom%probe_divU,str(DT%U%residual),'probe_divU',mom%SP%VS%U%SS%restart,.true.)
          call init(mom%probe_KE,str(DT%U%energy),'KE',mom%SP%VS%U%SS%restart,.false.)
+         call init(mom%probe_Q,str(DT%U%energy),'probe_Q',mom%SP%VS%U%SS%restart,.true.)
          if (m%MP%plane_any) then
-          call init(mom%probe_KE_2C,str(DT%U%energy),'KE_2C',mom%SP%VS%U%SS%restart,.false.)
+          call init(mom%probe_KE_2C,str(DT%U%energy),'KE_2C',mom%SP%VS%U%SS%restart,.true.)
          endif
          write(*,*) '     momentum probes initialized'
-         ! call init(mom%TS,mom%m,mom%U,t_start,t_stop,DT%U%field,'U',0)
+         call init(mom%TS,mom%m,mom%U,mom%SP%TSP,str(DT%U%stats),'U')
 
          ! Initialize interior solvers
          call init(mom%GS_p,mom%p,mom%m,mom%SP%VS%P%ISP,str(DT%p%residual),'p')
@@ -212,19 +217,23 @@
          call delete(mom%Ustar)
          call delete(mom%temp_F1)
          call delete(mom%temp_F2)
+         call delete(mom%temp_F3)
          call delete(mom%p)
          call delete(mom%temp_CC)
          call delete(mom%temp_CC_VF)
+         call delete(mom%TF_CC)
          call delete(mom%divU)
          call delete(mom%U_CC)
          call delete(mom%probe_divU)
          call delete(mom%probe_KE)
          call delete(mom%probe_KE_2C)
+         call delete(mom%probe_Q)
          call delete(mom%temp_E)
          call delete(mom%m)
          call delete(mom%PCG_P)
          call delete(mom%PCG_U)
          call delete(mom%GS_p)
+         call delete(mom%TS)
          call delete(mom%SP)
          write(*,*) 'Momentum object deleted'
        end subroutine
@@ -243,6 +252,7 @@
          mom%SP%VS%U%ISP%iter_max,mom%SP%VS%P%ISP%iter_max
          write(un,*) 'tol_mom,tol_PPE = ',mom%SP%VS%U%ISP%tol_rel,mom%SP%VS%P%ISP%tol_rel
          write(un,*) 'nstep,KE = ',mom%SP%VS%U%TMP%n_step,get_data(mom%probe_KE)
+         if (mom%TS%TSP%collect) call display(mom%TS%TSP,un)
          ! call displayPhysicalMinMax(mom%U,'U',un)
          call displayPhysicalMinMax(mom%divU,'divU',un)
          write(un,*) 'CFL = ',CFL_number(mom%U_CC,mom%m,mom%SP%VS%U%TMP%dt)
@@ -322,65 +332,58 @@
          endif
        end subroutine
 
-       subroutine export_unsteady_0D_mom(mom)
+       subroutine export_unsteady_0D_mom(mom,TMP)
          implicit none
          type(momentum),intent(inout) :: mom
+         type(time_marching_params),intent(in) :: TMP
          real(cp) :: temp,scale
          scale = mom%SP%DP%KE_scale
 
          call compute_TKE(temp,mom%U_CC,mom%m,scale)
-         call export(mom%probe_KE,mom%SP%VS%U%TMP,temp)
+         call export(mom%probe_KE,TMP,temp)
+
+         if (mom%SP%compute_surface_power) then
+         temp = surface_power(mom%U,mom%m,mom%temp_F1,mom%temp_F2,mom%temp_CC_VF,mom%TF_CC)
+         temp = scale*temp/mom%SP%DP%Re
+         call export(mom%probe_Q,TMP,temp)
+         endif
 
          if (mom%m%MP%plane_any) then
          if (mom%m%MP%plane(1)) call compute_TKE_2C(temp,mom%U_CC%y,mom%U_CC%z,mom%m,scale,mom%temp_CC)
          if (mom%m%MP%plane(2)) call compute_TKE_2C(temp,mom%U_CC%x,mom%U_CC%z,mom%m,scale,mom%temp_CC)
          if (mom%m%MP%plane(3)) call compute_TKE_2C(temp,mom%U_CC%x,mom%U_CC%y,mom%m,scale,mom%temp_CC)
-         call export(mom%probe_KE_2C,mom%SP%VS%U%TMP,temp)
+         call export(mom%probe_KE_2C,TMP,temp)
          endif
          call div(mom%divU,mom%U,mom%m)
          call Ln(temp,mom%divU,2.0_cp,mom%m)
-         call export(mom%probe_divU,mom%SP%VS%U%TMP,temp)
+         call export(mom%probe_divU,TMP,temp)
        end subroutine
 
-       subroutine export_unsteady_1D_mom(mom,DT)
+       subroutine export_unsteady_1D_mom(mom,TMP,DT)
          implicit none
          type(momentum),intent(inout) :: mom
+         type(time_marching_params),intent(in) :: TMP
          type(dir_tree),intent(in) :: DT
-         integer,dimension(2) :: line
-         integer :: dir
-         logical :: L
-         dir  = mom%SP%VS%U%unsteady_line%dir
-         line = mom%SP%VS%U%unsteady_line%line
-         L    = mom%SP%VS%U%unsteady_line%export_ever
-         if (L) call export_processed(mom%m,mom%U,str(DT%U%unsteady),'U',1,mom%SP%VS%U%TMP,dir,line)
-         dir  = mom%SP%VS%P%unsteady_line%dir
-         line = mom%SP%VS%P%unsteady_line%line
-         L    = mom%SP%VS%P%unsteady_line%export_ever
-         if (L) call export_processed(mom%m,mom%p,str(DT%P%unsteady),'p',1,mom%SP%VS%U%TMP,dir,line)
+         call export_processed(mom%m,mom%U,str(DT%U%unsteady),'U',1,TMP,mom%SP%VS%U%unsteady_line)
+         call export_processed(mom%m,mom%p,str(DT%P%unsteady),'p',1,TMP,mom%SP%VS%P%unsteady_line)
        end subroutine
 
-       subroutine export_unsteady_2D_mom(mom,DT)
+       subroutine export_unsteady_2D_mom(mom,TMP,DT)
          implicit none
          type(momentum),intent(inout) :: mom
+         type(time_marching_params),intent(in) :: TMP
          type(dir_tree),intent(in) :: DT
-         integer :: dir,plane
-         logical :: L
-         dir   = mom%SP%VS%U%unsteady_plane%dir
-         plane = mom%SP%VS%U%unsteady_plane%plane
-         L     = mom%SP%VS%U%unsteady_plane%export_ever
-         if (L) call export_processed(mom%m,mom%U,str(DT%U%unsteady),'U',1,mom%SP%VS%U%TMP,dir,plane)
-         dir   = mom%SP%VS%P%unsteady_plane%dir
-         plane = mom%SP%VS%P%unsteady_plane%plane
-         L     = mom%SP%VS%P%unsteady_plane%export_ever
-         if (L) call export_processed(mom%m,mom%p,str(DT%P%unsteady),'p',1,mom%SP%VS%U%TMP,dir,plane)
+         call export_processed(mom%m,mom%U,str(DT%U%unsteady),'U',1,TMP,mom%SP%VS%U%unsteady_plane)
+         call export_processed(mom%m,mom%p,str(DT%P%unsteady),'p',1,TMP,mom%SP%VS%P%unsteady_plane)
        end subroutine
 
-       subroutine export_unsteady_3D_mom(mom,DT)
+       subroutine export_unsteady_3D_mom(mom,TMP,DT)
          implicit none
          type(momentum),intent(inout) :: mom
+         type(time_marching_params),intent(in) :: TMP
          type(dir_tree),intent(in) :: DT
-         call export_processed(mom%m,mom%U,str(DT%U%unsteady),'U',1,mom%SP%VS%U%TMP)
-         call export_processed(mom%m,mom%p,str(DT%P%unsteady),'p',1,mom%SP%VS%U%TMP)
+         call export_processed(mom%m,mom%U,str(DT%U%unsteady),'U',1,TMP,mom%SP%VS%U%unsteady_field)
+         call export_processed(mom%m,mom%p,str(DT%P%unsteady),'p',1,TMP,mom%SP%VS%P%unsteady_field)
        end subroutine
 
        subroutine init_matrix_based_ops_mom(mom)
@@ -400,33 +403,41 @@
 
        ! ******************* SOLVER ****************************
 
-       subroutine solve_momentum(mom,F,Fnm1,EF,EN,DT)
+       subroutine solve_momentum(mom,F,Fnm1,TMP,EF,EN,DT)
          implicit none
          type(momentum),intent(inout) :: mom
          type(VF),intent(in) :: F,Fnm1
          type(export_frequency),intent(in) :: EF
          type(export_now),intent(in) :: EN
          type(dir_tree),intent(in) :: DT
+         type(time_marching_params),intent(inout) :: TMP
 
          select case(mom%SP%VS%U%SS%solve_method)
          case (1)
-           call Euler_PCG_Donor(mom%PCG_P,mom%U,mom%Ustar,mom%U_E,mom%p,F,mom%m,&
-           mom%SP%DP%Re,mom%SP%VS%U%TMP%dt,mom%temp_F1,mom%temp_F2,mom%temp_CC,mom%temp_E,&
-           EF%unsteady_0D%export_now)
+           call Euler_time_no_diff_Euler_sources_no_correction(mom%U,mom%Ustar,F,TMP)
          case (2)
-           call Euler_GS_Donor(mom%GS_p,mom%U,mom%Ustar,mom%U_E,mom%p,F,mom%m,&
-           mom%SP%DP%Re,mom%SP%VS%U%TMP%dt,mom%temp_F1,mom%temp_F2,mom%temp_CC,mom%temp_E,&
-           EF%unsteady_0D%export_now)
+           call Euler_time_no_diff_AB2_sources_no_correction(mom%U,mom%Ustar,F,Fnm1,TMP)
          case (3)
-           call CN_AB2_PPE_PCG_mom_PCG(mom%PCG_U,mom%PCG_p,mom%U,mom%Ustar,mom%Unm1,&
-           mom%U_E,mom%p,F,Fnm1,mom%m,mom%SP%VS%U%MFP,mom%SP%VS%U%TMP%dt,mom%temp_F1,&
-           mom%temp_F2,mom%temp_CC,mom%temp_CC_VF,mom%temp_E,EF%unsteady_0D%export_now)
+           call Euler_time_AB2_sources(mom%PCG_U,mom%PCG_P,mom%U,mom%Ustar,mom%Unm1,&
+           mom%p,F,Fnm1,mom%m,TMP,mom%temp_F1,mom%temp_F2,mom%temp_CC,mom%temp_CC_VF,&
+           EF%unsteady_0D%export_now)
          case (4)
-           call Euler_Donor_no_PPE(mom%U,mom%U_E,F,mom%m,mom%SP%DP%Re,mom%SP%VS%U%TMP%dt,&
-           mom%temp_F1,mom%temp_F2,mom%temp_CC,mom%temp_E)
+           call O2_BDF_time_AB2_sources(mom%PCG_U,mom%PCG_P,mom%U,mom%Ustar,&
+           mom%Unm1,mom%p,F,Fnm1,mom%m,TMP,mom%temp_F1,mom%temp_F2,mom%temp_CC,&
+           mom%temp_CC_VF,EF%unsteady_0D%export_now)
+
+         case (5)
+           call CN_AB2_PPE_PCG_mom_PCG(mom%PCG_U,mom%PCG_p,mom%U,mom%Ustar,mom%Unm1,&
+           mom%p,F,Fnm1,mom%m,TMP%dt,mom%temp_F1,&
+           mom%temp_F2,mom%temp_CC,mom%temp_CC_VF,EF%unsteady_0D%export_now)
+         case (6)
+           call Euler_Donor_no_PPE(mom%U,F,Fnm1,TMP%dt,mom%temp_F1)
+         case (7)
+           call Euler_PCG_Donor(mom%PCG_P,mom%U,mom%Ustar,mom%U_E,mom%p,F,mom%m,&
+           mom%SP%DP%Re,TMP%dt,mom%temp_F1,mom%temp_F2,mom%temp_CC,mom%temp_E,EF%unsteady_0D%export_now)
          case default; stop 'Error: solveUMethod must = 1:4 in momentum.f90.'
          end select
-         call iterate_step(mom%SP%VS%U%TMP)
+         call iterate_step(TMP)
 
          ! ********************* POST SOLUTION COMPUTATIONS *********************
          call face2CellCenter(mom%U_CC,mom%U,mom%m)
@@ -437,16 +448,17 @@
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
-         if (EF%unsteady_0D%export_now) call export_unsteady_0D(mom)
-         if (EF%unsteady_1D%export_now) call export_unsteady_1D(mom,DT)
-         if (EF%unsteady_2D%export_now) call export_unsteady_2D(mom,DT)
-         if (EF%unsteady_3D%export_now) call export_unsteady_3D(mom,DT)
+         if (EF%unsteady_0D%export_now) call export_unsteady_0D(mom,TMP)
+         if (EF%unsteady_1D%export_now) call export_unsteady_1D(mom,TMP,DT)
+         if (EF%unsteady_2D%export_now) call export_unsteady_2D(mom,TMP,DT)
+         if (EF%unsteady_3D%export_now) call export_unsteady_3D(mom,TMP,DT)
          if (EF%info%export_now) call print(mom)
 
          if (EF%final_solution%export_now.or.EN%U%this.or.EN%all%this) then
            ! call export(mom,DT)
            call export_tec(mom,DT,F,Fnm1)
          endif
+         call update(mom%TS,mom%m,mom%U,TMP,mom%temp_F1,mom%temp_CC_VF,mom%TF_CC)
        end subroutine
 
        subroutine compute_export_E_K_Budget(mom,B,B0,J,MD_fluid,DT)

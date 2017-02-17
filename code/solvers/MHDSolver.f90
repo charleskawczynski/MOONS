@@ -14,11 +14,13 @@
        use probe_mod
 
        use time_marching_params_mod
+       use add_all_momentum_sources_mod
+       use add_all_induction_sources_mod
+       use induction_aux_mod
        use energy_mod
        use momentum_mod
        use induction_mod
-       use energy_aux_mod
-       use induction_aux_mod
+       use momentum_sources_mod
        implicit none
 
        private
@@ -65,35 +67,17 @@
            if (SP%print_every_MHD_step) write(*,*) 'coupled%n_step = ',coupled%n_step
 
            ! if (SP%VS%rho%SS%solve)    call solve(dens,mom%U,  EF,EN,DT)
-           if (SP%VS%T%SS%solve) call solve(nrg,mom%U,  EF,EN,DT)
-           if (SP%VS%U%SS%solve) call solve(mom,F,Fnm1, EF,EN,DT)
-           if (SP%VS%B%SS%solve) call solve(ind,mom%U_E,EF,EN,DT)
-
-           if (SP%MF%mean_pressure_grad) call compute_Add_MPG(mom%U,mom%SP%VS%U%TMP,SP%mpg_dir)
-
-           call assign(Fnm1,F)
-           call assign(F,0.0_cp) ! DO NOT REMOVE THIS, FOLLOW THE COMPUTE_ADD PROCEDURE BELOW
-
-           if (SP%MF%JCrossB) then
-             call compute_AddJCrossB(F,ind%B,ind%B0,ind%J,ind%m,&
-                                     ind%MD_fluid,mom%SP%DP%N,&
-                                     ind%SP%finite_Rem,ind%temp_CC_SF,&
-                                     ind%temp_F1,ind%temp_F1_TF,&
-                                     ind%temp_F2_TF,mom%temp_F1)
+           if (SP%VS%T%SS%solve) then
+             call solve(nrg,mom%U,  nrg%SP%VS%T%TMP ,EF,EN,DT)
            endif
-
-           if (SP%MF%Q2D_JCrossB) then
-             call compute_add_Q2D_JCrossB(F,mom%U,mom%SP%DP%tau,mom%temp_F1)
+           if (SP%VS%U%SS%solve) then
+             call add_all_momentum_sources(F,Fnm1,nrg,mom,ind,SP)
+             call solve(mom,F,Fnm1, mom%SP%VS%U%TMP ,EF,EN,DT)
            endif
-           if (SP%MF%Buoyancy) then
-             call compute_AddBuoyancy(F,nrg%T,nrg%gravity,&
-                                      mom%SP%DP%Gr,mom%SP%DP%Re,nrg%m,nrg%MD,&
-                                      nrg%temp_F,nrg%temp_CC1_VF,mom%temp_F1)
-           endif
-           if (SP%MF%Gravity) then
-             call compute_AddGravity(F,nrg%gravity,mom%SP%DP%Fr,nrg%m,&
-                                     nrg%MD,nrg%temp_F,nrg%temp_CC1_VF,&
-                                     mom%temp_F1)
+           if (SP%VS%B%SS%solve) then
+            call embedVelocity_E(ind%U_E,mom%U_E,ind%MD_fluid)
+            call add_all_induction_sources(ind%F,ind%Fnm1,mom,ind,ind%SP%VS%B%TMP,SP)
+            call solve(ind,ind%F,ind%Fnm1,ind%SP%VS%B%TMP ,EF,EN,DT)
            endif
 
            call iterate_step(coupled)
@@ -117,7 +101,7 @@
              write(*,*) 'Working directory = ',str(DT%tar)
              call import(KS)
            endif
-           call import(EF)
+           ! call import(EF)
          enddo
          call print(sc,coupled)
          call export(sc,coupled)

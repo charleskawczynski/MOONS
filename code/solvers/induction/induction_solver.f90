@@ -27,6 +27,7 @@
        use update_intermediate_field_BCs_mod
        use mesh_domain_mod
        use ops_embedExtract_mod
+       use time_marching_params_mod
 
        implicit none
 
@@ -134,13 +135,13 @@
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: dt
          logical,intent(in) :: compute_norms
-         call add(temp_F2,B,B0) ! Since finite Rem
-         call advect_B(temp_F1,U_E,temp_F2,m,temp_E_TF,temp_E)
+         ! call add(temp_F2,B,B0) ! Since finite Rem
+         call advect_B(temp_F1,U_E,B0,m,temp_E_TF,temp_E)
          call multiply(temp_F1,dt)
          call add(temp_F1,B)
-         call add_product(temp_F1,F,dt)
+         ! call add_product(temp_F1,F,dt)
          call solve(PCG_B,Bstar,temp_F1,m,compute_norms)
-         call clean_div(PCG_cleanB,B,Bstar,phi,m,temp_F1,temp_CC,compute_norms)
+         call clean_div(PCG_cleanB,B,Bstar,phi,1.0_cp,m,temp_F1,temp_CC,compute_norms)
          call update_intermediate_field_BCs(Bstar,B,phi,m,temp_F1,temp_F2,temp_CC_VF)
        end subroutine
 
@@ -181,39 +182,48 @@
 
          call add(temp_F1,B)
          call solve(PCG_B,Bstar,temp_F1,m,compute_norms)
-         call clean_div(PCG_cleanB,B,Bstar,phi,m,temp_F1,temp_CC,compute_norms)
+         call clean_div(PCG_cleanB,B,Bstar,phi,1.0_cp/dt,m,temp_F1,temp_CC,compute_norms)
          call update_intermediate_field_BCs(Bstar,B,phi,m,temp_F1,temp_F2,temp_CC_VF)
        end subroutine
 
-       subroutine CT_Finite_Rem_interior_solved(PCG_cleanB,B,Bstar,B_interior,curlE,&
-         phi,m,MD_sigma,N_multistep,dt,compute_norms,SF_CC,VF_F1)
+       subroutine CT_Finite_Rem_interior_solved(PCG_cleanB,B,B0,Bstar,J,B_interior,U_E,curlE,&
+         phi,m,MD_sigma,TMP,Rem,finite_Rem,compute_norms,SF_CC,temp_F1,temp_F2,curlUCrossB,temp_E,temp_E_TF)
          ! Solves:  ∂B/∂t = ∇•∇B,  in vacuum domain, where B_interior is fixed.
          ! Note:    J = Rem⁻¹∇xB    -> J ALREADY HAS Rem⁻¹ !
          ! Method:  Constrained Transport (CT)
          ! Info:    Cell face => B,cell edge => J,sigmaInv_E,U_E,Finite Rem
          implicit none
          type(PCG_solver_SF),intent(inout) :: PCG_cleanB
-         type(VF),intent(inout) :: B,Bstar,VF_F1
-         type(VF),intent(in) :: B_interior,curlE
+         type(VF),intent(inout) :: B,Bstar,J,temp_F1,temp_F2,curlUCrossB,temp_E,curlE
+         type(VF),intent(in) :: B0,B_interior
          type(SF),intent(inout) :: SF_CC,phi
+         type(TF),intent(in) :: U_E
+         type(TF),intent(inout) :: temp_E_TF
          type(mesh_domain),intent(in) :: MD_sigma
          type(mesh),intent(in) :: m
-         real(cp),intent(in) :: dt
-         integer,intent(in) :: N_multistep
-         logical,intent(in) :: compute_norms
+         type(time_marching_params),intent(in) :: TMP
+         logical,intent(in) :: compute_norms,finite_Rem
+         real(cp),intent(in) :: Rem
          integer :: i
-         do i=1,N_multistep
-           call multiply(VF_F1,curlE,-dt)
-           call add(B,VF_F1)
+         if (TMP%n_step.le.1) then
+           call compute_J(J,B,Rem,m,finite_Rem)
+           call add(temp_F2,B,B0)
+           call advect_B(curlUCrossB,U_E,temp_F2,m,temp_E_TF,temp_E)
+           call curl(curlE,J,m)
+           call subtract(curlE,curlUCrossB)
+         endif
+         do i=1,TMP%multistep_iter
+           call multiply(temp_F1,curlE,-TMP%dt)
+           call add(B,temp_F1)
            call apply_BCs(B)
            call embedFace(B,B_interior,MD_sigma)
          enddo
-         call clean_div(PCG_cleanB,B,Bstar,phi,m,VF_F1,SF_CC,compute_norms)
+         call clean_div(PCG_cleanB,B,Bstar,phi,1.0_cp/TMP%dt,m,temp_F1,SF_CC,compute_norms)
          call embedFace(B,B_interior,MD_sigma)
        end subroutine
 
        subroutine JAC_interior_solved(JAC,PCG_cleanB,B,Bstar,RHS,phi,m,&
-         N_multistep,N_induction,compute_norms,SF_CC,temp_F1,temp_F2,temp_CC_VF)
+         N_multistep,N_induction,dt,compute_norms,SF_CC,temp_F1,temp_F2,temp_CC_VF)
          ! Solves: ∇•(∇B) = 0 using Jacobi method + cleaning procedure
          implicit none
          type(Jacobi),intent(inout) :: JAC
@@ -223,12 +233,13 @@
          type(SF),intent(inout) :: SF_CC,phi
          type(VF),intent(inout) :: temp_F1,temp_F2,temp_CC_VF
          type(mesh),intent(in) :: m
+         real(cp),intent(in) :: dt
          integer,intent(in) :: N_multistep,N_induction
          logical,intent(in) :: compute_norms
          integer :: i
          do i=1,N_multistep
            call solve(JAC,B,RHS,m,N_induction,.true.)
-           call clean_div(PCG_cleanB,B,Bstar,phi,m,temp_F1,SF_CC,compute_norms)
+           call clean_div(PCG_cleanB,B,Bstar,phi,1.0_cp/dt,m,temp_F1,SF_CC,compute_norms)
            call update_intermediate_field_BCs(Bstar,B,phi,m,temp_F1,temp_F2,temp_CC_VF)
          enddo
        end subroutine
@@ -272,7 +283,7 @@
          call extractFace(temp,temp_F2,D_conductor)
          call embedFace(B,temp,D_conductor)
          call delete(temp)
-         call clean_div(PCG_cleanB,B,Bstar,phi,m,temp_F1,temp_CC,compute_norms)
+         call clean_div(PCG_cleanB,B,Bstar,phi,1.0_cp/dt,m,temp_F1,temp_CC,compute_norms)
        end subroutine
 
        end module
