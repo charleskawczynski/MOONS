@@ -22,7 +22,7 @@
 \setlength{\topmargin}{-1in}     %\topmargin: gap above header
 \setlength{\headheight}{0in}     %\headheight: height of header
 \setlength{\topskip}{0in}        %\topskip: between header and text
-\setlength{\headsep}{0in}        
+\setlength{\headsep}{0in}
 \setlength{\textheight}{692pt}   %\textheight: height of main text
 \setlength{\textwidth}{7.5in}    % \textwidth: width of text
 \setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
@@ -45,36 +45,46 @@ University of California Los Angeles, USA\\
 }
 \maketitle
 
-\section{Thermal energy equation}
-This is not a derivation. This document simply states the dimensional form of the thermal energy equation. The derivation of the dimensionless thermal energy equation should begin from this form.
-\begin{equation}
-\rho C_p \left[ \frac{\PD T}{\PD t} 
-+ (\U \DOT \DEL) T \right] 
-= \DEL \DOT (k \DEL T) 
-+ \frac{1}{\sigma} \J^2 
-+ \underbrace{\mu ( \DEL \U^T + \DEL \U ) \DEL \U}_{\Phi}
-+ \dot{Q}
-\end{equation}
-The viscous dissipation term, $\Phi$, is 
+\section{Definition}
+Using index notation, the dimensional viscous dissipation term, $\Phi$, is (as defined in Professor Lavine's notes)
 \begin{equation}
 \Phi=\mu \left( \frac{\PD u_j}{\PD x_i}+\frac{\PD u_i}{\PD x_j} \right) \frac{\PD u_i}{\PD x_j}, \qquad i=\text{ $i$th component of momentum equation}
 \end{equation}
-using index notation.
+This definition may be for the thermal energy equation (which may have a different sign).
 
-\subsection{Forms of viscous dissipation term}
+This term, and its sign, is most easily obtained in the kinetic energy equation by dotting momentum with velocity:
+\begin{equation}
+	\boxed{
+	u_i \mu \frac{\PD^2 u_i}{\PD x_j^2} =
+	\mu \frac{\PD^2}{\PD x_j^2} \frac{1}{2} u_i u_i -
+	\mu \frac{\PD u_i}{\PD x_j}\frac{\PD u_i}{\PD x_j}
+	}
+\end{equation}
+As outlined in Sergey's suggested form.
+
+Take special note that writing in terms of $KE$, which includes density, will take the form
+\begin{equation}
+	\boxed{
+	u_i \mu \frac{\PD^2 u_i}{\PD x_j^2} =
+	\nu \frac{\PD^2 KE}{\PD x_j^2} -
+	\mu \frac{\PD u_i}{\PD x_j}\frac{\PD u_i}{\PD x_j}
+	}
+\end{equation}
+
+\section{Forms of viscous dissipation term}
 The viscous dissipation term, $\Phi$, may take several forms:
 
-\subsubsection{Professor Lavine's class notes}
+\subsection{Professor Lavine's class notes}
 \begin{equation}
 \Phi=\mu \left( \frac{\PD u_j}{\PD x_i}+\frac{\PD u_i}{\PD x_j} \right) \frac{\PD u_i}{\PD x_j}
 \end{equation}
 
-\subsubsection{Professor Kim's Turbulence class (and text)}
+\subsection{Professor Kim's Turbulence class (and text) in kinetic energy equation}
 First, let
 \begin{equation} \label{eq:strainRate}
 	S_{ij} = \frac{1}{2}
 	\left(
-	\frac{\PD u_i}{\PD x_j} + 
+	\frac{\PD u_i}{\PD x_j} +
 	\frac{\PD u_j}{\PD x_i}
 	\right)
 \end{equation}
@@ -84,7 +94,7 @@ And note that
 	\frac{1}{2} \left( \frac{\PD u_i}{\PD x_j} + \frac{\PD u_j}{\PD x_i} \right)
 	\left( \frac{\PD u_i}{\PD x_j} + \frac{\PD u_j}{\PD x_i} \right)
 	= \frac{1}{2} \left( \frac{\PD u_i}{\PD x_j} \frac{\PD u_i}{\PD x_j}
-	+ 2 \frac{\PD u_i}{\PD x_j} \frac{\PD u_j}{\PD x_i} 
+	+ 2 \frac{\PD u_i}{\PD x_j} \frac{\PD u_j}{\PD x_i}
 	+ \frac{\PD u_j}{\PD x_i} \frac{\PD u_j}{\PD x_i} \right)
 	= \frac{\PD u_i}{\PD x_j} \frac{\PD u_i}{\PD x_j}
 	+ \frac{\PD u_i}{\PD x_j} \frac{\PD u_j}{\PD x_i}
@@ -92,77 +102,77 @@ And note that
 since no free indexes exist and indexes may be swapped. In addition, we may write
 \begin{equation}
 	\frac{\PD}{\PD x_j} u_i \frac{\PD u_i}{\PD x_j} =
-	\frac{\PD u_i}{\PD x_j}\frac{\PD u_i}{\PD x_j} + 
+	\frac{\PD u_i}{\PD x_j}\frac{\PD u_i}{\PD x_j} +
 	u_i \frac{\PD^2 u_i}{\PD x_j^2}
 \end{equation}
 Therefore
 \begin{equation} \label{eq:secondIdentity}
-	u_i \frac{\PD^2 u_i}{\PD x_j^2} = 
-	\frac{\PD}{\PD x_j} \left[ u_i \frac{\PD u_i}{\PD x_j} \right] - 
+	u_i \frac{\PD^2 u_i}{\PD x_j^2} =
+	\frac{\PD}{\PD x_j} \left[ u_i \frac{\PD u_i}{\PD x_j} \right] -
 	\frac{\PD u_i}{\PD x_j}\frac{\PD u_i}{\PD x_j}
 \end{equation}
 Adding and subtracting $\frac{\PD}{\PD x_j} u_i \frac{\PD u_j}{\PD x_i}$ on the RHS, we have
 \begin{equation}
-	u_i \frac{\PD^2 u_i}{\PD x_j^2} = 
-	\frac{\PD}{\PD x_j} \left[ u_i \frac{\PD u_i}{\PD x_j} + u_i \frac{\PD u_j}{\PD x_i} \right] - 
-	\frac{\PD}{\PD x_j} \left[ u_i \frac{\PD u_j}{\PD x_i} \right] - 
+	u_i \frac{\PD^2 u_i}{\PD x_j^2} =
+	\frac{\PD}{\PD x_j} \left[ u_i \frac{\PD u_i}{\PD x_j} + u_i \frac{\PD u_j}{\PD x_i} \right] -
+	\frac{\PD}{\PD x_j} \left[ u_i \frac{\PD u_j}{\PD x_i} \right] -
 	\frac{\PD u_i}{\PD x_j}\frac{\PD u_i}{\PD x_j}
 \end{equation}
 Using \ref{eq:strainRate}, and expanding $\frac{\PD}{\PD x_j} u_i \frac{\PD u_j}{\PD x_i}$, we have
 \begin{equation}
-	u_i \frac{\PD^2 u_i}{\PD x_j^2} = 
-	\frac{\PD}{\PD x_j} \left[ u_i 2 S_{ij} \right] - 
-	\left( 
+	u_i \frac{\PD^2 u_i}{\PD x_j^2} =
+	\frac{\PD}{\PD x_j} \left[ u_i 2 S_{ij} \right] -
+	\left(
 	\underbrace{u_i \frac{\PD^2 u_j}{\PD x_j x_i}}_{=0 \text{ (swap ij, $\PD_i u_i =0$)}}
 	+
 	\frac{\PD u_i}{\PD x_j} \frac{\PD u_j}{\PD x_i}
-	\right) - 
+	\right) -
 	\frac{\PD u_i}{\PD x_j}\frac{\PD u_i}{\PD x_j}
 \end{equation}
 Using \ref{eq:strainIdentity}, we have
 \begin{equation}
-	u_i \frac{\PD^2 u_i}{\PD x_j^2} = 
-	\frac{\PD}{\PD x_j} \left[ 2 u_i S_{ij} \right] - 
+	u_i \frac{\PD^2 u_i}{\PD x_j^2} =
+	\frac{\PD}{\PD x_j} \left[ 2 u_i S_{ij} \right] -
 	2 S_{ij} S_{ij}
 \end{equation}
 Swapping the index of the first term on the RHS, and using $S_{ij}=S_{ji}$, we have
 \begin{equation}
-	u_i \frac{\PD^2 u_i}{\PD x_j^2} = 
-	\frac{\PD}{\PD x_i} \left[ 2 u_j S_{ij} \right] - 
+	u_i \frac{\PD^2 u_i}{\PD x_j^2} =
+	\frac{\PD}{\PD x_i} \left[ 2 u_j S_{ij} \right] -
 	2 S_{ij} S_{ij}
 \end{equation}
 Finally, we have
 \begin{equation}
 	\boxed{
-	u_i \mu \frac{\PD^2 u_i}{\PD x_j^2} = 
-	\frac{\PD}{\PD x_i} \left[ 2 \mu u_j S_{ij} \right] - 
+	u_i \mu \frac{\PD^2 u_i}{\PD x_j^2} =
+	\frac{\PD}{\PD x_i} \left[ 2 \mu u_j S_{ij} \right] -
 	2 \mu S_{ij} S_{ij}
 	}
 \end{equation}
 
-\subsubsection{Sergey's suggested form}
-Starting from 
+\subsection{Sergey's suggested form (in kinetic energy equation)}
+Starting from
 \begin{equation}
-	u_i \frac{\PD^2 u_i}{\PD x_j^2} = 
-	\frac{\PD}{\PD x_j} \left[ u_i \frac{\PD u_i}{\PD x_j} \right] - 
+	u_i \frac{\PD^2 u_i}{\PD x_j^2} =
+	\frac{\PD}{\PD x_j} \left[ u_i \frac{\PD u_i}{\PD x_j} \right] -
 	\frac{\PD u_i}{\PD x_j}\frac{\PD u_i}{\PD x_j}
 \end{equation}
-and using 
+and using
 \begin{equation}
-	u_i \frac{\PD u_i}{\PD x_j} = 
+	u_i \frac{\PD u_i}{\PD x_j} =
 	\frac{1}{2} \frac{\PD u_i u_i}{\PD x_j}
 \end{equation}
 with $\PD_j u_j = 0$, we have
 \begin{equation}
-	u_i \frac{\PD^2 u_i}{\PD x_j^2} = 
-	\frac{\PD^2 E_K}{\PD x_j^2} - 
+	u_i \frac{\PD^2 u_i}{\PD x_j^2} =
+	\frac{1}{\rho} \frac{\PD^2 E_K}{\PD x_j^2} -
 	\frac{\PD u_i}{\PD x_j}\frac{\PD u_i}{\PD x_j}
 \end{equation}
 Therefore
 \begin{equation}
 	\boxed{
-	u_i \mu \frac{\PD^2 u_i}{\PD x_j^2} = 
-	\mu \frac{\PD^2 E_K}{\PD x_j^2} - 
+	u_i \mu \frac{\PD^2 u_i}{\PD x_j^2} =
+	\nu \frac{\PD^2 E_K}{\PD x_j^2} -
 	\mu \frac{\PD u_i}{\PD x_j}\frac{\PD u_i}{\PD x_j}
 	}
 \end{equation}

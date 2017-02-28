@@ -84,7 +84,7 @@
        SP%FCL%Poisson_test           = F ! not used anywhere
 
        SP%EL%export_analytic         = F ! Export analytic solutions (MOONS.f90)
-       SP%EL%export_meshes           = F ! Export all meshes before starting simulation
+       SP%EL%export_meshes           = T ! Export all meshes before starting simulation
        SP%EL%export_vort_SF          = T ! Export vorticity-stream-function after simulation
        SP%EL%export_mat_props        = F ! Export material properties before starting simulation
        SP%EL%export_ICs              = F ! Export Post-Processed ICs before starting simulation
@@ -97,11 +97,11 @@
        SP%restart_all                = F ! restart sim (requires no code changes)
        SP%uniform_gravity_dir        = 1 ! Uniform gravity field direction
        SP%uniform_B0_dir             = 3 ! Uniform applied field direction
-       SP%mpg_dir                    = 0 ! Uniform applied field direction
+       SP%mpg_dir                    = 1 ! Uniform applied field direction
        SP%couple_time_steps          = T ! Ensures all dt are equal to coupled%dt
-       SP%finite_Rem                 = F ! Ensures all dt are equal to coupled%dt
+       SP%finite_Rem                 = T ! Ensures all dt are equal to coupled%dt
        SP%include_vacuum             = F ! Ensures all dt are equal to coupled%dt
-       SP%compute_surface_power      = T ! Compute surface power for LDC
+       SP%compute_surface_power      = F ! Compute surface power for LDC
 
        SP%matrix_based               = F ! Solve induction equation
        SP%prescribed_periodic_BCs    = T ! Ustar,Bstar defined by relation in Kim 1985
@@ -127,23 +127,23 @@
        ! call init(TSP,collect,t_start,t_stop)
        call init(SP%TSP,F,100.0_cp,500.0_cp)
 
-       time                          = 30.0_cp
-       dtime                         = 1.0_cp*pow(-2)
+       time                          = 10000.0_cp
+       dtime                         = 2.5_cp*pow(-4)
 
        SP%GP%tw                      = 0.05_cp
-       SP%GP%geometry                = 9
-       SP%GP%periodic_dir            = (/0,0,0/)
-       SP%GP%apply_BC_order          = (/3,4,5,6,1,2/) ! good for LDC
+       SP%GP%geometry                = 7
+       SP%GP%periodic_dir            = (/0,1,0/)
+       ! SP%GP%apply_BC_order          = (/3,4,5,6,1,2/) ! good for LDC
        ! SP%GP%apply_BC_order       = (/3,4,5,6,1,2/) ! good for periodic in y?
-       ! SP%GP%apply_BC_order       = (/5,6,1,2,3,4/) ! good for periodic in y?
+       SP%GP%apply_BC_order       = (/5,6,1,2,3,4/) ! good for periodic in y?
        ! SP%GP%apply_BC_order       = (/5,6,3,4,1,2/) ! good for periodic in z?
        ! SP%GP%apply_BC_order       = (/3,4,1,2,5,6/) ! good for periodic in z?
 
        call delete(SP%DP)
-       SP%DP%Re                      = 1.0_cp*pow(2)
-       ! SP%DP%Q                       = 3.0_cp*pow(-1)
+       SP%DP%Re                      = 2.0_cp*pow(2)
+       SP%DP%Q                       = 4.4_cp*pow(-1)
        SP%DP%Rem                     = 1.0_cp*pow(0)
-       SP%DP%Ha                      = 1.0_cp*pow(1)
+       ! SP%DP%Ha                      = 1.0_cp*pow(1)
        ! SP%DP%N                       = 1.0_cp/SP%DP%Q
        ! SP%DP%N                       = 1.0_cp*pow(-1)
        SP%DP%cw                      = 0.0_cp
@@ -153,8 +153,8 @@
        SP%DP%Fr                      = 1.0_cp
        SP%DP%Ec                      = 0.0_cp
 
+       SP%DP%Ha                      = (1.0_cp/SP%DP%Q*SP%DP%Re)**0.5_cp
        SP%DP%N                       = SP%DP%Ha**2.0_cp/SP%DP%Re
-       ! SP%DP%Ha                      = (1.0_cp/SP%DP%Q*SP%DP%Re)**0.5_cp
        ! SP%DP%Ha                      = (SP%DP%N*SP%DP%Re)**0.5_cp
        SP%DP%Al                      = SP%DP%N/SP%DP%Rem
        SP%DP%Pe                      = SP%DP%Pr*SP%DP%Re
@@ -186,22 +186,20 @@
        call init(SP%VS%phi%unsteady_line,F,1,(/2,34/))
        call init(SP%VS%rho%unsteady_line,F,1,(/2,34/))
 
-       ! call init_IC_BC(var,IC,BC)
-       call init_IC_BC(SP%VS%T,  0,0)
-       call init_IC_BC(SP%VS%U,  0,1)
-       call init_IC_BC(SP%VS%P,  0,0)
-       ! if (     RV_BCs) call init_IC_BC(SP%VS%B,  0,7)
-       ! if (.not.RV_BCs) call init_IC_BC(SP%VS%B,  0,8)
-       call init_IC_BC(SP%VS%B,  0,1)
-       call init_IC_BC(SP%VS%B0, 1,0)
-       call init_IC_BC(SP%VS%phi,0,0)
-       call init_IC_BC(SP%VS%rho,0,0)
+       ! call init_IC_BC(var      ,IC   ,BC)
+       call init_IC_BC(SP%VS%T    ,0    ,0 )
+       call init_IC_BC(SP%VS%U    ,0    ,6 )
+       call init_IC_BC(SP%VS%P    ,0    ,2 )
+       call init_IC_BC(SP%VS%B    ,0    ,2 )
+       call init_IC_BC(SP%VS%B0   ,4    ,0 )
+       call init_IC_BC(SP%VS%phi  ,0    ,0 )
+       call init_IC_BC(SP%VS%rho  ,0    ,0 )
 
        ! call init(SS        ,initialize,solve,restart,solve_method)
        call init(SP%VS%T%SS  ,F         ,F    ,F      ,0)
-       call init(SP%VS%U%SS  ,T         ,T    ,F      ,4)
+       call init(SP%VS%U%SS  ,T         ,T    ,F      ,3)
        call init(SP%VS%P%SS  ,T         ,T    ,F      ,1)
-       call init(SP%VS%B%SS  ,T         ,T    ,F      ,4)
+       call init(SP%VS%B%SS  ,T         ,T    ,F      ,3)
        call init(SP%VS%B0%SS ,T         ,T    ,F      ,0)
        call init(SP%VS%phi%SS,T         ,T    ,F      ,0)
        call init(SP%VS%rho%SS,F         ,F    ,F      ,0)
@@ -268,7 +266,7 @@
        SP%MF%advection_convection = F ! add advection (conv form)  to momentum equation
        SP%MF%advection_divergence = T ! add advection (div  form)  to momentum equation
        SP%MF%JCrossB              = T ! add JCrossB                to momentum equation
-       SP%MF%mean_pressure_grad   = F ! add mean pressure gradient to momentum equation
+       SP%MF%mean_pressure_grad   = T ! add mean pressure gradient to momentum equation
        SP%MF%Q2D_JCrossB          = F ! add Q2D JCrossB            to momentum equation
        SP%MF%Buoyancy             = F ! add Buoyancy               to momentum equation
        SP%MF%Gravity              = F ! add Gravity                to momentum equation

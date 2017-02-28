@@ -20,7 +20,7 @@ export_1D_L = False
 export_mean_1D_L = True
 
 # ************************************ GET DIRECTORIES **************************************
-base_dir = 'C:'+PS+'Users'+PS+'Charlie'+PS+'Dropbox'+PS+'UCLA'+PS+'RESEARCH'+PS+'Documents_exchange_Sergey'+PS+'Plasma_disruption_data_from_Ulrickson'+PS
+base_dir = 'C:'+PS+'Users'+PS+'Charlie'+PS+'Dropbox'+PS+'UCLA'+PS+'RESEARCH'+PS+'Documents_exchange_Sergey'+PS+'plasma_disruption'+PS+'Data_from_Ulrickson'+PS
 B_r_data_dir = base_dir+'data_email_6'+PS # Br
 B_z_data_dir = base_dir+'data_email_7'+PS # Bz
 print ' ----------------------------------------------- ';
@@ -221,5 +221,29 @@ if export_mean_1D_L:
 	f.write('\n'.join(header))
 	f.write('\n'.join(L))
 	f.close()
+
+if export_mean_1D_L:
+	d = '\t \t'
+	B_str = 'dB_z_mean_dt [T per micro s]'
+	T_str = 't [micro s]'
+	file_name = B_str+' vs '+T_str
+	export_dir = '1D'+PS
+	file = export_dir+file_name
+	dB0_dt = np.diff(B_z_mean_vs_time)/np.diff(T)
+	L = []
+	for t in range(0,N_t-1):
+		t_s = str('%02d' % (t,))
+		L.append(str(T[t])+d+str(dB0_dt[t]))
+	header = []
+	header.append('TITLE = "'+B_str+' vs '+T_str+' (Ulrickson)"')
+	header.append('VARIABLES = "'+T_str+'","'+B_str+'"')
+	header.append('ZONE, I = '+str(N_t-1)+' DATAPACKING = POINT \n')
+	f = open(file+'.dat', "w")
+	f.write('\n'.join(header))
+	f.write('\n'.join(L))
+	f.close()
+
+amax_dB0_dt = np.amax(np.abs(dB0_dt))
+print 'max(diff(B_z_mean_vs_time)/diff(t)) = '+str(amax_dB0_dt)
 
 IO.delete_pyc_files()

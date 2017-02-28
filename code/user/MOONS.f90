@@ -113,8 +113,8 @@
          endif
 
          ! Initialize energy,momentum,induction
-         if (SP%VS%U%SS%initialize) call init(mom,m_mom,SP,DT)
          if (SP%VS%T%SS%initialize) call init(nrg,m_ind,SP,DT,MD_fluid)
+         if (SP%VS%U%SS%initialize) call init(mom,m_mom,SP,DT)
          if (SP%VS%B%SS%initialize) call init(ind,m_ind,SP,DT,MD_fluid,MD_sigma)
 
          ! Clean up constructor copies
@@ -126,12 +126,12 @@
 
          ! ********************* EXPORT RAW ICs *************************
 
-         if (SP%EL%export_ICs.and.SP%VS%U%SS%initialize) call export_tec(nrg,DT)
-         if (SP%EL%export_ICs.and.SP%VS%T%SS%initialize) call export_tec(ind,DT)
-         if (SP%EL%export_ICs.and.SP%VS%B%SS%initialize) call export_tec(mom,DT)
+         if (SP%EL%export_ICs.and.SP%VS%T%SS%initialize) call export_tec(nrg,DT)
+         if (SP%EL%export_ICs.and.SP%VS%U%SS%initialize) call export_tec(mom,DT)
+         if (SP%EL%export_ICs.and.SP%VS%B%SS%initialize) call export_tec(ind,DT)
 
-         if (SP%VS%U%SS%initialize) call print(nrg%m)
-         if (SP%VS%T%SS%initialize) call print(mom%m)
+         if (SP%VS%T%SS%initialize) call print(nrg%m)
+         if (SP%VS%U%SS%initialize) call print(mom%m)
          if (SP%VS%B%SS%initialize) call print(ind%m)
 
          ! ******************** PREP TIME START/STOP ********************

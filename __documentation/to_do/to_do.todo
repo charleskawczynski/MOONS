@@ -1,13 +1,33 @@
+TO DO LIST COMMANDS:
+ ☐ Semi-colon at sentence end makes headers
+ ☐ ctrl-I makes list items
+ ☐ ctrl-D checks off list items
+ ☐ shift-ctrl-A moves checked items to archive
+ ☐ --tab creates a separator
+ ☐ Searches can be made for specific @tags
+--- ✄ -----------------------
 Right Now:
- ☐ 1) prep email to send to abdou about committee
- ☐ 2*) fix email (wait until ester gets in)
- ☐ 3*) send email to abdou about committee
- ☐ 5) Restart High Ha PD case with more PPE iters
- ☐ 4) Find parameter space in Shatrov for full BC paper
- ☐ 6) start new full BC shatrov case
- ☐ 7) start new full BC MRS
- ☐ 8) Fix broken code
- ☐ 9) Run Bandaru at Rem=10 to compare fig 14
+ ☐ 1) Respond to Abdou about committee
+ ☐ 2) Send emails to committee members
+ ☐ 3) Read Shatrov for parameter inspiration
+     ☐ Fig 9a
+     ☐ Re=2000,N=0.1,Ha=(2000*.1)^.5
+     ☐ -->Re=1000,N=0.1,Ha=(100)^.5=10
+     ☐ Re=3000,N=1,Ha=(3000*1)^.5
+     ☐ -->Re=1500,N=1,Ha=(1500*1)^.5~38.23
+     ☐ Ha = 
+     ☐ N  = 
+     ☐ Lid velocity distribution
+     ☐ B0 = (1,0,0)
+ ☐ 4) Start Shatrov parameter space sims
+   ☐ Analyze data - If good - then start new full BC MRS
+   ☐ Analyze data - else    - Ask Sergey if we can change B0 config to match Shatrov
+ ✔ 5) Start new Bandaru cases at Rem=10 to compare fig 14 @done (17-02-22 10:18)
+ ✔ 6) Digitize data in Fig 14 @done (17-02-22 14:23)
+ ☐ 7) Show Sergey Scaling in Kamkar paper
+ ✔ 8) Finish 1D analysis of PD case using dimensional scales, get u-scale @done (17-02-23 17:17)
+ ☐ 9) Move data from workstation to backup
+ ☐ 9) Move explicit term scales to input file, and generalize
 
   ☐ PD cases
     ☐ Determine actual Re_m,Re,Ha etc

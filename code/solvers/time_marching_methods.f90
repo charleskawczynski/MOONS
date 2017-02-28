@@ -1,10 +1,17 @@
        module time_marching_methods_mod
+       ! This seems to work fine for preassure, but not
+       ! always (e.g. Bandaru) for correction field phi.
+       ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%dt,m,temp_F2,temp_CC,compute_norms)
+       ! Instead, the following is used:
+       ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp,m,temp_F2,temp_CC,compute_norms)
+       ! This does not preserve the magnitude of preassure, however
        use current_precision_mod
        use mesh_mod
        use SF_mod
        use VF_mod
        use TF_mod
        use norms_mod
+       use string_mod
        use AB2_mod
        use compute_energy_mod
        use export_raw_processed_mod
@@ -70,7 +77,8 @@
          call assign(Xnm1,X)
          call update_MFP(PCG_VF,m,TMP%dt*two_thirds*PCG_VF%MFP%coeff_implicit,TMP%n_step.le.2)
          call solve(PCG_VF,Xstar,temp_F1,m,compute_norms) ! Solve for X*
-         call clean_div(PCG_SF,X,Xstar,phi,three_halfs/TMP%dt,m,temp_F2,temp_CC,compute_norms)
+         ! call clean_div(PCG_SF,X,Xstar,phi,three_halfs/TMP%dt,m,temp_F2,temp_CC,compute_norms)
+         call clean_div(PCG_SF,X,Xstar,phi,1.0_cp,m,temp_F2,temp_CC,compute_norms)
          call update_intermediate_field_BCs(Xstar,X,phi,m,temp_F1,temp_F2,temp_CC_VF)
        end subroutine
 
@@ -105,7 +113,8 @@
          call assign(Xnm1,X)
          call update_MFP(PCG_VF,m,TMP%dt*1.0_cp*PCG_VF%MFP%coeff_implicit,TMP%n_step.le.2)
          call solve(PCG_VF,Xstar,temp_F1,m,compute_norms) ! Solve for X*
-         call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%dt,m,temp_F2,temp_CC,compute_norms)
+         ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%dt,m,temp_F2,temp_CC,compute_norms)
+         call clean_div(PCG_SF,X,Xstar,phi,1.0_cp,m,temp_F2,temp_CC,compute_norms)
          call update_intermediate_field_BCs(Xstar,X,phi,m,temp_F1,temp_F2,temp_CC_VF)
        end subroutine
 
@@ -141,7 +150,8 @@
          call assign_wall_Dirichlet(Xstar,0.0_cp,X)
          call add(Xstar,X)
          call assign(Xnm1,X)
-         call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%dt,m,temp_F2,temp_CC,compute_norms)
+         call clean_div(PCG_SF,X,Xstar,phi,1.0_cp,m,temp_F2,temp_CC,compute_norms)
+         ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%dt,m,temp_F2,temp_CC,compute_norms)
        end subroutine
 
        subroutine Euler_time_no_diff_AB2_sources_no_correction(X,Xstar,F,Fnm1,TMP)

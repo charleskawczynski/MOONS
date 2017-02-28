@@ -1,0 +1,368 @@
+\documentclass[11pt]{article}
+% \documentclass[3p,twocolumn,10pt]{elsarticle}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+%\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+\usepackage{xcolor}
+\usepackage{xspace}
+\usepackage{longtable}
+\usepackage{mathtools}
+\usepackage{natbib}
+\usepackage{setspace}
+\usepackage{ragged2e}
+\usepackage{etoolbox}
+\usepackage{geometry}
+
+\input{../../../useful_commands.tex}
+
+\newcommand{\volume}{\mathop{\ooalign{\hfil$V$\hfil\cr\kern0.08em--\hfil\cr}}\nolimits}
+\newcommand{\figWidth}{0.45\textwidth}
+\newcommand{\figSuffix}{_png.png}
+\newcommand{\pushright}[1]{\ifmeasuring@#1\else\omit\hfill$\displaystyle#1$\fi\ignorespaces}
+\newcommand{\hfillMath}{\hskip \textwidth minus \textwidth}
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{8in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.7in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+% Useful commands:
+
+% \hfill    aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Plasma Disruption 2D solution}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Solving Shercliff-modified governing equations}
+In this document, we attempt the solution to the decoupled equations
+\begin{equation}\begin{aligned}
+\DEL^2 X + A \PD_x X = - C, \qquad \text{BCs: $X = 0 $ on $\PD \Omega$} \\
+\DEL^2 Y - A \PD_x Y = - D, \qquad \text{BCs: $Y = 0 $ on $\PD \Omega$} \\
+\end{aligned} \end{equation}
+Where constant $A$ is assumed to be positive. We assume the solution is the sum of a homogeneous equation, where $C,D$, are neglected, plus a solution with the coefficients present.
+\begin{equation}\begin{aligned}
+X = X_h(x,y) + X_p(y) \\
+Y = Y_h(x,y) + Y_p(y) \\
+\end{aligned} \end{equation}
+\begin{equation}\begin{aligned}
+\DEL^2 X_h + A \PD_x X_h = 0, \qquad\qquad \DEL^2 X_p = -C \\
+\DEL^2 Y_h - A \PD_x Y_h = 0, \qquad\qquad \DEL^2 Y_p = -D \\
+\end{aligned} \end{equation}
+
+\section{Homogeneous solution for X}
+Governing equation
+\begin{equation}\begin{aligned}
+\DEL^2 X_h + A \PD_x X_h = 0, \qquad\qquad X_h = X_h(x,y) \\
+\end{aligned} \end{equation}
+Assume the solution is separable:
+\begin{equation}\begin{aligned}
+X_h(x,y) = F(x)G(y) \\
+\end{aligned} \end{equation}
+Governing equation becomes
+\begin{equation}\begin{aligned}
+G F'' + FG'' + A G F' = 0 \\
+ \frac{F''}{F} + \frac{G''}{G} + A \frac{F'}{F} = 0 \\
+ \frac{F''}{F} + A \frac{F'}{F} = - \frac{G''}{G} = \lambda \\
+\end{aligned} \end{equation}
+
+\noindent\begin{minipage}[b]{.5\linewidth}\centering
+\begin{equation}\begin{aligned}
+\frac{F''}{F} + A \frac{F'}{F} = \lambda \\
+F'' + A F' - F \lambda = 0 \\
+F = \alpha e^{\gamma x} \\
+\gamma^2 + A \gamma - \lambda = 0 \\
+\gamma_{1,2} = -A \pm \frac{\sqrt{A^2 + 4\lambda}}{2} \\
+F_n = \alpha_1 e^{\gamma_1 x} + \alpha_2 e^{\gamma_2 x} \\
+\text{Let $\alpha_1,\alpha_2$ absorb $e^{-A}$} \\
+\gamma_{1,2} = \pm \frac{\sqrt{A^2 + 4\lambda}}{2} \\
+F_n = \alpha_1 e^{\gamma_1 x} + \alpha_2 e^{\gamma_2 x} \\
+\end{aligned} \end{equation}
+\end{minipage}
+\noindent\begin{minipage}[b]{.5\linewidth}\centering
+\begin{equation}\begin{aligned}
+\frac{G''}{G} = - \lambda \\
+G'' + G \lambda = 0 \\
+G = \beta e^{\theta y} \\
+\theta^2 + \lambda = 0 \\
+\theta_{1,2} = \pm i \sqrt{\lambda} \\
+G = \beta_1 e^{i \sqrt{\lambda} y} + \beta_2 e^{-i \sqrt{\lambda} y} \\
+G'(0) = \beta_1 i \sqrt{\lambda} - \beta_2 i \sqrt{\lambda} = 0 \\
+\beta_2 = \beta_1 \\
+G(y) = \beta_1 (e^{ i \sqrt{\lambda} y} + e^{-i \sqrt{\lambda} y}) = 0 \\
+G(b) = \beta_1 (e^{ i \sqrt{\lambda} b} + e^{-i \sqrt{\lambda} b}) = 0 \\
+                e^{2i \sqrt{\lambda} b} = -1 \\
+2i \sqrt{\lambda} b = 2 \pi i (n+1/2) \\
+   \sqrt{\lambda} b =   \pi   (n+1/2) \\
+         \lambda_n  = \left(\frac{\pi}{b} \left( n+\frac{1}{2} \right) \right)^2 \\
+G(y) = 2 \beta_1 \cos(\sqrt{\lambda_n} y) \\
+\end{aligned} \end{equation}
+\end{minipage}
+Our general solution to the homogeneous solution is then
+\begin{equation}\begin{aligned}
+X_h = \sum_{n=1}^{\infty} \left( {\alpha_n}_1 e^{{\gamma_n}_1 x} + {\alpha_n}_2 e^{{\gamma_n}_2 x} \right) \cos(\sqrt{\lambda_n} y) \\
+\end{aligned} \end{equation}
+
+\section{Homogeneous solution for Y}
+Governing equation
+\begin{equation}\begin{aligned}
+\DEL^2 Y_h - A \PD_x Y_h = 0, \qquad\qquad Y_h = Y_h(x,y) \\
+\end{aligned} \end{equation}
+Assume the solution is separable:
+\begin{equation}\begin{aligned}
+Y_h(x,y) = F(x)G(y) \\
+\end{aligned} \end{equation}
+\begin{equation}\begin{aligned}
+G F'' + FG'' - A G F' = 0 \\
+ \frac{F''}{F} + \frac{G''}{G} - A \frac{F'}{F} = 0 \\
+ \frac{F''}{F} - A \frac{F'}{F} = - \frac{G''}{G} = \lambda \\
+\end{aligned} \end{equation}
+
+\noindent\begin{minipage}[b]{.5\linewidth}\centering
+\begin{equation}\begin{aligned}
+\frac{F''}{F} - A \frac{F'}{F} = \lambda \\
+F'' - A F' - F \lambda = 0 \\
+F = \alpha e^{\gamma x} \\
+\gamma^2 - A \gamma - \lambda = 0 \\
+\gamma_{1,2} = A \pm \frac{\sqrt{A^2 + 4\lambda}}{2} \\
+F_n = \alpha_1 e^{\gamma_1 x} + \alpha_2 e^{\gamma_2 x} \\
+\text{Let $\alpha_1,\alpha_2$ absorb $e^{A}$} \\
+\gamma_{1,2} = \pm \frac{\sqrt{A^2 + 4\lambda}}{2} \\
+F_n = \alpha_1 e^{\gamma_1 x} + \alpha_2 e^{\gamma_2 x} \\
+\end{aligned} \end{equation}
+\end{minipage}
+\noindent\begin{minipage}[b]{.5\linewidth}\centering
+\begin{equation}\begin{aligned}
+\frac{G''}{G} = - \lambda \\
+G'' + G \lambda = 0 \\
+G = \beta e^{\theta y} \\
+\theta^2 + \lambda = 0 \\
+\theta_{1,2} = \pm i \sqrt{\lambda} \\
+G = \beta_1 e^{i \sqrt{\lambda} y} + \beta_2 e^{-i \sqrt{\lambda} y} \\
+G'(0) = \beta_1 i \sqrt{\lambda} - \beta_2 i \sqrt{\lambda} = 0 \\
+\beta_2 = \beta_1 \\
+G(y) = \beta_1 (e^{ i \sqrt{\lambda} y} + e^{-i \sqrt{\lambda} y}) = 0 \\
+G(b) = \beta_1 (e^{ i \sqrt{\lambda} b} + e^{-i \sqrt{\lambda} b}) = 0 \\
+                e^{2i \sqrt{\lambda} b} = -1 \\
+2i \sqrt{\lambda} b = 2 \pi i (n+1/2) \\
+   \sqrt{\lambda} b =   \pi   (n+1/2) \\
+\lambda_n  = \left(\frac{\pi}{b} \left( n+\frac{1}{2} \right) \right)^2 \\
+G(y) = 2 \beta_1 \cos(\sqrt{\lambda_n} y) \\
+\end{aligned} \end{equation}
+\end{minipage}
+Our general solution to the homogeneous solution is then
+\begin{equation}\begin{aligned}
+Y_h = \sum_{n=1}^{\infty} \left( {\alpha_n}_1 e^{\gamma_1 x} + {\alpha_n}_2 e^{\gamma_2 x} \right) \cos(\sqrt{\lambda_n} y) \\
+\end{aligned} \end{equation}
+
+\section{Homogeneous solution summary}
+\begin{equation}\begin{aligned}
+X_h = \sum_{n=1}^{\infty} \left( {\alpha_n}_1 e^{{\gamma_n}_1 x} + {\alpha_n}_2 e^{{\gamma_n}_2 x} \right) \cos(\sqrt{\lambda_n} y) \\
+Y_h = \sum_{n=1}^{\infty} \left( {\alpha_n}_1 e^{{\gamma_n}_1 x} + {\alpha_n}_2 e^{{\gamma_n}_2 x} \right) \cos(\sqrt{\lambda_n} y) \\
+\end{aligned} \end{equation}
+
+\section{Non-homogeneous solution}
+Governing equation
+\begin{equation}\begin{aligned}
+\DEL^2 X_p = -C, \qquad X_p = X_p(y) \\
+\DEL^2 Y_p = -D, \qquad Y_p = Y_p(y) \\
+\end{aligned} \end{equation}
+The solution only depends on $y$:
+\begin{equation}\begin{aligned}
+X_p'' = -C \\
+Y_p'' = -D \\
+\end{aligned} \end{equation}
+So integration is trivially performed. First integration yields
+\begin{equation}\begin{aligned}
+X_p' = -C y + c_1 \\
+Y_p' = -D y + b_1 \\
+\end{aligned} \end{equation}
+Second integration yields
+\begin{equation}\begin{aligned}
+X_p = -C \frac{1}{2} y^2 + c_1 y + c_2 \\
+Y_p = -D \frac{1}{2} y^2 + b_1 y + b_2 \\
+\end{aligned} \end{equation}
+Applying BCs, we have:
+\begin{equation}\begin{aligned}
+X_p(-b) = 0 = -C \frac{1}{2} b^2 - c_1 b + c_2 \\
+Y_p(-b) = 0 = -D \frac{1}{2} b^2 - b_1 b + b_2 \\
+X_p(b) = 0 = -C \frac{1}{2} b^2 + c_1 b + c_2 \\
+Y_p(b) = 0 = -D \frac{1}{2} b^2 + b_1 b + b_2 \\
+C \frac{1}{2} b^2 = c_2 \\
+D \frac{1}{2} b^2 = b_2 \\
+c_1 = 0 \\
+b_1 = 0 \\
+\end{aligned} \end{equation}
+The particular solution is then
+\begin{equation}\begin{aligned}
+X_p = -C \frac{1}{2} y^2 + C \frac{1}{2} b^2 \\
+Y_p = -D \frac{1}{2} y^2 + D \frac{1}{2} b^2 \\
+\end{aligned} \end{equation}
+Or
+\begin{equation}\begin{aligned}
+X_p = C \frac{1}{2} (b^2 - y^2) \\
+Y_p = D \frac{1}{2} (b^2 - y^2) \\
+\end{aligned} \end{equation}
+
+\section{Total solution}
+The total general solution is therefore:
+\begin{equation}\begin{aligned}
+X = C \frac{1}{2} (b^2 - y^2) + \sum_{n=1}^{\infty} \left( {\alpha_n}_1 e^{{\gamma_n}_1 x} + {\alpha_n}_2 e^{{\gamma_n}_2 x} \right) \cos(\sqrt{\lambda_n} y) \\
+Y = D \frac{1}{2} (b^2 - y^2) + \sum_{n=1}^{\infty} \left( {\beta_n}_1  e^{{\gamma_n}_1 x} + {\beta_n}_2  e^{{\gamma_n}_2 x} \right) \cos(\sqrt{\lambda_n} y) \\
+\end{aligned} \end{equation}
+Finally, the BCs at $x=0,a$ must be applied:
+Quick aside
+
+\noindent \rule{\textwidth}{1pt}
+Fourier series coefficients over the domain $[0,L]$
+\begin{equation}\begin{aligned}
+f(x) = \frac{A_0}{2} + \sum_{n=1}^{\infty} \left[ A_n \cos\left( \frac{n \pi x}{L} \right) + B_n \sin\left( \frac{n \pi x}{L} \right) \right] \\
+\end{aligned} \end{equation}
+may be solved using
+\begin{equation}\begin{aligned}
+A_0 = \frac{2}{L} \int_0^L f(x) dx, \qquad
+A_n = \frac{2}{L} \int_0^L f(x) \cos\left( \frac{n \pi x}{L} \right) dx, \qquad
+B_n = \frac{2}{L} \int_0^L f(x) \sin\left( \frac{n \pi x}{L} \right) dx
+\end{aligned} \end{equation}
+or over the domain $[-L,L]$:
+\begin{equation}\begin{aligned}
+A_0 = \frac{1}{L} \int_{-L}^L f(x) dx, \qquad
+A_n = \frac{1}{L} \int_{-L}^L f(x) \cos\left( \frac{n \pi x}{L} \right) dx, \qquad
+B_n = \frac{1}{L} \int_{-L}^L f(x) \sin\left( \frac{n \pi x}{L} \right) dx
+\end{aligned} \end{equation}
+\noindent \rule{\textwidth}{1pt}
+
+\subsection{BC at x=-a}
+Applying BC at $x=-a$ yields
+\begin{equation}\begin{aligned}
+\sum_{n=1}^{\infty} \left( {\alpha_n}_1 e^{-{\gamma_n}_1 a} + {\alpha_n}_2 e^{-{\gamma_n}_2 a} \right) \cos(\sqrt{\lambda_n} y) = C \frac{1}{2} (y^2-b^2) \\
+\sum_{n=1}^{\infty} \left( {\beta_n}_1  e^{-{\gamma_n}_1 a} + {\beta_n}_2  e^{-{\gamma_n}_2 a} \right) \cos(\sqrt{\lambda_n} y) = D \frac{1}{2} (y^2-b^2) \\
+\end{aligned} \end{equation}
+These are sine series expansions with respect to $y$, whose coefficients may be found from
+\begin{equation}\begin{aligned}
+\left( {\alpha_n}_1 e^{-{\gamma_n}_1 a} + {\alpha_n}_2 e^{-{\gamma_n}_2 a} \right) = C I_n \\
+\left( {\beta_n}_1  e^{-{\gamma_n}_1 a} + {\beta_n}_2  e^{-{\gamma_n}_2 a} \right) = D I_n \\
+{\alpha_n}_0 C b^2 = I_0 \\
+{\beta_n}_0  D b^2 = I_0 \\
+\end{aligned} \end{equation}
+Where $I_n$ is defined in the next section.
+
+\subsection{BC at x=a}
+Applying BC at $x=a$ yields
+\begin{equation}\begin{aligned}
+\sum_{n=1}^{\infty} \left( {\alpha_n}_1 e^{{\gamma_n}_1 a} + {\alpha_n}_2 e^{{\gamma_n}_2 a} \right) \cos(\sqrt{\lambda_n} y) = C \frac{1}{2} (y^2 - b^2) \\
+\sum_{n=1}^{\infty} \left( {\beta_n}_1  e^{{\gamma_n}_1 a} + {\beta_n}_2  e^{{\gamma_n}_2 a} \right) \cos(\sqrt{\lambda_n} y) = D \frac{1}{2} (y^2 - b^2) \\
+\end{aligned} \end{equation}
+
+These are sine series expansions with respect to $y$, whose coefficients may be found from the same integral as before, so we have
+\begin{equation}\begin{aligned}
+\left( {\alpha_n}_1 e^{{\gamma_n}_1 a} + {\alpha_n}_2 e^{{\gamma_n}_2 a} \right) = C I_n \\
+\left( {\beta_n}_1  e^{{\gamma_n}_1 a} + {\beta_n}_2  e^{{\gamma_n}_2 a} \right) = D I_n \\
+\end{aligned} \end{equation}
+Where $I_n$ is defined in the next section.
+
+\section{Evaluating the integral}
+The integral from the previous section is
+\begin{equation}\begin{aligned}
+I_0 = \frac{1}{b} \int_{-b}^{b} \frac{1}{2} (y^2 - b^2) dy \\
+I_n = \frac{1}{b} \int_{-b}^{b} \frac{1}{2} (y^2 - b^2) \cos(\sqrt{\lambda_n} y) dy \\
+\end{aligned} \end{equation}
+The integral yields (via Wolfram alpha)
+\begin{equation}\begin{aligned}
+I_0 = - \frac{2}{3} b^2 \\
+I_{n} = \frac{1}{b} \left( \frac{2 b \cos{ \left( b \sqrt{\lambda_n} \right) }}{\lambda_n}-\frac{2 \sin{ \left( b \sqrt{\lambda_n} \right) }}{\lambda_n^{3/2}} \right) \\
+\end{aligned} \end{equation}
+
+\section{Combining BC equations}
+Now we can combine the equations from each BC:
+
+
+\begin{equation}\begin{aligned}
+{\alpha_n}_0 C b^2 = - \frac{2}{3} b^2, \qquad {\alpha_n}_0 = -\frac{2}{3 C} \\
+{\beta_n}_0  D b^2 = - \frac{2}{3} b^2, \qquad {\beta_n}_0  = -\frac{2}{3 D} \\
+\left( {\alpha_n}_1 e^{-{\gamma_n}_1 a} + {\alpha_n}_2 e^{-{\gamma_n}_2 a} \right) = C I_n \\
+\left( {\alpha_n}_1 e^{ {\gamma_n}_1 a} + {\alpha_n}_2 e^{ {\gamma_n}_2 a} \right) = C I_n \\
+\left( {\beta_n}_1  e^{-{\gamma_n}_1 a} + {\beta_n}_2  e^{-{\gamma_n}_2 a} \right) = D I_n \\
+\left( {\beta_n}_1  e^{ {\gamma_n}_1 a} + {\beta_n}_2  e^{ {\gamma_n}_2 a} \right) = D I_n \\
+\end{aligned} \end{equation}
+We have 4 equations and 4 unknowns
+
+\section{Simplified equation form}
+Both sets of equations are in the form
+\begin{equation}\begin{aligned}
+A_1 E_1 + A_2 E_2 = H \\
+A_1 F_1 + A_2 F_2 = H \\
+\end{aligned} \end{equation}
+The solution to this system is
+\begin{equation}\begin{aligned}
+A_1 = \frac{H}{\theta} (E_2 - F_2) \\
+A_2 = \frac{H}{\theta} (F_1 - E_1) \\
+\theta = F_1 E_2 - F_2 E_1 \\
+\end{aligned} \end{equation}
+
+\section{Combining BC equations (continued)}
+Solving the BC system yields
+\begin{equation}\begin{aligned}
+{\alpha_n}_0 = -\frac{2}{3 C} \\
+{\beta_n}_0  = -\frac{2}{3 D} \\
+\theta = e^{ {\gamma_n}_1 a} e^{-{\gamma_n}_2 a} - e^{ {\gamma_n}_2 a} e^{-{\gamma_n}_1 a} \\
+{\alpha_n}_1 = \frac{H}{\theta} (E_2 - F_2) = \frac{C I_n}{\theta} (e^{-{\gamma_n}_2 a} - e^{ {\gamma_n}_2 a}) \\
+{\alpha_n}_2 = \frac{H}{\theta} (F_1 - E_1) = \frac{C I_n}{\theta} (e^{ {\gamma_n}_1 a} - e^{-{\gamma_n}_1 a}) \\
+{\beta_n}_1  = \frac{H}{\theta} (E_2 - F_2) = \frac{D I_n}{\theta} (e^{-{\gamma_n}_2 a} - e^{ {\gamma_n}_2 a}) \\
+{\beta_n}_2  = \frac{H}{\theta} (F_1 - E_1) = \frac{D I_n}{\theta} (e^{ {\gamma_n}_1 a} - e^{-{\gamma_n}_1 a}) \\
+\end{aligned} \end{equation}
+
+\section{Returning to our total solution}
+Finally, we have
+\begin{equation}\begin{aligned}
+\lambda_n  = \left(\frac{\pi}{b} \left( n+\frac{1}{2} \right) \right)^2 \\
+{\gamma_n}_{1,2} = \pm \frac{\sqrt{A^2 + 4 \lambda_n}}{2} \\
+I_{n} = \frac{1}{b} \left( \frac{2 b \cos{ \left( b \sqrt{\lambda_n} \right) }}{\lambda_n}-\frac{2 \sin{ \left( b \sqrt{\lambda_n} \right) }}{\lambda_n^{3/2}} \right) \\
+{\alpha_n}_0 = -\frac{2}{3 C} \\
+{\beta_n}_0  = -\frac{2}{3 D} \\
+\theta = e^{ {\gamma_n}_1 a} e^{-{\gamma_n}_2 a} - e^{ {\gamma_n}_2 a} e^{-{\gamma_n}_1 a} \\
+{\alpha_n}_1 = \frac{C I_n}{\theta} (e^{-{\gamma_n}_2 a} - e^{ {\gamma_n}_2 a}) \\
+{\alpha_n}_2 = \frac{C I_n}{\theta} (e^{ {\gamma_n}_1 a} - e^{-{\gamma_n}_1 a}) \\
+{\beta_n}_1  = \frac{D I_n}{\theta} (e^{-{\gamma_n}_2 a} - e^{ {\gamma_n}_2 a}) \\
+{\beta_n}_2  = \frac{D I_n}{\theta} (e^{ {\gamma_n}_1 a} - e^{-{\gamma_n}_1 a}) \\
+% X = C \frac{1}{2} (b^2 - y^2) + \sum_{n=1}^{\infty} \left( {\alpha_n}_1 e^{{\gamma_n}_1 x} + {\alpha_n}_2 e^{{\gamma_n}_2 x} \right) \cos(\sqrt{\lambda_n} y) \\
+% Y = D \frac{1}{2} (b^2 - y^2) + \sum_{n=1}^{\infty} \left( {\beta_n}_1  e^{{\gamma_n}_1 x} + {\beta_n}_2  e^{{\gamma_n}_2 x} \right) \cos(\sqrt{\lambda_n} y) \\
+X = -\frac{b^2}{3} - C \frac{1}{2} y^2 + \sum_{n=1}^{\infty} \left( {\alpha_n}_1 e^{{\gamma_n}_1 x} + {\alpha_n}_2 e^{{\gamma_n}_2 x} \right) \cos(\sqrt{\lambda_n} y) \\
+Y = -\frac{b^2}{3} - D \frac{1}{2} y^2 + \sum_{n=1}^{\infty} \left( {\beta_n}_1  e^{{\gamma_n}_1 x} + {\beta_n}_2  e^{{\gamma_n}_2 x} \right) \cos(\sqrt{\lambda_n} y) \\
+\end{aligned} \end{equation}
+
+Solutions are reconstructed using:
+\begin{equation}\begin{aligned}
+w   =                 \frac{1}{2} (X + Y)\\
+B_z = \frac{Re_m}{Ha} \frac{1}{2} (X - Y)\\
+\end{aligned} \end{equation}
+
+
+\end{document}

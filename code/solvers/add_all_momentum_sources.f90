@@ -34,19 +34,22 @@
 
          if (SP%MF%advection_divergence) then
            scale = -1.0_cp
+           scale = -1.0_cp/SP%DP%Rem ! For Rem ne 1 in Bandaru
            call compute_add_advection_divergence(F,mom%m,mom%U,mom%U_E,scale,mom%temp_F1,mom%temp_E,mom%temp_CC)
          endif
          if (SP%MF%advection_convection) then
            scale = -1.0_cp
+           scale = -1.0_cp/SP%DP%Rem ! For Rem ne 1 in Bandaru
            call compute_add_advection_convection(F,mom%m,mom%U,mom%U_E,scale,&
                 mom%temp_F1,mom%temp_F2,mom%temp_F3,mom%temp_CC)
          endif
-         if (SP%MF%diffusion) then
+         if (SP%MF%diffusion) then ! Requires special treatment since potentially implicit
            scale = mom%SP%VS%U%MFP%coeff_explicit
            call compute_add_diffusion(F,mom%m,mom%U,scale,mom%temp_F1)
          endif
          if (SP%MF%JCrossB) then
            scale = mom%SP%DP%N
+           scale = mom%SP%DP%N*mom%SP%DP%Rem ! For Rem ne 1 in Bandaru (look at J definition)
            call compute_add_JCrossB(F,mom%temp_F1,ind%B,ind%B0,ind%J,ind%m,&
                                    ind%MD_fluid,scale,&
                                    ind%SP%finite_Rem,ind%temp_CC,&

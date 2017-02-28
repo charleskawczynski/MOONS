@@ -1,0 +1,137 @@
+\documentclass[11pt]{article}
+% \documentclass[3p,twocolumn,10pt]{elsarticle}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+%\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+\usepackage{xcolor}
+\usepackage{xspace}
+\usepackage{longtable}
+\usepackage{mathtools}
+\usepackage{natbib}
+\usepackage{setspace}
+\usepackage{ragged2e}
+\usepackage{etoolbox}
+\usepackage{geometry}
+
+\input{../../../useful_commands.tex}
+
+\newcommand{\volume}{\mathop{\ooalign{\hfil$V$\hfil\cr\kern0.08em--\hfil\cr}}\nolimits}
+\newcommand{\figWidth}{0.45\textwidth}
+\newcommand{\figSuffix}{_png.png}
+\newcommand{\pushright}[1]{\ifmeasuring@#1\else\omit\hfill$\displaystyle#1$\fi\ignorespaces}
+\newcommand{\hfillMath}{\hskip \textwidth minus \textwidth}
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{8in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.7in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+% Useful commands:
+
+% \hfill    aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Plasma Disruption 2D solution}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Solving Shercliff-modified governing equations in 1D}
+In this document, we attempt the solution to the decoupled equations
+\begin{equation}\begin{aligned}
+X'' + A X' = - C, \qquad X=X(x) \text{, BCs: $X = 0 $ on $\PD \Omega$} \\
+Y'' - A Y' = - D, \qquad Y=Y(x) \text{, BCs: $Y = 0 $ on $\PD \Omega$} \\
+\end{aligned} \end{equation}
+Where constant $A$ is assumed to be positive.
+\section{Solution}
+Wolfram yields
+\begin{equation}\begin{aligned}
+X  = \frac{-C}{A} x + \alpha_1 \frac{e^{-Ax}}{A} + \alpha_2 \\
+Y  = \frac{ D}{A} x + \beta_1  \frac{e^{ Ax}}{A} + \beta_2  \\
+\end{aligned} \end{equation}
+Applying BCs yields and multiplying by $A$ yields
+\begin{equation}\begin{aligned}
+X(a)  = -C a + \alpha_1 e^{-A a} + A \alpha_2 = 0\\
+X(-a) =  C a + \alpha_1 e^{ A a} + A \alpha_2 = 0\\
+Y(a)  =  D a + \beta_1  e^{ A a} + A \beta_2  = 0\\
+Y(-a) = -D a + \beta_1  e^{-A a} + A \beta_2  = 0\\
+\end{aligned} \end{equation}
+Combining yields
+\begin{equation}\begin{aligned}
+2Ca + \alpha_1 (e^{ A a} - e^{-A a}) = 0 \\
+2Da + \beta_1  (e^{ A a} - e^{-A a}) = 0 \\
+\alpha_1 = \frac{-2Ca}{e^{ A a} - e^{-A a}} = \frac{-Ca}{\sinh(Aa)} \\
+\beta_1  = \frac{-2Da}{e^{ A a} - e^{-A a}} = \frac{-Da}{\sinh(Aa)} \\
+\end{aligned} \end{equation}
+Returning we have
+\begin{equation}\begin{aligned}
+-C a + \frac{-Ca}{\sinh(Aa)} e^{-A a} = - A \alpha_2 \\
+ D a + \frac{-Da}{\sinh(Aa)} e^{ A a} = - A \beta_2  \\
+\frac{Ca}{\sinh(Aa)} e^{-A a} +C a = A \alpha_2 \\
+\frac{Da}{\sinh(Aa)} e^{ A a} -D a = A \beta_2  \\
+\alpha_2 = \frac{1}{A} \left( \frac{Ca}{\sinh(Aa)} e^{-A a} +C a \right) \\
+\beta_2  = \frac{1}{A} \left( \frac{Da}{\sinh(Aa)} e^{ A a} -D a \right) \\
+\end{aligned} \end{equation}
+We finally have
+\begin{equation}\begin{aligned}
+X  = -\frac{C}{A} x - \frac{Ca}{\sinh(Aa)} \frac{e^{-Ax}}{A} + \frac{1}{A} \left( \frac{Ca}{\sinh(Aa)} e^{-A a} +C a \right) \\
+Y  =  \frac{D}{A} x - \frac{Da}{\sinh(Aa)} \frac{e^{ Ax}}{A} + \frac{1}{A} \left( \frac{Da}{\sinh(Aa)} e^{ A a} -D a \right) \\
+\end{aligned} \end{equation}
+Or
+\begin{equation}\begin{aligned}
+X  = \frac{1}{A} \left( -C x - \frac{Ca}{\sinh(Aa)} e^{-Ax} + \frac{Ca}{\sinh(Aa)} e^{-A a} +C a \right) \\
+Y  = \frac{1}{A} \left(  D x - \frac{Da}{\sinh(Aa)} e^{ Ax} + \frac{Da}{\sinh(Aa)} e^{ A a} -D a \right) \\
+\end{aligned} \end{equation}
+Collecting terms:
+\begin{equation}\begin{aligned}
+X  = \frac{1}{A} \left[ C(a-x) + \frac{Ca}{\sinh(Aa)}(e^{-A a}-e^{-Ax}) \right] \\
+Y  = \frac{1}{A} \left[ D(x-a) + \frac{Da}{\sinh(Aa)}(e^{ A a}-e^{ Ax}) \right] \\
+\end{aligned} \end{equation}
+
+Solutions are reconstructed using:
+\begin{equation}\begin{aligned}
+w   =                 \frac{1}{2} (X + Y)\\
+B_z = \frac{Re_m}{Ha} \frac{1}{2} (X - Y)\\
+\end{aligned} \end{equation}
+They are
+\begin{equation}\begin{aligned}
+w   =                 \frac{1}{2} \left( \frac{1}{A} \left[ C(a-x) + \frac{Ca}{\sinh(Aa)}(e^{-A a}-e^{-Ax}) \right] + \frac{1}{A} \left[ D(x-a) + \frac{Da}{\sinh(Aa)}(e^{ A a}-e^{ Ax}) \right] \right)\\
+B_z = \frac{Re_m}{Ha} \frac{1}{2} \left( \frac{1}{A} \left[ C(a-x) + \frac{Ca}{\sinh(Aa)}(e^{-A a}-e^{-Ax}) \right] - \frac{1}{A} \left[ D(x-a) + \frac{Da}{\sinh(Aa)}(e^{ A a}-e^{ Ax}) \right] \right)\\
+w   =                 \frac{1}{2A} \left( C(a-x) + \frac{Ca}{\sinh(Aa)}(e^{-A a}-e^{-Ax}) + D(x-a) + \frac{Da}{\sinh(Aa)}(e^{ A a}-e^{ Ax}) \right)\\
+B_z = \frac{Re_m}{Ha} \frac{1}{2A} \left( C(a-x) + \frac{Ca}{\sinh(Aa)}(e^{-A a}-e^{-Ax}) - D(x-a) - \frac{Da}{\sinh(Aa)}(e^{ A a}-e^{ Ax}) \right)\\
+w   =                 \frac{1}{2A} \left( -a(C+D)-x(C+D) \frac{Ca}{\sinh(Aa)}(e^{-A a}-e^{-Ax}) + \frac{Da}{\sinh(Aa)}(e^{ A a}-e^{ Ax}) \right)\\
+B_z = \frac{Re_m}{Ha} \frac{1}{2A} \left( -a(C-D)-x(C-D) \frac{Ca}{\sinh(Aa)}(e^{-A a}-e^{-Ax}) - \frac{Da}{\sinh(Aa)}(e^{ A a}-e^{ Ax}) \right)\\
+w   =                 \frac{1}{2A} \left(-(C+D)(a+x)+ \frac{a}{\sinh(Aa)} \left[C(e^{-A a}-e^{-Ax}) + D(e^{ A a}-e^{ Ax})\right] \right)\\
+B_z = \frac{Re_m}{Ha} \frac{1}{2A} \left(-(C-D)(a+x)+ \frac{a}{\sinh(Aa)} \left[C(e^{-A a}-e^{-Ax}) - D(e^{ A a}-e^{ Ax})\right] \right)\\
+\end{aligned} \end{equation}
+Where $A = Ha B_x^0, C = k - Ha \PD_t B_z^0, D = k + Ha \PD_t B_z^0$. We then have
+
+Note that
+$C-D = k - Ha \PD_t B_z^0 - (k + Ha \PD_t B_z^0) = -2Ha \PD_t B_z^0$
+
+\end{document}

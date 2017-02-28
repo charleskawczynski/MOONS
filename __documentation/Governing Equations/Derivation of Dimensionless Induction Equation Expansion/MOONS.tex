@@ -14,26 +14,8 @@
 \usepackage{setspace}
 \usepackage{tabularx,ragged2e,booktabs,caption}
 
-\newcommand{\B}{\mathbf{B}}
-\newcommand{\C}{\mathbf{C}}
-\newcommand{\U}{\mathbf{u}}
-\newcommand{\SI}{\sigma}
-\newcommand{\M}{\mu}
-
-\newcommand{\A}{\mathbf{A}}
-\newcommand{\PD}{\partial}
-\newcommand{\MC}{\mathcal}
-\newcommand{\BM}{\frac{\B}{\mu}}
-\newcommand{\J}{\mathbf{j}}
-\newcommand{\E}{\mathbf{E}}
-\newcommand{\N}{\mathbf{n}}
-\newcommand{\JS}{\frac{\J}{\sigma}}
-\newcommand{\JoS}{\frac{\J^1}{\sigma}}
-\newcommand{\JSS}{\frac{\J^2}{\sigma}}
-\newcommand{\SII}{\sigma^{-1}}
-\newcommand{\MO}{\overline{\mu}}
-\newcommand{\SO}{\overline{\sigma}}
-\newcommand{\DOT}{\text{\textbullet}}
+\input{./../path_to_useful_commands.tex}
+\input{\PATHTOUSEFULCOMMANDS}
 
 \setlength{\oddsidemargin}{0.1in}
 \setlength{\textwidth}{7.25in}
@@ -41,7 +23,7 @@
 \setlength{\topmargin}{-1in}     %\topmargin: gap above header
 \setlength{\headheight}{0in}     %\headheight: height of header
 \setlength{\topskip}{0in}        %\topskip: between header and text
-\setlength{\headsep}{0in}        
+\setlength{\headsep}{0in}
 \setlength{\textheight}{692pt}   %\textheight: height of main text
 \setlength{\textwidth}{7.5in}    % \textwidth: width of text
 \setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
@@ -66,7 +48,7 @@ University of California Los Angeles, USA\\
 \section{Induction equation by orders of induced magnetic field}
 The dimensional induction equation is
 \begin{equation} \label{eq:ind_dim}
-  \frac{\PD \B}{\PD t} 
+  \frac{\PD \B}{\PD t}
   =
   (\nabla \times \U \times \B)
   - \\
@@ -81,7 +63,7 @@ The dimensional induction equation is
 \end{equation}
 Non-dimensionalizing time, velocity, length, conductivity and magnetic permeability by $L/U,U,L,\sigma,\mu$, we have
 \begin{equation} \label{eq:ind}
-  \frac{\PD \B}{\PD t} 
+  \frac{\PD \B}{\PD t}
   =
   (\nabla \times \U \times \B)
   - \\
@@ -100,7 +82,7 @@ Note that, in the above equation, $\B$ has not been non-dimensionalized. Let
 \begin{equation}
   G(\B)
   =
-  \frac{\PD \B}{\PD t} 
+  \frac{\PD \B}{\PD t}
   -
   (\nabla \times \U \times \B)
   +
@@ -134,7 +116,7 @@ Considering the first two terms we have
 \end{equation}
 For a uniform and steady external field ($\B^0$), this simplifies to
 \begin{equation}
-  \frac{\PD \B^1}{\PD t} 
+  \frac{\PD \B^1}{\PD t}
   -
   (\nabla \times \U \times (\B^0 + \B^1))
   +

@@ -13,28 +13,8 @@
 \usepackage{setspace}
 \usepackage{tabularx,ragged2e,booktabs,caption}
 
-\newcommand{\B}{\mathbf{B}}
-\renewcommand{\H}{\mathbf{H}}
-\newcommand{\C}{\mathbf{C}}
-\newcommand{\U}{\mathbf{u}}
-\newcommand{\SI}{\sigma}
-\newcommand{\M}{\mu}
-\newcommand{\curl}{\nabla \times}
-
-\newcommand{\A}{\mathbf{A}}
-\newcommand{\PD}{\partial}
-\newcommand{\MC}{\mathcal}
-\newcommand{\BM}{\frac{\B}{\mu}}
-\newcommand{\J}{\mathbf{j}}
-\newcommand{\E}{\mathbf{E}}
-\newcommand{\N}{\mathbf{n}}
-\newcommand{\JS}{\frac{\J}{\sigma}}
-\newcommand{\JoS}{\frac{\J^1}{\sigma}}
-\newcommand{\JSS}{\frac{\J^2}{\sigma}}
-\newcommand{\SII}{\sigma^{-1}}
-\newcommand{\MO}{\overline{\mu}}
-\newcommand{\SO}{\overline{\sigma}}
-\newcommand{\DOT}{\text{\textbullet}}
+\input{./../path_to_useful_commands.tex}
+\input{\PATHTOUSEFULCOMMANDS}
 
 
 \setlength{\oddsidemargin}{0.1in}
@@ -43,7 +23,7 @@
 \setlength{\topmargin}{-1in}     %\topmargin: gap above header
 \setlength{\headheight}{0in}     %\headheight: height of header
 \setlength{\topskip}{0in}        %\topskip: between header and text
-\setlength{\headsep}{0in}        
+\setlength{\headsep}{0in}
 \setlength{\textheight}{692pt}   %\textheight: height of main text
 \setlength{\textwidth}{7.5in}    % \textwidth: width of text
 \setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
@@ -70,7 +50,7 @@ University of California Los Angeles, USA\\
 The dimensional energy equation is
 
 \begin{equation}
-\rho C_p \left[ \frac{\PD T}{\PD t} + \frac{\PD (u_j T)}{\PD x_j} \right] = 
+\rho C_p \left[ \frac{\PD T}{\PD t} + \frac{\PD (u_j T)}{\PD x_j} \right] =
 \frac{\PD}{\PD x_j} \left( k \frac{\PD T}{\PD x_j} \right) + \frac{1}{\sigma} j^2 + \Phi + \dot{Q}
 \end{equation}
 
@@ -84,8 +64,8 @@ is the viscous dissipation.
 \subsection{Non-dimensionalizing}
 Using
 \begin{equation}\begin{aligned}
-u_j^* = u_j/U_c \qquad t^* = t/t_c \qquad 
-t_c = L_c/U_c  \qquad x_j^* = x_j/L_c \qquad 
+u_j^* = u_j/U_c \qquad t^* = t/t_c \qquad
+t_c = L_c/U_c  \qquad x_j^* = x_j/L_c \qquad
 T^* = \frac{T - T_c}{\Delta T_c} \\
 \rho = \rho_c \qquad \mu = \mu_c \qquad
 C_p = C_{p,c} \qquad k = k_c \qquad
@@ -100,7 +80,7 @@ Yields
 	\left[
 	\frac{\Delta T_c}{t_c} \frac{\PD T^*}{\PD t^*} + \frac{\Delta T_c U_c}{L_c} \frac{\PD (u_j^* T^*)}{\PD x_j^*}
 	\right]
-	= 
+	=
 	\frac{k_c \Delta T_c}{L_c^2}
 	\frac{\PD}{\PD x_j^*}
 	\left( k^* \frac{\PD T^*}{\PD x_j^*} \right) +
@@ -118,12 +98,12 @@ Dividing by $\rho_c C_{p,c} \frac{\Delta T_c U_c}{L_c}$ yields
 \begin{multline}
 	\frac{\PD T^*}{\PD t^*} +
 	\frac{\PD (u_j^* T^*)}{\PD x_j^*}
-	= 
-	\alpha_c 
+	=
+	\alpha_c
 	\frac{L_c}{U_c \Delta T_c}
 	\frac{\Delta T_c}{L_c^2}
 	\frac{\PD}{\PD x_j^*}
-	\left( k^* \frac{\PD T^*}{\PD x_j^*} \right) + 
+	\left( k^* \frac{\PD T^*}{\PD x_j^*} \right) +
 	\frac{L_c}{U_c \Delta T_c}
 	\frac{\sigma_c}{\rho_c C_{p,c}}
 	\frac{U_c^2 B_c^2}{\sigma^*} {j^*}^2 + \\
@@ -189,7 +169,7 @@ Note that in order to have no coefficients in front of heat generation terms, th
 \dot{Q}^* = \frac{\dot{Q}}{\rho_c C_{p,c} \Delta T_c / t_c}
 \end{equation}
 
-It is readily confirmed that the units are correct here since 
+It is readily confirmed that the units are correct here since
 
 \begin{equation}
 Force \times distance = work \qquad \qquad
@@ -206,10 +186,10 @@ Since the viscous dissipation and generation terms have units power/volume, the 
 Putting this all together, we have
 \begin{equation}
 	\frac{\PD T^*}{\PD t^*} + \frac{\PD (u_j^* T^*)}{\PD x_j^*}
-	= 
+	=
 	\frac{1}{Re Pr}
 	\frac{\PD}{\PD x_j^*}
-	\left( k^* \frac{\PD T^*}{\PD x_j^*} \right) + 
+	\left( k^* \frac{\PD T^*}{\PD x_j^*} \right) +
 	Ec \frac{Ha^2}{Re}
 	\frac{{j^*}^2}{\sigma^*} +
 	\frac{Ec}{Re}
@@ -223,10 +203,10 @@ Removing the asterisks for simplicity, we have
 \begin{equation}
 	\frac{\PD T}{\PD t} +
 	\frac{\PD (u_j T)}{\PD x_j}
-	= 
+	=
 	\frac{1}{Re Pr}
 	\frac{\PD}{\PD x_j}
-	\left( k \frac{\PD T}{\PD x_j} \right) + 
+	\left( k \frac{\PD T}{\PD x_j} \right) +
 	Ec \frac{Ha^2}{Re}
 	\frac{{j}^2}{\sigma} +
 	\frac{Ec}{Re}
@@ -234,10 +214,6 @@ Removing the asterisks for simplicity, we have
 	\frac{\PD u_i}{\PD x_j} +
 	\dot{Q}
 \end{equation}
-
-\section{Implementing Periodic temperature BCs}
-Implementing periodic temperature BCs is delicate because the net amount of heat must remain zero to avoid unbounded momentum forces. To achieve this, we may decompose temperature into mean and fluctuating, and implement periodic BCs on the fluctuating temperature.
-
 
 
 \end{document}
