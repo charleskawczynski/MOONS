@@ -13,7 +13,9 @@
        use kill_switch_mod
        use probe_mod
 
+       use ops_embedExtract_mod
        use time_marching_params_mod
+       use add_all_energy_sources_mod
        use add_all_momentum_sources_mod
        use add_all_induction_sources_mod
        use induction_aux_mod
@@ -68,11 +70,14 @@
 
            ! if (SP%VS%rho%SS%solve)    call solve(dens,mom%U,  EF,EN,DT)
            if (SP%VS%T%SS%solve) then
-             call solve(nrg,mom%U,  nrg%SP%VS%T%TMP ,EF,EN,DT)
+             call embedFace(nrg%U_F,mom%U,nrg%MD)
+             call embedCC(nrg%U_CC,mom%U_CC,nrg%MD)
+             call add_all_energy_sources(nrg%F,nrg%Fnm1,nrg,ind,SP)
+             call solve(nrg,nrg%F,nrg%Fnm1,nrg%SP%VS%T%TMP,EF,EN,DT)
            endif
            if (SP%VS%U%SS%solve) then
              call add_all_momentum_sources(F,Fnm1,nrg,mom,ind,SP)
-             call solve(mom,F,Fnm1, mom%SP%VS%U%TMP ,EF,EN,DT)
+             call solve(mom,F,Fnm1,mom%SP%VS%U%TMP,EF,EN,DT)
            endif
            if (SP%VS%B%SS%solve) then
             call embedVelocity_E(ind%U_E,mom%U_E,ind%MD_fluid)

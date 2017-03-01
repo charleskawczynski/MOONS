@@ -364,8 +364,8 @@
          type(momentum),intent(inout) :: mom
          type(time_marching_params),intent(in) :: TMP
          type(dir_tree),intent(in) :: DT
-         call export_processed(mom%m,mom%U,str(DT%U%unsteady),'U',1,TMP,mom%SP%VS%U%unsteady_line)
-         call export_processed(mom%m,mom%p,str(DT%P%unsteady),'p',1,TMP,mom%SP%VS%P%unsteady_line)
+         call export_processed(mom%m,mom%U,str(DT%U%unsteady),'U',1,TMP,mom%SP%VS%U%unsteady_lines)
+         call export_processed(mom%m,mom%p,str(DT%P%unsteady),'p',1,TMP,mom%SP%VS%P%unsteady_lines)
        end subroutine
 
        subroutine export_unsteady_2D_mom(mom,TMP,DT)
@@ -373,8 +373,8 @@
          type(momentum),intent(inout) :: mom
          type(time_marching_params),intent(in) :: TMP
          type(dir_tree),intent(in) :: DT
-         call export_processed(mom%m,mom%U,str(DT%U%unsteady),'U',1,TMP,mom%SP%VS%U%unsteady_plane)
-         call export_processed(mom%m,mom%p,str(DT%P%unsteady),'p',1,TMP,mom%SP%VS%P%unsteady_plane)
+         call export_processed(mom%m,mom%U,str(DT%U%unsteady),'U',1,TMP,mom%SP%VS%U%unsteady_planes)
+         call export_processed(mom%m,mom%p,str(DT%P%unsteady),'p',1,TMP,mom%SP%VS%P%unsteady_planes)
        end subroutine
 
        subroutine export_unsteady_3D_mom(mom,TMP,DT)
@@ -425,16 +425,12 @@
            call O2_BDF_time_AB2_sources(mom%PCG_U,mom%PCG_P,mom%U,mom%Ustar,&
            mom%Unm1,mom%p,F,Fnm1,mom%m,TMP,mom%temp_F1,mom%temp_F2,mom%temp_CC,&
            mom%temp_CC_VF,EF%unsteady_0D%export_now)
-
          case (5)
-           call CN_AB2_PPE_PCG_mom_PCG(mom%PCG_U,mom%PCG_p,mom%U,mom%Ustar,mom%Unm1,&
-           mom%p,F,Fnm1,mom%m,TMP%dt,mom%temp_F1,&
-           mom%temp_F2,mom%temp_CC,mom%temp_CC_VF,EF%unsteady_0D%export_now)
+           call Euler_time_no_diff_AB2_sources(mom%PCG_P,mom%U,mom%Ustar,mom%Unm1,mom%p,&
+           F,Fnm1,mom%m,TMP,mom%temp_F2,mom%temp_CC,EF%unsteady_0D%export_now)
          case (6)
-           call Euler_Donor_no_PPE(mom%U,F,Fnm1,TMP%dt,mom%temp_F1)
-         case (7)
-           call Euler_PCG_Donor(mom%PCG_P,mom%U,mom%Ustar,mom%U_E,mom%p,F,mom%m,&
-           mom%SP%DP%Re,TMP%dt,mom%temp_F1,mom%temp_F2,mom%temp_CC,mom%temp_E,EF%unsteady_0D%export_now)
+           call Euler_time_no_diff_Euler_sources(mom%PCG_P,mom%U,mom%Ustar,mom%Unm1,mom%p,&
+           F,mom%m,TMP,mom%temp_F2,mom%temp_CC,EF%unsteady_0D%export_now)
          case default; stop 'Error: solveUMethod must = 1:4 in momentum.f90.'
          end select
          call iterate_step(TMP)

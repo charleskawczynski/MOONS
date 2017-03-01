@@ -24,25 +24,21 @@
          type(induction),intent(inout) :: ind
          type(time_marching_params),intent(in) :: TMP
          type(sim_params),intent(in) :: SP
-         real(cp) :: scale
 
          call assign(Fnm1,F)
          call assign(F,0.0_cp) ! DO NOT REMOVE THIS, FOLLOW THE COMPUTE_ADD PROCEDURE BELOW
 
-         if (SP%INDF%advection) then
-           scale = 1.0_cp
-           scale = 1.0_cp/SP%DP%Rem ! For Rem ne 1 in Bandaru
-           call add_curl_U_cross_B(F,ind%m,mom%U_E,ind%U_E,ind%B0,ind%B,ind%curlUCrossB,&
-           ind%MD_fluid,scale,ind%SP%finite_Rem,ind%temp_F2,ind%temp_E_TF,ind%temp_E)
+         if (SP%IT%advection%add) then
+           call add_curl_U_cross_B(F,ind%m,mom%U_E,ind%U_E,ind%B0,ind%B,&
+           ind%curlUCrossB,ind%MD_fluid,SP%IT%advection%scale,&
+           ind%SP%finite_Rem,ind%temp_F2,ind%temp_E_TF,ind%temp_E)
          endif
-         if (SP%INDF%diffusion) then ! Requires special treatment since potentially implicit
-           scale = -SP%VS%B%MFP%beta ! since LHS and J includes scale
-           call add_curl_J(F,ind%m,ind%J,ind%sigmaInv_edge,scale,ind%temp_F2,ind%temp_E)
+         if (SP%IT%diffusion%add) then
+           call add_curl_J(F,ind%m,ind%J,ind%sigmaInv_edge,&
+           SP%IT%diffusion%scale,ind%temp_F2,ind%temp_E)
          endif
-         if (SP%INDF%unsteady_B0) then
-           scale = -1.0_cp ! since RHS
-           call add_unsteady_B0(F,ind%B0,ind%dB0dt,scale,TMP)
-           call add(F,ind%dB0dt)
+         if (SP%IT%unsteady_B0%add) then
+           call add_unsteady_B0(F,ind%B0,ind%dB0dt,SP%IT%unsteady_B0%scale,TMP)
          endif
        end subroutine
 

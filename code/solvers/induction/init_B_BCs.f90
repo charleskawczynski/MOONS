@@ -39,11 +39,12 @@
          case (1); call pseudo_vacuum(B,m)
          case (2); call init_Bandaru(B)
          case (3); call periodic_duct_flow(B,m)
-         case (4); call thin_wall(B,m,cw)
-         case (5); call thin_wall_LDC(B,m,cw)
-         case (6); call thin_wall_Hunt(B,m,cw)
-         case (7); call RV_symmetric_zmax(B,m)
-         case (8); call PV_symmetric_zmax(B,m)
+         case (4); call periodic_duct_flow_pseudo_vacuum(B,m)
+         case (5); call thin_wall(B,m,cw)
+         case (6); call thin_wall_LDC(B,m,cw)
+         case (7); call thin_wall_Hunt(B,m,cw)
+         case (8); call RV_symmetric_zmax(B,m)
+         case (9); call PV_symmetric_zmax(B,m)
          case default; stop 'Error: bad preset_ID in init_UBCs.f90'
          end select
 
@@ -108,17 +109,33 @@
          enddo
        end subroutine
 
+       subroutine periodic_duct_flow_pseudo_vacuum(B,m)
+         implicit none
+         type(VF),intent(inout) :: B
+         type(mesh),intent(in) :: m
+         integer :: i,k
+         call pseudo_vacuum(B,m)
+         do i=1,m%s
+           do k=1,2; call init_periodic(B%x%BF(i)%BCs,k); enddo
+           do k=1,2; call init_periodic(B%y%BF(i)%BCs,k); enddo
+           do k=1,2; call init_periodic(B%z%BF(i)%BCs,k); enddo
+         enddo
+       end subroutine
+
        subroutine init_Bandaru(B)
          implicit none
          type(VF),intent(inout) :: B
-         call init_periodic(B%x%BF(1)%BCs,1)
-         call init_periodic(B%y%BF(1)%BCs,1)
-         call init_periodic(B%z%BF(1)%BCs,1)
-         call init_periodic(B%x%BF(1)%BCs,2)
-         call init_periodic(B%y%BF(1)%BCs,2)
-         call init_periodic(B%z%BF(1)%BCs,2)
-         call init_Neumann(B%x%BF(1)%BCs,5)
-         call init_Neumann(B%x%BF(1)%BCs,6)
+         integer :: i
+         do i=1,B%x%s
+         call init_periodic(B%x%BF(i)%BCs,1)
+         call init_periodic(B%y%BF(i)%BCs,1)
+         call init_periodic(B%z%BF(i)%BCs,1)
+         call init_periodic(B%x%BF(i)%BCs,2)
+         call init_periodic(B%y%BF(i)%BCs,2)
+         call init_periodic(B%z%BF(i)%BCs,2)
+         call init_Neumann(B%x%BF(i)%BCs,5)
+         call init_Neumann(B%x%BF(i)%BCs,6)
+         enddo
        end subroutine
 
        subroutine thin_wall(B,m,cw)

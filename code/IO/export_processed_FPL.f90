@@ -1,8 +1,9 @@
        module export_processed_FPL_mod
        use export_field_mod
-       use export_plane_mod
-       use export_line_mod
+       use export_planes_mod
+       use export_lines_mod
        use export_raw_processed_mod
+       use datatype_conversion_mod
        use mesh_mod
        use SF_mod
        use VF_mod
@@ -46,54 +47,70 @@
          endif
        end subroutine
 
-       subroutine export_unsteady_plane_SF(m,x,dir,name,pad,TMP,unsteady_plane)
+       subroutine export_unsteady_plane_SF(m,x,dir,name,pad,TMP,unsteady_planes)
          implicit none
          type(mesh),intent(in) :: m
          type(SF),intent(in) :: x
          character(len=*),intent(in) :: dir,name
          integer,intent(in) :: pad
          type(time_marching_params),intent(in) :: TMP
-         type(export_plane),intent(in) :: unsteady_plane
-         if (unsteady_plane%export_ever) then
-           call export_processed(m,x,dir,name,pad,TMP,unsteady_plane%dir,unsteady_plane%plane)
+         type(export_planes),intent(in) :: unsteady_planes
+         integer :: i
+         do i=1,unsteady_planes%N
+         if (unsteady_planes%EP(i)%export_ever) then
+           call export_processed(m,x,dir,name//unsteady_planes%EP(i)%suffix,&
+           pad,TMP,unsteady_planes%EP(i)%dir,unsteady_planes%EP(i)%plane)
          endif
+         enddo
        end subroutine
-       subroutine export_unsteady_plane_VF(m,x,dir,name,pad,TMP,unsteady_plane)
+       subroutine export_unsteady_plane_VF(m,x,dir,name,pad,TMP,unsteady_planes)
          implicit none
          type(mesh),intent(in) :: m
          type(VF),intent(in) :: x
          character(len=*),intent(in) :: dir,name
          integer,intent(in) :: pad
          type(time_marching_params),intent(in) :: TMP
-         type(export_plane),intent(in) :: unsteady_plane
-         if (unsteady_plane%export_ever) then
-           call export_processed(m,x,dir,name,pad,TMP,unsteady_plane%dir,unsteady_plane%plane)
+         type(export_planes),intent(in) :: unsteady_planes
+         integer :: i
+         do i=1,unsteady_planes%N
+         if (unsteady_planes%EP(i)%export_ever) then
+           call export_processed(m,x,dir,name//unsteady_planes%EP(i)%suffix,&
+            pad,TMP,unsteady_planes%EP(i)%dir,unsteady_planes%EP(i)%plane)
          endif
+         enddo
        end subroutine
 
-       subroutine export_unsteady_line_SF(m,x,dir,name,pad,TMP,unsteady_line)
+       subroutine export_unsteady_line_SF(m,x,dir,name,pad,TMP,unsteady_lines)
          implicit none
          type(mesh),intent(in) :: m
          type(SF),intent(in) :: x
          character(len=*),intent(in) :: dir,name
          integer,intent(in) :: pad
          type(time_marching_params),intent(in) :: TMP
-         type(export_line),intent(in) :: unsteady_line
-         if (unsteady_line%export_ever) then
-           call export_processed(m,x,dir,name,pad,TMP,unsteady_line%dir,unsteady_line%line)
+         type(export_lines),intent(in) :: unsteady_lines
+         integer :: i
+         do i=1,unsteady_lines%N
+         if (unsteady_lines%EL(i)%export_ever) then
+           call export_processed(m,x,dir,name//unsteady_lines%EL(i)%suffix,&
+           pad,TMP,unsteady_lines%EL(i)%dir,unsteady_lines%EL(i)%line)
          endif
+         enddo
        end subroutine
-       subroutine export_unsteady_line_VF(m,x,dir,name,pad,TMP,unsteady_line)
+       subroutine export_unsteady_line_VF(m,x,dir,name,pad,TMP,unsteady_lines)
          implicit none
          type(mesh),intent(in) :: m
          type(VF),intent(in) :: x
          character(len=*),intent(in) :: dir,name
          integer,intent(in) :: pad
          type(time_marching_params),intent(in) :: TMP
-         type(export_line),intent(in) :: unsteady_line
-         if (unsteady_line%export_ever) then
-           call export_processed(m,x,dir,name,pad,TMP,unsteady_line%dir,unsteady_line%line)
+         type(export_lines),intent(in) :: unsteady_lines
+         integer :: i
+         do i=1,unsteady_lines%N
+         if (unsteady_lines%EL(i)%export_ever) then
+           call export_processed(m,x,dir,name//unsteady_lines%EL(i)%suffix,&
+           pad,TMP,unsteady_lines%EL(i)%dir,unsteady_lines%EL(i)%line)
          endif
+         enddo
        end subroutine
 
        end module

@@ -77,9 +77,9 @@
          integer,intent(in) :: dir
          select case (dir)
          case (0);
-         case (1); call subtract(U%x,-scale*TMP%dt); call apply_BCs(U)
-         case (2); call subtract(U%y,-scale*TMP%dt); call apply_BCs(U)
-         case (3); call subtract(U%z,-scale*TMP%dt); call apply_BCs(U)
+         case (1); call add(U%x,scale*TMP%dt); call apply_BCs(U)
+         case (2); call add(U%y,scale*TMP%dt); call apply_BCs(U)
+         case (3); call add(U%z,scale*TMP%dt); call apply_BCs(U)
          case default; stop 'Error: dir must = 0:3 in compute_MPG in induction_aux.f90'
          end select
        end subroutine

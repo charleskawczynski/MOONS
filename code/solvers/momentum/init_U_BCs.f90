@@ -101,23 +101,31 @@
        subroutine LDC_at_ymax_symmetric_zmax(U)
          implicit none
          type(VF),intent(inout) :: U
-         call init(U%x%BF(1)%BCs,1.0_cp,4)
-         call init_Neumann(U%x%BF(1)%BCs,6)
-         call init_Neumann(U%y%BF(1)%BCs,6)
-         ! call init_Neumann(U%z%BF(1)%BCs,6) ! Results in small flow through
-         call init_Dirichlet(U%z%BF(1)%BCs,6)
+         integer :: i
+         do i=1,U%x%s
+         call init(U%x%BF(i)%BCs,1.0_cp,4)
+         call init_Neumann(U%x%BF(i)%BCs,6)
+         call init_Neumann(U%y%BF(i)%BCs,6)
+         ! call init_Neumann(U%z%BF(i)%BCs,6) ! Results in small flow through
+         call init_Dirichlet(U%z%BF(i)%BCs,6)
+         enddo
        end subroutine
 
        subroutine LDC_4_domains(U)
          implicit none
          type(VF),intent(inout) :: U
+         integer :: i
+         do i=1,U%x%s
          call init(U%x%BF(3)%BCs,1.0_cp,4) ! periodic in z, driven at ymax
          call init(U%x%BF(4)%BCs,1.0_cp,4) ! periodic in z, driven at ymax
+         enddo
        end subroutine
 
        subroutine LDC_9_domains(U)
          implicit none
          type(VF),intent(inout) :: U
+         integer :: i
+         do i=1,U%x%s
          call init(U%x%BF(5)%BCs,1.0_cp,4) ! periodic in z, driven at ymax
          call init(U%x%BF(8)%BCs,1.0_cp,4) ! periodic in z, driven at ymax
          call init(U%x%BF(9)%BCs,1.0_cp,4) ! periodic in z, driven at ymax
@@ -125,33 +133,43 @@
          ! call init(U%x%BF(8)%BCs%e(8+2),1.0_cp)
          ! call init(U%x%BF(8)%BCs%e(8+4),1.0_cp)
          ! call init(U%x%BF(9)%BCs%e(8+2),1.0_cp)
+         enddo
        end subroutine
 
        subroutine duct_flow_uniform_in_FD_out(U)
          implicit none
          type(VF),intent(inout) :: U
-         call init(U%x%BF(1)%BCs,1.0_cp,1)  ! Inlet (uniform)
-         call init_Neumann(U%x%BF(1)%BCs,2) ! Outlet (fully developed)
-         call init_Neumann(U%y%BF(1)%BCs,2) ! Outlet (fully developed)
-         call init_Neumann(U%z%BF(1)%BCs,2) ! Outlet (fully developed)
+         integer :: i
+         do i=1,U%x%s
+         call init(U%x%BF(i)%BCs,1.0_cp,1)  ! Inlet (uniform)
+         call init_Neumann(U%x%BF(i)%BCs,2) ! Outlet (fully developed)
+         call init_Neumann(U%y%BF(i)%BCs,2) ! Outlet (fully developed)
+         call init_Neumann(U%z%BF(i)%BCs,2) ! Outlet (fully developed)
+         enddo
        end subroutine
 
        subroutine duct_flow_uniform_in_axial_out(U)
          implicit none
          type(VF),intent(inout) :: U
-         call init(U%x%BF(1)%BCs,1.0_cp,1)  ! Inlet (uniform)
-         call init_Neumann(U%x%BF(1)%BCs,2) ! Outlet (fully developed)
+         integer :: i
+         do i=1,U%x%s
+         call init(U%x%BF(i)%BCs,1.0_cp,1)  ! Inlet (uniform)
+         call init_Neumann(U%x%BF(i)%BCs,2) ! Outlet (fully developed)
+         enddo
        end subroutine
 
        subroutine duct_flow_periodic_IO(U)
          implicit none
          type(VF),intent(inout) :: U
-         call init_periodic(U%x%BF(1)%BCs,1) ! Inlet (periodic)
-         call init_periodic(U%y%BF(1)%BCs,1) ! Inlet (periodic)
-         call init_periodic(U%z%BF(1)%BCs,1) ! Inlet (periodic)
-         call init_periodic(U%x%BF(1)%BCs,2) ! Outlet (periodic)
-         call init_periodic(U%y%BF(1)%BCs,2) ! Outlet (periodic)
-         call init_periodic(U%z%BF(1)%BCs,2) ! Outlet (periodic)
+         integer :: i
+         do i=1,U%x%s
+         call init_periodic(U%x%BF(i)%BCs,1) ! Inlet (periodic)
+         call init_periodic(U%x%BF(i)%BCs,2) ! Outlet (periodic)
+         call init_periodic(U%y%BF(i)%BCs,1) ! Inlet (periodic)
+         call init_periodic(U%z%BF(i)%BCs,1) ! Inlet (periodic)
+         call init_periodic(U%y%BF(i)%BCs,2) ! Outlet (periodic)
+         call init_periodic(U%z%BF(i)%BCs,2) ! Outlet (periodic)
+         enddo
        end subroutine
 
        subroutine duct_flow_2D_2domains(U)
@@ -170,8 +188,11 @@
        subroutine channel_flow_uniform_in_FD_out(U)
          implicit none
          type(VF),intent(inout) :: U
-         call init(U%x%BF(1)%BCs,1.0_cp,1)  ! Inlet (uniform)
-         call init_Neumann(U%x%BF(1)%BCs,2) ! Outlet (fully developed)
+         integer :: i
+         do i=1,U%x%s
+         call init(U%x%BF(i)%BCs,1.0_cp,1)  ! Inlet (uniform)
+         call init_Neumann(U%x%BF(i)%BCs,2) ! Outlet (fully developed)
+         enddo
        end subroutine
 
        subroutine channel_flow_parabolic_in_FD_out(U,m,dir)
@@ -179,8 +200,11 @@
          type(VF),intent(inout) :: U
          type(mesh),intent(in) :: m
          integer,intent(in) :: dir
-         call parabolic_1D(U%x%BF(1)%BCs%face%b(1),m%B(1)%g,U%x%DL,dir) ! Inlet (parabolic)
-         call init_Neumann(U%x%BF(1)%BCs,2) ! Outlet (fully developed)
+         integer :: i
+         do i=1,U%x%s
+         call parabolic_1D(U%x%BF(i)%BCs%face%b(1),m%B(1)%g,U%x%DL,dir) ! Inlet (parabolic)
+         call init_Neumann(U%x%BF(i)%BCs,2) ! Outlet (fully developed)
+         enddo
        end subroutine
 
        subroutine flow_over_2D_square(U)

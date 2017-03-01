@@ -91,25 +91,6 @@
        ! **********************************************************************
        ! **********************************************************************
 
-       subroutine Euler_PCG_Donor_old(PCG,U,Ustar,p,F,Fnm1,m,dt,&
-         temp_F1,temp_F2,temp_CC,compute_norms)
-         implicit none
-         type(PCG_solver_SF),intent(inout) :: PCG
-         type(SF),intent(inout) :: p
-         type(VF),intent(inout) :: U,Ustar
-         type(VF),intent(in) :: F,Fnm1
-         type(mesh),intent(in) :: m
-         real(cp),intent(in) :: dt
-         type(VF),intent(inout) :: temp_F1,temp_F2
-         type(SF),intent(inout) :: temp_CC
-         logical,intent(in) :: compute_norms
-         call AB2(temp_F1,F,Fnm1)
-         call multiply(temp_F1,dt)
-         call assign_wall_Dirichlet(temp_F1,0.0_cp,U)
-         call add(Ustar,temp_F1,U)
-         call clean_div(PCG,U,Ustar,p,1.0_cp/dt,m,temp_F2,temp_CC,compute_norms)
-       end subroutine
-
        subroutine Euler_PCG_Donor(PCG,U,Ustar,U_E,p,F,m,Re,dt,&
          temp_F1,temp_F2,temp_CC,temp_E,compute_norms)
          implicit none

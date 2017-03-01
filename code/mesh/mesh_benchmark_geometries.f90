@@ -50,6 +50,7 @@
          case (18); call MHD_3D_LDC_BC_symmetric_fine_top_new(m_mom,m_ind,MQP,MD_sigma,DP,tw,include_vacuum)
          case (19); call user_defined(             m_mom,m_ind,MQP,MD_sigma,DP)
          case (20); call Hydro_3D_LDC_Leriche(     m_mom,m_ind,MQP,DP)
+         case (21); call MHD_3D_2_channel_PD(      m_mom,m_ind,MQP,MD_sigma,DP)
          case default; stop 'Error: bad BMC_geometry in mesh_benchmark_geometries.f90'
          end select
        end subroutine

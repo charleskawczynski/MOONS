@@ -9,6 +9,7 @@
          logical :: export_ever = .false.
          integer :: dir = 0
          integer :: plane = 0
+         character(len=1) :: suffix = '1'
        end type
 
        interface init;      module procedure init_EP;      end interface
@@ -25,14 +26,17 @@
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-       subroutine init_EP(EP,export_ever,dir,plane)
+       subroutine init_EP(EP,export_ever,dir,plane,suffix)
          implicit none
          type(export_plane),intent(inout) :: EP
          logical,intent(in) :: export_ever
-         integer,intent(in) :: dir,plane
+         integer,intent(in) :: dir
+         integer,intent(in) :: plane
+         character(len=1),intent(in) :: suffix
          EP%export_ever = export_ever
          EP%dir         = dir
-         EP%plane       = plane
+         EP%plane        = plane
+         EP%suffix      = suffix
        end subroutine
 
        subroutine init_copy_EP(EP,EP_in)
@@ -42,6 +46,7 @@
          EP%export_ever = EP_in%export_ever
          EP%dir         = EP_in%dir
          EP%plane       = EP_in%plane
+         EP%suffix      = EP_in%suffix
        end subroutine
 
        subroutine delete_EP(EP)
@@ -50,6 +55,7 @@
          EP%export_ever = .false.
          EP%dir         = 0
          EP%plane       = 0
+         EP%suffix      = '1'
        end subroutine
 
        subroutine export_EP(EP,un)
@@ -59,6 +65,7 @@
          write(un,*) EP%export_ever
          write(un,*) EP%dir
          write(un,*) EP%plane
+         write(un,*) EP%suffix
        end subroutine
 
        subroutine import_EP(EP,un)
@@ -68,6 +75,7 @@
          read(un,*) EP%export_ever
          read(un,*) EP%dir
          read(un,*) EP%plane
+         read(un,*) EP%suffix
        end subroutine
 
        subroutine display_EP(EP,un)
@@ -77,6 +85,7 @@
          write(un,*) 'export_ever = ',EP%export_ever
          write(un,*) 'dir         = ',EP%dir
          write(un,*) 'plane       = ',EP%plane
+         write(un,*) 'suffix      = ',EP%suffix
        end subroutine
 
        subroutine print_EP(EP)

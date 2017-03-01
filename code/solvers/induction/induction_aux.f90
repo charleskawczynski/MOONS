@@ -43,15 +43,15 @@
          call div(divJ,J,m)
        end subroutine
 
-       subroutine compute_J(J,B,Rem,m,finite_Rem)
+       subroutine compute_J(J,B,scale,m,finite_Rem)
          implicit none
          type(VF),intent(inout) :: B
          type(VF),intent(inout) :: J
-         real(cp),intent(in) :: Rem
+         real(cp),intent(in) :: scale
          type(mesh),intent(in) :: m
          logical,intent(in) :: finite_Rem
          call curl(J,B,m)
-         if (finite_Rem) call multiply(J,1.0_cp/Rem)
+         if (finite_Rem) call multiply(J,scale)
        end subroutine
 
        subroutine compute_Total_Energy_Domain(energy,field,TMP,m,scale,MD)
@@ -120,11 +120,14 @@
          type(mesh_domain),intent(in) :: MD_sigma
          type(dimensionless_params),intent(in) :: DP
          type(SF) :: sigma_inv_temp
-         call init(sigma_inv_temp,m_ind,get_DL(sigma_inv))
+         type(mesh) :: m_other
+         call init_other(m_other,m_ind,MD_sigma)
+         call init(sigma_inv_temp,m_other,get_DL(sigma_inv))
          call assign(sigma_inv_temp,1.0_cp)
          call assign(sigma_inv,1.0_cp/DP%sig_local_over_sig_f)
          call embed(sigma_inv,sigma_inv_temp,MD_sigma)
          call delete(sigma_inv_temp)
+         call delete(m_other)
        end subroutine
 
        subroutine set_sigma_inv_VF(sigma_inv,m_ind,MD_sigma,DP)
@@ -134,11 +137,14 @@
          type(mesh_domain),intent(in) :: MD_sigma
          type(dimensionless_params),intent(in) :: DP
          type(VF) :: sigma_inv_temp
-         call init(sigma_inv_temp,m_ind,get_DL(sigma_inv))
+         type(mesh) :: m_other
+         call init_other(m_other,m_ind,MD_sigma)
+         call init(sigma_inv_temp,m_other,get_DL(sigma_inv))
          call assign(sigma_inv_temp,1.0_cp)
          call assign(sigma_inv,1.0_cp/DP%sig_local_over_sig_f)
          call embed(sigma_inv,sigma_inv_temp,MD_sigma)
          call delete(sigma_inv_temp)
+         call delete(m_other)
        end subroutine
 
        end module

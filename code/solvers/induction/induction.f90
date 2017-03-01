@@ -188,7 +188,7 @@
          call init_phi_field(ind%phi,m,ind%SP,str(DT%phi%field))
          call assign(ind%Bnm1,ind%B)
 
-         if (ind%SP%INDF%unsteady_B0) call assign_B0_vs_t(ind%B0,ind%SP%VS%B%TMP)
+         if (ind%SP%IT%unsteady_B0%add) call assign_B0_vs_t(ind%B0,ind%SP%VS%B%TMP)
 
          write(*,*) '     B-field initialized'
          ! call initB_interior(ind%B_interior,m,ind%MD_sigma,str(DT%B%field))
@@ -216,7 +216,7 @@
 
          call compute_J_ind(ind)
 
-         if (ind%SP%INDF%unsteady_B0) then
+         if (ind%SP%IT%unsteady_B0%add) then
            call init(ind%probe_dB0dt(1),str(DT%B%energy),'dB0dt_x',ind%SP%VS%B%SS%restart,.true.)
            call init(ind%probe_dB0dt(2),str(DT%B%energy),'dB0dt_y',ind%SP%VS%B%SS%restart,.true.)
            call init(ind%probe_dB0dt(3),str(DT%B%energy),'dB0dt_z',ind%SP%VS%B%SS%restart,.true.)
@@ -424,7 +424,7 @@
          call compute_divBJ(ind%divB,ind%divJ,ind%B,ind%J,ind%m)
          call Ln(temp,ind%divB,2.0_cp,ind%m); call export(ind%probe_divB,TMP,temp)
          call Ln(temp,ind%divJ,2.0_cp,ind%m); call export(ind%probe_divJ,TMP,temp)
-         if (ind%SP%INDF%unsteady_B0) then
+         if (ind%SP%IT%unsteady_B0%add) then
            call export(ind%probe_dB0dt(1),TMP,ind%dB0dt%x%BF(1)%GF%f(1,1,1))
            call export(ind%probe_dB0dt(2),TMP,ind%dB0dt%y%BF(1)%GF%f(1,1,1))
            call export(ind%probe_dB0dt(3),TMP,ind%dB0dt%z%BF(1)%GF%f(1,1,1))
@@ -459,8 +459,8 @@
          type(induction),intent(inout) :: ind
          type(time_marching_params),intent(in) :: TMP
          type(dir_tree),intent(in) :: DT
-         call export_processed(ind%m,ind%B,str(DT%B%unsteady),'B',1,TMP,ind%SP%VS%B%unsteady_line)
-         call export_processed(ind%m,ind%J,str(DT%J%unsteady),'J',1,TMP,ind%SP%VS%B%unsteady_line)
+         call export_processed(ind%m,ind%B,str(DT%B%unsteady),'B',1,TMP,ind%SP%VS%B%unsteady_lines)
+         call export_processed(ind%m,ind%J,str(DT%J%unsteady),'J',1,TMP,ind%SP%VS%B%unsteady_lines)
        end subroutine
 
        subroutine export_unsteady_2D_ind(ind,TMP,DT)
@@ -468,8 +468,8 @@
          type(induction),intent(inout) :: ind
          type(time_marching_params),intent(inout) :: TMP
          type(dir_tree),intent(in) :: DT
-         call export_processed(ind%m,ind%B,str(DT%B%unsteady),'B',1,TMP,ind%SP%VS%B%unsteady_plane)
-         call export_processed(ind%m,ind%J,str(DT%J%unsteady),'J',1,TMP,ind%SP%VS%B%unsteady_plane)
+         call export_processed(ind%m,ind%B,str(DT%B%unsteady),'B',1,TMP,ind%SP%VS%B%unsteady_planes)
+         call export_processed(ind%m,ind%J,str(DT%J%unsteady),'J',1,TMP,ind%SP%VS%B%unsteady_planes)
        end subroutine
 
        subroutine export_unsteady_3D_ind(ind,TMP,DT)
@@ -486,7 +486,7 @@
          type(induction),intent(inout) :: ind
          ! call assign(ind%J,0.0_cp)
          ! call embedEdge(ind%J,ind%J_interior,ind%MD_sigma)
-         call compute_J(ind%J,ind%B,ind%SP%DP%Rem,ind%m,ind%SP%finite_Rem)
+         call compute_J(ind%J,ind%B,ind%SP%IT%current%scale,ind%m,ind%SP%finite_Rem)
        end subroutine
 
        subroutine set_sigma_inv_ind(ind)
@@ -530,24 +530,22 @@
            call O2_BDF_time_AB2_sources(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%Bstar,&
            ind%Bnm1,ind%phi,F,Fnm1,ind%m,TMP,ind%temp_F1,ind%temp_F2,ind%temp_CC,&
            ind%temp_CC_VF,EF%unsteady_0D%export_now)
-
          case (5)
+          call Euler_time_no_diff_AB2_sources(ind%PCG_cleanB,ind%B,ind%Bstar,&
+           ind%Bnm1,ind%phi,F,Fnm1,ind%m,TMP,ind%temp_F1,ind%temp_CC,&
+           EF%unsteady_0D%export_now)
+         case (6)
+          call Euler_time_no_diff_Euler_sources(ind%PCG_cleanB,ind%B,ind%Bstar,&
+          ind%Bnm1,ind%phi,F,ind%m,TMP,ind%temp_F2,ind%temp_CC,EF%unsteady_0D%export_now)
+
+         case (7) ! Depricated
            call CT_Low_Rem(ind%B,ind%B0,ind%U_E,ind%J,ind%sigmaInv_edge,ind%m,&
            TMP%multistep_iter,TMP%dt,ind%temp_F1,ind%temp_F2,ind%temp_E,ind%temp_E_TF)
-         case (6)
+         case (8) ! Depricated
            call CT_Finite_Rem(ind%B,ind%B0,ind%U_E,ind%J,ind%dB0dt,ind%sigmaInv_edge,ind%m,&
            TMP%multistep_iter,TMP%dt,ind%temp_F1,ind%temp_F2,ind%temp_F1_TF%x,&
            ind%temp_E,ind%temp_E_TF)
-         case (7)
-           call ind_PCG_BE_EE_cleanB_PCG(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%Bstar,&
-           ind%phi,ind%B0,ind%U_E,ind%dB0dt,ind%m,TMP%dt,EF%unsteady_0D%export_now,&
-           ind%temp_F1,ind%temp_F2,ind%temp_E,ind%temp_E_TF,ind%temp_CC,ind%temp_CC_VF)
-         case (8)
-           call ind_PCG_CN_AB2_cleanB_PCG(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%Bstar,&
-           ind%phi,ind%B0,ind%U_E,ind%J,ind%sigmaInv_edge,ind%curlUCrossB,&
-           ind%curlUCrossB_nm1,ind%dB0dt,ind%m,ind%SP%VS%B%MFP,TMP%dt,EF%unsteady_0D%export_now,&
-           ind%temp_F1,ind%temp_F2,ind%temp_E,ind%temp_E_TF,ind%temp_CC,ind%temp_CC_VF)
-         case (9)
+         case (11) ! Still useful
            call CT_Finite_Rem_interior_solved(ind%PCG_cleanB,ind%B,ind%B0,ind%Bstar,&
            ind%J,ind%B_interior,ind%U_E,ind%curlE,ind%phi,ind%m,ind%MD_sigma,TMP,&
            ind%SP%DP%Rem,ind%SP%finite_Rem,EF%unsteady_0D%export_now,ind%temp_CC,&

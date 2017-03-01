@@ -36,6 +36,7 @@
 
        public :: Euler_time_no_diff_AB2_sources
        public :: Euler_time_no_diff_AB2_sources_no_correction
+       public :: Euler_time_no_diff_Euler_sources
        public :: Euler_time_no_diff_Euler_sources_no_correction
 
        real(cp),parameter :: two_thirds = 2.0_cp/3.0_cp
@@ -147,6 +148,37 @@
          logical,intent(in) :: compute_norms
          call AB2(Xstar,F,Fnm1)
          call multiply(Xstar,TMP%dt)
+         call assign_wall_Dirichlet(Xstar,0.0_cp,X)
+         call add(Xstar,X)
+         call assign(Xnm1,X)
+         call clean_div(PCG_SF,X,Xstar,phi,1.0_cp,m,temp_F2,temp_CC,compute_norms)
+         ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%dt,m,temp_F2,temp_CC,compute_norms)
+       end subroutine
+
+       subroutine Euler_time_no_diff_Euler_sources(PCG_SF,X,Xstar,Xnm1,phi,F,m,TMP,&
+         temp_F2,temp_CC,compute_norms)
+         ! Solves:
+         !
+         !  X^{*} - X^{n}
+         ! -------------- = F^{n}
+         !        dt
+         !
+         ! -->  X^{*} = X^{n} + dt AB2(F^{n},F^{n-1})
+         !
+         ! lap(phi^{n+1}) = 1/dt div(X^{*})
+         ! X^{n+1} = X^{*} - dt grad(phi^{n+1})
+         !
+         implicit none
+         type(PCG_solver_SF),intent(inout) :: PCG_SF
+         type(SF),intent(inout) :: phi
+         type(VF),intent(inout) :: X,Xnm1,Xstar
+         type(VF),intent(in) :: F
+         type(mesh),intent(in) :: m
+         type(time_marching_params),intent(in) :: TMP
+         type(VF),intent(inout) :: temp_F2
+         type(SF),intent(inout) :: temp_CC
+         logical,intent(in) :: compute_norms
+         call multiply(Xstar,F,TMP%dt)
          call assign_wall_Dirichlet(Xstar,0.0_cp,X)
          call add(Xstar,X)
          call assign(Xnm1,X)

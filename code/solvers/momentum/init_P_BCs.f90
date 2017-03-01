@@ -44,10 +44,11 @@
        subroutine flow_past_2D_square(p)
          implicit none
          type(SF),intent(inout) :: p
+         integer :: i
          p%all_Neumann = .false.
-         call init_Dirichlet(p%BF(5)%BCs,2)
-         call init_Dirichlet(p%BF(7)%BCs,2)
-         call init_Dirichlet(p%BF(8)%BCs,2)
+         do i=1,p%s
+         call init_Dirichlet(p%BF(i)%BCs,2)
+         enddo
          ! call init_Dirichlet(p%BF(5)%BCs%e(8+3)%BCs)
          ! call init_Dirichlet(p%BF(8)%BCs%e(8+3)%BCs)
          ! call init_Dirichlet(p%BF(8)%BCs%e(8+4)%BCs)
@@ -57,24 +58,32 @@
        subroutine duct_flow_P0_at_xmax(p)
          implicit none
          type(SF),intent(inout) :: p
+         integer :: i
          p%all_Neumann = .false.
-         call init_Dirichlet(p%BF(1)%BCs,2)
+         do i=1,p%s
+         call init_Dirichlet(p%BF(i)%BCs,2)
+         enddo
        end subroutine
 
        subroutine duct_flow_periodic_IO(p)
          implicit none
          type(SF),intent(inout) :: p
+         integer :: i
          p%all_Neumann = .true.
-         call init_periodic(p%BF(1)%BCs,1)
-         call init_periodic(p%BF(1)%BCs,2)
+         do i=1,p%s
+         call init_periodic(p%BF(i)%BCs,1)
+         call init_periodic(p%BF(i)%BCs,2)
+         enddo
        end subroutine
 
        subroutine duct_flow_2domains(p)
          implicit none
          type(SF),intent(inout) :: p
+         integer :: i
          p%all_Neumann = .false.
-         call init_Dirichlet(p%BF(1)%BCs,2)
-         call init_Dirichlet(p%BF(2)%BCs,2)
+         do i=1,p%s
+         call init_Dirichlet(p%BF(i)%BCs,2)
+         enddo
          ! call init_Dirichlet(p%BF(1)%BCs%e(8+4)%BCs)
          ! call init_Dirichlet(p%BF(2)%BCs%e(8+3)%BCs)
        end subroutine
