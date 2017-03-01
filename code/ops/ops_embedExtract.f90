@@ -155,7 +155,7 @@
         type(SF),intent(inout) :: total
         type(SF),intent(in) :: interior
         type(mesh_domain),intent(in) :: MD
-        if (is_CC(total%DL)) then;       call embedCC(total,interior,MD)
+              if (is_CC(total%DL)) then;  call embedCC(total,interior,MD)
         elseif (is_Node(total%DL)) then; ! call embedNode(total,interior,MD)
         stop 'Error: N not supported in embed_SF in ops_embedExtract.f90'
         elseif (is_Face(total%DL)) then; call embedFace(total,interior,MD)

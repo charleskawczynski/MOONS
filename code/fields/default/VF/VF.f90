@@ -149,6 +149,7 @@
         interface assign_BCs;               module procedure assign_BCs_VF;                 end interface
         interface assign_BC_vals;           module procedure assign_BC_vals_VF;             end interface
         interface assign_Neumann_BCs;       module procedure assign_Neumann_BCs_VF;         end interface
+        interface assign_Neumann_BCs;       module procedure assign_Neumann_BCs_VF_VF;      end interface
         interface assign_Dirichlet_BCs;     module procedure assign_Dirichlet_BCs_VF;       end interface
         interface assign_Periodic_BCs;      module procedure assign_Periodic_BCs_VF;        end interface
         interface multiply_Neumann_BCs;     module procedure multiply_Neumann_BCs_VF;       end interface
@@ -1117,6 +1118,12 @@
           call assign_Neumann_BCs(A%x,B%x)
           call assign_Neumann_BCs(A%y,B%y)
           call assign_Neumann_BCs(A%z,B%z)
+        end subroutine
+        subroutine assign_Neumann_BCs_VF_VF(phi,A)
+          implicit none
+          type(SF),intent(inout) :: phi
+          type(VF),intent(in) :: A
+          call assign_Neumann_BCs(phi,A%x,A%y,A%z)
         end subroutine
         subroutine assign_Dirichlet_BCs_VF(A,B)
           implicit none

@@ -1,4 +1,34 @@
+TO DO LIST COMMANDS:
+ ☐ Semi-colon at sentence end makes headers
+ ☐ ctrl-I makes list items
+ ☐ ctrl-D checks off list items
+ ☐ shift-ctrl-A moves checked items to archive
+ ☐ --tab creates a separator
+ ☐ Searches can be made for specific @tags
+--- ✄ -----------------------
 Right Now:
+ ☐ 1) Respond to Abdou about committee
+ ☐ 2) Send emails to committee members
+ ☐ 3) Read Shatrov for parameter inspiration
+     ☐ Fig 9a
+     ☐ Re=2000,N=0.1,Ha=(2000*.1)^.5
+     ☐ -->Re=1000,N=0.1,Ha=(100)^.5=10
+     ☐ Re=3000,N=1,Ha=(3000*1)^.5
+     ☐ -->Re=1500,N=1,Ha=(1500*1)^.5~38.23
+     ☐ Ha = 
+     ☐ N  = 
+     ☐ Lid velocity distribution
+     ☐ B0 = (1,0,0)
+ ☐ 4) Start Shatrov parameter space sims
+   ☐ Analyze data - If good - then start new full BC MRS
+   ☐ Analyze data - else    - Ask Sergey if we can change B0 config to match Shatrov
+ ✔ 5) Start new Bandaru cases at Rem=10 to compare fig 14 @done (17-02-22 10:18)
+ ✔ 6) Digitize data in Fig 14 @done (17-02-22 14:23)
+ ☐ 7) Show Sergey Scaling in Kamkar paper
+ ✔ 8) Finish 1D analysis of PD case using dimensional scales, get u-scale @done (17-02-23 17:17)
+ ☐ 9) Move data from workstation to backup
+ ☐ 9) Move explicit term scales to input file, and generalize
+
   ☐ PD cases
     ☐ Determine actual Re_m,Re,Ha etc
     ☐ Fix Poloidal,radial,toroidal plots in past PD slides
@@ -36,7 +66,7 @@ Papers:
     ☐ Meet with Sergey to show energy budget terms before post-processing all sims.
     ☐ Read Moreau book about energy transfer, write up some documentation for new implementation
     ☐ Plot KB in vacuum in BC sim, see if that differs more / less then KBi_f.
-    ☐ Look into different forms of JxB ,e,g jxB = B•∇(B/μ) - ∇ (B²/μ)
+    ☐ Look into different forms of JxB ,e,g jxB = B•∇(B/μ) - ∇ (B²/μ) (Page 97 of Davidson)
     ☐ Write a Python script to compare PV & RV BC sims
     ☐ KE & ME eq.
     ☐ Energy budget
@@ -98,6 +128,7 @@ Code development:
   IO:
   ☐ export_raw_processed_mod - remove global vars (from sim params), check correct field is exported.
   ☐ Re-consider HDF5
+  ☐ Consider adding arrays to export_plane,export_line so that multiple planes can be exported at at time. Will need to add "add" routines..
 
   Exception handling:
   ☐ Add face/node/CC/edge checks to ops (interp,advect, etc.).

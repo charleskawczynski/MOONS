@@ -55,7 +55,8 @@ From the dimensional momentum equation:
 	+ (\U \DOT \DEL) T \right]
 	= \DEL \DOT (k \DEL T)
 	+ \frac{1}{\sigma} \J^2
-	+ \mu ( \DEL \U^T + \DEL \U ) \DEL \U
+	- \frac{1}{2} \mu \DEL^2 (\U \DOT \U)
+	+ \mu (\DEL \U) \DOT (\DEL \U)
 	+ \dot{Q}
 \end{equation}
 First, let $\theta = (T - T_c)$, to get
@@ -64,7 +65,8 @@ First, let $\theta = (T - T_c)$, to get
 	+ (\U \DOT \DEL) \theta \right]
 	= \DEL \DOT (k \DEL \theta)
 	+ \frac{1}{\sigma} \J^2
-	+ \mu ( \DEL \U^T + \DEL \U ) \DEL \U
+	- \frac{1}{2} \mu \DEL^2 (\U \DOT \U)
+	+ \mu (\DEL \U) \DOT (\DEL \U)
 	+ \dot{Q}
 \end{equation}
 Where $\dot{Q}$ is some volumetric heat generation per unit volume. Non-dimensionalizing by general scales:
@@ -108,9 +110,9 @@ And dividing by the coefficient of the transient term, we have:
 \end{equation}
 \subsection{Viscous dissipation}
 \begin{equation}
-	\frac{\mu_c U_c^2}{L_c^2} ( \DEL^* {\U^*}^T + \DEL^* \U^* ) \DEL^* \U^*
+	\frac{\mu_c U_c^2}{L_c^2} \left( - \frac{1}{2} \mu^* {\DEL^*}^2 (\U^* \DOT \U^*) + \mu^* (\DEL^* \U^*) \DOT (\DEL^* \U^*) \right)
 	\OB
-	\frac{\mu_c t_c U_c^2}{\rho_c \Cp \theta_c L_c^2} ( \DEL^* {\U^*}^T + \DEL^* \U^* ) \DEL^* \U^*
+	\frac{\mu_c t_c U_c^2}{\rho_c \Cp \theta_c L_c^2} \left( - \frac{1}{2} \mu^* {\DEL^*}^2 (\U^* \DOT \U^*) + \mu^* (\DEL^* \U^*) \DOT (\DEL^* \U^*) \right)
 \end{equation}
 \subsection{General term}
 \begin{equation}
@@ -119,16 +121,14 @@ And dividing by the coefficient of the transient term, we have:
 	\frac{t_c}{\theta_c \rho_c \Cp}\dot{Q}
 \end{equation}
 \section{Putting it all together}
-\begin{equation}
-	\boxed{
+\begin{equation}\boxed{\begin{aligned}
 	\frac{\PD \theta^*}{\PD t^*}
 	+ \frac{U_c t_c}{L_c} (\U^* \DOT \DEL^*) \theta^*
-	= \frac{k_c}{\rho_c \Cp} \frac{t_c}{L_c^2} \DEL^* \DOT (k^* \DEL^* \theta^*)
-	+ \frac{J_c^2 t_c}{\rho_c \Cp \theta_c \sigma_c \sigma^*} {\J^*}^2
-	+ \frac{\mu_c t_c U_c^2}{\rho_c \Cp \theta_c L_c^2} ( \DEL^* {\U^*}^T + \DEL^* \U^* ) \DEL^* \U^*
+	=& \frac{k_c}{\rho_c \Cp} \frac{t_c}{L_c^2} \DEL^* \DOT (k^* \DEL^* \theta^*)
+	+ \frac{J_c^2 t_c}{\rho_c \Cp \theta_c \sigma_c} \frac{{\J^*}^2}{\sigma^*} \\
+	+& \frac{\mu_c t_c U_c^2}{\rho_c \Cp \theta_c L_c^2} \left( - \frac{1}{2} \mu^* {\DEL^*}^2 (\U^* \DOT \U^*) + \mu^* (\DEL^* \U^*) \DOT (\DEL^* \U^*) \right)
 	+ \frac{t_c \dot{Q}_c}{\theta_c \rho_c \Cp} \dot{Q}^*
-	}
-\end{equation}
+\end{aligned}}\end{equation}
 
 The choice of specific scales used after this may change the dimensionless groups in front of each term. This will be handled in a different document. Here are some examples of particular scales and some typical resulting dimensionless groups:
 

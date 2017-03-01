@@ -3,8 +3,9 @@
        use time_marching_params_mod
        use iter_solver_params_mod
        use matrix_free_params_mod
-       use export_line_mod
-       use export_plane_mod
+       use export_lines_mod
+       use export_planes_mod
+       use export_field_mod
        implicit none
 
        private
@@ -20,8 +21,9 @@
          type(matrix_free_params) :: MFP
          type(time_marching_params) :: TMP
          type(iter_solver_params) :: ISP
-         type(export_line) :: unsteady_line
-         type(export_plane) :: unsteady_plane
+         type(export_lines) :: unsteady_lines
+         type(export_planes) :: unsteady_planes
+         type(export_field) :: unsteady_field
          ! type(dir_group) :: DG
          ! type(export_now) :: EN
        end type
@@ -56,8 +58,9 @@
          call init(V%TMP,V_in%TMP)
          call init(V%ISP,V_in%ISP)
          call init(V%MFP,V_in%MFP)
-         call init(V%unsteady_line,V_in%unsteady_line)
-         call init(V%unsteady_plane,V_in%unsteady_plane)
+         call init(V%unsteady_lines,V_in%unsteady_lines)
+         call init(V%unsteady_planes,V_in%unsteady_planes)
+         call init(V%unsteady_field,V_in%unsteady_field)
          V%IC = V_in%IC
          V%BC = V_in%BC
        end subroutine
@@ -71,8 +74,9 @@
          call delete(V%TMP)
          call delete(V%ISP)
          call delete(V%MFP)
-         call delete(V%unsteady_line)
-         call delete(V%unsteady_plane)
+         call delete(V%unsteady_lines)
+         call delete(V%unsteady_planes)
+         call delete(V%unsteady_field)
        end subroutine
 
        subroutine export_V(V,un)
@@ -85,8 +89,9 @@
          call export(V%TMP,un)
          call export(V%ISP,un)
          call export(V%MFP,un)
-         call export(V%unsteady_line,un)
-         call export(V%unsteady_plane,un)
+         call export(V%unsteady_lines,un)
+         call export(V%unsteady_planes,un)
+         call export(V%unsteady_field,un)
        end subroutine
 
        subroutine import_V(V,un)
@@ -99,8 +104,9 @@
          call import(V%TMP,un)
          call import(V%ISP,un)
          call import(V%MFP,un)
-         call import(V%unsteady_line,un)
-         call import(V%unsteady_plane,un)
+         call import(V%unsteady_lines,un)
+         call import(V%unsteady_planes,un)
+         call import(V%unsteady_field,un)
        end subroutine
 
        subroutine display_V(V,un)
@@ -113,8 +119,9 @@
          call display(V%TMP,un)
          call display(V%ISP,un)
          call display(V%MFP,un)
-         call display(V%unsteady_line,un)
-         call display(V%unsteady_plane,un)
+         call display(V%unsteady_lines,un)
+         call display(V%unsteady_planes,un)
+         call display(V%unsteady_field,un)
        end subroutine
 
        subroutine print_V(V)

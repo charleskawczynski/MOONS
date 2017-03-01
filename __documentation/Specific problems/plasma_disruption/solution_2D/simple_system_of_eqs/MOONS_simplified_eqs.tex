@@ -1,0 +1,93 @@
+\documentclass[11pt]{article}
+% \documentclass[3p,twocolumn,10pt]{elsarticle}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+%\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+\usepackage{xcolor}
+\usepackage{xspace}
+\usepackage{longtable}
+\usepackage{mathtools}
+\usepackage{natbib}
+\usepackage{setspace}
+\usepackage{ragged2e}
+\usepackage{etoolbox}
+\usepackage{geometry}
+
+\input{../../../useful_commands.tex}
+
+\newcommand{\volume}{\mathop{\ooalign{\hfil$V$\hfil\cr\kern0.08em--\hfil\cr}}\nolimits}
+\newcommand{\figWidth}{0.45\textwidth}
+\newcommand{\figSuffix}{_png.png}
+\newcommand{\pushright}[1]{\ifmeasuring@#1\else\omit\hfill$\displaystyle#1$\fi\ignorespaces}
+\newcommand{\hfillMath}{\hskip \textwidth minus \textwidth}
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{8in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.7in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+% Useful commands:
+
+% \hfill    aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Plasma Disruption 2D solution}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+% \maketitle
+
+\section{Solution of simplified system of equations}
+Both sets of equations are in the form
+\begin{equation}\begin{aligned}
+A_1 E_1 + A_2 E_2 = H \\
+A_1 F_1 + A_2 F_2 = H \\
+A_2 E_2 = H - A_1 E_1 \\
+A_2 = \frac{1}{E_2} (H - A_1 E_1) \\
+A_1 F_1 + \frac{F_2}{E_2} (H - A_1 E_1) = H \\
+A_1 F_1 + \frac{F_2}{E_2} H - \frac{F_2}{E_2} A_1 E_1 = H \\
+A_1 \left( F_1 - \frac{F_2}{E_2} E_1 \right) = H -\frac{F_2}{E_2} H \\
+A_1 \left( F_1 - \frac{F_2}{E_2} E_1 \right) = H \left( 1 - \frac{F_2}{E_2} \right) \\
+A_1 = H \frac{\left( 1 - \frac{F_2}{E_2} \right)}{\left( F_1 - \frac{F_2}{E_2} E_1 \right)} \\
+\boxed{A_1 = H \left( \frac{E_2 - F_2}{F_1 E_2 - F_2 E_1} \right) } \\
+A_2 = \frac{1}{E_2} \left(H - A_1 E_1 \right) \\
+A_2 = \frac{1}{E_2} \left(H - H \frac{( E_2 - F_2 )}{( F_1 E_2 - F_2 E_1)} E_1 \right) \\
+A_2 = \frac{H}{E_2} \left(1 - \frac{(E_2 E_1 - F_2 E_1)}{(F_1 E_2 - F_2 E_1)} \right) \\
+A_2 = \frac{H}{E_2} \left(\frac{F_1 E_2 - F_2 E_1}{F_1 E_2 - F_2 E_1} - \frac{(E_2 E_1 - F_2 E_1)}{(F_1 E_2 - F_2 E_1)} \right) \\
+A_2 = \frac{H}{E_2} \left(\frac{F_1 E_2 - F_2 E_1 - (E_2 E_1 - F_2 E_1)}{F_1 E_2 - F_2 E_1}\right) \\
+A_2 = \frac{H}{E_2} \left(\frac{F_1 E_2 - F_2 E_1 - E_2 E_1 + F_2 E_1}{F_1 E_2 - F_2 E_1}\right) \\
+A_2 = \frac{H}{E_2} \left(\frac{F_1 E_2 - E_2 E_1}{F_1 E_2 - F_2 E_1}\right) \\
+\boxed{A_2 = H \left(\frac{F_1 - E_1}{F_1 E_2 - F_2 E_1}\right)} \\
+\end{aligned} \end{equation}
+
+\begin{equation}\begin{aligned}
+A_1 =& \frac{H}{\theta} (E_2 - F_2) \\
+A_2 =& \frac{H}{\theta} (F_1 - E_1), \qquad \theta = F_1 E_2 - F_2 E_1 \\
+\end{aligned} \end{equation}
+
+
+\end{document}

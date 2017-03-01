@@ -15,7 +15,7 @@
       public :: str2int
       public :: intLen
       public :: cp2str
-      interface cp2Str;      module procedure cp2Str_string;   end interface
+      interface cp2str;      module procedure cp2Str_string;   end interface
       ! interface cp2Str;      module procedure cp2Str_raw;      end interface
 
       ! public :: int2Str,int2Str2,str2int,intLen ! change to this eventually
@@ -54,7 +54,7 @@
       !   s = trim(adjustl(s))
       ! end function
 
-      function cp2Str_string(f) result(s)
+      function cp2str_string(f) result(s)
         implicit none
         real(cp),intent(in) :: f
         type(string) :: s

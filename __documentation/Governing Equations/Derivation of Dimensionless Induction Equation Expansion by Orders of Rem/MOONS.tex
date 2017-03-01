@@ -14,27 +14,8 @@
 \usepackage{setspace}
 \usepackage{tabularx,ragged2e,booktabs,caption}
 
-
-\newcommand{\A}{\mathbf{A}}
-\newcommand{\B}{\mathbf{B}}
-\newcommand{\MC}{\mathcal}
-\newcommand{\C}{\mathbf{C}}
-\newcommand{\PD}{\partial}
-\newcommand{\BM}{\frac{\mathbf{B}}{\mu}}
-\newcommand{\J}{\mathbf{j}}
-\newcommand{\E}{\mathbf{E}}
-\newcommand{\ep}{\epsilon}
-\newcommand{\N}{\mathbf{n}}
-\newcommand{\JS}{\frac{\mathbf{j}}{\sigma}}
-\newcommand{\JSS}{\frac{\mathbf{j}^2}{\sigma}}
-\newcommand{\U}{\mathbf{u}}
-\newcommand{\SII}{\sigma^{-1}}
-\newcommand{\SI}{\sigma}
-\newcommand{\M}{\mu}
-\newcommand{\MO}{\overline{\mu}}
-\newcommand{\SO}{\overline{\sigma}}
-\newcommand{\DOT}{\text{\textbullet}}
-
+\input{./../path_to_useful_commands.tex}
+\input{\PATHTOUSEFULCOMMANDS}
 
 \setlength{\oddsidemargin}{0.1in}
 \setlength{\textwidth}{7.25in}
@@ -42,7 +23,7 @@
 \setlength{\topmargin}{-1in}     %\topmargin: gap above header
 \setlength{\headheight}{0in}     %\headheight: height of header
 \setlength{\topskip}{0in}        %\topskip: between header and text
-\setlength{\headsep}{0in}        
+\setlength{\headsep}{0in}
 \setlength{\textheight}{692pt}   %\textheight: height of main text
 \setlength{\textwidth}{7.5in}    % \textwidth: width of text
 \setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
@@ -68,7 +49,7 @@ University of California Los Angeles, USA\\
 \section{Induction equation by orders of induced magnetic field by orders of Rem}
 The dimensional induction equation is
 \begin{equation} \label{eq:ind_dim}
-  \frac{\PD \B}{\PD t} 
+  \frac{\PD \B}{\PD t}
   =
   (\nabla \times \U \times \B)
   - \\
@@ -77,13 +58,13 @@ The dimensional induction equation is
   \left\{
   \frac{1}{\sigma}
   \nabla \times
-  \frac{\B}{\mu}
+  \frac{\B}{\M}
   \right\}
   \right)
 \end{equation}
-Non-dimensionalizing time, velocity, length, conductivity and magnetic permeability by $L/U,U,L,\sigma,\mu$, we have
+Non-dimensionalizing time, velocity, length, conductivity and magnetic permeability by $L/U,U,L,\sigma,\M$, we have
 \begin{equation} \label{eq:ind}
-  \frac{\PD \B}{\PD t} 
+  \frac{\PD \B}{\PD t}
   =
   (\nabla \times \U \times \B)
   - \\
@@ -93,16 +74,16 @@ Non-dimensionalizing time, velocity, length, conductivity and magnetic permeabil
   \left\{
   \frac{1}{\sigma}
   \nabla \times
-  \frac{\B}{\mu}
+  \frac{\B}{\M}
   \right\}
   \right)
-  ,\qquad Re_m = \sigma \mu LU
+  ,\qquad Re_m = \sigma \M LU
 \end{equation}
 Note that, in the above equation, $\B$ has not been non-dimensionalized. Let
 \begin{equation}
   G(\B)
   =
-  \frac{\PD \B}{\PD t} 
+  \frac{\PD \B}{\PD t}
   -
   (\nabla \times \U \times \B)
   +
@@ -112,7 +93,7 @@ Note that, in the above equation, $\B$ has not been non-dimensionalized. Let
   \left\{
   \frac{1}{\sigma}
   \nabla \times
-  \frac{\B}{\mu}
+  \frac{\B}{\M}
   \right\}
   \right)
   =
@@ -146,7 +127,7 @@ Considering the first two terms we have
 \end{equation}
 For a uniform and steady external field ($\B^0$), this simplifies to
 \begin{equation}
-  Re_m \frac{\PD \B^{*}}{\PD t} 
+  Re_m \frac{\PD \B^{*}}{\PD t}
   -
   (\nabla \times \U \times (\B^0 + Re_m \B^*))
   +
@@ -155,7 +136,7 @@ For a uniform and steady external field ($\B^0$), this simplifies to
   \left\{
   \frac{1}{\sigma}
   \nabla \times
-  \frac{\B^{*}}{\mu}
+  \frac{\B^{*}}{\M}
   \right\}
   \right)
   =
@@ -167,12 +148,12 @@ It's clear from the above equation that as $Re_m \rightarrow 0$, $\B^*$ can be c
   \left\{
   \frac{1}{\sigma}
   \nabla \times
-  \frac{\B^{*}}{\mu}
+  \frac{\B^{*}}{\M}
   \right\}
   =
   (\nabla \times \U \times \B^0)
 \end{equation}
-For uniform $\sigma, \mu$, this yields the Poisson equation for $\B^*$:
+For uniform $\sigma, \M$, this yields the Poisson equation for $\B^*$:
 \begin{equation}
   \nabla^2 \B^{*}
   =

@@ -13,26 +13,8 @@
 \usepackage{setspace}
 \usepackage{tabularx,ragged2e,booktabs,caption}
 
-\newcommand{\A}{\mathbf{A}}
-\newcommand{\B}{\mathbf{B}}
-\newcommand{\MC}{\mathcal}
-\newcommand{\C}{\mathbf{C}}
-\newcommand{\PD}{\partial}
-\newcommand{\BM}{\frac{\mathbf{B}}{\mu}}
-\newcommand{\J}{\mathbf{j}}
-\newcommand{\E}{\mathbf{E}}
-\newcommand{\ep}{\epsilon}
-\newcommand{\N}{\mathbf{n}}
-\newcommand{\JS}{\frac{\mathbf{j}}{\sigma}}
-\newcommand{\JSS}{\frac{\mathbf{j}^2}{\sigma}}
-\newcommand{\U}{\mathbf{u}}
-\newcommand{\SII}{\sigma^{-1}}
-\newcommand{\SI}{\sigma}
-\newcommand{\M}{\mu}
-\newcommand{\MO}{\overline{\mu}}
-\newcommand{\SO}{\overline{\sigma}}
-\newcommand{\DOT}{\text{\textbullet}}
-
+\input{./../path_to_useful_commands.tex}
+\input{\PATHTOUSEFULCOMMANDS}
 
 \setlength{\oddsidemargin}{0.1in}
 \setlength{\textwidth}{7.25in}
@@ -40,7 +22,7 @@
 \setlength{\topmargin}{-1in}     %\topmargin: gap above header
 \setlength{\headheight}{0in}     %\headheight: height of header
 \setlength{\topskip}{0in}        %\topskip: between header and text
-\setlength{\headsep}{0in}        
+\setlength{\headsep}{0in}
 \setlength{\textheight}{692pt}   %\textheight: height of main text
 \setlength{\textwidth}{7.5in}    % \textwidth: width of text
 \setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
@@ -65,9 +47,9 @@ University of California Los Angeles, USA\\
 
 \section{Maxwell's equations to Induction Equation}
 \begin{equation}
-	\J = \nabla \times \BM
+	\J = \nabla \times \H
 	\qquad
-	\frac{\PD \B}{\PD t} = 
+	\frac{\PD \B}{\PD t} =
 	- \nabla \times \E
 	\qquad
 	\J = \sigma (\E + \U \times \B)
@@ -77,7 +59,7 @@ University of California Los Angeles, USA\\
 	\qquad
 	\nabla \DOT \B = \mathbf{0}
 	\qquad
-	\mathbf{H} = \BM
+	\mathbf{H} = \H
 \end{equation}
 Solving for the electric field of the current in Ohm's law yields
 \begin{equation}
@@ -85,7 +67,7 @@ Solving for the electric field of the current in Ohm's law yields
 \end{equation}
 Plugging this into Faraday's law yields
 \begin{equation}
-	\frac{\PD \B}{\PD t} = 
+	\frac{\PD \B}{\PD t} =
 	- \nabla \times \left[ \frac{\J}{\sigma}
 	- \U \times \B \right]
 \end{equation}
@@ -94,11 +76,11 @@ Distributing we have the induction equation
 \section{Non-dimensionalizing by \texorpdfstring{$B_c$}{LG}}
 
 \begin{equation}
-	\frac{\PD \B}{\PD t} = 
+	\frac{\PD \B}{\PD t} =
 	\nabla \times (\U \times \B)
-	- \nabla \times 
+	- \nabla \times
 	\left[ \SII
-	\nabla \times \BM \right]
+	\nabla \times \H \right]
 \end{equation}
 
 Non-dimensionalizing this by
@@ -118,15 +100,15 @@ Non-dimensionalizing this by
 Yields
 
 \begin{equation}
-	\frac{B_c}{t_c} 
-	\frac{\PD B_i}{\PD t} 
-	= 
+	\frac{B_c}{t_c}
+	\frac{\PD B_i}{\PD t}
+	=
 	\frac{U_c B_c}{L_c}
 	(\nabla \times u \times B)_i
-	- 
+	-
 	\frac{B_c}{\sigma_c \mu_c L_c^2}
 	\left\{
-	\nabla \times 
+	\nabla \times
 	\left[ \SII
 	\nabla \times \frac{B}{\mu} \right]
 	\right\}_i
@@ -135,13 +117,13 @@ Yields
 Dividing by $\frac{B_c}{t_c}$ yields
 
 \begin{equation}
-	\frac{\PD B_i}{\PD t} 
-	= 
+	\frac{\PD B_i}{\PD t}
+	=
 	(\nabla \times u \times B)_i
-	- 
+	-
 	\frac{1}{\sigma_c \mu_c L_c U_c}
 	\left\{
-	\nabla \times 
+	\nabla \times
 	\left[ \SII
 	\nabla \times \frac{B}{\mu} \right]
 	\right\}_i
@@ -151,13 +133,13 @@ And finally
 
 \begin{equation}
 	\boxed{
-	\frac{\PD \B}{\PD t} = 
+	\frac{\PD \B}{\PD t} =
 	\nabla \times (\U \times \B)
-	- 
+	-
 	\frac{1}{Re_m}
-	\nabla \times 
+	\nabla \times
 	\left[ \SII
-	\nabla \times \BM \right]
+	\nabla \times \H \right]
 	}
 \end{equation}
 
@@ -172,26 +154,26 @@ Where
 
 Using the vector identity
 \begin{equation}
-	\nabla \times (A\times B) = 
-	A(\nabla \DOT B) 
+	\nabla \times (A\times B) =
+	A(\nabla \DOT B)
 	- B(\nabla \DOT A)
 	+(B \DOT \nabla)A - (A \DOT \nabla)B
 \end{equation}
 And noting that (index notation helps here)
 \begin{equation}
-	\PD_j (u_i B_j) = 
+	\PD_j (u_i B_j) =
 	u_i \underbrace{\PD_j B_j}_\text{= 0} + B_j \PD_j u_i
 	= B_j \PD_j u_i
 \end{equation}
 \begin{equation}
-	\PD_j (u_j B_i) = 
+	\PD_j (u_j B_i) =
 	u_j \PD_j B_i + B_i \underbrace{\PD_j u_j}_\text{=0}
 	= u_j \PD_j B_i
 \end{equation}
 We can write our advective term as
 \begin{equation}
-	\nabla \times (\U \times B) 
-	= \U(\nabla \DOT B) 
+	\nabla \times (\U \times B)
+	= \U(\nabla \DOT B)
 	- B(\nabla \DOT \U)
 	+ (B \DOT \nabla)\U
 	- (\U \DOT \nabla)B
@@ -210,7 +192,7 @@ Using the kronecker delta identity, the diffusion term may be written as
 \end{equation}
 
 \begin{equation}
-	  = \PD_j \left( \SII \PD_i \frac{B_j}{\mu} \right) 
+	  = \PD_j \left( \SII \PD_i \frac{B_j}{\mu} \right)
 	  - \PD_j \left( \SII \PD_j \frac{B_i}{\mu} \right)
 	  = \PD_j \left[ \SII \left( \PD_i \frac{B_j}{\mu} - \PD_j \frac{B_i}{\mu} \right) \right]
 \end{equation}
@@ -218,15 +200,15 @@ Using the kronecker delta identity, the diffusion term may be written as
 Finally, we may write our full induction equation as
 \begin{equation}
 	\boxed{
-	\frac{\PD B_i}{\PD t} 
-	+ \frac{\PD}{\PD x_j} (u_j B_i - u_i B_j) 
+	\frac{\PD B_i}{\PD t}
+	+ \frac{\PD}{\PD x_j} (u_j B_i - u_i B_j)
 	+ \frac{1}{Re_m}
-	\frac{\PD}{\PD x_j} 
-	\left\{ \SII 
-	\left[ 
-	\frac{\PD}{\PD x_i} 
-	\left( \frac{B_j}{\mu} \right) - 
-	\frac{\PD}{\PD x_j} 
+	\frac{\PD}{\PD x_j}
+	\left\{ \SII
+	\left[
+	\frac{\PD}{\PD x_i}
+	\left( \frac{B_j}{\mu} \right) -
+	\frac{\PD}{\PD x_j}
 	\left( \frac{B_i}{\mu} \right)
 	\right]
 	\right\} = 0
@@ -246,14 +228,14 @@ This is the dimensionless induction equation written in divergence form. This is
 Sometimes it is helpful to look at the induction equation in a semi-expanded form. Expanding the dummy index $j$ yields the following equation for the $i$th component:
 
 \begin{multline}
-	\frac{\PD B_i}{\PD t} + 
-	\PD_x (u_x B_i - u_i B_x) + 
-	\PD_y (u_y B_i - u_i B_y) + 
+	\frac{\PD B_i}{\PD t} +
+	\PD_x (u_x B_i - u_i B_x) +
+	\PD_y (u_y B_i - u_i B_y) +
 	\PD_z (u_z B_i - u_i B_z) + \\
 	\frac{1}{Re_m}
-	\PD_x \left[ \SII \left( \PD_i \frac{B_x}{\mu} - \PD_x \frac{B_i}{\mu} \right) \right] + 
+	\PD_x \left[ \SII \left( \PD_i \frac{B_x}{\mu} - \PD_x \frac{B_i}{\mu} \right) \right] +
 	\frac{1}{Re_m}
-	\PD_y \left[ \SII \left( \PD_i \frac{B_y}{\mu} - \PD_y \frac{B_i}{\mu} \right) \right] + 
+	\PD_y \left[ \SII \left( \PD_i \frac{B_y}{\mu} - \PD_y \frac{B_i}{\mu} \right) \right] +
 	\frac{1}{Re_m}
 	\PD_z \left[ \SII \left( \PD_i \frac{B_z}{\mu} - \PD_z \frac{B_i}{\mu} \right) \right]  = \text{source terms}
 \end{multline}
@@ -264,15 +246,15 @@ Sometimes it is helpful to look at the induction equation in a semi-expanded for
 The applied magnetic field is non-dimensionalized by $B^0$, which means the equation for the applied magnetic field is
 
 \begin{equation}
-	\frac{\PD B_i^0}{\PD t} 
-	+ \frac{\PD}{\PD x_j} (u_j B_i^0 - u_i B_j^0) 
+	\frac{\PD B_i^0}{\PD t}
+	+ \frac{\PD}{\PD x_j} (u_j B_i^0 - u_i B_j^0)
 	+ \frac{1}{Re_m}
-	\frac{\PD}{\PD x_j} 
-	\left\{ \SII 
-	\left[ 
-	\frac{\PD}{\PD x_i} 
-	\left( \frac{B_j^0}{\mu} \right) - 
-	\frac{\PD}{\PD x_j} 
+	\frac{\PD}{\PD x_j}
+	\left\{ \SII
+	\left[
+	\frac{\PD}{\PD x_i}
+	\left( \frac{B_j^0}{\mu} \right) -
+	\frac{\PD}{\PD x_j}
 	\left( \frac{B_i^0}{\mu} \right)
 	\right]
 	\right\} = 0
@@ -282,15 +264,15 @@ The induced magnetic field is non-dimensionalized by $Re_m B^0$, which means the
 
 
 \begin{equation}
-	\frac{\PD B_i}{\PD t} 
-	+ \frac{\PD}{\PD x_j} (u_j B_i - u_i B_j) 
+	\frac{\PD B_i}{\PD t}
+	+ \frac{\PD}{\PD x_j} (u_j B_i - u_i B_j)
 	+
-	\frac{\PD}{\PD x_j} 
-	\left\{ \SII 
-	\left[ 
-	\frac{\PD}{\PD x_i} 
-	\left( \frac{B_j}{\mu} \right) - 
-	\frac{\PD}{\PD x_j} 
+	\frac{\PD}{\PD x_j}
+	\left\{ \SII
+	\left[
+	\frac{\PD}{\PD x_i}
+	\left( \frac{B_j}{\mu} \right) -
+	\frac{\PD}{\PD x_j}
 	\left( \frac{B_i}{\mu} \right)
 	\right]
 	\right\} = 0
@@ -300,27 +282,27 @@ Since $B^{induced}$ scales with $Re_m B^0$, we may combine these equations by wr
 
 \begin{multline}
 	\frac{\PD B_i^0}{\PD t} +
-	\frac{\PD B_i}{\PD t} 
-	+ \frac{\PD}{\PD x_j} (u_j B_i - u_i B_j) 
-	+ \frac{\PD}{\PD x_j} (u_j B_i^0 - u_i B_j^0) 
+	\frac{\PD B_i}{\PD t}
+	+ \frac{\PD}{\PD x_j} (u_j B_i - u_i B_j)
+	+ \frac{\PD}{\PD x_j} (u_j B_i^0 - u_i B_j^0)
 	+ \\
 	\frac{1}{Re_m}
-	\frac{\PD}{\PD x_j} 
-	\left\{ \SII 
-	\left[ 
-	\frac{\PD}{\PD x_i} 
-	\left( \frac{B_j^0}{\mu} \right) - 
-	\frac{\PD}{\PD x_j} 
+	\frac{\PD}{\PD x_j}
+	\left\{ \SII
+	\left[
+	\frac{\PD}{\PD x_i}
+	\left( \frac{B_j^0}{\mu} \right) -
+	\frac{\PD}{\PD x_j}
 	\left( \frac{B_i^0}{\mu} \right)
 	\right]
-	\right\} 
+	\right\}
 	+
-	\frac{\PD}{\PD x_j} 
-	\left\{ \SII 
-	\left[ 
-	\frac{\PD}{\PD x_i} 
-	\left( \frac{B_j}{\mu} \right) - 
-	\frac{\PD}{\PD x_j} 
+	\frac{\PD}{\PD x_j}
+	\left\{ \SII
+	\left[
+	\frac{\PD}{\PD x_i}
+	\left( \frac{B_j}{\mu} \right) -
+	\frac{\PD}{\PD x_j}
 	\left( \frac{B_i}{\mu} \right)
 	\right]
 	\right\}
@@ -336,23 +318,23 @@ It is apparent that one of the equations may be multiplied by a scalar factor be
 \begin{equation*}
 	\frac{\PD B_i^0}{\PD t}
 	+
-	\frac{\PD B_i}{\PD t} 
-	+ 
-	\frac{\PD}{\PD x_j} (u_j B_i^0 - u_i B_j^0) 
+	\frac{\PD B_i}{\PD t}
 	+
-	\frac{\PD}{\PD x_j} (u_j B_i - u_i B_j) 
-	+ 
-	\frac{\PD}{\PD x_j} 
-	\left\{ \SII 
-	\left[ 
-	\frac{\PD}{\PD x_i} 
-	\left( \frac{B_j}{\mu} \right) 
-	- 
-	\frac{\PD}{\PD x_j} 
+	\frac{\PD}{\PD x_j} (u_j B_i^0 - u_i B_j^0)
+	+
+	\frac{\PD}{\PD x_j} (u_j B_i - u_i B_j)
+	+
+	\frac{\PD}{\PD x_j}
+	\left\{ \SII
+	\left[
+	\frac{\PD}{\PD x_i}
+	\left( \frac{B_j}{\mu} \right)
+	-
+	\frac{\PD}{\PD x_j}
 	\left( \frac{B_i}{\mu} \right)
 	\right]
 	\right\}
-	= 
+	=
 	0
 \end{equation*}
 
@@ -363,24 +345,24 @@ It is apparent that one of the equations may be multiplied by a scalar factor be
 	\frac{\PD B_i^0}{\PD t}
 	+
  	Re_m
-	\frac{\PD B_i}{\PD t} 
-	+ 
-	\frac{\PD}{\PD x_j} (u_j B_i^0 - u_i B_j^0) 
+	\frac{\PD B_i}{\PD t}
+	+
+	\frac{\PD}{\PD x_j} (u_j B_i^0 - u_i B_j^0)
 	+
  	Re_m
-	\frac{\PD}{\PD x_j} (u_j B_i - u_i B_j) 
-	+ 
-	\frac{\PD}{\PD x_j} 
-	\left\{ \SII 
-	\left[ 
-	\frac{\PD}{\PD x_i} 
-	\left( \frac{B_j}{\mu} \right) 
-	- 
-	\frac{\PD}{\PD x_j} 
+	\frac{\PD}{\PD x_j} (u_j B_i - u_i B_j)
+	+
+	\frac{\PD}{\PD x_j}
+	\left\{ \SII
+	\left[
+	\frac{\PD}{\PD x_i}
+	\left( \frac{B_j}{\mu} \right)
+	-
+	\frac{\PD}{\PD x_j}
 	\left( \frac{B_i}{\mu} \right)
 	\right]
 	\right\}
-	= 
+	=
 	0
 \end{equation*}
 
@@ -388,30 +370,30 @@ It is apparent that one of the equations may be multiplied by a scalar factor be
 \subsection{Appendix C - Dimensionless/Quasi-static approximation for \texorpdfstring{$Re_m<<1$}{LG}}
 
 \begin{equation*}
-	\frac{\PD}{\PD x_j} (u_j B_i^0 - u_i B_j^0) 
-	+ 
-	\frac{\PD}{\PD x_j} 
-	\left\{ \SII 
-	\left[ 
-	\frac{\PD}{\PD x_i} 
-	\left( \frac{B_j}{\mu} \right) 
-	- 
-	\frac{\PD}{\PD x_j} 
+	\frac{\PD}{\PD x_j} (u_j B_i^0 - u_i B_j^0)
+	+
+	\frac{\PD}{\PD x_j}
+	\left\{ \SII
+	\left[
+	\frac{\PD}{\PD x_i}
+	\left( \frac{B_j}{\mu} \right)
+	-
+	\frac{\PD}{\PD x_j}
 	\left( \frac{B_i}{\mu} \right)
 	\right]
 	\right\}
-	= 
+	=
 	0
 \end{equation*}
 
 \subsection{Appendix D - Dimensionless/Quasi-static approximation in with uniform \texorpdfstring{$\sigma$}{LG} for \texorpdfstring{$Re_m<<1$}{LG}}
 
 \begin{equation*}
-	\frac{\PD}{\PD x_j} (u_j B_i^0 - u_i B_j^0) 
-	- 
-	\frac{\PD^2}{\PD x_j^2} 
-	\left( \frac{B_j}{\mu} \right) 
-	= 
+	\frac{\PD}{\PD x_j} (u_j B_i^0 - u_i B_j^0)
+	-
+	\frac{\PD^2}{\PD x_j^2}
+	\left( \frac{B_j}{\mu} \right)
+	=
 	0
 \end{equation*}
 
@@ -421,24 +403,24 @@ It is apparent that one of the equations may be multiplied by a scalar factor be
 \begin{equation*}
 	\frac{\PD B_i^0}{\PD t}
 	+
-	\frac{\PD B_i}{\PD t} 
-	+ 
-	\frac{\PD}{\PD x_j} (u_j B_i^0 - u_i B_j^0) 
+	\frac{\PD B_i}{\PD t}
 	+
-	\frac{\PD}{\PD x_j} (u_j B_i - u_i B_j) 
-	+ 
+	\frac{\PD}{\PD x_j} (u_j B_i^0 - u_i B_j^0)
+	+
+	\frac{\PD}{\PD x_j} (u_j B_i - u_i B_j)
+	+
 	\frac{1}{Re_m}
-	\frac{\PD}{\PD x_j} 
-	\left\{ \SII 
-	\left[ 
-	\frac{\PD}{\PD x_i} 
-	\left( \frac{B_j}{\mu} \right) 
-	- 
-	\frac{\PD}{\PD x_j} 
+	\frac{\PD}{\PD x_j}
+	\left\{ \SII
+	\left[
+	\frac{\PD}{\PD x_i}
+	\left( \frac{B_j}{\mu} \right)
+	-
+	\frac{\PD}{\PD x_j}
 	\left( \frac{B_i}{\mu} \right)
 	\right]
 	\right\}
-	= 
+	=
 	0
 \end{equation*}
 

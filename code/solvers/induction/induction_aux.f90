@@ -22,11 +22,6 @@
        implicit none
 
        private
-       public :: compute_AddJCrossB
-       public :: compute_JCrossB
-       public :: compute_Add_MPG
-       public :: compute_add_Q2D_JCrossB
-       public :: compute_Q2D_JCrossB
        public :: compute_divBJ
        public :: compute_J
        public :: compute_Total_Energy_Domain
@@ -39,82 +34,6 @@
 
        contains
 
-       subroutine compute_AddJCrossB(jcrossB,B,B0,J,m,D_fluid,N,finite_Rem,&
-         temp_CC,temp_F,temp_F1_TF,temp_F2_TF,temp)
-         implicit none
-         type(VF),intent(inout) :: jcrossB,temp
-         type(VF),intent(in) :: B,B0
-         type(VF),intent(in) :: J
-         type(mesh),intent(in) :: m
-         type(mesh_domain),intent(in) :: D_fluid
-         real(cp),intent(in) :: N
-         logical,intent(in) :: finite_Rem
-         type(SF),intent(inout) :: temp_CC
-         type(VF),intent(inout) :: temp_F
-         type(TF),intent(inout) :: temp_F1_TF,temp_F2_TF
-         call compute_JCrossB(temp,B,B0,J,m,D_fluid,N,finite_Rem,&
-         temp_CC,temp_F,temp_F1_TF,temp_F2_TF)
-         call add(jcrossB,temp)
-       end subroutine
-
-       subroutine compute_JCrossB(jCrossB,B,B0,J,m,D_fluid,N,finite_Rem,&
-         temp_CC,temp_F,temp_F1_TF,temp_F2_TF)
-         ! computes
-         !
-         !     finite Rem:  Ha^2/Re J x (B0 + B_induced)
-         !     low    Rem:  Ha^2/Re J x (B0)
-         !
-         implicit none
-         type(VF),intent(inout) :: jCrossB,temp_F
-         type(VF),intent(in) :: B,B0,J
-         type(mesh),intent(in) :: m
-         type(mesh_domain),intent(in) :: D_fluid
-         real(cp),intent(in) :: N
-         logical,intent(in) :: finite_Rem
-         type(SF),intent(inout) :: temp_CC
-         type(TF),intent(inout) :: temp_F1_TF,temp_F2_TF
-         call edge2Face_no_diag(temp_F1_TF,J,m)
-         if (finite_Rem) then; call add(temp_F,B0,B); call face2Face_no_diag(temp_F2_TF,temp_F,m,temp_CC)
-         else;                                        call face2Face_no_diag(temp_F2_TF,B0    ,m,temp_CC)
-         endif
-         call cross_product(temp_F,temp_F1_TF,temp_F2_TF)
-         call extractFace(jCrossB,temp_F,D_fluid)
-         call assign_ghost_XPeriodic(jCrossB,0.0_cp)
-         call multiply(jCrossB,N)
-       end subroutine
-
-       subroutine compute_Add_MPG(U,TMP,dir)
-         type(VF),intent(inout) :: U
-         type(time_marching_params),intent(in) :: TMP
-         integer,intent(in) :: dir
-         select case (dir)
-         case (0);
-         case (1); call subtract(U%x,-TMP%dt*1.0_cp); call apply_BCs(U)
-         case (2); call subtract(U%y,-TMP%dt*1.0_cp); call apply_BCs(U)
-         case (3); call subtract(U%z,-TMP%dt*1.0_cp); call apply_BCs(U)
-         case default; stop 'Error: dir must = 0:3 in compute_MPG in induction_aux.f90'
-         end select
-       end subroutine
-
-       subroutine compute_add_Q2D_JCrossB(Q2D_JCrossB,U,tau,temp_F)
-         implicit none
-         type(VF),intent(inout) :: Q2D_JCrossB,temp_F
-         type(VF),intent(in) :: U
-         real(cp),intent(in) :: tau
-         call compute_Q2D_JCrossB(temp_F,U,tau)
-         call add(Q2D_JCrossB,temp_F)
-       end subroutine
-
-       subroutine compute_Q2D_JCrossB(Q2D_JCrossB,U,tau)
-         ! computes: Q2D_JCrossB = -U/tau, tau = Re/Ha
-         implicit none
-         type(VF),intent(inout) :: Q2D_JCrossB
-         type(VF),intent(in) :: U
-         real(cp),intent(in) :: tau
-         call assign(Q2D_JCrossB,U)
-         call multiply(Q2D_JCrossB,-1.0_cp/tau)
-       end subroutine
-
        subroutine compute_divBJ(divB,divJ,B,J,m)
          implicit none
          type(SF),intent(inout) :: divB,divJ
@@ -124,15 +43,15 @@
          call div(divJ,J,m)
        end subroutine
 
-       subroutine compute_J(J,B,Rem,m,finite_Rem)
+       subroutine compute_J(J,B,scale,m,finite_Rem)
          implicit none
          type(VF),intent(inout) :: B
          type(VF),intent(inout) :: J
-         real(cp),intent(in) :: Rem
+         real(cp),intent(in) :: scale
          type(mesh),intent(in) :: m
          logical,intent(in) :: finite_Rem
          call curl(J,B,m)
-         if (finite_Rem) call multiply(J,1.0_cp/Rem)
+         if (finite_Rem) call multiply(J,scale)
        end subroutine
 
        subroutine compute_Total_Energy_Domain(energy,field,TMP,m,scale,MD)
@@ -201,11 +120,14 @@
          type(mesh_domain),intent(in) :: MD_sigma
          type(dimensionless_params),intent(in) :: DP
          type(SF) :: sigma_inv_temp
-         call init(sigma_inv_temp,m_ind,get_DL(sigma_inv))
+         type(mesh) :: m_other
+         call init_other(m_other,m_ind,MD_sigma)
+         call init(sigma_inv_temp,m_other,get_DL(sigma_inv))
          call assign(sigma_inv_temp,1.0_cp)
          call assign(sigma_inv,1.0_cp/DP%sig_local_over_sig_f)
          call embed(sigma_inv,sigma_inv_temp,MD_sigma)
          call delete(sigma_inv_temp)
+         call delete(m_other)
        end subroutine
 
        subroutine set_sigma_inv_VF(sigma_inv,m_ind,MD_sigma,DP)
@@ -215,11 +137,14 @@
          type(mesh_domain),intent(in) :: MD_sigma
          type(dimensionless_params),intent(in) :: DP
          type(VF) :: sigma_inv_temp
-         call init(sigma_inv_temp,m_ind,get_DL(sigma_inv))
+         type(mesh) :: m_other
+         call init_other(m_other,m_ind,MD_sigma)
+         call init(sigma_inv_temp,m_other,get_DL(sigma_inv))
          call assign(sigma_inv_temp,1.0_cp)
          call assign(sigma_inv,1.0_cp/DP%sig_local_over_sig_f)
          call embed(sigma_inv,sigma_inv_temp,MD_sigma)
          call delete(sigma_inv_temp)
+         call delete(m_other)
        end subroutine
 
        end module

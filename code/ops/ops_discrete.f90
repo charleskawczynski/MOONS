@@ -44,52 +44,58 @@
 
        private
        public :: lap
-       interface lap;             module procedure lapUniformCoeff_SF;        end interface
-       interface lap;             module procedure lapUniformCoeff_VF;        end interface
-       interface lap;             module procedure lapVarCoeff_SF;            end interface
-       interface lap;             module procedure lapVarCoeff_VF;            end interface
+       interface lap;            module procedure lapUniformCoeff_SF;      end interface
+       interface lap;            module procedure lapUniformCoeff_VF;      end interface
+       interface lap;            module procedure lapVarCoeff_SF;          end interface
+       interface lap;            module procedure lapVarCoeff_VF;          end interface
 
        public :: lap_component
-       interface lap_component;   module procedure lap_component_SF;          end interface
-       interface lap_component;   module procedure lap_component_VF;          end interface
+       interface lap_component;  module procedure lap_component_SF;        end interface
+       interface lap_component;  module procedure lap_component_VF;        end interface
 
        public :: lap_centered
-       interface lap_centered;    module procedure lap_centered_SF_dynamic;   end interface
-       interface lap_centered;    module procedure lap_centered_VF_dynamic;   end interface
+       interface lap_centered;   module procedure lap_centered_SF_dynamic; end interface
+       interface lap_centered;   module procedure lap_centered_VF_dynamic; end interface
 
        public :: div
-       interface div;             module procedure div_SF;                    end interface
-       interface div;             module procedure div_VF;                    end interface
+       interface div;            module procedure div_SF;                  end interface
+       interface div;            module procedure div_VF;                  end interface
 
        public :: grad
-       interface grad;            module procedure grad_SF;                   end interface
-       interface grad;            module procedure grad_VF;                   end interface
-       interface grad;            module procedure grad_TF;                   end interface
+       interface grad;           module procedure grad_SF;                 end interface
+       interface grad;           module procedure grad_VF;                 end interface
+       interface grad;           module procedure grad_TF;                 end interface
+
+       public :: grad_no_diag
+       interface grad_no_diag;   module procedure grad_no_diag_TF;         end interface
 
        public :: grad_component
-       interface grad_component;  module procedure grad_component_SF;         end interface
-       interface grad_component;  module procedure grad_component_VF;         end interface
+       interface grad_component; module procedure grad_component_SF;       end interface
+       interface grad_component; module procedure grad_component_VF;       end interface
 
        public :: divGrad
-       interface divGrad;         module procedure divGrad_VF;                end interface
+       interface divGrad;        module procedure divGrad_VF;              end interface
 
        public :: curl
-       interface curl;            module procedure curl_SF;                   end interface
-       interface curl;            module procedure curl_VF;                   end interface
-       interface curl;            module procedure curl_TF;                   end interface
+       interface curl;           module procedure curl_SF;                 end interface
+       interface curl;           module procedure curl_VF;                 end interface
+       interface curl;           module procedure curl_TF;                 end interface
 
        public :: curl_parallel
-       interface curl_parallel;   module procedure curl_TF_Parallel;          end interface
+       interface curl_parallel;  module procedure curl_TF_Parallel;        end interface
 
        public :: curlcurl
-       interface curlcurl;        module procedure curlcurlCoeff_VF;          end interface
-       interface curlcurl;        module procedure curlcurlUniform_VF;        end interface
+       interface curlcurl;       module procedure curlcurlCoeff_VF;        end interface
+       interface curlcurl;       module procedure curlcurlUniform_VF;      end interface
 
        public :: mixed
-       interface mixed;           module procedure mixed_uniformCoeff_SF;     end interface
-       interface mixed;           module procedure mixed_uniformCoeff_VF;     end interface
-       interface mixed;           module procedure mixed_variableCoeff_SF;    end interface
-       interface mixed;           module procedure mixed_variableCoeff_VF;    end interface
+       interface mixed;          module procedure mixed_uniformCoeff_SF;   end interface
+       interface mixed;          module procedure mixed_uniformCoeff_VF;   end interface
+       interface mixed;          module procedure mixed_variableCoeff_SF;  end interface
+       interface mixed;          module procedure mixed_variableCoeff_VF;  end interface
+
+       public :: surface_power
+       interface surface_power;  module procedure surface_power_VF;        end interface
 
        contains
 
@@ -400,6 +406,20 @@
          call grad(gradU%z,U%z,m)
        end subroutine
 
+       subroutine grad_no_diag_TF(gradU,U,m)
+         implicit none
+         type(TF),intent(inout) :: gradU
+         type(VF),intent(in) :: U
+         type(mesh),intent(in) :: m
+         type(del) :: d
+         call d%assign(gradU%x%y,U%x,m,1,2,0)
+         call d%assign(gradU%x%z,U%x,m,1,3,0)
+         call d%assign(gradU%y%x,U%y,m,1,1,0)
+         call d%assign(gradU%y%z,U%y,m,1,3,0)
+         call d%assign(gradU%z%x,U%z,m,1,1,0)
+         call d%assign(gradU%z%y,U%z,m,1,2,0)
+       end subroutine
+
        subroutine divGrad_VF(divGradU,U,m,temp_TF)
          ! This routine achieves consecutive staggered derivatives
          ! to compute lap(U). If U lives on the cell face, then
@@ -519,5 +539,42 @@
          call mixed(mix%y,f,k%x,m,temp%x,1,3) ! Shape of k must match dir1
          call mixed(mix%z,f,k%x,m,temp%x,1,2) ! Shape of k must match dir1
        end subroutine
+
+       function surface_power_VF(u,m,temp_F1,temp_F2,temp_CC,temp_TF) result(Q)
+         ! Computes: BF = ∫∫ u_tangent•grad(u_tangent) dA
+         implicit none
+         type(VF),intent(in) :: u
+         type(VF),intent(inout) :: temp_F1,temp_F2,temp_CC
+         type(TF),intent(inout) :: temp_TF
+         type(mesh),intent(in) :: m
+         real(cp) :: Q
+         Q = 0.0_cp
+         call face2CellCenter(temp_CC,u,m)
+         call grad_no_diag(temp_TF,temp_CC,m)
+         call extrap(temp_TF,m)
+         ! x-faces
+         Q = Q + surface_power_component(temp_TF%y%x,temp_CC%y,m,temp_F1%x,temp_F2%x,1)
+         Q = Q + surface_power_component(temp_TF%z%x,temp_CC%z,m,temp_F1%x,temp_F2%x,1)
+         ! y-faces
+         Q = Q + surface_power_component(temp_TF%x%y,temp_CC%x,m,temp_F1%y,temp_F2%y,2)
+         Q = Q + surface_power_component(temp_TF%z%y,temp_CC%z,m,temp_F1%y,temp_F2%y,2)
+         ! z-faces
+         Q = Q + surface_power_component(temp_TF%x%z,temp_CC%x,m,temp_F1%z,temp_F2%z,3)
+         Q = Q + surface_power_component(temp_TF%y%z,temp_CC%y,m,temp_F1%z,temp_F2%z,3)
+       end function
+
+       function surface_power_component(CC1,CC2,m,temp_F1,temp_F2,dir) result(Q)
+         ! Computes: BF = ∫∫ u•tau_wall dA
+         implicit none
+         type(SF),intent(inout) :: temp_F1,temp_F2
+         type(SF),intent(in) :: CC1,CC2
+         type(mesh),intent(in) :: m
+         integer,intent(in) :: dir
+         real(cp) :: Q
+         call cellcenter2Face(temp_F1,CC1,m,dir)
+         call cellcenter2Face(temp_F2,CC2,m,dir)
+         call multiply(temp_F1,temp_F2)
+         Q = boundary_flux(temp_F1,m)
+       end function
 
        end module

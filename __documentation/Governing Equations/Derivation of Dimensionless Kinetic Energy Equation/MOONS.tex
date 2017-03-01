@@ -14,26 +14,8 @@
 \usepackage{tabularx,ragged2e,booktabs,caption}
 \usepackage{esint}
 
-
-\newcommand{\A}{\mathbf{A}}
-\newcommand{\B}{\mathbf{B}}
-\renewcommand{\C}{\mathbf{C}}
-\newcommand{\PD}{\partial}
-\newcommand{\MC}{\mathcal}
-\newcommand{\BM}{\frac{\mathbf{B}}{\mu}}
-\newcommand{\J}{\mathbf{j}}
-\newcommand{\E}{\mathbf{E}}
-\newcommand{\ep}{\epsilon}
-\newcommand{\N}{\mathbf{n}}
-\newcommand{\JS}{\frac{\mathbf{j}}{\sigma}}
-\newcommand{\JSS}{\frac{\mathbf{j}^2}{\sigma}}
-\renewcommand{\U}{\mathbf{u}}
-\newcommand{\SII}{\sigma^{-1}}
-\newcommand{\SI}{\sigma}
-\newcommand{\M}{\mu}
-\newcommand{\MO}{\overline{\mu}}
-\newcommand{\SO}{\overline{\sigma}}
-\newcommand{\DOT}{\text{\textbullet}}
+\input{./../path_to_useful_commands.tex}
+\input{\PATHTOUSEFULCOMMANDS}
 
 \setlength{\oddsidemargin}{0.1in}
 \setlength{\textwidth}{7.25in}
@@ -210,14 +192,14 @@ Starting from \ref{eq:secondIdentity}, and using
 with $\PD_j u_j = 0$, we have
 \begin{equation}
 	u_i \frac{\PD^2 u_i}{\PD x_j^2} =
-	\frac{\PD^2 E_K}{\PD x_j^2} -
+	\frac{1}{\rho} \frac{\PD^2 E_K}{\PD x_j^2} -
 	\frac{\PD u_i}{\PD x_j}\frac{\PD u_i}{\PD x_j}
 \end{equation}
 Therefore
 \begin{equation}
 	\boxed{
 	u_i \mu \frac{\PD^2 u_i}{\PD x_j^2} =
-	\mu \frac{\PD^2 E_K}{\PD x_j^2} -
+	\nu \frac{\PD^2 E_K}{\PD x_j^2} -
 	\mu \frac{\PD u_i}{\PD x_j}\frac{\PD u_i}{\PD x_j}
 	}
 \end{equation}
@@ -254,16 +236,16 @@ or split up
 \begin{equation}
 	\boxed{
 	u_i (j \times B)_i
-	= u_i B_j \frac{\PD}{\PD x_j} \frac{B_i}{\mu} - u_i \frac{\PD}{\PD x_i} \frac{B_j^2}{2 \mu}
-	, \qquad E_m = \frac{B_j^2}{2 \mu}
+	= u_i B_j \frac{\PD}{\PD x_j} \frac{B_i}{\M} - u_i \frac{\PD}{\PD x_i} \frac{B_j^2}{2 \M}
+	, \qquad E_m = \frac{B_j^2}{2 \M}
 	}
 \end{equation}
 Which we may write in vector notation as
 \begin{equation}
 	\boxed{
-	\U \DOT (\J \times \B) = \U \DOT \left[\B \DOT \nabla \left( \BM \right) \right] - (\U \DOT \nabla) E_m
+	\U \DOT (\J \CROSS \B) = \U \DOT \left[\B \DOT \DEL \left( \H \right) \right] - (\U \DOT \DEL) E_m
 	,\qquad
-	E_m = \frac{\B^2}{2 \mu}
+	E_m = \frac{\B^2}{2 \M}
 	}
 \end{equation}
 
@@ -285,7 +267,7 @@ Combining the compressive viscous stress with pressure, we have
 	{\substack{\text{Convection } \MC C_K \\\text{of $E_K$}}}
 	+ \underbrace{\frac{\PD}{\PD x_i} \left( u_i p - 2 \mu u_j S_{ij} \right)}_{\text{Transport } \MC T} =
 	- \underbrace{2 \mu S_{ij} S_{ij}}_{\substack{\text{Viscous } \\ \text{dissipation } \varepsilon_v}}
-	+ \underbrace{u_i B_j \frac{\PD}{\PD x_j} \frac{B_i}{\mu}}_
+	+ \underbrace{u_i B_j \frac{\PD}{\PD x_j} \frac{B_i}{\M}}_
 	{\substack{\text{Power $\MC P_{m}$ of}\\\text{maxwell stresses}}}
 	- \underbrace{u_j \frac{\PD E_m}{\PD x_j}}_
 	{\substack{\text{Convection $\MC C_m$}\\\text{of $E_m$}}}
@@ -305,9 +287,9 @@ Note that there is no production term, $P$, since turbulent fluctuations were no
 	{\substack{\text{Convection } \MC C_K \\\text{of $E_K$}}}
 	=
 	- \underbrace{\frac{\PD (u_i p)}{\PD x_i}}_{\text{Pressure } \MC P}
-	+ \underbrace{ \mu \frac{\PD^2 E_K}{\PD x_j^2} }_{\substack{\text{Diffusion } \MC D_K \\ \text{of $E_K$ }}}
+	+ \underbrace{ \nu \frac{\PD^2 E_K}{\PD x_j^2} }_{\substack{\text{Diffusion } \MC D_K \\ \text{of $E_K$ }}}
 	- \underbrace{\mu \frac{\PD u_i}{\PD x_j}\frac{\PD u_i}{\PD x_j} }_{\substack{\text{Viscous } \\ \text{dissipation } \varepsilon_v'}}
-	+ \underbrace{u_i B_j \frac{\PD}{\PD x_j} \frac{B_i}{\mu}}_
+	+ \underbrace{u_i B_j \frac{\PD}{\PD x_j} \frac{B_i}{\M}}_
 	{\substack{\text{Power $\MC P_{m}$ of}\\\text{maxwell stresses}}}
 	- \underbrace{u_j \frac{\PD E_m}{\PD x_j}}_
 	{\substack{\text{Convection $\MC C_m$}\\\text{of $E_m$}}}

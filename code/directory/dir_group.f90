@@ -18,6 +18,7 @@
         type(path) :: energy
         type(path) :: residual
         type(path) :: unsteady
+        type(path) :: stats
         type(path) :: BCs
       end type
 
@@ -36,6 +37,7 @@
         call init(DG%energy  ,DG%base,'energy'  ,PS)
         call init(DG%residual,DG%base,'residual',PS)
         call init(DG%unsteady,DG%base,'unsteady',PS)
+        call init(DG%stats   ,DG%base,'stats'   ,PS)
         call init(DG%BCs     ,DG%base,'BCs'     ,PS)
         call delete(temp)
       end subroutine
@@ -49,6 +51,7 @@
         call make_dir(str(DG%energy))
         call make_dir(str(DG%residual))
         call make_dir(str(DG%unsteady))
+        call make_dir(str(DG%stats))
         call make_dir(str(DG%BCs))
       end subroutine
 
@@ -61,6 +64,7 @@
         call delete(DG%energy)
         call delete(DG%residual)
         call delete(DG%unsteady)
+        call delete(DG%stats)
         call delete(DG%BCs)
       end subroutine
 

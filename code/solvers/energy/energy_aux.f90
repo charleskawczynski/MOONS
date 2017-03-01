@@ -13,77 +13,12 @@
        implicit none
 
        private
-       public :: compute_AddBuoyancy
-       public :: compute_AddGravity
-       public :: computeBuoyancy
-       public :: computeGravity
        public :: compute_Q
        public :: volumetric_heating_intro
        public :: volumetric_heating_equation
        public :: compute_divQ
 
        contains
-
-       subroutine computeBuoyancy(buoyancy,T,gravity,Gr,Re,m,MD,temp_F,temp_CC)
-         ! Computes
-         !
-         !            Gr
-         !           ---  T g
-         !           Re^2
-         implicit none
-         type(VF),intent(inout) :: buoyancy,temp_F,temp_CC
-         type(SF),intent(in) :: T
-         type(VF),intent(in) :: gravity
-         real(cp),intent(in) :: Gr,Re
-         type(mesh),intent(in) :: m
-         type(mesh_domain),intent(in) :: MD
-         call assign(temp_CC,T)
-         call multiply(temp_CC,Gr/(Re**2.0_cp))
-         call multiply(temp_CC,gravity)
-         call cellCenter2Face(temp_F,temp_CC,m)
-         call extractFace(buoyancy,temp_F,MD)
-       end subroutine
-
-       subroutine compute_AddBuoyancy(buoyancy,T,gravity,Gr,Re,m,MD,temp_F,temp_CC,temp_buoyancy)
-         implicit none
-         type(VF),intent(inout) :: buoyancy,temp_F,temp_CC,temp_buoyancy
-         type(SF),intent(in) :: T
-         type(VF),intent(in) :: gravity
-         real(cp),intent(in) :: Gr,Re
-         type(mesh),intent(in) :: m
-         type(mesh_domain),intent(in) :: MD
-         call computeBuoyancy(temp_buoyancy,T,gravity,Gr,Re,m,MD,temp_F,temp_CC)
-         call add(buoyancy,temp_buoyancy)
-       end subroutine
-
-       subroutine computeGravity(gravity,g,Fr,m,MD,temp_F,temp_CC)
-         ! Computes
-         !
-         !            1
-         !           --- g
-         !           Fr^2
-         implicit none
-         type(VF),intent(inout) :: gravity,temp_F,temp_CC
-         type(VF),intent(in) :: g
-         real(cp),intent(in) :: Fr
-         type(mesh),intent(in) :: m
-         type(mesh_domain),intent(in) :: MD
-         call assign(temp_CC,g)
-         call multiply(temp_CC,1.0_cp/(Fr**2.0_cp))
-         call cellCenter2Face(temp_F,temp_CC,m)
-         call extractFace(gravity,temp_F,MD)
-       end subroutine
-
-       subroutine compute_AddGravity(gravity,g,Fr,m,MD,temp_F,temp_CC,temp_gravity)
-         implicit none
-         type(VF),intent(inout) :: gravity,temp_F,temp_CC,temp_gravity
-         type(VF),intent(in) :: g
-         real(cp),intent(in) :: Fr
-         type(mesh),intent(in) :: m
-         type(mesh_domain),intent(in) :: MD
-         call computeGravity(temp_gravity,g,Fr,m,MD,temp_F,temp_CC)
-         call add(gravity,temp_gravity)
-       end subroutine
 
        subroutine compute_Q(Q,T,k,m)
          implicit none

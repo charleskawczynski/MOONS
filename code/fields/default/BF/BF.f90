@@ -126,6 +126,7 @@
        interface assign_BCs;                  module procedure assign_BCs_BF;                   end interface
        interface assign_BC_vals;              module procedure assign_BC_vals_BF;               end interface
        interface assign_Neumann_BCs;          module procedure assign_Neumann_BCs_BF;           end interface
+       interface assign_Neumann_BCs;          module procedure assign_Neumann_BCs_VF_BF;      end interface
        interface assign_Dirichlet_BCs;        module procedure assign_Dirichlet_BCs_BF;         end interface
        interface assign_Periodic_BCs;         module procedure assign_Periodic_BCs_BF;          end interface
        interface multiply_Neumann_BCs;        module procedure multiply_Neumann_BCs_BF;         end interface
@@ -145,6 +146,7 @@
        interface plane_sum_y;                 module procedure plane_sum_y_BF;                  end interface
        interface plane_sum_z;                 module procedure plane_sum_z_BF;                  end interface
        interface boundary_flux;               module procedure boundary_flux_BF;                end interface
+       interface boundary_flux;               module procedure boundary_flux_SF_BF;             end interface
 
        interface assign_ghost_xmin_xmax;      module procedure assign_ghost_xmin_xmax_BF;       end interface
        interface assign_ghost_ymin_ymax;      module procedure assign_ghost_ymin_ymax_BF;       end interface
@@ -599,6 +601,27 @@
          endif
        end subroutine
 
+       subroutine assign_Neumann_BCs_VF_BF(phi,u,v,w)
+         implicit none
+         type(block_field),intent(inout) :: phi
+         type(block_field),intent(in) :: u,v,w
+         logical,dimension(3) :: L
+         if (defined(phi%BCs)) then
+           L(1) = is_Face(u%DL).and.(get_Face(u%DL).eq.1)
+           L(2) = is_Face(v%DL).and.(get_Face(v%DL).eq.2)
+           L(3) = is_Face(w%DL).and.(get_Face(w%DL).eq.3)
+           if (all(L)) then
+             if (is_Neumann(phi%BCs%face%bct(1))) call assign_plane_x(phi%BCs%face%b(1),u%GF,1,    2      )
+             if (is_Neumann(phi%BCs%face%bct(2))) call assign_plane_x(phi%BCs%face%b(2),u%GF,1,u%GF%s(1)-1)
+             if (is_Neumann(phi%BCs%face%bct(3))) call assign_plane_y(phi%BCs%face%b(3),v%GF,1,    2      )
+             if (is_Neumann(phi%BCs%face%bct(4))) call assign_plane_y(phi%BCs%face%b(4),v%GF,1,v%GF%s(2)-1)
+             if (is_Neumann(phi%BCs%face%bct(5))) call assign_plane_z(phi%BCs%face%b(5),w%GF,1,    2      )
+             if (is_Neumann(phi%BCs%face%bct(6))) call assign_plane_z(phi%BCs%face%b(6),w%GF,1,w%GF%s(3)-1)
+           else; stop 'Error: bad DL in multiply_Neumann_BCs_VF_BF in BF.f90'
+           endif
+         endif
+       end subroutine
+
        subroutine assign_Dirichlet_BCs_BF(u,f)
          implicit none
          type(block_field),intent(inout) :: u
@@ -961,6 +984,34 @@
          call delete(temp_y)
          call delete(temp_z)
          else; stop 'Error: boundary flux only offered for face data in BF.f90'
+         endif
+       end function
+
+       function boundary_flux_SF_BF(phi,B) result(BF)
+         implicit none
+         type(block_field),intent(in) :: phi
+         type(block),intent(in) :: B
+         type(block_field) :: temp_phi
+         real(cp) :: BF
+         logical,dimension(3) :: L
+         L(1) = is_Face(phi%DL).and.(get_Face(phi%DL).eq.1)
+         L(2) = is_Face(phi%DL).and.(get_Face(phi%DL).eq.2)
+         L(3) = is_Face(phi%DL).and.(get_Face(phi%DL).eq.3)
+         BF = 0.0_cp
+         if (any(L)) then
+           call init(temp_phi,phi); call assign(temp_phi%GF,phi%GF)
+           call assign_ghost_XPeriodic(temp_phi,0.0_cp)
+              if (L(1)) then
+           BF = BF + plane_sum_x(temp_phi%GF,B%g,2,-1.0_cp)
+           BF = BF + plane_sum_x(temp_phi%GF,B%g,temp_phi%GF%s(1)-1,1.0_cp)
+           elseif(L(2)) then
+           BF = BF + plane_sum_y(temp_phi%GF,B%g,2,-1.0_cp)
+           BF = BF + plane_sum_y(temp_phi%GF,B%g,temp_phi%GF%s(2)-1,1.0_cp)
+           elseif(L(3)) then
+           BF = BF + plane_sum_z(temp_phi%GF,B%g,2,-1.0_cp)
+           BF = BF + plane_sum_z(temp_phi%GF,B%g,temp_phi%GF%s(3)-1,1.0_cp)
+           endif
+           call delete(temp_phi)
          endif
        end function
 

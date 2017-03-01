@@ -47,9 +47,9 @@ N_outer = 1;                  % restarts CG
 % run_sim(N_cells,forceType,p,BCs,N_inner,N_outer,print_full)
 
 % % f = cos(p*x), pure Neumann BCs (needs special treatment)
-forceType = 'sin';            % (zero,constant,x,gaussian,sin,cos)
-BCs.bc1.type = bctype(3);     % (1,2) = (Dirichlet,Neumann,Perioduc)
-BCs.bc2.type = bctype(3);     % (1,2) = (Dirichlet,Neumann,Perioduc)
+forceType = 'cos';            % (zero,constant,x,gaussian,sin,cos)
+BCs.bc1.type = bctype(2);     % (1,2) = (Dirichlet,Neumann,Perioduc)
+BCs.bc2.type = bctype(2);     % (1,2) = (Dirichlet,Neumann,Perioduc)
 BCs.bc1.val = 0;              % BC value
 BCs.bc2.val = 0;              % BC value
 N_outer = 1; N_inner = floor(N_total/N_outer);

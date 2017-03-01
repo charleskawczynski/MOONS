@@ -9,6 +9,7 @@
        public :: assign_B0_vs_t
        public :: assign_dB0_dt_vs_t
        integer,parameter :: n_data_points = 58
+       integer :: i_start = 7 ! B_poloidal does not drop until about t(7)
 
        contains
 
@@ -17,14 +18,16 @@
          type(VF),intent(inout) :: B0
          type(time_marching_params),intent(in) :: TMP
          real(cp),dimension(n_data_points) :: B_p_all,B_r_all,t_all
+         real(cp) :: time
          ! Non-dimensionalize
          call time_normalized(t_all)
+         time = TMP%t+t_all(i_start)
          ! call B_r_mean_normalized(B_r_all)
          call B_p_mean_normalized(B_p_all)
          call assign(B0%x,5.0_cp)
-         ! call assign(B0%y,get_B_from_t(t_all,B_r_all,TMP%t))
+         ! call assign(B0%y,get_B_from_t(t_all,B_r_all,time))
          call assign(B0%y,0.0_cp)
-         call assign(B0%z,get_B_from_t(t_all,B_p_all,TMP%t))
+         call assign(B0%z,get_B_from_t(t_all,B_p_all,time))
        end subroutine
 
        subroutine assign_dB0_dt_vs_t(dB0_dt,TMP)
@@ -32,13 +35,15 @@
          type(VF),intent(inout) :: dB0_dt
          type(time_marching_params),intent(in) :: TMP
          real(cp),dimension(n_data_points) :: B_p_all,B_r_all,t_all
+         real(cp) :: time
          call time_normalized(t_all)
+         time = TMP%t+t_all(i_start)
          ! call B_r_mean_normalized(B_r_all)
          call B_p_mean_normalized(B_p_all)
          call assign(dB0_dt%x,0.0_cp)
-         ! call assign(dB0_dt%y,get_dB0_dt_from_t(t_all,B_r_all,TMP%t))
+         ! call assign(dB0_dt%y,get_dB0_dt_from_t(t_all,B_r_all,time))
          call assign(dB0_dt%y,0.0_cp)
-         call assign(dB0_dt%z,get_dB0_dt_from_t(t_all,B_p_all,TMP%t))
+         call assign(dB0_dt%z,get_dB0_dt_from_t(t_all,B_p_all,time))
        end subroutine
 
        function get_dB0_dt_from_t(t_all,B_all,t) result(dB0_dt)

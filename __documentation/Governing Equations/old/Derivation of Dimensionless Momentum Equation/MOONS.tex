@@ -287,35 +287,6 @@ Removing the asterisk, we have
 	}
 \end{equation}
 
-
-\subsection{Spatial discretization}
-MOONS implements similar spatial discretization described in \cite{griebel1997numerical}. An extra ghost node is present in MOONS for easy implementation of Neumann BCs.
-
-\subsection{Time discretization}
-MOONS offers several time marching schemes including explicit Euler and a 3D ADI by . implements similar spatial discretization described in \cite{griebel1997numerical}
-Below the equations are written for this method with minimal explanation, since it can be found in the reference. Also, a mixed index-vector notation has been used.
-\begin{equation}
-	\frac{u_i^{n+1}- u_i^{n}}{\Delta t} = - \PD_j (u_j^{n} u_i^{n})
-	-\PD_i  p^{n+1} +
-	\frac{1}{Re} \PD_j \PD_j u_i^{n} +
-	\frac{Ha^2}{Re} \J^n \times \B^n
-\end{equation}
-Estimating for the velocity at the next time step, we have
-\begin{equation}
-	u_i^* = u_i^{n} + \Delta t \left[ - \PD_j (u_j^{n} u_i^{n}) +
-	\frac{1}{Re} \PD_j \PD_j u_i^{n} +
-	\frac{Ha^2}{Re} \J^n \times \B^n \right]
-\end{equation}
-And the pressure-correction step
-\begin{equation}
-	u_i^{n+1} = u_i^* -\PD_i p^{n+1}
-\end{equation}
-Where the implicit pressure is solved in
-\begin{equation}
-	\PD_j \PD_j p^{n+1} = \frac{1}{\Delta t} \PD_i u_i^n
-\end{equation}
-
-
 \bibliography{handpicked}
 \bibliographystyle{plain}
 

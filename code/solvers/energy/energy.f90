@@ -5,8 +5,11 @@
        use IO_export_mod
        use IO_import_mod
        use export_raw_processed_mod
+       use export_raw_processed_symmetry_mod
+       use export_processed_FPL_mod
        use SF_mod
        use VF_mod
+       use TF_mod
        use mesh_mod
        use mesh_domain_mod
        use dir_tree_mod
@@ -31,6 +34,7 @@
 
        use iter_solver_params_mod
        use time_marching_params_mod
+       use time_marching_methods_SF_mod
 
        use ops_embedExtract_mod
        use norms_mod
@@ -52,12 +56,15 @@
 
        type energy
          ! --- Vector fields ---
-         type(SF) :: T,temp_CC1,temp_CC2   ! CC data
+         type(SF) :: T,Tnm1,temp_CC1,temp_CC2   ! CC data
+         type(SF) :: F,Fnm1
          type(VF) :: temp_F,k              ! Face data
          type(VF) :: U_F                   ! Face data
+         type(VF) :: U_CC                  ! Face data
          type(VF) :: gravity               ! CC data
          type(VF) :: temp_CC1_VF           ! CC data
          type(VF) :: temp_CC2_VF           ! CC data
+         type(TF) :: temp_CC_TF            ! CC data
          ! --- Scalar fields ---
          type(SF) :: divQ                  ! CC data
          type(SF) :: Q_source
@@ -109,16 +116,21 @@
          call init(nrg%MD,MD)
 
          call init_CC(nrg%T,m,0.0_cp)
+         call init_CC(nrg%Tnm1,m,0.0_cp)
+         call init_CC(nrg%F,m,0.0_cp)
+         call init_CC(nrg%Fnm1,m,0.0_cp)
          call init_CC(nrg%Q_source,m,0.0_cp)
          call init_CC(nrg%temp_CC2,m,0.0_cp)
          call init_Face(nrg%temp_F,m,0.0_cp)
 
          call init_Face(nrg%k,m,0.0_cp)
          call init_Face(nrg%U_F,m,0.0_cp)
+         call init_CC(nrg%U_CC,m,0.0_cp)
          call init_CC(nrg%temp_CC1,m,0.0_cp)
          call init_CC(nrg%gravity,m,0.0_cp)
          call init_CC(nrg%temp_CC1_VF,m,0.0_cp)
          call init_CC(nrg%temp_CC2_VF,m,0.0_cp)
+         call init_CC(nrg%temp_CC_TF,m,0.0_cp)
 
          ! --- Scalar Fields ---
          call init_CC(nrg%divQ,m)
@@ -135,6 +147,7 @@
          write(*,*) '     T-field initialized'
 
          call apply_BCs(nrg%T)
+         call assign(nrg%Tnm1,nrg%T)
          write(*,*) '     BCs applied'
 
          call init_CC(k_cc,m,0.0_cp)
@@ -161,6 +174,9 @@
          type(energy),intent(inout) :: nrg
 
          call delete(nrg%T)
+         call delete(nrg%Tnm1)
+         call delete(nrg%F)
+         call delete(nrg%Fnm1)
          call delete(nrg%Q_source)
          call delete(nrg%temp_F)
          call delete(nrg%k)
@@ -168,9 +184,11 @@
          call delete(nrg%temp_CC2)
 
          call delete(nrg%U_F)
+         call delete(nrg%U_CC)
          call delete(nrg%gravity)
          call delete(nrg%temp_CC1_VF)
          call delete(nrg%temp_CC2_VF)
+         call delete(nrg%temp_CC_TF)
 
          call delete(nrg%divQ)
 
@@ -238,105 +256,110 @@
            write(*,*) 'export_tec_energy at nrg%SP%VS%T%TMP%n_step = ',nrg%SP%VS%T%TMP%n_step
            call export_processed(nrg%m,nrg%T,str(DT%T%field),'T',0)
            call export_raw(nrg%m,nrg%T,str(DT%T%field),'T',0)
+           call export_raw(nrg%m,nrg%Tnm1,str(DT%T%field),'Tnm1',0)
+           call export_raw(nrg%m,nrg%F,str(DT%T%field),'F',0)
+           call export_raw(nrg%m,nrg%Fnm1,str(DT%T%field),'Fnm1',0)
            call export_raw(nrg%m,nrg%divQ,str(DT%T%field),'divQ',0)
            write(*,*) '     finished'
          endif
        end subroutine
 
-       subroutine export_unsteady_0D_nrg(nrg)
+       subroutine export_unsteady_0D_nrg(nrg,TMP)
          implicit none
          type(energy),intent(inout) :: nrg
+         type(time_marching_params),intent(in) :: TMP
          real(cp) :: temp
          call compute_Q(nrg%temp_F,nrg%T,nrg%k,nrg%m)
          call compute_divQ(nrg%divQ,nrg%temp_F,nrg%m)
          call assign_ghost_XPeriodic(nrg%divQ,0.0_cp)
          call Ln(temp,nrg%divQ,2.0_cp,nrg%m)
-         call export(nrg%Probe_divQ,nrg%SP%VS%T%TMP,temp)
+         call export(nrg%Probe_divQ,TMP,temp)
        end subroutine
 
-       subroutine export_unsteady_1D_nrg(nrg,DT)
+       subroutine export_unsteady_1D_nrg(nrg,TMP,DT)
          implicit none
          type(energy),intent(inout) :: nrg
+         type(time_marching_params),intent(in) :: TMP
          type(dir_tree),intent(in) :: DT
-         integer :: dir
-         integer,dimension(2) :: line
-         logical :: L
-         dir  = nrg%SP%VS%T%unsteady_line%dir
-         line = nrg%SP%VS%T%unsteady_line%line
-         L    = nrg%SP%VS%T%unsteady_line%export_ever
-         if (L) call export_processed(nrg%m,nrg%T,str(DT%T%unsteady),'T',0,nrg%SP%VS%T%TMP,dir,line)
+         call export_processed(nrg%m,nrg%T,str(DT%T%unsteady),'T',1,TMP,nrg%SP%VS%T%unsteady_lines)
        end subroutine
 
-       subroutine export_unsteady_2D_nrg(nrg,DT)
+       subroutine export_unsteady_2D_nrg(nrg,TMP,DT)
          implicit none
          type(energy),intent(inout) :: nrg
+         type(time_marching_params),intent(in) :: TMP
          type(dir_tree),intent(in) :: DT
-         integer :: dir,plane
-         logical :: L
-         dir   = nrg%SP%VS%T%unsteady_plane%dir
-         plane = nrg%SP%VS%T%unsteady_plane%plane
-         L     = nrg%SP%VS%T%unsteady_plane%export_ever
-         if (L) call export_processed(nrg%m,nrg%T,str(DT%T%unsteady),'T',0,nrg%SP%VS%T%TMP,dir,plane)
+         call export_processed(nrg%m,nrg%T,str(DT%T%unsteady),'T',1,TMP,nrg%SP%VS%T%unsteady_planes)
        end subroutine
 
-       subroutine export_unsteady_3D_nrg(nrg,DT)
+       subroutine export_unsteady_3D_nrg(nrg,TMP,DT)
          implicit none
          type(energy),intent(inout) :: nrg
+         type(time_marching_params),intent(in) :: TMP
          type(dir_tree),intent(in) :: DT
-         call export_processed(nrg%m,nrg%T,str(DT%T%unsteady),'T',0,nrg%SP%VS%T%TMP)
+         call export_processed(nrg%m,nrg%T,str(DT%T%unsteady),'T',1,TMP,nrg%SP%VS%T%unsteady_field)
        end subroutine
 
-       subroutine solve_energy(nrg,U,EF,EN,DT)
+       subroutine solve_energy(nrg,F,Fnm1,TMP,EF,EN,DT)
          implicit none
          type(energy),intent(inout) :: nrg
-         type(VF),intent(in) :: U
+         type(SF),intent(in) :: F,Fnm1
+         type(time_marching_params),intent(inout) :: TMP
          type(export_frequency),intent(in) :: EF
          type(export_now),intent(in) :: EN
          type(dir_tree),intent(in) :: DT
 
-         call embedFace(nrg%U_F,U,nrg%MD)
-
-         select case (nrg%SP%VS%T%SS%solve_method)
+         select case(nrg%SP%VS%T%SS%solve_method)
          case (1)
-         call explicitEuler(nrg%T,nrg%U_F,nrg%SP%VS%T%TMP%dt,&
-         nrg%SP%DP%Pe,nrg%m,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
-
-         case (2) ! O2 time marching
-         call explicitEuler(nrg%T,nrg%U_F,nrg%SP%VS%T%TMP%dt,&
-         nrg%SP%DP%Pe,nrg%m,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
-
-         case (3) ! Diffusion implicit
-         call diffusion_implicit(nrg%PCG_T,nrg%T,nrg%U_F,nrg%SP%VS%T%TMP%dt,&
-         nrg%SP%DP%Pe,nrg%m,EF%unsteady_0D%export_now,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
-
+           call Euler_time_no_diff_Euler_sources_SF(nrg%T,nrg%temp_CC1,F,TMP)
+         case (2)
+           call Euler_time_no_diff_AB2_sources_SF(nrg%T,nrg%temp_CC1,F,Fnm1,TMP)
+         case (3)
+           call Euler_time_AB2_sources_SF(nrg%PCG_T,nrg%T,nrg%Tnm1,F,Fnm1,nrg%m,&
+           TMP,nrg%temp_CC1,EF%unsteady_0D%export_now)
          case (4)
-         if (nrg%SP%VS%T%TMP%n_step.le.1) then
-           call volumetric_heating_equation(nrg%Q_source,nrg%m,nrg%SP%DP%Pe)
-         endif
-
-         call explicitEuler_with_source(nrg%T,nrg%U_F,nrg%SP%VS%T%TMP%dt,&
-         nrg%SP%DP%Pe,nrg%m,nrg%Q_source,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
-
-         case (5)
-         if (nrg%SP%VS%T%TMP%n_step.le.1) then
-           call volumetric_heating_equation(nrg%Q_source,nrg%m,nrg%SP%DP%Pe)
-         endif
-         call CN_with_source(nrg%PCG_T,nrg%T,nrg%U_F,nrg%SP%VS%T%TMP%dt,&
-         nrg%SP%DP%Pe,nrg%m,nrg%Q_source,EF%unsteady_0D%export_now,nrg%temp_CC1,&
-         nrg%temp_CC2,nrg%temp_F)
-
-         case default; stop 'Erorr: bad solveTMethod value in solve_energy in energy.f90'
+           call O2_BDF_time_AB2_sources_SF(nrg%PCG_T,nrg%T,nrg%Tnm1,F,Fnm1,nrg%m,&
+           TMP,nrg%temp_CC1,EF%unsteady_0D%export_now)
+         case default; stop 'Error: solveTMethod must = 1:4 in energy.f90.'
          end select
-         call iterate_step(nrg%SP%VS%T%TMP)
+         call iterate_step(TMP)
+
+
+         ! select case (nrg%SP%VS%T%SS%solve_method)
+         ! case (1)
+         ! call explicitEuler(nrg%T,nrg%U_F,TMP%dt,&
+         ! nrg%SP%DP%Pe,nrg%m,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
+         ! case (2) ! O2 time marching
+         ! call explicitEuler(nrg%T,nrg%U_F,TMP%dt,&
+         ! nrg%SP%DP%Pe,nrg%m,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
+         ! case (3) ! Diffusion implicit
+         ! call diffusion_implicit(nrg%PCG_T,nrg%T,nrg%U_F,TMP%dt,&
+         ! nrg%SP%DP%Pe,nrg%m,EF%unsteady_0D%export_now,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
+         ! case (4)
+         ! if (TMP%n_step.le.1) then
+         !   call volumetric_heating_equation(nrg%Q_source,nrg%m,nrg%SP%DP%Pe)
+         ! endif
+         ! call explicitEuler_with_source(nrg%T,nrg%U_F,TMP%dt,&
+         ! nrg%SP%DP%Pe,nrg%m,nrg%Q_source,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
+         ! case (5)
+         ! if (TMP%n_step.le.1) then
+           call volumetric_heating_equation(nrg%Q_source,nrg%m,nrg%SP%DP%Pe)
+         ! endif
+         ! call CN_with_source(nrg%PCG_T,nrg%T,nrg%U_F,TMP%dt,&
+         ! nrg%SP%DP%Pe,nrg%m,nrg%Q_source,EF%unsteady_0D%export_now,nrg%temp_CC1,&
+         ! nrg%temp_CC2,nrg%temp_F)
+         ! case default; stop 'Erorr: bad solveTMethod value in solve_energy in energy.f90'
+         ! end select
+         ! call iterate_step(TMP)
 
          ! ********************* POST SOLUTION COMPUTATIONS *********************
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
-         if (EF%unsteady_0D%export_now) call export_unsteady_0D(nrg)
-         if (EF%unsteady_1D%export_now) call export_unsteady_1D(nrg,DT)
-         if (EF%unsteady_2D%export_now) call export_unsteady_2D(nrg,DT)
-         if (EF%unsteady_3D%export_now) call export_unsteady_3D(nrg,DT)
+         if (EF%unsteady_0D%export_now) call export_unsteady_0D(nrg,TMP)
+         if (EF%unsteady_1D%export_now) call export_unsteady_1D(nrg,TMP,DT)
+         if (EF%unsteady_2D%export_now) call export_unsteady_2D(nrg,TMP,DT)
+         if (EF%unsteady_3D%export_now) call export_unsteady_3D(nrg,TMP,DT)
          if (EF%info%export_now) call print(nrg)
 
          if (EF%final_solution%export_now.or.EN%T%this.or.EN%all%this) then
