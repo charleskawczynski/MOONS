@@ -210,19 +210,20 @@
 #endif
        end subroutine
 
-       subroutine apply_Robin_C_implicit(ug,ui,x,y,p) ! not yet tested
+       subroutine apply_Robin_C_implicit(ug,ui,bvals,dh_nhat,x,y,p) ! not yet tested
          ! u + c du/dh = 0
          implicit none
          integer,intent(in) :: x,y,p
          real(cp),dimension(x,y),intent(inout) :: ug
-         real(cp),dimension(x,y),intent(in) :: ui ! c = bvals
+         real(cp),dimension(x,y),intent(in) :: ui,bvals ! c = bvals
+         real(cp),intent(in) :: dh_nhat
          integer :: i,j
 #ifdef _PARALLELIZE_APPLY_BCS_FACES_RAW_
         !$OMP PARALLEL DO
 
 #endif
          do j=1+p,y-p; do i=1+p,x-p
-         ug(i,j) = -ui(i,j)
+         ug(i,j) = ui(i,j)*(2.0_cp*bvals(i,j)/dh_nhat-1.0_cp)/(2.0_cp*bvals(i,j)/dh_nhat+1.0_cp)
          enddo; enddo
 #ifdef _PARALLELIZE_APPLY_BCS_FACES_RAW_
         !$OMP END PARALLEL DO

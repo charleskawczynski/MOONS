@@ -102,7 +102,7 @@
        SP%restart_all                = F ! restart sim (requires no code changes)
        SP%uniform_gravity_dir        = 1 ! Uniform gravity field direction
        SP%uniform_B0_dir             = 3 ! Uniform applied field direction
-       SP%mpg_dir                    = 0 ! Uniform applied field direction
+       SP%mpg_dir                    = 1 ! Uniform applied field direction
        SP%couple_time_steps          = T ! Ensures all dt are equal to coupled%dt
        SP%finite_Rem                 = F ! Ensures all dt are equal to coupled%dt
        SP%include_vacuum             = F ! Ensures all dt are equal to coupled%dt
@@ -116,10 +116,10 @@
        call init(SP%MP,F,6) ! Must be defined before KE_scale,ME_scale,JE_scale
 
        ! call init(EFP,export_ever,export_first_step,frequency_base,frequency_exp)
-       call init(SP%EF%info          ,T,T,1,10,1)
+       call init(SP%EF%info          ,T,T,1,10,2)
        call init(SP%EF%unsteady_0D   ,T,T,1,10,2)
-       call init(SP%EF%unsteady_1D   ,T,F,1,10,2)
-       call init(SP%EF%unsteady_2D   ,T,F,1,10,2)
+       call init(SP%EF%unsteady_1D   ,F,F,1,10,2)
+       call init(SP%EF%unsteady_2D   ,F,F,1,10,2)
        call init(SP%EF%unsteady_3D   ,F,F,1,10,4)
        call init(SP%EF%restart_files ,F,F,1,10,2)
        call init(SP%EF%final_solution,F,F,1,10,6)
@@ -133,11 +133,11 @@
        call init(SP%TSP,F,100.0_cp,500.0_cp)
 
        time                          = 10000.0_cp
-       dtime                         = 1.0_cp*pow(-2)
+       dtime                         = 5.0_cp*pow(-4)
 
        SP%GP%tw                      = 0.05_cp
-       SP%GP%geometry                = 9
-       SP%GP%periodic_dir            = (/0,0,0/)
+       SP%GP%geometry                = 24
+       SP%GP%periodic_dir            = (/1,0,0/)
        ! SP%GP%apply_BC_order          = (/3,4,5,6,1,2/) ! good for LDC
        ! SP%GP%apply_BC_order       = (/3,4,5,6,1,2/) ! good for periodic in y?
        SP%GP%apply_BC_order       = (/5,6,1,2,3,4/) ! good for periodic in y?
@@ -148,9 +148,9 @@
        SP%DP%Re                      = 1.0_cp*pow(2)
        ! SP%DP%Q                       = 4.4_cp*pow(-1)
        SP%DP%Rem                     = 1.0_cp*pow(0)
-       SP%DP%Ha                      = 1.0_cp*pow(1)
+       SP%DP%Ha                      = 5.0_cp*pow(1)
        ! SP%DP%N                       = 1.0_cp/SP%DP%Q
-       ! SP%DP%N                       = 1.0_cp*pow(-1)
+       ! SP%DP%N                       = 4.0_cp*pow(-1)
        SP%DP%cw                      = 0.0_cp
        SP%DP%sig_local_over_sig_f    = 1.0_cp*pow(0)
        SP%DP%Gr                      = 0.0_cp
@@ -203,9 +203,9 @@
 
        ! call init_IC_BC(var      ,IC   ,BC)
        call init_IC_BC(SP%VS%T    ,0    ,0 )
-       call init_IC_BC(SP%VS%U    ,0    ,1 )
-       call init_IC_BC(SP%VS%P    ,0    ,0 )
-       call init_IC_BC(SP%VS%B    ,0    ,1 )
+       call init_IC_BC(SP%VS%U    ,0    ,6 )
+       call init_IC_BC(SP%VS%P    ,0    ,2 )
+       call init_IC_BC(SP%VS%B    ,0    ,4 )
        call init_IC_BC(SP%VS%B0   ,1    ,0 )
        call init_IC_BC(SP%VS%phi  ,0    ,0 )
        call init_IC_BC(SP%VS%rho  ,0    ,0 )
@@ -279,7 +279,7 @@
        SP%MT%diffusion%add              = T ! add diffusion              to momentum equation
        SP%MT%advection_convection%add   = F ! add advection (conv form)  to momentum equation
        SP%MT%advection_divergence%add   = T ! add advection (div  form)  to momentum equation
-       SP%MT%mean_pressure_grad%add     = F ! add mean pressure gradient to momentum equation
+       SP%MT%mean_pressure_grad%add     = T ! add mean pressure gradient to momentum equation
        SP%MT%JCrossB%add                = T ! add JCrossB                to momentum equation
        SP%MT%Q2D_JCrossB%add            = F ! add Q2D JCrossB            to momentum equation
        SP%MT%Buoyancy%add               = F ! add Buoyancy               to momentum equation
@@ -329,7 +329,7 @@
        endif
        ! call export_import_SS(SP%VS)
        call sanity_check(SP)
-      end subroutine
+     end subroutine
 
      subroutine sanity_check(SP)
        implicit none
@@ -372,7 +372,7 @@
        call init(SP%MQP,    SP_in%MQP)
        call init(SP%TSP,    SP_in%TSP)
        call init(SP%EF,     SP_in%EF)
-      end subroutine
+     end subroutine
 
      subroutine delete_SP(SP)
        implicit none
@@ -389,7 +389,7 @@
        call delete(SP%MQP)
        call delete(SP%TSP)
        call delete(SP%EF)
-      end subroutine
+     end subroutine
 
      subroutine display_SP(SP,un)
        implicit none
@@ -419,7 +419,34 @@
        call display(SP%TSP,un)
        call display(SP%EF,un)
        call display(SP%coupled,un)
-      end subroutine
+       call display_compiler_info(un)
+     end subroutine
+
+     subroutine display_compiler_info(un)
+       implicit none
+       integer,intent(in) :: un
+       write(un,*) ' ----------------- COMPILER FLAG INFO -------------- '
+#ifdef _PARALLELIZE_GF_
+       write(un,*) '_PARALLELIZE_GF_ = .true.'
+#else
+       write(un,*) '_PARALLELIZE_GF_ = .false.'
+#endif
+#ifdef _PARALLELIZE_BF_PLANE_
+       write(un,*) '_PARALLELIZE_BF_PLANE_ = .true.'
+#else
+       write(un,*) '_PARALLELIZE_BF_PLANE_ = .false.'
+#endif
+#ifdef PARALLELIZE_2D_OPS
+       write(un,*) 'PARALLELIZE_2D_OPS = .true.'
+#else
+       write(un,*) 'PARALLELIZE_2D_OPS = .false.'
+#endif
+#ifdef PARALLELIZE_1D_OPS
+       write(un,*) 'PARALLELIZE_1D_OPS = .true.'
+#else
+       write(un,*) 'PARALLELIZE_1D_OPS = .false.'
+#endif
+     end subroutine
 
      subroutine display_SP_wrapper(SP,dir,name)
        implicit none
@@ -429,13 +456,13 @@
        un = new_and_open(dir,name)
        call display(SP,un)
        call close_and_message(un,dir,name)
-      end subroutine
+     end subroutine
 
      subroutine print_SP(SP)
        implicit none
        type(sim_params),intent(in) :: SP
        call display(SP,6)
-      end subroutine
+     end subroutine
 
      subroutine export_SP(SP,un)
        implicit none
@@ -465,7 +492,7 @@
        call export(SP%TSP,un)
        call export(SP%EF,un)
        call export(SP%coupled,un)
-      end subroutine
+     end subroutine
 
      subroutine import_SP(SP,un)
        implicit none
@@ -495,7 +522,7 @@
        call import(SP%TSP,un)
        call import(SP%EF,un)
        call import(SP%coupled,un)
-      end subroutine
+     end subroutine
 
      subroutine export_SP_wrapper(SP,dir,name)
        implicit none
@@ -505,7 +532,7 @@
        un = new_and_open(dir,name)
        call export(SP,un)
        call close_and_message(un,dir,name)
-      end subroutine
+     end subroutine
 
      subroutine import_SP_wrapper(SP,dir,name)
        implicit none
@@ -515,6 +542,6 @@
        un = new_and_open(dir,name)
        call import(SP,un)
        call close_and_message(un,dir,name)
-      end subroutine
+     end subroutine
 
      end module

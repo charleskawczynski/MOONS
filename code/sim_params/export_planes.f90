@@ -82,8 +82,10 @@
          type(export_planes),intent(in) :: EPS_in
          integer :: i
          call delete(EPS)
+         allocate(EPS%EP(EPS_in%N))
+         EPS%N = EPS_in%N
          do i=1,EPS_in%N
-           call add(EPS,EPS_in%EP(i))
+           call init(EPS%EP(i),EPS_in%EP(i))
          enddo
        end subroutine
 

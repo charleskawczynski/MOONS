@@ -2,8 +2,8 @@
 # RELEASE = 'DEBUG'
 RELEASE = 'OPTIMIZE'
 # RELEASE = 'PROFILE'
-USE_OPEN_MP = 'TRUE'
-PARALLELIZE_3D_OPS = 'TRUE'
+# USE_OPEN_MP = 'TRUE'
+# PARALLELIZE_3D_OPS = 'TRUE'
 # PARALLELIZE_2D_OPS = 'TRUE'
 # PARALLELIZE_1D_OPS = 'TRUE'
 # FORMAT_OUTPUT = 'FORMATTED'
@@ -593,6 +593,7 @@ info:;  @echo " "
 	@echo "Source files:"
 	@echo $(SRCS_F)
 	@echo " "
+	@echo | gcc -dM -E -
 	@echo "Object files:"
 	@echo $(OBJS_F)
 	@echo " "

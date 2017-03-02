@@ -82,6 +82,7 @@
           type(grid_field) :: GF ! bulk
           type(boundary_conditions) :: BCs
           type(data_location) :: DL
+          logical,dimension(3) :: many_cell_N_periodic = .false.
           ! type(stitches) :: st
           type(procedure_array_plane_op) :: PA_assign_ghost_XPeriodic
           type(procedure_array_plane_op) :: PA_assign_ghost_N_XPeriodic
@@ -317,18 +318,21 @@
            L(2) = is_Periodic(BF%BCs%face%bct(1))
            L(3) = is_Periodic(BF%BCs%face%bct(2))
            L(4) = BF%GF%s(1).gt.4
+           BF%many_cell_N_periodic(1) = all(L)
            if (all(L)) call add(BF%PA_assign_wall_Periodic_single,assign_wall_xmax,2)
 
            L(1) = N_along(BF%DL,2)
            L(2) = is_Periodic(BF%BCs%face%bct(3))
            L(3) = is_Periodic(BF%BCs%face%bct(4))
            L(4) = BF%GF%s(2).gt.4
+           BF%many_cell_N_periodic(2) = all(L)
            if (all(L)) call add(BF%PA_assign_wall_Periodic_single,assign_wall_ymax,4)
 
            L(1) = N_along(BF%DL,3)
            L(2) = is_Periodic(BF%BCs%face%bct(5))
            L(3) = is_Periodic(BF%BCs%face%bct(6))
            L(4) = BF%GF%s(3).gt.4
+           BF%many_cell_N_periodic(3) = all(L)
            if (all(L)) call add(BF%PA_assign_wall_Periodic_single,assign_wall_zmax,6)
          endif
        end subroutine
@@ -368,6 +372,7 @@
          type(block_field),intent(inout) :: BF
          type(block_field),intent(in) :: BF_in
          call init(BF%GF,BF_in%GF)
+         BF%many_cell_N_periodic = BF_in%many_cell_N_periodic
          call init(BF%DL,BF_in%DL)
          if (BF_in%BCs%BCL%defined) call init(BF%BCs,BF_in%BCs)
          call init(BF%PA_assign_ghost_XPeriodic,BF_in%PA_assign_ghost_XPeriodic)
@@ -380,6 +385,7 @@
        subroutine delete_BF(BF)
          implicit none
          type(block_field),intent(inout) :: BF
+         BF%many_cell_N_periodic = .false.
          call delete(BF%GF)
          call delete(BF%DL)
          call delete(BF%BCs)
@@ -671,20 +677,23 @@
        subroutine set_prescribed_BCs_BF(A)
          implicit none
          type(block_field),intent(inout) :: A
+         logical,dimension(3) :: L
          if (defined(A%BCs)) then
-           if (is_Periodic(A%BCs%face%bct(1))) call set_prescribed(A%BCs%face%bct(1))
-           if (is_Periodic(A%BCs%face%bct(2))) call set_prescribed(A%BCs%face%bct(2))
-           if (is_Periodic(A%BCs%face%bct(3))) call set_prescribed(A%BCs%face%bct(3))
-           if (is_Periodic(A%BCs%face%bct(4))) call set_prescribed(A%BCs%face%bct(4))
-           if (is_Periodic(A%BCs%face%bct(5))) call set_prescribed(A%BCs%face%bct(5))
-           if (is_Periodic(A%BCs%face%bct(6))) call set_prescribed(A%BCs%face%bct(6))
+           L = A%many_cell_N_periodic
+           if (is_Periodic(A%BCs%face%bct(1)).and.L(1)) call set_prescribed(A%BCs%face%bct(1))
+           if (is_Periodic(A%BCs%face%bct(2)).and.L(1)) call set_prescribed(A%BCs%face%bct(2))
+           if (is_Periodic(A%BCs%face%bct(3)).and.L(2)) call set_prescribed(A%BCs%face%bct(3))
+           if (is_Periodic(A%BCs%face%bct(4)).and.L(2)) call set_prescribed(A%BCs%face%bct(4))
+           if (is_Periodic(A%BCs%face%bct(5)).and.L(3)) call set_prescribed(A%BCs%face%bct(5))
+           if (is_Periodic(A%BCs%face%bct(6)).and.L(3)) call set_prescribed(A%BCs%face%bct(6))
 
-           if (is_Periodic(A%BCs%face%bct(1))) call init_Periodic(A%BCs,1)
-           if (is_Periodic(A%BCs%face%bct(2))) call init_Periodic(A%BCs,2)
-           if (is_Periodic(A%BCs%face%bct(3))) call init_Periodic(A%BCs,3)
-           if (is_Periodic(A%BCs%face%bct(4))) call init_Periodic(A%BCs,4)
-           if (is_Periodic(A%BCs%face%bct(5))) call init_Periodic(A%BCs,5)
-           if (is_Periodic(A%BCs%face%bct(6))) call init_Periodic(A%BCs,6)
+           ! Prescribed is now potentially changed, re-assess BC type:
+           if (is_Periodic(A%BCs%face%bct(1)).and.L(1)) call init_periodic(A%BCs,1)
+           if (is_Periodic(A%BCs%face%bct(2)).and.L(1)) call init_periodic(A%BCs,2)
+           if (is_Periodic(A%BCs%face%bct(3)).and.L(2)) call init_periodic(A%BCs,3)
+           if (is_Periodic(A%BCs%face%bct(4)).and.L(2)) call init_periodic(A%BCs,4)
+           if (is_Periodic(A%BCs%face%bct(5)).and.L(3)) call init_periodic(A%BCs,5)
+           if (is_Periodic(A%BCs%face%bct(6)).and.L(3)) call init_periodic(A%BCs,6)
          endif
        end subroutine
 

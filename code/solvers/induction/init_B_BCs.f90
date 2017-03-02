@@ -36,15 +36,16 @@
 
          select case (preset_ID)
          case (0);
-         case (1); call pseudo_vacuum(B,m)
-         case (2); call init_Bandaru(B)
-         case (3); call periodic_duct_flow(B,m)
-         case (4); call periodic_duct_flow_pseudo_vacuum(B,m)
-         case (5); call thin_wall(B,m,cw)
-         case (6); call thin_wall_LDC(B,m,cw)
-         case (7); call thin_wall_Hunt(B,m,cw)
-         case (8); call RV_symmetric_zmax(B,m)
-         case (9); call PV_symmetric_zmax(B,m)
+         case (1);  call pseudo_vacuum(B,m)
+         case (2);  call init_Bandaru(B)
+         case (3);  call periodic_duct_flow(B,m)
+         case (4);  call periodic_duct_flow_pseudo_vacuum(B,m)
+         case (5);  call periodic_duct_thin_wall(B,m,cw)
+         case (6);  call thin_wall(B,m,cw)
+         case (7);  call thin_wall_LDC(B,m,cw)
+         case (8);  call thin_wall_Hunt(B,m,cw)
+         case (9);  call RV_symmetric_zmax(B,m)
+         case (10); call PV_symmetric_zmax(B,m)
          case default; stop 'Error: bad preset_ID in init_UBCs.f90'
          end select
 
@@ -115,6 +116,20 @@
          type(mesh),intent(in) :: m
          integer :: i,k
          call pseudo_vacuum(B,m)
+         do i=1,m%s
+           do k=1,2; call init_periodic(B%x%BF(i)%BCs,k); enddo
+           do k=1,2; call init_periodic(B%y%BF(i)%BCs,k); enddo
+           do k=1,2; call init_periodic(B%z%BF(i)%BCs,k); enddo
+         enddo
+       end subroutine
+
+       subroutine periodic_duct_thin_wall(B,m,cw)
+         implicit none
+         type(VF),intent(inout) :: B
+         type(mesh),intent(in) :: m
+         real(cp),intent(in) :: cw
+         integer :: i,k
+         call thin_wall(B,m,cw)
          do i=1,m%s
            do k=1,2; call init_periodic(B%x%BF(i)%BCs,k); enddo
            do k=1,2; call init_periodic(B%y%BF(i)%BCs,k); enddo

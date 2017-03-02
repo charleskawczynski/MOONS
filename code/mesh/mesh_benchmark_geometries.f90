@@ -51,6 +51,9 @@
          case (19); call user_defined(             m_mom,m_ind,MQP,MD_sigma,DP)
          case (20); call Hydro_3D_LDC_Leriche(     m_mom,m_ind,MQP,DP)
          case (21); call MHD_3D_2_channel_PD(      m_mom,m_ind,MQP,MD_sigma,DP)
+         case (22); call MHD_3D_LDC_Shatrov(       m_mom,m_ind,MQP,MD_sigma,DP)
+         case (23); call MHD_3D_Duct_Kinet(        m_mom,m_ind,MQP,MD_sigma,DP)
+         case (24); call MHD_2D_Duct_Hunt(         m_mom,m_ind,MQP,MD_sigma,DP)
          case default; stop 'Error: bad BMC_geometry in mesh_benchmark_geometries.f90'
          end select
        end subroutine
@@ -255,6 +258,83 @@
          call init(MD_sigma,m_mom,m_ind)
        end subroutine
 
+       subroutine MHD_3D_LDC_Shatrov(m_mom,m_ind,MQP,MD_sigma,DP)
+         implicit none
+         type(mesh),intent(inout) :: m_mom,m_ind
+         type(mesh_quality_params),intent(in) :: MQP
+         type(mesh_domain),intent(inout) :: MD_sigma
+         type(dimensionless_params),intent(in) :: DP
+         type(grid) :: g
+         real(cp),dimension(3) :: hmin,hmax,beta
+         integer,dimension(3) :: N
+         integer :: i
+         call delete(m_mom)
+         N = 60; hmin = -0.5_cp; hmax = 0.5_cp
+         beta = Re_Ha_BL(DP%Re,DP%Ha,hmin,hmax)
+         i = 1; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
+         i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
+         i = 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
+         call add(m_mom,g)
+         call init_props(m_mom)
+         call patch(m_mom)
+         call delete(g)
+         call init(m_ind,m_mom)
+         call init(MD_sigma,m_mom,m_ind)
+       end subroutine
+
+       subroutine MHD_3D_Duct_Kinet(m_mom,m_ind,MQP,MD_sigma,DP)
+         implicit none
+         type(mesh),intent(inout) :: m_mom,m_ind
+         type(mesh_quality_params),intent(in) :: MQP
+         type(mesh_domain),intent(inout) :: MD_sigma
+         type(dimensionless_params),intent(in) :: DP
+         type(grid) :: g
+         real(cp),dimension(3) :: hmin,hmax,beta
+         integer,dimension(3) :: N
+         integer :: i
+         call delete(m_mom)
+         N = (/512,100,100/)
+         hmin = -1.0_cp; hmax = 1.0_cp
+         hmin(1) = 0.0_cp
+         hmax(1) = 4.0_cp*PI
+         beta = Re_Ha_BL(DP%Re,DP%Ha,hmin,hmax)
+         i = 1; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
+         i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
+         i = 3; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
+         call add(m_mom,g)
+         call init_props(m_mom)
+         call patch(m_mom)
+         call delete(g)
+         call init(m_ind,m_mom)
+         call init(MD_sigma,m_mom,m_ind)
+       end subroutine
+
+       subroutine MHD_2D_Duct_Hunt(m_mom,m_ind,MQP,MD_sigma,DP)
+         implicit none
+         type(mesh),intent(inout) :: m_mom,m_ind
+         type(mesh_quality_params),intent(in) :: MQP
+         type(mesh_domain),intent(inout) :: MD_sigma
+         type(dimensionless_params),intent(in) :: DP
+         type(grid) :: g
+         real(cp),dimension(3) :: hmin,hmax,beta
+         integer,dimension(3) :: N
+         integer :: i
+         call delete(m_mom)
+         N = (/1,40,40/)
+         hmin = -1.0_cp; hmax = 1.0_cp
+         hmin(1) = -0.5_cp; hmax(1) = 0.5_cp
+         beta = Re_Ha_BL(DP%Re,DP%Ha,hmin,hmax)
+         i = 1; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
+         i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
+         i = 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
+         call add(m_mom,g)
+         call init_props(m_mom)
+         call patch(m_mom)
+         call delete(g)
+         call init(m_ind,m_mom)
+         call init(MD_sigma,m_mom,m_ind)
+       end subroutine
+
        subroutine MHD_3D_LDC_Sergey_uniform(m_mom,m_ind,MD_sigma)
          implicit none
          type(mesh),intent(inout) :: m_mom,m_ind
@@ -265,9 +345,9 @@
          integer,dimension(3) :: N
          call delete(m_mom); call delete(m_ind)
          N = 45; hmin = -1.0_cp; hmax =  1.0_cp
-         i= 1; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
-         i= 2; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
-         i= 3; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
+         i = 1; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
+         i = 2; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
+         i = 3; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
          call add(m_mom,g)
          call init_props(m_mom)
          call patch(m_mom)

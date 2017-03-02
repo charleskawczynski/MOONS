@@ -297,6 +297,7 @@
         end subroutine
 
         subroutine smooth_lid_Shatrov_GF(U,g,DL,plane,k_lid)
+          ! This profile was shifted to enforce 0 < x,y,z < 1
           implicit none
           type(grid_field),intent(inout) :: U
           type(grid),intent(in) :: g
@@ -304,24 +305,34 @@
           integer,intent(in) :: plane
           real(cp),intent(in) :: k_lid
           type(array),dimension(3) :: h
-          real(cp),dimension(3) :: L
+          real(cp),dimension(3) :: L,hmin
           integer,dimension(2) :: a
           integer,dimension(3) :: e
           real(cp) :: xhat,yhat
+          real(cp) :: x_01,y_01
+          real(cp) :: xhat_parabolic,yhat_parabolic
+          real(cp) :: xhat_flip,yhat_flip
           integer :: i,j,i_p,j_p,k_p,p
           call get_coordinates_h(h,g,DL)
           a = adj_dir_given_dir(plane)
           e = eye_given_dir(plane)
-          L = (/(g%c(i)%maxRange/2.0_cp,i=1,3)/)
+          L = (/(g%c(i)%hmax-g%c(i)%hmin,i=1,3)/)
+          hmin = (/(g%c(i)%hmin,i=1,3)/)
           do i=1,U%s(a(1))
           do j=1,U%s(a(2))
           do p=1,U%s(plane)
             i_p = e(1)*p + i*(1-e(1))
             j_p = e(2)*p + (i*(1-e(3)) + j*(1-e(1)))*(1-e(2))
             k_p = e(3)*p + j*(1-e(3))
-            xhat = exp( -k_lid* (1.0_cp - (1.0_cp - 2.0_cp*h(a(1))%f(i))**2.0_cp) )
-            yhat = exp( -k_lid* (1.0_cp - (1.0_cp - 2.0_cp*h(a(2))%f(j))**2.0_cp) )
-            U%f(i_p,j_p,k_p) = (1.0_cp - xhat)**2.0_cp*(1.0_cp - yhat)**2.0_cp
+            x_01 = abs((h(a(1))%f(i) - hmin(a(1)))/L(a(1)))
+            y_01 = abs((h(a(2))%f(j) - hmin(a(2)))/L(a(2)))
+            xhat_parabolic = ( 1.0_cp - 2.0_cp*x_01 )**2.0_cp
+            yhat_parabolic = ( 1.0_cp - 2.0_cp*y_01 )**2.0_cp
+            xhat_flip = 1.0_cp - xhat_parabolic
+            yhat_flip = 1.0_cp - yhat_parabolic
+            xhat = exp( -k_lid*abs(xhat_flip) ) ! abs prevents large ghost BC values
+            yhat = exp( -k_lid*abs(yhat_flip) ) ! abs prevents large ghost BC values
+            U%f(i_p,j_p,k_p) = ((1.0_cp - xhat)**2.0_cp)*((1.0_cp - yhat)**2.0_cp)
           enddo
           enddo
           enddo

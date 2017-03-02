@@ -55,6 +55,7 @@
          type(sub_domain) :: temp
          real(cp) :: tol
          integer :: i,dir,i_opp
+         logical :: many_cell
          tol = 10.0_cp**(-12.0_cp)
          call delete(FSD)
          do i=1,6
@@ -85,10 +86,18 @@
            call init(FSD%I_OPP_periodic_N(i),FSD%I_OPP(i))
            call init(FSD%G_periodic_N(i),FSD%G(i))
          enddo
+
+         ! For Periodic BCs, node points must be truncated by 1,
+         ! to solve the system correctly. If there's a single
+         ! interior cell (not multicell), however, then periodic
+         ! BCs should be symmetric and simply enforce no changes
+         ! along the single interior cell.
          do i=1,6
            i_opp = opp_face_given_face(i)
-           if (max_face(i)) call init(FSD%G_periodic_N(i),FSD%B(i))
-           if (max_face(i)) call init(FSD%I_OPP_periodic_N(i),FSD%B(i_opp))
+           dir = dir_given_face(i)
+           many_cell = g%c(dir)%sn.gt.4
+           if (max_face(i).and.many_cell) call init(FSD%G_periodic_N(i),FSD%B(i))
+           if (max_face(i).and.many_cell) call init(FSD%I_OPP_periodic_N(i),FSD%B(i_opp))
          enddo
          call delete(temp)
        end subroutine
