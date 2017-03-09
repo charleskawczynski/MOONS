@@ -4,6 +4,7 @@
       use apply_BCs_mod
       use ops_discrete_mod
       use ops_aux_mod
+      use bctype_mod
       use SF_mod
       use VF_mod
       use matrix_free_params_mod
@@ -36,6 +37,7 @@
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         type(SF),intent(inout) :: tempx,Ax,r,p
+        call assign_BC_vals(p,x)                      ! update BCs
         call assign(r,b)                              ! r = b
         call multiply_wall_Neumann(r,0.5_cp,x)        ! r = b_mod
         if (x%all_Neumann) call subtract_physical_mean(r,vol,tempx) ! Not sure correct loc
@@ -62,6 +64,7 @@
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         type(VF),intent(inout) :: tempx,Ax,r,p
+        call assign_BC_vals(p,x)                      ! update BCs
         call assign(r,b)                              ! r = b
         call multiply_wall_Neumann(r,0.5_cp,x)        ! r = b_mod
         ! if (x%all_Neumann) call subtract_physical_mean(r,vol,tempx) ! Not sure correct loc

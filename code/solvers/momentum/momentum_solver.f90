@@ -58,7 +58,7 @@
          call assign(Unm1,U)
          call solve(mom_PCG,Ustar,temp_F1,m,compute_norms) ! Solve for U*
          call clean_div(PPE_PCG,U,Ustar,p,1.0_cp/dt,m,temp_F2,temp_CC,compute_norms)
-         call update_intermediate_field_BCs(Ustar,U,p,m,temp_F1,temp_F2,temp_CC_VF)
+         call update_intermediate_field_BCs(Ustar,U,p,1.0_cp/dt,m,temp_F1,temp_F2,temp_CC_VF)
        end subroutine
 
        subroutine O2_BD_CN_AB2_PPE_PCG_mom_PCG(mom_PCG,PPE_PCG,U,Ustar,Unm1,p,F,Fnm1,m,&
@@ -81,8 +81,8 @@
          call add_product(temp_F1,Unm1,-1.0_cp/3.0_cp)
          call assign(Unm1,U)
          call solve(mom_PCG,Ustar,temp_F1,m,compute_norms) ! Solve for U*
-         call clean_div(PPE_PCG,U,Ustar,p,1.0_cp/dt,m,temp_F2,temp_CC,compute_norms)
-         call update_intermediate_field_BCs(Ustar,U,p,m,temp_F1,temp_F2,temp_CC_VF)
+         call clean_div(PPE_PCG,U,Ustar,p,dt,m,temp_F2,temp_CC,compute_norms)
+         call update_intermediate_field_BCs(Ustar,U,p,dt,m,temp_F1,temp_F2,temp_CC_VF)
        end subroutine
 
        ! **********************************************************************

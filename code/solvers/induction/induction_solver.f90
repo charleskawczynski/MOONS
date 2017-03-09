@@ -166,7 +166,7 @@
          do i=1,N_multistep
            call solve(JAC,B,RHS,m,N_induction,.true.)
            call clean_div(PCG_cleanB,B,Bstar,phi,1.0_cp/dt,m,temp_F1,SF_CC,compute_norms)
-           call update_intermediate_field_BCs(Bstar,B,phi,m,temp_F1,temp_F2,temp_CC_VF)
+           call update_intermediate_field_BCs(Bstar,B,phi,dt,m,temp_F1,temp_F2,temp_CC_VF)
          enddo
        end subroutine
 

@@ -99,16 +99,16 @@
          if (.not.b_in%defined) then
            stop 'Error: trying to copy bctype that has not been fully defined in bctype.f90'
          endif
-         b_out%meanVal = b_in%meanVal
-         b_out%Dirichlet = b_in%Dirichlet
-         b_out%Neumann = b_in%Neumann
-         b_out%Robin = b_in%Robin
-         b_out%Periodic = b_in%Periodic
-         b_out%symmetric = b_in%symmetric
+         b_out%meanVal       = b_in%meanVal
+         b_out%Dirichlet     = b_in%Dirichlet
+         b_out%Neumann       = b_in%Neumann
+         b_out%Robin         = b_in%Robin
+         b_out%Periodic      = b_in%Periodic
+         b_out%symmetric     = b_in%symmetric
          b_out%antisymmetric = b_in%antisymmetric
-         b_out%defined = b_in%defined
-         b_out%prescribed = b_in%prescribed
-         b_out%BCT = b_in%BCT
+         b_out%defined       = b_in%defined
+         b_out%prescribed    = b_in%prescribed
+         b_out%BCT           = b_in%BCT
        end subroutine
 
        subroutine delete_bctype(b)
@@ -203,32 +203,32 @@
        subroutine init_Dirichlet_b(b)
          implicit none
          type(bctype),intent(inout) :: b
-         call delete(b); b%Dirichlet = .true.; b%defined = .true.; b%BCT = 'D'
+         call delete(b); b%defined = .true.; b%BCT = 'D'; b%Dirichlet = .true.
        end subroutine
        subroutine init_Neumann_b(b)
          implicit none
          type(bctype),intent(inout) :: b
-         call delete(b); b%Neumann = .true.; b%defined = .true.; b%BCT = 'N'
+         call delete(b); b%defined = .true.; b%BCT = 'N'; b%Neumann = .true.
        end subroutine
        subroutine init_Robin_b(b)
          implicit none
          type(bctype),intent(inout) :: b
-         call delete(b); b%Robin = .true.; b%defined = .true.; b%BCT = 'R'
+         call delete(b); b%defined = .true.; b%BCT = 'R'; b%Robin = .true.
        end subroutine
        subroutine init_Periodic_b(b)
          implicit none
          type(bctype),intent(inout) :: b
-         call delete(b); b%Periodic = .true.; b%defined = .true.; b%BCT = 'P'
+         call delete(b); b%defined = .true.; b%BCT = 'P'; b%Periodic = .true.
        end subroutine
        subroutine init_symmetric_b(b)
          implicit none
          type(bctype),intent(inout) :: b
-         call delete(b); b%symmetric = .true.; b%defined = .true.; b%BCT = 'S'
+         call delete(b); b%defined = .true.; b%BCT = 'S'; b%symmetric = .true.
        end subroutine
        subroutine init_antisymmetric_b(b)
          implicit none
          type(bctype),intent(inout) :: b
-         call delete(b); b%antisymmetric = .true.; b%defined = .true.; b%BCT = 'A'
+         call delete(b); b%defined = .true.; b%BCT = 'A'; b%antisymmetric = .true.
        end subroutine
 
        function get_Dirichlet_b(b) result(L)

@@ -4,6 +4,8 @@
        implicit none
 
        private
+       public :: apply_assign
+
        public :: apply_Dirichlet_C
        public :: apply_Dirichlet_N
 
@@ -23,6 +25,25 @@
        public :: apply_Robin_N
 
        contains
+
+       subroutine apply_assign(u,bvals,x,y,p)
+         implicit none
+         integer,intent(in) :: x,y,p
+         real(cp),dimension(x,y),intent(inout) :: u
+         real(cp),dimension(x,y),intent(in) :: bvals
+         integer :: i,j
+#ifdef _PARALLELIZE_APPLY_BCS_FACES_RAW_
+        !$OMP PARALLEL DO
+
+#endif
+         do j=1+p,y-p; do i=1+p,x-p
+         u(i,j) = bvals(i,j)
+         enddo; enddo
+#ifdef _PARALLELIZE_APPLY_BCS_FACES_RAW_
+        !$OMP END PARALLEL DO
+
+#endif
+       end subroutine
 
        subroutine apply_Dirichlet_C(ug,ui,bvals,x,y,p)
          implicit none
@@ -212,13 +233,13 @@
 #endif
        end subroutine
 
-       subroutine apply_Robin_C(ug,ui,bvals,dh_nhat,x,y,p)
+       subroutine apply_Robin_C(ug,ui,bvals,dh_nhat,Robin_coeff,x,y,p)
          ! u + c du/dh = 0
          implicit none
          integer,intent(in) :: x,y,p
          real(cp),dimension(x,y),intent(inout) :: ug
          real(cp),dimension(x,y),intent(in) :: ui,bvals ! c = bvals
-         real(cp),intent(in) :: dh_nhat
+         real(cp),intent(in) :: dh_nhat,Robin_coeff
          integer :: i,j
 #ifdef _PARALLELIZE_APPLY_BCS_FACES_RAW_
         !$OMP PARALLEL DO
@@ -232,13 +253,13 @@
 
 #endif
        end subroutine
-       subroutine apply_Robin_N(ug,ui,ub,bvals,dh_nhat,x,y,p)
+       subroutine apply_Robin_N(ug,ui,ub,bvals,dh_nhat,Robin_coeff,x,y,p)
          ! u + c du/dh = 0
          implicit none
          integer,intent(in) :: x,y,p
          real(cp),dimension(x,y),intent(inout) :: ug
          real(cp),dimension(x,y),intent(in) :: ui,ub,bvals ! c = bvals
-         real(cp),intent(in) :: dh_nhat
+         real(cp),intent(in) :: dh_nhat,Robin_coeff
          integer :: i,j
 #ifdef _PARALLELIZE_APPLY_BCS_FACES_RAW_
         !$OMP PARALLEL DO

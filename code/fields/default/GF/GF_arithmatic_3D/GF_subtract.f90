@@ -20,6 +20,9 @@
           type(grid_field),intent(in) :: b
 #ifdef _PARALLELIZE_GF_
           integer :: i,j,k
+#ifdef _DEBUG_GF_
+          call insist_shape_match(a,b,'subtract_GF_GF (1)')
+#endif
           !$OMP PARALLEL DO
           do k=1,a%s(3)
             do j=1,a%s(2)
@@ -30,6 +33,9 @@
           enddo
           !$OMP END PARALLEL DO
 #else
+#ifdef _DEBUG_GF_
+          call insist_shape_match(a,b,'subtract_GF_GF (2)')
+#endif
           a%f = a%f - b%f
 #endif
         end subroutine
@@ -40,6 +46,9 @@
           type(grid_field),intent(in) :: b,c
 #ifdef _PARALLELIZE_GF_
           integer :: i,j,k
+#ifdef _DEBUG_GF_
+          call insist_shape_match(a,b,'subtract_GF_GF_GF (1)')
+#endif
           !$OMP PARALLEL DO
           do k=1,a%s(3)
             do j=1,a%s(2)
@@ -50,6 +59,9 @@
           enddo
           !$OMP END PARALLEL DO
 #else
+#ifdef _DEBUG_GF_
+          call insist_shape_match(a,b,'subtract_GF_GF_GF (2)')
+#endif
           a%f = b%f - c%f
 #endif
         end subroutine

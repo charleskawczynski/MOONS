@@ -21,7 +21,7 @@
          type(sim_params),intent(in) :: SP
          integer,dimension(3) :: periodic_dir
          integer :: preset_ID
-         real(cp) :: cw
+         real(cp),dimension(6) :: c_w
 
          call init_BC_mesh(B%x,m) ! MUST COME BEFORE BVAL ASSIGNMENT
          call init_BC_mesh(B%y,m) ! MUST COME BEFORE BVAL ASSIGNMENT
@@ -31,7 +31,7 @@
 
          preset_ID = SP%VS%B%BC
          periodic_dir = SP%GP%periodic_dir
-         cw = SP%DP%cw
+         c_w = SP%DP%c_w
          ! preset_ID = 0 ! manual override
 
          select case (preset_ID)
@@ -40,17 +40,17 @@
          case (2);  call init_Bandaru(B)
          case (3);  call periodic_duct_flow(B,m)
          case (4);  call periodic_duct_flow_pseudo_vacuum(B,m)
-         case (5);  call periodic_duct_thin_wall(B,m,cw)
-         case (6);  call thin_wall(B,m,cw)
-         case (7);  call thin_wall_LDC(B,m,cw)
-         case (8);  call thin_wall_Hunt(B,m,cw)
+         case (5);  call periodic_duct_thin_wall(B,m,c_w)
+         case (6);  call thin_wall(B,m,c_w)
+         case (7);  call thin_wall_LDC(B,m,c_w)
+         case (8);  call thin_wall_Hunt(B,m,c_w)
          case (9);  call RV_symmetric_zmax(B,m)
          case (10); call PV_symmetric_zmax(B,m)
          case default; stop 'Error: bad preset_ID in init_UBCs.f90'
          end select
 
          call make_periodic(B,m,periodic_dir)
-         call init_BC_props(B)
+         call init_BC_props(B,SP%DP%Robin_coeff)
        end subroutine
 
        subroutine RV_symmetric_zmax(B,m)
@@ -123,13 +123,13 @@
          enddo
        end subroutine
 
-       subroutine periodic_duct_thin_wall(B,m,cw)
+       subroutine periodic_duct_thin_wall(B,m,c_w)
          implicit none
          type(VF),intent(inout) :: B
          type(mesh),intent(in) :: m
-         real(cp),intent(in) :: cw
+         real(cp),dimension(6),intent(in) :: c_w
          integer :: i,k
-         call thin_wall(B,m,cw)
+         call thin_wall(B,m,c_w)
          do i=1,m%s
            do k=1,2; call init_periodic(B%x%BF(i)%BCs,k); enddo
            do k=1,2; call init_periodic(B%y%BF(i)%BCs,k); enddo
@@ -153,74 +153,74 @@
          enddo
        end subroutine
 
-       subroutine thin_wall(B,m,cw)
+       subroutine thin_wall(B,m,c_w)
          implicit none
          type(VF),intent(inout) :: B
          type(mesh),intent(in) :: m
-         real(cp),intent(in) :: cw
+         real(cp),dimension(6),intent(in) :: c_w
          integer :: i,j
          call pseudo_vacuum(B,m)
          do i=1,m%s
-           j=3;call init_Robin(B%x%BF(i)%BCs,j); call init(B%x%BF(i)%BCs,cw,j)
-           j=4;call init_Robin(B%x%BF(i)%BCs,j); call init(B%x%BF(i)%BCs,cw,j)
-           j=5;call init_Robin(B%x%BF(i)%BCs,j); call init(B%x%BF(i)%BCs,cw,j)
-           j=6;call init_Robin(B%x%BF(i)%BCs,j); call init(B%x%BF(i)%BCs,cw,j)
+           j=3;call init_Robin(B%x%BF(i)%BCs,j); call init(B%x%BF(i)%BCs,c_w(j),j)
+           j=4;call init_Robin(B%x%BF(i)%BCs,j); call init(B%x%BF(i)%BCs,c_w(j),j)
+           j=5;call init_Robin(B%x%BF(i)%BCs,j); call init(B%x%BF(i)%BCs,c_w(j),j)
+           j=6;call init_Robin(B%x%BF(i)%BCs,j); call init(B%x%BF(i)%BCs,c_w(j),j)
 
-           j=1;call init_Robin(B%y%BF(i)%BCs,j); call init(B%y%BF(i)%BCs,cw,j)
-           j=2;call init_Robin(B%y%BF(i)%BCs,j); call init(B%y%BF(i)%BCs,cw,j)
-           j=5;call init_Robin(B%y%BF(i)%BCs,j); call init(B%y%BF(i)%BCs,cw,j)
-           j=6;call init_Robin(B%y%BF(i)%BCs,j); call init(B%y%BF(i)%BCs,cw,j)
+           j=1;call init_Robin(B%y%BF(i)%BCs,j); call init(B%y%BF(i)%BCs,c_w(j),j)
+           j=2;call init_Robin(B%y%BF(i)%BCs,j); call init(B%y%BF(i)%BCs,c_w(j),j)
+           j=5;call init_Robin(B%y%BF(i)%BCs,j); call init(B%y%BF(i)%BCs,c_w(j),j)
+           j=6;call init_Robin(B%y%BF(i)%BCs,j); call init(B%y%BF(i)%BCs,c_w(j),j)
 
-           j=1;call init_Robin(B%z%BF(i)%BCs,j); call init(B%z%BF(i)%BCs,cw,j)
-           j=2;call init_Robin(B%z%BF(i)%BCs,j); call init(B%z%BF(i)%BCs,cw,j)
-           j=3;call init_Robin(B%z%BF(i)%BCs,j); call init(B%z%BF(i)%BCs,cw,j)
-           j=4;call init_Robin(B%z%BF(i)%BCs,j); call init(B%z%BF(i)%BCs,cw,j)
+           j=1;call init_Robin(B%z%BF(i)%BCs,j); call init(B%z%BF(i)%BCs,c_w(j),j)
+           j=2;call init_Robin(B%z%BF(i)%BCs,j); call init(B%z%BF(i)%BCs,c_w(j),j)
+           j=3;call init_Robin(B%z%BF(i)%BCs,j); call init(B%z%BF(i)%BCs,c_w(j),j)
+           j=4;call init_Robin(B%z%BF(i)%BCs,j); call init(B%z%BF(i)%BCs,c_w(j),j)
          enddo
        end subroutine
 
-       subroutine thin_wall_face(B,m,cw,face)
+       subroutine thin_wall_face(B,m,c_w,face)
          implicit none
          type(VF),intent(inout) :: B
          type(mesh),intent(in) :: m
-         real(cp),intent(in) :: cw
+         real(cp),dimension(6),intent(in) :: c_w
          integer,intent(in) :: face
          integer :: i
          do i=1,m%s
            select case (face)
-           case (1); call init_Robin(B%y%BF(i)%BCs,face); call init(B%y%BF(i)%BCs,cw,face)
-                     call init_Robin(B%z%BF(i)%BCs,face); call init(B%z%BF(i)%BCs,cw,face)
-           case (2); call init_Robin(B%y%BF(i)%BCs,face); call init(B%y%BF(i)%BCs,cw,face)
-                     call init_Robin(B%z%BF(i)%BCs,face); call init(B%z%BF(i)%BCs,cw,face)
-           case (3); call init_Robin(B%x%BF(i)%BCs,face); call init(B%x%BF(i)%BCs,cw,face)
-                     call init_Robin(B%z%BF(i)%BCs,face); call init(B%z%BF(i)%BCs,cw,face)
-           case (4); call init_Robin(B%x%BF(i)%BCs,face); call init(B%x%BF(i)%BCs,cw,face)
-                     call init_Robin(B%z%BF(i)%BCs,face); call init(B%z%BF(i)%BCs,cw,face)
-           case (5); call init_Robin(B%y%BF(i)%BCs,face); call init(B%y%BF(i)%BCs,cw,face)
-                     call init_Robin(B%x%BF(i)%BCs,face); call init(B%x%BF(i)%BCs,cw,face)
-           case (6); call init_Robin(B%x%BF(i)%BCs,face); call init(B%x%BF(i)%BCs,cw,face)
-                     call init_Robin(B%y%BF(i)%BCs,face); call init(B%y%BF(i)%BCs,cw,face)
+           case (1); call init_Robin(B%y%BF(i)%BCs,face); call init(B%y%BF(i)%BCs,c_w(face),face)
+                     call init_Robin(B%z%BF(i)%BCs,face); call init(B%z%BF(i)%BCs,c_w(face),face)
+           case (2); call init_Robin(B%y%BF(i)%BCs,face); call init(B%y%BF(i)%BCs,c_w(face),face)
+                     call init_Robin(B%z%BF(i)%BCs,face); call init(B%z%BF(i)%BCs,c_w(face),face)
+           case (3); call init_Robin(B%x%BF(i)%BCs,face); call init(B%x%BF(i)%BCs,c_w(face),face)
+                     call init_Robin(B%z%BF(i)%BCs,face); call init(B%z%BF(i)%BCs,c_w(face),face)
+           case (4); call init_Robin(B%x%BF(i)%BCs,face); call init(B%x%BF(i)%BCs,c_w(face),face)
+                     call init_Robin(B%z%BF(i)%BCs,face); call init(B%z%BF(i)%BCs,c_w(face),face)
+           case (5); call init_Robin(B%y%BF(i)%BCs,face); call init(B%y%BF(i)%BCs,c_w(face),face)
+                     call init_Robin(B%x%BF(i)%BCs,face); call init(B%x%BF(i)%BCs,c_w(face),face)
+           case (6); call init_Robin(B%x%BF(i)%BCs,face); call init(B%x%BF(i)%BCs,c_w(face),face)
+                     call init_Robin(B%y%BF(i)%BCs,face); call init(B%y%BF(i)%BCs,c_w(face),face)
            case default; stop 'Error: face must = 1:6 in thin_wall_face in init_BBCs.f90'
            end select
          enddo
        end subroutine
 
-       subroutine thin_wall_Hunt(B,m,cw)
+       subroutine thin_wall_Hunt(B,m,c_w)
          implicit none
          type(VF),intent(inout) :: B
          type(mesh),intent(in) :: m
-         real(cp),intent(in) :: cw
+         real(cp),dimension(6),intent(in) :: c_w
          call pseudo_vacuum(B,m)
-         call thin_wall_face(B,m,cw,5)
-         call thin_wall_face(B,m,cw,6)
+         call thin_wall_face(B,m,c_w,5)
+         call thin_wall_face(B,m,c_w,6)
        end subroutine
 
-       subroutine thin_wall_LDC(B,m,cw)
+       subroutine thin_wall_LDC(B,m,c_w)
          implicit none
          type(VF),intent(inout) :: B
          type(mesh),intent(in) :: m
-         real(cp),intent(in) :: cw
+         real(cp),dimension(6),intent(in) :: c_w
          call pseudo_vacuum(B,m)
-         call thin_wall_face(B,m,cw,4)
+         call thin_wall_face(B,m,c_w,4)
        end subroutine
 
        end module

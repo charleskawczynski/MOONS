@@ -45,6 +45,7 @@
        public :: Periodic_N_implicit
        public :: Periodic_N_prescribed_implicit
        public :: Robin_C_implicit
+       public :: Robin_C_implicit_prescribed
        public :: Robin_N_implicit
        public :: Symmetric_C_implicit
        public :: Symmetric_N_implicit
@@ -322,8 +323,34 @@
          ! call apply_Robin_C_implicit(ug,ui,x,y,p)
          call apply_Robin_C_implicit(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
                                      bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
-                                     surf%f,&
-                                     dh*nhat,surf%s(iR(1)),surf%s(iR(2)),p)
+                                     surf%s(iR(1)),surf%s(iR(2)),p)
+       end subroutine
+
+       subroutine Robin_C_implicit_prescribed(GF,surf,FSD,face)
+         implicit none
+         type(grid_field),intent(inout) :: GF
+         type(grid_field),intent(in) :: surf
+         type(face_SD),intent(in) :: FSD
+         integer,intent(in) :: face
+         call F_Robin_C_prescribed_GF(GF,surf,&
+                           FSD%G(face)%M(1:3)%i2(1),&
+                           FSD%G(face)%M(1:3)%i2(2),&
+                           FSD%I(face)%M(1:3)%i2(1),&
+                           FSD%I(face)%M(1:3)%i2(2),&
+                           FSD%i_2D(face)%i,&
+                           0)
+       end subroutine
+       subroutine F_Robin_C_prescribed_GF(bulk,surf,G1,G2,I1,I2,iR,p)
+         implicit none
+         type(grid_field),intent(inout) :: bulk
+         type(grid_field),intent(in) :: surf
+         integer,dimension(3),intent(in) :: G1,G2,I1,I2
+         integer,dimension(2),intent(in) :: iR
+         integer,intent(in) :: p
+         ! call apply_Robin_C_implicit(ug,ui,x,y,p)
+         call apply_Robin_C_implicit(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
+                                     bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
+                                     surf%s(iR(1)),surf%s(iR(2)),p)
        end subroutine
 
        subroutine Robin_N_implicit(GF,surf,FSD,face)

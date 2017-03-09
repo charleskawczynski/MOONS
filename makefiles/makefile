@@ -42,7 +42,7 @@ endif
 SRC_DIR = ..$(PS)code
 
 ifeq ($(CLUSTER),'PC_CK')
-	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS1
+	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS3
 endif
 
 ifeq ($(CLUSTER),'Workstation_CK')
@@ -266,6 +266,7 @@ VPATH =\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_symmetry\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_CFL_number\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_Fourier_number\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_Robin_BC_coeff\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)BF\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)SF\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)VF\
@@ -361,6 +362,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D$(PS)GF_square_root.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D$(PS)GF_cross_product.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_assign_plane.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_assign_plane_ave.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_add_plane.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_assign_ghost.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_assign_wall.f90\
@@ -378,6 +380,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_distributions.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_CFL_number$(PS)GF_CFL_number.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_Fourier_number$(PS)GF_Fourier_number.f90\
+	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_Robin_BC_coeff$(PS)GF_Robin_BC_coeff.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_diagonals.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_plane_sum.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_plane_mean.f90\
@@ -414,6 +417,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)procedure_array$(PS)procedure_array.f90\
 	$(SRC_DIR)$(PS)procedure_array$(PS)single_procedure_plane_op.f90\
 	$(SRC_DIR)$(PS)procedure_array$(PS)procedure_array_plane_op.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)single_boundary.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)boundary.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)boundary_conditions.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)BF$(PS)BF.f90\
@@ -468,7 +472,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)ops$(PS)ops_del.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)check_BCs.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply$(PS)apply_BCs.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)apply$(PS)apply_periodic_BCs.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)apply$(PS)apply_BCs_implicit.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_embedExtract.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_interp.f90\

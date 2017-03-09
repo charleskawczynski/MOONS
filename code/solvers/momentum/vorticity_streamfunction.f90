@@ -1,6 +1,7 @@
        module vorticity_streamfunction_mod
        use current_precision_mod
        use mesh_mod
+       use BC_funcs_mod
        use SF_mod
        use VF_mod
        use dir_tree_mod
@@ -64,17 +65,18 @@
          type(PCG_solver_VF) :: PCG
          type(iter_solver_params) :: ISP
          type(matrix_free_params) :: MFP
+         real(cp),dimension(6) :: Robin_coeff
          call init(ISP,10000,pow(-15),pow(-15),1,.true.,str(DT%ISP),'vorticity_streamfunction')
 
          call init_Edge(omega,m)
          call init_Edge(psi,m)
          call init_Face(temp_dummy,m)
-
-         call init_BC_mesh(psi%x,m);    call init_BCs(psi%x,0.0_cp)
-         call init_BC_mesh(psi%y,m);    call init_BCs(psi%y,0.0_cp)
-         call init_BC_mesh(psi%z,m);    call init_BCs(psi%z,0.0_cp)
-         call init_BC_Dirichlet(psi)
-         call init_BC_props(psi)
+         call init_BC_mesh(psi%x,m)
+         call init_BC_mesh(psi%y,m)
+         call init_BC_mesh(psi%z,m)
+         call Dirichlet_BCs(psi,m)
+         Robin_coeff = 0.0_cp
+         call init_BC_props(psi,Robin_coeff)
          call make_periodic(psi,m,SP%GP%periodic_dir)
 
          ! Make sure that Lap_uniform_VF does not

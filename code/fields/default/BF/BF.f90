@@ -35,10 +35,14 @@
 
         public :: assign_BCs
         public :: assign_BC_vals
+        public :: update_BC_vals
         public :: assign_Neumann_BCs
+        public :: assign_Neumann_BCs_wall_normal
         public :: assign_Dirichlet_BCs
         public :: assign_Periodic_BCs
-        public :: multiply_Neumann_BCs
+        public :: assign_Robin_BCs
+        public :: multiply_Robin_coeff
+        public :: multiply_nhat
         public :: assign_ghost_XPeriodic
         public :: assign_ghost_N_XPeriodic
         public :: assign_wall_Periodic_single
@@ -71,6 +75,11 @@
 
         public :: CFL_number
         public :: Fourier_number
+        public :: Robin_BC_coeff
+
+        public :: get_any_Dirichlet
+        public :: get_any_Neumann
+        public :: get_any_Robin
 
         public :: restrict
         public :: prolongate
@@ -83,6 +92,7 @@
           type(boundary_conditions) :: BCs
           type(data_location) :: DL
           logical,dimension(3) :: many_cell_N_periodic = .false.
+          logical,dimension(3) :: many_cell = .false.
           ! type(stitches) :: st
           type(procedure_array_plane_op) :: PA_assign_ghost_XPeriodic
           type(procedure_array_plane_op) :: PA_assign_ghost_N_XPeriodic
@@ -118,6 +128,11 @@
 
        interface CFL_number;                  module procedure CFL_number_BF;                   end interface
        interface Fourier_number;              module procedure Fourier_number_BF;               end interface
+       interface Robin_BC_coeff;              module procedure Robin_BC_coeff_BF;               end interface
+
+       interface get_any_Dirichlet;           module procedure get_any_Dirichlet_BF;            end interface
+       interface get_any_Neumann;             module procedure get_any_Neumann_BF;              end interface
+       interface get_any_Robin;               module procedure get_any_Robin_BF;                end interface
 
        interface square;                      module procedure square_BF;                       end interface
        interface square_root;                 module procedure square_root_BF;                  end interface
@@ -126,11 +141,14 @@
 
        interface assign_BCs;                  module procedure assign_BCs_BF;                   end interface
        interface assign_BC_vals;              module procedure assign_BC_vals_BF;               end interface
-       interface assign_Neumann_BCs;          module procedure assign_Neumann_BCs_BF;           end interface
-       interface assign_Neumann_BCs;          module procedure assign_Neumann_BCs_VF_BF;      end interface
+       interface update_BC_vals;              module procedure update_BC_vals_BF;               end interface
        interface assign_Dirichlet_BCs;        module procedure assign_Dirichlet_BCs_BF;         end interface
        interface assign_Periodic_BCs;         module procedure assign_Periodic_BCs_BF;          end interface
-       interface multiply_Neumann_BCs;        module procedure multiply_Neumann_BCs_BF;         end interface
+       interface assign_Neumann_BCs;          module procedure assign_Neumann_BCs_faces_BF;     end interface
+       interface assign_Neumann_BCs_wall_normal; module procedure assign_Neumann_BCs_wall_normal_BF;     end interface
+       interface assign_Robin_BCs;            module procedure assign_Robin_BCs_faces_BF;       end interface
+       interface multiply_Robin_coeff;        module procedure multiply_Robin_coeff_BF;         end interface
+       interface multiply_nhat;               module procedure multiply_nhat_BF;                end interface
        interface assign_ghost_XPeriodic;      module procedure assign_ghost_XPeriodic_BF;       end interface
        interface assign_ghost_XPeriodic;      module procedure assign_ghost_XPeriodic_BF2;      end interface
        interface assign_ghost_N_XPeriodic;    module procedure assign_ghost_N_XPeriodic_BF;     end interface
@@ -235,27 +253,27 @@
          call delete(BF%PA_assign_ghost_XPeriodic)
          call delete(BF%PA_assign_ghost_N_XPeriodic)
          if (defined(BF%BCs)) then
-         if(.not.is_Periodic(BF%BCs%face%bct(1)))then
+         if(.not.is_Periodic(BF%BCs%face%SB(1)%bct))then
          call add(BF%PA_assign_ghost_XPeriodic,assign_ghost_xmin,1)
          if (N_along(BF%DL,1)) call add(BF%PA_assign_ghost_N_XPeriodic,assign_ghost_xmin,1)
          endif
-         if(.not.is_Periodic(BF%BCs%face%bct(2)))then
+         if(.not.is_Periodic(BF%BCs%face%SB(2)%bct))then
          call add(BF%PA_assign_ghost_XPeriodic,assign_ghost_xmax,2)
          if (N_along(BF%DL,1)) call add(BF%PA_assign_ghost_N_XPeriodic,assign_ghost_xmax,2)
          endif
-         if(.not.is_Periodic(BF%BCs%face%bct(3)))then
+         if(.not.is_Periodic(BF%BCs%face%SB(3)%bct))then
          call add(BF%PA_assign_ghost_XPeriodic,assign_ghost_ymin,3)
          if (N_along(BF%DL,2)) call add(BF%PA_assign_ghost_N_XPeriodic,assign_ghost_ymin,3)
          endif
-         if(.not.is_Periodic(BF%BCs%face%bct(4)))then
+         if(.not.is_Periodic(BF%BCs%face%SB(4)%bct))then
          call add(BF%PA_assign_ghost_XPeriodic,assign_ghost_ymax,4)
          if (N_along(BF%DL,2)) call add(BF%PA_assign_ghost_N_XPeriodic,assign_ghost_ymax,4)
          endif
-         if(.not.is_Periodic(BF%BCs%face%bct(5)))then
+         if(.not.is_Periodic(BF%BCs%face%SB(5)%bct))then
          call add(BF%PA_assign_ghost_XPeriodic,assign_ghost_zmin,5)
          if (N_along(BF%DL,3)) call add(BF%PA_assign_ghost_N_XPeriodic,assign_ghost_zmin,5)
          endif
-         if(.not.is_Periodic(BF%BCs%face%bct(6)))then
+         if(.not.is_Periodic(BF%BCs%face%SB(6)%bct))then
          call add(BF%PA_assign_ghost_XPeriodic,assign_ghost_zmax,6)
          if (N_along(BF%DL,3)) call add(BF%PA_assign_ghost_N_XPeriodic,assign_ghost_zmax,6)
          endif
@@ -274,22 +292,22 @@
          type(block_field),intent(inout) :: BF
          call delete(BF%PA_assign_wall_Dirichlet)
          if (defined(BF%BCs)) then
-           if (N_along(BF%DL,1).and.(is_Dirichlet(BF%BCs%face%bct(1)))) then
+           if (N_along(BF%DL,1).and.(is_Dirichlet(BF%BCs%face%SB(1)%bct))) then
            call add(BF%PA_assign_wall_Dirichlet,assign_wall_xmin,1)
            endif
-           if (N_along(BF%DL,1).and.(is_Dirichlet(BF%BCs%face%bct(2)))) then
+           if (N_along(BF%DL,1).and.(is_Dirichlet(BF%BCs%face%SB(2)%bct))) then
            call add(BF%PA_assign_wall_Dirichlet,assign_wall_xmax,2)
            endif
-           if (N_along(BF%DL,2).and.(is_Dirichlet(BF%BCs%face%bct(3)))) then
+           if (N_along(BF%DL,2).and.(is_Dirichlet(BF%BCs%face%SB(3)%bct))) then
            call add(BF%PA_assign_wall_Dirichlet,assign_wall_ymin,3)
            endif
-           if (N_along(BF%DL,2).and.(is_Dirichlet(BF%BCs%face%bct(4)))) then
+           if (N_along(BF%DL,2).and.(is_Dirichlet(BF%BCs%face%SB(4)%bct))) then
            call add(BF%PA_assign_wall_Dirichlet,assign_wall_ymax,4)
            endif
-           if (N_along(BF%DL,3).and.(is_Dirichlet(BF%BCs%face%bct(5)))) then
+           if (N_along(BF%DL,3).and.(is_Dirichlet(BF%BCs%face%SB(5)%bct))) then
            call add(BF%PA_assign_wall_Dirichlet,assign_wall_zmin,5)
            endif
-           if (N_along(BF%DL,3).and.(is_Dirichlet(BF%BCs%face%bct(6)))) then
+           if (N_along(BF%DL,3).and.(is_Dirichlet(BF%BCs%face%SB(6)%bct))) then
            call add(BF%PA_assign_wall_Dirichlet,assign_wall_zmax,6)
            endif
          else
@@ -312,28 +330,37 @@
          implicit none
          type(block_field),intent(inout) :: BF
          logical,dimension(4) :: L
+         integer :: i
          call delete(BF%PA_assign_wall_Periodic_single)
          if (defined(BF%BCs)) then
            L(1) = N_along(BF%DL,1)
-           L(2) = is_Periodic(BF%BCs%face%bct(1))
-           L(3) = is_Periodic(BF%BCs%face%bct(2))
+           L(2) = is_Periodic(BF%BCs%face%SB(1)%bct)
+           L(3) = is_Periodic(BF%BCs%face%SB(2)%bct)
            L(4) = BF%GF%s(1).gt.4
            BF%many_cell_N_periodic(1) = all(L)
            if (all(L)) call add(BF%PA_assign_wall_Periodic_single,assign_wall_xmax,2)
 
            L(1) = N_along(BF%DL,2)
-           L(2) = is_Periodic(BF%BCs%face%bct(3))
-           L(3) = is_Periodic(BF%BCs%face%bct(4))
+           L(2) = is_Periodic(BF%BCs%face%SB(3)%bct)
+           L(3) = is_Periodic(BF%BCs%face%SB(4)%bct)
            L(4) = BF%GF%s(2).gt.4
            BF%many_cell_N_periodic(2) = all(L)
            if (all(L)) call add(BF%PA_assign_wall_Periodic_single,assign_wall_ymax,4)
 
            L(1) = N_along(BF%DL,3)
-           L(2) = is_Periodic(BF%BCs%face%bct(5))
-           L(3) = is_Periodic(BF%BCs%face%bct(6))
+           L(2) = is_Periodic(BF%BCs%face%SB(5)%bct)
+           L(3) = is_Periodic(BF%BCs%face%SB(6)%bct)
            L(4) = BF%GF%s(3).gt.4
            BF%many_cell_N_periodic(3) = all(L)
            if (all(L)) call add(BF%PA_assign_wall_Periodic_single,assign_wall_zmax,6)
+
+           do i=1,3
+             L(1) = N_along(BF%DL,i)
+             L(2) = CC_along(BF%DL,i)
+             L(3) = BF%GF%s(i).gt.4
+             L(4) = BF%GF%s(i).gt.3
+             BF%many_cell(i) = (L(1).and.L(3)).or.(L(2).and.L(4))
+           enddo
          endif
        end subroutine
 
@@ -342,17 +369,17 @@
          type(block_field),intent(inout) :: BF
          call delete(BF%PA_multiply_wall_Neumann)
          if (defined(BF%BCs)) then
-           if (N_along(BF%DL,1).and.(is_Neumann(BF%BCs%face%bct(1)))) then
+           if (N_along(BF%DL,1).and.(is_Neumann(BF%BCs%face%SB(1)%bct))) then
            call add(BF%PA_multiply_wall_Neumann,multiply_wall_xmin,1); endif
-           if (N_along(BF%DL,1).and.(is_Neumann(BF%BCs%face%bct(2)))) then
+           if (N_along(BF%DL,1).and.(is_Neumann(BF%BCs%face%SB(2)%bct))) then
            call add(BF%PA_multiply_wall_Neumann,multiply_wall_xmax,2); endif
-           if (N_along(BF%DL,2).and.(is_Neumann(BF%BCs%face%bct(3)))) then
+           if (N_along(BF%DL,2).and.(is_Neumann(BF%BCs%face%SB(3)%bct))) then
            call add(BF%PA_multiply_wall_Neumann,multiply_wall_ymin,3); endif
-           if (N_along(BF%DL,2).and.(is_Neumann(BF%BCs%face%bct(4)))) then
+           if (N_along(BF%DL,2).and.(is_Neumann(BF%BCs%face%SB(4)%bct))) then
            call add(BF%PA_multiply_wall_Neumann,multiply_wall_ymax,4); endif
-           if (N_along(BF%DL,3).and.(is_Neumann(BF%BCs%face%bct(5)))) then
+           if (N_along(BF%DL,3).and.(is_Neumann(BF%BCs%face%SB(5)%bct))) then
            call add(BF%PA_multiply_wall_Neumann,multiply_wall_zmin,5); endif
-           if (N_along(BF%DL,3).and.(is_Neumann(BF%BCs%face%bct(6)))) then
+           if (N_along(BF%DL,3).and.(is_Neumann(BF%BCs%face%SB(6)%bct))) then
            call add(BF%PA_multiply_wall_Neumann,multiply_wall_zmax,6); endif
          else
            if (N_along(BF%DL,1)) then; call add(BF%PA_multiply_wall_Neumann,multiply_wall_xmin,1)
@@ -373,6 +400,7 @@
          type(block_field),intent(in) :: BF_in
          call init(BF%GF,BF_in%GF)
          BF%many_cell_N_periodic = BF_in%many_cell_N_periodic
+         BF%many_cell = BF_in%many_cell
          call init(BF%DL,BF_in%DL)
          if (BF_in%BCs%BCL%defined) call init(BF%BCs,BF_in%BCs)
          call init(BF%PA_assign_ghost_XPeriodic,BF_in%PA_assign_ghost_XPeriodic)
@@ -386,6 +414,7 @@
          implicit none
          type(block_field),intent(inout) :: BF
          BF%many_cell_N_periodic = .false.
+         BF%many_cell = .false.
          call delete(BF%GF)
          call delete(BF%DL)
          call delete(BF%BCs)
@@ -446,10 +475,11 @@
          call init(BF%BCs,B,DL)
        end subroutine
 
-       subroutine init_BC_props_BF(BF)
+       subroutine init_BC_props_BF(BF,Robin_coeff)
          implicit none
          type(block_field),intent(inout) :: BF
-         call init_props(BF%BCs)
+         real(cp),dimension(6),intent(in) :: Robin_coeff
+         call init_props(BF%BCs,Robin_coeff)
          call set_assign_ghost_all_faces(BF)
          call set_assign_wall_Dirichlet(BF)
          call set_multiply_wall_Neumann(BF)
@@ -539,6 +569,35 @@
          Fourier = Fourier_number(alpha,B%g,dt)
        end function
 
+       function Robin_BC_coeff_BF(c_w,B) result(coeff)
+         implicit none
+         real(cp),dimension(6),intent(in) :: c_w
+         type(block),intent(in) :: B
+         real(cp),dimension(6) :: coeff
+         coeff = Robin_BC_coeff(c_w,B%g)
+       end function
+
+       function get_any_Dirichlet_BF(BF) result(L)
+         implicit none
+         type(block_field),intent(in) :: BF
+         logical :: L
+         L = get_any_Dirichlet(BF%BCs)
+       end function
+
+       function get_any_Neumann_BF(BF) result(L)
+         implicit none
+         type(block_field),intent(in) :: BF
+         logical :: L
+         L = get_any_Neumann(BF%BCs)
+       end function
+
+       function get_any_Robin_BF(BF) result(L)
+         implicit none
+         type(block_field),intent(in) :: BF
+         logical :: L
+         L = get_any_Robin(BF%BCs)
+       end function
+
        subroutine square_BF(u)
          implicit none
          type(block_field),intent(inout) :: u
@@ -569,12 +628,12 @@
          type(block_field),intent(inout) :: u
          type(block_field),intent(in) :: f
          if (defined(u%BCs)) then
-           call assign_plane(u%BCs%face%b(1),f%GF,1,     2     ,1)
-           call assign_plane(u%BCs%face%b(2),f%GF,1,f%GF%s(1)-1,1)
-           call assign_plane(u%BCs%face%b(3),f%GF,1,     2     ,2)
-           call assign_plane(u%BCs%face%b(4),f%GF,1,f%GF%s(2)-1,2)
-           call assign_plane(u%BCs%face%b(5),f%GF,1,     2     ,3)
-           call assign_plane(u%BCs%face%b(6),f%GF,1,f%GF%s(3)-1,3)
+           call assign_plane_x(u%BCs%face%SB(1)%b,f%GF,1,     2     )
+           call assign_plane_x(u%BCs%face%SB(2)%b,f%GF,1,f%GF%s(1)-1)
+           call assign_plane_y(u%BCs%face%SB(3)%b,f%GF,1,     2     )
+           call assign_plane_y(u%BCs%face%SB(4)%b,f%GF,1,f%GF%s(2)-1)
+           call assign_plane_z(u%BCs%face%SB(5)%b,f%GF,1,     2     )
+           call assign_plane_z(u%BCs%face%SB(6)%b,f%GF,1,f%GF%s(3)-1)
          endif
        end subroutine
 
@@ -582,63 +641,47 @@
          implicit none
          type(block_field),intent(inout) :: A
          type(block_field),intent(in) :: B
-#ifdef __DEBUG_BF__
+#ifdef _DEBUG_BF_
          if (.not.(defined(A%BCs).and.defined(B%BCs))) stop 'Error: BCs not defined in BF.f90'
 #endif
-         call assign(A%BCs%face%b(1),B%BCs%face%b(1))
-         call assign(A%BCs%face%b(2),B%BCs%face%b(2))
-         call assign(A%BCs%face%b(3),B%BCs%face%b(3))
-         call assign(A%BCs%face%b(4),B%BCs%face%b(4))
-         call assign(A%BCs%face%b(5),B%BCs%face%b(5))
-         call assign(A%BCs%face%b(6),B%BCs%face%b(6))
+         call assign(A%BCs%face%SB(1)%b,B%BCs%face%SB(1)%b)
+         call assign(A%BCs%face%SB(2)%b,B%BCs%face%SB(2)%b)
+         call assign(A%BCs%face%SB(3)%b,B%BCs%face%SB(3)%b)
+         call assign(A%BCs%face%SB(4)%b,B%BCs%face%SB(4)%b)
+         call assign(A%BCs%face%SB(5)%b,B%BCs%face%SB(5)%b)
+         call assign(A%BCs%face%SB(6)%b,B%BCs%face%SB(6)%b)
        end subroutine
 
-       subroutine assign_Neumann_BCs_BF(u,f)
+       subroutine update_BC_vals_BF(A)
          implicit none
-         type(block_field),intent(inout) :: u
-         type(block_field),intent(in) :: f
-         if (defined(u%BCs)) then
-           if (is_Neumann(u%BCs%face%bct(1))) call assign_plane(u%BCs%face%b(1),f%GF,1,     2     ,1)
-           if (is_Neumann(u%BCs%face%bct(2))) call assign_plane(u%BCs%face%b(2),f%GF,1,f%GF%s(1)-1,1)
-           if (is_Neumann(u%BCs%face%bct(3))) call assign_plane(u%BCs%face%b(3),f%GF,1,     2     ,2)
-           if (is_Neumann(u%BCs%face%bct(4))) call assign_plane(u%BCs%face%b(4),f%GF,1,f%GF%s(2)-1,2)
-           if (is_Neumann(u%BCs%face%bct(5))) call assign_plane(u%BCs%face%b(5),f%GF,1,     2     ,3)
-           if (is_Neumann(u%BCs%face%bct(6))) call assign_plane(u%BCs%face%b(6),f%GF,1,f%GF%s(3)-1,3)
-         endif
+         type(block_field),intent(inout) :: A
+         integer :: i
+#ifdef _DEBUG_BF_
+         if (.not.(defined(A%BCs))) stop 'Error: BCs not defined in update_BC_vals_BF in BF.f90'
+#endif
+         do i=1,6
+         call add(A%BCs%face%SB(i)%b_total,A%BCs%face%SB(i)%b,A%BCs%face%SB(i)%b_modified)
+         enddo
        end subroutine
 
-       subroutine assign_Neumann_BCs_VF_BF(phi,u,v,w)
+       subroutine assign_Dirichlet_BCs_BF(A,B)
          implicit none
-         type(block_field),intent(inout) :: phi
-         type(block_field),intent(in) :: u,v,w
-         logical,dimension(3) :: L
-         if (defined(phi%BCs)) then
-           L(1) = is_Face(u%DL).and.(get_Face(u%DL).eq.1)
-           L(2) = is_Face(v%DL).and.(get_Face(v%DL).eq.2)
-           L(3) = is_Face(w%DL).and.(get_Face(w%DL).eq.3)
-           if (all(L)) then
-             if (is_Neumann(phi%BCs%face%bct(1))) call assign_plane_x(phi%BCs%face%b(1),u%GF,1,    2      )
-             if (is_Neumann(phi%BCs%face%bct(2))) call assign_plane_x(phi%BCs%face%b(2),u%GF,1,u%GF%s(1)-1)
-             if (is_Neumann(phi%BCs%face%bct(3))) call assign_plane_y(phi%BCs%face%b(3),v%GF,1,    2      )
-             if (is_Neumann(phi%BCs%face%bct(4))) call assign_plane_y(phi%BCs%face%b(4),v%GF,1,v%GF%s(2)-1)
-             if (is_Neumann(phi%BCs%face%bct(5))) call assign_plane_z(phi%BCs%face%b(5),w%GF,1,    2      )
-             if (is_Neumann(phi%BCs%face%bct(6))) call assign_plane_z(phi%BCs%face%b(6),w%GF,1,w%GF%s(3)-1)
-           else; stop 'Error: bad DL in multiply_Neumann_BCs_VF_BF in BF.f90'
-           endif
-         endif
-       end subroutine
-
-       subroutine assign_Dirichlet_BCs_BF(u,f)
-         implicit none
-         type(block_field),intent(inout) :: u
-         type(block_field),intent(in) :: f
-         if (defined(u%BCs)) then
-           if (is_Dirichlet(u%BCs%face%bct(1))) call assign_plane(u%BCs%face%b(1),f%GF,1,     2     ,1)
-           if (is_Dirichlet(u%BCs%face%bct(2))) call assign_plane(u%BCs%face%b(2),f%GF,1,f%GF%s(1)-1,1)
-           if (is_Dirichlet(u%BCs%face%bct(3))) call assign_plane(u%BCs%face%b(3),f%GF,1,     2     ,2)
-           if (is_Dirichlet(u%BCs%face%bct(4))) call assign_plane(u%BCs%face%b(4),f%GF,1,f%GF%s(2)-1,2)
-           if (is_Dirichlet(u%BCs%face%bct(5))) call assign_plane(u%BCs%face%b(5),f%GF,1,     2     ,3)
-           if (is_Dirichlet(u%BCs%face%bct(6))) call assign_plane(u%BCs%face%b(6),f%GF,1,f%GF%s(3)-1,3)
+         type(block_field),intent(inout) :: A
+         type(block_field),intent(in) :: B
+         integer :: i,dir
+         if (defined(A%BCs)) then
+           do i=1,6
+             dir = dir_given_face(i)
+             if (is_Dirichlet(A%BCs%face%SB(i)%bct)) then
+             if (N_along(B%DL,dir)) then
+               if (min_face(i)) call assign_plane(A%BCs%face%SB(i)%b_modified,B%GF,1,       2     ,dir)
+               if (max_face(i)) call assign_plane(A%BCs%face%SB(i)%b_modified,B%GF,1,B%GF%s(dir)-1,dir)
+             else
+               if (min_face(i)) call assign_plane_ave(A%BCs%face%SB(i)%b_modified,B%GF,1,     1     ,      2      ,dir)
+               if (max_face(i)) call assign_plane_ave(A%BCs%face%SB(i)%b_modified,B%GF,1,B%GF%s(dir),B%GF%s(dir)-1,dir)
+             endif
+             endif
+           enddo
          endif
        end subroutine
 
@@ -646,54 +689,137 @@
          implicit none
          type(block_field),intent(inout) :: A
          type(block_field),intent(in) :: B
-         integer,dimension(3) :: p,i_opp_e,i_opp_s
+         integer,dimension(3) :: p
+         integer :: i,dir,i_opp_e,i_opp_s
          if (defined(A%BCs)) then
-           p = N_eye(A%DL)
-           i_opp_e = B%GF%s-1-p
-           i_opp_s = 2+p
-           if (is_Periodic(A%BCs%face%bct(1))) call assign_plane(A%BCs%face%b(1),B%GF,1,i_opp_e(1),1)
-           if (is_Periodic(A%BCs%face%bct(2))) call assign_plane(A%BCs%face%b(2),B%GF,1,i_opp_s(1),1)
-           if (is_Periodic(A%BCs%face%bct(3))) call assign_plane(A%BCs%face%b(3),B%GF,1,i_opp_e(2),2)
-           if (is_Periodic(A%BCs%face%bct(4))) call assign_plane(A%BCs%face%b(4),B%GF,1,i_opp_s(2),2)
-           if (is_Periodic(A%BCs%face%bct(5))) call assign_plane(A%BCs%face%b(5),B%GF,1,i_opp_e(3),3)
-           if (is_Periodic(A%BCs%face%bct(6))) call assign_plane(A%BCs%face%b(6),B%GF,1,i_opp_s(3),3)
+           do i=1,6
+             dir = dir_given_face(i)
+             p = N_eye(A%DL)
+             i_opp_e = B%GF%s(dir)-1-p(dir)
+             i_opp_s = 2+p(dir)
+             if (is_Periodic(A%BCs%face%SB(i)%bct)) then
+             if (N_along(B%DL,dir)) then
+               if (min_face(i)) call assign_plane(A%BCs%face%SB(i)%b_modified,B%GF,1,i_opp_e,dir)
+               if (max_face(i)) call assign_plane(A%BCs%face%SB(i)%b_modified,B%GF,1,i_opp_s,dir)
+             else
+               if (min_face(i)) call assign_plane_ave(A%BCs%face%SB(i)%b_modified,B%GF,1,i_opp_e+1,i_opp_e,dir)
+               if (max_face(i)) call assign_plane_ave(A%BCs%face%SB(i)%b_modified,B%GF,1,i_opp_s-1,i_opp_s,dir)
+             endif
+             endif
+           enddo
          endif
        end subroutine
 
-       subroutine multiply_Neumann_BCs_BF(u,val)
+       subroutine assign_Neumann_BCs_faces_BF(A,B,dir)
          implicit none
-         type(block_field),intent(inout) :: u
-         real(cp),intent(in) :: val
-         if (defined(u%BCs)) then
-           if (is_Neumann(u%BCs%face%bct(1))) call multiply(u%BCs%face%b(1),val)
-           if (is_Neumann(u%BCs%face%bct(2))) call multiply(u%BCs%face%b(2),val)
-           if (is_Neumann(u%BCs%face%bct(3))) call multiply(u%BCs%face%b(3),val)
-           if (is_Neumann(u%BCs%face%bct(4))) call multiply(u%BCs%face%b(4),val)
-           if (is_Neumann(u%BCs%face%bct(5))) call multiply(u%BCs%face%b(5),val)
-           if (is_Neumann(u%BCs%face%bct(6))) call multiply(u%BCs%face%b(6),val)
+         type(block_field),intent(inout) :: A
+         type(block_field),intent(in) :: B
+         integer,intent(in) :: dir
+         integer :: i,j
+         integer,dimension(2) :: faces
+         if (defined(A%BCs)) then
+           faces = normal_faces_given_dir(dir)
+           do j=1,2
+             i = faces(j)
+             if (is_Neumann(A%BCs%face%SB(i)%bct)) then
+             if (N_along(B%DL,dir)) then
+               if (min_face(i)) call assign_plane(A%BCs%face%SB(i)%b_modified,B%GF,1,       2     ,dir)
+               if (max_face(i)) call assign_plane(A%BCs%face%SB(i)%b_modified,B%GF,1,B%GF%s(dir)-1,dir)
+             else
+               if (min_face(i)) call assign_plane_ave(A%BCs%face%SB(i)%b_modified,B%GF,1,     1     ,      2      ,dir)
+               if (max_face(i)) call assign_plane_ave(A%BCs%face%SB(i)%b_modified,B%GF,1,B%GF%s(dir),B%GF%s(dir)-1,dir)
+             endif
+             endif
+           enddo
+         endif
+       end subroutine
+
+       subroutine assign_Neumann_BCs_wall_normal_BF(A,B,dir)
+         implicit none
+         type(block_field),intent(inout) :: A
+         type(block_field),intent(in) :: B
+         integer,intent(in) :: dir
+         integer :: i,j
+         integer,dimension(2) :: faces
+         if (defined(A%BCs)) then
+           faces = normal_faces_given_dir(dir)
+           do j=1,2
+             i = faces(j)
+             if (is_Neumann(A%BCs%face%SB(i)%bct)) then
+             if (N_along(B%DL,dir)) then
+               if (min_face(i)) call assign_plane(A%BCs%face%SB(i)%b_modified,B%GF,1,       2     ,dir)
+               if (max_face(i)) call assign_plane(A%BCs%face%SB(i)%b_modified,B%GF,1,B%GF%s(dir)-1,dir)
+             endif
+             endif
+           enddo
+         endif
+       end subroutine
+
+       subroutine assign_Robin_BCs_faces_BF(A,B,dir)
+         implicit none
+         type(block_field),intent(inout) :: A
+         type(block_field),intent(in) :: B
+         integer,intent(in) :: dir
+         integer :: i,j
+         integer,dimension(2) :: faces
+         if (defined(A%BCs)) then
+           faces = normal_faces_given_dir(dir)
+           do j=1,2
+             i = faces(j)
+             if (is_Robin(A%BCs%face%SB(i)%bct)) then
+             if (N_along(B%DL,dir)) then
+               if (min_face(i)) call assign_plane(A%BCs%face%SB(i)%b_modified,B%GF,1,       2     ,dir)
+               if (max_face(i)) call assign_plane(A%BCs%face%SB(i)%b_modified,B%GF,1,B%GF%s(dir)-1,dir)
+             else
+               if (min_face(i)) call assign_plane_ave(A%BCs%face%SB(i)%b_modified,B%GF,1,     1     ,      2      ,dir)
+               if (max_face(i)) call assign_plane_ave(A%BCs%face%SB(i)%b_modified,B%GF,1,B%GF%s(dir),B%GF%s(dir)-1,dir)
+             endif
+             endif
+           enddo
+         endif
+       end subroutine
+
+       subroutine multiply_Robin_coeff_BF(A,A_with_BCs)
+         implicit none
+         type(block_field),intent(inout) :: A
+         type(block_field),intent(in) :: A_with_BCs
+         integer :: i,dir
+         if (defined(A_with_BCs%BCs)) then
+           do i=1,6
+             dir = dir_given_face(i)
+             if (is_Robin(A_with_BCs%BCs%face%SB(i)%bct)) then
+               call multiply(A%BCs%face%SB(i)%b_total,A_with_BCs%BCs%f_BCs%Robin_coeff(i))
+             endif
+           enddo
+         endif
+       end subroutine
+
+       subroutine multiply_nhat_BF(A,A_with_BCs)
+         implicit none
+         type(block_field),intent(inout) :: A
+         type(block_field),intent(in) :: A_with_BCs
+         integer :: i,dir
+         if (defined(A_with_BCs%BCs)) then
+           do i=1,6
+             dir = dir_given_face(i)
+             if (N_along(A%DL,dir)) then
+               if (min_face(i)) call multiply_plane(A%GF,A_with_BCs%BCs%f_BCs%nhat(i),       2     ,dir)
+               if (max_face(i)) call multiply_plane(A%GF,A_with_BCs%BCs%f_BCs%nhat(i),A%GF%s(dir)-1,dir)
+             endif
+           enddo
          endif
        end subroutine
 
        subroutine set_prescribed_BCs_BF(A)
          implicit none
          type(block_field),intent(inout) :: A
-         logical,dimension(3) :: L
+         integer :: i,dir
          if (defined(A%BCs)) then
-           L = A%many_cell_N_periodic
-           if (is_Periodic(A%BCs%face%bct(1)).and.L(1)) call set_prescribed(A%BCs%face%bct(1))
-           if (is_Periodic(A%BCs%face%bct(2)).and.L(1)) call set_prescribed(A%BCs%face%bct(2))
-           if (is_Periodic(A%BCs%face%bct(3)).and.L(2)) call set_prescribed(A%BCs%face%bct(3))
-           if (is_Periodic(A%BCs%face%bct(4)).and.L(2)) call set_prescribed(A%BCs%face%bct(4))
-           if (is_Periodic(A%BCs%face%bct(5)).and.L(3)) call set_prescribed(A%BCs%face%bct(5))
-           if (is_Periodic(A%BCs%face%bct(6)).and.L(3)) call set_prescribed(A%BCs%face%bct(6))
-
-           ! Prescribed is now potentially changed, re-assess BC type:
-           if (is_Periodic(A%BCs%face%bct(1)).and.L(1)) call init_periodic(A%BCs,1)
-           if (is_Periodic(A%BCs%face%bct(2)).and.L(1)) call init_periodic(A%BCs,2)
-           if (is_Periodic(A%BCs%face%bct(3)).and.L(2)) call init_periodic(A%BCs,3)
-           if (is_Periodic(A%BCs%face%bct(4)).and.L(2)) call init_periodic(A%BCs,4)
-           if (is_Periodic(A%BCs%face%bct(5)).and.L(3)) call init_periodic(A%BCs,5)
-           if (is_Periodic(A%BCs%face%bct(6)).and.L(3)) call init_periodic(A%BCs,6)
+           do i=1,6
+            dir = dir_given_face(i)
+            if (A%many_cell(dir)) call set_prescribed(A%BCs%face%SB(i)%bct)
+            call init_PA_face(A%BCs,i)
+           enddo
          endif
        end subroutine
 
@@ -1086,6 +1212,7 @@
          integer,intent(in) :: dir
          integer,dimension(3) :: eye
          integer :: i,x,y,z
+         real(cp),dimension(6) :: Robin_coeff
          eye = eye_given_dir(dir)
          x = eye(1); y = eye(2); z = eye(3)
          if (CC_along(u%DL,dir))    then; call restrict_C(u%GF,B%g,dir,x,y,z)
@@ -1096,14 +1223,15 @@
          if (defined(u%BCs)) then
          do i=1,6
          if (dir_given_face(i).ne.dir) then ! only restrict BCs along surface tangent directions
-           if (CC_along(u%DL,dir))    then; call restrict_C(u%BCs%face%b(i),B%fb(i),dir,x,y,z)
-           elseif (N_along(u%DL,dir)) then; call restrict_N(u%BCs%face%b(i),B%fb(i),dir,x,y,z)
+           if (CC_along(u%DL,dir))    then; call restrict_C(u%BCs%face%SB(i)%b,B%fb(i),dir,x,y,z)
+           elseif (N_along(u%DL,dir)) then; call restrict_N(u%BCs%face%SB(i)%b,B%fb(i),dir,x,y,z)
            else; stop 'Error: bad DL in restrict_BF in BF.f90'
            endif
          endif
          enddo
+         Robin_coeff = u%BCs%f_BCs%Robin_coeff
          call restrict(u%BCs,B,dir)
-         call init_BC_props(u)
+         call init_BC_props(u,Robin_coeff)
          endif
        end subroutine
 
@@ -1130,6 +1258,7 @@
          integer,intent(in) :: dir
          integer,dimension(3) :: eye
          integer :: x,y,z
+         real(cp),dimension(6) :: Robin_coeff
          eye = eye_given_dir(dir)
          x = eye(1); y = eye(2); z = eye(3)
              if (CC_along(u%DL,dir)) then; call prolongate_C(u%GF,B%g,dir,x,y,z)
@@ -1137,8 +1266,9 @@
          else; stop 'Error: bad DL in prolongate_BF in BF.f90'
          endif
          if (defined(u%BCs)) then
+           Robin_coeff = u%BCs%f_BCs%Robin_coeff
            call prolongate(u%BCs,B,dir)
-           call init_BC_props(u)
+           call init_BC_props(u,Robin_coeff)
          endif
        end subroutine
 

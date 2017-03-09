@@ -24,7 +24,8 @@
          real(cp) :: Pe = 0.0_cp
          real(cp) :: Ec = 0.0_cp
          real(cp) :: Rem = 0.0_cp
-         real(cp) :: cw = 0.0_cp
+         real(cp),dimension(6) :: c_w = 0.0_cp
+         real(cp),dimension(6) :: Robin_coeff = 0.0_cp
          real(cp) :: Q = 0.0_cp
          real(cp) :: sig_local_over_sig_f = 0.0_cp
          real(cp) :: KE_scale = 0.0_cp
@@ -47,7 +48,8 @@
          DP%Ha         = DP_in%Ha
          DP%tau        = DP_in%tau
          DP%Rem        = DP_in%Rem
-         DP%cw         = DP_in%cw
+         DP%c_w        = DP_in%c_w
+         DP%Robin_coeff= DP_in%Robin_coeff
          DP%Q          = DP_in%Q
          DP%sig_local_over_sig_f = DP_in%sig_local_over_sig_f
          DP%Gr         = DP_in%Gr
@@ -72,7 +74,8 @@
          DP%Ha         = 0.0_cp
          DP%tau        = 0.0_cp
          DP%Rem        = 0.0_cp
-         DP%cw         = 0.0_cp
+         DP%c_w        = 0.0_cp
+         DP%Robin_coeff= 0.0_cp
          DP%Q          = 0.0_cp
          DP%sig_local_over_sig_f = 0.0_cp
          DP%Gr         = 0.0_cp
@@ -98,7 +101,8 @@
          write(un,*) 'Ha                   = ',DP%Ha
          write(un,*) 'tau                  = ',DP%tau
          write(un,*) 'Rem                  = ',DP%Rem
-         write(un,*) 'cw                   = ',DP%cw
+         write(un,*) 'c_w                  = ',DP%c_w
+         write(un,*) 'Robin_coeff          = ',DP%Robin_coeff
          write(un,*) 'Q                    = ',DP%Q
          write(un,*) 'sig_local_over_sig_f = ',DP%sig_local_over_sig_f
          write(un,*) 'Gr                   = ',DP%Gr
@@ -130,7 +134,8 @@
          write(un,*) DP%Ha
          write(un,*) DP%tau
          write(un,*) DP%Rem
-         write(un,*) DP%cw
+         write(un,*) DP%c_w
+         write(un,*) DP%Robin_coeff
          write(un,*) DP%Q
          write(un,*) DP%sig_local_over_sig_f
          write(un,*) DP%Gr
@@ -156,7 +161,8 @@
          read(un,*) DP%Ha
          read(un,*) DP%tau
          read(un,*) DP%Rem
-         read(un,*) DP%cw
+         read(un,*) DP%c_w
+         read(un,*) DP%Robin_coeff
          read(un,*) DP%Q
          read(un,*) DP%sig_local_over_sig_f
          read(un,*) DP%Gr

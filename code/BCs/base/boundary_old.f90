@@ -3,7 +3,6 @@
        use face_edge_corner_indexing_mod
        use data_location_mod
        use grid_mod
-       use single_boundary_mod
        use block_mod
        use string_mod
        use GF_mod
@@ -34,9 +33,10 @@
 
        type boundary
          integer :: n = 0
-         type(single_boundary),dimension(:),allocatable :: SB ! boundary grid fields and types
-         type(string) :: name                                 ! Face,edge,corner
-         type(BC_logicals) :: BCL                             ! logicals
+         type(grid_field),dimension(:),allocatable :: b      ! B values size = 6
+         type(bctype),dimension(:),allocatable :: bct        ! for self-documenting output
+         type(string) :: name                                ! Face,edge,corner
+         type(BC_logicals) :: BCL                            ! logicals
        end type
 
        interface init;                module procedure init_GFs_boundary_DL;      end interface
@@ -93,12 +93,31 @@
          character(len=*),intent(in) :: name
          integer :: i
          call delete(B)
-         allocate(B%SB(n))
+         allocate(B%b(n))
+         allocate(B%bct(n))
          call init(B%name,name)
          B%n = n
-             if (n.eq.6 ) then; do i=1,n; call init(B%SB(i),BL%fb(i),DL); enddo
-         elseif (n.eq.12) then; do i=1,n; call init(B%SB(i),BL%eb(i),DL); enddo
-         elseif (n.eq.8 ) then; do i=1,n; call init(B%SB(i),BL%cb(i),DL); enddo
+         if (n.eq.6) then
+               if (is_CC(DL)) then; do i=1,n; call init_CC(  B%b(i),BL%fb(i)); enddo
+         elseif (is_Node(DL)) then; do i=1,n; call init_Node(B%b(i),BL%fb(i)); enddo
+         elseif (is_Face(DL)) then; do i=1,n; call init_Face(B%b(i),BL%fb(i),get_Face(DL)); enddo
+         elseif (is_Edge(DL)) then; do i=1,n; call init_Edge(B%b(i),BL%fb(i),get_Edge(DL)); enddo
+         else; stop 'Error: bad DL f in init_GFs_boundary_DL in boundary.f90'
+         endif
+         elseif (n.eq.12) then
+               if (is_CC(DL)) then; do i=1,n; call init_CC(  B%b(i),BL%eb(i)); enddo
+         elseif (is_Node(DL)) then; do i=1,n; call init_Node(B%b(i),BL%eb(i)); enddo
+         elseif (is_Face(DL)) then; do i=1,n; call init_Face(B%b(i),BL%eb(i),get_Face(DL)); enddo
+         elseif (is_Edge(DL)) then; do i=1,n; call init_Edge(B%b(i),BL%eb(i),get_Edge(DL)); enddo
+         else; stop 'Error: bad DL e in init_GFs_boundary_DL in boundary.f90'
+         endif
+         elseif (n.eq.8) then
+               if (is_CC(DL)) then; do i=1,n; call init_CC(  B%b(i),BL%cb(i)); enddo
+         elseif (is_Node(DL)) then; do i=1,n; call init_Node(B%b(i),BL%cb(i)); enddo
+         elseif (is_Face(DL)) then; do i=1,n; call init_Face(B%b(i),BL%cb(i),get_Face(DL)); enddo
+         elseif (is_Edge(DL)) then; do i=1,n; call init_Edge(B%b(i),BL%cb(i),get_Edge(DL)); enddo
+         else; stop 'Error: bad DL c in init_GFs_boundary_DL in boundary.f90'
+         endif
          else; stop 'Error: bad input to init_GFs_boundary_DL in B.f90'
          endif
          call init_vals_all_S(B,0.0_cp)
@@ -119,17 +138,23 @@
          B%n = B_in%n
          call init(B%name,B_in%name)
          call init(B%BCL,B_in%BCL)
-         allocate(B%SB(B_in%n))
-         do i=1,B_in%n;  call init(B%SB(i),B_in%SB(i)); enddo
+         allocate(B%b(B_in%n))
+         allocate(B%bct(B_in%n))
+         do i=1,B_in%n;  call init(B%b(i),B_in%b(i)); call assign(B%b(i),B_in%b(i)); enddo
+         do i=1,B_in%n;  call init(B%bct(i),B_in%bct(i)); enddo
        end subroutine
 
        subroutine delete_boundary(B)
          implicit none
          type(boundary),intent(inout) :: B
          integer :: i
-         if (allocated(B%SB)) then
-           do i=1,size(B%SB); call delete(B%SB(i)); enddo
-           deallocate(B%SB)
+         if (allocated(B%b)) then
+           do i=1,size(B%b); call delete(B%b(i)); enddo
+           deallocate(B%b)
+         endif
+         if (allocated(B%bct)) then
+           do i=1,size(B%bct); call delete(B%bct(i)); enddo
+           deallocate(B%bct)
          endif
          call delete(B%BCL)
          call delete(B%name)
@@ -141,7 +166,7 @@
          type(boundary),intent(inout) :: B
          real(cp),intent(in) :: val
          integer :: i
-         do i=1,B%n; call assign(B%SB(i)%b,val); enddo
+         do i=1,B%n;  call assign(B%b(i),val); enddo
          B%BCL%vals_defined = .true.
          call define_logicals(B)
        end subroutine
@@ -151,7 +176,7 @@
          type(boundary),intent(inout) :: B
          type(grid_field),intent(in) :: vals
          integer,intent(in) :: ID
-         call assign(B%SB(ID)%b,vals)
+         call assign(B%b(ID),vals)
          B%BCL%vals_defined = .true.
          call define_logicals(B)
        end subroutine
@@ -161,7 +186,7 @@
          type(boundary),intent(inout) :: B
          real(cp),intent(in) :: val
          integer,intent(in) :: ID
-         call assign(B%SB(ID)%b,val)
+         call assign(B%b(ID),val)
          B%BCL%vals_defined = .true.
          call define_logicals(B)
        end subroutine
@@ -174,9 +199,9 @@
          if (B%BCL%defined) then
            precision = 4; col_width = 10
            call export_table('ID         :',(/(i,i=1,B%n)/),col_width,un)
-           call export_table('Type       :',(/(get_bctype(B%SB(i)%bct),i=1,B%n)/),col_width,un)
-           call export_table('meanVal    :',(/(get_mean_value(B%SB(i)%bct),i=1,B%n)/),col_width,precision,un)
-           call export_table('prescribed :',(/(is_prescribed(B%SB(i)%bct),i=1,B%n)/),col_width,un)
+           call export_table('Type       :',(/(get_bctype(B%bct(i)),i=1,B%n)/),col_width,un)
+           call export_table('meanVal    :',(/(get_mean_value(B%bct(i)),i=1,B%n)/),col_width,precision,un)
+           call export_table('prescribed :',(/(is_prescribed(B%bct(i)),i=1,B%n)/),col_width,un)
          endif
        end subroutine
 
@@ -195,7 +220,8 @@
          write(un,*) 'defined'
          write(un,*) B%BCL%defined
          if (B%BCL%defined) then
-           do i=1,B%n;  call export(B%SB(i),un);   enddo
+           do i=1,B%n;  call export(B%b(i),un);   enddo
+           do i=1,B%n;  call export(B%bct(i),un); enddo
            call export(B%BCL,un)
          endif
        end subroutine
@@ -208,7 +234,8 @@
          read(un,*)
          read(un,*) B%BCL%defined
          if (B%BCL%defined) then
-           do i=1,B%n; call import(B%SB(i),un); enddo
+           do i=1,B%n; call import(B%b(i),un); enddo
+           do i=1,B%n; call import(B%bct(i),un); enddo
            call import(B%BCL,un)
          endif
        end subroutine
@@ -247,7 +274,7 @@
          implicit none
          type(boundary),intent(inout) :: B
          integer,intent(in) :: ID
-         call init_Dirichlet(B%SB(ID)%bct)
+         call init_Dirichlet(B%bct(ID))
          call define_logicals(B)
          B%BCL%BCT_defined = .true.
        end subroutine
@@ -262,7 +289,7 @@
          implicit none
          type(boundary),intent(inout) :: B
          integer,intent(in) :: ID
-         call init_Neumann(B%SB(ID)%bct)
+         call init_Neumann(B%bct(ID))
          call define_logicals(B)
          B%BCL%BCT_defined = .true.
        end subroutine
@@ -277,7 +304,7 @@
          implicit none
          type(boundary),intent(inout) :: B
          integer,intent(in) :: ID
-         call init_Robin(B%SB(ID)%bct)
+         call init_Robin(B%bct(ID))
          call define_logicals(B)
          B%BCL%BCT_defined = .true.
        end subroutine
@@ -292,7 +319,7 @@
          implicit none
          type(boundary),intent(inout) :: B
          integer,intent(in) :: ID
-         call init_periodic(B%SB(ID)%bct)
+         call init_periodic(B%bct(ID))
          call define_logicals(B)
          B%BCL%BCT_defined = .true.
        end subroutine
@@ -307,7 +334,7 @@
          implicit none
          type(boundary),intent(inout) :: B
          integer,intent(in) :: ID
-         call init_symmetric(B%SB(ID)%bct)
+         call init_symmetric(B%bct(ID))
          call define_logicals(B)
          B%BCL%BCT_defined = .true.
        end subroutine
@@ -322,7 +349,7 @@
          implicit none
          type(boundary),intent(inout) :: B
          integer,intent(in) :: ID
-         call init_antisymmetric(B%SB(ID)%bct)
+         call init_antisymmetric(B%bct(ID))
          call define_logicals(B)
          B%BCL%BCT_defined = .true.
        end subroutine
@@ -335,9 +362,9 @@
          implicit none
          type(boundary),intent(in) :: B
          character(len=*),intent(in) :: caller
-         if (.not.(allocated(B%SB).and.(size(B%SB).eq.B%n))) then
+         if (.not.(allocated(B%b).and.(size(B%b).eq.B%n))) then
            write(*,*) 'Error: trying to copy unallocated BCs in '//caller//'in boundary.f90'
-           write(*,*) 'size(B%SB) = ',size(B%SB)
+           write(*,*) 'size(B%b) = ',size(B%b)
            stop 'Done'
          endif
        end subroutine
@@ -347,13 +374,13 @@
          type(boundary),intent(inout) :: B
          integer :: i
          B%BCL%defined = B%BCL%GFs_defined.and.B%BCL%BCT_defined.and.B%BCL%vals_defined
-         B%BCL%all_Dirichlet = all((/(is_Dirichlet(B%SB(i)%bct),i=1,B%n)/))
-         B%BCL%all_Robin     = all((/(is_Robin(B%SB(i)%bct),i=1,B%n)/))
-         B%BCL%all_Neumann   = all((/(is_Neumann(B%SB(i)%bct),i=1,B%n)/))
+         B%BCL%all_Dirichlet = all((/(is_Dirichlet(B%bct(i)),i=1,B%n)/))
+         B%BCL%all_Robin     = all((/(is_Robin(B%bct(i)),i=1,B%n)/))
+         B%BCL%all_Neumann   = all((/(is_Neumann(B%bct(i)),i=1,B%n)/))
 
-         B%BCL%any_Dirichlet = any((/(is_Dirichlet(B%SB(i)%bct),i=1,B%n)/))
-         B%BCL%any_Robin     = any((/(is_Robin(B%SB(i)%bct),i=1,B%n)/))
-         B%BCL%any_Neumann   = any((/(is_Neumann(B%SB(i)%bct),i=1,B%n)/))
+         B%BCL%any_Dirichlet = any((/(is_Dirichlet(B%bct(i)),i=1,B%n)/))
+         B%BCL%any_Robin     = any((/(is_Robin(B%bct(i)),i=1,B%n)/))
+         B%BCL%any_Neumann   = any((/(is_Neumann(B%bct(i)),i=1,B%n)/))
        end subroutine
 
        function get_all_Neumann_B(B) result(L)
@@ -384,8 +411,12 @@
          type(grid),dimension(n),intent(in) :: g
          type(data_location),intent(in) :: DL
          integer :: i
-         do i=1,B%n; call restrict(B%SB(i),g(i),DL,dir,x,y,z); enddo
-         do i=1,B%n; call restrict(B%SB(i),g(i),DL,dir,x,y,z); enddo
+         if (CC_along(DL,dir)) then
+           do i=1,B%n; call restrict_C(B%b(i),g(i),dir,x,y,z); enddo
+         elseif ( N_along(DL,dir)) then
+           do i=1,B%n; call restrict_N(B%b(i),g(i),dir,x,y,z); enddo
+         else; stop 'Error: bad DL in restrict_B in boundary.f90'
+         endif
        end subroutine
 
        subroutine prolongate_B(B,g,DL,dir,x,y,z,n)
@@ -395,8 +426,12 @@
          type(grid),dimension(n),intent(in) :: g
          type(data_location),intent(in) :: DL
          integer :: i
-         do i=1,B%n; call prolongate(B%SB(i),g(i),DL,dir,x,y,z); enddo
-         do i=1,B%n; call prolongate(B%SB(i),g(i),DL,dir,x,y,z); enddo
+         if (CC_along(DL,dir)) then
+           do i=1,B%n; call prolongate_C(B%b(i),g(i),dir,x,y,z); enddo
+         elseif ( N_along(DL,dir)) then
+           do i=1,B%n; call prolongate_N(B%b(i),dir,x,y,z); enddo
+         else; stop 'Error: bad DL in prolongate_B in boundary.f90'
+         endif
        end subroutine
 
        end module

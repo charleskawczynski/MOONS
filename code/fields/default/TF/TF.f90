@@ -50,10 +50,15 @@
         ! Grid initialization
         public :: init_CC
         public :: init_Face
-        public :: init_Face_compliment
         public :: init_Edge
-        public :: init_Edge_compliment
         public :: init_Node
+
+        public :: init_CC_Edge
+        public :: init_Node_Edge
+        public :: init_Face_Transpose
+
+        public :: assign_Neumann_BCs
+        public :: assign_Robin_BCs
 
         ! Monitoring
         public :: print
@@ -62,6 +67,7 @@
         public :: assign
         public :: add,add_product,subtract
         public :: multiply,divide
+        public :: amax
         public :: square,square_root
         public :: cross_product
         public :: transpose
@@ -81,23 +87,30 @@
         interface init;                module procedure init_TF_copy_TF;           end interface
         interface init;                module procedure init_TF_copy_TF_mesh;      end interface
 
-        interface init_CC;             module procedure init_TF_CC;                end interface
-        interface init_Face;           module procedure init_TF_Face;              end interface
-        interface init_Edge;           module procedure init_TF_Edge;              end interface
-        interface init_Node;           module procedure init_TF_Node;              end interface
+        interface init_CC;             module procedure init_CC_TF;                end interface
+        interface init_Face;           module procedure init_Face_TF;              end interface
+        interface init_Edge;           module procedure init_Edge_TF;              end interface
+        interface init_Node;           module procedure init_Node_TF;              end interface
 
-        interface init_CC;             module procedure init_TF_CC_MD;             end interface
-        interface init_Face;           module procedure init_TF_Face_MD;           end interface
-        interface init_Edge;           module procedure init_TF_Edge_MD;           end interface
-        interface init_Node;           module procedure init_TF_Node_MD;           end interface
+        interface init_CC;             module procedure init_CC_MD_TF;             end interface
+        interface init_Face;           module procedure init_Face_MD_TF;           end interface
+        interface init_Edge;           module procedure init_Edge_MD_TF;           end interface
+        interface init_Node;           module procedure init_Node_MD_TF;           end interface
 
-        interface init_Face_compliment;module procedure init_TF_Face_compliment;   end interface
-        interface init_Edge_compliment;module procedure init_TF_Edge_compliment;   end interface
+        interface init_Face_Transpose; module procedure init_Face_Transpose_TF;    end interface
+        interface init_Face_Transpose; module procedure init_Face_Transpose_assign_TF;    end interface
+        interface init_CC_Edge;        module procedure init_CC_Edge_TF;           end interface
+        interface init_Node_Edge;      module procedure init_Node_Edge_TF;         end interface
 
-        interface init_CC;             module procedure init_TF_CC_assign;         end interface
-        interface init_Face;           module procedure init_TF_Face_assign;       end interface
-        interface init_Edge;           module procedure init_TF_Edge_assign;       end interface
-        interface init_Node;           module procedure init_TF_Node_assign;       end interface
+        interface init_CC;             module procedure init_CC_assign_TF;         end interface
+        interface init_Face;           module procedure init_Face_assign_TF;       end interface
+        interface init_Edge;           module procedure init_Edge_assign_TF;       end interface
+        interface init_Node;           module procedure init_Node_assign_TF;       end interface
+
+        interface init_CC_Edge;module procedure init_CC_Edge_assign_TF; end interface
+
+        interface assign_Neumann_BCs;  module procedure assign_Neumann_BCs_faces_TF;        end interface
+        interface assign_Robin_BCs;    module procedure assign_Robin_BCs_faces_TF;  end interface
 
         interface delete;              module procedure delete_TF;                 end interface
         interface print;               module procedure print_TF;                  end interface
@@ -108,6 +121,7 @@
 
         interface add;                 module procedure add_TF_TF;                 end interface
         interface add;                 module procedure add_TF_TF_TF;              end interface
+        interface add;                 module procedure add_TF_TF_VF;              end interface
         interface add;                 module procedure add_TF_VF;                 end interface
         interface add;                 module procedure add_VF_TF;                 end interface
         interface add;                 module procedure add_TF_S;                  end interface
@@ -130,6 +144,8 @@
         interface divide;              module procedure divide_TF_VF;              end interface
         interface divide;              module procedure divide_TF_S;               end interface
         interface divide;              module procedure divide_S_TF;               end interface
+
+        interface amax;                module procedure amax_TF;                   end interface
 
         interface square;              module procedure square_TF;                 end interface
         interface square_root;         module procedure square_root_TF;            end interface
@@ -185,6 +201,14 @@
           type(TF),intent(inout) :: f
           type(TF),intent(in) :: g,r
           call add(f%x,g%x,r%x); call add(f%y,g%y,r%y); call add(f%z,g%z,r%z)
+        end subroutine
+
+        subroutine add_TF_TF_VF(f,g,r)
+          implicit none
+          type(TF),intent(inout) :: f
+          type(TF),intent(in) :: g
+          type(VF),intent(in) :: r
+          call add(f%x,g%x,r); call add(f%y,g%y,r); call add(f%z,g%z,r)
         end subroutine
 
         subroutine add_TF_VF(f,g)
@@ -333,6 +357,13 @@
 
       ! ------------------- OTHER ------------------------
 
+        function amax_TF(f) result (m)
+          implicit none
+          type(TF),intent(in) :: f
+          real(cp) :: m
+          m = maxval((/amax(f%x),amax(f%y),amax(f%z)/))
+        end function
+
         subroutine square_TF(f)
           implicit none
           type(TF),intent(inout) :: f
@@ -480,14 +511,14 @@
           call init(f1%x,f2); call init(f1%y,f2); call init(f1%z,f2)
         end subroutine
 
-        subroutine init_TF_CC(f,m)
+        subroutine init_CC_TF(f,m)
           implicit none
           type(TF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_CC(f%x,m); call init_CC(f%y,m); call init_CC(f%z,m)
         end subroutine
 
-        subroutine init_TF_CC_MD(f,m,MD)
+        subroutine init_CC_MD_TF(f,m,MD)
           implicit none
           type(TF),intent(inout) :: f
           type(mesh),intent(in) :: m
@@ -495,14 +526,14 @@
           call init_CC(f%x,m,MD); call init_CC(f%y,m,MD); call init_CC(f%z,m,MD)
         end subroutine
 
-        subroutine init_TF_Edge(f,m)
+        subroutine init_Edge_TF(f,m)
           implicit none
           type(TF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_Edge(f%x,m); call init_Edge(f%y,m); call init_Edge(f%z,m)
         end subroutine
 
-        subroutine init_TF_Edge_MD(f,m,MD)
+        subroutine init_Edge_MD_TF(f,m,MD)
           implicit none
           type(TF),intent(inout) :: f
           type(mesh),intent(in) :: m
@@ -510,7 +541,7 @@
           call init_Edge(f%x,m,MD); call init_Edge(f%y,m,MD); call init_Edge(f%z,m,MD)
         end subroutine
 
-        subroutine init_TF_Edge_compliment(f,m)
+        subroutine init_Node_Edge_TF(f,m)
           implicit none
           type(TF),intent(inout) :: f
           type(mesh),intent(in) :: m
@@ -527,14 +558,14 @@
           call init_Node(f%z%z,m)
         end subroutine
 
-        subroutine init_TF_Face(f,m)
+        subroutine init_Face_TF(f,m)
           implicit none
           type(TF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_Face(f%x,m); call init_Face(f%y,m); call init_Face(f%z,m)
         end subroutine
 
-        subroutine init_TF_Face_MD(f,m,MD)
+        subroutine init_Face_MD_TF(f,m,MD)
           implicit none
           type(TF),intent(inout) :: f
           type(mesh),intent(in) :: m
@@ -542,7 +573,31 @@
           call init_Face(f%x,m,MD); call init_Face(f%y,m,MD); call init_Face(f%z,m,MD)
         end subroutine
 
-        subroutine init_TF_Face_compliment(f,m)
+        subroutine init_Face_Transpose_TF(f,m)
+          implicit none
+          type(TF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          call init_Face(f%x%x,m,1)
+          call init_Face(f%x%y,m,1)
+          call init_Face(f%x%z,m,1)
+          call init_Face(f%y%x,m,2)
+          call init_Face(f%y%y,m,2)
+          call init_Face(f%y%z,m,2)
+          call init_Face(f%z%x,m,3)
+          call init_Face(f%z%y,m,3)
+          call init_Face(f%z%z,m,3)
+        end subroutine
+
+        subroutine init_Face_Transpose_assign_TF(f,m,val)
+          implicit none
+          type(TF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          real(cp),intent(in) :: val
+          call init_Face_Transpose(f,m)
+          call assign(f,val)
+        end subroutine
+
+        subroutine init_CC_Edge_TF(f,m)
           implicit none
           type(TF),intent(inout) :: f
           type(mesh),intent(in) :: m
@@ -559,14 +614,14 @@
           call init_CC  (f%z%z,m)
         end subroutine
 
-        subroutine init_TF_Node(f,m)
+        subroutine init_Node_TF(f,m)
           implicit none
           type(TF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_Node(f%x,m); call init_Node(f%y,m); call init_Node(f%z,m)
         end subroutine
 
-        subroutine init_TF_Node_MD(f,m,MD)
+        subroutine init_Node_MD_TF(f,m,MD)
           implicit none
           type(TF),intent(inout) :: f
           type(mesh),intent(in) :: m
@@ -574,7 +629,7 @@
           call init_Node(f%x,m,MD); call init_Node(f%y,m,MD); call init_Node(f%z,m,MD)
         end subroutine
 
-        subroutine init_TF_CC_assign(f,m,val)
+        subroutine init_CC_assign_TF(f,m,val)
           implicit none
           type(TF),intent(inout) :: f
           type(mesh),intent(in) :: m
@@ -582,7 +637,7 @@
           call init_CC(f%x,m,val); call init_CC(f%y,m,val); call init_CC(f%z,m,val)
         end subroutine
 
-        subroutine init_TF_Edge_assign(f,m,val)
+        subroutine init_Edge_assign_TF(f,m,val)
           implicit none
           type(TF),intent(inout) :: f
           type(mesh),intent(in) :: m
@@ -590,7 +645,7 @@
           call init_Edge(f%x,m,val); call init_Edge(f%y,m,val); call init_Edge(f%z,m,val)
         end subroutine
 
-        subroutine init_TF_Face_assign(f,m,val)
+        subroutine init_Face_assign_TF(f,m,val)
           implicit none
           type(TF),intent(inout) :: f
           type(mesh),intent(in) :: m
@@ -598,12 +653,38 @@
           call init_Face(f%x,m,val); call init_Face(f%y,m,val); call init_Face(f%z,m,val)
         end subroutine
 
-        subroutine init_TF_Node_assign(f,m,val)
+        subroutine init_Node_assign_TF(f,m,val)
           implicit none
           type(TF),intent(inout) :: f
           type(mesh),intent(in) :: m
           real(cp),intent(in) :: val
           call init_Node(f%x,m,val); call init_Node(f%y,m,val); call init_Node(f%z,m,val)
+        end subroutine
+
+        subroutine init_CC_Edge_assign_TF(f,m,val)
+          implicit none
+          type(TF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          real(cp),intent(in) :: val
+          call init_CC_Edge(f,m); call assign(f,val)
+        end subroutine
+
+        subroutine assign_Neumann_BCs_faces_TF(A,B)
+          implicit none
+          type(VF),intent(inout) :: A
+          type(TF),intent(in) :: B
+          call assign_Neumann_BCs(A%x,B%x)
+          call assign_Neumann_BCs(A%y,B%y)
+          call assign_Neumann_BCs(A%z,B%z)
+        end subroutine
+
+        subroutine assign_Robin_BCs_faces_TF(A,B)
+          implicit none
+          type(VF),intent(inout) :: A
+          type(TF),intent(in) :: B
+          call assign_Robin_BCs(A%x,B%x)
+          call assign_Robin_BCs(A%y,B%y)
+          call assign_Robin_BCs(A%z,B%z)
         end subroutine
 
         subroutine delete_TF(f)

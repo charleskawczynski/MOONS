@@ -17,6 +17,7 @@
        public :: Periodic_N
        public :: Periodic_N_prescribed
        public :: Robin_C
+       public :: Robin_C_prescribed
        public :: Robin_N
        public :: Symmetric_C
        public :: Symmetric_N
@@ -291,21 +292,47 @@
                            FSD%i_2D(face)%i,&
                            FSD%dh(face),&
                            FSD%nhat(face),&
+                           FSD%Robin_coeff(face),&
                            0)
        end subroutine
-       subroutine F_Robin_C_GF(bulk,surf,G1,G2,I1,I2,iR,dh,nhat,p)
+       subroutine F_Robin_C_GF(bulk,surf,G1,G2,I1,I2,iR,dh,nhat,Robin_coeff,p)
          implicit none
          type(grid_field),intent(inout) :: bulk
          type(grid_field),intent(in) :: surf
          integer,dimension(3),intent(in) :: G1,G2,I1,I2
          integer,dimension(2),intent(in) :: iR
-         real(cp),intent(in) :: dh,nhat
+         real(cp),intent(in) :: dh,nhat,Robin_coeff
          integer,intent(in) :: p
          ! call apply_Robin_C(ug,ui,bvals,dh,nhat,x,y,p)
          call apply_Robin_C(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
                             bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
                             surf%f,&
-                            dh*nhat,surf%s(iR(1)),surf%s(iR(2)),p)
+                            dh*nhat,Robin_coeff,surf%s(iR(1)),surf%s(iR(2)),p)
+       end subroutine
+
+       subroutine Robin_C_prescribed(GF,surf,FSD,face)
+         implicit none
+         type(grid_field),intent(inout) :: GF
+         type(grid_field),intent(in) :: surf
+         type(face_SD),intent(in) :: FSD
+         integer,intent(in) :: face
+         call F_Robin_C_prescribed_GF(GF,surf,&
+                           FSD%G(face)%M(1:3)%i2(1),&
+                           FSD%G(face)%M(1:3)%i2(2),&
+                           FSD%i_2D(face)%i,&
+                           0)
+       end subroutine
+       subroutine F_Robin_C_prescribed_GF(bulk,surf,G1,G2,iR,p)
+         implicit none
+         type(grid_field),intent(inout) :: bulk
+         type(grid_field),intent(in) :: surf
+         integer,dimension(3),intent(in) :: G1,G2
+         integer,dimension(2),intent(in) :: iR
+         integer,intent(in) :: p
+         ! call apply_Robin_C(ug,ui,bvals,dh,nhat,x,y,p)
+         call apply_assign(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
+                           surf%f,&
+                           surf%s(iR(1)),surf%s(iR(2)),p)
        end subroutine
 
        subroutine Robin_N(GF,surf,FSD,face)
@@ -324,22 +351,23 @@
                            FSD%i_2D(face)%i,&
                            FSD%dh(face),&
                            FSD%nhat(face),&
+                           FSD%Robin_coeff(face),&
                            0)
        end subroutine
-       subroutine F_Robin_N_GF(bulk,surf,G1,G2,I1,I2,B1,B2,iR,dh,nhat,p)
+       subroutine F_Robin_N_GF(bulk,surf,G1,G2,I1,I2,B1,B2,iR,dh,nhat,Robin_coeff,p)
          implicit none
          type(grid_field),intent(inout) :: bulk
          type(grid_field),intent(in) :: surf
          integer,dimension(3),intent(in) :: G1,G2,I1,I2,B1,B2
          integer,dimension(2),intent(in) :: iR
-         real(cp),intent(in) :: dh,nhat
+         real(cp),intent(in) :: dh,nhat,Robin_coeff
          integer,intent(in) :: p
          ! call apply_Robin_N(ug,ui,ub,bvals,dh,nhat,x,y,p)
          call apply_Robin_N(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
                             bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
                             bulk%f(B1(1):B2(1),B1(2):B2(2),B1(3):B2(3)),&
                             surf%f,&
-                            dh*nhat,surf%s(iR(1)),surf%s(iR(2)),p)
+                            dh*nhat,Robin_coeff,surf%s(iR(1)),surf%s(iR(2)),p)
        end subroutine
 
        ! *********************************************************************************

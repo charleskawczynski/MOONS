@@ -102,7 +102,7 @@
        SP%restart_all                = F ! restart sim (requires no code changes)
        SP%uniform_gravity_dir        = 1 ! Uniform gravity field direction
        SP%uniform_B0_dir             = 3 ! Uniform applied field direction
-       SP%mpg_dir                    = 0 ! Uniform applied field direction
+       SP%mpg_dir                    = 1 ! Uniform applied field direction
        SP%couple_time_steps          = T ! Ensures all dt are equal to coupled%dt
        SP%finite_Rem                 = F ! Ensures all dt are equal to coupled%dt
        SP%include_vacuum             = F ! Ensures all dt are equal to coupled%dt
@@ -133,11 +133,11 @@
        call init(SP%TSP,F,100.0_cp,500.0_cp)
 
        time                          = 1000.0_cp
-       dtime                         = 5.0_cp*pow(-3)
+       dtime                         = 5.0_cp*pow(-4)
 
        SP%GP%tw                      = 0.05_cp
-       SP%GP%geometry                = 2
-       SP%GP%periodic_dir            = (/0,0,1/)
+       SP%GP%geometry                = 24
+       SP%GP%periodic_dir            = (/1,0,0/)
        ! SP%GP%apply_BC_order          = (/3,4,5,6,1,2/) ! good for LDC
        ! SP%GP%apply_BC_order       = (/3,4,5,6,1,2/) ! good for periodic in y?
        SP%GP%apply_BC_order       = (/5,6,1,2,3,4/) ! good for periodic in y?
@@ -205,28 +205,20 @@
 
        ! call init_IC_BC(var      ,IC   ,BC)
        call init_IC_BC(SP%VS%T    ,0    ,0 )
-       call init_IC_BC(SP%VS%U    ,0    ,4 )
-       call init_IC_BC(SP%VS%P    ,0    ,1 )
+       call init_IC_BC(SP%VS%U    ,0    ,6 )
+       call init_IC_BC(SP%VS%P    ,0    ,2 )
        call init_IC_BC(SP%VS%B    ,0    ,1 ) ! 5 for thin wall
        call init_IC_BC(SP%VS%B0   ,1    ,0 )
        call init_IC_BC(SP%VS%phi  ,0    ,0 )
        call init_IC_BC(SP%VS%rho  ,0    ,0 )
 
        ! call init(SS        ,initialize,solve,restart,solve_method)
-       !              solve_method = 1 = Euler_time_no_diff_Euler_sources_no_correction
-       !              solve_method = 2 = Euler_time_no_diff_AB2_sources_no_correction
-       !              solve_method = 3 = Euler_time_no_diff_Euler_sources
-       !              solve_method = 4 = Euler_time_no_diff_AB2_sources
-       !              solve_method = 5 = Euler_time_Euler_sources
-       !              solve_method = 6 = Euler_time_AB2_sources
-       !              solve_method = 7 = O2_BDF_time_AB2_sources
-       !              solve_method = 8 = Euler_time_AB2_sources_new
        call init(SP%VS%T%SS  ,F         ,F    ,F      ,0)
-       call init(SP%VS%U%SS  ,T         ,T    ,F      ,5)
+       call init(SP%VS%U%SS  ,T         ,T    ,F      ,3)
        call init(SP%VS%P%SS  ,T         ,T    ,F      ,0)
-       call init(SP%VS%B%SS  ,F         ,F    ,F      ,7)
-       call init(SP%VS%B0%SS ,F         ,F    ,F      ,0)
-       call init(SP%VS%phi%SS,F         ,F    ,F      ,0)
+       call init(SP%VS%B%SS  ,T         ,T    ,F      ,7)
+       call init(SP%VS%B0%SS ,T         ,T    ,F      ,0)
+       call init(SP%VS%phi%SS,T         ,T    ,F      ,0)
        call init(SP%VS%rho%SS,F         ,F    ,F      ,0)
 
        ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,export_convergence,dir,name)
@@ -258,7 +250,7 @@
        ! coeff_implicit_time_split = dt*coeff_implicit/coeff_unsteady (computed in time_marching_methods.f90)
 
        SP%VS%B%MFP%alpha = 1.0_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
-       SP%VS%U%MFP%alpha = 0.0_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
+       SP%VS%U%MFP%alpha = 0.5_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
        SP%VS%T%MFP%alpha = 0.5_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
 
        SP%VS%B%MFP%beta =  1.0_cp - SP%VS%B%MFP%alpha ! weight of explicit treatment
@@ -289,8 +281,8 @@
        SP%MT%diffusion%add              = T ! add diffusion              to momentum equation
        SP%MT%advection_convection%add   = F ! add advection (conv form)  to momentum equation
        SP%MT%advection_divergence%add   = T ! add advection (div  form)  to momentum equation
-       SP%MT%mean_pressure_grad%add     = F ! add mean pressure gradient to momentum equation
-       SP%MT%JCrossB%add                = F ! add JCrossB                to momentum equation
+       SP%MT%mean_pressure_grad%add     = T ! add mean pressure gradient to momentum equation
+       SP%MT%JCrossB%add                = T ! add JCrossB                to momentum equation
        SP%MT%Q2D_JCrossB%add            = F ! add Q2D JCrossB            to momentum equation
        SP%MT%Buoyancy%add               = F ! add Buoyancy               to momentum equation
        SP%MT%Gravity%add                = F ! add Gravity                to momentum equation
@@ -352,17 +344,7 @@
        if (SP%VS%B0%SS%solve .and.(.not.SP%VS%B0%SS%initialize))  stop 'Error: solve but not init? B0'
        if (SP%VS%phi%SS%solve.and.(.not.SP%VS%phi%SS%initialize)) stop 'Error: solve but not init? phi'
        if (SP%VS%rho%SS%solve.and.(.not.SP%VS%rho%SS%initialize)) stop 'Error: solve but not init? rho'
-       if (window(SP%VS%T%MFP%alpha,0.0_cp,1.0_cp)) stop 'Error: 0<alpha(T)<1 not true in sim_params'
-       if (window(SP%VS%U%MFP%alpha,0.0_cp,1.0_cp)) stop 'Error: 0<alpha(U)<1 not true in sim_params'
-       if (window(SP%VS%B%MFP%alpha,0.0_cp,1.0_cp)) stop 'Error: 0<alpha(B)<1 not true in sim_params'
      end subroutine
-
-     function window(alpha,min_val,max_val) result(L)
-       implicit none
-       real(cp),intent(in) :: alpha,min_val,max_val
-       logical :: L
-       L = (alpha.lt.min_val).or.(alpha.gt.max_val)
-     end function
 
      subroutine init_SP_copy(SP,SP_in)
        implicit none
