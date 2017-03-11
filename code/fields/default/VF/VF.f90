@@ -90,7 +90,7 @@
         public :: square,square_root,invert,abs,insist_amax_lt_tol
         public :: mean,max,amin,amax
         public :: boundary_flux
-        ! public :: sum
+        public :: sum
         public :: assignX,assignY,assignZ
 
         public :: laplacian_matrix_based
@@ -161,6 +161,7 @@
         interface assign_Periodic_BCs;      module procedure assign_Periodic_BCs_VF;        end interface
         interface assign_Neumann_BCs;       module procedure assign_Neumann_BCs_faces_VF;   end interface
         interface assign_Neumann_BCs_wall_normal;  module procedure assign_Neumann_BCs_wall_normal_VF;   end interface
+        interface assign_Robin_BCs;         module procedure assign_Robin_BCs_dir_VF;       end interface
         interface assign_Robin_BCs;         module procedure assign_Robin_BCs_faces_VF;     end interface
         interface multiply_Robin_coeff;     module procedure multiply_Robin_coeff_VF;       end interface
         interface multiply_nhat;            module procedure multiply_nhat_VF;              end interface
@@ -258,6 +259,7 @@
         interface max;                      module procedure max_VF;                        end interface
         interface amax;                     module procedure amax_VF;                       end interface
         interface amin;                     module procedure amin_VF;                       end interface
+        interface sum;                      module procedure sum_pad_VF;                        end interface
         interface boundary_flux;            module procedure boundary_flux_VF;              end interface
 
         interface square;                   module procedure square_VF;                     end interface
@@ -380,13 +382,13 @@
           call init_BC_Dirichlet(f%z)
         end subroutine
 
-        subroutine init_BC_props_VF(f,Robin_coeff)
+        subroutine init_BC_props_VF(f,c_w,Robin_coeff)
           implicit none
           type(VF),intent(inout) :: f
-          real(cp),dimension(6),intent(in) :: Robin_coeff
-          call init_BC_props(f%x,Robin_coeff)
-          call init_BC_props(f%y,Robin_coeff)
-          call init_BC_props(f%z,Robin_coeff)
+          real(cp),dimension(6),intent(in) :: c_w,Robin_coeff
+          call init_BC_props(f%x,c_w,Robin_coeff)
+          call init_BC_props(f%y,c_w,Robin_coeff)
+          call init_BC_props(f%z,c_w,Robin_coeff)
         end subroutine
 
         function get_any_Dirichlet_VF(f) result(L)
@@ -963,6 +965,14 @@
           m = minval((/abs(amin(f%x)),abs(amin(f%y)),abs(amin(f%z))/))
         end function
 
+        function sum_pad_VF(f,pad) result (m)
+          implicit none
+          type(VF),intent(in) :: f
+          integer,intent(in) :: pad
+          real(cp) :: m
+          m = sum(f%x,pad)+sum(f%y,pad)+sum(f%z,pad)
+        end function
+
         function boundary_flux_VF(f,m) result (BF)
           implicit none
           type(VF),intent(in) :: f
@@ -1188,7 +1198,7 @@
           call assign_Neumann_BCs_wall_normal(A,B%y,2)
           call assign_Neumann_BCs_wall_normal(A,B%z,3)
         end subroutine
-        subroutine assign_Robin_BCs_faces_VF(A,B)
+        subroutine assign_Robin_BCs_dir_VF(A,B)
           implicit none
           type(SF),intent(inout) :: A
           type(VF),intent(in) :: B
@@ -1196,13 +1206,20 @@
           call assign_Robin_BCs(A,B%y,2)
           call assign_Robin_BCs(A,B%z,3)
         end subroutine
-        subroutine multiply_Robin_coeff_VF(u,u_with_BCs)
+        subroutine assign_Robin_BCs_faces_VF(A,B)
+          implicit none
+          type(VF),intent(inout) :: A
+          type(VF),intent(in) :: B
+          call assign_Robin_BCs(A%x,B%x)
+          call assign_Robin_BCs(A%y,B%y)
+          call assign_Robin_BCs(A%z,B%z)
+        end subroutine
+        subroutine multiply_Robin_coeff_VF(u)
           implicit none
           type(VF),intent(inout) :: u
-          type(VF),intent(in) :: u_with_BCs
-          call multiply_Robin_coeff(u%x,u_with_BCs%x)
-          call multiply_Robin_coeff(u%y,u_with_BCs%y)
-          call multiply_Robin_coeff(u%z,u_with_BCs%z)
+          call multiply_Robin_coeff(u%x)
+          call multiply_Robin_coeff(u%y)
+          call multiply_Robin_coeff(u%z)
         end subroutine
         subroutine multiply_nhat_VF(u,u_with_BCs)
           implicit none

@@ -102,7 +102,7 @@
        SP%restart_all                = F ! restart sim (requires no code changes)
        SP%uniform_gravity_dir        = 1 ! Uniform gravity field direction
        SP%uniform_B0_dir             = 3 ! Uniform applied field direction
-       SP%mpg_dir                    = 0 ! Uniform applied field direction
+       SP%mpg_dir                    = 1 ! Uniform applied field direction
        SP%couple_time_steps          = T ! Ensures all dt are equal to coupled%dt
        SP%finite_Rem                 = F ! Ensures all dt are equal to coupled%dt
        SP%include_vacuum             = F ! Ensures all dt are equal to coupled%dt
@@ -116,10 +116,10 @@
        call init(SP%MP,F,6) ! Must be defined before KE_scale,ME_scale,JE_scale
 
        ! call init(EFP,export_ever,export_first_step,frequency_base,frequency_exp)
-       call init(SP%EF%info          ,T,T,1,10,2)
-       call init(SP%EF%unsteady_0D   ,T,T,1,10,2)
-       call init(SP%EF%unsteady_1D   ,F,F,1,10,2)
-       call init(SP%EF%unsteady_2D   ,F,F,1,10,2)
+       call init(SP%EF%info          ,T,T,5,10,2)
+       call init(SP%EF%unsteady_0D   ,T,T,5,10,2)
+       call init(SP%EF%unsteady_1D   ,F,F,5,10,2)
+       call init(SP%EF%unsteady_2D   ,F,F,5,10,2)
        call init(SP%EF%unsteady_3D   ,F,F,1,10,4)
        call init(SP%EF%restart_files ,F,F,1,10,2)
        call init(SP%EF%final_solution,F,F,1,10,6)
@@ -133,11 +133,11 @@
        call init(SP%TSP,F,100.0_cp,500.0_cp)
 
        time                          = 1000.0_cp
-       dtime                         = 5.0_cp*pow(-3)
+       dtime                         = 5.0_cp*pow(-4)
 
        SP%GP%tw                      = 0.05_cp
-       SP%GP%geometry                = 2
-       SP%GP%periodic_dir            = (/0,0,1/)
+       SP%GP%geometry                = 24
+       SP%GP%periodic_dir            = (/1,0,0/)
        ! SP%GP%apply_BC_order          = (/3,4,5,6,1,2/) ! good for LDC
        ! SP%GP%apply_BC_order       = (/3,4,5,6,1,2/) ! good for periodic in y?
        SP%GP%apply_BC_order       = (/5,6,1,2,3,4/) ! good for periodic in y?
@@ -151,8 +151,11 @@
        SP%DP%Ha                      = 5.0_cp*pow(1)
        ! SP%DP%N                       = 1.0_cp/SP%DP%Q
        ! SP%DP%N                       = 4.0_cp*pow(-1)
-       SP%DP%c_w(1:6)                = 0.1_cp
-       SP%DP%Robin_coeff             = -1.0_cp/SP%DP%c_w
+       SP%DP%c_w(1:6)                = 0.0_cp
+       SP%DP%c_w( 5 )                = 1.0_cp
+       SP%DP%c_w( 6 )                = 1.0_cp
+       SP%DP%Robin_coeff             = 0.0_cp
+       SP%DP%Robin_coeff(5:6)        = -1.0_cp/SP%DP%c_w(5:6)
        ! SP%DP%c_w_coeff                = (2.0_cp*SP%DP%c_w/dh_nhat-1.0_cp)/(2.0_cp*SP%DP%c_w/dh_nhat+1.0_cp)
        SP%DP%sig_local_over_sig_f    = 1.0_cp*pow(0)
        SP%DP%Gr                      = 0.0_cp
@@ -205,9 +208,9 @@
 
        ! call init_IC_BC(var      ,IC   ,BC)
        call init_IC_BC(SP%VS%T    ,0    ,0 )
-       call init_IC_BC(SP%VS%U    ,0    ,4 )
-       call init_IC_BC(SP%VS%P    ,0    ,1 )
-       call init_IC_BC(SP%VS%B    ,0    ,1 ) ! 5 for thin wall
+       call init_IC_BC(SP%VS%U    ,0    ,6 )
+       call init_IC_BC(SP%VS%P    ,0    ,2 )
+       call init_IC_BC(SP%VS%B    ,0    ,5 ) ! 5 for thin wall
        call init_IC_BC(SP%VS%B0   ,1    ,0 )
        call init_IC_BC(SP%VS%phi  ,0    ,0 )
        call init_IC_BC(SP%VS%rho  ,0    ,0 )
@@ -222,11 +225,11 @@
        !              solve_method = 7 = O2_BDF_time_AB2_sources
        !              solve_method = 8 = Euler_time_AB2_sources_new
        call init(SP%VS%T%SS  ,F         ,F    ,F      ,0)
-       call init(SP%VS%U%SS  ,T         ,T    ,F      ,5)
-       call init(SP%VS%P%SS  ,T         ,T    ,F      ,0)
-       call init(SP%VS%B%SS  ,F         ,F    ,F      ,7)
-       call init(SP%VS%B0%SS ,F         ,F    ,F      ,0)
-       call init(SP%VS%phi%SS,F         ,F    ,F      ,0)
+       call init(SP%VS%U%SS  ,T         ,F    ,T      ,8)
+       call init(SP%VS%P%SS  ,T         ,F    ,T      ,0)
+       call init(SP%VS%B%SS  ,T         ,T    ,F      ,8)
+       call init(SP%VS%B0%SS ,T         ,T    ,F      ,0)
+       call init(SP%VS%phi%SS,T         ,T    ,F      ,0)
        call init(SP%VS%rho%SS,F         ,F    ,F      ,0)
 
        ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,export_convergence,dir,name)
@@ -235,7 +238,7 @@
        call init(SP%VS%P%ISP,  5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_P')
        ! if (     RV_BCs) call init(SP%VS%B%ISP,  20 ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_B')
        ! if (.not.RV_BCs) call init(SP%VS%B%ISP,  5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_B')
-       call init(SP%VS%B%ISP,  5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_B')
+       call init(SP%VS%B%ISP,  50 ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_B')
        call init(SP%VS%B0%ISP, 5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_B0')
        call init(SP%VS%phi%ISP,5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_phi')
        call init(SP%VS%rho%ISP,5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_rho')
@@ -258,7 +261,7 @@
        ! coeff_implicit_time_split = dt*coeff_implicit/coeff_unsteady (computed in time_marching_methods.f90)
 
        SP%VS%B%MFP%alpha = 1.0_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
-       SP%VS%U%MFP%alpha = 0.0_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
+       SP%VS%U%MFP%alpha = 1.0_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
        SP%VS%T%MFP%alpha = 0.5_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
 
        SP%VS%B%MFP%beta =  1.0_cp - SP%VS%B%MFP%alpha ! weight of explicit treatment
@@ -289,7 +292,7 @@
        SP%MT%diffusion%add              = T ! add diffusion              to momentum equation
        SP%MT%advection_convection%add   = F ! add advection (conv form)  to momentum equation
        SP%MT%advection_divergence%add   = T ! add advection (div  form)  to momentum equation
-       SP%MT%mean_pressure_grad%add     = F ! add mean pressure gradient to momentum equation
+       SP%MT%mean_pressure_grad%add     = T ! add mean pressure gradient to momentum equation
        SP%MT%JCrossB%add                = F ! add JCrossB                to momentum equation
        SP%MT%Q2D_JCrossB%add            = F ! add Q2D JCrossB            to momentum equation
        SP%MT%Buoyancy%add               = F ! add Buoyancy               to momentum equation
@@ -299,7 +302,7 @@
        SP%MT%advection_convection%scale = -1.0_cp
        SP%MT%advection_divergence%scale = -1.0_cp
        ! SP%MT%advection_divergence%scale = -1.0_cp/SP%DP%Rem ! For Rem ne 1 in Bandaru
-       SP%MT%mean_pressure_grad%scale   = 1.0_cp
+       SP%MT%mean_pressure_grad%scale   = 0.1_cp
        SP%MT%JCrossB%scale              = SP%DP%N
        SP%MT%Q2D_JCrossB%scale          = -1.0_cp/SP%DP%tau
        SP%MT%Buoyancy%scale             = SP%DP%Gr/SP%DP%Re**2.0_cp

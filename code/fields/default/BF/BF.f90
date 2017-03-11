@@ -147,6 +147,7 @@
        interface assign_Neumann_BCs;          module procedure assign_Neumann_BCs_faces_BF;     end interface
        interface assign_Neumann_BCs_wall_normal; module procedure assign_Neumann_BCs_wall_normal_BF;     end interface
        interface assign_Robin_BCs;            module procedure assign_Robin_BCs_faces_BF;       end interface
+       interface assign_Robin_BCs;            module procedure assign_Robin_BCs_dir_BF;         end interface
        interface multiply_Robin_coeff;        module procedure multiply_Robin_coeff_BF;         end interface
        interface multiply_nhat;               module procedure multiply_nhat_BF;                end interface
        interface assign_ghost_XPeriodic;      module procedure assign_ghost_XPeriodic_BF;       end interface
@@ -475,11 +476,11 @@
          call init(BF%BCs,B,DL)
        end subroutine
 
-       subroutine init_BC_props_BF(BF,Robin_coeff)
+       subroutine init_BC_props_BF(BF,c_w,Robin_coeff)
          implicit none
          type(block_field),intent(inout) :: BF
-         real(cp),dimension(6),intent(in) :: Robin_coeff
-         call init_props(BF%BCs,Robin_coeff)
+         real(cp),dimension(6),intent(in) :: c_w,Robin_coeff
+         call init_props(BF%BCs,c_w,Robin_coeff)
          call set_assign_ghost_all_faces(BF)
          call set_assign_wall_Dirichlet(BF)
          call set_multiply_wall_Neumann(BF)
@@ -641,15 +642,13 @@
          implicit none
          type(block_field),intent(inout) :: A
          type(block_field),intent(in) :: B
+         integer :: i
 #ifdef _DEBUG_BF_
          if (.not.(defined(A%BCs).and.defined(B%BCs))) stop 'Error: BCs not defined in BF.f90'
 #endif
-         call assign(A%BCs%face%SB(1)%b,B%BCs%face%SB(1)%b)
-         call assign(A%BCs%face%SB(2)%b,B%BCs%face%SB(2)%b)
-         call assign(A%BCs%face%SB(3)%b,B%BCs%face%SB(3)%b)
-         call assign(A%BCs%face%SB(4)%b,B%BCs%face%SB(4)%b)
-         call assign(A%BCs%face%SB(5)%b,B%BCs%face%SB(5)%b)
-         call assign(A%BCs%face%SB(6)%b,B%BCs%face%SB(6)%b)
+         do i=1,6; call assign(A%BCs%face%SB(i)%b         ,B%BCs%face%SB(i)%b         ); enddo
+         do i=1,6; call assign(A%BCs%face%SB(i)%b_total   ,B%BCs%face%SB(i)%b_total   ); enddo
+         do i=1,6; call assign(A%BCs%face%SB(i)%b_modified,B%BCs%face%SB(i)%b_modified); enddo
        end subroutine
 
        subroutine update_BC_vals_BF(A)
@@ -755,7 +754,7 @@
          endif
        end subroutine
 
-       subroutine assign_Robin_BCs_faces_BF(A,B,dir)
+       subroutine assign_Robin_BCs_dir_BF(A,B,dir)
          implicit none
          type(block_field),intent(inout) :: A
          type(block_field),intent(in) :: B
@@ -779,16 +778,36 @@
          endif
        end subroutine
 
-       subroutine multiply_Robin_coeff_BF(A,A_with_BCs)
+       subroutine assign_Robin_BCs_faces_BF(A,B)
          implicit none
          type(block_field),intent(inout) :: A
-         type(block_field),intent(in) :: A_with_BCs
+         type(block_field),intent(in) :: B
          integer :: i,dir
-         if (defined(A_with_BCs%BCs)) then
+         if (defined(A%BCs)) then
            do i=1,6
              dir = dir_given_face(i)
-             if (is_Robin(A_with_BCs%BCs%face%SB(i)%bct)) then
-               call multiply(A%BCs%face%SB(i)%b_total,A_with_BCs%BCs%f_BCs%Robin_coeff(i))
+             if (is_Robin(A%BCs%face%SB(i)%bct)) then
+             if (N_along(B%DL,dir)) then
+               if (min_face(i)) call assign_plane(A%BCs%face%SB(i)%b_modified,B%GF,1,       2     ,dir)
+               if (max_face(i)) call assign_plane(A%BCs%face%SB(i)%b_modified,B%GF,1,B%GF%s(dir)-1,dir)
+             else
+               if (min_face(i)) call assign_plane_ave(A%BCs%face%SB(i)%b_modified,B%GF,1,     1     ,      2      ,dir)
+               if (max_face(i)) call assign_plane_ave(A%BCs%face%SB(i)%b_modified,B%GF,1,B%GF%s(dir),B%GF%s(dir)-1,dir)
+             endif
+             endif
+           enddo
+         endif
+       end subroutine
+
+       subroutine multiply_Robin_coeff_BF(A)
+         implicit none
+         type(block_field),intent(inout) :: A
+         integer :: i,dir
+         if (defined(A%BCs)) then
+           do i=1,6
+             dir = dir_given_face(i)
+             if (is_Robin(A%BCs%face%SB(i)%bct)) then
+               call multiply(A%BCs%face%SB(i)%b_modified,A%BCs%f_BCs%Robin_coeff(i))
              endif
            enddo
          endif
@@ -1212,7 +1231,7 @@
          integer,intent(in) :: dir
          integer,dimension(3) :: eye
          integer :: i,x,y,z
-         real(cp),dimension(6) :: Robin_coeff
+         real(cp),dimension(6) :: c_w,Robin_coeff
          eye = eye_given_dir(dir)
          x = eye(1); y = eye(2); z = eye(3)
          if (CC_along(u%DL,dir))    then; call restrict_C(u%GF,B%g,dir,x,y,z)
@@ -1230,8 +1249,9 @@
          endif
          enddo
          Robin_coeff = u%BCs%f_BCs%Robin_coeff
+         c_w = u%BCs%f_BCs%c_w
          call restrict(u%BCs,B,dir)
-         call init_BC_props(u,Robin_coeff)
+         call init_BC_props(u,c_w,Robin_coeff)
          endif
        end subroutine
 
@@ -1258,7 +1278,7 @@
          integer,intent(in) :: dir
          integer,dimension(3) :: eye
          integer :: x,y,z
-         real(cp),dimension(6) :: Robin_coeff
+         real(cp),dimension(6) :: c_w,Robin_coeff
          eye = eye_given_dir(dir)
          x = eye(1); y = eye(2); z = eye(3)
              if (CC_along(u%DL,dir)) then; call prolongate_C(u%GF,B%g,dir,x,y,z)
@@ -1267,8 +1287,9 @@
          endif
          if (defined(u%BCs)) then
            Robin_coeff = u%BCs%f_BCs%Robin_coeff
+           c_w = u%BCs%f_BCs%c_w
            call prolongate(u%BCs,B,dir)
-           call init_BC_props(u,Robin_coeff)
+           call init_BC_props(u,c_w,Robin_coeff)
          endif
        end subroutine
 

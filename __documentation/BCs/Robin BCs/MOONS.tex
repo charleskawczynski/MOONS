@@ -1,0 +1,109 @@
+\documentclass[11pt]{article}
+% \documentclass[3p,twocolumn,10pt]{elsarticle}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+%\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+\usepackage{xcolor}
+\usepackage{xspace}
+\usepackage{longtable}
+\usepackage{mathtools}
+\usepackage{natbib}
+\usepackage{setspace}
+\usepackage{ragged2e}
+\usepackage{etoolbox}
+\usepackage{geometry}
+
+\input{./../path_to_useful_commands.tex}
+\input{\PATHTOUSEFULCOMMANDS}
+
+% \setlength{\textfloatsep}{0.1cm}
+\newcommand{\volume}{\mathop{\ooalign{\hfil$V$\hfil\cr\kern0.08em--\hfil\cr}}\nolimits}
+\newcommand{\figWidth}{0.45\textwidth}
+\newcommand{\figSuffix}{_png.png}
+\newcommand{\pushright}[1]{\ifmeasuring@#1\else\omit\hfill$\displaystyle#1$\fi\ignorespaces}
+\newcommand{\hfillMath}{\hskip \textwidth minus \textwidth}
+% \renewcommand{\arraystretch}{0.0} % Removes vertical spaces before/after tabularx
+
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+% Useful commands:
+
+% \hfill    aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Magnetohydrodynamic Object-Oriented Numerical Solver (MOONS)}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Robin BCs}
+The Robin BCs are
+\begin{equation}\begin{aligned}
+  c \PD_n u + u = \theta \\
+\end{aligned}\end{equation}
+\subsection{CC data O2 accurate}
+The using FDM, for CC data, we have
+\begin{equation}\begin{aligned}
+  c \PD_n u + u = \theta \\
+  c \hat{n} \frac{u_g - u_i}{\Delta h} + .5 (u_g+u_i) = \theta \\
+  2 c \hat{n} (u_g - u_i) + \Delta h (u_g+u_i) = 2 \theta \Delta h \\
+  u_g (2 c \hat{n} + \Delta h) + u_i (\Delta h - 2c \hat{n}) = 2 \theta \Delta h \\
+  u_g (2 c \hat{n} + \Delta h) = 2 \theta \Delta h - u_i (\Delta h - 2c \hat{n}) \\
+  u_g = \frac{2 \theta \Delta h - u_i (\Delta h - 2c \hat{n})}{2 c \hat{n} + \Delta h} \\
+  u_g = \frac{2 \theta \Delta h}{2 c \hat{n} + \Delta h} + u_i \frac{2c \hat{n} - \Delta h}{2 c \hat{n} + \Delta h} \\
+  u_g = \theta \frac{2 \Delta h}{2 c \hat{n} + \Delta h} + u_i \frac{2c \hat{n} - \Delta h}{2 c \hat{n} + \Delta h} \\
+  u_g = \Theta + u_i K, \qquad K = \frac{2c \hat{n} - \Delta h}{2 c \hat{n} + \Delta h} \\
+\end{aligned}\end{equation}
+
+
+\subsection{Matlab Code demonstration}
+Here is a matlab code that plots $K$ for an arbitrary $\Delta h$ and a range of $c$:
+
+clear all; clc; close all; \\
+dh = 3e-3; \\
+n = [-1 1]; \\
+a = 0; \\
+b = 1; \\
+L = b-a; \\
+c = linspace(a,b,1000); \\
+K1=(2*c*n(1)-dh)./(2*c*n(1)+dh); \\
+K2=(2*c*n(2)-dh)./(2*c*n(2)+dh); \\
+for j=1:10/L \\
+  i=find(K1==max(abs(K1))); c(i) = []; \\
+  K1=(2*c*n(1)-dh)./(2*c*n(1)+dh); \\
+  K2=(2*c*n(2)-dh)./(2*c*n(2)+dh); \\
+end \\
+plot(c,K1,'-r',c,K2,'-b') \\
+legend('nhat=-1','nhat=1') \\
+
+
+\end{document}

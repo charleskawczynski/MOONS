@@ -40,7 +40,7 @@
          type(sub_domain),dimension(6) :: I_OPP
          type(sub_domain),dimension(6) :: I_OPP_periodic_N
          type(index_2D),dimension(6) :: i_2D
-         real(cp),dimension(6) :: dh,nhat,Robin_coeff = 0.0_cp
+         real(cp),dimension(6) :: dh,nhat,c_w,Robin_coeff = 0.0_cp
        end type
 
        contains
@@ -119,6 +119,7 @@
          FSD%dh = FSD_in%dh
          FSD%nhat = FSD_in%nhat
          FSD%Robin_coeff = FSD_in%Robin_coeff
+         FSD%c_w = FSD_in%c_w
        end subroutine
 
        subroutine delete_face_SD(FSD)
@@ -135,6 +136,7 @@
          FSD%dh = 0.0_cp
          FSD%nhat = 0.0_cp
          FSD%Robin_coeff = 0.0_cp
+         FSD%c_w = 0.0_cp
        end subroutine
 
        subroutine display_face_SD(FSD,name,u)
@@ -153,6 +155,7 @@
          write(u,*) 'dh = ',FSD%dh
          write(u,*) 'nhat = ',FSD%nhat
          write(u,*) 'Robin_coeff = ',FSD%Robin_coeff
+         write(u,*) 'c_w = ',FSD%c_w
          do i=1,6; write(u,*) 'i_2D = '; write(u,*) FSD%i_2D(i)%i; enddo
          write(u,*) ' *********************************************************** '
        end subroutine
@@ -179,6 +182,7 @@
          write(u,*) 'dh = ';      write(u,*) FSD%dh
          write(u,*) 'nhat = ';    write(u,*) FSD%nhat
          write(u,*) 'Robin_coeff = ';    write(u,*) FSD%Robin_coeff
+         write(u,*) 'c_w = ';    write(u,*) FSD%c_w
          do i=1,6; write(u,*) 'i_2D = '; write(u,*) FSD%i_2D(i)%i; enddo
          write(u,*) ' ********************************* '
        end subroutine
@@ -198,6 +202,7 @@
          read(u,*); write(u,*) FSD%dh
          read(u,*); write(u,*) FSD%nhat
          read(u,*); write(u,*) FSD%Robin_coeff
+         read(u,*); write(u,*) FSD%c_w
          do i=1,6; read(u,*); read(u,*) FSD%i_2D(i)%i; enddo
          read(u,*);
        end subroutine
@@ -218,10 +223,11 @@
           FSD%I_OPP_periodic_N(i)%C,FSD%I_OPP_periodic_N(i)%N,DL); enddo
        end subroutine
 
-       subroutine init_Robin_coeff_SD(FSD,Robin_coeff)
+       subroutine init_Robin_coeff_SD(FSD,c_w,Robin_coeff)
          implicit none
          type(face_SD),intent(inout) :: FSD
-         real(cp),dimension(6),intent(in) :: Robin_coeff
+         real(cp),dimension(6),intent(in) :: c_w,Robin_coeff
+         FSD%c_w = c_w
          FSD%Robin_coeff = Robin_coeff
        end subroutine
 

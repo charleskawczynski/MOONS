@@ -196,18 +196,24 @@ A = \frac{1}{\Delta x^2} \left[\begin{array}{ccccccccc}
 Although the matrix does not appear circulant, the periodic part is moved to the RHS.
 
 \subsection{Robin}
-Consider Robin BCs, $u_g$ may be computed by writing the equation for the first derivative plus $u$ on the boundary:
+The using FDM, for CC data, we have
 \begin{equation}\begin{aligned}
-  u_{boundary} + c \left(\frac{\partial u}{\partial x}\right)_{boundary} = 0 \\
-  u_{boundary} + c \frac{u_g - u_1}{\Delta x} \hat{n} = 0 \\
-  u_{boundary} \Delta x + c (u_g - u_1) \hat{n} =  0 \\
-  .5 (u_g + u_1) \Delta x + c (u_g - u_1) \hat{n} =  0 \\
-  u_g (.5 \Delta x + c \hat{n}) = u_1 (c \hat{n} - .5 \Delta x) \\
-  u_g = \frac{u_1 (c \hat{n} - .5 \Delta x)}{.5 \Delta x + c \hat{n}} \\
-  u_g = \frac{u_1 (2 c \hat{n} - \Delta x)}{\Delta x + 2 c \hat{n}} \\
-  u_g = u_1 \frac{2 c \hat{n}/\Delta x - 1}{1 + 2 c \hat{n}/\Delta x} \\
-  u_g = u_1 K, \qquad K = \frac{2 c \hat{n}/\Delta x - 1}{1 + 2 c \hat{n}/\Delta x}  \\
+  c \PD_n u + u = \theta \\
+  c \hat{n} \frac{u_g - u_i}{\Delta h} + .5 (u_g+u_i) = \theta \\
+  2 c \hat{n} (u_g - u_i) + \Delta h (u_g+u_i) = 2 \theta \Delta h \\
+  u_g (2 c \hat{n} + \Delta h) + u_i (\Delta h - 2c \hat{n}) = 2 \theta \Delta h \\
+  u_g (2 c \hat{n} + \Delta h) = 2 \theta \Delta h - u_i (\Delta h - 2c \hat{n}) \\
+  u_g = \frac{2 \theta \Delta h - u_i (\Delta h - 2c \hat{n})}{2 c \hat{n} + \Delta h} \\
+  u_g = \frac{2 \theta \Delta h}{2 c \hat{n} + \Delta h} + u_i \frac{2c \hat{n} - \Delta h}{2 c \hat{n} + \Delta h} \\
+  u_g = \theta \frac{2 \Delta h}{2 c \hat{n} + \Delta h} + u_i \frac{2c \hat{n} - \Delta h}{2 c \hat{n} + \Delta h} \\
+  u_g = \Theta + u_i K, \qquad K = \frac{2c \hat{n} - \Delta h}{2 c \hat{n} + \Delta h} \\
 \end{aligned}\end{equation}
+Note that
+\begin{equation}\begin{aligned}
+  K = -1 , \qquad c<<1 \\
+  K = 1  , \qquad c>>1 \\
+\end{aligned}\end{equation}
+
 So our Laplacian stencil becomes:
 \begin{equation}
    \left(\frac{\partial^2 u}{\partial x^2}\right)_{1} =
@@ -247,28 +253,25 @@ ALSO: In this case, $A$ may be near singular, but the nullspace cannot be remove
 \subsection{Robin (Neumann type)}
 Consider Robin BCs, $u_g$ may be computed by writing the equation for the first derivative plus $u$ on the boundary:
 \begin{equation}\begin{aligned}
-  \left(\frac{\partial u}{\partial x}\right)_{boundary} = -\frac{u_{boundary}}{c} \\
-  \frac{u_g - u_i}{\Delta x} = -\frac{u_{boundary}}{c} \\
-  \frac{u_g - u_i}{\Delta x} = -\frac{u_{boundary}}{c} \\
-  u_{boundary} + c \frac{u_g - u_1}{\Delta x} \hat{n} = 0 \\
-  u_{boundary} \Delta x + c (u_g - u_1) \hat{n} =  0 \\
-  .5 (u_g + u_1) \Delta x + c (u_g - u_1) \hat{n} =  0 \\
-  u_g (.5 \Delta x + c \hat{n}) = u_1 (c \hat{n} - .5 \Delta x) \\
-  u_g = \frac{u_1 (c \hat{n} - .5 \Delta x)}{.5 \Delta x + c \hat{n}} \\
-  u_g = \frac{u_1 (2 c \hat{n} - \Delta x)}{\Delta x + 2 c \hat{n}} \\
-  u_g = u_1 \frac{2 c \hat{n}/\Delta x - 1}{1 + 2 c \hat{n}/\Delta x} \\
-  u_g = u_1 K, \qquad K = \frac{2 c \hat{n}/\Delta x - 1}{1 + 2 c \hat{n}/\Delta x}  \\
+  c \PD_n u + u = \theta \\
+  c \hat{n} \frac{u_g - u_i}{\Delta h} + .5 (u_g+u_i) = \theta \\
+  2 c \hat{n} (u_g - u_i) + \Delta h (u_g+u_i) = 2 \theta \Delta h \\
+  u_g (2 c \hat{n} + \Delta h) + u_i (\Delta h - 2c \hat{n}) = 2 \theta \Delta h \\
+  u_g (2 c \hat{n} + \Delta h) = 2 \theta \Delta h - u_i (\Delta h - 2c \hat{n}) \\
+  u_g = \frac{2 \theta \Delta h - u_i (\Delta h - 2c \hat{n})}{2 c \hat{n} + \Delta h} \\
+  u_g = \frac{2 \theta \Delta h}{2 c \hat{n} + \Delta h} + u_i \frac{2c \hat{n} - \Delta h}{2 c \hat{n} + \Delta h} \\
+  u_g = \theta \frac{2 \Delta h}{2 c \hat{n} + \Delta h} + u_i \frac{2c \hat{n} - \Delta h}{2 c \hat{n} + \Delta h} = \Theta + u_i K \\
 \end{aligned}\end{equation}
 So our Laplacian stencil becomes:
 \begin{equation}
    \left(\frac{\partial^2 u}{\partial x^2}\right)_{1} =
-   \frac{(K u_1) - 2 u_1 + u_{2}}{\Delta x^2} = f_1
+   \frac{(K u_1 + \Theta) - 2 u_1 + u_{2}}{\Delta x^2} = f_1
 \end{equation}
 This boundary information must be moved to the RHS to maintain a consistent matrix-vector multiplication. Since there is nothing to move, we have:
 \begin{equation}
    \frac{u_g - 2 u_1 + u_{2}}{\Delta x^2} = f_1
    \rightarrow
-   \frac{u_1(K-2) + u_{2}}{\Delta x^2} = f_1
+   \frac{u_1(K-2) + u_{2}}{\Delta x^2} = f_1 - \frac{\Theta}{\Delta x^2}
 \end{equation}
 Correspondingly, the matrix $A$ changes:
 \[ A = \frac{1}{\Delta x^2} \left[\begin{array}{ccccccccc}
@@ -480,6 +483,18 @@ Since the ghost node is part of the unknowns on the opposite side of the domain 
 \]
 
 This matrix is symmetric and suitable for PCG so long both front and back BCs are periodic. If one is periodic and the other is, e.g. Neumann, CG cannot be used. NOTE: the first two 0's in the above equation refer to the ghost and boundary equations.
+
+\subsection{Robin}
+Consider Robin BCs, $u_g$ may be computed by writing the equation for the first derivative plus $u$ on the boundary:
+\begin{equation}\begin{aligned}
+  c \PD_n u + u = \theta \\
+  c \hat{n} \frac{u_g - u_1}{2 \Delta h} + u_b = \theta \\
+  c \hat{n} (u_g - u_i) + 2 \Delta h u_b = 2 \Delta h \theta \\
+  c \hat{n} (u_g - u_i) = 2 \Delta h \theta - 2 \Delta h u_b \\
+  u_g - u_i = \frac{2 \Delta h \theta - 2 \Delta h u_b}{c \hat{n}} \\
+  u_g = u_i + \frac{2 \Delta h \theta - 2 \Delta h u_b}{c \hat{n}} \\
+  u_g = u_i - u_b \frac{2 \Delta h}{c \hat{n}} + \theta \frac{2 \Delta h}{c \hat{n}}\\
+\end{aligned}\end{equation}
 
 \newpage
 

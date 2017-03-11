@@ -68,48 +68,20 @@
 
          ! Correction contribution (scale*partial_n partial_i phi)
          if (get_any_Robin(Xstar).or.get_any_Neumann(Xstar)) then
-           call grad(temp_F,phi,m)
+           call multiply(TF_CC_edge%x%x,phi,scale)
+           call grad(temp_F,TF_CC_edge%x%x,m)
            call compute_PD_n_grad_X(TF_Face1,temp_F,m,TF_CC_edge)
-           call multiply(TF_Face1,scale)
          endif
 
-         ! if (get_any_Robin(Xstar).or.get_any_Neumann(Xstar)) then
+         ! if (get_any_Neumann(Xstar)) then
          !   call grad(temp_CC_VF,phi,m)
          !   call multiply(temp_CC_VF,scale)
          !   call grad(TF_Face1,temp_CC_VF,m)
-         !   call assign_Neumann_BCs(Xstar,TF_Face1)
+         !   call assign_Neumann_BCs_wall_normal(Xstar,TF_Face1)
          ! endif
 
-         if (get_any_Robin(Xstar)) then ! Robin
-           call assign(temp_F,X)
-           call face2Face(TF_Face2,temp_F,m,TF_CC_edge%x%x) ! Need X on boundary
-           call assign(TF_Face2%x%x,X%x)
-           call assign(TF_Face2%y%y,X%y)
-           call assign(TF_Face2%z%z,X%z)
-           call face2Edge(TF_CC_edge%x%y,X%x,m,1,3)
-           call face2Edge(TF_CC_edge%x%z,X%x,m,1,2)
-           call face2Edge(TF_CC_edge%y%x,X%y,m,2,3)
-           call face2Edge(TF_CC_edge%y%z,X%y,m,2,1)
-           call face2Edge(TF_CC_edge%z%x,X%z,m,3,2)
-           call face2Edge(TF_CC_edge%z%y,X%z,m,3,1)
-           call multiply(TF_Face2,-1.0_cp/0.1_cp)
-           call multiply(TF_CC_edge,-1.0_cp/0.1_cp)
-           call add(TF_Face2,TF_Face1)
-           call assign_Robin_BCs(Xstar%x,TF_Face2%x%x,1) ! x-faces for x-component
-           call assign_Robin_BCs(Xstar%x,TF_CC_edge%x%z,2) ! y-faces for x-component
-           call assign_Robin_BCs(Xstar%x,TF_CC_edge%x%y,3) ! z-faces for x-component
-
-           call assign_Robin_BCs(Xstar%y,TF_CC_edge%y%z,1) ! x-faces for y-component
-           call assign_Robin_BCs(Xstar%y,TF_Face2%y%y,2) ! y-faces for y-component
-           call assign_Robin_BCs(Xstar%y,TF_CC_edge%y%x,3) ! z-faces for y-component
-
-           call assign_Robin_BCs(Xstar%z,TF_CC_edge%z%y,1) ! x-faces for y-component
-           call assign_Robin_BCs(Xstar%z,TF_CC_edge%z%x,2) ! y-faces for y-component
-           call assign_Robin_BCs(Xstar%z,TF_Face2%z%z,3) ! z-faces for y-component
-         endif
-
          if (get_any_Neumann(Xstar)) then ! Neumann
-           call assign_Neumann_BCs(Xstar,TF_Face1)
+           ! call assign_Neumann_BCs(Xstar,TF_Face1) ! broken...
          endif
          call update_BC_vals(Xstar)
        end subroutine

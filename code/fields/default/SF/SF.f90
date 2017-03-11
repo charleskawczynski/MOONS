@@ -175,6 +175,7 @@
         interface assign_Periodic_BCs;      module procedure assign_Periodic_BCs_SF;       end interface
         interface assign_Neumann_BCs;       module procedure assign_Neumann_BCs_faces_SF;  end interface
         interface assign_Neumann_BCs_wall_normal; module procedure assign_Neumann_BCs_wall_normal_SF;  end interface
+        interface assign_Robin_BCs;         module procedure assign_Robin_BCs_dir_SF;      end interface
         interface assign_Robin_BCs;         module procedure assign_Robin_BCs_faces_SF;    end interface
         interface multiply_Robin_coeff;     module procedure multiply_Robin_coeff_SF;      end interface
         interface multiply_nhat;            module procedure multiply_nhat_SF;             end interface
@@ -579,15 +580,15 @@
           do i=1,f%s; call init_Dirichlet(f%BF(i)%BCs); enddo
         end subroutine
 
-        subroutine init_BC_val_SF(f,val,Robin_coeff)
+        subroutine init_BC_val_SF(f,val,c_w,Robin_coeff)
           implicit none
           type(SF),intent(inout) :: f
           real(cp),intent(in) :: val
-          real(cp),dimension(6),intent(in) :: Robin_coeff
+          real(cp),dimension(6),intent(in) :: c_w,Robin_coeff
           integer :: i
           do i=1,f%s; call init_BCs(f%BF(i),val); enddo
           f%all_Neumann = all((/(f%BF(i)%BCs%BCL%all_Neumann,i=1,f%s)/))
-          call init_BC_props(f,Robin_coeff)
+          call init_BC_props(f,c_w,Robin_coeff)
         end subroutine
 
         subroutine init_BC_mesh_SF(f,m)
@@ -598,13 +599,13 @@
           do i=1,f%s; call init_BCs(f%BF(i),m%B(i),f%DL); enddo
         end subroutine
 
-        subroutine init_BC_props_SF(f,Robin_coeff)
+        subroutine init_BC_props_SF(f,c_w,Robin_coeff)
           implicit none
           type(SF),intent(inout) :: f
-          real(cp),dimension(6),intent(in) :: Robin_coeff
+          real(cp),dimension(6),intent(in) :: c_w,Robin_coeff
           integer :: i
           do i=1,f%s
-            call init_BC_props(f%BF(i),Robin_coeff)
+            call init_BC_props(f%BF(i),c_w,Robin_coeff)
           enddo
         end subroutine
 
@@ -775,7 +776,7 @@
           integer :: i
           do i=1,A%s; call assign_Neumann_BCs_wall_normal(A%BF(i),B%BF(i),dir); enddo
         end subroutine
-        subroutine assign_Robin_BCs_faces_SF(A,B,dir)
+        subroutine assign_Robin_BCs_dir_SF(A,B,dir)
           implicit none
           type(SF),intent(inout) :: A
           type(SF),intent(in) :: B
@@ -783,13 +784,19 @@
           integer :: i
           do i=1,A%s; call assign_Robin_BCs(A%BF(i),B%BF(i),dir); enddo
         end subroutine
+        subroutine assign_Robin_BCs_faces_SF(A,B)
+          implicit none
+          type(SF),intent(inout) :: A
+          type(SF),intent(in) :: B
+          integer :: i
+          do i=1,A%s; call assign_Robin_BCs(A%BF(i),B%BF(i)); enddo
+        end subroutine
 
-        subroutine multiply_Robin_coeff_SF(u,u_with_BCs)
+        subroutine multiply_Robin_coeff_SF(u)
           implicit none
           type(SF),intent(inout) :: u
-          type(SF),intent(in) :: u_with_BCs
           integer :: i
-          do i=1,u%s; call multiply_Robin_coeff(u%BF(i),u_with_BCs%BF(i)); enddo
+          do i=1,u%s; call multiply_Robin_coeff(u%BF(i)); enddo
         end subroutine
         subroutine multiply_nhat_SF(u,u_with_BCs)
           implicit none

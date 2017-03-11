@@ -58,7 +58,7 @@
          case default; stop 'Error: bad preset_ID in init_UBCs.f90'
          end select
          call make_periodic(U,m,periodic_dir)
-         call init_BC_props(U,SP%DP%Robin_coeff)
+         call init_BC_props(U,SP%DP%c_w,SP%DP%Robin_coeff)
        end subroutine
 
        subroutine LDC_at_ymax(U)

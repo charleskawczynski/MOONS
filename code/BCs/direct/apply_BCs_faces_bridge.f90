@@ -62,7 +62,6 @@
          integer,dimension(3),intent(in) :: G1,G2,I1,I2
          integer,dimension(2),intent(in) :: iR
          integer,intent(in) :: p
-         ! call apply_Dirichlet_C(ug,ui,bvals,x,y,p)
          call apply_Dirichlet_C(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
                                 bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
                                 surf%f,&
@@ -92,7 +91,6 @@
          integer,dimension(3),intent(in) :: G1,G2,B1,B2,I1,I2
          integer,dimension(2),intent(in) :: iR
          integer,intent(in) :: p
-         ! call apply_Dirichlet_N(ug,ub,ui,bvals,x,y,p)
          call apply_Dirichlet_N(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
                                 bulk%f(B1(1):B2(1),B1(2):B2(2),B1(3):B2(3)),&
                                 bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
@@ -128,7 +126,6 @@
          integer,dimension(2),intent(in) :: iR
          real(cp),intent(in) :: dh,nhat
          integer,intent(in) :: p
-         ! call apply_Neumann_C(ug,ui,bvals,dh,nhat,x,y,p)
          call apply_Neumann_C(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
                               bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
                               surf%f,&
@@ -159,7 +156,6 @@
          real(cp),intent(in) :: dh,nhat
          integer,dimension(2),intent(in) :: iR
          integer,intent(in) :: p
-         ! call apply_Neumann_N(ug,ui,bvals,dh,nhat,x,y,p)
          call apply_Neumann_N(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
                               bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
                               surf%f,&
@@ -243,7 +239,6 @@
          integer,dimension(3),intent(in) :: G1,G2,I1,I2
          integer,dimension(2),intent(in) :: iR
          integer,intent(in) :: p
-         ! call apply_Periodic_N(ug,ui_opp,x,y,p)
          call apply_Periodic_N(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
                                bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
                                surf%s(iR(1)),surf%s(iR(2)),p)
@@ -268,7 +263,6 @@
          integer,dimension(3),intent(in) :: G1,G2
          integer,dimension(2),intent(in) :: iR
          integer,intent(in) :: p
-         ! call apply_Periodic_N(ug,ui_opp,x,y,p)
          call apply_Periodic_N(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
                                surf%f,&
                                surf%s(iR(1)),surf%s(iR(2)),p)
@@ -292,22 +286,21 @@
                            FSD%i_2D(face)%i,&
                            FSD%dh(face),&
                            FSD%nhat(face),&
-                           FSD%Robin_coeff(face),&
+                           FSD%c_w(face),&
                            0)
        end subroutine
-       subroutine F_Robin_C_GF(bulk,surf,G1,G2,I1,I2,iR,dh,nhat,Robin_coeff,p)
+       subroutine F_Robin_C_GF(bulk,surf,G1,G2,I1,I2,iR,dh,nhat,c_w,p)
          implicit none
          type(grid_field),intent(inout) :: bulk
          type(grid_field),intent(in) :: surf
          integer,dimension(3),intent(in) :: G1,G2,I1,I2
          integer,dimension(2),intent(in) :: iR
-         real(cp),intent(in) :: dh,nhat,Robin_coeff
+         real(cp),intent(in) :: dh,nhat,c_w
          integer,intent(in) :: p
-         ! call apply_Robin_C(ug,ui,bvals,dh,nhat,x,y,p)
          call apply_Robin_C(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
                             bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
                             surf%f,&
-                            dh*nhat,Robin_coeff,surf%s(iR(1)),surf%s(iR(2)),p)
+                            dh,nhat,c_w,surf%s(iR(1)),surf%s(iR(2)),p)
        end subroutine
 
        subroutine Robin_C_prescribed(GF,surf,FSD,face)
@@ -329,7 +322,6 @@
          integer,dimension(3),intent(in) :: G1,G2
          integer,dimension(2),intent(in) :: iR
          integer,intent(in) :: p
-         ! call apply_Robin_C(ug,ui,bvals,dh,nhat,x,y,p)
          call apply_assign(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
                            surf%f,&
                            surf%s(iR(1)),surf%s(iR(2)),p)
@@ -351,23 +343,22 @@
                            FSD%i_2D(face)%i,&
                            FSD%dh(face),&
                            FSD%nhat(face),&
-                           FSD%Robin_coeff(face),&
+                           FSD%c_w(face),&
                            0)
        end subroutine
-       subroutine F_Robin_N_GF(bulk,surf,G1,G2,I1,I2,B1,B2,iR,dh,nhat,Robin_coeff,p)
+       subroutine F_Robin_N_GF(bulk,surf,G1,G2,I1,I2,B1,B2,iR,dh,nhat,c_w,p)
          implicit none
          type(grid_field),intent(inout) :: bulk
          type(grid_field),intent(in) :: surf
          integer,dimension(3),intent(in) :: G1,G2,I1,I2,B1,B2
          integer,dimension(2),intent(in) :: iR
-         real(cp),intent(in) :: dh,nhat,Robin_coeff
+         real(cp),intent(in) :: dh,nhat,c_w
          integer,intent(in) :: p
-         ! call apply_Robin_N(ug,ui,ub,bvals,dh,nhat,x,y,p)
          call apply_Robin_N(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
                             bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
                             bulk%f(B1(1):B2(1),B1(2):B2(2),B1(3):B2(3)),&
                             surf%f,&
-                            dh*nhat,Robin_coeff,surf%s(iR(1)),surf%s(iR(2)),p)
+                            dh,nhat,c_w,surf%s(iR(1)),surf%s(iR(2)),p)
        end subroutine
 
        ! *********************************************************************************
@@ -395,7 +386,6 @@
          integer,dimension(3),intent(in) :: G1,G2,I1,I2
          integer,dimension(2),intent(in) :: iR
          integer,intent(in) :: p
-         ! call apply_Symmetric_C(ug,ui,x,y,p)
          call apply_Symmetric_C(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
                                 bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
                                 surf%s(iR(1)),surf%s(iR(2)),p)
@@ -422,7 +412,6 @@
          integer,dimension(3),intent(in) :: G1,G2,I1,I2
          integer,dimension(2),intent(in) :: iR
          integer,intent(in) :: p
-         ! call apply_Symmetric_N(ug,ui,x,y,p)
          call apply_Symmetric_N(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
                                 bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
                                 surf%s(iR(1)),surf%s(iR(2)),p)
@@ -453,7 +442,6 @@
          integer,dimension(3),intent(in) :: G1,G2,I1,I2
          integer,dimension(2),intent(in) :: iR
          integer,intent(in) :: p
-         ! call apply_antisymmetric_C(ug,ui,x,y,p)
          call apply_antisymmetric_C(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
                                      bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
                                      surf%s(iR(1)),surf%s(iR(2)),p)
@@ -480,7 +468,6 @@
          integer,dimension(3),intent(in) :: G1,G2,I1,I2
          integer,dimension(2),intent(in) :: iR
          integer,intent(in) :: p
-         ! call apply_antisymmetric_N(ug,ui,x,y,p)
          call apply_antisymmetric_N(bulk%f(G1(1):G2(1),G1(2):G2(2),G1(3):G2(3)),&
                                      bulk%f(I1(1):I2(1),I1(2):I2(2),I1(3):I2(3)),&
                                      surf%s(iR(1)),surf%s(iR(2)),p)

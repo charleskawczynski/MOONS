@@ -467,16 +467,16 @@
              if (is_Dirichlet(BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Dirichlet_C,face)
              if (is_Neumann(  BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Neumann_C  ,face)
              if (is_Periodic( BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Periodic_C_prescribed ,face)
-             if (is_Robin(    BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Robin_C_prescribed    ,face)
+             if (is_Robin(    BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Robin_C  ,face)
              if (is_Dirichlet(BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Dirichlet_C_implicit,face)
              if (is_Neumann(  BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Neumann_C_implicit  ,face)
              if (is_Periodic( BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Periodic_C_implicit ,face)
-             if (is_Robin(    BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Robin_C_implicit_prescribed,face)
+             if (is_Robin(    BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Robin_C_implicit,face)
            else
              if (is_Dirichlet(BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Dirichlet_C,face)
              if (is_Neumann(  BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Neumann_C  ,face)
              if (is_Periodic( BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Periodic_C ,face)
-             if (is_Robin(    BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Robin_C    ,face)
+             if (is_Robin(    BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Robin_C ,face)
              if (is_Dirichlet(BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Dirichlet_C_implicit,face)
              if (is_Neumann(  BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Neumann_C_implicit  ,face)
              if (is_Periodic( BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Periodic_C_implicit ,face)
@@ -505,65 +505,6 @@
            else; stop 'Error: bad DL in init_PA_face_BC in boundary_conditions.f90'
          endif
        end subroutine
-
-       ! subroutine init_PA_face_BC(BC,face)
-       !   implicit none
-       !   type(boundary_conditions),intent(inout) :: BC
-       !   integer,intent(in) :: face
-       !   integer :: dir
-       !   dir = dir_given_face(face)
-       !   call check_prereq(BC)
-       !   call remove(BC%PA_face_BCs,face)
-       !   call remove(BC%PA_face_implicit_BCs,face)
-       !   if (CC_along(BC%DL,dir)) then
-       !     if (is_prescribed(BC%face%SB(face)%bct)) then
-       !       if (is_Dirichlet(BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Dirichlet_C_prescribed,face)
-       !       if (is_Neumann(  BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Neumann_C_prescribed  ,face)
-       !       if (is_Periodic( BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Periodic_C_prescribed ,face)
-       !       if (is_Robin(    BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Robin_C_prescribed    ,face)
-       !     else
-       !       if (is_Dirichlet(BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Dirichlet_C,face)
-       !       if (is_Neumann(  BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Neumann_C  ,face)
-       !       if (is_Periodic( BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Periodic_C ,face)
-       !       if (is_Robin(    BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Robin_C    ,face)
-       !     endif
-       !     if (is_prescribed(BC%face%SB(face)%bct)) then
-       !       if (is_Dirichlet(BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Dirichlet_C_implicit_prescribed,face)
-       !       if (is_Neumann(  BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Neumann_C_implicit_prescribed  ,face)
-       !       if (is_Periodic( BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Periodic_C_implicit_prescribed ,face)
-       !       if (is_Robin(    BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Robin_C_implicit_prescribed    ,face)
-       !     else
-       !       if (is_Dirichlet(BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Dirichlet_C_implicit,face)
-       !       if (is_Neumann(  BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Neumann_C_implicit  ,face)
-       !       if (is_Periodic( BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Periodic_C_implicit ,face)
-       !       if (is_Robin(    BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Robin_C_implicit    ,face)
-       !     endif
-       !   endif
-       !   if ( N_along(BC%DL,dir)) then
-       !     if (is_prescribed(BC%face%SB(face)%bct)) then
-       !       if (is_Dirichlet(BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Dirichlet_N_prescribed,face)
-       !       if (is_Neumann(  BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Neumann_N_prescribed  ,face)
-       !       if (is_Periodic( BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Periodic_N_prescribed ,face)
-       !       if (is_Robin(    BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Robin_N_prescribed    ,face)
-       !     else
-       !       if (is_Dirichlet(BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Dirichlet_N,face)
-       !       if (is_Neumann(  BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Neumann_N  ,face)
-       !       if (is_Periodic( BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Periodic_N ,face)
-       !       if (is_Robin(    BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Robin_N    ,face)
-       !     endif
-       !     if (is_prescribed(BC%face%SB(face)%bct)) then
-       !       if (is_Dirichlet(BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Dirichlet_N_implicit_prescribed,face)
-       !       if (is_Neumann(  BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Neumann_N_implicit_prescribed  ,face)
-       !       if (is_Periodic( BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Periodic_N_implicit_prescribed ,face)
-       !       if (is_Robin(    BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Robin_N_implicit_prescribed    ,face)
-       !     else
-       !       if (is_Dirichlet(BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Dirichlet_N_implicit,face)
-       !       if (is_Neumann(  BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Neumann_N_implicit  ,face)
-       !       if (is_Periodic( BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Periodic_N_implicit ,face)
-       !       if (is_Robin(    BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Robin_N_implicit    ,face)
-       !     endif
-       !   endif
-       ! end subroutine
 
        ! *******************************************************************************
        ! ********************************* INIT EDGES **********************************
@@ -668,13 +609,13 @@
          L = BC%BCL%any_Robin
        end function
 
-       subroutine init_props_BCs(BC,Robin_coeff)
+       subroutine init_props_BCs(BC,c_w,Robin_coeff)
          implicit none
          type(boundary_conditions),intent(inout) :: BC
-         real(cp),intent(in),dimension(6) :: Robin_coeff
+         real(cp),intent(in),dimension(6) :: c_w,Robin_coeff
          call define_logicals(BC)
          call init_mixed(BC%f_BCs,BC%DL)
-         call init_Robin_coeff(BC%f_BCs,Robin_coeff)
+         call init_Robin_coeff(BC%f_BCs,c_w,Robin_coeff)
          call sort(BC%PA_face_BCs,BC%apply_BC_order,6)
          call sort(BC%PA_face_implicit_BCs,BC%apply_BC_order,6)
        end subroutine
@@ -686,7 +627,7 @@
          integer,intent(in) :: dir
          integer,dimension(3) :: eye
          integer :: x,y,z
-         real(cp),dimension(6) :: Robin_coeff
+         real(cp),dimension(6) :: c_w,Robin_coeff
          eye = eye_given_dir(dir)
          x = eye(1); y = eye(2); z = eye(3)
          if (BC%BCL%defined) then
@@ -697,7 +638,8 @@
            ! call init(BC%e_BCs,B%g,B%e)
            ! call init(BC%c_BCs,B%g,B%c)
            Robin_coeff = BC%f_BCs%Robin_coeff
-           call init_props(BC,Robin_coeff)
+           c_w = BC%f_BCs%c_w
+           call init_props(BC,c_w,Robin_coeff)
          endif
        end subroutine
 
@@ -708,7 +650,7 @@
          integer,intent(in) :: dir
          integer,dimension(3) :: eye
          integer :: x,y,z
-         real(cp),dimension(6) :: Robin_coeff
+         real(cp),dimension(6) :: c_w,Robin_coeff
          eye = eye_given_dir(dir)
          x = eye(1); y = eye(2); z = eye(3)
          if (BC%BCL%defined) then
@@ -719,7 +661,8 @@
            ! call init(BC%e_BCs,B%g,B%e)
            ! call init(BC%c_BCs,B%g,B%c)
            Robin_coeff = BC%f_BCs%Robin_coeff
-           call init_props(BC,Robin_coeff)
+           c_w = BC%f_BCs%c_w
+           call init_props(BC,c_w,Robin_coeff)
          endif
        end subroutine
 

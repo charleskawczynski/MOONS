@@ -183,41 +183,6 @@
          endif
        end subroutine
 
-       subroutine lap_centered_VF_dynamic_new(lapU,U,m)
-         implicit none
-         type(VF),intent(inout) :: lapU
-         type(VF),intent(in) :: U
-         type(mesh),intent(in) :: m
-         type(TF) :: TF_temp
-         type(VF) :: VF_temp
-         if     (is_CC(U)) then
-           call init_Face(VF_temp,m)
-           call lap_centered_SF_given_both(lapU%x,U%x,m,VF_temp%x,VF_temp%y,VF_temp%z)
-           call lap_centered_SF_given_both(lapU%y,U%y,m,VF_temp%x,VF_temp%y,VF_temp%z)
-           call lap_centered_SF_given_both(lapU%z,U%z,m,VF_temp%x,VF_temp%y,VF_temp%z)
-           call delete(VF_temp)
-         elseif (is_Node(U)) then
-           call init_Edge(VF_temp,m)
-           call lap_centered_SF_given_both(lapU%x,U%x,m,VF_temp%x,VF_temp%y,VF_temp%z)
-           call lap_centered_SF_given_both(lapU%y,U%y,m,VF_temp%x,VF_temp%y,VF_temp%z)
-           call lap_centered_SF_given_both(lapU%z,U%z,m,VF_temp%x,VF_temp%y,VF_temp%z)
-           call delete(VF_temp)
-         elseif (is_Face(U)) then
-           call init_CC_Edge(TF_temp,m)
-           call lap_centered_SF_given_both(lapU%x,U%x,m,TF_temp%x%x,TF_temp%x%z,TF_temp%x%y)
-           call lap_centered_SF_given_both(lapU%y,U%y,m,TF_temp%y%z,TF_temp%y%y,TF_temp%y%x)
-           call lap_centered_SF_given_both(lapU%z,U%z,m,TF_temp%z%y,TF_temp%z%x,TF_temp%z%z)
-           call delete(TF_temp)
-         elseif (is_Edge(U)) then
-           call init_Node_Edge(TF_temp,m)
-           call lap_centered_SF_given_both(lapU%x,U%x,m,TF_temp%x%x,TF_temp%x%y,TF_temp%x%z)
-           call lap_centered_SF_given_both(lapU%y,U%y,m,TF_temp%y%x,TF_temp%y%y,TF_temp%y%z)
-           call lap_centered_SF_given_both(lapU%z,U%z,m,TF_temp%z%x,TF_temp%z%y,TF_temp%z%z)
-           call delete(TF_temp)
-         else; stop 'Error: bad data type in lap_centered_VF_dynamic in ops_discrete.f90'
-         endif
-       end subroutine
-
        subroutine lap_centered_SF_dynamic(lapU,U,m)
          implicit none
          type(SF),intent(inout) :: lapU

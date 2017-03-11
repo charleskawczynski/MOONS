@@ -16,14 +16,14 @@ nu = mu/rho;
 %% Magnetic field configuration from Mike Ulrickson's data
 micro_seconds_to_seconds = 10^6;
 B0_z = 5;
-dB0_x = -1;
+dB0_x = 1;
 dt = 4500/micro_seconds_to_seconds; % Plasma event time-period
 dB0_x_dt_average = dB0_x/dt; % Based on time average
 dB0_x_dt_max = -0.000252170601462*micro_seconds_to_seconds; % Based on dB0_x_dt_max
 
 %% Time-varying magnetic field scale
-% dB0_x_dt = dB0_x_dt_average;
-dB0_x_dt = dB0_x_dt_max;
+dB0_x_dt = dB0_x_dt_average;
+% dB0_x_dt = dB0_x_dt_max;
 
 %% Solution construction
 A = 1/(rho*nu*mu_m)*B0_z;
@@ -41,10 +41,11 @@ B_temp = cosh_a_over_sinh_b_safe(M*y,M*a);
 u = u_coeff*(y/a - u_temp);
 B_x = B_coeff*(B_temp - 1/tanh(M*a));
 
-disp(['u_coeff = ' num2str(u_coeff)])
-disp(['B_coeff = ' num2str(B_coeff)])
-disp(['M   = ' num2str(M)])
-disp(['a   = ' num2str(a)])
+disp(['dB0_x_dt = ' num2str(dB0_x_dt)])
+disp(['u_coeff  = ' num2str(u_coeff)])
+disp(['B_coeff  = ' num2str(B_coeff)])
+disp(['M        = ' num2str(M)])
+disp(['a        = ' num2str(a)])
 disp(' ------------- DIMENSIONLESS PARAMETERS ------------- ')
 
 %% Plot solutions
@@ -73,6 +74,7 @@ disp(['Ha  = ' num2str(Ha)])
 M_star = 100;
 a = 1;
 y = linspace(-a,a,N_nodes);
+y_star = y/a;
 u_coeff = 1;
 B_coeff = 1;
 u_temp = sinh_a_over_sinh_b_safe(M_star*y,M_star*a);

@@ -38,7 +38,7 @@
          case default; stop 'Error: bad preset_ID in init_PBCs.f90.'
          end select
          call make_periodic(p,m,periodic_dir)
-         call init_BC_props(p,SP%DP%Robin_coeff)
+         call init_BC_props(p,SP%DP%c_w,SP%DP%Robin_coeff)
        end subroutine
 
        subroutine flow_past_2D_square(p)

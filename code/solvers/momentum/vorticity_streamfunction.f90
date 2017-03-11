@@ -65,7 +65,7 @@
          type(PCG_solver_VF) :: PCG
          type(iter_solver_params) :: ISP
          type(matrix_free_params) :: MFP
-         real(cp),dimension(6) :: Robin_coeff
+         real(cp),dimension(6) :: c_w,Robin_coeff
          call init(ISP,10000,pow(-15),pow(-15),1,.true.,str(DT%ISP),'vorticity_streamfunction')
 
          call init_Edge(omega,m)
@@ -76,7 +76,8 @@
          call init_BC_mesh(psi%z,m)
          call Dirichlet_BCs(psi,m)
          Robin_coeff = 0.0_cp
-         call init_BC_props(psi,Robin_coeff)
+         c_w = 0.0_cp
+         call init_BC_props(psi,c_w,Robin_coeff)
          call make_periodic(psi,m,SP%GP%periodic_dir)
 
          ! Make sure that Lap_uniform_VF does not

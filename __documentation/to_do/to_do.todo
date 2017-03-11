@@ -8,11 +8,16 @@ TO DO LIST COMMANDS:
 --- ✄ -----------------------
 Right Now:
  ☐ 3) Read Shatrov for parameter inspiration
-     ☐ Fig 9a
-     ☐ Re=2000,N=0.1,Ha=(2000*.1)^.5
-     ☐ -->Re=1000,N=0.1,Ha=(100)^.5=10
-     ☐ Re=3000,N=1,Ha=(3000*1)^.5
-     ☐ -->Re=1500,N=1,Ha=(1500*1)^.5~38.23
+     ☐ Fig 9a:
+     ☐ Re(L=.5)=1000,N(L=.5)=0.1-->Re(L=1)=2000,N(L=1)=0.2
+     ☐ Re(L=.5)=1000,N(L=.5)= 1 -->Re(L=1)=2000,N(L=1)=2
+     ☐ Re(L=.5)=3000,N(L=.5)= 1 -->Re(L=1)=6000,N(L=1)=2
+     ☐ Re(L=.5)=3000,N(L=.5)= 10-->Re(L=1)=6000,N(L=1)=20
+
+     ☐ Re(L=.5)=1000,N(L=.5)=0.1-->Re(L=1)=500 ,N(L=1)=0.05  I think these are correct
+     ☐ Re(L=.5)=1000,N(L=.5)= 1 -->Re(L=1)=500 ,N(L=1)=.5    I think these are correct
+     ☐ Re(L=.5)=3000,N(L=.5)= 1 -->Re(L=1)=1500,N(L=1)=.5    I think these are correct
+     ☐ Re(L=.5)=3000,N(L=.5)= 10-->Re(L=1)=1500,N(L=1)=5     I think these are correct
      ☐ Lid velocity distribution
      ☐ B0 = (1,0,0)
  ☐ 4) Start Shatrov parameter space sims
@@ -21,6 +26,8 @@ Right Now:
  ☐ 7) Analyze scaling in Kamkar paper
  ☐ 9) Move data from workstation to backup
  ☐ 9) Test out Robin conditions for PCG
+ ☐ 9) Move restart fields to restart
+ ☐ 9) Maybe make debug fields, and store them appropriately
 
   ☐ PD cases
     ☐ Determine actual Re_m,Re,Ha etc
