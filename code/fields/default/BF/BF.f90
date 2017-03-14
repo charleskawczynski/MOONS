@@ -38,6 +38,8 @@
         public :: update_BC_vals
         public :: assign_Neumann_BCs
         public :: assign_Neumann_BCs_wall_normal
+        public :: multiply_Neumann_BCs
+        public :: multiply_BCs_by_nhat
         public :: assign_Dirichlet_BCs
         public :: assign_Periodic_BCs
         public :: assign_Robin_BCs
@@ -146,6 +148,8 @@
        interface assign_Periodic_BCs;         module procedure assign_Periodic_BCs_BF;          end interface
        interface assign_Neumann_BCs;          module procedure assign_Neumann_BCs_faces_BF;     end interface
        interface assign_Neumann_BCs_wall_normal; module procedure assign_Neumann_BCs_wall_normal_BF;     end interface
+       interface multiply_Neumann_BCs;        module procedure multiply_Neumann_BCs_BF;         end interface
+       interface multiply_BCs_by_nhat;        module procedure multiply_BCs_by_nhat_BF;         end interface
        interface assign_Robin_BCs;            module procedure assign_Robin_BCs_faces_BF;       end interface
        interface assign_Robin_BCs;            module procedure assign_Robin_BCs_dir_BF;         end interface
        interface multiply_Robin_coeff;        module procedure multiply_Robin_coeff_BF;         end interface
@@ -750,6 +754,31 @@
                if (max_face(i)) call assign_plane(A%BCs%face%SB(i)%b_modified,B%GF,1,B%GF%s(dir)-1,dir)
              endif
              endif
+           enddo
+         endif
+       end subroutine
+
+       subroutine multiply_Neumann_BCs_BF(A,scale)
+         implicit none
+         type(block_field),intent(inout) :: A
+         real(cp),intent(in) :: scale
+         integer :: i
+         if (defined(A%BCs)) then
+           do i=1,6
+             if (is_Neumann(A%BCs%face%SB(i)%bct)) then
+             call multiply(A%BCs%face%SB(i)%b_modified,scale)
+             endif
+           enddo
+         endif
+       end subroutine
+
+       subroutine multiply_BCs_by_nhat_BF(A)
+         implicit none
+         type(block_field),intent(inout) :: A
+         integer :: i
+         if (defined(A%BCs)) then
+           do i=1,6
+             call multiply(A%BCs%face%SB(i)%b_modified,A%BCs%f_BCs%nhat(i))
            enddo
          endif
        end subroutine

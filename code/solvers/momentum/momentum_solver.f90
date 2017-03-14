@@ -39,12 +39,12 @@
        contains
 
        subroutine CN_AB2_PPE_PCG_mom_PCG(mom_PCG,PPE_PCG,U,Ustar,Unm1,p,F,Fnm1,m,&
-         dt,temp_F1,temp_F2,temp_CC,temp_CC_VF,compute_norms)
+         dt,temp_F1,temp_F2,temp_CC,compute_norms)
          implicit none
          type(PCG_solver_VF),intent(inout) :: mom_PCG
          type(PCG_solver_SF),intent(inout) :: PPE_PCG
          type(SF),intent(inout) :: p
-         type(VF),intent(inout) :: U,Ustar,Unm1,temp_CC_VF
+         type(VF),intent(inout) :: U,Ustar,Unm1
          type(VF),intent(in) :: F,Fnm1
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: dt
@@ -58,16 +58,16 @@
          call assign(Unm1,U)
          call solve(mom_PCG,Ustar,temp_F1,m,compute_norms) ! Solve for U*
          call clean_div(PPE_PCG,U,Ustar,p,1.0_cp/dt,m,temp_F2,temp_CC,compute_norms)
-         call update_intermediate_field_BCs(Ustar,U,p,1.0_cp/dt,m,temp_F1,temp_F2,temp_CC_VF)
+         call update_intermediate_field_BCs(Ustar,p,1.0_cp/dt,m,temp_F1,temp_CC)
        end subroutine
 
        subroutine O2_BD_CN_AB2_PPE_PCG_mom_PCG(mom_PCG,PPE_PCG,U,Ustar,Unm1,p,F,Fnm1,m,&
-         dt,temp_F1,temp_F2,temp_CC,temp_CC_VF,compute_norms)
+         dt,temp_F1,temp_F2,temp_CC,compute_norms)
          implicit none
          type(PCG_solver_VF),intent(inout) :: mom_PCG
          type(PCG_solver_SF),intent(inout) :: PPE_PCG
          type(SF),intent(inout) :: p
-         type(VF),intent(inout) :: U,Ustar,Unm1,temp_CC_VF
+         type(VF),intent(inout) :: U,Ustar,Unm1
          type(VF),intent(in) :: F,Fnm1
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: dt
@@ -82,7 +82,7 @@
          call assign(Unm1,U)
          call solve(mom_PCG,Ustar,temp_F1,m,compute_norms) ! Solve for U*
          call clean_div(PPE_PCG,U,Ustar,p,dt,m,temp_F2,temp_CC,compute_norms)
-         call update_intermediate_field_BCs(Ustar,U,p,dt,m,temp_F1,temp_F2,temp_CC_VF)
+         call update_intermediate_field_BCs(Ustar,p,dt,m,temp_F1,temp_CC)
        end subroutine
 
        ! **********************************************************************

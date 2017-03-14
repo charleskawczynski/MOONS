@@ -77,7 +77,6 @@
          type(TF) :: U_E
          type(TF) :: TF_CC
          type(TF) :: TF_CC_edge
-         type(TF) :: TF_face1,TF_face2
          ! Vector fields
          type(VF) :: U,Ustar,Unm1
          type(VF) :: U_CC
@@ -145,8 +144,6 @@
          call init_CC(mom%temp_CC     ,m,0.0_cp)
          call init_CC(mom%temp_CC_VF  ,m,0.0_cp)
          call init_CC(mom%TF_CC       ,m,0.0_cp)
-         call init_Face(mom%TF_face1,m,0.0_cp)
-         call init_Face(mom%TF_face2,m,0.0_cp)
          call init_CC_Edge(mom%TF_CC_edge,m,0.0_cp)
 
          write(*,*) '     Fields allocated'
@@ -230,8 +227,6 @@
          call delete(mom%temp_CC_VF)
          call delete(mom%TF_CC)
          call delete(mom%TF_CC_edge)
-         call delete(mom%TF_face1)
-         call delete(mom%TF_face2)
          call delete(mom%divU)
          call delete(mom%U_CC)
          call delete(mom%probe_divU)
@@ -256,7 +251,7 @@
          write(un,*) '************************** MOMENTUM **************************'
          write(un,*) '**************************************************************'
          write(un,*) 'Re,Ha = ',mom%SP%DP%Re,mom%SP%DP%Ha
-         write(un,*) 'Gr,Fr = ',mom%SP%DP%Gr,mom%SP%DP%Fr
+         write(un,*) 'N,Gr = ',mom%SP%DP%N,mom%SP%DP%Gr
          write(un,*) 't,dt = ',mom%SP%VS%U%TMP%t,mom%SP%VS%U%TMP%dt
          write(un,*) 'solveUMethod,N_mom,N_PPE = ',mom%SP%VS%U%SS%solve_method,&
          mom%SP%VS%U%ISP%iter_max,mom%SP%VS%P%ISP%iter_max
@@ -433,25 +428,21 @@
            call Euler_time_no_diff_AB2_sources_no_correction(mom%U,mom%Ustar,F,Fnm1,TMP)
          case (3)
            call Euler_time_no_diff_Euler_sources(mom%PCG_P,mom%U,mom%Ustar,mom%Unm1,mom%p,&
-           F,mom%m,TMP,mom%temp_F2,mom%temp_CC,EF%unsteady_0D%export_now)
+           F,mom%m,TMP,mom%temp_F1,mom%temp_CC,EF%unsteady_0D%export_now)
          case (4)
            call Euler_time_no_diff_AB2_sources(mom%PCG_P,mom%U,mom%Ustar,mom%Unm1,mom%p,&
-           F,Fnm1,mom%m,TMP,mom%temp_F2,mom%temp_CC,EF%unsteady_0D%export_now)
+           F,Fnm1,mom%m,TMP,mom%temp_F1,mom%temp_CC,EF%unsteady_0D%export_now)
          case (5)
            call Euler_time_Euler_sources(mom%PCG_U,mom%PCG_P,mom%U,mom%Ustar,mom%Unm1,&
-           mom%p,F,mom%m,TMP,mom%temp_F1,mom%temp_F2,mom%temp_CC,mom%temp_CC_VF,&
+           mom%p,F,mom%m,TMP,mom%temp_F1,mom%temp_CC,&
            EF%unsteady_0D%export_now)
          case (6)
            call Euler_time_AB2_sources(mom%PCG_U,mom%PCG_P,mom%U,mom%Ustar,mom%Unm1,&
-           mom%p,F,Fnm1,mom%m,TMP,mom%temp_F1,mom%temp_F2,mom%temp_CC,mom%temp_CC_VF,&
+           mom%p,F,Fnm1,mom%m,TMP,mom%temp_F1,mom%temp_CC,&
            EF%unsteady_0D%export_now)
          case (7)
            call O2_BDF_time_AB2_sources(mom%PCG_U,mom%PCG_P,mom%U,mom%Ustar,&
-           mom%Unm1,mom%p,F,Fnm1,mom%m,TMP,mom%temp_F1,mom%temp_F2,mom%temp_CC,&
-           mom%temp_CC_VF,EF%unsteady_0D%export_now)
-         case (8)
-           call Euler_time_AB2_sources_new(mom%PCG_U,mom%PCG_P,mom%U,mom%Ustar,mom%Unm1,&
-           mom%p,F,Fnm1,mom%m,TMP,mom%temp_F1,mom%TF_Face1,mom%TF_Face2,mom%TF_CC_edge,&
+           mom%Unm1,mom%p,F,Fnm1,mom%m,TMP,mom%temp_F1,mom%temp_CC,&
            EF%unsteady_0D%export_now)
          case default; stop 'Error: solveUMethod must = 1:4 in momentum.f90.'
          end select

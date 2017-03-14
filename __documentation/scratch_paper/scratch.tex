@@ -14,39 +14,8 @@
 \usepackage{tabularx,ragged2e,booktabs,caption}
 \usepackage{esint}
 
-
-\newcommand{\G}{\mathbf{g}}
-\newcommand{\U}{\mathbf{u}}
-\newcommand{\C}{\mathbf{C}}
-\newcommand{\B}{\mathbf{B}}
-\newcommand{\E}{\mathbf{E}}
-\newcommand{\J}{\mathbf{j}}
-\newcommand{\A}{\mathbf{A}}
-\newcommand{\N}{\mathbf{n}}
-\newcommand{\F}{\mathbf{f}}
-\newcommand{\X}{\mathbf{x}}
-\newcommand{\Y}{\mathbf{y}}
-
-\newcommand{\DOT}{\text{\textbullet}}
-\newcommand{\CROSS}{\times}
-\newcommand{\DEL}{\nabla}
-\newcommand{\CURL}{\DEL \CROSS}
-\newcommand{\DIV}{\DEL \DOT}
-\newcommand{\PD}{\partial}
-\newcommand{\MAC}{\mathcal}
-
-\newcommand{\M}{{\mu_m}}
-\newcommand{\SI}{\sigma}
-\newcommand{\SII}{\SI^{-1}}
-\newcommand{\JS}{\frac{\J}{\sigma}}
-\newcommand{\MO}{\overline{\mu}_m}
-\newcommand{\SO}{\overline{\sigma}}
-\newcommand{\RA}{\rightarrow}
-
-\renewcommand{\H}{\frac{\B}{\MO}}
-
-\newcommand{\JSS}{\frac{\J^2}{\sigma}}
-\newcommand{\HD}{\frac{\B}{\M}}
+\newcommand{\PATHTOUSEFULCOMMANDS}{../useful_commands.tex}
+\input{\PATHTOUSEFULCOMMANDS}
 
 \setlength{\oddsidemargin}{0.1in}
 \setlength{\textwidth}{7.25in}
@@ -54,7 +23,7 @@
 \setlength{\topmargin}{-1in}     %\topmargin: gap above header
 \setlength{\headheight}{0in}     %\headheight: height of header
 \setlength{\topskip}{0in}        %\topskip: between header and text
-\setlength{\headsep}{0in}        
+\setlength{\headsep}{0in}
 \setlength{\textheight}{692pt}   %\textheight: height of main text
 \setlength{\textwidth}{7.5in}    % \textwidth: width of text
 \setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
@@ -101,7 +70,7 @@ The ratio of length and time scales are
 
 \section{Comparing all 3}
 
-From this, we can see there are 1 in 5 possible values of $\delta$ for each boundary layer, for each 
+From this, we can see there are 1 in 5 possible values of $\delta$ for each boundary layer, for each
 
 1) 2 large gaps (3 permutes in order + 3 permutes out of order):
 \begin{itemize}
@@ -132,7 +101,7 @@ From this, we can see there are 1 in 5 possible values of $\delta$ for each boun
 \end{itemize}
 
 \subsection{Low Rem}
-The magnetic boundary layer is 
+The magnetic boundary layer is
 \begin{equation}\begin{aligned}
 	\delta_m \sim L
 \end{aligned}\end{equation}
@@ -143,14 +112,14 @@ The Hartmann layer at low $Re_m$ is estimated by equating the viscous and Lorent
 In the low $Re_m$ limit, we use $[J_c] = \sigma U B$, and therefore have
 \begin{equation}\begin{aligned}
 	\rho \nu \frac{U}{\delta^2} =& \sigma U B^2 \\
-	\delta^2 =& \rho \nu \frac{U}{\sigma U B^2} 
+	\delta^2 =& \rho \nu \frac{U}{\sigma U B^2}
 	         = & \frac{\rho \nu}{\sigma B^2} \\
 	\frac{\delta^2}{L^2} =& \frac{1}{Ha^2} \\
 	\frac{\delta}{L} =& \frac{1}{Ha}
 \end{aligned}\end{equation}
 
 \subsection{Finite Rem}
-The magnetic boundary layer is 
+The magnetic boundary layer is
 \begin{equation}\begin{aligned}
 	\frac{\delta_m}{L} = Re_m^{-1/2} \\
 \end{aligned}\end{equation}
@@ -170,5 +139,19 @@ Where $J_c$ may be specified.
 \item $E_{\B}(\Omega,SS)$, $E_{\B}(\Omega_f,SS)$, $E_{\B}(\Omega_c,SS)$
 \end{itemize}
 
+\section{2D parabolic duct flow solution}
+\begin{equation}\begin{aligned}
+	\frac{1}{Re}\PD_{zz} u = - \PD_x p \\
+	\PD_{zz} u = - Re \PD_x p \\
+	\PD_{z} u = - Re \PD_x p z + c_1 \\
+	u = - Re \PD_x p z^2/2 + c_1 z + c_2\\
+	u(-1) = - Re \PD_x p /2 - c_1 + c_2 = 0\\
+	u(1)  = - Re \PD_x p /2 + c_1 + c_2 = 0\\
+	c_1 = 0 \\
+	c_2 = Re \PD_x p /2 \\
+	u = - Re \PD_x p z^2/2 + Re \PD_x p /2 \\
+	u = \frac{Re \PD_x p}{2} \left(1-z^2 \right) \\
+	u_{max} = \frac{Re \PD_x p}{2} \\
+\end{aligned}\end{equation}
 
 \end{document}

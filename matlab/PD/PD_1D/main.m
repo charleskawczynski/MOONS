@@ -26,38 +26,32 @@ dB0_x_dt = dB0_x_dt_average;
 % dB0_x_dt = dB0_x_dt_max;
 
 %% Solution construction
-A = 1/(rho*nu*mu_m)*B0_z;
-C = sigma*mu_m*dB0_x_dt;
-D = sigma*mu_m*B0_z;
-F = sqrt(A/D);
-M = F*D;
-u_coeff = a*C/D;
-B_coeff = a*C/(F*D);
+Ha = a*B0_z*sqrt(sigma/rho/nu);
+U_c = a*dB0_x_dt/B0_z;
+B_c = U_c*sqrt(mu*sigma*mu_m^2.0);
 y = linspace(-a,a,N_nodes);
-u_temp = sinh_a_over_sinh_b_safe(M*y,M*a);
-B_temp = cosh_a_over_sinh_b_safe(M*y,M*a);
-% u_temp = sinh(M*y)/sinh(M*a); % Numerical issues at high M
-% B_temp = cosh(M*y)/sinh(M*a); % Numerical issues at high M
-u = u_coeff*(y/a - u_temp);
-B_x = B_coeff*(B_temp - 1/tanh(M*a));
+u_temp = sinh_a_over_sinh_b_safe(Ha*y/a,Ha);
+B_temp = cosh_a_over_sinh_b_safe(Ha*y/a,Ha);
+u = U_c*(y/a - u_temp);
+B_x = B_c*(B_temp - 1/tanh(Ha));
 
 disp(['dB0_x_dt = ' num2str(dB0_x_dt)])
-disp(['u_coeff  = ' num2str(u_coeff)])
-disp(['B_coeff  = ' num2str(B_coeff)])
-disp(['M        = ' num2str(M)])
+disp(['U_c      = ' num2str(U_c)])
+disp(['B_c      = ' num2str(B_c)])
+disp(['Ha       = ' num2str(Ha)])
 disp(['a        = ' num2str(a)])
 disp(' ------------- DIMENSIONLESS PARAMETERS ------------- ')
 
 %% Plot solutions
 figure
-subplot(2,1,1)
+subplot(2,2,1)
 plot(y,u)
-title('u vs y')
+title('Dimensional velocity')
 xlabel('y')
 ylabel('u')
-subplot(2,1,2)
+subplot(2,2,2)
 plot(y,B_x)
-title('B_x vs y')
+title('Dimensional magnetic field')
 xlabel('y')
 ylabel('B_x')
 
@@ -71,26 +65,17 @@ disp(['Ha  = ' num2str(Ha)])
 
 
 %% Dimensionless solution plot
-M_star = 100;
-a = 1;
-y = linspace(-a,a,N_nodes);
-y_star = y/a;
-u_coeff = 1;
-B_coeff = 1;
-u_temp = sinh_a_over_sinh_b_safe(M_star*y,M_star*a);
-B_temp = cosh_a_over_sinh_b_safe(M_star*y,M_star*a);
-u_star = u_coeff*(y/a - u_temp);
-B_star = B_coeff*(B_temp - 1/tanh(M_star*a));
+u_star = u/U_c;
+B_star = B_x/B_c;
 
-figure
-subplot(2,1,1)
+subplot(2,2,3)
 plot(y_star,u_star)
-title('u vs y')
+title('Dimensionless velocity')
 xlabel('y')
 ylabel('u')
-subplot(2,1,2)
+subplot(2,2,4)
 plot(y_star,B_star)
-title('B_x vs y')
+title('Dimensionless magnetic field')
 xlabel('y')
 ylabel('B_x')
 

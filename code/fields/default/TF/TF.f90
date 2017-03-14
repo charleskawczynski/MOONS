@@ -59,7 +59,7 @@
 
         public :: assign_Neumann_BCs
         public :: assign_Neumann_BCs_wall_normal
-        public :: assign_Robin_BCs
+        public :: multiply_Neumann_BCs
 
         ! Monitoring
         public :: print
@@ -112,7 +112,7 @@
 
         interface assign_Neumann_BCs;  module procedure assign_Neumann_BCs_faces_TF;        end interface
         interface assign_Neumann_BCs_wall_normal;  module procedure assign_Neumann_BCs_wall_normal_TF;  end interface
-        interface assign_Robin_BCs;    module procedure assign_Robin_BCs_faces_TF;  end interface
+        interface multiply_Neumann_BCs;module procedure multiply_Neumann_BCs_faces_TF; end interface
 
         interface delete;              module procedure delete_TF;                 end interface
         interface print;               module procedure print_TF;                  end interface
@@ -689,13 +689,13 @@
           call assign_Neumann_BCs_wall_normal(A%z,B%z)
         end subroutine
 
-        subroutine assign_Robin_BCs_faces_TF(A,B)
+        subroutine multiply_Neumann_BCs_faces_TF(A,scale)
           implicit none
-          type(VF),intent(inout) :: A
-          type(TF),intent(in) :: B
-          call assign_Robin_BCs(A%x,B%x)
-          call assign_Robin_BCs(A%y,B%y)
-          call assign_Robin_BCs(A%z,B%z)
+          type(TF),intent(inout) :: A
+          real(cp),intent(in) :: scale
+          call multiply_Neumann_BCs(A%x,scale)
+          call multiply_Neumann_BCs(A%y,scale)
+          call multiply_Neumann_BCs(A%z,scale)
         end subroutine
 
         subroutine delete_TF(f)

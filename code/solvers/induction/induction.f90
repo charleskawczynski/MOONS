@@ -193,6 +193,7 @@
          call assign(ind%Bnm1,ind%B)
 
          if (ind%SP%IT%unsteady_B0%add) call assign_B0_vs_t(ind%B0,ind%SP%VS%B%TMP)
+         call multiply(ind%B0,SP%IT%B_applied%scale)
 
          write(*,*) '     B-field initialized'
          ! call initB_interior(ind%B_interior,m,ind%MD_sigma,str(DT%B%field))
@@ -542,29 +543,25 @@
            EF%unsteady_0D%export_now)
          case (5)
            call Euler_time_Euler_sources(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%Bstar,ind%Bnm1,&
-           ind%phi,F,ind%m,TMP,ind%temp_F1,ind%temp_F2,ind%temp_CC,ind%temp_CC_VF,&
+           ind%phi,F,ind%m,TMP,ind%temp_F1,ind%temp_CC,&
            EF%unsteady_0D%export_now)
          case (6)
            call Euler_time_AB2_sources(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%Bstar,ind%Bnm1,&
-           ind%phi,F,Fnm1,ind%m,TMP,ind%temp_F1,ind%temp_F2,ind%temp_CC,ind%temp_CC_VF,&
+           ind%phi,F,Fnm1,ind%m,TMP,ind%temp_F1,ind%temp_CC,&
            EF%unsteady_0D%export_now)
          case (7)
            call O2_BDF_time_AB2_sources(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%Bstar,&
-           ind%Bnm1,ind%phi,F,Fnm1,ind%m,TMP,ind%temp_F1,ind%temp_F2,ind%temp_CC,&
-           ind%temp_CC_VF,EF%unsteady_0D%export_now)
-         case (8)
-           call Euler_time_AB2_sources_new(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%Bstar,&
-           ind%Bnm1,ind%phi,F,Fnm1,ind%m,TMP,ind%temp_F1,&
-           ind%temp_F1_TF,ind%temp_F2_TF,ind%TF_CC_edge,EF%unsteady_0D%export_now)
+           ind%Bnm1,ind%phi,F,Fnm1,ind%m,TMP,ind%temp_F1,ind%temp_CC,&
+           EF%unsteady_0D%export_now)
 
-         case (9) ! Depricated
+         case (8) ! Depricated
            call CT_Low_Rem(ind%B,ind%B0,ind%U_E,ind%J,ind%sigmaInv_edge,ind%m,&
            TMP%multistep_iter,TMP%dt,ind%temp_F1,ind%temp_F2,ind%temp_E,ind%temp_E_TF)
-         case (10) ! Depricated
+         case (9) ! Depricated
            call CT_Finite_Rem(ind%B,ind%B0,ind%U_E,ind%J,ind%dB0dt,ind%sigmaInv_edge,ind%m,&
            TMP%multistep_iter,TMP%dt,ind%temp_F1,ind%temp_F2,ind%temp_F1_TF%x,&
            ind%temp_E,ind%temp_E_TF)
-         case (11) ! Still useful
+         case (10) ! Still useful
            call CT_Finite_Rem_interior_solved(ind%PCG_cleanB,ind%B,ind%B0,ind%Bstar,&
            ind%J,ind%B_interior,ind%U_E,ind%curlE,ind%phi,ind%m,ind%MD_sigma,TMP,&
            ind%SP%DP%Rem,ind%SP%finite_Rem,EF%unsteady_0D%export_now,ind%temp_CC,&

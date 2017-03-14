@@ -52,6 +52,8 @@
         public :: assign_Periodic_BCs
         public :: assign_Neumann_BCs
         public :: assign_Neumann_BCs_wall_normal
+        public :: multiply_Neumann_BCs
+        public :: multiply_BCs_by_nhat
         public :: assign_Robin_BCs
         public :: multiply_Robin_coeff
         public :: multiply_nhat
@@ -175,6 +177,8 @@
         interface assign_Periodic_BCs;      module procedure assign_Periodic_BCs_SF;       end interface
         interface assign_Neumann_BCs;       module procedure assign_Neumann_BCs_faces_SF;  end interface
         interface assign_Neumann_BCs_wall_normal; module procedure assign_Neumann_BCs_wall_normal_SF;  end interface
+        interface multiply_Neumann_BCs;     module procedure multiply_Neumann_BCs_SF;      end interface
+        interface multiply_BCs_by_nhat;     module procedure multiply_BCs_by_nhat_SF;      end interface
         interface assign_Robin_BCs;         module procedure assign_Robin_BCs_dir_SF;      end interface
         interface assign_Robin_BCs;         module procedure assign_Robin_BCs_faces_SF;    end interface
         interface multiply_Robin_coeff;     module procedure multiply_Robin_coeff_SF;      end interface
@@ -775,6 +779,19 @@
           integer,intent(in) :: dir
           integer :: i
           do i=1,A%s; call assign_Neumann_BCs_wall_normal(A%BF(i),B%BF(i),dir); enddo
+        end subroutine
+        subroutine multiply_Neumann_BCs_SF(A,scale)
+          implicit none
+          type(SF),intent(inout) :: A
+          real(cp),intent(in) :: scale
+          integer :: i
+          do i=1,A%s; call multiply_Neumann_BCs(A%BF(i),scale); enddo
+        end subroutine
+        subroutine multiply_BCs_by_nhat_SF(A)
+          implicit none
+          type(SF),intent(inout) :: A
+          integer :: i
+          do i=1,A%s; call multiply_BCs_by_nhat(A%BF(i)); enddo
         end subroutine
         subroutine assign_Robin_BCs_dir_SF(A,B,dir)
           implicit none
