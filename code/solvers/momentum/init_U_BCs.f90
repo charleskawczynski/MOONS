@@ -166,8 +166,8 @@
          call init_periodic(U%x%BF(i)%BCs,1) ! Inlet (periodic)
          call init_periodic(U%x%BF(i)%BCs,2) ! Outlet (periodic)
          call init_periodic(U%y%BF(i)%BCs,1) ! Inlet (periodic)
-         call init_periodic(U%z%BF(i)%BCs,1) ! Inlet (periodic)
          call init_periodic(U%y%BF(i)%BCs,2) ! Outlet (periodic)
+         call init_periodic(U%z%BF(i)%BCs,1) ! Inlet (periodic)
          call init_periodic(U%z%BF(i)%BCs,2) ! Outlet (periodic)
          enddo
        end subroutine

@@ -64,6 +64,8 @@
        public :: init_symmetric
        public :: init_antisymmetric
 
+       public :: set_prescribed
+
        public :: init_PA_face
 
        public :: get_all_Dirichlet
@@ -72,6 +74,7 @@
        public :: get_any_Dirichlet
        public :: get_any_Neumann
        public :: get_any_Robin
+       public :: get_any_Prescribed
 
        public :: init_props
        public :: defined
@@ -131,6 +134,8 @@
        interface init_symmetric;     module procedure init_symmetric_face;     end interface
        interface init_antisymmetric; module procedure init_antisymmetric_all;  end interface
        interface init_antisymmetric; module procedure init_antisymmetric_face; end interface
+       interface set_prescribed;     module procedure set_prescribed_all;      end interface
+       interface set_prescribed;     module procedure set_prescribed_face;     end interface
        interface init_PA_face;       module procedure init_PA_face_BC;         end interface
 
        interface get_all_Dirichlet;  module procedure get_all_Dirichlet_BCs;   end interface
@@ -139,6 +144,7 @@
        interface get_any_Dirichlet;  module procedure get_any_Dirichlet_BCs;   end interface
        interface get_any_Neumann;    module procedure get_any_Neumann_BCs;     end interface
        interface get_any_Robin;      module procedure get_any_Robin_BCs;       end interface
+       interface get_any_Prescribed; module procedure get_any_Prescribed_BCs;  end interface
 
        interface define_logicals;    module procedure define_logicals_BCs;     end interface
        interface insist_allocated;   module procedure insist_allocated_BCs;    end interface
@@ -453,6 +459,23 @@
          call define_logicals(BC)
        end subroutine
 
+       subroutine set_prescribed_all(BC)
+         implicit none
+         type(boundary_conditions),intent(inout) :: BC
+         integer :: i
+         do i=1,6; call set_prescribed(BC,i); enddo
+       end subroutine
+       subroutine set_prescribed_face(BC,face)
+         implicit none
+         type(boundary_conditions),intent(inout) :: BC
+         integer,intent(in) :: face
+         integer :: dir
+         dir = dir_given_face(face)
+         call check_prereq(BC)
+         call set_prescribed(BC%face,face)
+         call define_logicals(BC)
+       end subroutine
+
        subroutine init_PA_face_BC(BC,face)
          implicit none
          type(boundary_conditions),intent(inout) :: BC
@@ -565,6 +588,11 @@
          L(2) = BC%edge%BCL%any_Neumann
          L(3) = BC%corner%BCL%any_Neumann
          BC%BCL%any_Neumann = any(L)
+
+         L(1) = BC%face%BCL%any_Prescribed
+         L(2) = BC%edge%BCL%any_Prescribed
+         L(3) = BC%corner%BCL%any_Prescribed
+         BC%BCL%any_Prescribed = any(L)
        end subroutine
 
        function get_all_Dirichlet_BCs(BC) result(L)
@@ -607,6 +635,13 @@
          type(boundary_conditions),intent(in) :: BC
          logical :: L
          L = BC%BCL%any_Robin
+       end function
+
+       function get_any_Prescribed_BCs(BC) result(L)
+         implicit none
+         type(boundary_conditions),intent(in) :: BC
+         logical :: L
+         L = BC%BCL%any_Prescribed
        end function
 
        subroutine init_props_BCs(BC,c_w,Robin_coeff)

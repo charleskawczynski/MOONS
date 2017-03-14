@@ -7,27 +7,23 @@ TO DO LIST COMMANDS:
  ☐ Searches can be made for specific @tags
 --- ✄ -----------------------
 Right Now:
- ☐ 3) Read Shatrov for parameter inspiration
-     ☐ Fig 9a:
-     ☐ Re(L=.5)=1000,N(L=.5)=0.1-->Re(L=1)=2000,N(L=1)=0.2
-     ☐ Re(L=.5)=1000,N(L=.5)= 1 -->Re(L=1)=2000,N(L=1)=2
-     ☐ Re(L=.5)=3000,N(L=.5)= 1 -->Re(L=1)=6000,N(L=1)=2
-     ☐ Re(L=.5)=3000,N(L=.5)= 10-->Re(L=1)=6000,N(L=1)=20
-
-     ☐ Re(L=.5)=1000,N(L=.5)=0.1-->Re(L=1)=500 ,N(L=1)=0.05  I think these are correct
-     ☐ Re(L=.5)=1000,N(L=.5)= 1 -->Re(L=1)=500 ,N(L=1)=.5    I think these are correct
-     ☐ Re(L=.5)=3000,N(L=.5)= 1 -->Re(L=1)=1500,N(L=1)=.5    I think these are correct
-     ☐ Re(L=.5)=3000,N(L=.5)= 10-->Re(L=1)=1500,N(L=1)=5     I think these are correct
-     ☐ Lid velocity distribution
-     ☐ B0 = (1,0,0)
- ☐ 4) Start Shatrov parameter space sims
+ ☐ 1) Start BC cases
+     ☐ Parameters determined via Shatrov paper, Fig 9a:
+     ☐ Re(L=.5)=1000,N(L=.5)=0.1-->Re(L=1)=500 ,N(L=1)=0.05
+     ☐ Re(L=.5)=1000,N(L=.5)= 1 -->Re(L=1)=500 ,N(L=1)=.5
+     ☐ Re(L=.5)=3000,N(L=.5)= 1 -->Re(L=1)=1500,N(L=1)=.5
+     ☐ Re(L=.5)=3000,N(L=.5)= 10-->Re(L=1)=1500,N(L=1)=5
+     ☐ Re(L=.5)=5000,N(L=.5)= 50-->Re(L=1)=2500,N(L=1)=25
+     ☐ Some differences from Shatrove:
+     ☐  - Lid velocity distribution
+     ☐  - B0 = (1,0,0)
+ ☐ 2) Start Shatrov parameter space sims
    ☐ Analyze data - If good - then start new full BC MRS
    ☐ Analyze data - else    - Ask Sergey if we can change B0 config to match Shatrov
- ☐ 7) Analyze scaling in Kamkar paper
- ☐ 9) Move data from workstation to backup
- ☐ 9) Test out Robin conditions for PCG
- ☐ 9) Move restart fields to restart
- ☐ 9) Maybe make debug fields, and store them appropriately
+ ☐ 3) Analyze scaling in Kamkar paper
+ ☐ 4) Move data from workstation to backup
+ ☐ 5) Move restart fields to restart
+ ☐ 6) Maybe make debug fields, and store them appropriately, export conditionally
 
   ☐ PD cases
     ☐ Determine actual Re_m,Re,Ha etc

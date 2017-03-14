@@ -24,10 +24,12 @@
        public :: init_periodic
        public :: init_symmetric
        public :: init_antisymmetric
+       public :: set_prescribed
 
        public :: get_all_Neumann
        public :: get_all_Dirichlet
        public :: get_all_Robin
+       public :: get_any_prescribed
 
        public :: prolongate
        public :: restrict
@@ -67,6 +69,8 @@
        interface init_symmetric;      module procedure init_symmetric_ID;         end interface
        interface init_antisymmetric;  module procedure init_antisymmetric_all;    end interface
        interface init_antisymmetric;  module procedure init_antisymmetric_ID;     end interface
+       interface set_prescribed;      module procedure set_prescribed_ID;         end interface
+       interface set_prescribed;      module procedure set_prescribed_all;        end interface
 
        interface define_logicals;     module procedure define_logicals_boundary;  end interface
        interface insist_allocated;    module procedure insist_allocated_boundary; end interface
@@ -74,6 +78,7 @@
        interface get_all_Neumann;     module procedure get_all_Neumann_B;         end interface
        interface get_all_Dirichlet;   module procedure get_all_Dirichlet_B;       end interface
        interface get_all_Robin;       module procedure get_all_Robin_B;           end interface
+       interface get_any_prescribed;  module procedure get_any_prescribed_B;      end interface
 
        interface prolongate;          module procedure prolongate_B;              end interface
        interface restrict;            module procedure restrict_B;                end interface
@@ -327,6 +332,20 @@
          B%BCL%BCT_defined = .true.
        end subroutine
 
+       subroutine set_prescribed_all(B)
+         implicit none
+         type(boundary),intent(inout) :: B
+         integer :: i
+         do i=1,B%n; call set_prescribed(B,i); enddo
+       end subroutine
+       subroutine set_prescribed_ID(B,ID)
+         implicit none
+         type(boundary),intent(inout) :: B
+         integer,intent(in) :: ID
+         call set_prescribed(B%SB(ID)%bct)
+         call define_logicals(B)
+       end subroutine
+
        ! *******************************************************************************
        ! ********************************* AUXILIARY ***********************************
        ! *******************************************************************************
@@ -354,6 +373,7 @@
          B%BCL%any_Dirichlet = any((/(is_Dirichlet(B%SB(i)%bct),i=1,B%n)/))
          B%BCL%any_Robin     = any((/(is_Robin(B%SB(i)%bct),i=1,B%n)/))
          B%BCL%any_Neumann   = any((/(is_Neumann(B%SB(i)%bct),i=1,B%n)/))
+         B%BCL%any_Prescribed= any((/(is_prescribed(B%SB(i)%bct),i=1,B%n)/))
        end subroutine
 
        function get_all_Neumann_B(B) result(L)
@@ -375,6 +395,13 @@
          type(boundary),intent(inout) :: B
          logical :: L
          L = B%BCL%all_Robin
+       end function
+
+       function get_any_prescribed_B(B) result(L)
+         implicit none
+         type(boundary),intent(inout) :: B
+         logical :: L
+         L = B%BCL%any_prescribed
        end function
 
        subroutine restrict_B(B,g,DL,dir,x,y,z,n)

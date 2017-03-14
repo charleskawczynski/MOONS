@@ -79,8 +79,7 @@
          call solve(PCG_VF,Xstar,temp_F1,m,compute_norms) ! Solve for X*
          ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%dt,m,temp_F1,temp_CC,compute_norms)
          call clean_div(PCG_SF,X,Xstar,phi,1.0_cp,m,temp_F1,temp_CC,compute_norms)
-         call update_intermediate_field_BCs(Xstar,phi,1.0_cp,&
-         m,temp_F1,temp_CC)
+         if (get_any_Prescribed(Xstar)) call update_intermediate_field_BCs(Xstar,phi,1.0_cp,m,temp_F1,temp_CC)
        end subroutine
 
        subroutine O2_BDF_time_AB2_sources(PCG_VF,PCG_SF,X,Xstar,Xnm1,phi,F,Fnm1,m,&
@@ -117,8 +116,7 @@
          call solve(PCG_VF,Xstar,temp_F1,m,compute_norms) ! Solve for X*
          ! call clean_div(PCG_SF,X,Xstar,phi,three_halfs/TMP%dt,m,temp_F1,temp_CC,compute_norms)
          call clean_div(PCG_SF,X,Xstar,phi,1.0_cp,m,temp_F1,temp_CC,compute_norms)
-         call update_intermediate_field_BCs(Xstar,phi,1.0_cp,&
-         m,temp_F1,temp_CC)
+         if (get_any_Prescribed(Xstar)) call update_intermediate_field_BCs(Xstar,phi,1.0_cp,m,temp_F1,temp_CC)
        end subroutine
 
        subroutine Euler_time_AB2_sources(PCG_VF,PCG_SF,X,Xstar,Xnm1,phi,F,Fnm1,m,&
@@ -154,8 +152,7 @@
          call solve(PCG_VF,Xstar,temp_F1,m,compute_norms) ! Solve for X*
          ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%dt,m,temp_F1,temp_CC,compute_norms)
          call clean_div(PCG_SF,X,Xstar,phi,1.0_cp,m,temp_F1,temp_CC,compute_norms)
-         call update_intermediate_field_BCs(Xstar,phi,1.0_cp,&
-         m,temp_F1,temp_CC)
+         if (get_any_Prescribed(Xstar)) call update_intermediate_field_BCs(Xstar,phi,1.0_cp,m,temp_F1,temp_CC)
        end subroutine
 
        ! **********************************************************************

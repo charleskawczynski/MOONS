@@ -202,7 +202,7 @@
          call apply_BCs(ind%B);                           write(*,*) '     BCs applied'
 
          call init(ind%Bstar,ind%B)
-         if (SP%prescribed_BCs) call set_prescribed_BCs(ind%Bstar)
+         if (SP%VS%B%SS%prescribed_BCs) call set_prescribed_BCs(ind%Bstar)
          call init_Bstar_field(ind%Bstar,m,ind%B,ind%SP,str(DT%B%field))
 
          write(*,*) '     Intermediate B-field initialized'

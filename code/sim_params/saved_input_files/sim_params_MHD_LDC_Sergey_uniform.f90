@@ -106,7 +106,7 @@
        SP%couple_time_steps          = T ! Ensures all dt are equal to coupled%dt
        SP%finite_Rem                 = F ! Ensures all dt are equal to coupled%dt
        SP%include_vacuum             = F ! Ensures all dt are equal to coupled%dt
-       SP%compute_surface_power      = F ! Compute surface power for LDC
+       SP%compute_surface_power      = T ! Compute surface power for LDC
 
        SP%matrix_based               = F ! Solve induction equation
        SP%print_every_MHD_step       = F ! Print nstep every time stop (for debugging)
@@ -115,10 +115,10 @@
        call init(SP%MP,F,6) ! Must be defined before KE_scale,ME_scale,JE_scale
 
        ! call init(EFP,export_ever,export_first_step,frequency_base,frequency_exp)
-       call init(SP%EF%info          ,T,T,2,10,2)
-       call init(SP%EF%unsteady_0D   ,T,T,2,10,2)
-       call init(SP%EF%unsteady_1D   ,F,F,2,10,2)
-       call init(SP%EF%unsteady_2D   ,F,F,2,10,2)
+       call init(SP%EF%info          ,T,T,1,10,2)
+       call init(SP%EF%unsteady_0D   ,T,T,1,10,2)
+       call init(SP%EF%unsteady_1D   ,F,F,1,10,2)
+       call init(SP%EF%unsteady_2D   ,F,F,1,10,2)
        call init(SP%EF%unsteady_3D   ,F,F,1,10,4)
        call init(SP%EF%restart_files ,F,F,1,10,2)
        call init(SP%EF%final_solution,F,F,1,10,6)
@@ -131,12 +131,12 @@
        ! call init(TSP,collect,t_start,t_stop)
        call init(SP%TSP,F,100.0_cp,500.0_cp)
 
-       time                          = 1000.0_cp
+       time                          = 30.0_cp
        dtime                         = 1.0_cp*pow(-2)
 
        SP%GP%tw                      = 0.05_cp
-       SP%GP%geometry                = 2
-       SP%GP%periodic_dir            = (/0,0,1/)
+       SP%GP%geometry                = 9
+       SP%GP%periodic_dir            = (/0,0,0/)
        ! SP%GP%apply_BC_order          = (/3,4,5,6,1,2/) ! good for LDC
        ! SP%GP%apply_BC_order       = (/3,4,5,6,1,2/) ! good for periodic in y?
        SP%GP%apply_BC_order       = (/5,6,1,2,3,4/) ! good for periodic in y?
@@ -147,7 +147,7 @@
        SP%DP%Re                      = 1.0_cp*pow(2)
        ! SP%DP%Q                       = 4.4_cp*pow(-1)
        SP%DP%Rem                     = 1.0_cp*pow(0)
-       SP%DP%Ha                      = 5.0_cp*pow(1)
+       SP%DP%Ha                      = 1.0_cp*pow(1)
        ! SP%DP%N                       = 1.0_cp/SP%DP%Q
        ! SP%DP%N                       = 4.0_cp*pow(-1)
        SP%DP%c_w(1:6)                = 0.0_cp
@@ -159,14 +159,14 @@
        SP%DP%sig_local_over_sig_f    = 1.0_cp*pow(0)
        SP%DP%Gr                      = 0.0_cp
        SP%DP%Pr                      = 0.01_cp
-       ! call init(SS        ,initialize,solve,restart,prescribe_BCs,solve_method)
-       call init(SP%VS%T%SS  ,F         ,F    ,F      ,F            ,0)
-       call init(SP%VS%U%SS  ,T         ,T    ,F      ,T            ,6)
-       call init(SP%VS%P%SS  ,T         ,T    ,F      ,F            ,0)
-       call init(SP%VS%B%SS  ,T         ,T    ,F      ,F            ,6)
-       call init(SP%VS%B0%SS ,T         ,T    ,F      ,F            ,0)
-       call init(SP%VS%phi%SS,F         ,F    ,F      ,F            ,0)
-       call init(SP%VS%rho%SS,F         ,F    ,F      ,F            ,0)
+       SP%DP%Fr                      = 1.0_cp
+       SP%DP%Ec                      = 0.0_cp
+
+       ! SP%DP%Ha                      = (1.0_cp/SP%DP%Q*SP%DP%Re)**0.5_cp
+       SP%DP%N                       = SP%DP%Ha**2.0_cp/SP%DP%Re
+       ! SP%DP%Ha                      = (SP%DP%N*SP%DP%Re)**0.5_cp
+       SP%DP%Al                      = SP%DP%N/SP%DP%Rem
+       SP%DP%Pe                      = SP%DP%Pr*SP%DP%Re
        SP%DP%tau                     = SP%DP%Re/SP%DP%Ha
        SP%DP%L_eta                   = SP%DP%Re**(-0.75_cp)
        SP%DP%U_eta                   = SP%DP%Re**(-0.25_cp)
@@ -224,9 +224,9 @@
 
        ! call init_IC_BC(var      ,IC   ,BC)
        call init_IC_BC(SP%VS%T    ,0    ,0 )
-       call init_IC_BC(SP%VS%U    ,0    ,4 )
-       call init_IC_BC(SP%VS%P    ,0    ,1 )
-       call init_IC_BC(SP%VS%B    ,0    ,5 ) ! 5 for thin wall
+       call init_IC_BC(SP%VS%U    ,0    ,1 )
+       call init_IC_BC(SP%VS%P    ,0    ,0 )
+       call init_IC_BC(SP%VS%B    ,0    ,1 ) ! 5 for thin wall
        call init_IC_BC(SP%VS%B0   ,1    ,0 )
        call init_IC_BC(SP%VS%phi  ,0    ,0 )
        call init_IC_BC(SP%VS%rho  ,0    ,0 )
@@ -251,15 +251,15 @@
        call init(SP%VS%B0%TMP, 1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_B0')
        call init(SP%VS%phi%TMP,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_phi')
        call init(SP%VS%rho%TMP,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_rho')
-
-       ! Matrix-free parameters:
-       ! theta          = weight for explicit to implicit treatment
-       ! coeff_natural  = coefficient of terms in non-discretized equation
-       ! coeff_explicit = coefficient of explicit terms without time discretization
-       ! coeff_implicit = coefficient of implicit terms without time discretization
-       ! coeff_implicit_time_split = dt*coeff_implicit/coeff_unsteady (computed in time_marching_methods.f90)
-
-       SP%VS%B%MFP%alpha = 1.0_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
+       ! call init(SS        ,initialize,solve,restart,prescribe_BCs,solve_method)
+       call init(SP%VS%T%SS  ,F         ,F    ,F      ,F            ,0)
+       call init(SP%VS%U%SS  ,T         ,T    ,F      ,T            ,6)
+       call init(SP%VS%P%SS  ,T         ,T    ,F      ,F            ,0)
+       call init(SP%VS%B%SS  ,T         ,T    ,F      ,F            ,6)
+       call init(SP%VS%B0%SS ,T         ,T    ,F      ,F            ,0)
+       call init(SP%VS%phi%SS,F         ,F    ,F      ,F            ,0)
+       call init(SP%VS%rho%SS,F         ,F    ,F      ,F            ,0)
+licit treatment (1 = Backward Euler, .5 = Crank Nicholson)
        SP%VS%U%MFP%alpha = 0.5_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
        SP%VS%T%MFP%alpha = 0.5_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
        SP%VS%B%MFP%coeff_natural = -1.0_cp/SP%DP%Rem ! natural diffusion coefficient on RHS
@@ -276,15 +276,15 @@
        SP%MT%advection_convection%add   = F ! add advection (conv form)  to momentum equation
        SP%MT%advection_divergence%add   = T ! add advection (div  form)  to momentum equation
        SP%MT%mean_pressure_grad%add     = F ! add mean pressure gradient to momentum equation
-       SP%MT%JCrossB%add                = F ! add JCrossB                to momentum equation
-       ! call init(SS        ,initialize,solve,restart,prescribe_BCs,solve_method)
-       call init(SP%VS%T%SS  ,F         ,F    ,F      ,F            ,0)
-       call init(SP%VS%U%SS  ,T         ,T    ,F      ,T            ,6)
-       call init(SP%VS%P%SS  ,T         ,T    ,F      ,F            ,0)
-       call init(SP%VS%B%SS  ,T         ,T    ,F      ,F            ,6)
-       call init(SP%VS%B0%SS ,T         ,T    ,F      ,F            ,0)
-       call init(SP%VS%phi%SS,F         ,F    ,F      ,F            ,0)
-       call init(SP%VS%rho%SS,F         ,F    ,F      ,F            ,0)
+       SP%MT%JCrossB%add                = T ! add JCrossB                to momentum equation
+       SP%MT%Q2D_JCrossB%add            = F ! add Q2D JCrossB            to momentum equation
+       SP%MT%Buoyancy%add               = F ! add Buoyancy               to momentum equation
+       SP%MT%Gravity%add                = F ! add Gravity                to momentum equation
+
+       SP%IT%advection%add              = T ! add advection              to induction equation
+       SP%IT%diffusion%add              = T ! add diffusion              to induction equation
+       SP%IT%unsteady_B0%add            = F ! add unsteady_B0            to induction equation
+
        SP%ET%advection%add              = F ! add advection           to energy equation
        SP%ET%diffusion%add              = F ! add diffusion           to energy equation
        SP%ET%KE_diffusion%add           = F ! add KE_diffusion        to energy equation
@@ -298,14 +298,14 @@
        ! SP%MT%advection_divergence%scale = -1.0_cp/SP%DP%Rem ! For Rem ne 1 in Bandaru
        SP%MT%mean_pressure_grad%scale   = 1.0_cp
        SP%MT%JCrossB%scale              = SP%DP%N
-       ! call init(SS        ,initialize,solve,restart,prescribe_BCs,solve_method)
-       call init(SP%VS%T%SS  ,F         ,F    ,F      ,F            ,0)
-       call init(SP%VS%U%SS  ,T         ,T    ,F      ,T            ,6)
-       call init(SP%VS%P%SS  ,T         ,T    ,F      ,F            ,0)
-       call init(SP%VS%B%SS  ,T         ,T    ,F      ,F            ,6)
-       call init(SP%VS%B0%SS ,T         ,T    ,F      ,F            ,0)
-       call init(SP%VS%phi%SS,F         ,F    ,F      ,F            ,0)
-       call init(SP%VS%rho%SS,F         ,F    ,F      ,F            ,0)
+       SP%MT%Q2D_JCrossB%scale          = -1.0_cp/SP%DP%tau
+       SP%MT%Buoyancy%scale             = SP%DP%Gr/SP%DP%Re**2.0_cp
+       SP%MT%Gravity%scale              = 1.0_cp/SP%DP%Fr**2.0_cp
+       ! SP%MT%JCrossB%scale              = SP%DP%N*SP%DP%Rem ! For Rem ne 1 in Bandaru (look at J definition)
+
+       SP%IT%advection%scale            = 1.0_cp
+       SP%IT%diffusion%scale            = -SP%VS%B%MFP%beta ! since LHS and J includes scale
+       SP%IT%unsteady_B0%scale          = -1.0_cp ! since RHS
        SP%IT%current%scale              = 1.0_cp/SP%DP%Rem ! J = scale curl(B)
        SP%IT%B_applied%scale            = 1.0_cp           ! B0 = scale*B0
        ! SP%IT%advection%scale            = 1.0_cp/SP%DP%Rem ! For Rem ne 1 in Bandaru
@@ -323,15 +323,15 @@
      end subroutine
 
      subroutine sanity_check_SP(SP)
-       implicit none
-       type(sim_params),intent(in) :: SP
-       if (SP%coupled%n_step_stop.lt.1) stop 'Error: coupled%n_step_stop<1 in sim_params.f90'
-       call sanity_check(SP%VS)
-     end subroutine
-
-     subroutine init_SP_copy(SP,SP_in)
-       implicit none
-       type(sim_params),intent(inout) :: SP
+       implicit none       ! call init(SS        ,initialize,solve,restart,prescribe_BCs,solve_method)
+       call init(SP%VS%T%SS  ,F         ,F    ,F      ,F            ,0)
+       call init(SP%VS%U%SS  ,T         ,T    ,F      ,T            ,6)
+       call init(SP%VS%P%SS  ,T         ,T    ,F      ,F            ,0)
+       call init(SP%VS%B%SS  ,T         ,T    ,F      ,F            ,6)
+       call init(SP%VS%B0%SS ,T         ,T    ,F      ,F            ,0)
+       call init(SP%VS%phi%SS,F         ,F    ,F      ,F            ,0)
+       call init(SP%VS%rho%SS,F         ,F    ,F      ,F            ,0)
+t(inout) :: SP
        type(sim_params),intent(in) :: SP_in
        SP%restart_all            = SP_in%restart_all
        SP%couple_time_steps      = SP_in%couple_time_steps
@@ -352,15 +352,15 @@
        call init(SP%MT,     SP_in%MT)
        call init(SP%IT,     SP_in%IT)
        call init(SP%DP,     SP_in%DP)
-       call init(SP%coupled,SP_in%coupled)
-       call init(SP%MQP,    SP_in%MQP)
-       call init(SP%TSP,    SP_in%TSP)
-       call init(SP%EF,     SP_in%EF)
-     end subroutine
-
-     subroutine delete_SP(SP)
-       implicit none
-       type(sim_params),intent(inout) :: SP
+       call init(SP%coupled,SP       ! call init(SS        ,initialize,solve,restart,prescribe_BCs,solve_method)
+       call init(SP%VS%T%SS  ,F         ,F    ,F      ,F            ,0)
+       call init(SP%VS%U%SS  ,T         ,T    ,F      ,T            ,6)
+       call init(SP%VS%P%SS  ,T         ,T    ,F      ,F            ,0)
+       call init(SP%VS%B%SS  ,T         ,T    ,F      ,F            ,6)
+       call init(SP%VS%B0%SS ,T         ,T    ,F      ,F            ,0)
+       call init(SP%VS%phi%SS,F         ,F    ,F      ,F            ,0)
+       call init(SP%VS%rho%SS,F         ,F    ,F      ,F            ,0)
+(inout) :: SP
        call delete(SP%GP)
        call delete(SP%MP)
        call delete(SP%EL)

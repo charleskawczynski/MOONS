@@ -67,6 +67,7 @@
         public :: get_any_Dirichlet
         public :: get_any_Neumann
         public :: get_any_Robin
+        public :: get_any_Prescribed
 
         public :: init_BCs,init_BC_Dirichlet,init_BC_props,init_BC_mesh
         public :: dot_product
@@ -198,6 +199,7 @@
         interface get_any_Dirichlet;        module procedure get_any_Dirichlet_SF;         end interface
         interface get_any_Neumann;          module procedure get_any_Neumann_SF;           end interface
         interface get_any_Robin;            module procedure get_any_Robin_SF;             end interface
+        interface get_any_Prescribed;       module procedure get_any_Prescribed_SF;        end interface
 
         interface plane_sum_x;              module procedure plane_sum_x_SF;               end interface
         interface plane_sum_y;              module procedure plane_sum_y_SF;               end interface
@@ -932,6 +934,14 @@
           logical :: L
           integer :: i
           L = any((/(get_any_Robin(u%BF(i)),i=1,u%s)/))
+        end function
+
+        function get_any_Prescribed_SF(u) result(L)
+          implicit none
+          type(SF),intent(in) :: u
+          logical :: L
+          integer :: i
+          L = any((/(get_any_Prescribed(u%BF(i)),i=1,u%s)/))
         end function
 
         function plane_sum_x_SF(u,m,p) result(SP)

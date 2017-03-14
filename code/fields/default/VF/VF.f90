@@ -42,6 +42,7 @@
         public :: get_any_Dirichlet
         public :: get_any_Neumann
         public :: get_any_Robin
+        public :: get_any_Prescribed
 
         public :: volume
         public :: sine_waves
@@ -211,6 +212,7 @@
         interface get_any_Dirichlet;        module procedure get_any_Dirichlet_VF;          end interface
         interface get_any_Neumann;          module procedure get_any_Neumann_VF;            end interface
         interface get_any_Robin;            module procedure get_any_Robin_VF;              end interface
+        interface get_any_Prescribed;       module procedure get_any_Prescribed_VF;         end interface
 
         ! COMPUTATION ROUTINES
 
@@ -414,6 +416,13 @@
           type(VF),intent(in) :: f
           logical :: L
           L = any((/get_any_Robin(f%x),get_any_Robin(f%y),get_any_Robin(f%z)/))
+        end function
+
+        function get_any_Prescribed_VF(f) result(L)
+          implicit none
+          type(VF),intent(in) :: f
+          logical :: L
+          L = any((/get_any_Prescribed(f%x),get_any_Prescribed(f%y),get_any_Prescribed(f%z)/))
         end function
 
         subroutine export_BCs_VF(f,dir,name)

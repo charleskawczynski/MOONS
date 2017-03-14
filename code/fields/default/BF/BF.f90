@@ -82,6 +82,7 @@
         public :: get_any_Dirichlet
         public :: get_any_Neumann
         public :: get_any_Robin
+        public :: get_any_Prescribed
 
         public :: restrict
         public :: prolongate
@@ -135,6 +136,7 @@
        interface get_any_Dirichlet;           module procedure get_any_Dirichlet_BF;            end interface
        interface get_any_Neumann;             module procedure get_any_Neumann_BF;              end interface
        interface get_any_Robin;               module procedure get_any_Robin_BF;                end interface
+       interface get_any_Prescribed;          module procedure get_any_Prescribed_BF;           end interface
 
        interface square;                      module procedure square_BF;                       end interface
        interface square_root;                 module procedure square_root_BF;                  end interface
@@ -603,6 +605,13 @@
          L = get_any_Robin(BF%BCs)
        end function
 
+       function get_any_Prescribed_BF(BF) result(L)
+         implicit none
+         type(block_field),intent(in) :: BF
+         logical :: L
+         L = get_any_Prescribed(BF%BCs)
+       end function
+
        subroutine square_BF(u)
          implicit none
          type(block_field),intent(inout) :: u
@@ -865,7 +874,7 @@
          if (defined(A%BCs)) then
            do i=1,6
             dir = dir_given_face(i)
-            if (A%many_cell(dir)) call set_prescribed(A%BCs%face%SB(i)%bct)
+            if (A%many_cell(dir)) call set_prescribed(A%BCs,i)
             call init_PA_face(A%BCs,i)
            enddo
          endif

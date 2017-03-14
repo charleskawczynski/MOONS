@@ -171,7 +171,7 @@
          write(*,*) '     U BCs applied'
 
          call init(mom%Ustar,mom%U)
-         if (SP%prescribed_BCs) call set_prescribed_BCs(mom%Ustar)
+         if (SP%VS%U%SS%prescribed_BCs) call set_prescribed_BCs(mom%Ustar)
          call init_Ustar_field(mom%Ustar,mom%m,mom%U,mom%SP,str(DT%U%field))
          write(*,*) '     Intermediate field initialized'
 

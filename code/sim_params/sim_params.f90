@@ -58,7 +58,6 @@
        logical :: restart_all
 
        logical :: matrix_based
-       logical :: prescribed_BCs
        logical :: print_every_MHD_step
 
        logical :: couple_time_steps
@@ -105,22 +104,21 @@
        SP%uniform_B0_dir             = 3 ! Uniform applied field direction
        SP%mpg_dir                    = 1 ! Uniform applied field direction
        SP%couple_time_steps          = T ! Ensures all dt are equal to coupled%dt
-       SP%finite_Rem                 = F ! Ensures all dt are equal to coupled%dt
+       SP%finite_Rem                 = T ! Ensures all dt are equal to coupled%dt
        SP%include_vacuum             = F ! Ensures all dt are equal to coupled%dt
-       SP%compute_surface_power      = F ! Compute surface power for LDC
+       SP%compute_surface_power      = T ! Compute surface power for LDC
 
        SP%matrix_based               = F ! Solve induction equation
-       SP%prescribed_BCs             = T ! Ustar,Bstar defined by relation in Kim 1985
        SP%print_every_MHD_step       = F ! Print nstep every time stop (for debugging)
 
        ! call init(MP,mirror,mirror_face)
        call init(SP%MP,F,6) ! Must be defined before KE_scale,ME_scale,JE_scale
 
        ! call init(EFP,export_ever,export_first_step,frequency_base,frequency_exp)
-       call init(SP%EF%info          ,T,T,2,10,2)
-       call init(SP%EF%unsteady_0D   ,T,T,2,10,2)
-       call init(SP%EF%unsteady_1D   ,F,F,2,10,2)
-       call init(SP%EF%unsteady_2D   ,F,F,2,10,2)
+       call init(SP%EF%info          ,T,T,1,10,2)
+       call init(SP%EF%unsteady_0D   ,T,T,1,10,2)
+       call init(SP%EF%unsteady_1D   ,F,F,1,10,2)
+       call init(SP%EF%unsteady_2D   ,F,F,1,10,2)
        call init(SP%EF%unsteady_3D   ,F,F,1,10,4)
        call init(SP%EF%restart_files ,F,F,1,10,2)
        call init(SP%EF%final_solution,F,F,1,10,6)
@@ -133,12 +131,12 @@
        ! call init(TSP,collect,t_start,t_stop)
        call init(SP%TSP,F,100.0_cp,500.0_cp)
 
-       time                          = 1000.0_cp
-       dtime                         = 1.0_cp*pow(-2)
+       time                          = 40.0_cp
+       dtime                         = 2.0_cp*pow(-3)
 
        SP%GP%tw                      = 0.05_cp
-       SP%GP%geometry                = 2
-       SP%GP%periodic_dir            = (/0,0,1/)
+       SP%GP%geometry                = 7
+       SP%GP%periodic_dir            = (/0,1,0/)
        ! SP%GP%apply_BC_order          = (/3,4,5,6,1,2/) ! good for LDC
        ! SP%GP%apply_BC_order       = (/3,4,5,6,1,2/) ! good for periodic in y?
        SP%GP%apply_BC_order       = (/5,6,1,2,3,4/) ! good for periodic in y?
@@ -146,11 +144,11 @@
        ! SP%GP%apply_BC_order       = (/3,4,1,2,5,6/) ! good for periodic in z?
 
        call delete(SP%DP)
-       SP%DP%Re                      = 1.0_cp*pow(2)
-       ! SP%DP%Q                       = 4.4_cp*pow(-1)
+       SP%DP%Re                      = 2.0_cp*pow(2)
+       SP%DP%Q                       = 3.0_cp*pow(-1)
        SP%DP%Rem                     = 1.0_cp*pow(0)
-       SP%DP%Ha                      = 5.0_cp*pow(1)
-       ! SP%DP%N                       = 1.0_cp/SP%DP%Q
+       ! SP%DP%Ha                      = 1.0_cp*pow(1)
+       SP%DP%N                       = 1.0_cp/SP%DP%Q
        ! SP%DP%N                       = 4.0_cp*pow(-1)
        SP%DP%c_w(1:6)                = 0.0_cp
        SP%DP%c_w( 5 )                = 1.0_cp
@@ -164,8 +162,8 @@
        SP%DP%Fr                      = 1.0_cp
        SP%DP%Ec                      = 0.0_cp
 
-       ! SP%DP%Ha                      = (1.0_cp/SP%DP%Q*SP%DP%Re)**0.5_cp
-       SP%DP%N                       = SP%DP%Ha**2.0_cp/SP%DP%Re
+       SP%DP%Ha                      = (1.0_cp/SP%DP%Q*SP%DP%Re)**0.5_cp
+       ! SP%DP%N                       = SP%DP%Ha**2.0_cp/SP%DP%Re
        ! SP%DP%Ha                      = (SP%DP%N*SP%DP%Re)**0.5_cp
        SP%DP%Al                      = SP%DP%N/SP%DP%Rem
        SP%DP%Pe                      = SP%DP%Pr*SP%DP%Re
@@ -207,14 +205,14 @@
        call init(SP%VS%phi%unsteady_lines,F,1,(/2,34/),'1')
        call init(SP%VS%rho%unsteady_lines,F,1,(/2,34/),'1')
 
-       ! call init(SS        ,initialize,solve,restart,solve_method)
-       call init(SP%VS%T%SS  ,F         ,F    ,F      ,0)
-       call init(SP%VS%U%SS  ,T         ,T    ,F      ,6)
-       call init(SP%VS%P%SS  ,T         ,T    ,F      ,0)
-       call init(SP%VS%B%SS  ,F         ,F    ,F      ,6)
-       call init(SP%VS%B0%SS ,F         ,F    ,F      ,0)
-       call init(SP%VS%phi%SS,F         ,F    ,F      ,0)
-       call init(SP%VS%rho%SS,F         ,F    ,F      ,0)
+       ! call init(SS        ,initialize,solve,restart,prescribe_BCs,solve_method)
+       call init(SP%VS%T%SS  ,F         ,F    ,F      ,F            ,0)
+       call init(SP%VS%U%SS  ,T         ,T    ,F      ,T            ,6)
+       call init(SP%VS%P%SS  ,T         ,T    ,F      ,F            ,0)
+       call init(SP%VS%B%SS  ,T         ,T    ,F      ,F            ,6)
+       call init(SP%VS%B0%SS ,T         ,T    ,F      ,F            ,0)
+       call init(SP%VS%phi%SS,F         ,F    ,F      ,F            ,0)
+       call init(SP%VS%rho%SS,F         ,F    ,F      ,F            ,0)
        !     solve_method = 1 = Euler_time_no_diff_Euler_sources_no_correction
        !     solve_method = 2 = Euler_time_no_diff_AB2_sources_no_correction
        !     solve_method = 3 = Euler_time_no_diff_Euler_sources
@@ -226,10 +224,10 @@
 
        ! call init_IC_BC(var      ,IC   ,BC)
        call init_IC_BC(SP%VS%T    ,0    ,0 )
-       call init_IC_BC(SP%VS%U    ,0    ,4 )
-       call init_IC_BC(SP%VS%P    ,0    ,1 )
-       call init_IC_BC(SP%VS%B    ,0    ,5 ) ! 5 for thin wall
-       call init_IC_BC(SP%VS%B0   ,1    ,0 )
+       call init_IC_BC(SP%VS%U    ,0    ,6 )
+       call init_IC_BC(SP%VS%P    ,0    ,2 )
+       call init_IC_BC(SP%VS%B    ,0    ,2 ) ! 5 for thin wall
+       call init_IC_BC(SP%VS%B0   ,4    ,0 )
        call init_IC_BC(SP%VS%phi  ,0    ,0 )
        call init_IC_BC(SP%VS%rho  ,0    ,0 )
 
@@ -277,8 +275,8 @@
        SP%MT%diffusion%add              = T ! add diffusion              to momentum equation
        SP%MT%advection_convection%add   = F ! add advection (conv form)  to momentum equation
        SP%MT%advection_divergence%add   = T ! add advection (div  form)  to momentum equation
-       SP%MT%mean_pressure_grad%add     = F ! add mean pressure gradient to momentum equation
-       SP%MT%JCrossB%add                = F ! add JCrossB                to momentum equation
+       SP%MT%mean_pressure_grad%add     = T ! add mean pressure gradient to momentum equation
+       SP%MT%JCrossB%add                = T ! add JCrossB                to momentum equation
        SP%MT%Q2D_JCrossB%add            = F ! add Q2D JCrossB            to momentum equation
        SP%MT%Buoyancy%add               = F ! add Buoyancy               to momentum equation
        SP%MT%Gravity%add                = F ! add Gravity                to momentum equation
@@ -344,7 +342,6 @@
        SP%mpg_dir                = SP_in%mpg_dir
        SP%uniform_gravity_dir    = SP_in%uniform_gravity_dir
        SP%matrix_based           = SP_in%matrix_based
-       SP%prescribed_BCs         = SP_in%prescribed_BCs
        SP%print_every_MHD_step   = SP_in%print_every_MHD_step
        call init(SP%FCL,    SP_in%FCL)
        call init(SP%GP,     SP_in%GP)
@@ -391,7 +388,6 @@
        write(un,*) 'mpg_dir                = ',SP%mpg_dir
        write(un,*) 'uniform_gravity_dir    = ',SP%uniform_gravity_dir
        write(un,*) 'matrix_based           = ',SP%matrix_based
-       write(un,*) 'prescribed_BCs         = ',SP%prescribed_BCs
        write(un,*) 'print_every_MHD_step   = ',SP%print_every_MHD_step
        call display(SP%FCL,un)
        call display(SP%GP,un)
@@ -464,7 +460,6 @@
        write(un,*) SP%mpg_dir
        write(un,*) SP%uniform_gravity_dir
        write(un,*) SP%matrix_based
-       write(un,*) SP%prescribed_BCs
        write(un,*) SP%print_every_MHD_step
        call export(SP%FCL,un)
        call export(SP%GP,un)
@@ -494,7 +489,6 @@
        read(un,*) SP%mpg_dir
        read(un,*) SP%uniform_gravity_dir
        read(un,*) SP%matrix_based
-       read(un,*) SP%prescribed_BCs
        read(un,*) SP%print_every_MHD_step
        call import(SP%FCL,un)
        call import(SP%GP,un)
