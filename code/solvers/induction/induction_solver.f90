@@ -34,63 +34,12 @@
        private
 
        ! Explicit time marching methods (CT methods)
-       public :: CT_Finite_Rem
        public :: CT_Finite_Rem_perfect_vacuum
-       public :: CT_Low_Rem
        public :: CT_Low_Rem_matrix_based
        public :: CT_Finite_Rem_interior_solved
        public :: JAC_interior_solved
 
        contains
-
-       subroutine CT_Finite_Rem(B,B0,U_E,J,F,sigmaInv_E,m,N_multistep,dt,&
-         temp_F1,temp_F2,temp_F3,temp_E,temp_E_TF)
-         ! Solves:    ∂B/∂t = ∇x(ux(B⁰+B)) - Rem⁻¹∇x(σ⁻¹∇xB) + F
-         ! Computes:  B (above)
-         ! Note:      J = Rem⁻¹∇xB    -> J ALREADY HAS Rem⁻¹ !
-         ! Method:    Constrained Transport (CT)
-         ! Info:      cell face => B,B0,cell edge => J,sigmaInv_E,U_E,Finite Rem
-         implicit none
-         type(VF),intent(inout) :: B,temp_E,temp_F1,temp_F2,temp_F3
-         type(VF),intent(in) :: B0,sigmaInv_E,J,F
-         type(TF),intent(inout) :: temp_E_TF
-         type(TF),intent(in) :: U_E
-         type(mesh),intent(in) :: m
-         integer,intent(in) :: N_multistep
-         real(cp),intent(in) :: dt
-         integer :: i
-         do i=1,N_multistep
-           call add(temp_F2,B,B0) ! Since finite Rem
-           call advect_B(temp_F1,U_E,temp_F2,m,temp_E_TF,temp_E)
-           call multiply(temp_E,J,sigmaInv_E)
-           call curl(temp_F3,temp_E,m)
-           call subtract(temp_F1,temp_F3)
-           call add(temp_F1,F)
-           call multiply(temp_F1,dt)
-           call add(B,temp_F1)
-           call apply_BCs(B)
-         enddo
-       end subroutine
-
-       subroutine CT_Low_Rem(B,B0,U_E,J,sigmaInv_E,m,N_multistep,dt,temp_F1,temp_F2,temp_E,temp_E_TF)
-         implicit none
-         type(VF),intent(inout) :: B,J,temp_E,temp_F1,temp_F2
-         type(VF),intent(in) :: B0,sigmaInv_E
-         type(TF),intent(inout) :: temp_E_TF
-         type(TF),intent(in) :: U_E
-         type(mesh),intent(in) :: m
-         real(cp),intent(in) :: dt
-         integer,intent(in) :: N_multistep
-         integer :: i
-         do i=1,N_multistep
-           call curl_curl_B_matrix_free(temp_F2,J,B,sigmaInv_E,m,temp_E)
-           call advect_B(temp_F1,U_E,B0,m,temp_E_TF,temp_E)
-           call multiply(temp_F1,dt)
-           call add_product(B,temp_F2,-dt)
-           call add(B,temp_F1)
-           call apply_BCs(B)
-         enddo
-       end subroutine
 
        subroutine CT_Low_Rem_matrix_based(B,B0,U_E,m,N_multistep,dt,temp_F1,temp_F2,temp_E,temp_E_TF)
          implicit none
@@ -149,7 +98,7 @@
        end subroutine
 
        subroutine JAC_interior_solved(JAC,PCG_cleanB,B,Bstar,RHS,phi,m,&
-         N_multistep,N_induction,dt,compute_norms,SF_CC,temp_F1)
+         N_multistep,N_induction,dt,compute_norms,SF_CC,temp_F1,temp_E)
          ! Solves: ∇•(∇B) = 0 using Jacobi method + cleaning procedure
          implicit none
          type(Jacobi),intent(inout) :: JAC
@@ -157,7 +106,7 @@
          type(VF),intent(inout) :: B,Bstar
          type(VF),intent(in) :: RHS
          type(SF),intent(inout) :: SF_CC,phi
-         type(VF),intent(inout) :: temp_F1
+         type(VF),intent(inout) :: temp_F1,temp_E
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: dt
          integer,intent(in) :: N_multistep,N_induction
@@ -166,7 +115,7 @@
          do i=1,N_multistep
            call solve(JAC,B,RHS,m,N_induction,.true.)
            call clean_div(PCG_cleanB,B,Bstar,phi,1.0_cp/dt,m,temp_F1,SF_CC,compute_norms)
-           call update_intermediate_field_BCs(Bstar,phi,dt,m,temp_F1,SF_CC)
+           call update_intermediate_field_BCs(Bstar,phi,dt,m,temp_F1,temp_E,SF_CC)
          enddo
        end subroutine
 
