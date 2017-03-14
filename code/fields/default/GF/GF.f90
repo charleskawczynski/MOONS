@@ -12,6 +12,7 @@
         use GF_aux_mod
         use GF_distributions_mod
         use GF_assign_plane_mod
+        use GF_assign_plane_ave_mod
         use GF_add_plane_mod
         use GF_plane_sum_mod
         use GF_symmetry_error_mod
@@ -31,6 +32,7 @@
         use GF_prolongate_mod
         use GF_CFL_number_mod
         use GF_Fourier_number_mod
+        use GF_Robin_BC_coeff_mod
 
         implicit none
         private
@@ -80,9 +82,9 @@
         public :: symmetry_error_y,assign_plane_y,add_plane_y,symmetry_local_y
         public :: symmetry_error_z,assign_plane_z,add_plane_z,symmetry_local_z
 
-        public :: multiply_plane_x
-        public :: multiply_plane_y
-        public :: multiply_plane_z
+        public :: multiply_plane_x,assign_plane_ave_x,assign_plane_ave
+        public :: multiply_plane_y,assign_plane_ave_y,assign_plane_ave
+        public :: multiply_plane_z,assign_plane_ave_z,assign_plane_ave
 
         ! GF_assign_mod
         public :: assign,assign_negative
@@ -130,6 +132,7 @@
 
         public :: CFL_number
         public :: Fourier_number
+        public :: Robin_BC_coeff
 
         public :: insist_allocated
         public :: insist_shape_staggered

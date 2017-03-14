@@ -36,7 +36,7 @@
          case default; stop 'Error: bad preset_ID in init_phi_BCs.f90.'
          end select
          call make_periodic(phi,m,periodic_dir)
-         call init_BC_props(phi)
+         call init_BC_props(phi,SP%DP%c_w,SP%DP%Robin_coeff)
        end subroutine
 
        subroutine periodic_duct_flow(phi)

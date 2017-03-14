@@ -64,9 +64,17 @@
        public :: init_symmetric
        public :: init_antisymmetric
 
-       public :: getAllNeumann
-       public :: getDirichlet
-       public :: getAllRobin
+       public :: set_prescribed
+
+       public :: init_PA_face
+
+       public :: get_all_Dirichlet
+       public :: get_all_Neumann
+       public :: get_all_Robin
+       public :: get_any_Dirichlet
+       public :: get_any_Neumann
+       public :: get_any_Robin
+       public :: get_any_Prescribed
 
        public :: init_props
        public :: defined
@@ -97,43 +105,54 @@
          integer,dimension(6) :: apply_BC_order = (/1,2,3,4,5,6/)
        end type
 
-       interface init;                module procedure init_GFs_BCs_DL;         end interface
-       interface init;                module procedure init_BCs_copy;           end interface
+       interface init;               module procedure init_GFs_BCs_DL;         end interface
+       interface init;               module procedure init_BCs_copy;           end interface
 
-       interface init;                module procedure init_vals_all_S;         end interface
-       interface init;                module procedure init_vals_face_GF;       end interface
-       interface init;                module procedure init_val_face_S;         end interface
+       interface init;               module procedure init_vals_all_S;         end interface
+       interface init;               module procedure init_vals_face_GF;       end interface
+       interface init;               module procedure init_val_face_S;         end interface
 
-       interface delete;              module procedure delete_BCs;              end interface
-       interface display;             module procedure display_BCs;             end interface
-       interface print;               module procedure print_BCs;               end interface
-       interface export;              module procedure export_BCs;              end interface
-       interface import;              module procedure import_BCs;              end interface
+       interface delete;             module procedure delete_BCs;              end interface
+       interface display;            module procedure display_BCs;             end interface
+       interface print;              module procedure print_BCs;               end interface
+       interface export;             module procedure export_BCs;              end interface
+       interface import;             module procedure import_BCs;              end interface
 
-       interface export;              module procedure export_BCs_wrapper;      end interface
-       interface import;              module procedure import_BCs_wrapper;      end interface
+       interface export;             module procedure export_BCs_wrapper;      end interface
+       interface import;             module procedure import_BCs_wrapper;      end interface
 
-       interface defined;             module procedure defined_BCs;             end interface
-       interface init_Dirichlet;      module procedure init_Dirichlet_all;      end interface
-       interface init_Dirichlet;      module procedure init_Dirichlet_face;     end interface
-       interface init_Neumann;        module procedure init_Neumann_all;        end interface
-       interface init_Neumann;        module procedure init_Neumann_face;       end interface
-       interface init_Robin;          module procedure init_Robin_all;          end interface
-       interface init_Robin;          module procedure init_Robin_face;         end interface
-       interface init_periodic;       module procedure init_periodic_all;       end interface
-       interface init_periodic;       module procedure init_periodic_face;      end interface
-       interface init_symmetric;      module procedure init_symmetric_all;      end interface
-       interface init_symmetric;      module procedure init_symmetric_face;     end interface
-       interface init_antisymmetric;  module procedure init_antisymmetric_all;  end interface
-       interface init_antisymmetric;  module procedure init_antisymmetric_face; end interface
+       interface defined;            module procedure defined_BCs;             end interface
+       interface init_Dirichlet;     module procedure init_Dirichlet_all;      end interface
+       interface init_Dirichlet;     module procedure init_Dirichlet_face;     end interface
+       interface init_Neumann;       module procedure init_Neumann_all;        end interface
+       interface init_Neumann;       module procedure init_Neumann_face;       end interface
+       interface init_Robin;         module procedure init_Robin_all;          end interface
+       interface init_Robin;         module procedure init_Robin_face;         end interface
+       interface init_periodic;      module procedure init_periodic_all;       end interface
+       interface init_periodic;      module procedure init_periodic_face;      end interface
+       interface init_symmetric;     module procedure init_symmetric_all;      end interface
+       interface init_symmetric;     module procedure init_symmetric_face;     end interface
+       interface init_antisymmetric; module procedure init_antisymmetric_all;  end interface
+       interface init_antisymmetric; module procedure init_antisymmetric_face; end interface
+       interface set_prescribed;     module procedure set_prescribed_all;      end interface
+       interface set_prescribed;     module procedure set_prescribed_face;     end interface
+       interface init_PA_face;       module procedure init_PA_face_BC;         end interface
 
-       interface define_logicals;     module procedure define_logicals_BCs;     end interface
-       interface insist_allocated;    module procedure insist_allocated_BCs;    end interface
+       interface get_all_Dirichlet;  module procedure get_all_Dirichlet_BCs;   end interface
+       interface get_all_Neumann;    module procedure get_all_Neumann_BCs;     end interface
+       interface get_all_Robin;      module procedure get_all_Robin_BCs;       end interface
+       interface get_any_Dirichlet;  module procedure get_any_Dirichlet_BCs;   end interface
+       interface get_any_Neumann;    module procedure get_any_Neumann_BCs;     end interface
+       interface get_any_Robin;      module procedure get_any_Robin_BCs;       end interface
+       interface get_any_Prescribed; module procedure get_any_Prescribed_BCs;  end interface
 
-       interface init_props;          module procedure init_props_BCs;          end interface
+       interface define_logicals;    module procedure define_logicals_BCs;     end interface
+       interface insist_allocated;   module procedure insist_allocated_BCs;    end interface
 
-       interface restrict;            module procedure restrict_BCs;            end interface
-       interface prolongate;          module procedure prolongate_BCs;          end interface
+       interface init_props;         module procedure init_props_BCs;          end interface
+
+       interface restrict;           module procedure restrict_BCs;            end interface
+       interface prolongate;         module procedure prolongate_BCs;          end interface
 
        contains
 
@@ -203,6 +222,7 @@
          call delete(BC%corner)
          call delete(BC%PA_corners_BCs)
          call delete(BC%PA_corners_implicit_BCs)
+         BC%apply_BC_order = (/1,2,3,4,5,6/)
          ! call delete(BC%e_BCs)
          ! call delete(BC%c_BCs)
        end subroutine
@@ -224,7 +244,9 @@
          type(grid_field),intent(in) :: vals
          integer,intent(in) :: face
          ! call assign(BC%face(ID)%b,vals)
-         call assign(BC%face%b(face),vals)
+         call assign(BC%face%SB(face)%b,vals)
+         call assign(BC%face%SB(face)%b_total,vals)
+         call assign(BC%face%SB(face)%b_modified,0.0_cp)
          BC%BCL%vals_defined = .true.
          call define_logicals(BC)
        end subroutine
@@ -235,7 +257,9 @@
          real(cp),intent(in) :: val
          integer,intent(in) :: face
          ! call assign(BC%face(ID)%b,val)
-         call assign(BC%face%b(face),val)
+         call assign(BC%face%SB(face)%b,val)
+         call assign(BC%face%SB(face)%b_total,val)
+         call assign(BC%face%SB(face)%b_modified,0.0_cp)
          BC%BCL%vals_defined = .true.
          call define_logicals(BC)
        end subroutine
@@ -271,8 +295,6 @@
            call export(BC%PA_face_BCs,un)
            call export(BC%PA_face_implicit_BCs,un)
            call export(BC%BCL,un)
-           write(un,*) 'all_Dirichlet,all_Neumann,all_Robin'
-           write(un,*) BC%BCL%all_Dirichlet,BC%BCL%all_Neumann,BC%BCL%all_Robin
          endif
        end subroutine
 
@@ -289,8 +311,6 @@
            call import(BC%PA_face_BCs,un)
            call import(BC%PA_face_implicit_BCs,un)
            call import(BC%BCL,un)
-           read(un,*)
-           read(un,*) BC%BCL%all_Dirichlet,BC%BCL%all_Neumann,BC%BCL%all_Robin
          endif
        end subroutine
 
@@ -339,20 +359,7 @@
          dir = dir_given_face(face)
          call check_prereq(BC)
          call init_Dirichlet(BC%face,face)
-
-         if (CC_along(BC%DL,dir)) then
-           call remove(BC%PA_face_BCs,face)
-           call add(BC%PA_face_BCs,Dirichlet_C,face)
-           call remove(BC%PA_face_implicit_BCs,face)
-           call add(BC%PA_face_implicit_BCs,Dirichlet_C_implicit,face)
-         endif
-         if ( N_along(BC%DL,dir)) then
-           call remove(BC%PA_face_BCs,face)
-           call add(BC%PA_face_BCs,Dirichlet_N,face)
-           call remove(BC%PA_face_implicit_BCs,face)
-           call add(BC%PA_face_implicit_BCs,Dirichlet_N_implicit,face)
-         endif
-
+         call init_PA_face(BC,face)
          call define_logicals(BC)
          BC%BCL%BCT_defined = .true.
        end subroutine
@@ -371,20 +378,7 @@
          dir = dir_given_face(face)
          call check_prereq(BC)
          call init_Neumann(BC%face,face)
-
-         if (CC_along(BC%DL,dir)) then
-           call remove(BC%PA_face_BCs,face)
-           call add(BC%PA_face_BCs,Neumann_C,face)
-           call remove(BC%PA_face_implicit_BCs,face)
-           call add(BC%PA_face_implicit_BCs,Neumann_C_implicit,face)
-         endif
-         if ( N_along(BC%DL,dir)) then
-           call remove(BC%PA_face_BCs,face)
-           call add(BC%PA_face_BCs,Neumann_N,face)
-           call remove(BC%PA_face_implicit_BCs,face)
-           call add(BC%PA_face_implicit_BCs,Neumann_N_implicit,face)
-         endif
-
+         call init_PA_face(BC,face)
          BC%BCL%BCT_defined = .true.
          call define_logicals(BC)
        end subroutine
@@ -403,20 +397,7 @@
          dir = dir_given_face(face)
          call check_prereq(BC)
          call init_Robin(BC%face,face)
-
-         if (CC_along(BC%DL,dir)) then
-           call remove(BC%PA_face_BCs,face)
-           call add(BC%PA_face_BCs,Robin_C,face)
-           call remove(BC%PA_face_implicit_BCs,face)
-           call add(BC%PA_face_implicit_BCs,Robin_C_implicit,face)
-         endif
-         if ( N_along(BC%DL,dir)) then
-           call remove(BC%PA_face_BCs,face)
-           call add(BC%PA_face_BCs,Robin_N,face)
-           call remove(BC%PA_face_implicit_BCs,face)
-           call add(BC%PA_face_implicit_BCs,Robin_N_implicit,face)
-         endif
-
+         call init_PA_face(BC,face)
          BC%BCL%BCT_defined = .true.
          call define_logicals(BC)
        end subroutine
@@ -435,32 +416,7 @@
          dir = dir_given_face(face)
          call check_prereq(BC)
          call init_Periodic(BC%face,face)
-
-         if (CC_along(BC%DL,dir)) then
-           call remove(BC%PA_face_BCs,face)
-           if (is_prescribed(BC%face%bct(face))) then
-                 call add(BC%PA_face_BCs,Periodic_C_prescribed,face)
-           else; call add(BC%PA_face_BCs,Periodic_C,face)
-           endif
-           call remove(BC%PA_face_implicit_BCs,face)
-           if (is_prescribed(BC%face%bct(face))) then
-                 call add(BC%PA_face_implicit_BCs,Periodic_C_prescribed_implicit,face)
-           else; call add(BC%PA_face_implicit_BCs,Periodic_C_implicit,face)
-           endif
-         endif
-         if ( N_along(BC%DL,dir)) then
-           call remove(BC%PA_face_BCs,face)
-           if (is_prescribed(BC%face%bct(face))) then
-                 call add(BC%PA_face_BCs,Periodic_N_prescribed,face)
-           else; call add(BC%PA_face_BCs,Periodic_N,face)
-           endif
-           call remove(BC%PA_face_implicit_BCs,face)
-           if (is_prescribed(BC%face%bct(face))) then
-                 call add(BC%PA_face_implicit_BCs,Periodic_N_prescribed_implicit,face)
-           else; call add(BC%PA_face_implicit_BCs,Periodic_N_implicit,face)
-           endif
-         endif
-
+         call init_PA_face(BC,face)
          BC%BCL%BCT_defined = .true.
          call define_logicals(BC)
        end subroutine
@@ -479,20 +435,7 @@
          dir = dir_given_face(face)
          call check_prereq(BC)
          call init_Symmetric(BC%face,face)
-
-         if (CC_along(BC%DL,dir)) then
-           call remove(BC%PA_face_BCs,face)
-           call add(BC%PA_face_BCs,Symmetric_C,face)
-           call remove(BC%PA_face_implicit_BCs,face)
-           call add(BC%PA_face_implicit_BCs,Symmetric_C_implicit,face)
-         endif
-         if ( N_along(BC%DL,dir)) then
-           call remove(BC%PA_face_BCs,face)
-           call add(BC%PA_face_BCs,Symmetric_N,face)
-           call remove(BC%PA_face_implicit_BCs,face)
-           call add(BC%PA_face_implicit_BCs,Symmetric_N_implicit,face)
-         endif
-
+         call init_PA_face(BC,face)
          BC%BCL%BCT_defined = .true.
          call define_logicals(BC)
        end subroutine
@@ -511,22 +454,79 @@
          dir = dir_given_face(face)
          call check_prereq(BC)
          call init_antisymmetric(BC%face,face)
-
-         if (CC_along(BC%DL,dir)) then
-           call remove(BC%PA_face_BCs,face)
-           call add(BC%PA_face_BCs,antisymmetric_C,face)
-           call remove(BC%PA_face_implicit_BCs,face)
-           call add(BC%PA_face_implicit_BCs,antisymmetric_C_implicit,face)
-         endif
-         if ( N_along(BC%DL,dir)) then
-           call remove(BC%PA_face_BCs,face)
-           call add(BC%PA_face_BCs,antisymmetric_N,face)
-           call remove(BC%PA_face_implicit_BCs,face)
-           call add(BC%PA_face_implicit_BCs,antisymmetric_N_implicit,face)
-         endif
-
+         call init_PA_face(BC,face)
          BC%BCL%BCT_defined = .true.
          call define_logicals(BC)
+       end subroutine
+
+       subroutine set_prescribed_all(BC)
+         implicit none
+         type(boundary_conditions),intent(inout) :: BC
+         integer :: i
+         do i=1,6; call set_prescribed(BC,i); enddo
+       end subroutine
+       subroutine set_prescribed_face(BC,face)
+         implicit none
+         type(boundary_conditions),intent(inout) :: BC
+         integer,intent(in) :: face
+         integer :: dir
+         dir = dir_given_face(face)
+         call check_prereq(BC)
+         call set_prescribed(BC%face,face)
+         call define_logicals(BC)
+       end subroutine
+
+       subroutine init_PA_face_BC(BC,face)
+         implicit none
+         type(boundary_conditions),intent(inout) :: BC
+         integer,intent(in) :: face
+         integer :: dir
+         dir = dir_given_face(face)
+         call check_prereq(BC)
+         call remove(BC%PA_face_BCs,face)
+         call remove(BC%PA_face_implicit_BCs,face)
+         if (CC_along(BC%DL,dir)) then
+           if (is_prescribed(BC%face%SB(face)%bct)) then
+             if (is_Dirichlet(BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Dirichlet_C,face)
+             if (is_Neumann(  BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Neumann_C  ,face)
+             if (is_Periodic( BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Periodic_C_prescribed ,face)
+             if (is_Robin(    BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Robin_C  ,face)
+             if (is_Dirichlet(BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Dirichlet_C_implicit,face)
+             if (is_Neumann(  BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Neumann_C_implicit  ,face)
+             if (is_Periodic( BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Periodic_C_implicit ,face)
+             if (is_Robin(    BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Robin_C_implicit,face)
+           else
+             if (is_Dirichlet(BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Dirichlet_C,face)
+             if (is_Neumann(  BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Neumann_C  ,face)
+             if (is_Periodic( BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Periodic_C ,face)
+             if (is_Robin(    BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Robin_C ,face)
+             if (is_Dirichlet(BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Dirichlet_C_implicit,face)
+             if (is_Neumann(  BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Neumann_C_implicit  ,face)
+             if (is_Periodic( BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Periodic_C_implicit ,face)
+             if (is_Robin(    BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Robin_C_implicit    ,face)
+           endif
+         elseif ( N_along(BC%DL,dir)) then
+           if (is_prescribed(BC%face%SB(face)%bct)) then
+             if (is_Dirichlet(BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Dirichlet_N,face)
+             if (is_Neumann(  BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Neumann_N  ,face)
+             if (is_Periodic( BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Periodic_N_prescribed,face)
+             if (is_Robin(    BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Robin_N    ,face)
+             if (is_Dirichlet(BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Dirichlet_N_implicit,face)
+             if (is_Neumann(  BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Neumann_N_implicit  ,face)
+             if (is_Periodic( BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Periodic_N_implicit ,face)
+             if (is_Robin(    BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Robin_N_implicit    ,face)
+           else
+             if (is_Dirichlet(BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Dirichlet_N,face)
+             if (is_Neumann(  BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Neumann_N  ,face)
+             if (is_Periodic( BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Periodic_N ,face)
+             if (is_Robin(    BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Robin_N    ,face)
+             if (is_Dirichlet(BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Dirichlet_N_implicit,face)
+             if (is_Neumann(  BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Neumann_N_implicit  ,face)
+             if (is_Periodic( BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Periodic_N_implicit ,face)
+             if (is_Robin(    BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Robin_N_implicit    ,face)
+           endif
+           else; stop 'Error: bad DL in init_PA_face_BC in boundary_conditions.f90'
+         endif
        end subroutine
 
        ! *******************************************************************************
@@ -573,34 +573,84 @@
          L(2) = BC%edge%BCL%all_Neumann
          L(3) = BC%corner%BCL%all_Neumann
          BC%BCL%all_Neumann = all(L)
+
+         L(1) = BC%face%BCL%any_Dirichlet
+         L(2) = BC%edge%BCL%any_Dirichlet
+         L(3) = BC%corner%BCL%any_Dirichlet
+         BC%BCL%any_Dirichlet = any(L)
+
+         L(1) = BC%face%BCL%any_Robin
+         L(2) = BC%edge%BCL%any_Robin
+         L(3) = BC%corner%BCL%any_Robin
+         BC%BCL%any_Robin = any(L)
+
+         L(1) = BC%face%BCL%any_Neumann
+         L(2) = BC%edge%BCL%any_Neumann
+         L(3) = BC%corner%BCL%any_Neumann
+         BC%BCL%any_Neumann = any(L)
+
+         L(1) = BC%face%BCL%any_Prescribed
+         L(2) = BC%edge%BCL%any_Prescribed
+         L(3) = BC%corner%BCL%any_Prescribed
+         BC%BCL%any_Prescribed = any(L)
        end subroutine
 
-       function getAllNeumann(BC) result(L)
+       function get_all_Dirichlet_BCs(BC) result(L)
          implicit none
-         type(boundary_conditions),intent(inout) :: BC
-         logical :: L
-         L = BC%BCL%all_Neumann
-       end function
-
-       function getDirichlet(BC) result(L)
-         implicit none
-         type(boundary_conditions),intent(inout) :: BC
+         type(boundary_conditions),intent(in) :: BC
          logical :: L
          L = BC%BCL%all_Dirichlet
        end function
 
-       function getAllRobin(BC) result(L)
+       function get_all_Neumann_BCs(BC) result(L)
          implicit none
-         type(boundary_conditions),intent(inout) :: BC
+         type(boundary_conditions),intent(in) :: BC
+         logical :: L
+         L = BC%BCL%all_Neumann
+       end function
+
+       function get_all_Robin_BCs(BC) result(L)
+         implicit none
+         type(boundary_conditions),intent(in) :: BC
          logical :: L
          L = BC%BCL%all_Robin
        end function
 
-       subroutine init_props_BCs(BC)
+       function get_any_Dirichlet_BCs(BC) result(L)
+         implicit none
+         type(boundary_conditions),intent(in) :: BC
+         logical :: L
+         L = BC%BCL%any_Dirichlet
+       end function
+
+       function get_any_Neumann_BCs(BC) result(L)
+         implicit none
+         type(boundary_conditions),intent(in) :: BC
+         logical :: L
+         L = BC%BCL%any_Neumann
+       end function
+
+       function get_any_Robin_BCs(BC) result(L)
+         implicit none
+         type(boundary_conditions),intent(in) :: BC
+         logical :: L
+         L = BC%BCL%any_Robin
+       end function
+
+       function get_any_Prescribed_BCs(BC) result(L)
+         implicit none
+         type(boundary_conditions),intent(in) :: BC
+         logical :: L
+         L = BC%BCL%any_Prescribed
+       end function
+
+       subroutine init_props_BCs(BC,c_w,Robin_coeff)
          implicit none
          type(boundary_conditions),intent(inout) :: BC
+         real(cp),intent(in),dimension(6) :: c_w,Robin_coeff
          call define_logicals(BC)
          call init_mixed(BC%f_BCs,BC%DL)
+         call init_Robin_coeff(BC%f_BCs,c_w,Robin_coeff)
          call sort(BC%PA_face_BCs,BC%apply_BC_order,6)
          call sort(BC%PA_face_implicit_BCs,BC%apply_BC_order,6)
        end subroutine
@@ -612,6 +662,7 @@
          integer,intent(in) :: dir
          integer,dimension(3) :: eye
          integer :: x,y,z
+         real(cp),dimension(6) :: c_w,Robin_coeff
          eye = eye_given_dir(dir)
          x = eye(1); y = eye(2); z = eye(3)
          if (BC%BCL%defined) then
@@ -621,7 +672,9 @@
            call init(BC%f_BCs,B%g,B%f)
            ! call init(BC%e_BCs,B%g,B%e)
            ! call init(BC%c_BCs,B%g,B%c)
-           call init_props(BC)
+           Robin_coeff = BC%f_BCs%Robin_coeff
+           c_w = BC%f_BCs%c_w
+           call init_props(BC,c_w,Robin_coeff)
          endif
        end subroutine
 
@@ -632,6 +685,7 @@
          integer,intent(in) :: dir
          integer,dimension(3) :: eye
          integer :: x,y,z
+         real(cp),dimension(6) :: c_w,Robin_coeff
          eye = eye_given_dir(dir)
          x = eye(1); y = eye(2); z = eye(3)
          if (BC%BCL%defined) then
@@ -641,7 +695,9 @@
            call init(BC%f_BCs,B%g,B%f)
            ! call init(BC%e_BCs,B%g,B%e)
            ! call init(BC%c_BCs,B%g,B%c)
-           call init_props(BC)
+           Robin_coeff = BC%f_BCs%Robin_coeff
+           c_w = BC%f_BCs%c_w
+           call init_props(BC,c_w,Robin_coeff)
          endif
        end subroutine
 

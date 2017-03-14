@@ -20,6 +20,7 @@
        type(equation_term) :: diffusion
        type(equation_term) :: unsteady_B0
        type(equation_term) :: current
+       type(equation_term) :: B_applied
      end type
 
      contains
@@ -32,6 +33,7 @@
        call init(IT%diffusion,IT_in%diffusion)
        call init(IT%unsteady_B0,IT_in%unsteady_B0)
        call init(IT%current,IT_in%current)
+       call init(IT%B_applied,IT_in%B_applied)
       end subroutine
 
      subroutine delete_IT(IT)
@@ -41,6 +43,7 @@
        call delete(IT%diffusion)
        call delete(IT%unsteady_B0)
        call delete(IT%current)
+       call delete(IT%B_applied)
       end subroutine
 
      subroutine display_IT(IT,un)
@@ -51,6 +54,7 @@
        call display(IT%diffusion,un,'diffusion')
        call display(IT%unsteady_B0,un,'unsteady_B0')
        call display(IT%current,un,'current')
+       call display(IT%B_applied,un,'B_applied')
       end subroutine
 
      subroutine print_IT(IT)
@@ -67,6 +71,7 @@
        call export(IT%diffusion,un,'diffusion')
        call export(IT%unsteady_B0,un,'unsteady_B0')
        call export(IT%current,un,'current')
+       call export(IT%B_applied,un,'B_applied')
       end subroutine
 
      subroutine import_IT(IT,un)
@@ -77,6 +82,7 @@
        call import(IT%diffusion,un)
        call import(IT%unsteady_B0,un)
        call import(IT%current,un)
+       call import(IT%B_applied,un)
       end subroutine
 
      subroutine export_IT_wrapper(IT,dir,name)

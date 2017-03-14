@@ -82,8 +82,10 @@
          type(export_lines),intent(in) :: ELS_in
          integer :: i
          call delete(ELS)
+         allocate(ELS%EL(ELS_in%N))
+         ELS%N = ELS_in%N
          do i=1,ELS_in%N
-           call add(ELS,ELS_in%EL(i))
+           call init(ELS%EL(i),ELS_in%EL(i))
          enddo
        end subroutine
 

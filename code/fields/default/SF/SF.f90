@@ -47,16 +47,27 @@
 
         public :: assign_BCs
         public :: assign_BC_vals
-        public :: assign_Neumann_BCs
+        public :: update_BC_vals
         public :: assign_Dirichlet_BCs
-        public :: assign_wall_Periodic_single
         public :: assign_Periodic_BCs
+        public :: assign_Neumann_BCs
+        public :: assign_Neumann_BCs_wall_normal
         public :: multiply_Neumann_BCs
+        public :: multiply_BCs_by_nhat
+        public :: assign_Robin_BCs
+        public :: multiply_Robin_coeff
+        public :: multiply_nhat
+        public :: assign_wall_Periodic_single
         public :: assign_ghost_XPeriodic
         public :: assign_ghost_N_XPeriodic
         public :: assign_wall_Dirichlet
         public :: multiply_wall_Neumann
         public :: set_prescribed_BCs
+
+        public :: get_any_Dirichlet
+        public :: get_any_Neumann
+        public :: get_any_Robin
+        public :: get_any_Prescribed
 
         public :: init_BCs,init_BC_Dirichlet,init_BC_props,init_BC_mesh
         public :: dot_product
@@ -66,6 +77,7 @@
 
         public :: CFL_number
         public :: Fourier_number
+        public :: Robin_BC_coeff
 
         public :: restrict
         public :: prolongate
@@ -161,11 +173,17 @@
 
         interface assign_BCs;               module procedure assign_BCs_SF;                end interface
         interface assign_BC_vals;           module procedure assign_BC_vals_SF;            end interface
-        interface assign_Neumann_BCs;       module procedure assign_Neumann_BCs_SF;        end interface
-        interface assign_Neumann_BCs;       module procedure assign_Neumann_BCs_VF_SF;   end interface
+        interface update_BC_vals;           module procedure update_BC_vals_SF;            end interface
         interface assign_Dirichlet_BCs;     module procedure assign_Dirichlet_BCs_SF;      end interface
         interface assign_Periodic_BCs;      module procedure assign_Periodic_BCs_SF;       end interface
+        interface assign_Neumann_BCs;       module procedure assign_Neumann_BCs_faces_SF;  end interface
+        interface assign_Neumann_BCs_wall_normal; module procedure assign_Neumann_BCs_wall_normal_SF;  end interface
         interface multiply_Neumann_BCs;     module procedure multiply_Neumann_BCs_SF;      end interface
+        interface multiply_BCs_by_nhat;     module procedure multiply_BCs_by_nhat_SF;      end interface
+        interface assign_Robin_BCs;         module procedure assign_Robin_BCs_dir_SF;      end interface
+        interface assign_Robin_BCs;         module procedure assign_Robin_BCs_faces_SF;    end interface
+        interface multiply_Robin_coeff;     module procedure multiply_Robin_coeff_SF;      end interface
+        interface multiply_nhat;            module procedure multiply_nhat_SF;             end interface
         interface assign_ghost_XPeriodic;   module procedure assign_ghost_XPeriodic_SF;    end interface
         interface assign_ghost_XPeriodic;   module procedure assign_ghost_XPeriodic_SF2;   end interface
         interface assign_ghost_N_XPeriodic; module procedure assign_ghost_N_XPeriodic_SF;  end interface
@@ -177,6 +195,11 @@
         interface multiply_wall_Neumann;    module procedure multiply_wall_Neumann_SF;     end interface
         interface multiply_wall_Neumann;    module procedure multiply_wall_Neumann_SF2;    end interface
         interface set_prescribed_BCs;       module procedure set_prescribed_BCs_SF;        end interface
+
+        interface get_any_Dirichlet;        module procedure get_any_Dirichlet_SF;         end interface
+        interface get_any_Neumann;          module procedure get_any_Neumann_SF;           end interface
+        interface get_any_Robin;            module procedure get_any_Robin_SF;             end interface
+        interface get_any_Prescribed;       module procedure get_any_Prescribed_SF;        end interface
 
         interface plane_sum_x;              module procedure plane_sum_x_SF;               end interface
         interface plane_sum_y;              module procedure plane_sum_y_SF;               end interface
@@ -205,6 +228,7 @@
 
         interface CFL_number;               module procedure CFL_number_SF;                end interface
         interface Fourier_number;           module procedure Fourier_number_SF;            end interface
+        interface Robin_BC_coeff;           module procedure Robin_BC_coeff_SF;            end interface
 
         interface restrict;                 module procedure restrict_SF;                  end interface
         interface restrict;                 module procedure restrict_reset_SF;            end interface
@@ -562,14 +586,15 @@
           do i=1,f%s; call init_Dirichlet(f%BF(i)%BCs); enddo
         end subroutine
 
-        subroutine init_BC_val_SF(f,val)
+        subroutine init_BC_val_SF(f,val,c_w,Robin_coeff)
           implicit none
           type(SF),intent(inout) :: f
           real(cp),intent(in) :: val
+          real(cp),dimension(6),intent(in) :: c_w,Robin_coeff
           integer :: i
           do i=1,f%s; call init_BCs(f%BF(i),val); enddo
           f%all_Neumann = all((/(f%BF(i)%BCs%BCL%all_Neumann,i=1,f%s)/))
-          call init_BC_props(f)
+          call init_BC_props(f,c_w,Robin_coeff)
         end subroutine
 
         subroutine init_BC_mesh_SF(f,m)
@@ -580,12 +605,13 @@
           do i=1,f%s; call init_BCs(f%BF(i),m%B(i),f%DL); enddo
         end subroutine
 
-        subroutine init_BC_props_SF(f)
+        subroutine init_BC_props_SF(f,c_w,Robin_coeff)
           implicit none
           type(SF),intent(inout) :: f
+          real(cp),dimension(6),intent(in) :: c_w,Robin_coeff
           integer :: i
           do i=1,f%s
-            call init_BC_props(f%BF(i))
+            call init_BC_props(f%BF(i),c_w,Robin_coeff)
           enddo
         end subroutine
 
@@ -712,47 +738,91 @@
           do i=1,A%s; call assign_BC_vals(A%BF(i),B%BF(i)); enddo
         end subroutine
 
-        subroutine assign_BCs_SF(u,f)
+        subroutine update_BC_vals_SF(A)
+          implicit none
+          type(SF),intent(inout) :: A
+          integer :: i
+          do i=1,A%s; call update_BC_vals(A%BF(i)); enddo
+        end subroutine
+
+        subroutine assign_BCs_SF(A,B)
+          implicit none
+          type(SF),intent(inout) :: A
+          type(SF),intent(in) :: B
+          integer :: i
+          do i=1,A%s; call assign_BCs(A%BF(i),B%BF(i)); enddo
+        end subroutine
+        subroutine assign_Dirichlet_BCs_SF(A,B)
+          implicit none
+          type(SF),intent(inout) :: A
+          type(SF),intent(in) :: B
+          integer :: i
+          do i=1,A%s; call assign_Dirichlet_BCs(A%BF(i),B%BF(i)); enddo
+        end subroutine
+        subroutine assign_Periodic_BCs_SF(A,B)
+          implicit none
+          type(SF),intent(inout) :: A
+          type(SF),intent(in) :: B
+          integer :: i
+          do i=1,A%s; call assign_Periodic_BCs(A%BF(i),B%BF(i)); enddo
+        end subroutine
+        subroutine assign_Neumann_BCs_faces_SF(A,B,dir)
+          implicit none
+          type(SF),intent(inout) :: A
+          type(SF),intent(in) :: B
+          integer,intent(in) :: dir
+          integer :: i
+          do i=1,A%s; call assign_Neumann_BCs(A%BF(i),B%BF(i),dir); enddo
+        end subroutine
+        subroutine assign_Neumann_BCs_wall_normal_SF(A,B,dir)
+          implicit none
+          type(SF),intent(inout) :: A
+          type(SF),intent(in) :: B
+          integer,intent(in) :: dir
+          integer :: i
+          do i=1,A%s; call assign_Neumann_BCs_wall_normal(A%BF(i),B%BF(i),dir); enddo
+        end subroutine
+        subroutine multiply_Neumann_BCs_SF(A,scale)
+          implicit none
+          type(SF),intent(inout) :: A
+          real(cp),intent(in) :: scale
+          integer :: i
+          do i=1,A%s; call multiply_Neumann_BCs(A%BF(i),scale); enddo
+        end subroutine
+        subroutine multiply_BCs_by_nhat_SF(A)
+          implicit none
+          type(SF),intent(inout) :: A
+          integer :: i
+          do i=1,A%s; call multiply_BCs_by_nhat(A%BF(i)); enddo
+        end subroutine
+        subroutine assign_Robin_BCs_dir_SF(A,B,dir)
+          implicit none
+          type(SF),intent(inout) :: A
+          type(SF),intent(in) :: B
+          integer,intent(in) :: dir
+          integer :: i
+          do i=1,A%s; call assign_Robin_BCs(A%BF(i),B%BF(i),dir); enddo
+        end subroutine
+        subroutine assign_Robin_BCs_faces_SF(A,B)
+          implicit none
+          type(SF),intent(inout) :: A
+          type(SF),intent(in) :: B
+          integer :: i
+          do i=1,A%s; call assign_Robin_BCs(A%BF(i),B%BF(i)); enddo
+        end subroutine
+
+        subroutine multiply_Robin_coeff_SF(u)
           implicit none
           type(SF),intent(inout) :: u
-          type(SF),intent(in) :: f
           integer :: i
-          do i=1,u%s; call assign_BCs(u%BF(i),f%BF(i)); enddo
+          do i=1,u%s; call multiply_Robin_coeff(u%BF(i)); enddo
         end subroutine
-        subroutine assign_Neumann_BCs_SF(u,f)
+        subroutine multiply_nhat_SF(u,u_with_BCs)
           implicit none
           type(SF),intent(inout) :: u
-          type(SF),intent(in) :: f
+          type(SF),intent(in) :: u_with_BCs
           integer :: i
-          do i=1,u%s; call assign_Neumann_BCs(u%BF(i),f%BF(i)); enddo
-        end subroutine
-        subroutine assign_Neumann_BCs_VF_SF(phi,u,v,w)
-          implicit none
-          type(SF),intent(inout) :: phi
-          type(SF),intent(in) :: u,v,w
-          integer :: i
-          do i=1,u%s; call assign_Neumann_BCs(phi%BF(i),u%BF(i),v%BF(i),w%BF(i)); enddo
-        end subroutine
-        subroutine assign_Dirichlet_BCs_SF(u,f)
-          implicit none
-          type(SF),intent(inout) :: u
-          type(SF),intent(in) :: f
-          integer :: i
-          do i=1,u%s; call assign_Dirichlet_BCs(u%BF(i),f%BF(i)); enddo
-        end subroutine
-        subroutine assign_Periodic_BCs_SF(u,f)
-          implicit none
-          type(SF),intent(inout) :: u
-          type(SF),intent(in) :: f
-          integer :: i
-          do i=1,u%s; call assign_Periodic_BCs(u%BF(i),f%BF(i)); enddo
-        end subroutine
-        subroutine multiply_Neumann_BCs_SF(u,val)
-          implicit none
-          type(SF),intent(inout) :: u
-          real(cp),intent(in) :: val
-          integer :: i
-          do i=1,u%s; call multiply_Neumann_BCs(u%BF(i),val); enddo
+          do i=1,u%s; call multiply_nhat(u%BF(i),u_with_BCs%BF(i)); enddo
         end subroutine
 
         subroutine assign_ghost_XPeriodic_SF(u,val)
@@ -841,6 +911,38 @@
           integer :: i
           do i=1,u%s; call set_prescribed_BCs(u%BF(i)); enddo
         end subroutine
+
+        function get_any_Dirichlet_SF(u) result(L)
+          implicit none
+          type(SF),intent(in) :: u
+          logical :: L
+          integer :: i
+          L = any((/(get_any_Dirichlet(u%BF(i)),i=1,u%s)/))
+        end function
+
+        function get_any_Neumann_SF(u) result(L)
+          implicit none
+          type(SF),intent(in) :: u
+          logical :: L
+          integer :: i
+          L = any((/(get_any_Neumann(u%BF(i)),i=1,u%s)/))
+        end function
+
+        function get_any_Robin_SF(u) result(L)
+          implicit none
+          type(SF),intent(in) :: u
+          logical :: L
+          integer :: i
+          L = any((/(get_any_Robin(u%BF(i)),i=1,u%s)/))
+        end function
+
+        function get_any_Prescribed_SF(u) result(L)
+          implicit none
+          type(SF),intent(in) :: u
+          logical :: L
+          integer :: i
+          L = any((/(get_any_Prescribed(u%BF(i)),i=1,u%s)/))
+        end function
 
         function plane_sum_x_SF(u,m,p) result(SP)
           implicit none
@@ -1497,6 +1599,21 @@
           Fourier = 0.0_cp
           do t=1,m%s
             Fourier = maxval((/Fourier,Fourier_number(alpha,m%B(t),dt)/))
+          enddo
+        end function
+
+        function Robin_BC_coeff_SF(c_w,m) result(coeff)
+          implicit none
+          real(cp),dimension(6),intent(in) :: c_w
+          type(mesh),intent(in) :: m
+          real(cp),dimension(6) :: coeff
+          real(cp),dimension(6) :: temp
+          integer :: t
+          coeff = 0.0_cp
+          temp = coeff
+          do t=1,m%s
+            temp = Robin_BC_coeff(c_w,m%B(t))
+            coeff = temp ! BAD DESIGN, BUT NOT SURE WHAT TO DO HERE...
           enddo
         end function
 

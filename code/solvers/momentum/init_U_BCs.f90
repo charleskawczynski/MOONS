@@ -58,7 +58,7 @@
          case default; stop 'Error: bad preset_ID in init_UBCs.f90'
          end select
          call make_periodic(U,m,periodic_dir)
-         call init_BC_props(U)
+         call init_BC_props(U,SP%DP%c_w,SP%DP%Robin_coeff)
        end subroutine
 
        subroutine LDC_at_ymax(U)
@@ -75,7 +75,7 @@
          call init(U%x%BF(1)%BCs,1.0_cp,4)
          n = 18.0_cp
          ! smooth_lid_GF(U,g,DL,plane,n)
-         call smooth_lid(U%x%BF(1)%BCs%face%b(4),m%B(1)%fb(4),U%x%DL,2,n)
+         call smooth_lid(U%x%BF(1)%BCs%face%SB(4)%b,m%B(1)%fb(4),U%x%DL,2,n)
        end subroutine
 
        subroutine LDC_at_ymax_Shatrov_smooth(U,m)
@@ -85,7 +85,7 @@
          real(cp) :: k_lid
          call init(U%x%BF(1)%BCs,1.0_cp,4)
          k_lid = 80.0_cp
-         call smooth_lid_Shatrov(U%x%BF(1)%BCs%face%b(4),m%B(1)%fb(4),U%x%DL,2,k_lid)
+         call smooth_lid_Shatrov(U%x%BF(1)%BCs%face%SB(4)%b,m%B(1)%fb(4),U%x%DL,2,k_lid)
        end subroutine
 
        subroutine LDC_at_ymax_Leriche_smooth(U,m)
@@ -95,7 +95,7 @@
          real(cp) :: n_lid
          call init(U%x%BF(1)%BCs,1.0_cp,4)
          n_lid = 18.0_cp
-         call smooth_lid_Leriche(U%x%BF(1)%BCs%face%b(4),m%B(1)%fb(4),U%x%DL,2,n_lid)
+         call smooth_lid_Leriche(U%x%BF(1)%BCs%face%SB(4)%b,m%B(1)%fb(4),U%x%DL,2,n_lid)
        end subroutine
 
        subroutine LDC_at_ymax_symmetric_zmax(U)
@@ -166,8 +166,8 @@
          call init_periodic(U%x%BF(i)%BCs,1) ! Inlet (periodic)
          call init_periodic(U%x%BF(i)%BCs,2) ! Outlet (periodic)
          call init_periodic(U%y%BF(i)%BCs,1) ! Inlet (periodic)
-         call init_periodic(U%z%BF(i)%BCs,1) ! Inlet (periodic)
          call init_periodic(U%y%BF(i)%BCs,2) ! Outlet (periodic)
+         call init_periodic(U%z%BF(i)%BCs,1) ! Inlet (periodic)
          call init_periodic(U%z%BF(i)%BCs,2) ! Outlet (periodic)
          enddo
        end subroutine
@@ -202,7 +202,7 @@
          integer,intent(in) :: dir
          integer :: i
          do i=1,U%x%s
-         call parabolic_1D(U%x%BF(i)%BCs%face%b(1),m%B(1)%g,U%x%DL,dir) ! Inlet (parabolic)
+         call parabolic_1D(U%x%BF(i)%BCs%face%SB(1)%b,m%B(1)%g,U%x%DL,dir) ! Inlet (parabolic)
          call init_Neumann(U%x%BF(i)%BCs,2) ! Outlet (fully developed)
          enddo
        end subroutine

@@ -51,7 +51,7 @@
          do i=1,U%BF(t)%BCs%PA_face_BCs%N
          call U%BF(t)%BCs%PA_face_BCs%SP(i)%P(&
          U%BF(t)%GF,&
-         U%BF(t)%BCs%face%b(U%BF(t)%BCs%PA_face_BCs%SP(i)%ID),&
+         U%BF(t)%BCs%face%SB(U%BF(t)%BCs%PA_face_BCs%SP(i)%ID)%b_total,&
          U%BF(t)%BCs%f_BCs,&
          U%BF(t)%BCs%PA_face_BCs%SP(i)%ID)
          enddo

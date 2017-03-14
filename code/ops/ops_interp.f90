@@ -482,12 +482,14 @@
          type(mesh),intent(in) :: m
          type(SF),intent(inout) :: tempCC
          call assign(face_TF%x%x,face_VF%x)
-         call assign(face_TF%y%y,face_VF%y)
-         call assign(face_TF%z%z,face_VF%z)
          call face2Face(face_TF%x%y,face_VF%x,m,tempCC,1,2)
          call face2Face(face_TF%x%z,face_VF%x,m,tempCC,1,3)
+
+         call assign(face_TF%y%y,face_VF%y)
          call face2Face(face_TF%y%x,face_VF%y,m,tempCC,2,1)
          call face2Face(face_TF%y%z,face_VF%y,m,tempCC,2,3)
+
+         call assign(face_TF%z%z,face_VF%z)
          call face2Face(face_TF%z%x,face_VF%z,m,tempCC,3,1)
          call face2Face(face_TF%z%y,face_VF%z,m,tempCC,3,2)
        end subroutine

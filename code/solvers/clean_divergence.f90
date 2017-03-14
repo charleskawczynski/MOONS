@@ -50,7 +50,6 @@
          type(mesh),intent(in) :: m
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
-         call update_correction_field_BCs(phi,Xstar,scale,temp_F)
          call div(temp_CC,Xstar,m)
          call multiply(temp_CC,scale)
          call solve(PCG,phi,temp_CC,m,compute_norms)
@@ -75,7 +74,6 @@
          type(mesh),intent(in) :: m
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
-         call update_correction_field_BCs(phi,Xstar,scale,temp_F)
          call div(temp_CC,Xstar,m)
          call multiply(temp_CC,scale)
          call solve(GS,phi,temp_CC,m,compute_norms)

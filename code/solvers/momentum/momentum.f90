@@ -76,6 +76,7 @@
          ! Tensor fields
          type(TF) :: U_E
          type(TF) :: TF_CC
+         type(TF) :: TF_CC_edge
          ! Vector fields
          type(VF) :: U,Ustar,Unm1
          type(VF) :: U_CC
@@ -143,13 +144,16 @@
          call init_CC(mom%temp_CC     ,m,0.0_cp)
          call init_CC(mom%temp_CC_VF  ,m,0.0_cp)
          call init_CC(mom%TF_CC       ,m,0.0_cp)
+         call init_CC_Edge(mom%TF_CC_edge,m,0.0_cp)
 
          write(*,*) '     Fields allocated'
          ! Initialize U-field, P-field and all BCs
          write(*,*) 'about to define U_BCs'
          call init_U_BCs(mom%U,m,mom%SP)
+         call update_BC_vals(mom%U)
          write(*,*) 'U_BCs defined'
          call init_P_BCs(mom%p,m,mom%SP)
+         call update_BC_vals(mom%p)
          write(*,*) '     BCs initialized'
          if (mom%SP%VS%U%SS%solve) call print_BCs(mom%U,'U')
          if (mom%SP%VS%U%SS%solve) call export_BCs(mom%U,str(DT%U%BCs),'U')
@@ -167,7 +171,7 @@
          write(*,*) '     U BCs applied'
 
          call init(mom%Ustar,mom%U)
-         if (SP%prescribed_periodic_BCs) call set_prescribed_BCs(mom%Ustar)
+         if (SP%VS%U%SS%prescribed_BCs) call set_prescribed_BCs(mom%Ustar)
          call init_Ustar_field(mom%Ustar,mom%m,mom%U,mom%SP,str(DT%U%field))
          write(*,*) '     Intermediate field initialized'
 
@@ -222,6 +226,7 @@
          call delete(mom%temp_CC)
          call delete(mom%temp_CC_VF)
          call delete(mom%TF_CC)
+         call delete(mom%TF_CC_edge)
          call delete(mom%divU)
          call delete(mom%U_CC)
          call delete(mom%probe_divU)
@@ -246,7 +251,7 @@
          write(un,*) '************************** MOMENTUM **************************'
          write(un,*) '**************************************************************'
          write(un,*) 'Re,Ha = ',mom%SP%DP%Re,mom%SP%DP%Ha
-         write(un,*) 'Gr,Fr = ',mom%SP%DP%Gr,mom%SP%DP%Fr
+         write(un,*) 'N,Gr = ',mom%SP%DP%N,mom%SP%DP%Gr
          write(un,*) 't,dt = ',mom%SP%VS%U%TMP%t,mom%SP%VS%U%TMP%dt
          write(un,*) 'solveUMethod,N_mom,N_PPE = ',mom%SP%VS%U%SS%solve_method,&
          mom%SP%VS%U%ISP%iter_max,mom%SP%VS%P%ISP%iter_max
@@ -321,7 +326,9 @@
              call export_processed(mom%m,mom%p,str(DT%p%field),'p',1)
              call export_raw(mom%m,mom%U,str(DT%U%field),'U',0)
              call export_raw(mom%m,mom%p,str(DT%p%field),'p',0)
-             call export_raw(mom%m,mom%Ustar,str(DT%U%field),'Ustar',1)
+             call export_raw(mom%m,mom%Ustar,str(DT%U%field),'Ustar',0)
+             call export_raw(mom%m,mom%PCG_P%r,str(DT%P%field),'residual_p',0)
+             call export_raw(mom%m,mom%PCG_U%r,str(DT%U%field),'residual_Ustar',0)
              if (mom%SP%EL%export_symmetric) then
               call export_processed(mom%m,mom%U,str(DT%U%field),'U',1,mom%SP%MP)
               call export_processed(mom%m,mom%p,str(DT%p%field),'p',1,mom%SP%MP)
@@ -411,29 +418,36 @@
          type(export_now),intent(in) :: EN
          type(dir_tree),intent(in) :: DT
          type(time_marching_params),intent(inout) :: TMP
+         integer :: i
 
+         do i=1,mom%SP%VS%U%TMP%multistep_iter
          select case(mom%SP%VS%U%SS%solve_method)
          case (1)
            call Euler_time_no_diff_Euler_sources_no_correction(mom%U,mom%Ustar,F,TMP)
          case (2)
            call Euler_time_no_diff_AB2_sources_no_correction(mom%U,mom%Ustar,F,Fnm1,TMP)
          case (3)
-           call Euler_time_AB2_sources(mom%PCG_U,mom%PCG_P,mom%U,mom%Ustar,mom%Unm1,&
-           mom%p,F,Fnm1,mom%m,TMP,mom%temp_F1,mom%temp_F2,mom%temp_CC,mom%temp_CC_VF,&
-           EF%unsteady_0D%export_now)
-         case (4)
-           call O2_BDF_time_AB2_sources(mom%PCG_U,mom%PCG_P,mom%U,mom%Ustar,&
-           mom%Unm1,mom%p,F,Fnm1,mom%m,TMP,mom%temp_F1,mom%temp_F2,mom%temp_CC,&
-           mom%temp_CC_VF,EF%unsteady_0D%export_now)
-         case (5)
-           call Euler_time_no_diff_AB2_sources(mom%PCG_P,mom%U,mom%Ustar,mom%Unm1,mom%p,&
-           F,Fnm1,mom%m,TMP,mom%temp_F2,mom%temp_CC,EF%unsteady_0D%export_now)
-         case (6)
            call Euler_time_no_diff_Euler_sources(mom%PCG_P,mom%U,mom%Ustar,mom%Unm1,mom%p,&
-           F,mom%m,TMP,mom%temp_F2,mom%temp_CC,EF%unsteady_0D%export_now)
+           F,mom%m,TMP,mom%temp_F1,mom%temp_CC,EF%unsteady_0D%export_now)
+         case (4)
+           call Euler_time_no_diff_AB2_sources(mom%PCG_P,mom%U,mom%Ustar,mom%Unm1,mom%p,&
+           F,Fnm1,mom%m,TMP,mom%temp_F1,mom%temp_CC,EF%unsteady_0D%export_now)
+         case (5)
+           call Euler_time_Euler_sources(mom%PCG_U,mom%PCG_P,mom%U,mom%Ustar,mom%Unm1,&
+           mom%p,F,mom%m,TMP,mom%temp_F1,mom%temp_CC,&
+           EF%unsteady_0D%export_now)
+         case (6)
+           call Euler_time_AB2_sources(mom%PCG_U,mom%PCG_P,mom%U,mom%Ustar,mom%Unm1,&
+           mom%p,F,Fnm1,mom%m,TMP,mom%temp_F1,mom%temp_CC,&
+           EF%unsteady_0D%export_now)
+         case (7)
+           call O2_BDF_time_AB2_sources(mom%PCG_U,mom%PCG_P,mom%U,mom%Ustar,&
+           mom%Unm1,mom%p,F,Fnm1,mom%m,TMP,mom%temp_F1,mom%temp_CC,&
+           EF%unsteady_0D%export_now)
          case default; stop 'Error: solveUMethod must = 1:4 in momentum.f90.'
          end select
          call iterate_step(TMP)
+         enddo
 
          ! ********************* POST SOLUTION COMPUTATIONS *********************
          call face2CellCenter(mom%U_CC,mom%U,mom%m)

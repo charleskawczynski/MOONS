@@ -73,6 +73,7 @@
          ! --- Tensor fields ---
          type(TF) :: U_E,temp_E_TF                    ! Edge data
          type(TF) :: temp_F1_TF,temp_F2_TF            ! Face data
+         type(TF) :: TF_CC_edge
 
          ! --- Vector fields ---
          type(VF) :: F,Fnm1                           ! Face data
@@ -155,9 +156,10 @@
          call init_Edge(ind%U_E            ,m,0.0_cp)
          call init_Edge(ind%temp_E_TF      ,m,0.0_cp)
          call init_Face(ind%temp_F1_TF     ,m,0.0_cp)
+         call init_Face(ind%temp_F2_TF     ,m,0.0_cp)
+         call init_CC_Edge(ind%TF_CC_edge  ,m,0.0_cp)
          call init_Face(ind%F              ,m,0.0_cp)
          call init_Face(ind%Fnm1           ,m,0.0_cp)
-         call init_Face(ind%temp_F2_TF     ,m,0.0_cp)
          call init_Face(ind%B              ,m,0.0_cp)
          call init_Face(ind%Bnm1           ,m,0.0_cp)
          call init_Face(ind%B0             ,m,0.0_cp)
@@ -181,7 +183,9 @@
 
          ! --- Initialize Fields ---
          call init_B_BCs(ind%B,m,ind%SP);     write(*,*) '     B BCs initialized'
+         call update_BC_vals(ind%B)
          call init_phi_BCs(ind%phi,m,ind%SP); write(*,*) '     phi BCs initialized'
+         call update_BC_vals(ind%phi)
 
          call init_B0_field(ind%B0,m,ind%SP,str(DT%B%field))
          call init_B_field(ind%B,m,ind%SP,str(DT%B%field))
@@ -189,6 +193,7 @@
          call assign(ind%Bnm1,ind%B)
 
          if (ind%SP%IT%unsteady_B0%add) call assign_B0_vs_t(ind%B0,ind%SP%VS%B%TMP)
+         call multiply(ind%B0,SP%IT%B_applied%scale)
 
          write(*,*) '     B-field initialized'
          ! call initB_interior(ind%B_interior,m,ind%MD_sigma,str(DT%B%field))
@@ -197,7 +202,7 @@
          call apply_BCs(ind%B);                           write(*,*) '     BCs applied'
 
          call init(ind%Bstar,ind%B)
-         if (SP%prescribed_periodic_BCs) call set_prescribed_BCs(ind%Bstar)
+         if (SP%VS%B%SS%prescribed_BCs) call set_prescribed_BCs(ind%Bstar)
          call init_Bstar_field(ind%Bstar,m,ind%B,ind%SP,str(DT%B%field))
 
          write(*,*) '     Intermediate B-field initialized'
@@ -272,6 +277,7 @@
          call delete(ind%temp_E_TF)
          call delete(ind%temp_F1_TF)
          call delete(ind%temp_F2_TF)
+         call delete(ind%TF_CC_edge)
          call delete(ind%U_E)
 
          call delete(ind%F)
@@ -392,8 +398,12 @@
            if (ind%SP%VS%B%SS%solve) then
              write(*,*) 'export_tec_induction at n_step = ',ind%SP%VS%B%TMP%n_step
              call export_processed(ind%m,ind%B,str(DT%B%field),'B',1)
-             call export_raw(ind%m,ind%phi,str(DT%phi%field),'phi',0)
+
+             call multiply(ind%temp_F1,ind%B,ind%SP%DP%c_w(1))
+             call export_processed(ind%m,ind%temp_F1,str(DT%B%field),'B_over_c_w',1)
              call export_raw(ind%m,ind%Bstar,str(DT%B%field),'Bstar',0)
+
+             call export_raw(ind%m,ind%phi,str(DT%phi%field),'phi',0)
              call export_raw(ind%m,ind%Bnm1,str(DT%B%field),'Bnm1',0)
              call export_processed(ind%m,ind%phi ,str(DT%phi%field),'phi',1)
              if (.not.ind%SP%EL%export_soln_only) then
@@ -516,36 +526,42 @@
          type(export_frequency),intent(in) :: EF
          type(export_now),intent(in) :: EN
          type(dir_tree),intent(in) :: DT
+         integer :: i
 
+         do i=1,ind%SP%VS%B%TMP%multistep_iter
          select case (ind%SP%VS%B%SS%solve_method)
          case (1)
            call Euler_time_no_diff_Euler_sources_no_correction(ind%B,ind%Bstar,F,TMP)
          case (2)
            call Euler_time_no_diff_AB2_sources_no_correction(ind%B,ind%Bstar,F,Fnm1,TMP)
          case (3)
-           call Euler_time_AB2_sources(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%Bstar,ind%Bnm1,&
-             ind%phi,F,Fnm1,ind%m,TMP,ind%temp_F1,ind%temp_F2,ind%temp_CC,ind%temp_CC_VF,&
-             EF%unsteady_0D%export_now)
+           call Euler_time_no_diff_Euler_sources(ind%PCG_cleanB,ind%B,ind%Bstar,&
+           ind%Bnm1,ind%phi,F,ind%m,TMP,ind%temp_F2,ind%temp_CC,EF%unsteady_0D%export_now)
          case (4)
-           call O2_BDF_time_AB2_sources(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%Bstar,&
-           ind%Bnm1,ind%phi,F,Fnm1,ind%m,TMP,ind%temp_F1,ind%temp_F2,ind%temp_CC,&
-           ind%temp_CC_VF,EF%unsteady_0D%export_now)
-         case (5)
           call Euler_time_no_diff_AB2_sources(ind%PCG_cleanB,ind%B,ind%Bstar,&
            ind%Bnm1,ind%phi,F,Fnm1,ind%m,TMP,ind%temp_F1,ind%temp_CC,&
            EF%unsteady_0D%export_now)
+         case (5)
+           call Euler_time_Euler_sources(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%Bstar,ind%Bnm1,&
+           ind%phi,F,ind%m,TMP,ind%temp_F1,ind%temp_CC,&
+           EF%unsteady_0D%export_now)
          case (6)
-          call Euler_time_no_diff_Euler_sources(ind%PCG_cleanB,ind%B,ind%Bstar,&
-          ind%Bnm1,ind%phi,F,ind%m,TMP,ind%temp_F2,ind%temp_CC,EF%unsteady_0D%export_now)
+           call Euler_time_AB2_sources(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%Bstar,ind%Bnm1,&
+           ind%phi,F,Fnm1,ind%m,TMP,ind%temp_F1,ind%temp_CC,&
+           EF%unsteady_0D%export_now)
+         case (7)
+           call O2_BDF_time_AB2_sources(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%Bstar,&
+           ind%Bnm1,ind%phi,F,Fnm1,ind%m,TMP,ind%temp_F1,ind%temp_CC,&
+           EF%unsteady_0D%export_now)
 
-         case (7) ! Depricated
+         case (8) ! Depricated
            call CT_Low_Rem(ind%B,ind%B0,ind%U_E,ind%J,ind%sigmaInv_edge,ind%m,&
            TMP%multistep_iter,TMP%dt,ind%temp_F1,ind%temp_F2,ind%temp_E,ind%temp_E_TF)
-         case (8) ! Depricated
+         case (9) ! Depricated
            call CT_Finite_Rem(ind%B,ind%B0,ind%U_E,ind%J,ind%dB0dt,ind%sigmaInv_edge,ind%m,&
            TMP%multistep_iter,TMP%dt,ind%temp_F1,ind%temp_F2,ind%temp_F1_TF%x,&
            ind%temp_E,ind%temp_E_TF)
-         case (11) ! Still useful
+         case (10) ! Still useful
            call CT_Finite_Rem_interior_solved(ind%PCG_cleanB,ind%B,ind%B0,ind%Bstar,&
            ind%J,ind%B_interior,ind%U_E,ind%curlE,ind%phi,ind%m,ind%MD_sigma,TMP,&
            ind%SP%DP%Rem,ind%SP%finite_Rem,EF%unsteady_0D%export_now,ind%temp_CC,&
@@ -553,6 +569,7 @@
          case default; stop 'Error: bad solveBMethod input solve_induction in induction.f90'
          end select
          call iterate_step(TMP)
+         enddo
 
          call compute_J_ind(ind)
 

@@ -27,16 +27,17 @@
      public :: sim_params
      public :: init,delete,display,print,export,import
 
-     interface init;    module procedure init_SP;           end interface
-     interface delete;  module procedure delete_SP;         end interface
-     interface init;    module procedure init_SP_copy;      end interface
-     interface display; module procedure display_SP;        end interface
-     interface display; module procedure display_SP_wrapper;end interface
-     interface print;   module procedure print_SP;          end interface
-     interface export;  module procedure export_SP;         end interface
-     interface export;  module procedure export_SP_wrapper; end interface
-     interface import;  module procedure import_SP;         end interface
-     interface import;  module procedure import_SP_wrapper; end interface
+     interface init;         module procedure init_SP;            end interface
+     interface delete;       module procedure delete_SP;          end interface
+     interface init;         module procedure init_SP_copy;       end interface
+     interface display;      module procedure display_SP;         end interface
+     interface display;      module procedure display_SP_wrapper; end interface
+     interface print;        module procedure print_SP;           end interface
+     interface export;       module procedure export_SP;          end interface
+     interface export;       module procedure export_SP_wrapper;  end interface
+     interface import;       module procedure import_SP;          end interface
+     interface import;       module procedure import_SP_wrapper;  end interface
+     interface sanity_check; module procedure sanity_check_SP;    end interface
 
      type sim_params
        type(var_set) :: VS
@@ -57,7 +58,6 @@
        logical :: restart_all
 
        logical :: matrix_based
-       logical :: prescribed_periodic_BCs
        logical :: print_every_MHD_step
 
        logical :: couple_time_steps
@@ -89,7 +89,7 @@
        SP%FCL%Poisson_test           = F ! not used anywhere
 
        SP%EL%export_analytic         = F ! Export analytic solutions (MOONS.f90)
-       SP%EL%export_meshes           = F ! Export all meshes before starting simulation
+       SP%EL%export_meshes           = T ! Export all meshes before starting simulation
        SP%EL%export_vort_SF          = T ! Export vorticity-stream-function after simulation
        SP%EL%export_mat_props        = F ! Export material properties before starting simulation
        SP%EL%export_ICs              = F ! Export Post-Processed ICs before starting simulation
@@ -102,24 +102,23 @@
        SP%restart_all                = F ! restart sim (requires no code changes)
        SP%uniform_gravity_dir        = 1 ! Uniform gravity field direction
        SP%uniform_B0_dir             = 3 ! Uniform applied field direction
-       SP%mpg_dir                    = 0 ! Uniform applied field direction
+       SP%mpg_dir                    = 1 ! Uniform applied field direction
        SP%couple_time_steps          = T ! Ensures all dt are equal to coupled%dt
-       SP%finite_Rem                 = F ! Ensures all dt are equal to coupled%dt
+       SP%finite_Rem                 = T ! Ensures all dt are equal to coupled%dt
        SP%include_vacuum             = F ! Ensures all dt are equal to coupled%dt
-       SP%compute_surface_power      = F ! Compute surface power for LDC
+       SP%compute_surface_power      = T ! Compute surface power for LDC
 
        SP%matrix_based               = F ! Solve induction equation
-       SP%prescribed_periodic_BCs    = T ! Ustar,Bstar defined by relation in Kim 1985
        SP%print_every_MHD_step       = F ! Print nstep every time stop (for debugging)
 
        ! call init(MP,mirror,mirror_face)
        call init(SP%MP,F,6) ! Must be defined before KE_scale,ME_scale,JE_scale
 
        ! call init(EFP,export_ever,export_first_step,frequency_base,frequency_exp)
-       call init(SP%EF%info          ,T,T,1,10,1)
+       call init(SP%EF%info          ,T,T,1,10,2)
        call init(SP%EF%unsteady_0D   ,T,T,1,10,2)
-       call init(SP%EF%unsteady_1D   ,T,F,1,10,2)
-       call init(SP%EF%unsteady_2D   ,T,F,1,10,2)
+       call init(SP%EF%unsteady_1D   ,F,F,1,10,2)
+       call init(SP%EF%unsteady_2D   ,F,F,1,10,2)
        call init(SP%EF%unsteady_3D   ,F,F,1,10,4)
        call init(SP%EF%restart_files ,F,F,1,10,2)
        call init(SP%EF%final_solution,F,F,1,10,6)
@@ -132,12 +131,12 @@
        ! call init(TSP,collect,t_start,t_stop)
        call init(SP%TSP,F,100.0_cp,500.0_cp)
 
-       time                          = 10000.0_cp
-       dtime                         = 1.0_cp*pow(-2)
+       time                          = 40.0_cp
+       dtime                         = 2.0_cp*pow(-3)
 
        SP%GP%tw                      = 0.05_cp
-       SP%GP%geometry                = 9
-       SP%GP%periodic_dir            = (/0,0,0/)
+       SP%GP%geometry                = 7
+       SP%GP%periodic_dir            = (/0,1,0/)
        ! SP%GP%apply_BC_order          = (/3,4,5,6,1,2/) ! good for LDC
        ! SP%GP%apply_BC_order       = (/3,4,5,6,1,2/) ! good for periodic in y?
        SP%GP%apply_BC_order       = (/5,6,1,2,3,4/) ! good for periodic in y?
@@ -145,21 +144,26 @@
        ! SP%GP%apply_BC_order       = (/3,4,1,2,5,6/) ! good for periodic in z?
 
        call delete(SP%DP)
-       SP%DP%Re                      = 1.0_cp*pow(2)
-       ! SP%DP%Q                       = 4.4_cp*pow(-1)
+       SP%DP%Re                      = 2.0_cp*pow(2)
+       SP%DP%Q                       = 3.0_cp*pow(-1)
        SP%DP%Rem                     = 1.0_cp*pow(0)
-       SP%DP%Ha                      = 1.0_cp*pow(1)
-       ! SP%DP%N                       = 1.0_cp/SP%DP%Q
-       ! SP%DP%N                       = 1.0_cp*pow(-1)
-       SP%DP%cw                      = 0.0_cp
+       ! SP%DP%Ha                      = 1.0_cp*pow(1)
+       SP%DP%N                       = 1.0_cp/SP%DP%Q
+       ! SP%DP%N                       = 4.0_cp*pow(-1)
+       SP%DP%c_w(1:6)                = 0.0_cp
+       SP%DP%c_w( 5 )                = 1.0_cp
+       SP%DP%c_w( 6 )                = 1.0_cp
+       SP%DP%Robin_coeff             = 0.0_cp
+       SP%DP%Robin_coeff(5:6)        = -1.0_cp/SP%DP%c_w(5:6)
+       ! SP%DP%c_w_coeff                = (2.0_cp*SP%DP%c_w/dh_nhat-1.0_cp)/(2.0_cp*SP%DP%c_w/dh_nhat+1.0_cp)
        SP%DP%sig_local_over_sig_f    = 1.0_cp*pow(0)
        SP%DP%Gr                      = 0.0_cp
        SP%DP%Pr                      = 0.01_cp
        SP%DP%Fr                      = 1.0_cp
        SP%DP%Ec                      = 0.0_cp
 
-       ! SP%DP%Ha                      = (1.0_cp/SP%DP%Q*SP%DP%Re)**0.5_cp
-       SP%DP%N                       = SP%DP%Ha**2.0_cp/SP%DP%Re
+       SP%DP%Ha                      = (1.0_cp/SP%DP%Q*SP%DP%Re)**0.5_cp
+       ! SP%DP%N                       = SP%DP%Ha**2.0_cp/SP%DP%Re
        ! SP%DP%Ha                      = (SP%DP%N*SP%DP%Re)**0.5_cp
        SP%DP%Al                      = SP%DP%N/SP%DP%Rem
        SP%DP%Pe                      = SP%DP%Pr*SP%DP%Re
@@ -185,7 +189,7 @@
        call init(SP%VS%rho%unsteady_field,F)
        ! call init(export_plane,export_ever,dir,plane)
        call init(SP%VS%T%unsteady_planes  ,F,2,1,'1')
-       call init(SP%VS%U%unsteady_planes  ,F,3,23,'1')
+       call init(SP%VS%U%unsteady_planes  ,F,3,2,'1')
        call add (SP%VS%U%unsteady_planes  ,F,3,23,'2')
        call init(SP%VS%P%unsteady_planes  ,F,2,1,'1')
        call init(SP%VS%B%unsteady_planes  ,F,2,1,'1')
@@ -201,23 +205,31 @@
        call init(SP%VS%phi%unsteady_lines,F,1,(/2,34/),'1')
        call init(SP%VS%rho%unsteady_lines,F,1,(/2,34/),'1')
 
+       ! call init(SS        ,initialize,solve,restart,prescribe_BCs,solve_method)
+       call init(SP%VS%T%SS  ,F         ,F    ,F      ,F            ,0)
+       call init(SP%VS%U%SS  ,T         ,T    ,F      ,T            ,6)
+       call init(SP%VS%P%SS  ,T         ,T    ,F      ,F            ,0)
+       call init(SP%VS%B%SS  ,T         ,T    ,F      ,F            ,6)
+       call init(SP%VS%B0%SS ,T         ,T    ,F      ,F            ,0)
+       call init(SP%VS%phi%SS,F         ,F    ,F      ,F            ,0)
+       call init(SP%VS%rho%SS,F         ,F    ,F      ,F            ,0)
+       !     solve_method = 1 = Euler_time_no_diff_Euler_sources_no_correction
+       !     solve_method = 2 = Euler_time_no_diff_AB2_sources_no_correction
+       !     solve_method = 3 = Euler_time_no_diff_Euler_sources
+       !     solve_method = 4 = Euler_time_no_diff_AB2_sources
+       !     solve_method = 5 = Euler_time_Euler_sources
+       !     solve_method = 6 = Euler_time_AB2_sources
+       !     solve_method = 7 = O2_BDF_time_AB2_sources
+       !     solve_method = 8 = Euler_time_AB2_sources_new
+
        ! call init_IC_BC(var      ,IC   ,BC)
        call init_IC_BC(SP%VS%T    ,0    ,0 )
-       call init_IC_BC(SP%VS%U    ,0    ,1 )
-       call init_IC_BC(SP%VS%P    ,0    ,0 )
-       call init_IC_BC(SP%VS%B    ,0    ,1 )
-       call init_IC_BC(SP%VS%B0   ,1    ,0 )
+       call init_IC_BC(SP%VS%U    ,0    ,6 )
+       call init_IC_BC(SP%VS%P    ,0    ,2 )
+       call init_IC_BC(SP%VS%B    ,0    ,2 ) ! 5 for thin wall
+       call init_IC_BC(SP%VS%B0   ,4    ,0 )
        call init_IC_BC(SP%VS%phi  ,0    ,0 )
        call init_IC_BC(SP%VS%rho  ,0    ,0 )
-
-       ! call init(SS        ,initialize,solve,restart,solve_method)
-       call init(SP%VS%T%SS  ,F         ,F    ,F      ,0)
-       call init(SP%VS%U%SS  ,T         ,T    ,F      ,3)
-       call init(SP%VS%P%SS  ,T         ,T    ,F      ,0)
-       call init(SP%VS%B%SS  ,T         ,T    ,F      ,3)
-       call init(SP%VS%B0%SS ,T         ,T    ,F      ,0)
-       call init(SP%VS%phi%SS,T         ,T    ,F      ,0)
-       call init(SP%VS%rho%SS,F         ,F    ,F      ,0)
 
        ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,export_convergence,dir,name)
        call init(SP%VS%T%ISP,  5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_T')
@@ -250,28 +262,12 @@
        SP%VS%B%MFP%alpha = 1.0_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
        SP%VS%U%MFP%alpha = 0.5_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
        SP%VS%T%MFP%alpha = 0.5_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
-
-       SP%VS%B%MFP%beta =  1.0_cp - SP%VS%B%MFP%alpha ! weight of explicit treatment
-       SP%VS%U%MFP%beta =  1.0_cp - SP%VS%U%MFP%alpha ! weight of explicit treatment
-       SP%VS%T%MFP%beta =  1.0_cp - SP%VS%T%MFP%alpha ! weight of explicit treatment
-
        SP%VS%B%MFP%coeff_natural = -1.0_cp/SP%DP%Rem ! natural diffusion coefficient on RHS
        SP%VS%U%MFP%coeff_natural =  1.0_cp/SP%DP%Re  ! natural diffusion coefficient on RHS
        SP%VS%T%MFP%coeff_natural =  1.0_cp/SP%DP%Pe  ! natural diffusion coefficient on RHS
-
-       SP%VS%B%MFP%coeff_explicit   = SP%VS%B%MFP%coeff_natural*SP%VS%B%MFP%beta ! RHS diffusion coefficient
-       SP%VS%U%MFP%coeff_explicit   = SP%VS%U%MFP%coeff_natural*SP%VS%U%MFP%beta ! RHS diffusion coefficient
-       SP%VS%T%MFP%coeff_explicit   = SP%VS%T%MFP%coeff_natural*SP%VS%T%MFP%beta ! RHS diffusion coefficient
-       SP%VS%phi%MFP%coeff_explicit = 0.0_cp ! Poisson, coefficient unused
-       SP%VS%p%MFP%coeff_explicit   = 0.0_cp ! Poisson, coefficient unused
-       SP%VS%rho%MFP%coeff_explicit = 0.0_cp ! Poisson, coefficient unused
-
-       SP%VS%B%MFP%coeff_implicit   = -SP%VS%B%MFP%coeff_natural*SP%VS%B%MFP%alpha ! LHS diffusion coefficient
-       SP%VS%U%MFP%coeff_implicit   = -SP%VS%U%MFP%coeff_natural*SP%VS%U%MFP%alpha ! LHS diffusion coefficient
-       SP%VS%T%MFP%coeff_implicit   = -SP%VS%T%MFP%coeff_natural*SP%VS%T%MFP%alpha ! LHS diffusion coefficient
-       SP%VS%phi%MFP%coeff_implicit = 0.0_cp ! Poisson, coefficient unused
-       SP%VS%p%MFP%coeff_implicit   = 0.0_cp ! Poisson, coefficient unused
-       SP%VS%rho%MFP%coeff_implicit = 0.0_cp ! Poisson, coefficient unused
+       call assign_beta(SP%VS)           ! weight of explicit treatment, alpha must be defined first
+       call assign_coeff_explicit(SP%VS) ! RHS diffusion coefficient, (beta ,coeff_natural) must be defined first
+       call assign_coeff_implicit(SP%VS) ! LHS diffusion coefficient, (alpha,coeff_natural) must be defined first
 
        ! The following is needed only if curl-curl(B) is used, opposed to J in solver.
        ! if (SP%finite_Rem) SP%VS%B%MFP%coeff_explicit = SP%VS%B%MFP%coeff_explicit/SP%DP%Rem
@@ -279,11 +275,22 @@
        SP%MT%diffusion%add              = T ! add diffusion              to momentum equation
        SP%MT%advection_convection%add   = F ! add advection (conv form)  to momentum equation
        SP%MT%advection_divergence%add   = T ! add advection (div  form)  to momentum equation
-       SP%MT%mean_pressure_grad%add     = F ! add mean pressure gradient to momentum equation
+       SP%MT%mean_pressure_grad%add     = T ! add mean pressure gradient to momentum equation
        SP%MT%JCrossB%add                = T ! add JCrossB                to momentum equation
        SP%MT%Q2D_JCrossB%add            = F ! add Q2D JCrossB            to momentum equation
        SP%MT%Buoyancy%add               = F ! add Buoyancy               to momentum equation
        SP%MT%Gravity%add                = F ! add Gravity                to momentum equation
+
+       SP%IT%advection%add              = T ! add advection              to induction equation
+       SP%IT%diffusion%add              = T ! add diffusion              to induction equation
+       SP%IT%unsteady_B0%add            = F ! add unsteady_B0            to induction equation
+
+       SP%ET%advection%add              = F ! add advection           to energy equation
+       SP%ET%diffusion%add              = F ! add diffusion           to energy equation
+       SP%ET%KE_diffusion%add           = F ! add KE_diffusion        to energy equation
+       SP%ET%viscous_dissipation%add    = F ! add viscous_dissipation to energy equation
+       SP%ET%joule_heating%add          = F ! add joule_heating       to energy equation
+       SP%ET%volumetric_heating%add     = F ! add volumetric_heating  to energy equation
 
        SP%MT%diffusion%scale            = SP%VS%U%MFP%coeff_explicit
        SP%MT%advection_convection%scale = -1.0_cp
@@ -296,21 +303,13 @@
        SP%MT%Gravity%scale              = 1.0_cp/SP%DP%Fr**2.0_cp
        ! SP%MT%JCrossB%scale              = SP%DP%N*SP%DP%Rem ! For Rem ne 1 in Bandaru (look at J definition)
 
-       SP%IT%advection%add              = T ! add advection              to induction equation
-       SP%IT%diffusion%add              = T ! add diffusion              to induction equation
-       SP%IT%unsteady_B0%add            = F ! add unsteady_B0            to induction equation
        SP%IT%advection%scale            = 1.0_cp
        SP%IT%diffusion%scale            = -SP%VS%B%MFP%beta ! since LHS and J includes scale
        SP%IT%unsteady_B0%scale          = -1.0_cp ! since RHS
        SP%IT%current%scale              = 1.0_cp/SP%DP%Rem ! J = scale curl(B)
+       SP%IT%B_applied%scale            = 1.0_cp           ! B0 = scale*B0
        ! SP%IT%advection%scale            = 1.0_cp/SP%DP%Rem ! For Rem ne 1 in Bandaru
 
-       SP%ET%advection%add              = F ! add advection           to energy equation
-       SP%ET%diffusion%add              = F ! add diffusion           to energy equation
-       SP%ET%KE_diffusion%add           = F ! add KE_diffusion        to energy equation
-       SP%ET%viscous_dissipation%add    = F ! add viscous_dissipation to energy equation
-       SP%ET%joule_heating%add          = F ! add joule_heating       to energy equation
-       SP%ET%volumetric_heating%add     = F ! add volumetric_heating  to energy equation
        SP%ET%advection%scale            = -1.0_cp
        SP%ET%diffusion%scale            = 1.0_cp/SP%DP%Pe
        SP%ET%KE_diffusion%scale         = -SP%DP%Ec/SP%DP%Re
@@ -318,30 +317,16 @@
        SP%ET%joule_heating%scale        = SP%DP%Ec*SP%DP%N
        SP%ET%volumetric_heating%scale   = 1.0_cp ! Not sure what this scale was...
 
-       if (SP%couple_time_steps) then
-         call couple_time_step(SP%VS%T%TMP  ,SP%coupled)
-         call couple_time_step(SP%VS%U%TMP  ,SP%coupled)
-         call couple_time_step(SP%VS%P%TMP  ,SP%coupled)
-         call couple_time_step(SP%VS%B%TMP  ,SP%coupled)
-         call couple_time_step(SP%VS%B0%TMP ,SP%coupled)
-         call couple_time_step(SP%VS%phi%TMP,SP%coupled)
-         call couple_time_step(SP%VS%rho%TMP,SP%coupled)
-       endif
+       if (SP%couple_time_steps) call couple_time_step(SP%VS,SP%coupled)
        ! call export_import_SS(SP%VS)
        call sanity_check(SP)
-      end subroutine
+     end subroutine
 
-     subroutine sanity_check(SP)
+     subroutine sanity_check_SP(SP)
        implicit none
        type(sim_params),intent(in) :: SP
        if (SP%coupled%n_step_stop.lt.1) stop 'Error: coupled%n_step_stop<1 in sim_params.f90'
-       if (SP%VS%T%SS%solve  .and.(.not.SP%VS%T%SS%initialize))   stop 'Error: solve but not init? T'
-       if (SP%VS%U%SS%solve  .and.(.not.SP%VS%U%SS%initialize))   stop 'Error: solve but not init? U'
-       if (SP%VS%P%SS%solve  .and.(.not.SP%VS%P%SS%initialize))   stop 'Error: solve but not init? P'
-       if (SP%VS%B%SS%solve  .and.(.not.SP%VS%B%SS%initialize))   stop 'Error: solve but not init? B'
-       if (SP%VS%B0%SS%solve .and.(.not.SP%VS%B0%SS%initialize))  stop 'Error: solve but not init? B0'
-       if (SP%VS%phi%SS%solve.and.(.not.SP%VS%phi%SS%initialize)) stop 'Error: solve but not init? phi'
-       if (SP%VS%rho%SS%solve.and.(.not.SP%VS%rho%SS%initialize)) stop 'Error: solve but not init? rho'
+       call sanity_check(SP%VS)
      end subroutine
 
      subroutine init_SP_copy(SP,SP_in)
@@ -357,7 +342,6 @@
        SP%mpg_dir                = SP_in%mpg_dir
        SP%uniform_gravity_dir    = SP_in%uniform_gravity_dir
        SP%matrix_based           = SP_in%matrix_based
-       SP%prescribed_periodic_BCs= SP_in%prescribed_periodic_BCs
        SP%print_every_MHD_step   = SP_in%print_every_MHD_step
        call init(SP%FCL,    SP_in%FCL)
        call init(SP%GP,     SP_in%GP)
@@ -372,7 +356,7 @@
        call init(SP%MQP,    SP_in%MQP)
        call init(SP%TSP,    SP_in%TSP)
        call init(SP%EF,     SP_in%EF)
-      end subroutine
+     end subroutine
 
      subroutine delete_SP(SP)
        implicit none
@@ -389,7 +373,7 @@
        call delete(SP%MQP)
        call delete(SP%TSP)
        call delete(SP%EF)
-      end subroutine
+     end subroutine
 
      subroutine display_SP(SP,un)
        implicit none
@@ -404,7 +388,6 @@
        write(un,*) 'mpg_dir                = ',SP%mpg_dir
        write(un,*) 'uniform_gravity_dir    = ',SP%uniform_gravity_dir
        write(un,*) 'matrix_based           = ',SP%matrix_based
-       write(un,*) 'prescribed_periodic_BCs= ',SP%prescribed_periodic_BCs
        write(un,*) 'print_every_MHD_step   = ',SP%print_every_MHD_step
        call display(SP%FCL,un)
        call display(SP%GP,un)
@@ -419,7 +402,34 @@
        call display(SP%TSP,un)
        call display(SP%EF,un)
        call display(SP%coupled,un)
-      end subroutine
+       call display_compiler_info(un)
+     end subroutine
+
+     subroutine display_compiler_info(un)
+       implicit none
+       integer,intent(in) :: un
+       write(un,*) ' ----------------- COMPILER FLAG INFO -------------- '
+#ifdef _PARALLELIZE_GF_
+       write(un,*) '_PARALLELIZE_GF_ = .true.'
+#else
+       write(un,*) '_PARALLELIZE_GF_ = .false.'
+#endif
+#ifdef _PARALLELIZE_BF_PLANE_
+       write(un,*) '_PARALLELIZE_BF_PLANE_ = .true.'
+#else
+       write(un,*) '_PARALLELIZE_BF_PLANE_ = .false.'
+#endif
+#ifdef PARALLELIZE_2D_OPS
+       write(un,*) 'PARALLELIZE_2D_OPS = .true.'
+#else
+       write(un,*) 'PARALLELIZE_2D_OPS = .false.'
+#endif
+#ifdef PARALLELIZE_1D_OPS
+       write(un,*) 'PARALLELIZE_1D_OPS = .true.'
+#else
+       write(un,*) 'PARALLELIZE_1D_OPS = .false.'
+#endif
+     end subroutine
 
      subroutine display_SP_wrapper(SP,dir,name)
        implicit none
@@ -429,13 +439,13 @@
        un = new_and_open(dir,name)
        call display(SP,un)
        call close_and_message(un,dir,name)
-      end subroutine
+     end subroutine
 
      subroutine print_SP(SP)
        implicit none
        type(sim_params),intent(in) :: SP
        call display(SP,6)
-      end subroutine
+     end subroutine
 
      subroutine export_SP(SP,un)
        implicit none
@@ -450,7 +460,6 @@
        write(un,*) SP%mpg_dir
        write(un,*) SP%uniform_gravity_dir
        write(un,*) SP%matrix_based
-       write(un,*) SP%prescribed_periodic_BCs
        write(un,*) SP%print_every_MHD_step
        call export(SP%FCL,un)
        call export(SP%GP,un)
@@ -465,7 +474,7 @@
        call export(SP%TSP,un)
        call export(SP%EF,un)
        call export(SP%coupled,un)
-      end subroutine
+     end subroutine
 
      subroutine import_SP(SP,un)
        implicit none
@@ -480,7 +489,6 @@
        read(un,*) SP%mpg_dir
        read(un,*) SP%uniform_gravity_dir
        read(un,*) SP%matrix_based
-       read(un,*) SP%prescribed_periodic_BCs
        read(un,*) SP%print_every_MHD_step
        call import(SP%FCL,un)
        call import(SP%GP,un)
@@ -495,7 +503,7 @@
        call import(SP%TSP,un)
        call import(SP%EF,un)
        call import(SP%coupled,un)
-      end subroutine
+     end subroutine
 
      subroutine export_SP_wrapper(SP,dir,name)
        implicit none
@@ -505,7 +513,7 @@
        un = new_and_open(dir,name)
        call export(SP,un)
        call close_and_message(un,dir,name)
-      end subroutine
+     end subroutine
 
      subroutine import_SP_wrapper(SP,dir,name)
        implicit none
@@ -515,6 +523,6 @@
        un = new_and_open(dir,name)
        call import(SP,un)
        call close_and_message(un,dir,name)
-      end subroutine
+     end subroutine
 
      end module

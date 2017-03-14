@@ -50,14 +50,15 @@
          call add_product(F,temp_F2,scale)
        end subroutine
 
-       subroutine add_unsteady_B0(F,B0,dB0dt,scale,TMP)
+       subroutine add_unsteady_B0(F,B0,dB0dt,scale_B0,scale_dB0_dt,TMP)
          implicit none
          type(VF),intent(inout) :: F,B0,dB0dt
          type(time_marching_params),intent(in) :: TMP
-         real(cp),intent(in) :: scale
+         real(cp),intent(in) :: scale_B0,scale_dB0_dt
          call assign_B0_vs_t(B0,TMP)
+         call multiply(B0,scale_B0)
          call assign_dB0_dt_vs_t(dB0dt,TMP)
-         call add_product(F,dB0dt,scale) ! (-) since added to RHS
+         call add_product(F,dB0dt,scale_dB0_dt) ! (-) since added to RHS
        end subroutine
 
        end module

@@ -12,6 +12,7 @@
          logical :: solve = .false.
          logical :: restart = .false.
          integer :: solve_method = 0
+         logical :: prescribed_BCs = .false.
        end type
 
        interface init;    module procedure init_SS;      end interface
@@ -30,15 +31,16 @@
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-       subroutine init_SS(SS,initialize,solve,restart,solve_method)
+       subroutine init_SS(SS,initialize,solve,restart,prescribed_BCs,solve_method)
          implicit none
          type(solver_settings),intent(inout) :: SS
-         logical,intent(in) :: initialize,solve,restart
+         logical,intent(in) :: initialize,solve,restart,prescribed_BCs
          integer,intent(in) :: solve_method
          SS%initialize = initialize
          SS%solve = solve
          SS%restart = restart
          SS%solve_method = solve_method
+         SS%prescribed_BCs = prescribed_BCs
        end subroutine
 
        subroutine init_copy_SS(SS,SS_in)
@@ -49,6 +51,7 @@
          SS%solve = SS_in%solve
          SS%restart = SS_in%restart
          SS%solve_method = SS_in%solve_method
+         SS%prescribed_BCs = SS_in%prescribed_BCs
        end subroutine
 
        subroutine delete_SS(SS)
@@ -58,6 +61,7 @@
          SS%solve = .false.
          SS%restart = .false.
          SS%solve_method = 0
+         SS%prescribed_BCs = .false.
        end subroutine
 
        subroutine export_SS(SS,un)
@@ -68,6 +72,7 @@
          write(un,*) SS%solve
          write(un,*) SS%restart
          write(un,*) SS%solve_method
+         write(un,*) SS%prescribed_BCs
        end subroutine
 
        subroutine import_SS(SS,un)
@@ -78,16 +83,18 @@
          read(un,*) SS%solve
          read(un,*) SS%restart
          read(un,*) SS%solve_method
+         read(un,*) SS%prescribed_BCs
        end subroutine
 
        subroutine display_SS(SS,un)
          implicit none
          type(solver_settings),intent(in) :: SS
          integer,intent(in) :: un
-         write(un,*) 'initialize   = ',SS%initialize
-         write(un,*) 'solve        = ',SS%solve
-         write(un,*) 'restart      = ',SS%restart
-         write(un,*) 'solve_method = ',SS%solve_method
+         write(un,*) 'initialize     = ',SS%initialize
+         write(un,*) 'solve          = ',SS%solve
+         write(un,*) 'restart        = ',SS%restart
+         write(un,*) 'solve_method   = ',SS%solve_method
+         write(un,*) 'prescribed_BCs = ',SS%prescribed_BCs
        end subroutine
 
        subroutine print_SS(SS)
@@ -96,12 +103,12 @@
          call display(SS,6)
        end subroutine
 
-       function get_SS_SS(initialize,solve,restart,solve_method) result(SS)
+       function get_SS_SS(initialize,solve,restart,prescribed_BCs,solve_method) result(SS)
          implicit none
          type(solver_settings) :: SS
-         logical,intent(in) :: initialize,solve,restart
+         logical,intent(in) :: initialize,solve,restart,prescribed_BCs
          integer,intent(in) :: solve_method
-         call init(SS,initialize,solve,restart,solve_method)
+         call init(SS,initialize,solve,restart,prescribed_BCs,solve_method)
        end function
 
        end module

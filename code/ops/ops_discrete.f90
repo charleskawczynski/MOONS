@@ -168,13 +168,13 @@
            call lap_centered_SF_given_both(lapU%z,U%z,m,VF_temp%x,VF_temp%y,VF_temp%z)
            call delete(VF_temp)
          elseif (is_Face(U)) then
-           call init_Face_compliment(TF_temp,m)
+           call init_CC_Edge(TF_temp,m)
            call lap_centered_SF_given_both(lapU%x,U%x,m,TF_temp%x%x,TF_temp%x%y,TF_temp%x%z)
            call lap_centered_SF_given_both(lapU%y,U%y,m,TF_temp%y%x,TF_temp%y%y,TF_temp%y%z)
            call lap_centered_SF_given_both(lapU%z,U%z,m,TF_temp%z%x,TF_temp%z%y,TF_temp%z%z)
            call delete(TF_temp)
          elseif (is_Edge(U)) then
-           call init_Edge_compliment(TF_temp,m)
+           call init_Node_Edge(TF_temp,m)
            call lap_centered_SF_given_both(lapU%x,U%x,m,TF_temp%x%x,TF_temp%x%y,TF_temp%x%z)
            call lap_centered_SF_given_both(lapU%y,U%y,m,TF_temp%y%x,TF_temp%y%y,TF_temp%y%z)
            call lap_centered_SF_given_both(lapU%z,U%z,m,TF_temp%z%x,TF_temp%z%y,TF_temp%z%z)
@@ -199,7 +199,7 @@
            call lap_centered_SF_given_both(lapU,U,m,VF_temp%x,VF_temp%y,VF_temp%z)
            call delete(VF_temp)
          elseif (is_Face(U%DL)) then
-           call init_Face_compliment(TF_temp,m)
+           call init_CC_Edge(TF_temp,m)
            select case (get_Face(U%DL))
            case (1); call lap_centered_SF_given_both(lapU,U,m,TF_temp%x%x,TF_temp%x%y,TF_temp%x%z)
            case (2); call lap_centered_SF_given_both(lapU,U,m,TF_temp%y%x,TF_temp%y%y,TF_temp%y%z)
@@ -207,14 +207,14 @@
            end select
            call delete(TF_temp)
          elseif (is_Edge(U%DL)) then
-           call init_Edge_compliment(TF_temp,m)
+           call init_Node_Edge(TF_temp,m)
            select case (get_Edge(U%DL))
            case (1); call lap_centered_SF_given_both(lapU,U,m,TF_temp%x%x,TF_temp%x%y,TF_temp%x%z)
            case (2); call lap_centered_SF_given_both(lapU,U,m,TF_temp%y%x,TF_temp%y%y,TF_temp%y%z)
            case (3); call lap_centered_SF_given_both(lapU,U,m,TF_temp%z%x,TF_temp%z%y,TF_temp%z%z)
            end select
            call delete(TF_temp)
-         else; stop 'Error: bad data type in lap_centered_VF_dynamic in ops_discrete.f90'
+         else; stop 'Error: bad data type in lap_centered_SF_dynamic in ops_discrete.f90'
          endif
        end subroutine
 

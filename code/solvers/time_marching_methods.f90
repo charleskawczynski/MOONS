@@ -1,9 +1,9 @@
        module time_marching_methods_mod
        ! This seems to work fine for preassure, but not
        ! always (e.g. Bandaru) for correction field phi.
-       ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%dt,m,temp_F2,temp_CC,compute_norms)
+       ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%dt,m,temp_F1,temp_CC,compute_norms)
        ! Instead, the following is used:
-       ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp,m,temp_F2,temp_CC,compute_norms)
+       ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp,m,temp_F1,temp_CC,compute_norms)
        ! This does not preserve the magnitude of preassure, however
        use current_precision_mod
        use mesh_mod
@@ -31,6 +31,7 @@
        implicit none
        private
 
+       public :: Euler_time_Euler_sources
        public :: O2_BDF_time_AB2_sources
        public :: Euler_time_AB2_sources
 
@@ -46,8 +47,43 @@
 
        contains
 
+       subroutine Euler_time_Euler_sources(PCG_VF,PCG_SF,X,Xstar,Xnm1,phi,F,m,&
+         TMP,temp_F1,temp_CC,compute_norms)
+         ! Solves:
+         !
+         !  X^{*} - X^{n}
+         ! -------------- + AX^{*} = F^{n}
+         !        dt
+         !
+         ! -->  (I + dt 1 A)X^{*} = X^{n} + dt F^{n}
+         !
+         ! lap(phi^{n+1}) = 1/dt div(X^{*})
+         ! X^{n+1} = X^{*} - dt grad(phi^{n+1})
+         !
+         implicit none
+         type(PCG_solver_VF),intent(inout) :: PCG_VF
+         type(PCG_solver_SF),intent(inout) :: PCG_SF
+         type(SF),intent(inout) :: phi,temp_CC
+         type(VF),intent(inout) :: X,Xstar,Xnm1
+         type(VF),intent(in) :: F
+         type(mesh),intent(in) :: m
+         type(time_marching_params),intent(in) :: TMP
+         type(VF),intent(inout) :: temp_F1
+         logical,intent(in) :: compute_norms
+         call assign(temp_F1,F)
+         call multiply(temp_F1,TMP%dt)
+         call assign_wall_Dirichlet(temp_F1,0.0_cp,X)
+         call add(temp_F1,X)
+         call assign(Xnm1,X)
+         call update_MFP(PCG_VF,m,TMP%dt*1.0_cp*PCG_VF%MFP%coeff_implicit,TMP%n_step.le.2)
+         call solve(PCG_VF,Xstar,temp_F1,m,compute_norms) ! Solve for X*
+         ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%dt,m,temp_F1,temp_CC,compute_norms)
+         call clean_div(PCG_SF,X,Xstar,phi,1.0_cp,m,temp_F1,temp_CC,compute_norms)
+         if (get_any_Prescribed(Xstar)) call update_intermediate_field_BCs(Xstar,phi,1.0_cp,m,temp_F1,temp_CC)
+       end subroutine
+
        subroutine O2_BDF_time_AB2_sources(PCG_VF,PCG_SF,X,Xstar,Xnm1,phi,F,Fnm1,m,&
-         TMP,temp_F1,temp_F2,temp_CC,temp_CC_VF,compute_norms)
+         TMP,temp_F1,temp_CC,compute_norms)
          ! Solves:
          !
          !  3X^{*} - 4X^{n} + X^{n-1}
@@ -63,11 +99,11 @@
          type(PCG_solver_VF),intent(inout) :: PCG_VF
          type(PCG_solver_SF),intent(inout) :: PCG_SF
          type(SF),intent(inout) :: phi
-         type(VF),intent(inout) :: X,Xstar,Xnm1,temp_CC_VF
+         type(VF),intent(inout) :: X,Xstar,Xnm1
          type(VF),intent(in) :: F,Fnm1
          type(mesh),intent(in) :: m
          type(time_marching_params),intent(in) :: TMP
-         type(VF),intent(inout) :: temp_F1,temp_F2
+         type(VF),intent(inout) :: temp_F1
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
          call AB2(temp_F1,F,Fnm1)
@@ -78,13 +114,13 @@
          call assign(Xnm1,X)
          call update_MFP(PCG_VF,m,TMP%dt*two_thirds*PCG_VF%MFP%coeff_implicit,TMP%n_step.le.2)
          call solve(PCG_VF,Xstar,temp_F1,m,compute_norms) ! Solve for X*
-         ! call clean_div(PCG_SF,X,Xstar,phi,three_halfs/TMP%dt,m,temp_F2,temp_CC,compute_norms)
-         call clean_div(PCG_SF,X,Xstar,phi,1.0_cp,m,temp_F2,temp_CC,compute_norms)
-         call update_intermediate_field_BCs(Xstar,X,phi,m,temp_F1,temp_F2,temp_CC_VF)
+         ! call clean_div(PCG_SF,X,Xstar,phi,three_halfs/TMP%dt,m,temp_F1,temp_CC,compute_norms)
+         call clean_div(PCG_SF,X,Xstar,phi,1.0_cp,m,temp_F1,temp_CC,compute_norms)
+         if (get_any_Prescribed(Xstar)) call update_intermediate_field_BCs(Xstar,phi,1.0_cp,m,temp_F1,temp_CC)
        end subroutine
 
        subroutine Euler_time_AB2_sources(PCG_VF,PCG_SF,X,Xstar,Xnm1,phi,F,Fnm1,m,&
-         TMP,temp_F1,temp_F2,temp_CC,temp_CC_VF,compute_norms)
+         TMP,temp_F1,temp_CC,compute_norms)
          ! Solves:
          !
          !  X^{*} - X^{n}
@@ -100,11 +136,11 @@
          type(PCG_solver_VF),intent(inout) :: PCG_VF
          type(PCG_solver_SF),intent(inout) :: PCG_SF
          type(SF),intent(inout) :: phi
-         type(VF),intent(inout) :: X,Xstar,Xnm1,temp_CC_VF
+         type(VF),intent(inout) :: X,Xstar,Xnm1
          type(VF),intent(in) :: F,Fnm1
          type(mesh),intent(in) :: m
          type(time_marching_params),intent(in) :: TMP
-         type(VF),intent(inout) :: temp_F1,temp_F2
+         type(VF),intent(inout) :: temp_F1
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
          call AB2(temp_F1,F,Fnm1)
@@ -114,9 +150,9 @@
          call assign(Xnm1,X)
          call update_MFP(PCG_VF,m,TMP%dt*1.0_cp*PCG_VF%MFP%coeff_implicit,TMP%n_step.le.2)
          call solve(PCG_VF,Xstar,temp_F1,m,compute_norms) ! Solve for X*
-         ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%dt,m,temp_F2,temp_CC,compute_norms)
-         call clean_div(PCG_SF,X,Xstar,phi,1.0_cp,m,temp_F2,temp_CC,compute_norms)
-         call update_intermediate_field_BCs(Xstar,X,phi,m,temp_F1,temp_F2,temp_CC_VF)
+         ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%dt,m,temp_F1,temp_CC,compute_norms)
+         call clean_div(PCG_SF,X,Xstar,phi,1.0_cp,m,temp_F1,temp_CC,compute_norms)
+         if (get_any_Prescribed(Xstar)) call update_intermediate_field_BCs(Xstar,phi,1.0_cp,m,temp_F1,temp_CC)
        end subroutine
 
        ! **********************************************************************
@@ -124,7 +160,7 @@
        ! **********************************************************************
 
        subroutine Euler_time_no_diff_AB2_sources(PCG_SF,X,Xstar,Xnm1,phi,F,Fnm1,m,TMP,&
-         temp_F2,temp_CC,compute_norms)
+         temp_F1,temp_CC,compute_norms)
          ! Solves:
          !
          !  X^{*} - X^{n}
@@ -143,7 +179,7 @@
          type(VF),intent(in) :: F,Fnm1
          type(mesh),intent(in) :: m
          type(time_marching_params),intent(in) :: TMP
-         type(VF),intent(inout) :: temp_F2
+         type(VF),intent(inout) :: temp_F1
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
          call AB2(Xstar,F,Fnm1)
@@ -151,12 +187,12 @@
          call assign_wall_Dirichlet(Xstar,0.0_cp,X)
          call add(Xstar,X)
          call assign(Xnm1,X)
-         call clean_div(PCG_SF,X,Xstar,phi,1.0_cp,m,temp_F2,temp_CC,compute_norms)
-         ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%dt,m,temp_F2,temp_CC,compute_norms)
+         call clean_div(PCG_SF,X,Xstar,phi,1.0_cp,m,temp_F1,temp_CC,compute_norms)
+         ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%dt,m,temp_F1,temp_CC,compute_norms)
        end subroutine
 
        subroutine Euler_time_no_diff_Euler_sources(PCG_SF,X,Xstar,Xnm1,phi,F,m,TMP,&
-         temp_F2,temp_CC,compute_norms)
+         temp_F1,temp_CC,compute_norms)
          ! Solves:
          !
          !  X^{*} - X^{n}
@@ -175,15 +211,15 @@
          type(VF),intent(in) :: F
          type(mesh),intent(in) :: m
          type(time_marching_params),intent(in) :: TMP
-         type(VF),intent(inout) :: temp_F2
+         type(VF),intent(inout) :: temp_F1
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
          call multiply(Xstar,F,TMP%dt)
          call assign_wall_Dirichlet(Xstar,0.0_cp,X)
          call add(Xstar,X)
          call assign(Xnm1,X)
-         call clean_div(PCG_SF,X,Xstar,phi,1.0_cp,m,temp_F2,temp_CC,compute_norms)
-         ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%dt,m,temp_F2,temp_CC,compute_norms)
+         call clean_div(PCG_SF,X,Xstar,phi,1.0_cp,m,temp_F1,temp_CC,compute_norms)
+         ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%dt,m,temp_F1,temp_CC,compute_norms)
        end subroutine
 
        subroutine Euler_time_no_diff_AB2_sources_no_correction(X,Xstar,F,Fnm1,TMP)
@@ -203,6 +239,7 @@
          call multiply(Xstar,TMP%dt)
          call assign_wall_Dirichlet(Xstar,0.0_cp,X)
          call add(X,Xstar)
+         call apply_BCs(X)
        end subroutine
 
        subroutine Euler_time_no_diff_Euler_sources_no_correction(X,Xstar,F,TMP)
@@ -221,6 +258,7 @@
          call multiply(Xstar,F,TMP%dt)
          call assign_wall_Dirichlet(Xstar,0.0_cp,X)
          call add(X,Xstar)
+         call apply_BCs(X)
        end subroutine
 
        end module

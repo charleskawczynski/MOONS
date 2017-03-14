@@ -38,7 +38,7 @@
            SP%IT%diffusion%scale,ind%temp_F2,ind%temp_E)
          endif
          if (SP%IT%unsteady_B0%add) then
-           call add_unsteady_B0(F,ind%B0,ind%dB0dt,SP%IT%unsteady_B0%scale,TMP)
+           call add_unsteady_B0(F,ind%B0,ind%dB0dt,SP%IT%B_applied%scale,SP%IT%unsteady_B0%scale,TMP)
          endif
        end subroutine
 

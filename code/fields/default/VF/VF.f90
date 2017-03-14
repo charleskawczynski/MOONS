@@ -31,13 +31,18 @@
         public :: init_Edge
         public :: init_Node
 
-        public :: init_Face_compliment
-        public :: init_Edge_compliment
+        public :: init_CC_Edge
+        public :: init_Node_Edge
 
         public :: init_BCs
         public :: init_BC_Dirichlet
         public :: init_BC_props
         public :: multiply_volume
+
+        public :: get_any_Dirichlet
+        public :: get_any_Neumann
+        public :: get_any_Robin
+        public :: get_any_Prescribed
 
         public :: volume
         public :: sine_waves
@@ -46,10 +51,16 @@
 
         public :: assign_BCs
         public :: assign_BC_vals
-        public :: assign_Neumann_BCs
+        public :: update_BC_vals
         public :: assign_Dirichlet_BCs
         public :: assign_Periodic_BCs
+        public :: assign_Neumann_BCs
+        public :: assign_Neumann_BCs_wall_normal
         public :: multiply_Neumann_BCs
+        public :: multiply_BCs_by_nhat
+        public :: assign_Robin_BCs
+        public :: multiply_Robin_coeff
+        public :: multiply_nhat
         public :: assign_ghost_XPeriodic
         public :: assign_ghost_N_XPeriodic
         public :: assign_wall_Dirichlet
@@ -82,7 +93,7 @@
         public :: square,square_root,invert,abs,insist_amax_lt_tol
         public :: mean,max,amin,amax
         public :: boundary_flux
-        ! public :: sum
+        public :: sum
         public :: assignX,assignY,assignZ
 
         public :: laplacian_matrix_based
@@ -112,23 +123,23 @@
         interface export;                   module procedure export_VF_wrapper;             end interface
         interface import;                   module procedure import_VF_wrapper;             end interface
 
-        interface init_CC;                  module procedure init_VF_CC;                    end interface
-        interface init_Face;                module procedure init_VF_Face;                  end interface
-        interface init_Edge;                module procedure init_VF_Edge;                  end interface
-        interface init_Node;                module procedure init_VF_Node;                  end interface
+        interface init_CC;                  module procedure init_CC_VF;                    end interface
+        interface init_Face;                module procedure init_Face_VF;                  end interface
+        interface init_Edge;                module procedure init_Edge_VF;                  end interface
+        interface init_Node;                module procedure init_Node_VF;                  end interface
 
-        interface init_CC;                  module procedure init_VF_CC_MD;                 end interface
-        interface init_Face;                module procedure init_VF_Face_MD;               end interface
-        interface init_Edge;                module procedure init_VF_Edge_MD;               end interface
-        interface init_Node;                module procedure init_VF_Node_MD;               end interface
+        interface init_CC;                  module procedure init_CC_VF_MD;                 end interface
+        interface init_Face;                module procedure init_Face_VF_MD;               end interface
+        interface init_Edge;                module procedure init_Edge_VF_MD;               end interface
+        interface init_Node;                module procedure init_Node_VF_MD;               end interface
 
-        interface init_Face_compliment;     module procedure init_VF_Face_compliment;       end interface
-        interface init_Edge_compliment;     module procedure init_VF_Edge_compliment;       end interface
+        interface init_CC_Edge;             module procedure init_CC_Edge_VF;               end interface
+        interface init_Node_Edge;           module procedure init_Node_Edge_VF;             end interface
 
-        interface init_CC;                  module procedure init_VF_CC_assign;             end interface
-        interface init_Face;                module procedure init_VF_Face_assign;           end interface
-        interface init_Edge;                module procedure init_VF_Edge_assign;           end interface
-        interface init_Node;                module procedure init_VF_Node_assign;           end interface
+        interface init_CC;                  module procedure init_CC_VF_assign;             end interface
+        interface init_Face;                module procedure init_Face_VF_assign;           end interface
+        interface init_Edge;                module procedure init_Edge_VF_assign;           end interface
+        interface init_Node;                module procedure init_Node_VF_assign;           end interface
         interface multiply_volume;          module procedure multiply_volume_VF;            end interface
 
         interface volume;                   module procedure volume_VF;                     end interface
@@ -148,11 +159,17 @@
 
         interface assign_BCs;               module procedure assign_BCs_VF;                 end interface
         interface assign_BC_vals;           module procedure assign_BC_vals_VF;             end interface
-        interface assign_Neumann_BCs;       module procedure assign_Neumann_BCs_VF;         end interface
-        interface assign_Neumann_BCs;       module procedure assign_Neumann_BCs_VF_VF;      end interface
+        interface update_BC_vals;           module procedure update_BC_vals_VF;             end interface
         interface assign_Dirichlet_BCs;     module procedure assign_Dirichlet_BCs_VF;       end interface
         interface assign_Periodic_BCs;      module procedure assign_Periodic_BCs_VF;        end interface
+        interface assign_Neumann_BCs;       module procedure assign_Neumann_BCs_faces_VF;   end interface
+        interface assign_Neumann_BCs_wall_normal;  module procedure assign_Neumann_BCs_wall_normal_VF;   end interface
         interface multiply_Neumann_BCs;     module procedure multiply_Neumann_BCs_VF;       end interface
+        interface multiply_BCs_by_nhat;     module procedure multiply_BCs_by_nhat_VF;       end interface
+        interface assign_Robin_BCs;         module procedure assign_Robin_BCs_dir_VF;       end interface
+        interface assign_Robin_BCs;         module procedure assign_Robin_BCs_faces_VF;     end interface
+        interface multiply_Robin_coeff;     module procedure multiply_Robin_coeff_VF;       end interface
+        interface multiply_nhat;            module procedure multiply_nhat_VF;              end interface
         interface assign_ghost_XPeriodic;   module procedure assign_ghost_XPeriodic_VF;     end interface
         interface assign_ghost_XPeriodic;   module procedure assign_ghost_XPeriodic_VF2;    end interface
         interface assign_ghost_N_XPeriodic; module procedure assign_ghost_N_XPeriodic_VF;   end interface
@@ -188,9 +205,14 @@
 
         interface print_BCs;                module procedure print_BCs_VF;                  end interface
         interface init_BCs;                 module procedure init_BCs_VF_VF;                end interface
-        interface init_BC_Dirichlet;        module procedure init_BC_Dirichlet_VF;         end interface
+        interface init_BC_Dirichlet;        module procedure init_BC_Dirichlet_VF;          end interface
         interface export_BCs;               module procedure export_BCs_VF;                 end interface
         interface init_BC_props;            module procedure init_BC_props_VF;              end interface
+
+        interface get_any_Dirichlet;        module procedure get_any_Dirichlet_VF;          end interface
+        interface get_any_Neumann;          module procedure get_any_Neumann_VF;            end interface
+        interface get_any_Robin;            module procedure get_any_Robin_VF;              end interface
+        interface get_any_Prescribed;       module procedure get_any_Prescribed_VF;         end interface
 
         ! COMPUTATION ROUTINES
 
@@ -243,6 +265,7 @@
         interface max;                      module procedure max_VF;                        end interface
         interface amax;                     module procedure amax_VF;                       end interface
         interface amin;                     module procedure amin_VF;                       end interface
+        interface sum;                      module procedure sum_pad_VF;                        end interface
         interface boundary_flux;            module procedure boundary_flux_VF;              end interface
 
         interface square;                   module procedure square_VF;                     end interface
@@ -365,13 +388,42 @@
           call init_BC_Dirichlet(f%z)
         end subroutine
 
-        subroutine init_BC_props_VF(f)
+        subroutine init_BC_props_VF(f,c_w,Robin_coeff)
           implicit none
           type(VF),intent(inout) :: f
-          call init_BC_props(f%x)
-          call init_BC_props(f%y)
-          call init_BC_props(f%z)
+          real(cp),dimension(6),intent(in) :: c_w,Robin_coeff
+          call init_BC_props(f%x,c_w,Robin_coeff)
+          call init_BC_props(f%y,c_w,Robin_coeff)
+          call init_BC_props(f%z,c_w,Robin_coeff)
         end subroutine
+
+        function get_any_Dirichlet_VF(f) result(L)
+          implicit none
+          type(VF),intent(in) :: f
+          logical :: L
+          L = any((/get_any_Dirichlet(f%x),get_any_Dirichlet(f%y),get_any_Dirichlet(f%z)/))
+        end function
+
+        function get_any_Neumann_VF(f) result(L)
+          implicit none
+          type(VF),intent(in) :: f
+          logical :: L
+          L = any((/get_any_Neumann(f%x),get_any_Neumann(f%y),get_any_Neumann(f%z)/))
+        end function
+
+        function get_any_Robin_VF(f) result(L)
+          implicit none
+          type(VF),intent(in) :: f
+          logical :: L
+          L = any((/get_any_Robin(f%x),get_any_Robin(f%y),get_any_Robin(f%z)/))
+        end function
+
+        function get_any_Prescribed_VF(f) result(L)
+          implicit none
+          type(VF),intent(in) :: f
+          logical :: L
+          L = any((/get_any_Prescribed(f%x),get_any_Prescribed(f%y),get_any_Prescribed(f%z)/))
+        end function
 
         subroutine export_BCs_VF(f,dir,name)
           implicit none
@@ -495,14 +547,14 @@
           call multiply_volume(u%x,m); call multiply_volume(u%y,m); call multiply_volume(u%z,m)
         end subroutine
 
-        subroutine init_VF_CC(f,m)
+        subroutine init_CC_VF(f,m)
           implicit none
           type(VF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_CC(f%x,m); call init_CC(f%y,m); call init_CC(f%z,m)
         end subroutine
 
-        subroutine init_VF_CC_MD(f,m,MD)
+        subroutine init_CC_VF_MD(f,m,MD)
           implicit none
           type(VF),intent(inout) :: f
           type(mesh),intent(in) :: m
@@ -510,14 +562,14 @@
           call init_CC(f%x,m,MD); call init_CC(f%y,m,MD); call init_CC(f%z,m,MD)
         end subroutine
 
-        subroutine init_VF_Edge(f,m)
+        subroutine init_Edge_VF(f,m)
           implicit none
           type(VF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_Edge(f%x,m,1); call init_Edge(f%y,m,2); call init_Edge(f%z,m,3)
         end subroutine
 
-        subroutine init_VF_Edge_MD(f,m,MD)
+        subroutine init_Edge_VF_MD(f,m,MD)
           implicit none
           type(VF),intent(inout) :: f
           type(mesh),intent(in) :: m
@@ -525,7 +577,7 @@
           call init_Edge(f%x,m,1,MD); call init_Edge(f%y,m,2,MD); call init_Edge(f%z,m,3,MD)
         end subroutine
 
-        subroutine init_VF_Edge_compliment(f,m,dir)
+        subroutine init_Node_Edge_VF(f,m,dir)
           implicit none
           type(VF),intent(inout) :: f
           type(mesh),intent(in) :: m
@@ -534,18 +586,18 @@
           case (1); call init_Node(f%x,m);  call init_Face(f%y,m,3);call init_Face(f%z,m,2)
           case (2); call init_Face(f%x,m,3);call init_Node(f%y,m);  call init_Face(f%z,m,1)
           case (3); call init_Face(f%x,m,2);call init_Face(f%y,m,1);call init_Node(f%z,m)
-          case default; stop 'Error: dir must = 1,2,3 in init_VF_Edge_compliment in VF.f90'
+          case default; stop 'Error: dir must = 1,2,3 in init_Node_Edge_VF in VF.f90'
           end select
         end subroutine
 
-        subroutine init_VF_Face(f,m)
+        subroutine init_Face_VF(f,m)
           implicit none
           type(VF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_Face(f%x,m,1); call init_Face(f%y,m,2); call init_Face(f%z,m,3)
         end subroutine
 
-        subroutine init_VF_Face_MD(f,m,MD)
+        subroutine init_Face_VF_MD(f,m,MD)
           implicit none
           type(VF),intent(inout) :: f
           type(mesh),intent(in) :: m
@@ -553,27 +605,27 @@
           call init_Face(f%x,m,1,MD); call init_Face(f%y,m,2,MD); call init_Face(f%z,m,3,MD)
         end subroutine
 
-        subroutine init_VF_Face_compliment(f,m,dir)
+        subroutine init_CC_Edge_VF(f,m,dir)
           implicit none
           type(VF),intent(inout) :: f
           type(mesh),intent(in) :: m
           integer,intent(in) :: dir
           select case (dir)
-          case (1); call init_CC  (f%x,m);  call init_Edge(f%y,m,3);call init_Edge(f%z,m,2)
-          case (2); call init_Edge(f%x,m,3);call init_CC  (f%y,m);  call init_Edge(f%z,m,1)
-          case (3); call init_Edge(f%x,m,2);call init_Edge(f%y,m,1);call init_CC  (f%z,m)
-          case default; stop 'Error: dir must = 1,2,3 in init_VF_Face_compliment in VF.f90'
+          case (1); call init_CC  (f%x,m);  call init_Edge(f%y,m,2);call init_Edge(f%z,m,3)
+          case (2); call init_Edge(f%x,m,1);call init_CC  (f%y,m);  call init_Edge(f%z,m,3)
+          case (3); call init_Edge(f%x,m,1);call init_Edge(f%y,m,2);call init_CC  (f%z,m)
+          case default; stop 'Error: dir must = 1,2,3 in init_Face_compliment_VF in VF.f90'
           end select
         end subroutine
 
-        subroutine init_VF_Node(f,m)
+        subroutine init_Node_VF(f,m)
           implicit none
           type(VF),intent(inout) :: f
           type(mesh),intent(in) :: m
           call init_Node(f%x,m); call init_Node(f%y,m); call init_Node(f%z,m)
         end subroutine
 
-        subroutine init_VF_Node_MD(f,m,MD)
+        subroutine init_Node_VF_MD(f,m,MD)
           implicit none
           type(VF),intent(inout) :: f
           type(mesh),intent(in) :: m
@@ -581,7 +633,7 @@
           call init_Node(f%x,m,MD); call init_Node(f%y,m,MD); call init_Node(f%z,m,MD)
         end subroutine
 
-        subroutine init_VF_CC_assign(f,m,val)
+        subroutine init_CC_VF_assign(f,m,val)
           implicit none
           type(VF),intent(inout) :: f
           type(mesh),intent(in) :: m
@@ -589,7 +641,7 @@
           call init_CC(f%x,m,val); call init_CC(f%y,m,val); call init_CC(f%z,m,val)
         end subroutine
 
-        subroutine init_VF_Edge_assign(f,m,val)
+        subroutine init_Edge_VF_assign(f,m,val)
           implicit none
           type(VF),intent(inout) :: f
           type(mesh),intent(in) :: m
@@ -597,7 +649,7 @@
           call init_Edge(f%x,m,1,val); call init_Edge(f%y,m,2,val); call init_Edge(f%z,m,3,val)
         end subroutine
 
-        subroutine init_VF_Face_assign(f,m,val)
+        subroutine init_Face_VF_assign(f,m,val)
           implicit none
           type(VF),intent(inout) :: f
           type(mesh),intent(in) :: m
@@ -605,7 +657,7 @@
           call init_Face(f%x,m,1,val); call init_Face(f%y,m,2,val); call init_Face(f%z,m,3,val)
         end subroutine
 
-        subroutine init_VF_Node_assign(f,m,val)
+        subroutine init_Node_VF_assign(f,m,val)
           implicit none
           type(VF),intent(inout) :: f
           type(mesh),intent(in) :: m
@@ -926,6 +978,14 @@
           m = minval((/abs(amin(f%x)),abs(amin(f%y)),abs(amin(f%z))/))
         end function
 
+        function sum_pad_VF(f,pad) result (m)
+          implicit none
+          type(VF),intent(in) :: f
+          integer,intent(in) :: pad
+          real(cp) :: m
+          m = sum(f%x,pad)+sum(f%y,pad)+sum(f%z,pad)
+        end function
+
         function boundary_flux_VF(f,m) result (BF)
           implicit none
           type(VF),intent(in) :: f
@@ -1103,6 +1163,14 @@
           call assign_BC_vals(A%z,B%z)
         end subroutine
 
+        subroutine update_BC_vals_VF(A)
+          implicit none
+          type(VF),intent(inout) :: A
+          call update_BC_vals(A%x)
+          call update_BC_vals(A%y)
+          call update_BC_vals(A%z)
+        end subroutine
+
         subroutine assign_BCs_VF(A,B)
           implicit none
           type(VF),intent(inout) :: A
@@ -1110,20 +1178,6 @@
           call assign_BCs(A%x,B%x)
           call assign_BCs(A%y,B%y)
           call assign_BCs(A%z,B%z)
-        end subroutine
-        subroutine assign_Neumann_BCs_VF(A,B)
-          implicit none
-          type(VF),intent(inout) :: A
-          type(VF),intent(in) :: B
-          call assign_Neumann_BCs(A%x,B%x)
-          call assign_Neumann_BCs(A%y,B%y)
-          call assign_Neumann_BCs(A%z,B%z)
-        end subroutine
-        subroutine assign_Neumann_BCs_VF_VF(phi,A)
-          implicit none
-          type(SF),intent(inout) :: phi
-          type(VF),intent(in) :: A
-          call assign_Neumann_BCs(phi,A%x,A%y,A%z)
         end subroutine
         subroutine assign_Dirichlet_BCs_VF(A,B)
           implicit none
@@ -1141,13 +1195,67 @@
           call assign_Periodic_BCs(A%y,B%y)
           call assign_Periodic_BCs(A%z,B%z)
         end subroutine
-        subroutine multiply_Neumann_BCs_VF(A,val)
+        subroutine assign_Neumann_BCs_faces_VF(A,B)
+          implicit none
+          type(SF),intent(inout) :: A
+          type(VF),intent(in) :: B
+          call assign_Neumann_BCs(A,B%x,1)
+          call assign_Neumann_BCs(A,B%y,2)
+          call assign_Neumann_BCs(A,B%z,3)
+        end subroutine
+        subroutine assign_Neumann_BCs_wall_normal_VF(A,B)
+          implicit none
+          type(SF),intent(inout) :: A
+          type(VF),intent(in) :: B
+          call assign_Neumann_BCs_wall_normal(A,B%x,1)
+          call assign_Neumann_BCs_wall_normal(A,B%y,2)
+          call assign_Neumann_BCs_wall_normal(A,B%z,3)
+        end subroutine
+        subroutine multiply_Neumann_BCs_VF(A,scale)
           implicit none
           type(VF),intent(inout) :: A
-          real(cp),intent(in) :: val
-          call multiply_Neumann_BCs(A%x,val)
-          call multiply_Neumann_BCs(A%y,val)
-          call multiply_Neumann_BCs(A%z,val)
+          real(cp),intent(in) :: scale
+          call multiply_Neumann_BCs(A%x,scale)
+          call multiply_Neumann_BCs(A%y,scale)
+          call multiply_Neumann_BCs(A%z,scale)
+        end subroutine
+        subroutine multiply_BCs_by_nhat_VF(A)
+          implicit none
+          type(VF),intent(inout) :: A
+          call multiply_BCs_by_nhat(A%x)
+          call multiply_BCs_by_nhat(A%y)
+          call multiply_BCs_by_nhat(A%z)
+        end subroutine
+        subroutine assign_Robin_BCs_dir_VF(A,B)
+          implicit none
+          type(SF),intent(inout) :: A
+          type(VF),intent(in) :: B
+          call assign_Robin_BCs(A,B%x,1)
+          call assign_Robin_BCs(A,B%y,2)
+          call assign_Robin_BCs(A,B%z,3)
+        end subroutine
+        subroutine assign_Robin_BCs_faces_VF(A,B)
+          implicit none
+          type(VF),intent(inout) :: A
+          type(VF),intent(in) :: B
+          call assign_Robin_BCs(A%x,B%x)
+          call assign_Robin_BCs(A%y,B%y)
+          call assign_Robin_BCs(A%z,B%z)
+        end subroutine
+        subroutine multiply_Robin_coeff_VF(u)
+          implicit none
+          type(VF),intent(inout) :: u
+          call multiply_Robin_coeff(u%x)
+          call multiply_Robin_coeff(u%y)
+          call multiply_Robin_coeff(u%z)
+        end subroutine
+        subroutine multiply_nhat_VF(u,u_with_BCs)
+          implicit none
+          type(VF),intent(inout) :: u
+          type(VF),intent(in) :: u_with_BCs
+          call multiply_nhat(u%x,u_with_BCs%x)
+          call multiply_nhat(u%y,u_with_BCs%y)
+          call multiply_nhat(u%z,u_with_BCs%z)
         end subroutine
 
         subroutine assign_ghost_XPeriodic_VF(A,val)
