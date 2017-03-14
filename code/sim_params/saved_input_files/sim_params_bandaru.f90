@@ -132,7 +132,7 @@
        call init(SP%TSP,F,100.0_cp,500.0_cp)
 
        time                          = 40.0_cp
-       dtime                         = 1.0_cp*pow(-3)
+       dtime                         = 2.0_cp*pow(-3)
 
        SP%GP%tw                      = 0.05_cp
        SP%GP%geometry                = 7

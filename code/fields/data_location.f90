@@ -89,6 +89,7 @@
        interface delete;              module procedure delete_DL;               end interface
        interface display;             module procedure display_DL;              end interface
        interface print;               module procedure print_DL;                end interface
+       interface print;               module procedure print_DL3;               end interface
        interface export;              module procedure export_DL;               end interface
        interface import;              module procedure import_DL;               end interface
 
@@ -229,6 +230,14 @@
          write(un,*) 'CC_along = ',DL%CC_along
          write(un,*) 'N_along = ',DL%N_along
          write(un,*) 'volume_ID = ',DL%volume_ID
+       end subroutine
+
+       subroutine print_DL3(DL)
+         implicit none
+         type(data_location),dimension(3),intent(in) :: DL
+         call display(DL(1),6)
+         call display(DL(2),6)
+         call display(DL(3),6)
        end subroutine
 
        subroutine print_DL(DL)

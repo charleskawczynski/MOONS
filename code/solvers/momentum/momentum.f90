@@ -16,7 +16,6 @@
 
        use mesh_stencils_mod
        use time_marching_methods_mod
-       use momentum_solver_mod
        use momentum_aux_mod
        use init_P_BCs_mod
        use init_Ustar_field_mod
@@ -434,15 +433,15 @@
            F,Fnm1,mom%m,TMP,mom%temp_F1,mom%temp_CC,EF%unsteady_0D%export_now)
          case (5)
            call Euler_time_Euler_sources(mom%PCG_U,mom%PCG_P,mom%U,mom%Ustar,mom%Unm1,&
-           mom%p,F,mom%m,TMP,mom%temp_F1,mom%temp_CC,&
+           mom%p,F,mom%m,TMP,mom%temp_F1,mom%temp_E,mom%temp_CC,&
            EF%unsteady_0D%export_now)
          case (6)
            call Euler_time_AB2_sources(mom%PCG_U,mom%PCG_P,mom%U,mom%Ustar,mom%Unm1,&
-           mom%p,F,Fnm1,mom%m,TMP,mom%temp_F1,mom%temp_CC,&
+           mom%p,F,Fnm1,mom%m,TMP,mom%temp_F1,mom%temp_E,mom%temp_CC,&
            EF%unsteady_0D%export_now)
          case (7)
            call O2_BDF_time_AB2_sources(mom%PCG_U,mom%PCG_P,mom%U,mom%Ustar,&
-           mom%Unm1,mom%p,F,Fnm1,mom%m,TMP,mom%temp_F1,mom%temp_CC,&
+           mom%Unm1,mom%p,F,Fnm1,mom%m,TMP,mom%temp_F1,mom%temp_E,mom%temp_CC,&
            EF%unsteady_0D%export_now)
          case default; stop 'Error: solveUMethod must = 1:4 in momentum.f90.'
          end select
