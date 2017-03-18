@@ -8,7 +8,7 @@
       private
 
       public :: get_file_unit
-      public :: new_and_open,close_and_message
+      public :: new_and_open,close_and_message,delete_file
       public :: rewind_unit
       public :: open_to_read,open_to_write,open_to_append
       public :: safe_read
@@ -93,6 +93,20 @@
         close(un)
 #ifndef _OPTIMIZE_IO_TOOLS_
         write(*,*) '+++ Closed file ' // dir // name
+#endif
+      end subroutine
+
+      subroutine delete_file(dir,name)
+        implicit none
+        character(len=*),intent(in) :: dir,name
+        integer :: un
+        write(*,*) 'file_exists(dir,name) = ',file_exists(dir,name)
+        if (file_exists(dir,name)) then
+          un = open_to_read(dir,name)
+          close(un, status='delete')
+        endif
+#ifndef _OPTIMIZE_IO_TOOLS_
+        write(*,*) '+++ deleted file ' // dir // name
 #endif
       end subroutine
 

@@ -245,7 +245,7 @@
          real(cp) :: tol_rel,tol_abs
          integer :: iter_max,n_skip_check_res
          tol_rel = 0.0_cp
-         tol_abs = 10.0_cp*epsilon(1.0_cp)
+         tol_abs = 10.0_cp*machine_epsilon
          iter_max = 10000
          n_skip_check_res = 100
          call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,.false.,dir,'solve_exact')
@@ -259,7 +259,7 @@
          real(cp) :: tol_rel,tol_abs
          integer :: iter_max,n_skip_check_res
          tol_rel = 0.0_cp
-         tol_abs = 10.0_cp*epsilon(1.0_cp)
+         tol_abs = 10.0_cp*machine_epsilon
          iter_max = N
          n_skip_check_res = 100
          call init(ISP,iter_max,tol_rel,tol_abs,&

@@ -147,8 +147,8 @@
          integer :: i,N_w,N_v,N_extra
          real(cp) :: tf,Gamma_v
          call delete(m_mom)
-         buffer = 1.0_cp
-         buffer_y = 1.0_cp
+         buffer = 2.0_cp
+         buffer_y = 8.0_cp
          hmin = -1.0_cp; hmax = 1.0_cp; center = 0.0_cp
          hmax(3) = 0.0_cp
          beta = Re_Ha_BL(DP%Re*buffer,DP%Ha*buffer,hmin,hmax)
@@ -157,7 +157,7 @@
          ! N = (/30,30,15/); N_w = 8; N_v = 14 ! Coarse
          ! N = (/40,40,20/); N_w = 10; N_v = 16 ! Moderates
          ! N = (/50,50,25/); N_w = 12; N_v = 18 ! Fine
-         N = 30; N(3)=N(1)/2; N_w = 4;  N_v = 8 ! Physics search mesh
+         N = 36; N(3)=N(1)/2; N_w = 6;  N_v = 8 ! Physics search mesh
 
          ! New MRS:
          ! N = 30; N(3)=N(1)/2; N_w = 8;  N_v = 14 ! Coarse

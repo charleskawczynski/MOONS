@@ -15,6 +15,7 @@
         type(path) :: base
         type(path) :: field
         type(path) :: restart
+        type(path) :: debug
         type(path) :: energy
         type(path) :: residual
         type(path) :: unsteady
@@ -34,6 +35,7 @@
         call init(DG%base    ,temp   ,name      ,PS)
         call init(DG%field   ,DG%base,'field'   ,PS)
         call init(DG%restart ,DG%base,'restart' ,PS)
+        call init(DG%debug   ,DG%base,'debug'   ,PS)
         call init(DG%energy  ,DG%base,'energy'  ,PS)
         call init(DG%residual,DG%base,'residual',PS)
         call init(DG%unsteady,DG%base,'unsteady',PS)
@@ -48,6 +50,7 @@
         call make_dir(str(DG%base))
         call make_dir(str(DG%field))
         call make_dir(str(DG%restart))
+        call make_dir(str(DG%debug))
         call make_dir(str(DG%energy))
         call make_dir(str(DG%residual))
         call make_dir(str(DG%unsteady))
@@ -61,6 +64,7 @@
         call delete(DG%base)
         call delete(DG%field)
         call delete(DG%restart)
+        call delete(DG%debug)
         call delete(DG%energy)
         call delete(DG%residual)
         call delete(DG%unsteady)

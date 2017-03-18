@@ -9,21 +9,24 @@ TO DO LIST COMMANDS:
 Right Now:
  ☐ 1) Start BC cases
      ☐ Parameters determined via Shatrov paper, Fig 9a:
-     ☐ Re(L=.5)=1000,N(L=.5)=0.1-->Re(L=1)=500 ,N(L=1)=0.05
-     ☐ Re(L=.5)=1000,N(L=.5)= 1 -->Re(L=1)=500 ,N(L=1)=.5
-     ☐ Re(L=.5)=3000,N(L=.5)= 1 -->Re(L=1)=1500,N(L=1)=.5
-     ☐ Re(L=.5)=3000,N(L=.5)= 10-->Re(L=1)=1500,N(L=1)=5
+     ✔ Re(L=.5)=1000,N(L=.5)=0.1-->Re(L=1)=500 ,N(L=1)=0.05 @done (17-03-15 07:54)
+     ✔ Re(L=.5)=1000,N(L=.5)= 1 -->Re(L=1)=500 ,N(L=1)=.5 @done (17-03-15 07:54)
+     ✔ Re(L=.5)=3000,N(L=.5)= 1 -->Re(L=1)=1500,N(L=1)=.5 @done (17-03-15 07:54)
+     ✔ Re(L=.5)=3000,N(L=.5)= 10-->Re(L=1)=1500,N(L=1)=5 @done (17-03-15 07:54)
      ☐ Re(L=.5)=5000,N(L=.5)= 50-->Re(L=1)=2500,N(L=1)=25
-     ☐ Some differences from Shatrove:
+     ☐ Re(L=.5)=2400,N(L=.5)= 0.28-->Re(L=1)=1200,N(L=1)=0.14 ! predicted unsteady with LSA (Shatrov)
+     ☐ Re(L=.5)=2200,N(L=.5)= 0.24-->Re(L=1)=1100,N(L=1)=0.12 ! predicted unsteady with LSA (Shatrov)
+     ☐ Some differences from Shatrov:
      ☐  - Lid velocity distribution
      ☐  - B0 = (1,0,0)
  ☐ 2) Start Shatrov parameter space sims
    ☐ Analyze data - If good - then start new full BC MRS
    ☐ Analyze data - else    - Ask Sergey if we can change B0 config to match Shatrov
  ☐ 3) Analyze scaling in Kamkar paper
- ☐ 4) Move data from workstation to backup
- ☐ 5) Move restart fields to restart
- ☐ 6) Maybe make debug fields, and store them appropriately, export conditionally
+ ✔ 4) Move data from workstation to backup @done (17-03-15 07:58)
+ ✔ 5) Move restart fields to restart @done (17-03-15 08:13)
+ ✔ 6) Maybe make debug fields, and store them appropriately, export conditionally @done (17-03-15 08:13)
+ ✔ Always check mesh error file after mesh generation @done (17-03-15 09:26)
 
   ☐ PD cases
     ☐ Determine actual Re_m,Re,Ha etc
