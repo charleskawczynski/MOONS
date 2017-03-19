@@ -22,7 +22,7 @@
 \setlength{\topmargin}{-1in}     %\topmargin: gap above header
 \setlength{\headheight}{0in}     %\headheight: height of header
 \setlength{\topskip}{0in}        %\topskip: between header and text
-\setlength{\headsep}{0in}        
+\setlength{\headsep}{0in}
 \setlength{\textheight}{692pt}   %\textheight: height of main text
 \setlength{\textwidth}{7.5in}    % \textwidth: width of text
 \setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
@@ -48,21 +48,21 @@ University of California Los Angeles, USA\\
 \section{Dimensional total energy equation}
 Adding the thermal, kinetic and magnetic energy equations
 \begin{equation}
-	\rho C_p \left[ \frac{\PD T}{\PD t} 
-	+ (\U \DOT \DEL) T \right] 
-	= \DEL \DOT (k \DEL T) 
-	+ \frac{1}{\sigma} \J^2 
+	\rho C_p \left[ \frac{\PD T}{\PD t}
+	+ (\U \DOT \DEL) T \right]
+	= \DEL \DOT (k \DEL T)
+	+ \frac{1}{\sigma} \J^2
 	- \nu \DEL^2 E_K
 	+ \mu (\DEL \U) \DOT (\DEL \U)
 \end{equation}
 \begin{equation}
-	\frac{\PD E_K}{\PD t} + 
-	(\U \DOT \DEL) E_K = 
+	\frac{\PD E_K}{\PD t} +
+	(\U \DOT \DEL) E_K =
 	- \DEL \DOT (\U p)
 	+ \nu \DEL^2 E_K
 	- \mu (\DEL \U) \DOT (\DEL \U)
 	- (\U \DOT \DEL) E_M
-	+ \U \DOT \left[\B \DOT \DEL \left( \H \right) \right] 
+	+ \U \DOT \left[\B \DOT \DEL \left( \H \right) \right]
 \end{equation}
 \begin{equation}
 	\frac{\PD E_M}{\PD t} =
@@ -73,9 +73,9 @@ Adding the thermal, kinetic and magnetic energy equations
 \end{equation}
 Magnetic + Kinetic
 \begin{equation}
-	\frac{\PD E_K}{\PD t} 
+	\frac{\PD E_K}{\PD t}
 	+ \frac{\PD E_M}{\PD t}
-	+ (\U \DOT \DEL) E_K = 
+	+ (\U \DOT \DEL) E_K =
 	- \JSS
 	- \DEL \DOT \left(\E \times \H \right)
 	- \DEL \DOT (\U p)
@@ -84,15 +84,15 @@ Magnetic + Kinetic
 \end{equation}
 Assuming viscous losses are negligible, and since flow is isothermal, the Joule heating will balance kinetic energy diffusion, so we'll have
 \begin{equation}\begin{aligned}
-	\frac{\PD (E_K + E_M)}{\PD t} 
-	+ (\U \DOT \DEL) E_K = 
+	\frac{\PD (E_K + E_M)}{\PD t}
+	+ (\U \DOT \DEL) E_K =
 	- \DEL \DOT \left(\E \times \H \right)
 	- \DEL \DOT (\U p) \\
 	\JSS = \nu \DEL^2 E_K
 \end{aligned}\end{equation}
 At steady state, we have
 \begin{equation}\begin{aligned}
-	(\U \DOT \DEL) E_K = 
+	(\U \DOT \DEL) E_K =
 	- \DEL \DOT \left(\E \times \H \right)
 	- \DEL \DOT (\U p) \\
 	\JSS = \nu \DEL^2 E_K
@@ -115,18 +115,18 @@ Let's scale this by
 \end{aligned}\end{equation}
 To get
 \begin{equation}\begin{aligned}
-	\frac{\rho U^3}{2L} (\U \DOT \DEL) ( \U \DOT \U ) = 
+	\frac{\rho U^3}{2L} (\U \DOT \DEL) ( \U \DOT \U ) =
 	- \frac{\rho U^3}{2L} \DEL \DOT (\U p) \\
-	(\U \DOT \DEL) ( \U \DOT \U ) = 
+	(\U \DOT \DEL) ( \U \DOT \U ) =
 	- \DEL \DOT (\U p), \qquad
 \end{aligned}\end{equation}
 and
 \begin{equation}\begin{aligned}
-	\frac{\sigma_c^2 U^2 B^2}{\sigma_c} \JSS = 
+	\frac{\sigma_c^2 U^2 B^2}{\sigma_c} \JSS =
 	\frac{U^2}{L^2} \mu \DEL^2 \left( \frac{1}{2} \U \DOT \U \right) \\
-	\frac{\sigma_c B^2 L^2}{\mu} \JSS = 
+	\frac{\sigma_c B^2 L^2}{\mu} \JSS =
 	\DEL^2 \left( \frac{1}{2} \U \DOT \U \right) \\
-	Ha^2 \JSS = 
+	Ha^2 \JSS =
 	\DEL^2 \left( \frac{1}{2} \U \DOT \U \right)
 \end{aligned}\end{equation}
 

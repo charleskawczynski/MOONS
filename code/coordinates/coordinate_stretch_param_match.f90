@@ -1,6 +1,7 @@
        module coordinate_stretch_param_match_mod
        ! Compiler flag (_DEBUG_COORDINATE_STRETCH_PARAM_MATCH_)
        use is_nan_mod
+       use IO_tools_mod
        use current_precision_mod
        implicit none
 
@@ -119,7 +120,7 @@
 
          real(cp) :: dbeta, fbeta, fbetaprime,beta0 ! local variables
          integer,parameter :: maxiter = 1000000
-         real(cp),parameter :: tol = 10.0_cp**(-14.0_cp) ! Good tolerance
+         real(cp),parameter :: tol = 10.0_cp*machine_epsilon
          real(cp),parameter :: err = 10.0_cp**(-10.0_cp) ! We may have a problem
          integer :: k
          beta0 = beta
@@ -186,10 +187,11 @@
          integer,intent(in) :: N
          real(cp) :: dbeta,fbeta,fbetaprime,beta_low ! local variables
          integer,parameter :: maxiter = 1000000
-         real(cp),parameter :: tol = 10.0_cp**(-14.0_cp) ! Good tolerance
+         real(cp),parameter :: tol = 10.0_cp*machine_epsilon
          integer :: k
          logical :: err
          beta_low = one + 10.0_cp**(-10.0_cp)
+         err = .false.
          do k=1,maxiter ! Newton iteration to find a zero of T_root(beta)
            fbeta = T_root(beta,hmin,hmax,alpha,N,dh) ! evaluate function and its derivative:
            fbetaprime = T_prime(beta,alpha,N)
@@ -199,11 +201,25 @@
            dbeta = fbeta/fbetaprime                                   ! compute beta increment
            beta = beta - dbeta                                        ! update
          enddo
-         if (is_nan(beta)) then; err = .true.; beta = 1.1_cp; endif  ! oops, gracefully handle
+         if (is_nan(beta).or.(abs(fbeta).gt.tol)) then ! oops, gracefully handle
+           err = .true.; beta = 1.1_cp
+         endif
+         if (err) call write_error_message_to_file(beta,fbeta)
 
 #ifdef _DEBUG_COORDINATE_STRETCH_PARAM_MATCH_
          call newtonT2_debug(T_root,T_prime,beta,hmin,hmax,alpha,N,dh,err)
 #endif
+       end subroutine
+
+       subroutine write_error_message_to_file(beta,fbeta)
+         implicit none
+         real(cp),intent(in) :: fbeta,beta
+         integer :: un
+         un = new_and_open('','mesh_generation_error')
+         write(un,*) 'Error: newtonT2 not converged, gracefully handling.'
+         write(un,*) 'fbeta = ',fbeta
+         write(un,*) 'beta = ',beta
+         close(un)
        end subroutine
 
        ! ***************************************************************

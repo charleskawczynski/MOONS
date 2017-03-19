@@ -159,8 +159,8 @@
          if (mom%SP%VS%U%SS%solve) call print_BCs(mom%p,'p')
          if (mom%SP%VS%U%SS%solve) call export_BCs(mom%p,str(DT%p%BCs),'p')
 
-         call init_U_field(mom%U,m,mom%SP,str(DT%U%field))
-         call init_P_field(mom%p,m,mom%SP,str(DT%p%field))
+         call init_U_field(mom%U,m,mom%SP,str(DT%U%restart))
+         call init_P_field(mom%p,m,mom%SP,str(DT%p%restart))
          call assign(mom%Unm1,mom%U)
          write(*,*) '     Field initialized'
 
@@ -171,7 +171,7 @@
 
          call init(mom%Ustar,mom%U)
          if (SP%VS%U%SS%prescribed_BCs) call set_prescribed_BCs(mom%Ustar)
-         call init_Ustar_field(mom%Ustar,mom%m,mom%U,mom%SP,str(DT%U%field))
+         call init_Ustar_field(mom%Ustar,mom%m,mom%U,mom%SP,str(DT%U%restart))
          write(*,*) '     Intermediate field initialized'
 
          write(*,*) '     about to assemble Laplacian matrices'
@@ -305,8 +305,8 @@
          type(dir_tree),intent(in) :: DT
          if (.not.mom%SP%EL%export_soln_only) then
          if (mom%SP%VS%B%SS%solve.or.mom%SP%VS%T%SS%solve) then
-           call export_raw(mom%m,F,str(DT%U%field),'F_external',0)
-           call export_raw(mom%m,Fnm1,str(DT%U%field),'Fnm1_external',0)
+           call export_raw(mom%m,F,str(DT%U%restart),'F_external',0)
+           call export_raw(mom%m,Fnm1,str(DT%U%restart),'Fnm1_external',0)
          endif
          endif
          call export_tec_momentum_no_ext(mom,DT)
@@ -323,16 +323,20 @@
 
            if (.not.mom%SP%EL%export_soln_only) then
              call export_processed(mom%m,mom%p,str(DT%p%field),'p',1)
-             call export_raw(mom%m,mom%U,str(DT%U%field),'U',0)
-             call export_raw(mom%m,mom%p,str(DT%p%field),'p',0)
-             call export_raw(mom%m,mom%Ustar,str(DT%U%field),'Ustar',0)
-             call export_raw(mom%m,mom%PCG_P%r,str(DT%P%field),'residual_p',0)
-             call export_raw(mom%m,mom%PCG_U%r,str(DT%U%field),'residual_Ustar',0)
-             if (mom%SP%EL%export_symmetric) then
-              call export_processed(mom%m,mom%U,str(DT%U%field),'U',1,mom%SP%MP)
-              call export_processed(mom%m,mom%p,str(DT%p%field),'p',1,mom%SP%MP)
-             endif
              call export_raw(mom%m,mom%divU,str(DT%U%field),'divU',0)
+             if (mom%SP%EL%export_symmetric) then
+               call export_processed(mom%m,mom%U,str(DT%U%field),'U',1,mom%SP%MP)
+               call export_processed(mom%m,mom%p,str(DT%p%field),'p',1,mom%SP%MP)
+             endif
+
+             call export_raw(mom%m,mom%U,str(DT%U%restart),'U',0)
+             call export_raw(mom%m,mom%Unm1,str(DT%U%restart),'Unm1',0)
+             call export_raw(mom%m,mom%Ustar,str(DT%U%restart),'Ustar',0)
+             call export_raw(mom%m,mom%p,str(DT%p%restart),'p',0)
+
+             call export_raw(mom%m,mom%PCG_P%r,str(DT%P%debug),'residual_p',0)
+             call export_raw(mom%m,mom%PCG_U%r,str(DT%U%debug),'residual_Ustar',0)
+
              write(*,*) '     finished'
            endif
          endif

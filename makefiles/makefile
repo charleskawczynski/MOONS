@@ -2,8 +2,8 @@
 # RELEASE = 'DEBUG'
 RELEASE = 'OPTIMIZE'
 # RELEASE = 'PROFILE'
-# USE_OPEN_MP = 'TRUE'
-# PARALLELIZE_3D_OPS = 'TRUE'
+USE_OPEN_MP = 'TRUE'
+PARALLELIZE_3D_OPS = 'TRUE'
 # PARALLELIZE_2D_OPS = 'TRUE'
 # PARALLELIZE_1D_OPS = 'TRUE'
 # FORMAT_OUTPUT = 'FORMATTED'
@@ -42,7 +42,7 @@ endif
 SRC_DIR = ..$(PS)code
 
 ifeq ($(CLUSTER),'PC_CK')
-	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS3
+	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS6
 endif
 
 ifeq ($(CLUSTER),'Workstation_CK')
@@ -145,7 +145,6 @@ FC_DEBUG += -fcheck=bounds -fcheck=do -fcheck=mem -fcheck=pointer -fcheck=recurs
 # These flags are for rigorous mesh / stencil checking
 # FC_DEBUG += -D_DEBUG_COORDINATES_
 # FC_DEBUG += -D_DEBUG_COORDINATE_STRETCH_PARAM_MATCH_
-# FC_DEBUG += -D_DEBUG_APPLY_STITCHES
 FC_DEBUG += -D_DEBUG_IO_EXPORT_
 FC_DEBUG += -D_DEBUG_EMBEDEXTRACT_
 FC_DEBUG += -D_DEBUG_DATA_LOCATION_
@@ -551,9 +550,9 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_sources.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)add_all_energy_sources.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)add_all_momentum_sources.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)add_all_induction_sources.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)add_all_energy_sources.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)add_all_momentum_sources.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)add_all_induction_sources.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)MHDSolver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)Poisson_test.f90\
 	$(SRC_DIR)$(PS)user$(PS)export_mesh_aux.f90\

@@ -187,9 +187,9 @@
          call init_phi_BCs(ind%phi,m,ind%SP); write(*,*) '     phi BCs initialized'
          call update_BC_vals(ind%phi)
 
-         call init_B0_field(ind%B0,m,ind%SP,str(DT%B%field))
-         call init_B_field(ind%B,m,ind%SP,str(DT%B%field))
-         call init_phi_field(ind%phi,m,ind%SP,str(DT%phi%field))
+         call init_B0_field(ind%B0,m,ind%SP,str(DT%B%restart))
+         call init_B_field(ind%B,m,ind%SP,str(DT%B%restart))
+         call init_phi_field(ind%phi,m,ind%SP,str(DT%phi%restart))
          call assign(ind%Bnm1,ind%B)
 
          if (ind%SP%IT%unsteady_B0%add) call assign_B0_vs_t(ind%B0,ind%SP%VS%B%TMP)
@@ -398,28 +398,28 @@
            if (ind%SP%VS%B%SS%solve) then
              write(*,*) 'export_tec_induction at n_step = ',ind%SP%VS%B%TMP%n_step
              call export_processed(ind%m,ind%B,str(DT%B%field),'B',1)
-
-             call multiply(ind%temp_F1,ind%B,ind%SP%DP%c_w(1))
-             call export_processed(ind%m,ind%temp_F1,str(DT%B%field),'B_over_c_w',1)
-             call export_raw(ind%m,ind%Bstar,str(DT%B%field),'Bstar',0)
-
-             call export_raw(ind%m,ind%phi,str(DT%phi%field),'phi',0)
-             call export_raw(ind%m,ind%Bnm1,str(DT%B%field),'Bnm1',0)
+             call export_processed(ind%m,ind%B0,str(DT%B%field),'B0',1)
              call export_processed(ind%m,ind%phi ,str(DT%phi%field),'phi',1)
+             call export_processed(ind%m,ind%J ,str(DT%J%field),'J',1)
+             call export_raw(ind%m,ind%divB ,str(DT%B%field),'divB',0)
+
              if (.not.ind%SP%EL%export_soln_only) then
              if (ind%SP%EL%export_symmetric) then
              call export_processed(ind%m,ind%B,str(DT%B%field),'B',1,anti_mirror(ind%SP%MP))
              call export_processed(ind%m,ind%J,str(DT%J%field),'J',1,ind%SP%MP)
              endif
-             call export_raw(ind%m,ind%B ,str(DT%B%field),'B',0)
-             call export_raw(ind%m,ind%divB ,str(DT%B%field),'divB',0)
-             call export_raw(ind%m,ind%J ,str(DT%J%field),'J',0)
-             call export_processed(ind%m,ind%J ,str(DT%J%field),'J',1)
-             call export_raw(ind%m,ind%U_E%x  ,str(DT%B%field),'U_E_x',0)
-             call export_raw(ind%m,ind%U_E%y  ,str(DT%B%field),'U_E_y',0)
-             call export_raw(ind%m,ind%U_E%z  ,str(DT%B%field),'U_E_z',0)
-             call export_processed(ind%m,ind%B0,str(DT%B%field),'B0',1)
-             ! call embedFace(ind%B,ind%B_interior,ind%MD_sigma)
+
+             call export_raw(ind%m,ind%B,str(DT%B%restart),'B',0)
+             call export_raw(ind%m,ind%Bnm1,str(DT%B%restart),'Bnm1',0)
+             call export_raw(ind%m,ind%B0,str(DT%B%restart),'B0',0)
+             call export_raw(ind%m,ind%F,str(DT%B%restart),'F',0)
+             call export_raw(ind%m,ind%Fnm1,str(DT%B%restart),'Fnm1',0)
+             call export_raw(ind%m,ind%Bstar,str(DT%B%restart),'Bstar',0)
+             call export_raw(ind%m,ind%phi,str(DT%phi%restart),'phi',0)
+             call export_raw(ind%m,ind%J,str(DT%J%restart),'J',0)
+             call export_raw(ind%m,ind%U_E%x  ,str(DT%B%restart),'U_E_x',0)
+             call export_raw(ind%m,ind%U_E%y  ,str(DT%B%restart),'U_E_y',0)
+             call export_raw(ind%m,ind%U_E%z  ,str(DT%B%restart),'U_E_z',0)
              endif
              write(*,*) '     finished'
            endif

@@ -25,7 +25,7 @@
 \usepackage{etoolbox}
 \usepackage{geometry}
 
-\input{../../../useful_commands.tex}
+\input{../../../../useful_commands.tex}
 
 \newcommand{\volume}{\mathop{\ooalign{\hfil$V$\hfil\cr\kern0.08em--\hfil\cr}}\nolimits}
 \newcommand{\figWidth}{0.45\textwidth}
@@ -54,7 +54,7 @@
 
 \begin{document}
 \doublespacing
-\title{Plasma Disruption 2D solution}
+\title{Plasma Disruption 1D solution}
 \author{C. Kawczynski \\
 Department of Mechanical and Aerospace Engineering \\
 University of California Los Angeles, USA\\
@@ -62,156 +62,81 @@ University of California Los Angeles, USA\\
 \maketitle
 
 \section{Governing equations}
-The dimensionless momentum and induction equations are
+The dimensional momentum and induction equations for uniform $\rho,\mu,\M,\sigma$ are
 \begin{equation}\begin{aligned}
-\PD_t u_i+u_j\PD_j u_i = -\PD_i p+ \frac{1}{Re} \PD_{jj} u_i + Al (B_j \PD_j B_i - \tfrac{1}{2} \PD_i B_j B_j) \\
-\PD_t B_i + \PD_t B_i^0 = \frac{1}{Re_m} \PD_{jj} B_i - \PD_j (u_j B_i - u_i B_j)
+\PD_t u_i+u_j\PD_j u_i = - \frac{1}{\rho} \PD_i p+ \nu \PD_{jj} u_i + \frac{1}{\rho \M} (B_j \PD_j B_i - \tfrac{1}{2} \PD_i B_j B_j) \\
+\PD_t B_i + \PD_t B_i^0 = \frac{1}{\sigma \M} \PD_{jj} B_i - \PD_j (u_j B_i - u_i B_j)
 \end{aligned} \end{equation}
 Remove magnetic pressure
 \begin{equation}\begin{aligned}
-\PD_t u_i+u_j\PD_j u_i = -\PD_i p+ \frac{1}{Re} \PD_{jj} u_i + Al B_j \PD_j B_i \\
-\PD_t B_i + \PD_t B_i^0 = \frac{1}{Re_m} \PD_{jj} B_i - \PD_j (u_j B_i - u_i B_j)
+\PD_t u_i+u_j\PD_j u_i = -\PD_i p+ \nu \PD_{jj} u_i + \frac{1}{\rho \M} B_j \PD_j B_i \\
+\PD_t B_i + \PD_t B_i^0 = \frac{1}{\sigma \M} \PD_{jj} B_i - \PD_j (u_j B_i - u_i B_j)
 \end{aligned} \end{equation}
 Expanding equations yields
 \begin{equation}\begin{aligned}
-\PD_t u+ u\PD_x u + v\PD_y u + w\PD_z u = -\PD_x p+ \frac{1}{Re} (\PD_{xx} u+\PD_{yy} u+\PD_{zz} u) + Al (B_x \PD_x B_x + B_y \PD_y B_x + B_z \PD_z B_x) \\
-\PD_t v+ u\PD_x v + v\PD_y v + w\PD_z v = -\PD_y p+ \frac{1}{Re} (\PD_{xx} v+\PD_{yy} v+\PD_{zz} v) + Al (B_x \PD_x B_y + B_y \PD_y B_y + B_z \PD_z B_y) \\
-\PD_t w+ u\PD_x w + v\PD_y w + w\PD_z w = -\PD_z p+ \frac{1}{Re} (\PD_{xx} w+\PD_{yy} w+\PD_{zz} w) + Al (B_x \PD_x B_z + B_y \PD_y B_z + B_z \PD_z B_z) \\
-\PD_t B_x + \PD_t B_x^0 = \frac{1}{Re_m} (\PD_{xx} B_x + \PD_{yy} B_x+\PD_{zz} B_x)                         - \PD_y (v B_x - u B_y) - \PD_z (w B_x - u B_z) \\
-\PD_t B_y + \PD_t B_y^0 = \frac{1}{Re_m} (\PD_{xx} B_y + \PD_{yy} B_y+\PD_{zz} B_y) - \PD_x (u B_y - v B_x)                         - \PD_z (w B_y - v B_z) \\
-\PD_t B_z + \PD_t B_z^0 = \frac{1}{Re_m} (\PD_{xx} B_z + \PD_{yy} B_z+\PD_{zz} B_z) - \PD_x (u B_z - w B_x) - \PD_y (v B_z - w B_y)                         \\
+\PD_t u+ u\PD_x u + v\PD_y u + w\PD_z u = -\frac{1}{\rho}\PD_x p+ \nu (\PD_{xx} u+\PD_{yy} u+\PD_{zz} u) + \frac{1}{\rho \M} (B_x \PD_x B_x + B_y \PD_y B_x + B_z \PD_z B_x) \\
+\PD_t v+ u\PD_x v + v\PD_y v + w\PD_z v = -\frac{1}{\rho}\PD_y p+ \nu (\PD_{xx} v+\PD_{yy} v+\PD_{zz} v) + \frac{1}{\rho \M} (B_x \PD_x B_y + B_y \PD_y B_y + B_z \PD_z B_y) \\
+\PD_t w+ u\PD_x w + v\PD_y w + w\PD_z w = -\frac{1}{\rho}\PD_z p+ \nu (\PD_{xx} w+\PD_{yy} w+\PD_{zz} w) + \frac{1}{\rho \M} (B_x \PD_x B_z + B_y \PD_y B_z + B_z \PD_z B_z) \\
+\PD_t B_x + \PD_t B_x^0 = \frac{1}{\sigma \M} (\PD_{xx} B_x + \PD_{yy} B_x+\PD_{zz} B_x)                         - \PD_y (v B_x - u B_y) - \PD_z (w B_x - u B_z) \\
+\PD_t B_y + \PD_t B_y^0 = \frac{1}{\sigma \M} (\PD_{xx} B_y + \PD_{yy} B_y+\PD_{zz} B_y) - \PD_x (u B_y - v B_x)                         - \PD_z (w B_y - v B_z) \\
+\PD_t B_z + \PD_t B_z^0 = \frac{1}{\sigma \M} (\PD_{xx} B_z + \PD_{yy} B_z+\PD_{zz} B_z) - \PD_x (u B_z - w B_x) - \PD_y (v B_z - w B_y)                         \\
 \end{aligned} \end{equation}
 Assuming:
 \begin{itemize}\setlength\itemsep{-1em}
-	\item $\PD_z=0$
+	\item $\PD_x=0$
 \end{itemize}
 We have
 \begin{equation}\begin{aligned}
-\PD_t u+ u\PD_x u + v\PD_y u = -\PD_x p+ \frac{1}{Re} (\PD_{xx}u+\PD_{yy}u) + Al (B_x \PD_x B_x + B_y \PD_y B_x) \\
-\PD_t v+ u\PD_x v + v\PD_y v = -\PD_y p+ \frac{1}{Re} (\PD_{xx}v+\PD_{yy}v) + Al (B_x \PD_x B_y + B_y \PD_y B_y) \\
-\PD_t w+ u\PD_x w + v\PD_y w = -\PD_z p+ \frac{1}{Re} (\PD_{xx}w+\PD_{yy}w) + Al (B_x \PD_x B_z + B_y \PD_y B_z) \\
-\PD_t B_x + \PD_t B_x^0 = \frac{1}{Re_m} (\PD_{xx} B_x + \PD_{yy} B_x) - \PD_x (u B_x - u B_x) - \PD_y (v B_x - u B_y) \\
-\PD_t B_y + \PD_t B_y^0 = \frac{1}{Re_m} (\PD_{xx} B_y + \PD_{yy} B_y) - \PD_x (u B_y - v B_x) - \PD_y (v B_y - v B_y) \\
-\PD_t B_z + \PD_t B_z^0 = \frac{1}{Re_m} (\PD_{xx} B_z + \PD_{yy} B_z) - \PD_x (u B_z - w B_x) - \PD_y (v B_z - w B_y) \\
+\PD_t u+ v\PD_y u + w\PD_z u = -\frac{1}{\rho}\PD_x p+ \nu (\PD_{yy} u+\PD_{zz} u) + \frac{1}{\rho \M} (B_y \PD_y B_x + B_z \PD_z B_x) \\
+\PD_t v+ v\PD_y v + w\PD_z v = -\frac{1}{\rho}\PD_y p+ \nu (\PD_{yy} v+\PD_{zz} v) + \frac{1}{\rho \M} (B_y \PD_y B_y + B_z \PD_z B_y) \\
+\PD_t w+ v\PD_y w + w\PD_z w = -\frac{1}{\rho}\PD_z p+ \nu (\PD_{yy} w+\PD_{zz} w) + \frac{1}{\rho \M} (B_y \PD_y B_z + B_z \PD_z B_z) \\
+\PD_t B_x + \PD_t B_x^0 = \frac{1}{\sigma \M} (\PD_{yy} B_x+\PD_{zz} B_x) - \PD_y (v B_x - u B_y) - \PD_z (w B_x - u B_z) \\
+\PD_t B_y + \PD_t B_y^0 = \frac{1}{\sigma \M} (\PD_{yy} B_y+\PD_{zz} B_y)                         - \PD_z (w B_y - v B_z) \\
+\PD_t B_z + \PD_t B_z^0 = \frac{1}{\sigma \M} (\PD_{yy} B_z+\PD_{zz} B_z) - \PD_y (v B_z - w B_y)                         \\
 \end{aligned} \end{equation}
 Assuming:
 \begin{itemize}\setlength\itemsep{-1em}
-	\item $u=0,v=0$
-	\item $\PD_t B_x^0 = 0, \PD_t B_y^0 = 0$
+	\item $v=0,w=0$
+	\item $\PD_t B_y^0 = 0, \PD_t B_z^0 = 0$
 \end{itemize}
-The induced field components $B_x^1,B_y^1$ have no source terms and are therefore zero, leaving us with
+The induced field components $B_y^1,B_z^1$ have no source terms and are therefore zero, leaving us with
 \begin{equation}\begin{aligned}
-\PD_t w = -\PD_z p+ \frac{1}{Re} (\PD_{xx}w+\PD_{yy}w) + Al (B_x \PD_x B_z + B_y \PD_y B_z) \\
-\PD_t B_z + \PD_t B_z^0 = \frac{1}{Re_m} (\PD_{xx} B_z + \PD_{yy} B_z) + \PD_x (w B_x) + \PD_y (w B_y) \\
+\PD_t u  = -\frac{1}{\rho}\PD_x p+ \nu (\PD_{yy} u+\PD_{zz} u) + \frac{1}{\rho \M} (B_y \PD_y B_x + B_z \PD_z B_x) \\
+\PD_t B_x + \PD_t B_x^0 = \frac{1}{\sigma \M} (\PD_{yy} B_x+\PD_{zz} B_x) + \PD_y (u B_y) + \PD_z (u B_z) \\
 \end{aligned} \end{equation}
 Assuming:
 \begin{itemize}\setlength\itemsep{-1em}
-	\item $\B^0 = (B_x^0,0,B_z^0(t)) \ne \B^0(x,y,z)$
+	\item $\B^0 = (B_x^0(t),0,B_z^0) \ne \B^0(x,y,z)$
 \end{itemize}
 \begin{equation}\begin{aligned}
-\PD_t w = -\PD_z p+ \frac{1}{Re} (\PD_{xx}w+\PD_{yy}w) + Al B_x^0 \PD_x B_z \\
-\PD_t B_z + \PD_t B_z^0 = \frac{1}{Re_m} (\PD_{xx} B_z + \PD_{yy} B_z) + B_x^0 \PD_x w \\
+\PD_t u                 = -\frac{1}{\rho}\PD_x p+ \nu (\PD_{yy} u+\PD_{zz} u) + \frac{1}{\rho \M} B_z^0 \PD_z B_x \\
+\PD_t B_x + \PD_t B_x^0 = \frac{1}{\sigma \M} (\PD_{yy} B_x+\PD_{zz} B_x) + B_z^0 \PD_z u \\
 \end{aligned} \end{equation}
-Assuming:
-\begin{itemize}\setlength\itemsep{-1em}
-	\item $\PD_t w = 0$
-	\item $\PD_t B_z = 0$
-\end{itemize}
-We have
-\begin{equation}\begin{aligned}
-\PD_{xx}w+\PD_{yy}w = Re\PD_z p - \frac{Ha^2}{Re_m} B_x^0 \PD_x B_z \\
-\PD_t B_z^0 = \frac{1}{Re_m} \PD_{xx} B_z + \PD_{yy} B_z + B_x^0 \PD_x w \\
-\end{aligned} \end{equation}
+\section{Governing equation in 2D}
 In 2D, this may be written as
 \begin{equation}\begin{aligned}
-\DEL^2 w = Re\PD_z p - \frac{Ha^2}{Re_m} B_x^0 \PD_x B_z \\
-\frac{1}{Re_m} \DEL^2 B_z = \PD_t B_z^0 - B_x^0 \PD_x w \\
+\PD_t u                 = -\frac{1}{\rho}\PD_x p+ \nu \DEL^2 u + \frac{1}{\rho \M} B_z^0 \PD_z B_x \\
+\PD_t B_x + \PD_t B_x^0 = \frac{1}{\sigma \M} \DEL^2 B_x + B_z^0 \PD_z u \\
 \end{aligned} \end{equation}
 
-\noindent \rule{\textwidth}{1pt}
-Let
+This system can be solved in 2D using the same transformation as in Shercliff.
+
+\section{Governing equation in 1D}
+Here, we will further assume
+\begin{itemize}\setlength\itemsep{-1em}
+	\item $\PD_y () = 0$
+\end{itemize}
+Which yields an ordinary differential equation
 \begin{equation}\begin{aligned}
-X = w + \frac{Ha}{Re_m} B_z \\
-\end{aligned} \end{equation}
-Substituting these into our governing equations, we have
-\begin{equation}\begin{aligned}
-\DEL^2 \left( X - \frac{Ha}{Re_m} B_z \right) = Re\PD_z p - \frac{Ha^2}{Re_m} B_x^0 \PD_x B_z \\
-\frac{1}{Re_m} \DEL^2 B_z = \PD_t B_z^0 - B_x^0 \PD_x \left( X - \frac{Ha}{Re_m} B_z \right) \\
-\end{aligned} \end{equation}
-Distributing
-\begin{equation}\begin{aligned}
-\DEL^2 X - \frac{Ha}{Re_m} \DEL^2 B_z = Re\PD_z p - \frac{Ha^2}{Re_m} B_x^0 \PD_x B_z \\
-\frac{1}{Re_m} \DEL^2 B_z = \PD_t B_z^0 - B_x^0 \PD_x X + \frac{Ha}{Re_m} B_x^0 \PD_x B_z \\
-\end{aligned} \end{equation}
-Combining using a factor of $Ha$ for the second equation, we have
-\begin{equation}\begin{aligned}
-\DEL^2 X = Re\PD_z p + Ha \PD_t B_z^0 - Ha B_x^0 \PD_x X \\
+\PD_t u                 = -\frac{1}{\rho}\PD_x p+ \nu u'' + \frac{1}{\rho \M} B_z^0 B_x' \\
+\PD_t B_x + \PD_t B_x^0 = \frac{1}{\sigma \M} B_x'' + B_z^0 u' \\
 \end{aligned} \end{equation}
 
-\noindent \rule{\textwidth}{1pt}
-Let
-\begin{equation}\begin{aligned}
-Y = w - \frac{Ha}{Re_m} B_z \\
-\end{aligned} \end{equation}
-Substituting these into our governing equations, we have
-\begin{equation}\begin{aligned}
-\DEL^2 \left( Y + \frac{Ha}{Re_m} B_z \right) = Re\PD_z p - \frac{Ha^2}{Re_m} B_x^0 \PD_x B_z \\
-\frac{1}{Re_m} \DEL^2 B_z = \PD_t B_z^0 - B_x^0 \PD_x \left( Y + \frac{Ha}{Re_m} B_z \right) \\
-\end{aligned} \end{equation}
-Distributing
-\begin{equation}\begin{aligned}
-\DEL^2 Y + \frac{Ha}{Re_m} \DEL^2 B_z = Re\PD_z p - \frac{Ha^2}{Re_m} B_x^0 \PD_x B_z \\
-\frac{1}{Re_m} \DEL^2 B_z = \PD_t B_z^0 - B_x^0 \PD_x Y - \frac{Ha}{Re_m} B_x^0 \PD_x B_z \\
-\end{aligned} \end{equation}
-Combining using a factor of $Ha$ for the second equation, we have
-\begin{equation}\begin{aligned}
-\DEL^2 Y = Re\PD_z p - Ha \PD_t B_z^0 + Ha B_x^0 \PD_x Y \\
-\end{aligned} \end{equation}
-\noindent \rule{\textwidth}{1pt}
+We may further assume no pressure gradient exists, to get
 
-\noindent
-In summary, we have
 \begin{equation}\begin{aligned}
-\DEL^2 X = Re\PD_z p + Ha \PD_t B_z^0 - Ha B_x^0 \PD_x X \\
-\DEL^2 Y = Re\PD_z p - Ha \PD_t B_z^0 + Ha B_x^0 \PD_x Y \\
-X = w + \frac{Ha}{Re_m} B_z \\
-Y = w - \frac{Ha}{Re_m} B_z \\
+\PD_t u                 = \nu u'' + \frac{1}{\rho \M} B_z^0 B_x' \\
+\PD_t B_x + \PD_t B_x^0 = \frac{1}{\sigma \M} B_x'' + B_z^0 u' \\
 \end{aligned} \end{equation}
-And note that the original variables can be reconstructed using
-\begin{equation}\begin{aligned}
-w   =                 \frac{1}{2} (X + Y) =                 \frac{1}{2} \left( w + \frac{Ha}{Re_m} B_z + w - \frac{Ha}{Re_m} B_z \right) = w   \\
-B_z = \frac{Re_m}{Ha} \frac{1}{2} (X - Y) = \frac{Re_m}{Ha} \frac{1}{2} \left( w + \frac{Ha}{Re_m} B_z - w + \frac{Ha}{Re_m} B_z \right) = B_z \\
-\end{aligned} \end{equation}
-Moving all terms to the LHS
-\begin{equation}\begin{aligned}
-\DEL^2 X + Ha B_x^0 \PD_x X - Re\PD_z p - Ha \PD_t B_z^0 = 0 \\
-\DEL^2 Y - Ha B_x^0 \PD_x Y - Re\PD_z p + Ha \PD_t B_z^0 = 0 \\
-\end{aligned} \end{equation}
-Let $-Re \PD_z p = k$ yields
-\begin{equation}\begin{aligned}
-\DEL^2 X + Ha B_x^0 \PD_x X + (k - Ha \PD_t B_z^0) = 0 \\
-\DEL^2 Y - Ha B_x^0 \PD_x Y + (k + Ha \PD_t B_z^0) = 0 \\
-\end{aligned} \end{equation}
-Let $A = Ha B_x^0, C = k - Ha \PD_t B_z^0, D = k + Ha \PD_t B_z^0$. We then have
-\begin{equation}\begin{aligned}
-\DEL^2 X + A \PD_x X + C = 0 \\
-\DEL^2 Y - A \PD_x Y + D = 0 \\
-\end{aligned} \end{equation}
-
-The first equation is in the same form as equation 9 in Shercliff.
-The only difference is that we use $Ha$ instead of $M/a$. Correspondingly, the solution
-% in the domain $x=\pm a, y=\pm b$ is:
-% \begin{equation}
-% 	X = \frac{16 kb^2}{\pi^3} \sum_{n=0}^{\infty}
-% 	\frac{(-1)^n}{(2n+1)^3}
-% 	\left\{
-% 	1 + \frac{ (e^{m_1 x}) \sinh(m_2 a) - (e^{m_2 x}) \sinh(m_1 a) }{\sinh([m_2-m_1] a)}
-% 	\right\}
-% 	\cos \left(\frac{[2n+1]\pi y}{2b} \right)
-% \end{equation}
-% Where $m_1, m_2$ are roots to the quadratic equation
-% \begin{equation}
-% 	m^2 + Ha m - \frac{(2n+1)^2 \pi^2}{4 b^2} = 0
-% \end{equation}
 
 \end{document}

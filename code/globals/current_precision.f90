@@ -5,6 +5,7 @@
       public :: cp,li
       public :: pow
       public :: equal
+      public :: machine_epsilon
 
 #ifdef _QUAD_PRECISION_
        integer,parameter :: cp = selected_real_kind(32) ! Quad precision
@@ -16,6 +17,7 @@
 #endif
 #endif
 
+       real(cp),parameter :: machine_epsilon = epsilon(1.0_cp)
        integer,parameter :: li = selected_int_kind(16)
        ! integer,parameter :: ip = selected_int_kind(8)  ! Short int
 
@@ -35,7 +37,7 @@
          real(cp),intent(in) :: A,B
          real(cp) :: tol
          logical :: L
-         tol = 100.0_cp*epsilon(1.0_cp)
+         tol = 100.0_cp*machine_epsilon
          L = abs(A-B).lt.tol
        end function
 

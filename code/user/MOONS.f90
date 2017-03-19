@@ -3,6 +3,7 @@
        use IO_tools_mod
        use IO_import_mod
        use IO_export_mod
+       use inquire_funcs_mod
 
        use version_mod
        use mesh_mod
@@ -53,7 +54,7 @@
          type(dir_tree) :: DT
          type(sim_params) :: SP
          ! ************************************************************** Parallel + directory + input parameters
-
+         call delete_file('','mesh_generation_error')
 #ifdef fopenmp
          call omp_set_num_threads(12) ! Set number of openMP threads
 
@@ -108,6 +109,7 @@
          endif
          endif
 
+         if (file_exists('','mesh_generation_error')) stop 'Error: non-converged mesh, inspect mesh.'
          if (SP%FCL%stop_after_mesh_export) then
            stop 'Exported meshes. Turn off stop_after_mesh_export in sim_params.f90 to run sim.'
          endif
