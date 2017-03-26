@@ -57,7 +57,6 @@
        interface dot_product;             module procedure dot_product_VF;            end interface
 
        public :: flux
-       interface flux;                    module procedure flux_VF;                   end interface
        interface flux;                    module procedure flux_VF_SD;                end interface
 
        public :: subtract_physical_mean
@@ -131,19 +130,6 @@
          enddo; enddo; enddo
          !$OMP END PARALLEL DO
        end subroutine
-
-       function flux_VF(u,m) result(BF) ! Computes: BF = ∫∫ u•n dA
-         implicit none
-         type(VF),intent(in) :: u
-         type(mesh),intent(in) :: m
-         real(cp) :: BF
-         type(VF) :: temp
-         BF = 0.0_cp
-         call init(temp,u); call assign(temp,u)
-         call assign_ghost_XPeriodic(temp,0.0_cp)
-         BF = boundary_flux(temp,m)
-         call delete(temp)
-       end function
 
        subroutine subtract_phys_mean_SF(u)
          ! Subtracts the physical mean from scalar field u
@@ -416,22 +402,23 @@
          call stabilityTerms(fo,fi%z,m,n,3)
        end subroutine
 
-       function flux_VF_SD(f,m,MD) result(BF)
+       subroutine flux_VF_SD(BF,f,m,MD,f_temp)
          implicit none
+         real(cp),intent(inout) :: BF
          type(VF),intent(in) :: f
          type(mesh),intent(in) :: m
          type(mesh_domain),intent(in) :: MD
-         real(cp) :: BF
+         type(VF),intent(inout) :: f_temp
          type(mesh) :: m_temp
          type(VF) :: temp
          if (.not.is_Face(f)) stop 'Error: bad DL in flux_VF_SD in ops_aux.f90'
          call init_other(m_temp,m,MD)
          call init_Face(temp,m_temp)
          call extractFace(temp,f,MD)
-         BF = flux(temp,m_temp)
+         call boundary_flux(BF,temp,m_temp,f_temp)
          call delete(temp)
          call delete(m_temp)
-       end function
+       end subroutine
 
        subroutine treatInterface_VF(f,take_high_value)
          implicit none

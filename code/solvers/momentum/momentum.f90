@@ -355,7 +355,7 @@
          call export(mom%probe_KE,TMP,temp)
 
          if (mom%SP%compute_surface_power) then
-         temp = surface_power(mom%U,mom%m,mom%temp_F1,mom%temp_F2,mom%temp_CC_VF,mom%TF_CC)
+         call surface_power(temp,mom%U,mom%m,mom%temp_F1,mom%temp_F2,mom%temp_CC_VF,mom%TF_CC)
          temp = scale*temp/mom%SP%DP%Re
          call export(mom%probe_Q,TMP,temp)
          endif

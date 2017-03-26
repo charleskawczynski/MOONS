@@ -1148,50 +1148,44 @@
          PS = plane_sum_z(u%GF,B%g,p,1.0_cp)
        end function
 
-       function boundary_flux_BF(x,y,z,B) result(BF)
+       subroutine boundary_flux_BF(BF,x,y,z,B,temp_x,temp_y,temp_z)
          implicit none
+         real(cp),intent(inout) :: BF
          type(block_field),intent(in) :: x,y,z
+         type(block_field),intent(inout) :: temp_x,temp_y,temp_z
          type(block),intent(in) :: B
-         type(block_field) :: temp_x,temp_y,temp_z
-         real(cp) :: BF
          logical,dimension(3) :: L
          L(1) = is_Face(x%DL).and.(get_Face(x%DL).eq.1)
          L(2) = is_Face(y%DL).and.(get_Face(y%DL).eq.2)
          L(3) = is_Face(z%DL).and.(get_Face(z%DL).eq.3)
          if (all(L)) then
          BF = 0.0_cp
-         call init(temp_x,x); call assign(temp_x%GF,x%GF)
-         call init(temp_y,y); call assign(temp_y%GF,y%GF)
-         call init(temp_z,z); call assign(temp_z%GF,z%GF)
-         call assign_ghost_XPeriodic(temp_x,0.0_cp)
-         call assign_ghost_XPeriodic(temp_y,0.0_cp)
-         call assign_ghost_XPeriodic(temp_z,0.0_cp)
+         call assign(temp_x%GF,x%GF); call assign_ghost_XPeriodic(temp_x,0.0_cp)
+         call assign(temp_y%GF,y%GF); call assign_ghost_XPeriodic(temp_y,0.0_cp)
+         call assign(temp_z%GF,z%GF); call assign_ghost_XPeriodic(temp_z,0.0_cp)
          BF = BF + plane_sum_x(temp_x%GF,B%g,2,-1.0_cp)
          BF = BF + plane_sum_x(temp_x%GF,B%g,temp_x%GF%s(1)-1,1.0_cp)
          BF = BF + plane_sum_y(temp_y%GF,B%g,2,-1.0_cp)
          BF = BF + plane_sum_y(temp_y%GF,B%g,temp_y%GF%s(2)-1,1.0_cp)
          BF = BF + plane_sum_z(temp_z%GF,B%g,2,-1.0_cp)
          BF = BF + plane_sum_z(temp_z%GF,B%g,temp_z%GF%s(3)-1,1.0_cp)
-         call delete(temp_x)
-         call delete(temp_y)
-         call delete(temp_z)
          else; stop 'Error: boundary flux only offered for face data in BF.f90'
          endif
-       end function
+       end subroutine
 
-       function boundary_flux_SF_BF(phi,B) result(BF)
+       subroutine boundary_flux_SF_BF(BF,phi,B,temp_phi)
          implicit none
+         real(cp),intent(inout) :: BF
          type(block_field),intent(in) :: phi
          type(block),intent(in) :: B
-         type(block_field) :: temp_phi
-         real(cp) :: BF
+         type(block_field),intent(inout) :: temp_phi
          logical,dimension(3) :: L
          L(1) = is_Face(phi%DL).and.(get_Face(phi%DL).eq.1)
          L(2) = is_Face(phi%DL).and.(get_Face(phi%DL).eq.2)
          L(3) = is_Face(phi%DL).and.(get_Face(phi%DL).eq.3)
          BF = 0.0_cp
          if (any(L)) then
-           call init(temp_phi,phi); call assign(temp_phi%GF,phi%GF)
+           call assign(temp_phi%GF,phi%GF)
            call assign_ghost_XPeriodic(temp_phi,0.0_cp)
               if (L(1)) then
            BF = BF + plane_sum_x(temp_phi%GF,B%g,2,-1.0_cp)
@@ -1203,9 +1197,8 @@
            BF = BF + plane_sum_z(temp_phi%GF,B%g,2,-1.0_cp)
            BF = BF + plane_sum_z(temp_phi%GF,B%g,temp_phi%GF%s(3)-1,1.0_cp)
            endif
-           call delete(temp_phi)
          endif
-       end function
+       end subroutine
 
        function symmetry_error_x_BF(u) result(SE)
          implicit none
