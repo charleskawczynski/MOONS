@@ -77,7 +77,7 @@
          type(TF) :: TF_CC
          type(TF) :: TF_CC_edge
          ! Vector fields
-         type(VF) :: U,Ustar,Unm1
+         type(VF) :: U,Ustar,Unm1,U_base
          type(VF) :: U_CC
          type(VF) :: temp_F1,temp_F2,temp_F3
          type(VF) :: temp_E,temp_CC_VF
@@ -133,6 +133,7 @@
          call init_Edge(mom%U_E       ,m,0.0_cp)
          call init_Face(mom%U         ,m,0.0_cp)
          call init_Face(mom%Unm1      ,m,0.0_cp)
+         call init_Face(mom%U_base    ,m,0.0_cp)
          call init_Face(mom%temp_F1   ,m,0.0_cp)
          call init_Face(mom%temp_F2   ,m,0.0_cp)
          call init_Face(mom%temp_F3   ,m,0.0_cp)
@@ -217,6 +218,7 @@
          call delete(mom%U)
          call delete(mom%U_E)
          call delete(mom%Unm1)
+         call delete(mom%U_base)
          call delete(mom%Ustar)
          call delete(mom%temp_F1)
          call delete(mom%temp_F2)

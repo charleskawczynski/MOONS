@@ -42,12 +42,12 @@ endif
 SRC_DIR = ..$(PS)code
 
 ifeq ($(CLUSTER),'PC_CK')
-	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS6
+	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS1
 endif
 
 ifeq ($(CLUSTER),'Workstation_CK')
 	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)MOONS5
-	TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)NME_new_fast$(PS)MOONS8_correct
+	TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)BC_full$(PS)Shatrov_inspired$(PS)M4
 	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)NME_new_fast$(PS)mesh_refinement_study$(PS)coarse
 	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)NME_new_fast$(PS)mesh_refinement_study$(PS)moderate
 	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)NME_new_fast$(PS)mesh_refinement_study$(PS)fine

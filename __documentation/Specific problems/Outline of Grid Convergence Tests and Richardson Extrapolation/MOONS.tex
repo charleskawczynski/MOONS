@@ -20,7 +20,7 @@
 \setlength{\topmargin}{-1in}     %\topmargin: gap above header
 \setlength{\headheight}{0in}     %\headheight: height of header
 \setlength{\topskip}{0in}        %\topskip: between header and text
-\setlength{\headsep}{0in}        
+\setlength{\headsep}{0in}
 \setlength{\textheight}{692pt}   %\textheight: height of main text
 \setlength{\textwidth}{7.5in}    % \textwidth: width of text
 \setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
@@ -50,7 +50,7 @@ Let the error to a CFD problem for a grid size $h$ be
 \end{equation}
 This error is equal to some constant times the grid spacing to some power plus higher order terms. This constant is the same for any discretization for the given solution method.
 \begin{equation}
-	\varepsilon_{h} 
+	\varepsilon_{h}
 	=
 	|u^{h} - u^{exact}|
 	=
@@ -69,11 +69,11 @@ Now suppose three grid sizes $h_1,h_2$ and $h_3$ are used. We have
 \end{equation}
 Here we have 6 equations, and 6 unknowns:
 \begin{equation}
-	u^{exact}, 
-	\varepsilon_{h_1} , 
-	\varepsilon_{h_2} , 
-	\varepsilon_{h_3} , 
-	p , 
+	u^{exact},
+	\varepsilon_{h_1} ,
+	\varepsilon_{h_2} ,
+	\varepsilon_{h_3} ,
+	p ,
 	C
 \end{equation}
 Subtracting the equations, we eliminate $u^{exact}$ and get
@@ -150,7 +150,7 @@ Dividing these equations, we have
 	\frac{|u^{h_1} - u^{exact}|}{|u^{h_2} - u^{exact}|}
 	=
 	\frac{C (h_1)^p}{C (h_2)^p}
-	= 
+	=
 	\left(\frac{h_1}{h_2}\right)^p
 \end{equation}
 The order of accuracy between these two errors is then

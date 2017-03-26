@@ -14,6 +14,9 @@
 \usepackage{tabularx,ragged2e,booktabs,caption}
 \usepackage{etoolbox}
 
+\input{./../path_to_useful_commands.tex}
+\input{\PATHTOUSEFULCOMMANDS}
+
 \newcommand{\figS}{22.1em}
 \newcommand{\BfigS}{50em}
 \newcommand{\ffigS}{15.1em}
@@ -31,7 +34,7 @@
 \setlength{\topmargin}{-1in}     %\topmargin: gap above header
 \setlength{\headheight}{0in}     %\headheight: height of header
 \setlength{\topskip}{0in}        %\topskip: between header and text
-\setlength{\headsep}{0in}        
+\setlength{\headsep}{0in}
 \setlength{\textheight}{692pt}   %\textheight: height of main text
 \setlength{\textwidth}{7.5in}    % \textwidth: width of text
 \setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
@@ -69,17 +72,17 @@ Here, we made the following assumptions:
 \item The number of cells in the fluid and walls were $N_{fluid} = (75,45,45)$ \qquad $N_{wall} = (11,11,11)$
 \end{itemize}
 
-\begin{figure}[H]
- \centering
-  \includegraphics[width=\figW,height=\figH]{geometry.eps}
-   \caption[Optional ]{Geometry}
-\end{figure}
+% \begin{figure}[H]
+%  \centering
+%   \includegraphics[width=\figW,height=\figH]{geometry.eps}
+%    \caption[Optional ]{Geometry}
+% \end{figure}
 
 For this problem, we solved the momentum and induction equations. For boundary conditions used were the following
 
 \begin{equation}
-	\pmb{u},
-	\pmb{B},
+	\U,
+	\B,
 	p = \text{periodic}
 	\qquad
 	x_{min},x_{max}
@@ -87,11 +90,11 @@ For this problem, we solved the momentum and induction equations. For boundary c
 \end{equation}
 
 \begin{equation}
-	\pmb{u} = \pmb{u}_{walls} = 0
+	\U = \U_{walls} = 0
 	\qquad
-	\frac{\partial p}{\partial n} = 0
+	\frac{\PD p}{\PD n} = 0
 	\qquad
-	\frac{\partial B_{n}}{\partial n} = 0
+	\frac{\PD B_{n}}{\PD n} = 0
 	\qquad
 	B_{tangent} = 0
 	\qquad
@@ -99,46 +102,46 @@ For this problem, we solved the momentum and induction equations. For boundary c
 	z_{min},z_{max}
 \end{equation}
 
-Using the $\frac{\partial ()}{\partial x} = 0$, the momentum equations become
+Using the $\frac{\PD ()}{\PD x} = 0$, the momentum equations become
 
 \begin{equation}
-	\frac{\partial u}{\partial t} 
-	+ \frac{\partial (u v)}{\partial y}
-	+ \frac{\partial (u w)}{\partial z}
-	= 
-	- \frac{\partial p}{\partial x}
+	\frac{\PD u}{\PD t}
+	+ \frac{\PD (u v)}{\PD y}
+	+ \frac{\PD (u w)}{\PD z}
+	=
+	- \frac{\PD p}{\PD x}
 	+ \frac{1}{Re}
 	\left(
-	\frac{\partial^2 u}{\partial y^2}
-	+\frac{\partial^2 u}{\partial z^2}
+	\frac{\PD^2 u}{\PD y^2}
+	+\frac{\PD^2 u}{\PD z^2}
 	\right)
 	+ \frac{Ha^2}{Re}
 	(j \times B)_x
 \end{equation}
 \begin{equation}
-	\frac{\partial v}{\partial t} 
-	+ \frac{\partial (v v)}{\partial y}
-	+ \frac{\partial (v w)}{\partial z}
-	= 
-	- \frac{\partial p}{\partial y}
+	\frac{\PD v}{\PD t}
+	+ \frac{\PD (v v)}{\PD y}
+	+ \frac{\PD (v w)}{\PD z}
+	=
+	- \frac{\PD p}{\PD y}
 	+ \frac{1}{Re}
 	\left(
-	\frac{\partial^2 v}{\partial y^2}
-	+\frac{\partial^2 v}{\partial z^2}
+	\frac{\PD^2 v}{\PD y^2}
+	+\frac{\PD^2 v}{\PD z^2}
 	\right)
 	+ \frac{Ha^2}{Re}
 	(j \times B)_y
 \end{equation}
 \begin{equation}
-	\frac{\partial w}{\partial t} 
-	+ \frac{\partial (w v)}{\partial y}
-	+ \frac{\partial (w w)}{\partial z}
-	= 
-	- \frac{\partial p}{\partial z}
+	\frac{\PD w}{\PD t}
+	+ \frac{\PD (w v)}{\PD y}
+	+ \frac{\PD (w w)}{\PD z}
+	=
+	- \frac{\PD p}{\PD z}
 	+ \frac{1}{Re}
 	\left(
-	\frac{\partial^2 w}{\partial y^2}
-	+\frac{\partial^2 w}{\partial z^2}
+	\frac{\PD^2 w}{\PD y^2}
+	+\frac{\PD^2 w}{\PD z^2}
 	\right)
 	+ \frac{Ha^2}{Re}
 	(j \times B)_z
@@ -147,100 +150,100 @@ Using the $\frac{\partial ()}{\partial x} = 0$, the momentum equations become
 Using the uniform $\sigma$, uniform $\mu$ the induction equations become
 
 \begin{equation}
-	\frac{\partial B_i}{\partial t} 
+	\frac{\PD B_i}{\PD t}
 	=
-	- \frac{\partial B_i^0}{\partial t} 
-	- \frac{\partial}{\partial x_j} (u_j B_i^0 - u_i B_j^0) 
-	- \frac{\partial}{\partial x_j} (u_j B_i - u_i B_j) 
+	- \frac{\PD B_i^0}{\PD t}
+	- \frac{\PD}{\PD x_j} (u_j B_i^0 - u_i B_j^0)
+	- \frac{\PD}{\PD x_j} (u_j B_i - u_i B_j)
 	+
 	\frac{1}{Re_m}
-	\frac{\partial^2 B_i}{\partial x_j^2}
+	\frac{\PD^2 B_i}{\PD x_j^2}
 \end{equation}
 
-Using the $\frac{\partial ()}{\partial x} = 0$, we have
+Using the $\frac{\PD ()}{\PD x} = 0$, we have
 
 \begin{equation}
-	\frac{\partial B_x}{\partial t} 
+	\frac{\PD B_x}{\PD t}
 	=
-	- \frac{\partial B_x^0}{\partial t} 
-	- \frac{\partial}{\partial y} (v B_x - u B_y)
-	- \frac{\partial}{\partial z} (w B_x - u B_z)
-	- \frac{\partial}{\partial y} (v B_x^0 - u B_y^0)
-	- \frac{\partial}{\partial z} (w B_x^0 - u B_z^0)	
+	- \frac{\PD B_x^0}{\PD t}
+	- \frac{\PD}{\PD y} (v B_x - u B_y)
+	- \frac{\PD}{\PD z} (w B_x - u B_z)
+	- \frac{\PD}{\PD y} (v B_x^0 - u B_y^0)
+	- \frac{\PD}{\PD z} (w B_x^0 - u B_z^0)
 	+
 	\frac{1}{Re_m}
 	\left(
-	\frac{\partial^2 B_x}{\partial y^2}
-	+ \frac{\partial^2 B_x}{\partial z^2}
+	\frac{\PD^2 B_x}{\PD y^2}
+	+ \frac{\PD^2 B_x}{\PD z^2}
 	\right)
 \end{equation}
 \begin{equation}
-	\frac{\partial B_y}{\partial t} 
+	\frac{\PD B_y}{\PD t}
 	=
-	- \frac{\partial B_y^0}{\partial t} 
-	- \frac{\partial}{\partial z} (w B_y - v B_z)
-	- \frac{\partial}{\partial z} (w B_y^0 - v B_z^0)	
+	- \frac{\PD B_y^0}{\PD t}
+	- \frac{\PD}{\PD z} (w B_y - v B_z)
+	- \frac{\PD}{\PD z} (w B_y^0 - v B_z^0)
 	+
 	\frac{1}{Re_m}
 	\left(
-	\frac{\partial^2 B_y}{\partial y^2}
-	+ \frac{\partial^2 B_y}{\partial z^2}
+	\frac{\PD^2 B_y}{\PD y^2}
+	+ \frac{\PD^2 B_y}{\PD z^2}
 	\right)
 \end{equation}
 \begin{equation}
-	\frac{\partial B_z}{\partial t} 
+	\frac{\PD B_z}{\PD t}
 	=
-	- \frac{\partial B_z^0}{\partial t} 
-	- \frac{\partial}{\partial y} (v B_z - w B_y)
-	- \frac{\partial}{\partial y} (v B_z^0 - w B_y^0)
+	- \frac{\PD B_z^0}{\PD t}
+	- \frac{\PD}{\PD y} (v B_z - w B_y)
+	- \frac{\PD}{\PD y} (v B_z^0 - w B_y^0)
 	+
 	\frac{1}{Re_m}
 	\left(
-	\frac{\partial^2 B_z}{\partial y^2}
-	+ \frac{\partial^2 B_z}{\partial z^2}
+	\frac{\PD^2 B_z}{\PD y^2}
+	+ \frac{\PD^2 B_z}{\PD z^2}
 	\right)
 \end{equation}
 
 Using the applied magnetic field, we have
 
 \begin{equation}
-	\frac{\partial B_x}{\partial t} 
+	\frac{\PD B_x}{\PD t}
 	=
 	e^{-t}
-	- \frac{\partial}{\partial y} (v B_x - u B_y)
-	- \frac{\partial}{\partial z} (w B_x - u B_z)
-	+ e^{-t} \frac{\partial}{\partial y} (v - u)
-	- \frac{\partial}{\partial z} (-w e^{-t} - u)	
+	- \frac{\PD}{\PD y} (v B_x - u B_y)
+	- \frac{\PD}{\PD z} (w B_x - u B_z)
+	+ e^{-t} \frac{\PD}{\PD y} (v - u)
+	- \frac{\PD}{\PD z} (-w e^{-t} - u)
 	+
 	\frac{1}{Re_m}
 	\left(
-	\frac{\partial^2 B_x}{\partial y^2}
-	+ \frac{\partial^2 B_x}{\partial z^2}
+	\frac{\PD^2 B_x}{\PD y^2}
+	+ \frac{\PD^2 B_x}{\PD z^2}
 	\right)
 \end{equation}
 \begin{equation}
-	\frac{\partial B_y}{\partial t} 
+	\frac{\PD B_y}{\PD t}
 	=
 	e^{-t}
-	- \frac{\partial}{\partial z} (w B_y - v B_z)
-	+ \frac{\partial}{\partial z} (w e^{-t} + v)	
+	- \frac{\PD}{\PD z} (w B_y - v B_z)
+	+ \frac{\PD}{\PD z} (w e^{-t} + v)
 	+
 	\frac{1}{Re_m}
 	\left(
-	\frac{\partial^2 B_y}{\partial y^2}
-	+ \frac{\partial^2 B_y}{\partial z^2}
+	\frac{\PD^2 B_y}{\PD y^2}
+	+ \frac{\PD^2 B_y}{\PD z^2}
 	\right)
 \end{equation}
 \begin{equation}
-	\frac{\partial B_z}{\partial t} 
+	\frac{\PD B_z}{\PD t}
 	=
-	- \frac{\partial}{\partial y} (v B_z - w B_y)
-	- \frac{\partial}{\partial y} (v + w e^{-t})
+	- \frac{\PD}{\PD y} (v B_z - w B_y)
+	- \frac{\PD}{\PD y} (v + w e^{-t})
 	+
 	\frac{1}{Re_m}
 	\left(
-	\frac{\partial^2 B_z}{\partial y^2}
-	+ \frac{\partial^2 B_z}{\partial z^2}
+	\frac{\PD^2 B_z}{\PD y^2}
+	+ \frac{\PD^2 B_z}{\PD z^2}
 	\right)
 \end{equation}
 
@@ -249,21 +252,21 @@ The plots have been organized using colors=(black,red,blue,green) $\rightarrow$ 
 
 Not all simulations reached a maximum energy. In fact, many simulations seem like motion and induced magnetic field have just begun to develop. Particularly, those with low $Ha$ number (10).
 
-\subsection{Kinetic}
-\begin{figure}[H]
- \centering
-  \subfigure[standard scale] {\includegraphics[width=\figW,height=\figH]{KU/KU.eps}}
-  \subfigure[semi-log y scale] {\includegraphics[width=\figW,height=\figH]{KU/KU_log.eps}}
-   \caption[Optional ]{Kinetic Energy vs Time Step}
-\end{figure}
+% \subsection{Kinetic}
+% \begin{figure}[H]
+%  \centering
+%   \subfigure[standard scale] {\includegraphics[width=\figW,height=\figH]{KU/KU.eps}}
+%   \subfigure[semi-log y scale] {\includegraphics[width=\figW,height=\figH]{KU/KU_log.eps}}
+%    \caption[Optional ]{Kinetic Energy vs Time Step}
+% \end{figure}
 
-\subsection{Magnetic}
-\begin{figure}[H]
- \centering 
-  \subfigure[standard scale] {\includegraphics[width=\figW,height=\figH]{KB/KB.eps}}
-  \subfigure[semi-log y scale] {\includegraphics[width=\figW,height=\figH]{KB/KB_log.eps}}
-   \caption[Optional ]{Magnetic Energy vs Time Step}
-\end{figure}
+% \subsection{Magnetic}
+% \begin{figure}[H]
+%  \centering
+%   \subfigure[standard scale] {\includegraphics[width=\figW,height=\figH]{KB/KB.eps}}
+%   \subfigure[semi-log y scale] {\includegraphics[width=\figW,height=\figH]{KB/KB_log.eps}}
+%    \caption[Optional ]{Magnetic Energy vs Time Step}
+% \end{figure}
 
 
 \section{Given Ha=10}

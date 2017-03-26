@@ -37,7 +37,7 @@
          type(dimensionless_params),intent(in) :: DP
          type(mirror_props),intent(in) :: MP
          type(time_marching_params),intent(in) :: TMP
-         type(mesh_domain) :: MD_fluid_temp
+         type(mesh_domain) :: MD_fluid_temp,temp
          type(mesh) :: m_temp
          type(VF) :: U_temp,Unm1_temp,B_temp,B0_temp,J_temp
          type(SF) :: p_temp
@@ -48,11 +48,13 @@
           call mirror_field(m_temp,B_temp,m,B,anti_mirror(MP))
           call mirror_field(m_temp,B0_temp,m,B0,MP)
           call mirror_field(m_temp,J_temp,m,J,MP)
-          call mirror_mesh(MD_fluid_temp%m_R1,MD_fluid%m_R1,MP)
-          call mirror_mesh(MD_fluid_temp%m_R2,MD_fluid%m_R2,MP)
+          call mirror_mesh(temp%m_R1,MD_fluid%m_R1,MP)
+          call mirror_mesh(temp%m_R2,MD_fluid%m_R2,MP)
+          call init(MD_fluid_temp,temp%m_R1,temp%m_R1)
           call E_K_Budget_no_dummies(DT,U_temp,Unm1_temp,B_temp,B0_temp,&
           J_temp,p_temp,m_temp,TMP,DP,MD_fluid_temp)
           call delete(MD_fluid_temp)
+          call delete(temp)
           call delete(m_temp)
           call delete(U_temp)
           call delete(Unm1_temp)
@@ -162,7 +164,7 @@
          call init(vars(i),'E_M_Tension = '); i=i+1
          call init(vars(i),'Lorentz = '); i=i+1
 
-         write(un,*) 'kinetic energy budget at nstep=',TMP%n_step
+         write(un,*) 'kinetic energy budget at t=',TMP%t
          do i=1,size(vars)
          write(un,*) str(vars(i)),e_budget(i)
          call delete(vars(i))

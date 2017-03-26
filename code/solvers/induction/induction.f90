@@ -196,14 +196,14 @@
          call multiply(ind%B0,SP%IT%B_applied%scale)
 
          write(*,*) '     B-field initialized'
-         ! call initB_interior(ind%B_interior,m,ind%MD_sigma,str(DT%B%field))
-         ! call initJ_interior(ind%J_interior,m,ind%MD_sigma,str(DT%J%field))
+         ! call initB_interior(ind%B_interior,m,ind%MD_sigma,str(DT%B%restart))
+         ! call initJ_interior(ind%J_interior,m,ind%MD_sigma,str(DT%J%restart))
          call assign_ghost_XPeriodic(ind%B_interior,0.0_cp)
          call apply_BCs(ind%B);                           write(*,*) '     BCs applied'
 
          call init(ind%Bstar,ind%B)
          if (SP%VS%B%SS%prescribed_BCs) call set_prescribed_BCs(ind%Bstar)
-         call init_Bstar_field(ind%Bstar,m,ind%B,ind%SP,str(DT%B%field))
+         call init_Bstar_field(ind%Bstar,m,ind%B,ind%SP,str(DT%B%restart))
 
          write(*,*) '     Intermediate B-field initialized'
 
@@ -585,7 +585,7 @@
          type(induction),intent(inout) :: ind
          type(VF),intent(in) :: U
          type(dir_tree),intent(in) :: DT
-         call E_M_Budget_wrapper(DT,U,ind%B,ind%B,ind%B0,ind%B0,ind%J,ind%m,&
+         call E_M_Budget_wrapper(DT,U,ind%B,ind%Bnm1,ind%B0,ind%B0,ind%J,ind%m,&
          ind%MD_fluid,ind%MD_sigma,ind%SP%DP,ind%SP%VS%B%TMP,ind%SP%MP)
        end subroutine
 
