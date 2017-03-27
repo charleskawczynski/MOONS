@@ -7,6 +7,7 @@
       use bctype_mod
       use SF_mod
       use VF_mod
+      use TF_mod
       use matrix_free_params_mod
       use matrix_free_operators_mod
       implicit none
@@ -32,8 +33,8 @@
         procedure(op_SF_explicit) :: operator_explicit
         type(SF),intent(inout) :: x
         type(SF),intent(in) :: b,vol
-        type(VF),intent(in) :: k
-        type(VF),intent(inout) :: tempk
+        type(TF),intent(in) :: k
+        type(TF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         type(SF),intent(inout) :: tempx,Ax,r,p
@@ -59,8 +60,8 @@
         procedure(op_VF_explicit) :: operator_explicit
         type(VF),intent(inout) :: x
         type(VF),intent(in) :: b,vol
-        type(VF),intent(in) :: k
-        type(VF),intent(inout) :: tempk
+        type(TF),intent(in) :: k
+        type(TF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         type(VF),intent(inout) :: tempx,Ax,r,p
@@ -83,8 +84,8 @@
         implicit none
         procedure(op_SF_explicit) :: operator_explicit
         type(SF),intent(inout) :: Ax_BC,p
-        type(VF),intent(inout) :: tempk
-        type(VF),intent(in) :: k
+        type(TF),intent(in) :: k
+        type(TF),intent(inout) :: tempk
         type(SF),intent(in) :: x
         type(matrix_free_params),intent(in) :: MFP
         type(mesh),intent(in) :: m
@@ -98,8 +99,9 @@
         implicit none
         procedure(op_VF_explicit) :: operator_explicit
         type(VF),intent(inout) :: Ax_BC,p
-        type(VF),intent(inout) :: tempk
-        type(VF),intent(in) :: k,x
+        type(VF),intent(in) :: x
+        type(TF),intent(in) :: k
+        type(TF),intent(inout) :: tempk
         type(matrix_free_params),intent(in) :: MFP
         type(mesh),intent(in) :: m
         call compute_x_BC(p)

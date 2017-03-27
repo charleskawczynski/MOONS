@@ -11,6 +11,7 @@
       use is_nan_mod
       use SF_mod
       use VF_mod
+      use TF_mod
       use PCG_aux_mod
       use ops_norms_mod
       use IO_tools_mod
@@ -39,8 +40,8 @@
         character(len=*),intent(in) :: name
         type(SF),intent(inout) :: x
         type(SF),intent(in) :: b,vol,Minv
-        type(VF),intent(in) :: k
-        type(VF),intent(inout) :: tempk
+        type(TF),intent(in) :: k
+        type(TF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(norms),intent(inout) :: res_norm
         integer,intent(in) :: un,un_convergence
@@ -111,8 +112,8 @@
         character(len=*),intent(in) :: name
         type(VF),intent(inout) :: x
         type(VF),intent(in) :: b,vol,Minv
-        type(VF),intent(in) :: k
-        type(VF),intent(inout) :: tempk
+        type(TF),intent(in) :: k
+        type(TF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(norms),intent(inout) :: res_norm
         type(iter_solver_params),intent(inout) :: ISP

@@ -8,6 +8,7 @@
       use ops_aux_mod
       use SF_mod
       use VF_mod
+      use TF_mod
       use IO_export_mod
       use ops_embedExtract_mod
       use matrix_free_params_mod
@@ -30,8 +31,8 @@
         procedure(op_SF_explicit) :: operator
         type(SF),intent(inout) :: x
         type(SF),intent(in) :: f,x_interior,Dinv,Diag,vol
-        type(VF),intent(in) :: k
-        type(VF),intent(inout) :: tempk
+        type(TF),intent(in) :: k
+        type(TF),intent(inout) :: tempk
         type(mesh_domain),intent(in) :: MD_interior
         type(mesh),intent(in) :: m
         real(cp),intent(in) :: tol
@@ -102,8 +103,8 @@
         procedure(op_VF_explicit) :: operator
         type(VF),intent(inout) :: x
         type(VF),intent(in) :: f,x_interior,Dinv,Diag,vol
-        type(VF),intent(in) :: k
-        type(VF),intent(inout) :: tempk
+        type(TF),intent(in) :: k
+        type(TF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(mesh_domain),intent(in) :: MD_interior
         real(cp),intent(in) :: tol

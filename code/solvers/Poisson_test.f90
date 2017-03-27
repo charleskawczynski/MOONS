@@ -4,6 +4,7 @@
        use mesh_mod
        use SF_mod
        use VF_mod
+       use TF_mod
        use dir_tree_mod
        use string_mod
        use path_mod
@@ -51,7 +52,7 @@
          type(mesh),intent(in) :: m
          type(dir_tree),intent(in) :: DT
          type(SF) :: phi,temp_CC
-         type(VF) :: temp_F
+         type(TF) :: temp_F
          type(PCG_solver_SF) :: PCG
          type(iter_solver_params) :: ISP
          type(matrix_free_params) :: MFP
@@ -90,20 +91,21 @@
          type(VF),intent(in) :: X
          type(mesh),intent(in) :: m
          type(dir_tree),intent(in) :: DT
-         type(VF) :: U,temp_F,temp_E
+         type(VF) :: U,temp_F
+         type(TF) :: temp_CC_edge
          type(PCG_solver_VF) :: PCG
          type(iter_solver_params) :: ISP
          type(matrix_free_params) :: MFP
          call init(ISP,10000,pow(-15),pow(-15),1,.true.,str(DT%test%field),'Poisson_test_Face')
          call init(U,X)
          call assign(U,0.0_cp)
-         call init_Edge(temp_E,m)
+         call init_CC_edge(temp_CC_edge,m)
          call init_Face(temp_F,m)
 
          call print_BCs(U,'Face')
 
          call init(PCG,Lap_uniform_VF,Lap_uniform_VF_explicit,prec_Lap_VF,m,&
-         ISP,MFP,U,temp_E,str(DT%test%residual),'Poisson_test_Face',.false.,.false.)
+         ISP,MFP,U,temp_CC_edge,str(DT%test%residual),'Poisson_test_Face',.false.,.false.)
 
          call random_noise(U) ! Does not work for periodic BCs, but does work for Dirichlet BCs
          call sine_waves(U,m,(/2.0_cp/PI,1.0_cp,2.0_cp/),(/0.0_cp,-0.5_cp,0.0_cp/))
@@ -118,7 +120,7 @@
          call export_raw(m,U,str(DT%test%field),'U_Face',0)
          call export_raw(m,PCG%r,str(DT%test%field),'Residual_Face',0)
          call delete(U)
-         call delete(temp_E)
+         call delete(temp_CC_edge)
          call delete(temp_F)
          call delete(PCG)
          call delete(ISP)

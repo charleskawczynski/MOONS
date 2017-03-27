@@ -73,14 +73,15 @@
          call add_product(F,temp_F,scale)
        end subroutine
 
-       subroutine compute_add_diffusion(F,m,U,scale,temp_F)
+       subroutine compute_add_diffusion(F,m,U,scale,temp_F,TF_CC_edge)
          implicit none
          type(VF),intent(inout) :: F,temp_F
          type(mesh),intent(in) :: m
          type(VF),intent(in) :: U
+         type(TF),intent(inout) :: TF_CC_edge
          real(cp),intent(in) :: scale
          ! call lap(temp_F,U,m)
-         call lap_centered(temp_F,U,m)
+         call lap_centered(temp_F,U,m,TF_CC_edge)
          call add_product(F,temp_F,scale)
        end subroutine
 

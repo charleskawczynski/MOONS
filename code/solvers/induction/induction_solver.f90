@@ -62,7 +62,7 @@
        end subroutine
 
        subroutine CT_Finite_Rem_interior_solved(PCG_cleanB,B,B0,Bstar,J,B_interior,U_E,curlE,&
-         phi,m,MD_sigma,TMP,Rem,finite_Rem,compute_norms,SF_CC,temp_F1,temp_F2,curlUCrossB,temp_E,temp_E_TF)
+         phi,m,MD_sigma,TMP,Rem,compute_norms,SF_CC,temp_F1,temp_F2,curlUCrossB,temp_E,temp_E_TF)
          ! Solves:  ∂B/∂t = ∇•∇B,  in vacuum domain, where B_interior is fixed.
          ! Note:    J = Rem⁻¹∇xB    -> J ALREADY HAS Rem⁻¹ !
          ! Method:  Constrained Transport (CT)
@@ -77,11 +77,11 @@
          type(mesh_domain),intent(in) :: MD_sigma
          type(mesh),intent(in) :: m
          type(time_marching_params),intent(in) :: TMP
-         logical,intent(in) :: compute_norms,finite_Rem
+         logical,intent(in) :: compute_norms
          real(cp),intent(in) :: Rem
          integer :: i
          if (TMP%n_step.le.1) then
-           call compute_J(J,B,Rem,m,finite_Rem)
+           call compute_J(J,B,Rem,m)
            call add(temp_F2,B,B0)
            call advect_B(curlUCrossB,U_E,temp_F2,m,temp_E_TF,temp_E)
            call curl(curlE,J,m)

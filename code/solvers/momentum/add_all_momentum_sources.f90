@@ -46,7 +46,7 @@
            mom%temp_F3,mom%temp_CC)
          endif
          if (SP%MT%diffusion%add) then
-           call compute_add_diffusion(F,mom%m,mom%U,SP%MT%diffusion%scale,mom%temp_F1)
+           call compute_add_diffusion(F,mom%m,mom%U,SP%MT%diffusion%scale,mom%temp_F1,mom%TF_CC_edge)
          endif
          if (SP%MT%JCrossB%add) then
            call compute_add_JCrossB(F,mom%temp_F1,ind%B,ind%B0,ind%J,ind%m,&

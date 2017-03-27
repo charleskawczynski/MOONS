@@ -4,6 +4,7 @@
       use mesh_mod
       use SF_mod
       use VF_mod
+      use TF_mod
       use boundary_conditions_mod
       use apply_BCs_mod
       use norms_mod
@@ -30,8 +31,8 @@
         procedure(op_SF_explicit) :: operator
         type(SF),intent(inout) :: x
         type(SF),intent(in) :: b,vol
-        type(VF),intent(in) :: k
-        type(VF),intent(inout) :: tempk
+        type(TF),intent(in) :: k
+        type(TF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(norms),intent(inout) :: norm
         integer,intent(in) :: n,un
@@ -79,8 +80,8 @@
         procedure(op_VF_explicit) :: operator
         type(VF),intent(inout) :: x
         type(VF),intent(in) :: b,vol
-        type(VF),intent(in) :: k
-        type(VF),intent(inout) :: tempk
+        type(TF),intent(in) :: k
+        type(TF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         type(norms),intent(inout) :: norm

@@ -24,6 +24,7 @@
       use ops_aux_mod
       use SF_mod
       use VF_mod
+      use TF_mod
       use IO_tools_mod
       implicit none
 
@@ -44,10 +45,11 @@
       contains
 
       subroutine solve_GS_SF(u,f_in,D_inv,m,p,d,vol,gt,n,tol,norm,compute_norm,&
-        N_iter,un,lapu,res,f,name,n_skip_check_res)
+        N_iter,un,lapu,res,f,tempk,name,n_skip_check_res)
         implicit none
         type(SF),intent(inout) :: u,f,lapu,res
         type(SF),intent(in) :: D_inv,vol,f_in
+        type(TF),intent(inout) :: tempk
         type(mesh),intent(in) :: m,p,d
         integer,intent(in) :: n,un
         real(cp),intent(in) :: tol
@@ -63,7 +65,7 @@
         if (u%all_Neumann) call subtract_physical_mean(f)
 
         if (compute_norm) then
-          call lap_centered(lapu,u,m)
+          call lap_centered(lapu,u,m,tempk%x)
           call subtract(res,lapu,f)
           call assign_ghost_XPeriodic(res,0.0_cp)
           call compute(norm0,res,vol,m%MP%volume)
@@ -90,7 +92,7 @@
             N_iter = N_iter + 1
 
             if (mod(i,n_skip_check_res).eq.0) then
-              call lap_centered(lapu,u,m)
+              call lap_centered(lapu,u,m,tempk%x)
               call subtract(res,lapu,f)
               call assign_ghost_XPeriodic(res,0.0_cp)
               call compute(norm,res,vol,m%MP%volume)
@@ -111,7 +113,7 @@
         ! if (u%all_Neumann) call subtract(u,mean(u))
         if (compute_norm) then
           if (.not.skip_loop) then
-            call lap_centered(lapu,u,m)
+            call lap_centered(lapu,u,m,tempk%x)
             call subtract(res,lapu,f)
             call assign_ghost_XPeriodic(res,0.0_cp)
             call compute(norm,res,vol,m%MP%volume)
@@ -129,10 +131,11 @@
       end subroutine
 
       subroutine solve_GS_VF(u,f_in,D_inv,m,p,d,vol,gtx,gty,gtz,n,tol,norm,compute_norm,&
-        N_iter,un,lapu,res,f,name,n_skip_check_res)
+        N_iter,un,lapu,res,f,tempk,name,n_skip_check_res)
         implicit none
         type(VF),intent(inout) :: u,f,lapu,res
         type(VF),intent(in) :: vol,D_inv,f_in
+        type(TF),intent(inout) :: tempk
         type(mesh),intent(in) :: m,p,d
         integer,intent(in) :: n,un
         real(cp),intent(in) :: tol
@@ -148,7 +151,7 @@
         ! if (u%all_Neumann) call subtract_physical_mean(f)
 
         if (compute_norm) then
-          call lap(lapu,u,m)
+          call lap_centered(lapu,u,m,tempk)
           call subtract(res,lapu,f)
           call assign_ghost_XPeriodic(res,0.0_cp)
           call compute(norm0,res,vol,m%MP%volume)
@@ -175,7 +178,7 @@
             N_iter = N_iter + 1
 
             if (mod(i,n_skip_check_res).eq.0) then
-              call lap(lapu,u,m)
+              call lap_centered(lapu,u,m,tempk)
               call subtract(res,lapu,f)
               call assign_ghost_XPeriodic(res,0.0_cp)
               call compute(norm,res,vol,m%MP%volume)
@@ -196,7 +199,7 @@
         ! if (u%all_Neumann) call subtract(u,mean(u))
         if (compute_norm) then
           if (.not.skip_loop) then
-            call lap(lapu,u,m)
+            call lap_centered(lapu,u,m,tempk)
             call subtract(res,lapu,f)
             call assign_ghost_XPeriodic(res,0.0_cp)
             call compute(norm,res,vol,m%MP%volume)

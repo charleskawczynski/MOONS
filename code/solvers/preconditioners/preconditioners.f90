@@ -6,6 +6,7 @@
       use mesh_mod
       use SF_mod
       use VF_mod
+      use TF_mod
       use ops_aux_mod
       implicit none
 
@@ -22,22 +23,22 @@
 
       abstract interface
         subroutine preconditioner_SF(Minv,m,sig,c,temp_Minv)
-          import mesh,SF,VF,cp
+          import mesh,SF,TF,cp
           implicit none
           type(SF),intent(inout) :: Minv,temp_Minv
           type(mesh),intent(in) :: m
-          type(VF),intent(in) :: sig
+          type(TF),intent(in) :: sig
           real(cp),intent(in) :: c
         end subroutine
       end interface
 
       abstract interface
         subroutine preconditioner_VF(Minv,m,sig,c,temp_Minv)
-          import mesh,VF,cp
+          import mesh,VF,TF,cp
           implicit none
           type(VF),intent(inout) :: Minv,temp_Minv
           type(mesh),intent(in) :: m
-          type(VF),intent(in) :: sig
+          type(TF),intent(in) :: sig
           real(cp),intent(in) :: c
         end subroutine
       end interface
@@ -49,12 +50,12 @@
         implicit none
         type(SF),intent(inout) :: Minv,temp_Minv
         type(mesh),intent(in) :: m
-        type(VF),intent(in) :: sig
+        type(TF),intent(in) :: sig
         real(cp),intent(in) :: c
         real(cp) :: suppress_warn
         logical :: suppress_warning
         suppress_warn = c
-        suppress_warning = defined(sig%x%DL)
+        suppress_warning = defined(sig%x%x%DL)
         suppress_warning = defined(temp_Minv%DL)
         suppress_warning = m%defined
         call assign(Minv,1.0_cp)
@@ -64,7 +65,7 @@
         ! Computes Identity preconditioner (no preconditioning): Minv = I
         implicit none
         type(VF),intent(inout) :: Minv,temp_Minv
-        type(VF),intent(in) :: sig
+        type(TF),intent(in) :: sig
         type(mesh),intent(in) :: m
         real(cp),intent(in) :: c
         call prec_Identity_SF(Minv%x,m,sig,c,temp_Minv%x)
@@ -77,12 +78,12 @@
         implicit none
         type(SF),intent(inout) :: Minv,temp_Minv
         type(mesh),intent(in) :: m
-        type(VF),intent(in) :: sig
+        type(TF),intent(in) :: sig
         real(cp),intent(in) :: c
         real(cp) :: suppress_warn
         logical :: suppress_warning
         suppress_warn = c
-        suppress_warning = defined(sig%x%DL)
+        suppress_warning = defined(sig%x%x%DL)
         call diag_Lap(Minv,m)
         call volume(temp_Minv,m)
         call multiply(Minv,temp_Minv)
@@ -94,7 +95,7 @@
         ! Computes Laplacian diagonal preconditioner: Minv = diag( V ∇•(∇) )⁻¹, V = cell volume
         implicit none
         type(VF),intent(inout) :: Minv,temp_Minv
-        type(VF),intent(in) :: sig
+        type(TF),intent(in) :: sig
         type(mesh),intent(in) :: m
         real(cp),intent(in) :: c
         call prec_Lap_SF(Minv%x,m,sig,c,temp_Minv%x)
@@ -107,10 +108,10 @@
         implicit none
         type(SF),intent(inout) :: Minv,temp_Minv
         type(mesh),intent(in) :: m
-        type(VF),intent(in) :: sig
+        type(TF),intent(in) :: sig
         real(cp),intent(in) :: c
         logical :: suppress_warning
-        suppress_warning = defined(sig%x%DL)
+        suppress_warning = defined(sig%x%x%DL)
         call assign(Minv,0.0_cp)
         call diag_Lap(Minv,m)
         call multiply(Minv,c)
@@ -124,7 +125,7 @@
       subroutine prec_mom_VF(Minv,m,sig,c,temp_Minv)
         implicit none
         type(VF),intent(inout) :: Minv,temp_Minv
-        type(VF),intent(in) :: sig
+        type(TF),intent(in) :: sig
         type(mesh),intent(in) :: m
         real(cp),intent(in) :: c
         call prec_mom_SF(Minv%x,m,sig,c,temp_Minv%x)
@@ -136,7 +137,7 @@
         ! Computes curl-curl diagonal preconditioner: Minv = diag( V(I + c∇x(σ∇x)) )⁻¹, V = cell volume
         implicit none
         type(VF),intent(inout) :: Minv,temp_Minv
-        type(VF),intent(in) :: sig
+        type(TF),intent(in) :: sig
         type(mesh),intent(in) :: m
         real(cp),intent(in) :: c
         call diag_curl_curl(Minv,m,sig)

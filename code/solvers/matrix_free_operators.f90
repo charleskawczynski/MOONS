@@ -9,6 +9,7 @@
       use data_location_mod
       use SF_mod
       use VF_mod
+      use TF_mod
       use ops_discrete_mod
       use ops_aux_mod
       use ops_interp_mod
@@ -30,11 +31,11 @@
 
       abstract interface
         subroutine op_SF(Ax,x,k,m,MFP,tempk)
-          import :: SF,VF,mesh,matrix_free_params
+          import :: SF,TF,mesh,matrix_free_params
           implicit none
           type(SF),intent(inout) :: Ax,x
-          type(VF),intent(in) :: k
-          type(VF),intent(inout) :: tempk
+          type(TF),intent(in) :: k
+          type(TF),intent(inout) :: tempk
           type(mesh),intent(in) :: m
           type(matrix_free_params),intent(in) :: MFP
         end subroutine
@@ -42,11 +43,11 @@
 
       abstract interface
         subroutine op_SF_explicit(Ax,x,k,m,MFP,tempk)
-          import :: SF,VF,mesh,matrix_free_params
+          import :: SF,TF,mesh,matrix_free_params
           implicit none
           type(SF),intent(inout) :: Ax,x
-          type(VF),intent(in) :: k
-          type(VF),intent(inout) :: tempk
+          type(TF),intent(in) :: k
+          type(TF),intent(inout) :: tempk
           type(mesh),intent(in) :: m
           type(matrix_free_params),intent(in) :: MFP
         end subroutine
@@ -54,11 +55,11 @@
 
       abstract interface
         subroutine op_VF(Ax,x,k,m,MFP,tempk)
-          import :: VF,mesh,matrix_free_params
+          import :: VF,TF,mesh,matrix_free_params
           implicit none
           type(VF),intent(inout) :: Ax,x
-          type(VF),intent(in) :: k
-          type(VF),intent(inout) :: tempk
+          type(TF),intent(in) :: k
+          type(TF),intent(inout) :: tempk
           type(mesh),intent(in) :: m
           type(matrix_free_params),intent(in) :: MFP
         end subroutine
@@ -66,11 +67,11 @@
 
       abstract interface
         subroutine op_VF_explicit(Ax,x,k,m,MFP,tempk)
-          import :: VF,mesh,matrix_free_params
+          import :: VF,TF,mesh,matrix_free_params
           implicit none
           type(VF),intent(inout) :: Ax,x
-          type(VF),intent(in) :: k
-          type(VF),intent(inout) :: tempk
+          type(TF),intent(in) :: k
+          type(TF),intent(inout) :: tempk
           type(mesh),intent(in) :: m
           type(matrix_free_params),intent(in) :: MFP
         end subroutine
@@ -83,15 +84,15 @@
         !        A = ∇•(∇)
         implicit none
         type(SF),intent(inout) :: Ax,x
-        type(VF),intent(in) :: k
-        type(VF),intent(inout) :: tempk
+        type(TF),intent(in) :: k
+        type(TF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
         suppress_warning = is_CC(k)
         suppress_warning = is_CC(tempk)
-        call lap_centered(Ax,x,m)
+        call lap_centered(Ax,x,m,tempk%x)
         ! call grad(tempk,x,m)
         ! call div(Ax,tempk,m)
       end subroutine
@@ -100,8 +101,8 @@
         !        A = ∇•(∇)
         implicit none
         type(SF),intent(inout) :: Ax,x
-        type(VF),intent(in) :: k
-        type(VF),intent(inout) :: tempk
+        type(TF),intent(in) :: k
+        type(TF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         call apply_BCs_implicit(x)
@@ -113,15 +114,15 @@
         !        A = ∇•(∇)
         implicit none
         type(VF),intent(inout) :: Ax,x
-        type(VF),intent(in) :: k
-        type(VF),intent(inout) :: tempk
+        type(TF),intent(in) :: k
+        type(TF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
         suppress_warning = is_CC(k)
         suppress_warning = is_CC(tempk)
-        call lap_centered(Ax,x,m) ! Involves dynamic allocations
+        call lap_centered(Ax,x,m,tempk)
         ! call lap(Ax,x,m)
       end subroutine
       subroutine Lap_uniform_VF(Ax,x,k,m,MFP,tempk)
@@ -129,8 +130,8 @@
         !        A = ∇•(∇)
         implicit none
         type(VF),intent(inout) :: Ax,x
-        type(VF),intent(in) :: k
-        type(VF),intent(inout) :: tempk
+        type(TF),intent(in) :: k
+        type(TF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         call apply_BCs_implicit(x)
@@ -142,23 +143,23 @@
         !        A = ∇•(k∇)
         implicit none
         type(SF),intent(inout) :: Ax,x
-        type(VF),intent(in) :: k
-        type(VF),intent(inout) :: tempk
+        type(TF),intent(in) :: k
+        type(TF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
-        call grad(tempk,x,m)
-        call multiply(tempk,k)
-        call div(Ax,tempk,m)
+        call grad(tempk%x,x,m)
+        call multiply(tempk%x,k%x)
+        call div(Ax,tempk%x,m)
       end subroutine
       subroutine Lap_nonuniform_props(Ax,x,k,m,MFP,tempk)
         ! COMPUTES:
         !        A = ∇•(k∇)
         implicit none
         type(SF),intent(inout) :: Ax,x
-        type(VF),intent(in) :: k
-        type(VF),intent(inout) :: tempk
+        type(TF),intent(in) :: k
+        type(TF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         call apply_BCs_implicit(x)
@@ -170,13 +171,13 @@
         !        A = {I + coeff ∇x(k∇x)}
         implicit none
         type(VF),intent(inout) :: Ax,x
-        type(VF),intent(in) :: k
-        type(VF),intent(inout) :: tempk
+        type(TF),intent(in) :: k
+        type(TF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
-        call curl(tempk,x,m)
-        call multiply(tempk,k)
-        call curl(Ax,tempk,m)
+        call curl(tempk%x,x,m)
+        call multiply(tempk%x,k%x)
+        call curl(Ax,tempk%x,m)
         call multiply(Ax,MFP%coeff_implicit_time_split)
         call add(Ax,x)
       end subroutine
@@ -185,8 +186,8 @@
         !        A = {I + coeff ∇x(k∇x)}
         implicit none
         type(VF),intent(inout) :: Ax,x
-        type(VF),intent(in) :: k
-        type(VF),intent(inout) :: tempk
+        type(TF),intent(in) :: k
+        type(TF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         call apply_BCs_implicit(x)
@@ -198,13 +199,13 @@
         !        A = {I + coeff ∇•(k∇)}
         implicit none
         type(SF),intent(inout) :: Ax,x
-        type(VF),intent(in) :: k
-        type(VF),intent(inout) :: tempk
+        type(TF),intent(in) :: k
+        type(TF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
-        call grad(tempk,x,m)
-        call multiply(tempk,k)
-        call div(Ax,tempk,m)
+        call grad(tempk%x,x,m)
+        call multiply(tempk%x,k%x)
+        call div(Ax,tempk%x,m)
         call multiply(Ax,MFP%coeff_implicit_time_split)
         call add(Ax,x)
       end subroutine
@@ -213,8 +214,8 @@
         !        A = {I + coeff ∇•(k∇)}
         implicit none
         type(SF),intent(inout) :: Ax,x
-        type(VF),intent(in) :: k
-        type(VF),intent(inout) :: tempk
+        type(TF),intent(in) :: k
+        type(TF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         call apply_BCs_implicit(x)
@@ -226,20 +227,13 @@
         !        A = {I + coeff ∇•(∇)}
         implicit none
         type(VF),intent(inout) :: Ax,x
-        type(VF),intent(in) :: k
-        type(VF),intent(inout) :: tempk
+        type(TF),intent(in) :: k
+        type(TF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
         suppress_warning = is_CC(k)
-        suppress_warning = is_CC(tempk)
-        ! lap_centered is a very bad and expensive routine. It needs
-        ! to be updated (a VF is allocated and deallocated inside).
-        ! The reason this is not as simple as the laplacian operator
-        ! is because U is staggered, and so k (the intermediate location),
-        ! is staggered AND different for each component, which cannot be
-        ! achieved by a scalar field.
-        call lap_centered(Ax,x,m)
+        call lap_centered(Ax,x,m,tempk)
         call multiply(Ax,MFP%coeff_implicit_time_split)
         call add(Ax,x)
       end subroutine
@@ -248,8 +242,8 @@
         !        A = {I + coeff ∇•(∇)}
         implicit none
         type(VF),intent(inout) :: Ax,x
-        type(VF),intent(in) :: k
-        type(VF),intent(inout) :: tempk
+        type(TF),intent(in) :: k
+        type(TF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         call apply_BCs_implicit(x)

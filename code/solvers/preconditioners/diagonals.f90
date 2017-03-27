@@ -4,6 +4,7 @@
       use mesh_mod
       use SF_mod
       use VF_mod
+      use TF_mod
       implicit none
 
       private
@@ -40,7 +41,7 @@
         implicit none
         type(VF),intent(inout) :: diag
         type(mesh),intent(in) :: m
-        type(VF),intent(in) :: sig
+        type(TF),intent(in) :: sig
         integer :: t
         call assign(diag,0.0_cp)
         do t=1,m%s
@@ -48,9 +49,9 @@
                                   diag%y%BF(t)%GF,&
                                   diag%z%BF(t)%GF,&
                                   m%B(t)%g,&
-                                  sig%x%BF(t)%GF,&
-                                  sig%y%BF(t)%GF,&
-                                  sig%z%BF(t)%GF)
+                                  sig%x%x%BF(t)%GF,&
+                                  sig%x%y%BF(t)%GF,&
+                                  sig%x%z%BF(t)%GF)
         enddo
       end subroutine
 
