@@ -73,11 +73,9 @@
          logical :: suppress_warning
          ! Tensor fields
          type(TF) :: U_E
-         type(TF) :: TF_CC
-         type(TF) :: TF_CC_edge
-         type(TF) :: TF_Face
+         type(TF) :: TF_CC,TF_CC_edge
          ! Vector fields
-         type(VF) :: U,Ustar,Unm1,U_base
+         type(VF) :: U,Ustar,Unm1
          type(VF) :: U_CC
          type(VF) :: temp_F1,temp_F2,temp_F3
          type(VF) :: temp_E,temp_CC_VF
@@ -122,6 +120,7 @@
          type(mesh),intent(in) :: m
          type(sim_params),intent(in) :: SP
          type(dir_tree),intent(in) :: DT
+         type(TF) :: TF_Face
          integer :: temp_unit
          write(*,*) 'Initializing momentum:'
 
@@ -131,10 +130,8 @@
          call init_Edge(mom%U_E       ,m,0.0_cp)
          call init_Face(mom%U         ,m,0.0_cp)
          call init_Face(mom%Unm1      ,m,0.0_cp)
-         call init_Face(mom%U_base    ,m,0.0_cp)
          call init_Face(mom%temp_F1   ,m,0.0_cp)
          call init_Face(mom%temp_F2   ,m,0.0_cp)
-         call init_Face(mom%TF_Face   ,m,0.0_cp)
          call init_Face(mom%temp_F3   ,m,0.0_cp)
          call init_Edge(mom%temp_E    ,m,0.0_cp)
          call init_CC(mom%p           ,m,0.0_cp)
@@ -195,8 +192,11 @@
          mom%SP%VS%U%ISP,mom%SP%VS%U%MFP,mom%Ustar,mom%TF_CC_edge,str(DT%U%residual),'U',.false.,.false.)
          write(*,*) '     PCG solver initialized for U'
 
+         call delete(TF_Face)
+         call init_Face(TF_Face,m,0.0_cp)
          call init(mom%PCG_P,Lap_uniform_SF,Lap_uniform_SF_explicit,prec_lap_SF,mom%m,&
-         mom%SP%VS%P%ISP,mom%SP%VS%P%MFP,mom%p,mom%TF_Face,str(DT%p%residual),'p',.false.,.false.)
+         mom%SP%VS%P%ISP,mom%SP%VS%P%MFP,mom%p,TF_Face,str(DT%p%residual),'p',.false.,.false.)
+         call delete(TF_Face)
          write(*,*) '     PCG solver initialized for p'
 
          temp_unit = new_and_open(str(DT%params),'info_mom')
@@ -214,12 +214,10 @@
          call delete(mom%U)
          call delete(mom%U_E)
          call delete(mom%Unm1)
-         call delete(mom%U_base)
          call delete(mom%Ustar)
          call delete(mom%temp_F1)
          call delete(mom%temp_F2)
          call delete(mom%temp_F3)
-         call delete(mom%TF_Face)
          call delete(mom%p)
          call delete(mom%temp_CC)
          call delete(mom%temp_CC_VF)

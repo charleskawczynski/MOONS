@@ -56,7 +56,6 @@
        use induction_solver_mod
        use preconditioners_mod
        use PCG_mod
-       use Jacobi_mod
        use matrix_free_params_mod
        use matrix_free_operators_mod
        use induction_aux_mod
@@ -73,7 +72,6 @@
          ! --- Tensor fields ---
          type(TF) :: U_E,temp_E_TF                    ! Edge data
          type(TF) :: temp_F1_TF,temp_F2_TF            ! Face data
-         type(TF) :: sigmaInv_edge_TF
 
          ! --- Vector fields ---
          type(VF) :: F,Fnm1                           ! Face data
@@ -83,8 +81,8 @@
          type(VF) :: dB0dt
          type(VF) :: temp_CC_VF                       ! CC data
          type(VF) :: sigmaInv_edge
-         type(VF) :: J_interior,curlE
-         type(VF) :: curlUCrossB,curlUCrossB_nm1
+         type(VF) :: J_interior
+         type(VF) :: curlUCrossB
          type(VF) :: CC_VF_fluid,CC_VF_sigma
 
          ! --- Scalar fields ---
@@ -94,8 +92,6 @@
          ! --- Solvers ---
          type(PCG_solver_VF) :: PCG_B
          type(PCG_solver_SF) :: PCG_cleanB
-
-         type(Jacobi) :: JAC_B
 
          ! Subscripts:
          ! Magnetic field:
@@ -143,6 +139,7 @@
          type(sim_params),intent(in) :: SP
          type(mesh_domain),intent(in) :: MD_fluid,MD_sigma
          type(dir_tree),intent(in) :: DT
+         type(TF) :: TF_face,sigmaInv_edge_TF
          integer :: temp_unit
          write(*,*) 'Initializing induction:'
 
@@ -160,7 +157,6 @@
          call init_Edge(ind%temp_E_TF      ,m,0.0_cp)
          call init_Face(ind%temp_F1_TF     ,m,0.0_cp)
          call init_Face(ind%temp_F2_TF     ,m,0.0_cp)
-         call init_Edge(ind%sigmaInv_edge_TF,m,0.0_cp)
          call init_Face(ind%F              ,m,0.0_cp)
          call init_Face(ind%Fnm1           ,m,0.0_cp)
          call init_Face(ind%B              ,m,0.0_cp)
@@ -170,8 +166,6 @@
          call init_CC(ind%temp_CC_VF       ,m,0.0_cp)
          call init_Edge(ind%J              ,m,0.0_cp)
          call init_Face(ind%curlUCrossB    ,m,0.0_cp)
-         call init_Face(ind%curlUCrossB_nm1,m,0.0_cp)
-         call init_Face(ind%curlE          ,m,0.0_cp)
          call init_Edge(ind%temp_E         ,m,0.0_cp)
          call init_Edge(ind%sigmaInv_edge  ,m,0.0_cp)
          call init_Face(ind%temp_F1        ,m,0.0_cp)
@@ -219,7 +213,6 @@
          call set_sigma_inv(ind)
          write(*,*) '     Materials initialized'
          if (ind%SP%EL%export_mat_props) call export_raw(m,ind%sigmaInv_edge,str(DT%mat),'sigmaInv',0)
-         call assign(ind%sigmaInv_edge_TF,ind%sigmaInv_edge)
 
          ! *************************************************************
 
@@ -259,17 +252,18 @@
          write(*,*) '     About to assemble curl-curl matrix'
          if (ind%SP%matrix_based) call init_matrix_based_ops(ind)
 
+         call init_Edge(sigmaInv_edge_TF%x,m,0.0_cp) ! x-component used in matrix_free_operators.f90
+         call assign(sigmaInv_edge_TF%x,ind%sigmaInv_edge)
          call init(ind%PCG_B,ind_diffusion,ind_diffusion_explicit,prec_ind_VF,ind%m,&
-         ind%SP%VS%B%ISP,ind%SP%VS%B%MFP,ind%Bstar,ind%sigmaInv_edge_TF,str(DT%B%residual),'B',.false.,.false.)
+         ind%SP%VS%B%ISP,ind%SP%VS%B%MFP,ind%Bstar,sigmaInv_edge_TF,str(DT%B%residual),'B',.false.,.false.)
+         call delete(sigmaInv_edge_TF)
          write(*,*) '     PCG Solver initialized for B'
 
+         call init_Face(TF_face%x,m,0.0_cp) ! x-component used in matrix_free_operators.f90
          call init(ind%PCG_cleanB,Lap_uniform_SF,Lap_uniform_SF_explicit,prec_lap_SF,&
-         ind%m,ind%SP%VS%phi%ISP,ind%SP%VS%phi%MFP,ind%phi,ind%temp_F1_TF,str(DT%phi%residual),'phi',.false.,.false.)
+         ind%m,ind%SP%VS%phi%ISP,ind%SP%VS%phi%MFP,ind%phi,TF_face,str(DT%phi%residual),'phi',.false.,.false.)
+         call delete(TF_face)
          write(*,*) '     PCG Solver initialized for phi'
-
-         call init(ind%JAC_B,Lap_uniform_VF_explicit,ind%B,ind%B_interior,&
-         ind%sigmaInv_edge_TF,ind%m,ind%MD_sigma,ind%SP%VS%B%MFP,10,ind%SP%VS%B%ISP%tol_rel,&
-         str(DT%B%residual),'B',.false.)
 
          write(*,*) '     Finished'
          ! if (restart_induction) call import(ind,DT)
@@ -281,7 +275,6 @@
          call delete(ind%temp_E_TF)
          call delete(ind%temp_F1_TF)
          call delete(ind%temp_F2_TF)
-         call delete(ind%sigmaInv_edge_TF)
          call delete(ind%U_E)
 
          call delete(ind%F)
@@ -295,10 +288,8 @@
          call delete(ind%J)
          call delete(ind%J_interior)
          call delete(ind%curlUCrossB)
-         call delete(ind%curlUCrossB_nm1)
          call delete(ind%CC_VF_fluid)
          call delete(ind%CC_VF_sigma)
-         call delete(ind%curlE)
          call delete(ind%temp_CC_VF)
          call delete(ind%temp_E)
          call delete(ind%temp_F1)
@@ -327,7 +318,6 @@
 
          call delete(ind%PCG_cleanB)
          call delete(ind%PCG_B)
-         call delete(ind%JAC_B)
          call delete(ind%SP)
 
          write(*,*) 'Induction object deleted'
@@ -559,15 +549,10 @@
            call O2_BDF_time_AB2_sources(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%Bstar,&
            ind%Bnm1,ind%phi,F,Fnm1,ind%m,TMP,ind%temp_F1,ind%temp_E,ind%temp_CC,&
            EF%unsteady_0D%export_now)
-
-         case (8) ! Still useful
-           call CT_Finite_Rem_interior_solved(ind%PCG_cleanB,ind%B,ind%B0,ind%Bstar,&
-           ind%J,ind%B_interior,ind%U_E,ind%curlE,ind%phi,ind%m,ind%MD_sigma,TMP,&
-           ind%SP%DP%Rem,EF%unsteady_0D%export_now,ind%temp_CC,&
-           ind%temp_F1,ind%temp_F2,ind%curlUCrossB,ind%temp_E,ind%temp_E_TF)
          case default; stop 'Error: bad solveBMethod input solve_induction in induction.f90'
          end select
          call iterate_step(TMP)
+         if (ind%SP%embed_B_interior) call embedFace(ind%B,ind%B_interior,ind%MD_sigma)
          enddo
 
          call compute_J_ind(ind)

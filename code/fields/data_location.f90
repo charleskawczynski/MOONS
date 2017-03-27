@@ -37,8 +37,12 @@
 
        type data_location
          private
-         logical :: C,N,E,F = .false.                ! cell center, cell corner, cell edge, cell face
-         integer :: face,edge = 0                    ! face direction, edge direction
+         logical :: C = .false.                      ! cell center, cell corner, cell edge, cell face
+         logical :: N = .false.                      ! cell center, cell corner, cell edge, cell face
+         logical :: E = .false.                      ! cell center, cell corner, cell edge, cell face
+         logical :: F = .false.                      ! cell center, cell corner, cell edge, cell face
+         integer :: face = 0                         ! face direction, edge direction
+         integer :: edge = 0                         ! face direction, edge direction
          logical,dimension(3) :: CC_along = .false.  !
          logical,dimension(3) :: N_along = .false.   !
          integer,dimension(3) :: CC_eye = 0          !

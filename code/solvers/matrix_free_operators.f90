@@ -90,8 +90,7 @@
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
-        suppress_warning = is_CC(k)
-        suppress_warning = is_CC(tempk)
+        suppress_warning = is_CC(k%x)
         call lap_centered(Ax,x,m,tempk%x)
         ! call grad(tempk,x,m)
         ! call div(Ax,tempk,m)
@@ -120,8 +119,7 @@
         type(matrix_free_params),intent(in) :: MFP
         logical :: suppress_warning
         suppress_warning = MFP%suppress_warning
-        suppress_warning = is_CC(k)
-        suppress_warning = is_CC(tempk)
+        suppress_warning = is_CC(k%x)
         call lap_centered(Ax,x,m,tempk)
         ! call lap(Ax,x,m)
       end subroutine

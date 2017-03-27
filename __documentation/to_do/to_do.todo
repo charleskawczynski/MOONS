@@ -40,8 +40,6 @@ Right Now:
  ✔ Always check mesh error file after mesh generation @done (17-03-15 09:26)
  ☐ Configure parameter for printing information to file (full vs light)
  ☐ Try multiple outputs in same folder (via new_and_open)
- ☐ Make a lap_centered without allocation using TF, and add this to PCG interface
- ☐ Try to remove more runtime allocation (some still exist in energy computations for subdomains I think)
 
   ☐ PD cases
     ☐ Determine actual Re_m,Re,Ha etc

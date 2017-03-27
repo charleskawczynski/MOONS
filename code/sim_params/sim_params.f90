@@ -63,6 +63,7 @@
        logical :: couple_time_steps
        logical :: finite_Rem
        logical :: include_vacuum
+       logical :: embed_B_interior
        logical :: compute_surface_power
        integer :: uniform_B0_dir
        integer :: mpg_dir
@@ -80,7 +81,7 @@
        real(cp) :: time,dtime
        logical :: RV_BCs
        call delete(SP)
-       RV_BCs = F
+       RV_BCs = T
        ! call get_environment_variable(name[, value, length, status, trim_name)
 
        SP%FCL%stop_after_mesh_export = F !
@@ -90,25 +91,26 @@
        SP%FCL%Poisson_test           = F ! not used anywhere
 
        SP%EL%export_analytic         = F ! Export analytic solutions (MOONS.f90)
-       SP%EL%export_meshes           = T ! Export all meshes before starting simulation
+       SP%EL%export_meshes           = F ! Export all meshes before starting simulation
        SP%EL%export_vort_SF          = T ! Export vorticity-stream-function after simulation
-       SP%EL%export_mat_props        = T ! Export material properties before starting simulation
+       SP%EL%export_mat_props        = F ! Export material properties before starting simulation
        SP%EL%export_ICs              = F ! Export Post-Processed ICs before starting simulation
        SP%EL%export_cell_volume      = F ! Export cell volumes for each mesh
        SP%EL%export_planar           = F ! Export 2D data when N_cell = 1 along given direction
        SP%EL%export_symmetric        = F !
        SP%EL%export_mesh_block       = F ! Export mesh blocks to FECs
-       SP%EL%export_soln_only        = T ! Export processed solution only
+       SP%EL%export_soln_only        = F ! Export processed solution only
 
        SP%restart_all                = F ! restart sim (requires no code changes)
        SP%uniform_gravity_dir        = 1 ! Uniform gravity field direction
-       SP%uniform_B0_dir             = 1 ! Uniform applied field direction
+       SP%uniform_B0_dir             = 3 ! Uniform applied field direction
        SP%mpg_dir                    = 0 ! Uniform applied field direction
        SP%couple_time_steps          = T ! Ensures all dt are equal to coupled%dt
        if (     RV_BCs) SP%finite_Rem                 = T ! Ensures all dt are equal to coupled%dt
        if (.not.RV_BCs) SP%finite_Rem                 = F ! Ensures all dt are equal to coupled%dt
        if (     RV_BCs) SP%include_vacuum             = T ! Ensures all dt are equal to coupled%dt
        if (.not.RV_BCs) SP%include_vacuum             = F ! Ensures all dt are equal to coupled%dt
+       SP%embed_B_interior           = F ! Solve for exterior B using interior B
        SP%compute_surface_power      = T ! Compute surface power for LDC
 
        SP%matrix_based               = F ! Solve induction equation
@@ -139,8 +141,8 @@
        dtime                         = 5.0_cp*pow(-3)
 
        SP%GP%tw                      = 0.05_cp
-       SP%GP%geometry                = 8
-       SP%GP%periodic_dir            = (/0,0,1/)
+       SP%GP%geometry                = 15
+       SP%GP%periodic_dir            = (/0,0,0/)
        ! SP%GP%apply_BC_order          = (/3,4,5,6,1,2/) ! good for LDC
        ! SP%GP%apply_BC_order       = (/3,4,5,6,1,2/) ! good for periodic in y?
        SP%GP%apply_BC_order       = (/5,6,1,2,3,4/) ! good for periodic in y?
@@ -148,10 +150,10 @@
        ! SP%GP%apply_BC_order       = (/3,4,1,2,5,6/) ! good for periodic in z?
 
        call delete(SP%DP)
-       SP%DP%Re                      = 1.0_cp*pow(2)
+       SP%DP%Re                      = 2.3_cp*pow(3)
        SP%DP%N                       = 5.0_cp*pow(0)
        ! SP%DP%Q                       = 3.0_cp*pow(-1)
-       if (     RV_BCs) SP%DP%Rem                     = 1.0_cp*pow(3)
+       if (     RV_BCs) SP%DP%Rem                     = 2.0_cp*pow(2)
        if (.not.RV_BCs) SP%DP%Rem                     = 1.0_cp*pow(0)
        ! SP%DP%Ha                      = 1.0_cp*pow(1)
        ! SP%DP%N                       = 1.0_cp/SP%DP%Q
@@ -229,11 +231,10 @@
 
        ! call init_IC_BC(var      ,IC   ,BC)
        call init_IC_BC(SP%VS%T    ,0    ,0 )
-       call init_IC_BC(SP%VS%U    ,0    ,1 )
+       call init_IC_BC(SP%VS%U    ,0    ,2 )
        call init_IC_BC(SP%VS%P    ,0    ,0 )
-       call init_IC_BC(SP%VS%B    ,0    ,1 ) ! 5 for thin wall
-       ! if (     RV_BCs) call init_IC_BC(SP%VS%B    ,0    ,9 ) ! 5 for thin wall
-       ! if (.not.RV_BCs) call init_IC_BC(SP%VS%B    ,0    ,10) ! 5 for thin wall
+       if (     RV_BCs) call init_IC_BC(SP%VS%B    ,0    ,9 ) ! 5 for thin wall
+       if (.not.RV_BCs) call init_IC_BC(SP%VS%B    ,0    ,10) ! 5 for thin wall
        call init_IC_BC(SP%VS%B0   ,1    ,0 )
        call init_IC_BC(SP%VS%phi  ,0    ,0 )
        call init_IC_BC(SP%VS%rho  ,0    ,0 )
@@ -346,6 +347,7 @@
        SP%couple_time_steps      = SP_in%couple_time_steps
        SP%finite_Rem             = SP_in%finite_Rem
        SP%include_vacuum         = SP_in%include_vacuum
+       SP%embed_B_interior       = SP_in%embed_B_interior
        SP%compute_surface_power  = SP_in%compute_surface_power
        SP%uniform_B0_dir         = SP_in%uniform_B0_dir
        SP%mpg_dir                = SP_in%mpg_dir
@@ -392,6 +394,7 @@
        write(un,*) 'couple_time_steps      = ',SP%couple_time_steps
        write(un,*) 'finite_Rem             = ',SP%finite_Rem
        write(un,*) 'include_vacuum         = ',SP%include_vacuum
+       write(un,*) 'embed_B_interior       = ',SP%embed_B_interior
        write(un,*) 'compute_surface_power  = ',SP%compute_surface_power
        write(un,*) 'uniform_B0_dir         = ',SP%uniform_B0_dir
        write(un,*) 'mpg_dir                = ',SP%mpg_dir
@@ -464,6 +467,7 @@
        write(un,*) SP%couple_time_steps
        write(un,*) SP%finite_Rem
        write(un,*) SP%include_vacuum
+       write(un,*) SP%embed_B_interior
        write(un,*) SP%compute_surface_power
        write(un,*) SP%uniform_B0_dir
        write(un,*) SP%mpg_dir
@@ -493,6 +497,7 @@
        read(un,*) SP%couple_time_steps
        read(un,*) SP%finite_Rem
        read(un,*) SP%include_vacuum
+       read(un,*) SP%embed_B_interior
        read(un,*) SP%compute_surface_power
        read(un,*) SP%uniform_B0_dir
        read(un,*) SP%mpg_dir
