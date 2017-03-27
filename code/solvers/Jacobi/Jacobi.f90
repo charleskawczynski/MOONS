@@ -8,6 +8,7 @@
       use string_mod
       use SF_mod
       use VF_mod
+      use TF_mod
       use IO_export_mod
       use IO_tools_mod
       use matrix_free_params_mod
@@ -26,7 +27,8 @@
 
       type Jacobi
         type(mesh) :: m
-        type(VF) :: Ax,res,Dinv,D,k,tempk,vol,x_interior
+        type(VF) :: Ax,res,Dinv,D,vol,x_interior
+        type(TF) :: k,tempk
         type(norms) :: norm
         type(mesh_domain) :: D_interior
         type(string) :: name
@@ -48,7 +50,7 @@
         procedure(op_VF_explicit) :: operator
         type(Jacobi),intent(inout) :: JAC
         type(VF),intent(in) :: x,x_interior
-        type(VF),intent(in) :: k
+        type(TF),intent(in) :: k
         type(mesh),intent(in) :: m
         type(mesh_domain),intent(in) :: D_interior
         type(matrix_free_params),intent(in) :: MFP

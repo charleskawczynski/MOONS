@@ -1,0 +1,106 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+\usepackage{etoolbox}
+\usepackage{epstopdf}
+% \usepackage[outdir=./]{epstopdf}
+
+\input{./../path_to_useful_commands.tex}
+\input{\PATHTOUSEFULCOMMANDS}
+
+\newcommand{\figS}{22.1em}
+\newcommand{\BfigS}{50em}
+\newcommand{\ffigS}{15.1em}
+\newcommand{\figH}{\figS}
+\newcommand{\figW}{\figS}
+\newcommand{\BfigH}{\BfigS}
+\newcommand{\BfigW}{\BfigS}
+\newcommand{\ffigH}{\ffigS}
+\newcommand{\ffigW}{\ffigS}
+\graphicspath{{figs}}
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+\newtoggle{plotUstream}
+\toggletrue{plotUstream}
+\togglefalse{plotUstream}
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{LSA equations derivation for SK flow}
+\author{S. Smolentsev, C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Governing equations}
+
+The governing equations (derived elsewhere) are
+\begin{equation}\begin{aligned}
+\PD_t v+ v\PD_y v + w\PD_z v = -\frac{1}{\rho}\PD_y p+ \nu (\PD_{yy} v+\PD_{zz} v) - \frac{1}{2 \rho \M} \PD_y (B_x B_x) \\
+\PD_t w+ v\PD_y w + w\PD_z w = -\frac{1}{\rho}\PD_z p+ \nu (\PD_{yy} w+\PD_{zz} w) - \frac{1}{2 \rho \M} \PD_z (B_x B_x) \\
+\PD_t B_x = \frac{1}{\sigma \M} (\PD_{yy} B_x+\PD_{zz} B_x) - (v\PD_y B_x+w\PD_z B_x) \\
+\end{aligned} \end{equation}
+
+\section{LSA equations derivation for SK flow}
+Expanding $B_x=B_x^0+B_x^1$ and assuming small disturbances $B_x'$, and neglecting some 2nd order terms, we have
+\begin{equation}\begin{aligned}
+B_xB_x = & (B_x^{0}+B_x^{1}+B_x^{1'}) (B_x^{0}+B_x^{1}+B_x^{1'}) \\
+       = & B_x^{0 }B_x^{0 } + B_x^{0 }B_x^{1 } + B_x^{0 }B_x^{1'} \\
+       + & B_x^{1 }B_x^{0 } + B_x^{1 }B_x^{1 } + B_x^{1 }B_x^{1'} \\
+       + & B_x^{1'}B_x^{0 } + B_x^{1'}B_x^{1 } + B_x^{1'}B_x^{1'} \\
+       = & B_x^{0 }B_x^{0 } + B_x^{0 }B_x^{1 } + B_x^{0 }B_x^{1'} \\
+       + & B_x^{1 }B_x^{0 } + B_x^{1 }B_x^{1 } + B_x^{1 }B_x^{1'} \\
+       + & B_x^{1'}B_x^{0 } + B_x^{1'}B_x^{1 } \\
+\end{aligned} \end{equation}
+Furthermore, we assume that $B_x^1$ itself is small initially and ignore additional 2nd order terms, so we have
+\begin{equation}\begin{aligned}
+B_xB_x = & B_x^{0 }B_x^{0 } + B_x^{0 }B_x^{1 } + B_x^{0 }B_x^{1'} \\
+       + & B_x^{1 }B_x^{0 } \\
+       + & B_x^{1'}B_x^{0 } \\
+       = & {B_x^{0 }}^2 + 2 B_x^{0 }B_x^{1 } + 2 B_x^{0 }B_x^{1'} \\
+\end{aligned} \end{equation}
+Returning to the governing equations and assuming small disturbances $u',v',p'$ and neglecting 2nd order terms (both, e.g. $u'B_x^{1'}$ and $v'B_x^1$), we have
+\tiny\begin{equation}\begin{aligned}
+\PD_t v' = -\frac{1}{\rho}\PD_y p' + \nu (\PD_{yy} v'+\PD_{zz} v') - \frac{1}{2\rho \M} \PD_y ({B_x^{0 }}^2 + 2 B_x^{0 }B_x^{1 } + 2 B_x^{0 }B_x^{1'}) \\
+\PD_t w' = -\frac{1}{\rho}\PD_z p' + \nu (\PD_{yy} w'+\PD_{zz} w') - \frac{1}{2\rho \M} \PD_z ({B_x^{0 }}^2 + 2 B_x^{0 }B_x^{1 } + 2 B_x^{0 }B_x^{1'}) \\
+\PD_t (B_x^{0}+B_x^{1}+B_x^{1'}) = \frac{1}{\sigma \M} (\PD_{yy} (B_x^{0}+B_x^{1}+B_x^{1'})+\PD_{zz} (B_x^{0}+B_x^{1}+B_x^{1'})) - (v' \PD_y (B_x^{0}+B_x^{1}+B_x^{1'}) + w'\PD_z (B_x^{0}+B_x^{1}+B_x^{1'})) \\
+\end{aligned} \end{equation}\normalsize
+Applying uniform $B_x^0$ we have
+\begin{equation}\begin{aligned}
+\PD_t v' = -\frac{1}{\rho}\PD_y p' + \nu (\PD_{yy} v'+\PD_{zz} v') - \frac{1}{\rho \M} \left( B_x^0 \PD_y B_x^1 + B_x^0 \PD_y B_x^{1'} \right) \\
+\PD_t w' = -\frac{1}{\rho}\PD_z p' + \nu (\PD_{yy} w'+\PD_{zz} w') - \frac{1}{\rho \M} \left( B_x^0 \PD_z B_x^1 + B_x^0 \PD_z B_x^{1'} \right) \\
+\PD_t (B_x^{0}+B_x^{1}+B_x^{1'}) = \frac{1}{\sigma \M} (\PD_{yy} (B_x^{1}+B_x^{1'})+\PD_{zz} (B_x^{1}+B_x^{1'})) - (v' \PD_y (B_x^{1}+B_x^{1'}) + w'\PD_z (B_x^{1}+B_x^{1'})) \\
+\PD_y v' + \PD_z w' = 0  \\
+\end{aligned} \end{equation}
+
+
+\end{document}

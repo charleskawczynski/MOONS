@@ -8,6 +8,7 @@
       use ops_aux_mod
       use SF_mod
       use VF_mod
+      use TF_mod
       use IO_tools_mod
 
       use matrix_mod
@@ -32,7 +33,7 @@
 
       type PSE_solver_SF
         type(matrix_free_params) :: MFP
-        type(VF) :: tempk,k
+        type(TF) :: tempk,k
         type(norms) :: norm
         type(SF) :: r,Ax,vol
         integer :: un,N_iter
@@ -41,7 +42,7 @@
 
       type PSE_solver_VF
         type(matrix_free_params) :: MFP
-        type(VF) :: tempk,k
+        type(TF) :: tempk,k
         type(norms) :: norm
         type(VF) :: r,Ax,vol
         integer :: un,N_iter
@@ -56,7 +57,7 @@
         type(PSE_solver_SF),intent(inout) :: PSE
         type(mesh),intent(in) :: m
         type(SF),intent(in) :: x
-        type(VF),intent(in) :: k
+        type(TF),intent(in) :: k
         character(len=*),intent(in) :: dir,name
         logical,intent(in) :: testSymmetry,exportOperator
         type(matrix_free_params),intent(in) :: MFP
@@ -86,7 +87,8 @@
         procedure(op_VF) :: operator
         type(PSE_solver_VF),intent(inout) :: PSE
         type(mesh),intent(in) :: m
-        type(VF),intent(in) :: x,k
+        type(VF),intent(in) :: x
+        type(TF),intent(in) :: k
         character(len=*),intent(in) :: dir,name
         logical,intent(in) :: testSymmetry,exportOperator
         type(matrix_free_params),intent(in) :: MFP

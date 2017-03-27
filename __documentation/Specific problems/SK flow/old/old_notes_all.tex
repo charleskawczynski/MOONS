@@ -1,0 +1,526 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+\usepackage{etoolbox}
+\usepackage{epstopdf}
+% \usepackage[outdir=./]{epstopdf}
+
+\input{./../path_to_useful_commands.tex}
+\input{\PATHTOUSEFULCOMMANDS}
+
+\newcommand{\figS}{22.1em}
+\newcommand{\BfigS}{50em}
+\newcommand{\ffigS}{15.1em}
+\newcommand{\figH}{\figS}
+\newcommand{\figW}{\figS}
+\newcommand{\BfigH}{\BfigS}
+\newcommand{\BfigW}{\BfigS}
+\newcommand{\ffigH}{\ffigS}
+\newcommand{\ffigW}{\ffigS}
+\graphicspath{{figs}}
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+\newtoggle{plotUstream}
+\toggletrue{plotUstream}
+\togglefalse{plotUstream}
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Results of Dynamic MHD Periodic Duct for finite
+ \texorpdfstring{$Re_m$} \\ with 1 Magnetic field Component}
+\author{S. Smolentsev, C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+
+\section{Case D: Fully Coupled 1 Component Magnetic field in a Periodic Duct}
+
+The dimensional momentum and induction equations for uniform $\rho,\mu,\M,\sigma$ are
+
+\begin{equation}\begin{aligned}
+\PD_t u_i+u_j\PD_j u_i = - \frac{1}{\rho} \PD_i p+ \nu \PD_{jj} u_i + \frac{1}{\rho \M} (B_j \PD_j B_i - \tfrac{1}{2} \PD_i B_j B_j) \\
+\PD_t B_i = \frac{1}{\sigma \M} \PD_{jj} B_i + B_j \PD_j u_i - u_j \PD_j B_i
+\end{aligned} \end{equation}
+Remove magnetic pressure
+\begin{equation}\begin{aligned}
+\PD_t u_i+u_j\PD_j u_i = -\PD_i p+ \nu \PD_{jj} u_i + \frac{1}{\rho \M} B_j \PD_j B_i \\
+\PD_t B_i = \frac{1}{\sigma \M} \PD_{jj} B_i + B_j \PD_j u_i - u_j \PD_j B_i
+\end{aligned} \end{equation}
+Expanding equations yields
+\begin{equation}\begin{aligned}
+\PD_t u+ u\PD_x u + v\PD_y u + w\PD_z u = -\frac{1}{\rho}\PD_x p+ \nu (\PD_{xx} u+\PD_{yy} u+\PD_{zz} u) + \frac{1}{\rho \M} (B_x \PD_x B_x + B_y \PD_y B_x + B_z \PD_z B_x) \\
+\PD_t v+ u\PD_x v + v\PD_y v + w\PD_z v = -\frac{1}{\rho}\PD_y p+ \nu (\PD_{xx} v+\PD_{yy} v+\PD_{zz} v) + \frac{1}{\rho \M} (B_x \PD_x B_y + B_y \PD_y B_y + B_z \PD_z B_y) \\
+\PD_t w+ u\PD_x w + v\PD_y w + w\PD_z w = -\frac{1}{\rho}\PD_z p+ \nu (\PD_{xx} w+\PD_{yy} w+\PD_{zz} w) + \frac{1}{\rho \M} (B_x \PD_x B_z + B_y \PD_y B_z + B_z \PD_z B_z) \\
+\PD_t B_x = \frac{1}{\sigma \M} (\PD_{xx} B_x + \PD_{yy} B_x+\PD_{zz} B_x) + (B_x\PD_x u+B_y\PD_y u+B_z\PD_z u) - (u\PD_x B_x+v\PD_y B_x+w\PD_z B_x) \\
+\PD_t B_y = \frac{1}{\sigma \M} (\PD_{xx} B_y + \PD_{yy} B_y+\PD_{zz} B_y) + (B_x\PD_x v+B_y\PD_y v+B_z\PD_z v) - (u\PD_x B_y+v\PD_y B_y+w\PD_z B_y) \\
+\PD_t B_z = \frac{1}{\sigma \M} (\PD_{xx} B_z + \PD_{yy} B_z+\PD_{zz} B_z) + (B_x\PD_x w+B_y\PD_y w+B_z\PD_z w) - (u\PD_x B_z+v\PD_y B_z+w\PD_z B_z) \\
+\end{aligned} \end{equation}
+Assuming:
+\begin{itemize}
+\item $\PD_x () = 0$
+\item $u = 0,B_y^1=0,B_z^1=0$
+\item Spatially uniform $B^0$
+\end{itemize}
+We have
+\begin{equation}\begin{aligned}
+\PD_t v+ v\PD_y v + w\PD_z v = -\frac{1}{\rho}\PD_y p+ \nu (\PD_{yy} v+\PD_{zz} v) + \frac{1}{\rho \M} (B_y \PD_y B_y^1 + B_z \PD_z B_y^1) \\
+\PD_t w+ v\PD_y w + w\PD_z w = -\frac{1}{\rho}\PD_z p+ \nu (\PD_{yy} w+\PD_{zz} w) + \frac{1}{\rho \M} (B_y \PD_y B_z^1 + B_z \PD_z B_z^1) \\
+\PD_t B_x = \frac{1}{\sigma \M} (\PD_{yy} B_x^1+\PD_{zz} B_x^1) - (v\PD_y B_x^1+w\PD_z B_x^1) \\
+\end{aligned} \end{equation}
+
+Assuming a 
+
+% \item Domain enclosure of size $-0.5 < x < 0.5 \qquad -1.1 < y < 1.1 \qquad -1.1 < z < 1.1$
+% \item The number of cells in the fluid and walls were $N_{fluid} = (1,64,64)$ \qquad $N_{wall} = (0,8,8)$
+% \item Or $N_{fluid} = (1,200,200)$ \qquad $N_{wall} = (0,10,10)$
+% For this problem, we solved the momentum and induction equations. For BCs we used
+% \begin{equation}
+	% \U, \B, p = \text{periodic} \qquad x_{min},x_{max}
+% \end{equation}
+
+% \begin{equation}
+	% \U = \U_{walls} = 0 \qquad
+	% \PD_n p = 0 \qquad
+	% \PD_n B_n = 0 \qquad
+	% B_{tangent} = 0 \qquad
+	% y_{min},y_{max}, z_{min},z_{max}
+% \end{equation}
+
+% \subsection{Momentum equation}
+
+
+\subsection{Final Form of Governing Equations}
+
+\subsubsection{Momentum}
+\begin{equation}
+	u=0
+\end{equation}
+\begin{equation}
+	\frac{\PD v}{\PD t}
+	+ \frac{\PD (v v)}{\PD y}
+	+ \frac{\PD (v w)}{\PD z}
+	=
+	- \frac{\PD p}{\PD y}
+	+ \frac{1}{Re}
+	\left(
+	\frac{\PD^2 v}{\PD y^2}
+	+\frac{\PD^2 v}{\PD z^2}
+	\right)
+	- \frac{Ha^2}{Re}
+	B_x^{tot} \frac{\PD B_x}{\PD y}
+\end{equation}
+\begin{equation}
+	\frac{\PD w}{\PD t}
+	+ \frac{\PD (w v)}{\PD y}
+	+ \frac{\PD (w w)}{\PD z}
+	=
+	- \frac{\PD p}{\PD z}
+	+ \frac{1}{Re}
+	\left(
+	\frac{\PD^2 w}{\PD y^2}
+	+\frac{\PD^2 w}{\PD z^2}
+	\right)
+	-\frac{Ha^2}{Re}
+	B_x^{tot} \frac{\PD B_x}{\PD z}
+\end{equation}
+
+\subsubsection{Induction}
+\begin{equation}
+	\frac{\PD B_x}{\PD t}
+	=
+	- \frac{\PD B_x^0}{\PD t}
+	- \frac{\PD}{\PD y} (v B_x^{tot})
+	- \frac{\PD}{\PD z} (w B_x^{tot})
+	+ \frac{1}{Re_m}
+	\left(
+	\frac{\PD^2 B_x}{\PD y^2}
+	+
+	\frac{\PD^2 B_x}{\PD z^2}
+	\right)
+\end{equation}
+\begin{equation}
+	B_y = B_z = 0
+\end{equation}
+
+\section{Primary Induced Flow Field}
+Since we are assuming the fluid starts from rest, let's see how early flow development begins.
+
+\subsection{B evolution at early time}
+At early time, there is no fluid motion, so the $x$-component of the magnetic field evolves with
+\begin{equation}
+	\frac{\PD B_x}{\PD t}
+	- \frac{1}{Re_m}
+	\left(
+	\frac{\PD^2 B_x}{\PD y^2}
+	+
+	\frac{\PD^2 B_x}{\PD z^2}
+	\right)
+	=
+	- \frac{\PD B_x^0}{\PD t}
+\end{equation}
+
+Since the source term, $- \frac{\PD B_x^0}{\PD t}$, is uniform and $B_x=0$ on the boundaries, we can expect that the contours of $B_x$ will be that of concentric rounded squares (since we are working with a square duct). Also, $B_x$ will be positive everywhere.
+
+\subsection{Currents at early time}
+For this B-field configuration, the currents simplify to
+\begin{equation}
+	\J
+	=
+	\hat{y} \frac{\PD B_x}{\PD z}
+	- \hat{z} \frac{\PD B_x}{\PD y}
+\end{equation}
+
+Breaking up the domain into 4 quadrants, starting from the north east quadrant, and proceding counter-clockwise, let's number them 1,2,3,4 respectively.
+
+Given the distribution of $B_x$ at early time, the currents will have the following signs in the following quadrants
+\subsubsection{Quadrant 1}
+\begin{equation}
+	j_y	= \frac{\PD B_x}{\PD z} = (-)
+	\qquad \qquad
+	j_z = - \hat{z} \frac{\PD B_x}{\PD y} = (+)
+\end{equation}
+
+\subsubsection{Quadrant 2}
+\begin{equation}
+	j_y	= \frac{\PD B_x}{\PD z} = (-)
+	\qquad \qquad
+	j_z = - \hat{z} \frac{\PD B_x}{\PD y} = (-)
+\end{equation}
+\subsubsection{Quadrant 3}
+\begin{equation}
+	j_y	= \frac{\PD B_x}{\PD z} = (+)
+	\qquad \qquad
+	j_z = - \hat{z} \frac{\PD B_x}{\PD y} = (-)
+\end{equation}
+\subsubsection{Quadrant 4}
+\begin{equation}
+	j_y	= \frac{\PD B_x}{\PD z} = (+)
+	\qquad \qquad
+	j_z = - \hat{z} \frac{\PD B_x}{\PD y} = (+)
+\end{equation}
+
+\subsection{Lorentz Force at early time}
+The signs of the B-field and J-field allow us to see what the signs, and roughly distribution, of the Lorentz force at early time.
+
+The Lorentz force is
+
+\begin{equation}
+	\J \CROSS \B
+	=
+	\{
+	0 ,
+	j_z B_x ,
+	-j_y B_x
+	\}
+	=
+	\left\{
+	0 ,
+	- B_x \frac{\PD B_x}{\PD y} ,
+	- B_x \frac{\PD B_x}{\PD z}
+	\right\}
+\end{equation}
+
+Again, breaking up the domain into 4 quadrants as before, the Lorentz force will have the following signs in the following quadrants
+\subsubsection{Quadrant 1}
+\begin{equation}
+	(\J \CROSS \B)_y = - B_x \frac{\PD B_x}{\PD y} = (+)
+	\qquad \qquad
+	(\J \CROSS \B)_z = - B_x \frac{\PD B_x}{\PD z} = (+)
+\end{equation}
+
+\subsubsection{Quadrant 2}
+\begin{equation}
+	(\J \CROSS \B)_y = - B_x \frac{\PD B_x}{\PD y} = (-)
+	\qquad \qquad
+	(\J \CROSS \B)_z = - B_x \frac{\PD B_x}{\PD z} = (+)
+\end{equation}
+\subsubsection{Quadrant 3}
+\begin{equation}
+	(\J \CROSS \B)_y = - B_x \frac{\PD B_x}{\PD y} = (-)
+	\qquad \qquad
+	(\J \CROSS \B)_z = - B_x \frac{\PD B_x}{\PD z} = (-)
+\end{equation}
+\subsubsection{Quadrant 4}
+\begin{equation}
+	(\J \CROSS \B)_y = - B_x \frac{\PD B_x}{\PD y} = (+)
+	\qquad \qquad
+	(\J \CROSS \B)_z = - B_x \frac{\PD B_x}{\PD z} = (-)
+\end{equation}
+
+In addition, the north, south, east and west sides of the square geometry have the following signs
+\subsubsection{North}
+\begin{equation}
+	(\J \CROSS \B)_y = - B_x \frac{\PD B_x}{\PD y} = (0)
+	\qquad \qquad
+	(\J \CROSS \B)_z = - B_x \frac{\PD B_x}{\PD z} = (+)
+\end{equation}
+
+\subsubsection{South}
+\begin{equation}
+	(\J \CROSS \B)_y = - B_x \frac{\PD B_x}{\PD y} = (0)
+	\qquad \qquad
+	(\J \CROSS \B)_z = - B_x \frac{\PD B_x}{\PD z} = (+)
+\end{equation}
+\subsubsection{East}
+\begin{equation}
+	(\J \CROSS \B)_y = - B_x \frac{\PD B_x}{\PD y} = (-)
+	\qquad \qquad
+	(\J \CROSS \B)_z = - B_x \frac{\PD B_x}{\PD z} = (0)
+\end{equation}
+\subsubsection{West}
+\begin{equation}
+	(\J \CROSS \B)_y = - B_x \frac{\PD B_x}{\PD y} = (+)
+	\qquad \qquad
+	(\J \CROSS \B)_z = - B_x \frac{\PD B_x}{\PD z} = (0)
+\end{equation}
+
+\section{Other notes}
+
+First note that there is no pressure force along x, and since the flow is periodic in x, the only way for flow to be driven in x requires a non-zero $\J \CROSS \B$ force, which doesn't exist since the applied magnetic field induces currents in planes of x, resulting in a $\J \CROSS \B$ only in planes of x. In addition, let's assume that the applied magnetic field does not induce any currents ($\CURL B^0=0$). Therefore, using the $\PD_x () = 0$, and $u = 0$, the momentum equations become
+
+\begin{equation}
+	u=0
+\end{equation}
+\begin{equation}
+	\frac{\PD v}{\PD t}
+	+ \frac{\PD (v v)}{\PD y}
+	+ \frac{\PD (v w)}{\PD z}
+	=
+	- \frac{\PD p}{\PD y}
+	+ \frac{1}{Re}
+	\left(
+	\frac{\PD^2 v}{\PD y^2}
+	+\frac{\PD^2 v}{\PD z^2}
+	\right)
+	+ \frac{Ha^2}{Re}
+	(\J \CROSS (\B^{tot}))_y
+\end{equation}
+\begin{equation}
+	\frac{\PD w}{\PD t}
+	+ \frac{\PD (w v)}{\PD y}
+	+ \frac{\PD (w w)}{\PD z}
+	=
+	- \frac{\PD p}{\PD z}
+	+ \frac{1}{Re}
+	\left(
+	\frac{\PD^2 w}{\PD y^2}
+	+\frac{\PD^2 w}{\PD z^2}
+	\right)
+	+ \frac{Ha^2}{Re}
+	(\J \CROSS (\B^{tot}))_z
+\end{equation}
+
+Where
+
+\begin{equation}
+	B^{tot} = B^0 + B
+\end{equation}
+
+\subsection{Induction equation}
+
+The induction equation in its general form is
+
+\begin{equation}
+	\PD_t B_i
+	=
+	- \PD_t B_i^0
+	- \PD_j (u_j B_i^{tot} - u_i B_j^{tot})
+	+
+	\frac{1}{Re_m}
+	\PD_{jj} B_i
+\end{equation}
+
+First note that there is only a source term for the induced magnetic field for the x-component. This means that, since the initial induced magnetic field is zero, the y and z components of the induced magnetic field are always zero. Using this fact, $\PD_x ()=0$, the uniform $\sigma$, and uniform $\mu$, the induction equations become
+
+
+\begin{equation}
+	\PD_t B_x
+	=
+	- \PD_t B_x^0
+	- \PD_y (v B_x^{tot})
+	- \PD_z (w B_x^{tot})
+	+ \frac{1}{Re_m}
+	\left(
+	\PD_{yy} B_x
+	+
+	\PD_{zz} B_x
+	\right)
+\end{equation}
+\begin{equation}
+	B_y = B_z = 0
+\end{equation}
+
+\subsection{Lorentz force}
+
+Looking back at the momentum equation, the $\J \CROSS \B$ force does not act in x, and we only have one component of the magnetic field, so we have
+
+\begin{equation}
+	(\J \CROSS \B^{tot})_x = 0
+	\qquad \qquad
+	(\J \CROSS \B^{tot})_y = - B_x^{tot} \frac{\PD B_x}{\PD y}
+	\qquad \qquad
+	(\J \CROSS \B^{tot})_z = - B_x^{tot} \frac{\PD B_x}{\PD z}
+\end{equation}
+
+
+\subsection{Implications}
+
+Drawing a rough vector field of $\J \CROSS \B$ with the above information, it is clear that the fluid in the entire domain experiences a force toward the boundaries. Due to the \textit{square} geometry, and boundary conditions on the magnetic field, $B_x=0 \in \PD \Omega$, this force is larger in the corners as compared with the sides (since the sides only have one component), which means that the force along the diagonal (towards the corners) is large enough to overcome the force along the cross section (towards the sides). This means that there is a net torque on the fluid within each corner to create a counter rotating vortex pair (CVP). As we'll see, this is in fact was is happening.
+
+Note that if the geometry were square, the Lorentz forces would be radially outward, the pressure force would balance the Lorentz force, and no torque would result.
+
+\begin{figure}[H]
+ \centering
+  \includegraphics[width=\BfigH,height=\BfigW]{figs/CVP.png}
+   \caption[Optional ]{4 Conter-rotating Vortex Pair (in each corner)}
+\end{figure}
+
+\subsection{Quantitative Analysis}
+To be sure that there will be movement, we must make sure that there is a non-zero circulation of the $\J \CROSS \B$ force. We can compute the circulation of $\J \CROSS \B$ as
+
+\begin{equation}
+	\Gamma = \int_A ( \CURL [\J \CROSS \B] )_x dA
+\end{equation}
+From above,
+\begin{equation}
+	\J \CROSS \B
+	=
+	\{
+	0 ,
+	j_z B_x ,
+	-j_y B_x
+	\}
+	=
+	\left\{
+	0 ,
+	- B_x \frac{\PD B_x}{\PD y} ,
+	- B_x \frac{\PD B_x}{\PD z}
+	\right\}
+\end{equation}
+
+
+Since there is no variation in $x$, and the $x$ component of $\J \CROSS \B=0$, taking the curl of this yields
+
+\begin{equation}
+	\CURL [\J \CROSS \B]
+	=
+	(\CURL [\J \CROSS \B]) _x
+	=
+	-
+	\frac{\PD}{\PD y} \left( B_x \frac{\PD B_x}{\PD z} \right)
+	+
+	\frac{\PD}{\PD z} \left( B_x \frac{\PD B_x}{\PD y} \right)
+\end{equation}
+
+\begin{equation}
+	=
+	-
+	\left\{
+	B_x \frac{\PD B_x}{\PD z y} + \frac{\PD B_x}{\PD z} \frac{\PD B_x}{\PD y}
+	\right\}
+	+
+	\left\{
+	B_x \frac{\PD B_x}{\PD y z} + \frac{\PD B_x}{\PD y} \frac{\PD B_x}{\PD z}
+	\right\}
+	=
+	-
+	\frac{\PD B_x}{\PD z} \frac{\PD B_x}{\PD y}
+	+
+	\frac{\PD B_x}{\PD y} \frac{\PD B_x}{\PD z}
+	= 0
+\end{equation}
+
+Therefore
+
+\begin{equation}
+	\Gamma = \int_A ( \CURL [\J \CROSS \B] )_x dA = 0
+\end{equation}
+
+
+This means that, at early time, the vorticity equation is
+
+\begin{equation}
+	\PD_t \CURL \U = \CURL \nabla p
+	+
+	\frac{Ha^2}{Re}
+	\CURL
+	\J \CROSS \B
+	=
+	0
+\end{equation}
+
+Due to the vector identity $\CURL \nabla \phi=0$ and the analysis above. Therefore, until there is a spatial variation in $u$, $\CURL \U=0$.
+
+It seems that $\J \CROSS \B$ is only providing tensile forces to the fluid, and not imparting any rotational force. The motion seen above must be due to the fact that the PPE is being estimated by Gauss-Seidel. If a direct method were used, the fluid should remain stationary, since the pressure would perfectly balance the $\J \CROSS \B$ force.
+
+\section{Energy}
+
+
+\subsection{Kinetic}
+
+\subsection{Magnetic}
+
+% \section{Given Ha=10}
+% \subsection{Given Rm=1}
+
+% \subsubsection{Re = 100}
+% \subsubsection{Re = 500}
+% \subsubsection{Re = 1000}
+% \subsubsection{Re = 10000}
+% \subsection{Given Rm=10}
+% \subsubsection{Re = 100}
+% \subsubsection{Re = 500}
+% \subsubsection{Re = 1000}
+% \subsubsection{Re = 10000}
+% \subsection{Given Rm=100}
+% \subsubsection{Re = 100}
+% \subsubsection{Re = 500}
+% \subsubsection{Re = 10000}
+% \section{Given Ha=100}
+% \subsection{Given Rm=1}
+% \subsubsection{Re = 100}
+% \subsubsection{Re = 500}
+% \subsubsection{Re = 1000}
+% \subsubsection{Re = 10000}
+% \subsection{Given Rm=10}
+% \subsubsection{Re = 100}
+% \subsubsection{Re = 500}
+% \subsubsection{Re = 1000}
+% \subsubsection{Re = 10000}
+% \subsection{Given Rm=100}
+
+\bibliographystyle{unsrt}
+\bibliography{MHD,Math,Interface,fluids,CFD,handpicked}
+
+
+\end{document}

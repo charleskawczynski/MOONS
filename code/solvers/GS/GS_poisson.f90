@@ -25,6 +25,7 @@
       use ops_aux_mod
       use SF_mod
       use VF_mod
+      use TF_mod
       use IO_tools_mod
       use preconditioners_mod
       use diagonals_mod
@@ -44,6 +45,7 @@
         logical :: setCoeff = .false.
         type(iter_solver_params) :: ISP
 
+        type(TF) :: tempk
         type(SF) :: vol,lapu,res,f,D_inv ! cell volume, laplacian, residual, Diagonal inverse
         integer,dimension(3) :: gt,s
       end type
@@ -56,6 +58,7 @@
         logical :: setCoeff = .false.
         type(iter_solver_params) :: ISP
 
+        type(TF) :: tempk
         type(VF) :: vol,lapu,res,f,D_inv ! cell volume, laplacian, residual, Diagonal inverse
         integer,dimension(3) :: gtx,gty,gtz,sx,sy,sz
       end type
@@ -69,10 +72,11 @@
 
       contains
 
-      subroutine init_GS_SF(GS,u,m,ISP,dir,name)
+      subroutine init_GS_SF(GS,u,m,k,ISP,dir,name)
         implicit none
         type(GS_poisson_SF),intent(inout) :: GS
         type(SF),intent(in) :: u
+        type(TF),intent(in) :: k
         type(iter_solver_params),intent(in) :: ISP
         type(mesh),intent(in) :: m
         character(len=*),intent(in) :: dir,name
@@ -81,6 +85,7 @@
         call init(GS%p,m)
         call init(GS%d,m)
         call init(GS%name,name)
+        call init(GS%tempk,k)
         GS%un = new_and_open(dir,'norm_GS_'//name)
         call init(GS%norm)
         call init(GS%vol,u)
@@ -114,10 +119,11 @@
         GS%N_iter = 1
       end subroutine
 
-      subroutine init_GS_VF(GS,u,m,ISP,dir,name)
+      subroutine init_GS_VF(GS,u,m,k,ISP,dir,name)
         implicit none
         type(GS_poisson_VF),intent(inout) :: GS
         type(VF),intent(in) :: u
+        type(TF),intent(in) :: k
         type(iter_solver_params),intent(in) :: ISP
         type(mesh),intent(in) :: m
         character(len=*),intent(in) :: dir,name
@@ -126,6 +132,7 @@
         call init(GS%ISP,ISP)
         call init(GS%p,m)
         call init(GS%d,m)
+        call init(GS%tempk,k)
         call init(GS%name,name)
         GS%un = new_and_open(dir,'norm_GS_'//name)
         call init(GS%norm)
@@ -172,7 +179,7 @@
         type(mesh),intent(in) :: m
         logical,intent(in) :: compute_norm
         call solve_GS(u,f,GS%D_inv,m,GS%p,GS%d,GS%vol,GS%gt,GS%ISP%iter_max,&
-        GS%ISP%tol_rel,GS%norm,compute_norm,GS%N_iter,GS%un,GS%lapu,GS%res,GS%f,&
+        GS%ISP%tol_rel,GS%norm,compute_norm,GS%N_iter,GS%un,GS%lapu,GS%res,GS%f,GS%tempk,&
         str(GS%name),GS%ISP%n_skip_check_res)
       end subroutine
 
@@ -193,6 +200,7 @@
         type(GS_poisson_SF),intent(inout) :: GS
         call delete(GS%ISP)
         call delete(GS%p)
+        call delete(GS%tempk)
         call delete(GS%d)
         call delete(GS%f)
         call delete(GS%lapu)
@@ -210,6 +218,7 @@
         type(GS_poisson_VF),intent(inout) :: GS
         call delete(GS%ISP)
         call delete(GS%p)
+        call delete(GS%tempk)
         call delete(GS%d)
         call delete(GS%f)
         call delete(GS%lapu)

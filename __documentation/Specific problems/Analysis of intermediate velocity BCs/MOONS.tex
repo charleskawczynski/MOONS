@@ -20,7 +20,7 @@
 \setlength{\topmargin}{-1in}     %\topmargin: gap above header
 \setlength{\headheight}{0in}     %\headheight: height of header
 \setlength{\topskip}{0in}        %\topskip: between header and text
-\setlength{\headsep}{0in}        
+\setlength{\headsep}{0in}
 \setlength{\textheight}{692pt}   %\textheight: height of main text
 \setlength{\textwidth}{7.5in}    % \textwidth: width of text
 \setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
@@ -46,12 +46,12 @@ University of California Los Angeles, USA\\
 \section{Intermediate velocity BCs}
 The ith component of the momentum equation is
 \begin{equation}
-	\frac{\partial u_i}{\partial t} + 
-	= 
-	- \frac{\partial (u_i u_j)}{\partial x_j}
-	- \frac{\partial p}{\partial x_i}
+	\frac{\PD u_i}{\PD t} +
+	=
+	- \frac{\PD (u_i u_j)}{\PD x_j}
+	- \frac{\PD p}{\PD x_i}
 	+ \frac{1}{Re}
-	\frac{\partial^2 u_i}{\partial x_j^2}
+	\frac{\PD^2 u_i}{\PD x_j^2}
 	+ \frac{1}{Fr^2}
 	g_i
 	+ \frac{Gr}{Re^2}
@@ -69,10 +69,10 @@ And applying explicit Euler, we have
 	+
 	\Delta t
 	\left\{
-	- \frac{\partial (u_i u_j)}{\partial x_j}
-	- \frac{\partial p}{\partial x_i}
+	- \frac{\PD (u_i u_j)}{\PD x_j}
+	- \frac{\PD p}{\PD x_i}
 	+ \frac{1}{Re}
-	\frac{\partial^2 u_i}{\partial x_j^2}
+	\frac{\PD^2 u_i}{\PD x_j^2}
 	+ \frac{1}{Fr^2}
 	g_i
 	+ \frac{Gr}{Re^2}
@@ -93,7 +93,7 @@ Using the projection method, and treating pressure implicitly, we have
 	F_i^n
 	-
 	\Delta t
-	\frac{\partial p^{n+1}}{\partial x_i}
+	\frac{\PD p^{n+1}}{\PD x_i}
 \end{equation}
 
 Where
@@ -101,9 +101,9 @@ Where
 \begin{equation}
 	F_i
 	=
-	- \frac{\partial (u_i u_j)}{\partial x_j}
+	- \frac{\PD (u_i u_j)}{\PD x_j}
 	+ \frac{1}{Re}
-	\frac{\partial^2 u_i}{\partial x_j^2}
+	\frac{\PD^2 u_i}{\PD x_j^2}
 	+ \frac{1}{Fr^2}
 	g_i
 	+ \frac{Gr}{Re^2}
@@ -117,7 +117,7 @@ Taking the divergence of this, we have
 \begin{equation}
 	0
 	=
-	\frac{\partial }{\partial x_i}
+	\frac{\PD }{\PD x_i}
 	\left(
 	u_i^n
 	+
@@ -126,16 +126,16 @@ Taking the divergence of this, we have
 	\right)
 	-
 	\Delta t
-	\frac{\partial^2 p^{n+1}}{\partial x_i^2}
+	\frac{\PD^2 p^{n+1}}{\PD x_i^2}
 \end{equation}
 
 Which yields Laplace's equation for pressure:
 
 \begin{equation}
-	\frac{\partial^2 p^{n+1}}{\partial x_i^2}
+	\frac{\PD^2 p^{n+1}}{\PD x_i^2}
 	=
 	\frac{1}{\Delta t}
-	\frac{\partial }{\partial x_i}
+	\frac{\PD }{\PD x_i}
 	\left(
 	u_i^n
 	+
@@ -143,102 +143,5 @@ Which yields Laplace's equation for pressure:
 	F_i^n
 	\right)
 \end{equation}
-
-\section{Forms of \texorpdfstring{$j \times B$} \ \ force}
-
-The $j \times B$ force may be written as
-
-\begin{equation}
-	\epsilon_{imk} j_m B_k
-	=
-	\epsilon_{imk} (\epsilon_{mlp} \partial_l B_p) B_k
-	=
-	\epsilon_{imk} \epsilon_{mlp} B_k \frac{\partial B_p}{\partial x_l} 
-	=
-	\epsilon_{mki} \epsilon_{mlp} B_k \frac{\partial B_p}{\partial x_l} 
-	=
-	(\delta_{kl} \delta_{ip}
-	-
-	\delta_{kp} \delta_{il}) 
-	B_k \frac{\partial B_p}{\partial x_l} 
-\end{equation}
-
-Finally
-
-\begin{equation}
-	(j \times B )_i
-	=
-	B_k \frac{\partial B_i}{\partial x_k} 
-	-
-	B_k \frac{\partial B_k}{\partial x_i} 
-\end{equation}
-
-Expanded, this yields
-
-\begin{equation}
-	(j \times B )_i
-	=
-	B_x
-	\left(
-	\frac{\partial B_i}{\partial x} 
-	- 
-	\frac{\partial B_x}{\partial x_i} 
-	\right)
-	+
-	B_y
-	\left(
-	\frac{\partial B_i}{\partial y} 
-	- 
-	\frac{\partial B_y}{\partial x_i} 
-	\right)
-	+
-	B_z
-	\left(
-	\frac{\partial B_i}{\partial z} 
-	- 
-	\frac{\partial B_z}{\partial x_i} 
-	\right)
-\end{equation}
-
-
-
-\section{Divergence of \texorpdfstring{$j \times B$} \ \ force}
-
-The divergence of the $j \times B$ force is important, because this is what feeds into the pressure correction.
-
-\begin{equation}
-	\frac{\partial }{\partial x_i}
-	(j \times B )_i
-	=
-	\frac{\partial }{\partial x_i}
-	\left(
-	B_k 
-	\frac{\partial B_i}{\partial x_k} 
-	\right)
-	-
-	\frac{\partial }{\partial x_i}
-	\left(
-	B_k 
-	\frac{\partial B_k}{\partial x_i} 
-	\right)
-\end{equation}
-
-
-\begin{equation}
-	=
-	B_k 
-	\frac{\partial^2 B_i}{\partial x_i x_k} 
-	+
-	\frac{\partial B_i}{\partial x_k} 
-	\frac{\partial B_k}{\partial x_i}
-	-
-	B_k 
-	\frac{\partial^2 B_k}{\partial x_i^2} 
-	-
-	\frac{\partial B_k}{\partial x_i} 
-	\frac{\partial B_k}{\partial x_i}
-\end{equation}
-
-
 
 \end{document}

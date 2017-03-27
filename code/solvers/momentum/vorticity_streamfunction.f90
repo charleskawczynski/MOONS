@@ -4,6 +4,7 @@
        use BC_funcs_mod
        use SF_mod
        use VF_mod
+       use TF_mod
        use dir_tree_mod
        use string_mod
        use path_mod
@@ -61,7 +62,8 @@
          type(mesh),intent(in) :: m
          type(dir_tree),intent(in) :: DT
          type(sim_params),intent(in) :: SP
-         type(VF) :: psi,omega,temp_dummy
+         type(VF) :: psi,omega
+         type(TF) :: temp_dummy
          type(PCG_solver_VF) :: PCG
          type(iter_solver_params) :: ISP
          type(matrix_free_params) :: MFP
@@ -70,7 +72,7 @@
 
          call init_Edge(omega,m)
          call init_Edge(psi,m)
-         call init_Face(temp_dummy,m)
+         call init_Node_Face(temp_dummy,m)
          call init_BC_mesh(psi%x,m)
          call init_BC_mesh(psi%y,m)
          call init_BC_mesh(psi%z,m)

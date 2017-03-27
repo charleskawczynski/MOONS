@@ -49,17 +49,14 @@
        interface lap;            module procedure lapVarCoeff_SF;          end interface
        interface lap;            module procedure lapVarCoeff_VF;          end interface
 
-       public :: lap_component
-       interface lap_component;  module procedure lap_component_SF;        end interface
-       interface lap_component;  module procedure lap_component_VF;        end interface
-
        public :: lap_centered
-       interface lap_centered;   module procedure lap_centered_SF_dynamic; end interface
-       interface lap_centered;   module procedure lap_centered_VF_dynamic; end interface
+       interface lap_centered;   module procedure lap_centered_SF_new;     end interface
+       interface lap_centered;   module procedure lap_centered_VF_new;     end interface
 
        public :: div
        interface div;            module procedure div_SF;                  end interface
        interface div;            module procedure div_VF;                  end interface
+       interface div;            module procedure div_TF;                  end interface
 
        public :: grad
        interface grad;           module procedure grad_SF;                 end interface
@@ -68,10 +65,6 @@
 
        public :: grad_no_diag
        interface grad_no_diag;   module procedure grad_no_diag_TF;         end interface
-
-       public :: grad_component
-       interface grad_component; module procedure grad_component_SF;       end interface
-       interface grad_component; module procedure grad_component_VF;       end interface
 
        public :: divGrad
        interface divGrad;        module procedure divGrad_VF;              end interface
@@ -116,106 +109,37 @@
             call d%add(lapU,u,m,2,3,0)
        end subroutine
 
-       subroutine lap_component_SF(lapU,u,m,dir)
-         implicit none
-         type(SF),intent(inout) :: lapU
-         type(SF),intent(in) :: u
-         type(mesh),intent(in) :: m
-         integer,intent(in) :: dir
-         type(del) :: d
-         call d%assign(lapU,u,m,2,dir,0)
-       end subroutine
-
-       subroutine lap_component_VF(lapU,u,m)
-         implicit none
-         type(VF),intent(inout) :: lapU
-         type(SF),intent(in) :: u
-         type(mesh),intent(in) :: m
-         call lap_component(lapU%x,u,m,1)
-         call lap_component(lapU%y,u,m,2)
-         call lap_component(lapU%z,u,m,3)
-       end subroutine
-
-       subroutine lap_centered_SF_given_both(lapU,U,m,tempx,tempy,tempz)
+       subroutine lap_centered_SF_given_both(lapU,U,m,temp)
          implicit none
          type(SF),intent(inout) :: lapU
          type(SF),intent(in) :: U
          type(mesh),intent(in) :: m
-         type(SF),intent(inout) :: tempx,tempy,tempz
+         type(VF),intent(inout) :: temp
          type(del) :: d
-         call d%assign(tempx,U,m,1,1,0); call d%assign(lapU,tempx,m,1,1,0)
-         call d%assign(tempy,U,m,1,2,0); call d%add   (lapU,tempy,m,1,2,0)
-         call d%assign(tempz,U,m,1,3,0); call d%add   (lapU,tempz,m,1,3,0)
+         call d%assign(temp%x,U,m,1,1,0); call d%assign(lapU,temp%x,m,1,1,0)
+         call d%assign(temp%y,U,m,1,2,0); call d%add   (lapU,temp%y,m,1,2,0)
+         call d%assign(temp%z,U,m,1,3,0); call d%add   (lapU,temp%z,m,1,3,0)
        end subroutine
 
-       subroutine lap_centered_VF_dynamic(lapU,U,m)
+       subroutine lap_centered_SF_new(lapU,U,m,VF_temp)
+         implicit none
+         type(SF),intent(inout) :: lapU
+         type(SF),intent(in) :: U
+         type(mesh),intent(in) :: m
+         type(VF),intent(inout) :: VF_temp
+         call grad(VF_temp,U,m)
+         call div(lapU,VF_temp,m)
+       end subroutine
+
+       subroutine lap_centered_VF_new(lapU,U,m,TF_temp)
          implicit none
          type(VF),intent(inout) :: lapU
          type(VF),intent(in) :: U
          type(mesh),intent(in) :: m
-         type(TF) :: TF_temp
-         type(VF) :: VF_temp
-         if     (is_CC(U)) then
-           call init_Face(VF_temp,m)
-           call lap_centered_SF_given_both(lapU%x,U%x,m,VF_temp%x,VF_temp%y,VF_temp%z)
-           call lap_centered_SF_given_both(lapU%y,U%y,m,VF_temp%x,VF_temp%y,VF_temp%z)
-           call lap_centered_SF_given_both(lapU%z,U%z,m,VF_temp%x,VF_temp%y,VF_temp%z)
-           call delete(VF_temp)
-         elseif (is_Node(U)) then
-           call init_Edge(VF_temp,m)
-           call lap_centered_SF_given_both(lapU%x,U%x,m,VF_temp%x,VF_temp%y,VF_temp%z)
-           call lap_centered_SF_given_both(lapU%y,U%y,m,VF_temp%x,VF_temp%y,VF_temp%z)
-           call lap_centered_SF_given_both(lapU%z,U%z,m,VF_temp%x,VF_temp%y,VF_temp%z)
-           call delete(VF_temp)
-         elseif (is_Face(U)) then
-           call init_CC_Edge(TF_temp,m)
-           call lap_centered_SF_given_both(lapU%x,U%x,m,TF_temp%x%x,TF_temp%x%y,TF_temp%x%z)
-           call lap_centered_SF_given_both(lapU%y,U%y,m,TF_temp%y%x,TF_temp%y%y,TF_temp%y%z)
-           call lap_centered_SF_given_both(lapU%z,U%z,m,TF_temp%z%x,TF_temp%z%y,TF_temp%z%z)
-           call delete(TF_temp)
-         elseif (is_Edge(U)) then
-           call init_Node_Edge(TF_temp,m)
-           call lap_centered_SF_given_both(lapU%x,U%x,m,TF_temp%x%x,TF_temp%x%y,TF_temp%x%z)
-           call lap_centered_SF_given_both(lapU%y,U%y,m,TF_temp%y%x,TF_temp%y%y,TF_temp%y%z)
-           call lap_centered_SF_given_both(lapU%z,U%z,m,TF_temp%z%x,TF_temp%z%y,TF_temp%z%z)
-           call delete(TF_temp)
-         else; stop 'Error: bad data type in lap_centered_VF_dynamic in ops_discrete.f90'
-         endif
-       end subroutine
-
-       subroutine lap_centered_SF_dynamic(lapU,U,m)
-         implicit none
-         type(SF),intent(inout) :: lapU
-         type(SF),intent(in) :: U
-         type(mesh),intent(in) :: m
-         type(TF) :: TF_temp
-         type(VF) :: VF_temp
-         if     (is_CC(U%DL)) then
-           call init_Face(VF_temp,m)
-           call lap_centered_SF_given_both(lapU,U,m,VF_temp%x,VF_temp%y,VF_temp%z)
-           call delete(VF_temp)
-         elseif (is_Node(U%DL)) then
-           call init_Edge(VF_temp,m)
-           call lap_centered_SF_given_both(lapU,U,m,VF_temp%x,VF_temp%y,VF_temp%z)
-           call delete(VF_temp)
-         elseif (is_Face(U%DL)) then
-           call init_CC_Edge(TF_temp,m)
-           select case (get_Face(U%DL))
-           case (1); call lap_centered_SF_given_both(lapU,U,m,TF_temp%x%x,TF_temp%x%y,TF_temp%x%z)
-           case (2); call lap_centered_SF_given_both(lapU,U,m,TF_temp%y%x,TF_temp%y%y,TF_temp%y%z)
-           case (3); call lap_centered_SF_given_both(lapU,U,m,TF_temp%z%x,TF_temp%z%y,TF_temp%z%z)
-           end select
-           call delete(TF_temp)
-         elseif (is_Edge(U%DL)) then
-           call init_Node_Edge(TF_temp,m)
-           select case (get_Edge(U%DL))
-           case (1); call lap_centered_SF_given_both(lapU,U,m,TF_temp%x%x,TF_temp%x%y,TF_temp%x%z)
-           case (2); call lap_centered_SF_given_both(lapU,U,m,TF_temp%y%x,TF_temp%y%y,TF_temp%y%z)
-           case (3); call lap_centered_SF_given_both(lapU,U,m,TF_temp%z%x,TF_temp%z%y,TF_temp%z%z)
-           end select
-           call delete(TF_temp)
-         else; stop 'Error: bad data type in lap_centered_SF_dynamic in ops_discrete.f90'
-         endif
+         type(TF),intent(inout) :: TF_temp
+         call lap_centered_SF_given_both(lapU%x,U%x,m,TF_temp%x)
+         call lap_centered_SF_given_both(lapU%y,U%y,m,TF_temp%y)
+         call lap_centered_SF_given_both(lapU%z,U%z,m,TF_temp%z)
        end subroutine
 
        subroutine lapVarCoeff_SF(lapU,u,k,m,temp,dir)
@@ -255,26 +179,6 @@
          call d%assign(gradx,u,m,1,1,0) ! Padding avoids calcs on fictive cells
          call d%assign(grady,u,m,1,2,0) ! Padding avoids calcs on fictive cells
          call d%assign(gradz,u,m,1,3,0) ! Padding avoids calcs on fictive cells
-       end subroutine
-
-       subroutine grad_component_SF(grad,u,m,dir)
-         implicit none
-         type(SF),intent(inout) :: grad
-         type(SF),intent(in) :: u
-         type(mesh),intent(in) :: m
-         integer,intent(in) :: dir
-         type(del) :: d
-         call d%assign(grad,u,m,1,dir,0)
-       end subroutine
-
-       subroutine grad_component_VF(grad,u,m)
-         implicit none
-         type(VF),intent(inout) :: grad
-         type(VF),intent(in) :: u
-         type(mesh),intent(in) :: m
-         call grad_component(grad%x,u%x,m,1)
-         call grad_component(grad%y,u%y,m,2)
-         call grad_component(grad%z,u%z,m,3)
        end subroutine
 
        subroutine curl_SF(curlU,u,v,w,m,dir)
@@ -386,6 +290,16 @@
          type(VF),intent(in) :: U
          type(mesh),intent(in) :: m
          call div(divU,U%x,U%y,U%z,m)
+       end subroutine
+
+       subroutine div_TF(divU,U,m)
+         implicit none
+         type(VF),intent(inout) :: divU
+         type(TF),intent(in) :: U
+         type(mesh),intent(in) :: m
+         call div(divU%x,U%x,m)
+         call div(divU%y,U%y,m)
+         call div(divU%z,U%z,m)
        end subroutine
 
        subroutine grad_VF(gradU,U,m)
@@ -540,41 +454,42 @@
          call mixed(mix%z,f,k%x,m,temp%x,1,2) ! Shape of k must match dir1
        end subroutine
 
-       function surface_power_VF(u,m,temp_F1,temp_F2,temp_CC,temp_TF) result(Q)
+       subroutine surface_power_VF(Q,u,m,temp_F1,temp_F2,temp_CC,temp_TF)
          ! Computes: BF = ∫∫ u_tangent•grad(u_tangent) dA
          implicit none
+         real(cp),intent(inout) :: Q
          type(VF),intent(in) :: u
          type(VF),intent(inout) :: temp_F1,temp_F2,temp_CC
          type(TF),intent(inout) :: temp_TF
          type(mesh),intent(in) :: m
-         real(cp) :: Q
-         Q = 0.0_cp
+         real(cp) :: temp
+         Q = 0.0_cp; temp = 0.0_cp
          call face2CellCenter(temp_CC,u,m)
          call grad_no_diag(temp_TF,temp_CC,m)
          call extrap(temp_TF,m)
          ! x-faces
-         Q = Q + surface_power_component(temp_TF%y%x,temp_CC%y,m,temp_F1%x,temp_F2%x,1)
-         Q = Q + surface_power_component(temp_TF%z%x,temp_CC%z,m,temp_F1%x,temp_F2%x,1)
+         call surface_power_component(temp,temp_TF%y%x,temp_CC%y,m,temp_F1%x,temp_F2%x,1); Q=Q+temp
+         call surface_power_component(temp,temp_TF%z%x,temp_CC%z,m,temp_F1%x,temp_F2%x,1); Q=Q+temp
          ! y-faces
-         Q = Q + surface_power_component(temp_TF%x%y,temp_CC%x,m,temp_F1%y,temp_F2%y,2)
-         Q = Q + surface_power_component(temp_TF%z%y,temp_CC%z,m,temp_F1%y,temp_F2%y,2)
+         call surface_power_component(temp,temp_TF%x%y,temp_CC%x,m,temp_F1%y,temp_F2%y,2); Q=Q+temp
+         call surface_power_component(temp,temp_TF%z%y,temp_CC%z,m,temp_F1%y,temp_F2%y,2); Q=Q+temp
          ! z-faces
-         Q = Q + surface_power_component(temp_TF%x%z,temp_CC%x,m,temp_F1%z,temp_F2%z,3)
-         Q = Q + surface_power_component(temp_TF%y%z,temp_CC%y,m,temp_F1%z,temp_F2%z,3)
-       end function
+         call surface_power_component(temp,temp_TF%x%z,temp_CC%x,m,temp_F1%z,temp_F2%z,3); Q=Q+temp
+         call surface_power_component(temp,temp_TF%y%z,temp_CC%y,m,temp_F1%z,temp_F2%z,3); Q=Q+temp
+       end subroutine
 
-       function surface_power_component(CC1,CC2,m,temp_F1,temp_F2,dir) result(Q)
+       subroutine surface_power_component(Q,CC1,CC2,m,temp_F1,temp_F2,dir)
          ! Computes: BF = ∫∫ u•tau_wall dA
          implicit none
+         real(cp),intent(inout) :: Q
          type(SF),intent(inout) :: temp_F1,temp_F2
          type(SF),intent(in) :: CC1,CC2
          type(mesh),intent(in) :: m
          integer,intent(in) :: dir
-         real(cp) :: Q
          call cellcenter2Face(temp_F1,CC1,m,dir)
          call cellcenter2Face(temp_F2,CC2,m,dir)
          call multiply(temp_F1,temp_F2)
-         Q = boundary_flux(temp_F1,m)
-       end function
+         call boundary_flux(Q,temp_F1,m,temp_F2)
+       end subroutine
 
        end module

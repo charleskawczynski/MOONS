@@ -51,6 +51,7 @@
         public :: init_Edge
         public :: init_Node
         public :: init_CC_Edge
+        public :: init_Node_Face
         public :: get_DL
 
         ! Monitoring
@@ -79,12 +80,14 @@
         interface init_Edge;     module procedure init_Edge_TF;             end interface
         interface init_Node;     module procedure init_Node_TF;             end interface
         interface init_CC_Edge;  module procedure init_CC_Edge_TF;          end interface
+        interface init_Node_Face;module procedure init_Node_Face_TF;        end interface
 
         interface init_CC;       module procedure init_CC_assign_TF;        end interface
         interface init_Face;     module procedure init_Face_assign_TF;      end interface
         interface init_Edge;     module procedure init_Edge_assign_TF;      end interface
         interface init_Node;     module procedure init_Node_assign_TF;      end interface
         interface init_CC_Edge;  module procedure init_CC_Edge_assign_TF;   end interface
+        interface init_Node_Face;module procedure init_Node_Face_assign_TF; end interface
 
         interface delete;        module procedure delete_TF;                end interface
         interface print;         module procedure print_TF;                 end interface
@@ -441,6 +444,22 @@
           call init_edge(f%z%y,m,2)
         end subroutine
 
+        subroutine init_Node_Face_TF(f,m)
+          implicit none
+          type(TF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          call init_Node(f%x%x,m)
+          call init_Node(f%y%y,m)
+          call init_Node(f%z%z,m)
+
+          call init_Face(f%x%y,m,2)
+          call init_Face(f%x%z,m,3)
+          call init_Face(f%y%x,m,1)
+          call init_Face(f%y%z,m,3)
+          call init_Face(f%z%x,m,1)
+          call init_Face(f%z%y,m,2)
+        end subroutine
+
         subroutine init_Edge_TF(f,m)
           implicit none
           type(TF),intent(inout) :: f
@@ -499,7 +518,15 @@
           type(TF),intent(inout) :: f
           type(mesh),intent(in) :: m
           real(cp),intent(in) :: val
-          call init_CC_Edge(f,m); call assign(init_CC_Edge_TF,val)
+          call init_CC_Edge(f,m); call assign(f,val)
+        end subroutine
+
+        subroutine init_Node_Face_assign_TF(f,m,val)
+          implicit none
+          type(TF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          real(cp),intent(in) :: val
+          call init_Node_Face(f,m); call assign(f,val)
         end subroutine
 
         subroutine delete_TF(f)

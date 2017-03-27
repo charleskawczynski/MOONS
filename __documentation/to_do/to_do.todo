@@ -8,17 +8,28 @@ TO DO LIST COMMANDS:
 --- ✄ -----------------------
 Right Now:
  ☐ 1) Start BC cases
-     ☐ Parameters determined via Shatrov paper, Fig 9a:
-     ✔ Re(L=.5)=1000,N(L=.5)=0.1-->Re(L=1)=500 ,N(L=1)=0.05 @done (17-03-15 07:54)
-     ✔ Re(L=.5)=1000,N(L=.5)= 1 -->Re(L=1)=500 ,N(L=1)=.5 @done (17-03-15 07:54)
-     ✔ Re(L=.5)=3000,N(L=.5)= 1 -->Re(L=1)=1500,N(L=1)=.5 @done (17-03-15 07:54)
-     ✔ Re(L=.5)=3000,N(L=.5)= 10-->Re(L=1)=1500,N(L=1)=5 @done (17-03-15 07:54)
-     ☐ Re(L=.5)=5000,N(L=.5)= 50-->Re(L=1)=2500,N(L=1)=25
-     ☐ Re(L=.5)=2400,N(L=.5)= 0.28-->Re(L=1)=1200,N(L=1)=0.14 ! predicted unsteady with LSA (Shatrov)
-     ☐ Re(L=.5)=2200,N(L=.5)= 0.24-->Re(L=1)=1100,N(L=1)=0.12 ! predicted unsteady with LSA (Shatrov)
+     ☐ Re(L=.5)=1000,N(L=.5)=0.1-->Re(L=1)=500 ,N(L=1)=0.05
+     ☐ Re(L=.5)=1000,N(L=.5)= 1 -->Re(L=1)=500 ,N(L=1)=.5
+     ☐ Re(L=.5)=3000,N(L=.5)= 1 -->Re(L=1)=1500,N(L=1)=.5
+     ☐ Re(L=.5)=5000,N(L=.5)= 50-->Re(L=1)=5000,N(L=1)=25
+     Others:
+     ☐ Re(L=.5)=3000 ,N(L=.5)= 10 -->Re(L=1)=1500 ,N(L=1)=5 ! ?
+     ☐ Re(L=.5)=5000 ,N(L=.5)= 10 -->Re(L=1)=2000 ,N(L=1)=5 ! steady
+     ☐ Re(L=.5)=6000 ,N(L=.5)= 10 -->Re(L=1)=2500 ,N(L=1)=5 ! up next
+     ☐ Re(L=.5)=6000 ,N(L=.5)= 10 -->Re(L=1)=3000 ,N(L=1)=5 ! unsteady
+     ☐ Re(L=.5)=7000 ,N(L=.5)= 10 -->Re(L=1)=3500 ,N(L=1)=5 ! unsteady
+     ☐ Re(L=.5)=5000 ,N(L=.5)= 10 -->Re(L=1)=10000,N(L=1)=5 ! unsteady
+
+     ☐ Re(L=.5)=5000 ,N(L=.5)= 50 -->Re(L=1)=2500 ,N(L=1)=25
+     ☐ Re(L=.5)=5000 ,N(L=.5)= 50 -->Re(L=1)=5000 ,N(L=1)=25
+     ☐ Re(L=.5)=10000,N(L=.5)= 100-->Re(L=1)=5000 ,N(L=1)=50
+     ☐ Re(L=.5)=20000,N(L=.5)= 200-->Re(L=1)=10000,N(L=1)=100 ! started on workstation
+     ☐ Re(L=.5)=20000,N(L=.5)= 200-->Re(L=1)=10000,N(L=1)=100
+     ☐ Re(L=.5)=20000,N(L=.5)= 200-->Re(L=1)=10^5,N(L=1)=1000
      ☐ Some differences from Shatrov:
      ☐  - Lid velocity distribution
      ☐  - B0 = (1,0,0)
+
  ☐ 2) Start Shatrov parameter space sims
    ☐ Analyze data - If good - then start new full BC MRS
    ☐ Analyze data - else    - Ask Sergey if we can change B0 config to match Shatrov
@@ -27,16 +38,29 @@ Right Now:
  ✔ 5) Move restart fields to restart @done (17-03-15 08:13)
  ✔ 6) Maybe make debug fields, and store them appropriately, export conditionally @done (17-03-15 08:13)
  ✔ Always check mesh error file after mesh generation @done (17-03-15 09:26)
+ ☐ Configure parameter for printing information to file (full vs light)
+ ☐ Try multiple outputs in same folder (via new_and_open)
 
   ☐ PD cases
     ☐ Determine actual Re_m,Re,Ha etc
     ☐ Fix Poloidal,radial,toroidal plots in past PD slides
+    ☐ Questions for Vinodh
+      ☐ What is a bootstrap current?
+      ☐ What are the time scales involved? - alfven time, quench time, etc.
+      ☐ Opening of magnetic island?
+      ☐ Rational surface?
+      ☐ Width of island?
+      ☐ Seed island?
+      ☐ Halo plasma
+      ☐
+      ☐
   ☐ Full BC sims
     ☐ Perform new mesh refinement study
     ☐ Look at new parameter spaces with coardse mesh
     ☐ Suggest using previous results instead and simply nix the PV BC cases
       ☐ There are more cases this way, the BC comparison can be more limited in scope.
   ☐
+  ☐ Magnetic convection export seems to be broken, may be broken embed-extract after mirror
   ☐ Re-develop stiches
   ☐ Consider adding a prefix to the output of all "names" (not dir's), so that results can be integrated into the same folder. This may be really useful.
   ☐ Look into Sergey's suggested reference "Jenko - energy balance for plasma disruption"
@@ -119,10 +143,7 @@ Code development:
   ☐ Make a function to make grid in BL uniform
 
   SF / VF / TF:
-  ☐ Remove is_CC from VF,TF. Make all objects depend on data_location.
-  ☐ Try to make data_location properties private again.
-  ☐ Make TF composed of 9 SF so that it can be composed of different sizes.
-  ☐ Try re-incorporating better parallelization for collocated / staggered VF / TF fields
+  ☐
 
   IO:
   ☐ export_raw_processed_mod - remove global vars (from sim params), check correct field is exported.
@@ -235,18 +256,14 @@ Today:
 
 Code changes to make:
  ☐ add restart to PE, and use this to separate tec export and restart export
- ☐ make "array" class and use it in coordinates and triDiag (maybe)
  ☐ change stencils.f90 to sparse\_mult and use L,D,U only (so that stencils must be combined at beginning)
  ☐ delete more matlab scripts / convert to python
- ☐ migrate to using DL only: (make CC,N,F,E private in SF and VF, then replace with DL)
- ☐ make mirror for (coordinates,grid,mesh,GF,BF,SF,VF) for export\_raw\_symmetric(...,mirror dir)
- ☐ make mirror for (coordinates,grid,mesh,GF,BF,SF,VF) for export\_raw\_antisymmetric(...,mirror dir)
  ☐ Remove (get\_ghost,get\_interior) from coordinates
  ☐ move all routines that use i,j,k indexes to GF and make all of these callable from BF, then SF.
  ☐ This may not be necessary for 1D operations, since GF requires 3D scalar info.
- ☐ preconditioners
- ☐ interp
- ☐ del
+ ☐     preconditioners
+ ☐     interp
+ ☐     del
 
 Before starting next NME simulations:
  ☐ Need to checkout a lot of old files on workstation.
@@ -262,17 +279,10 @@ Misc:
  ☐ finish reading two papers (bandaru / MHD moving interfaces)
  ☐ Update fix and improvements, then return here
  ☐ Bring books over to Jon / Tyler
- ☐ Look at solution from 2-day sim, make sure all looks okay
- ☐ Change time to 400, or 100000 or something so that varying ISP is not missed.
  ☐ copy over new Gamma_c sims
  ☐ Push MOONS to github, pull on workstation + start new sim set (with proper sim ID)
- ☐ Speak with Sergey about decision
  ☐ \Gamma_c = 1 matches BETTER with PV BC case (uniform sigma) @created(16-11-17 12:10)
  ☐ We should not be concerned with J_n not = 0 at \Gamma_c AFTER LINEAR INTERPOLATION since the currents do not behave linearly along n in this region. @created(16-11-17 12:11)
- ☐ Practitioners will find this data, and study, more useful if they can compare uniform sigma
- ☐ Work on the paper
- ☐ Work prospectus presentation
- ☐ Email abdou about prospectus reminder
  ☐ Update FFT_Poisson_mod and all of its "leaves"
 
 

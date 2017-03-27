@@ -986,13 +986,14 @@
           m = sum(f%x,pad)+sum(f%y,pad)+sum(f%z,pad)
         end function
 
-        function boundary_flux_VF(f,m) result (BF)
+        subroutine boundary_flux_VF(BF,f,m,f_temp)
           implicit none
+          real(cp),intent(inout) :: BF
           type(VF),intent(in) :: f
           type(mesh),intent(in) :: m
-          real(cp) :: BF
-          BF = boundary_flux(f%x,f%y,f%z,m)
-        end function
+          type(VF),intent(inout) :: f_temp
+          call boundary_flux(BF,f%x,f%y,f%z,m,f_temp%x,f_temp%y,f_temp%z)
+        end subroutine
 
         function amax_VF(f) result (m)
           implicit none

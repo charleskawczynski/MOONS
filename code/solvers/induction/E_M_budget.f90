@@ -61,6 +61,7 @@
           J_temp,m_temp,MD_fluid_temp,MD_sigma_temp,DP,TMP)
           call delete(MD_fluid_temp)
           call delete(MD_sigma_temp)
+          call delete(temp)
           call delete(m_temp)
           call delete(U_temp)
           call delete(B_temp)
@@ -184,7 +185,7 @@
          call init(vars(2),'Joule_Heat = ')
          call init(vars(3),'Poynting = ')
 
-         write(un,*) 'magnetic energy budget at nstep=',TMP%n_step
+         write(un,*) 'magnetic energy budget at t=',TMP%t
          do i=1,3
          write(un,*) str(vars(i)),e_budget(i)
          call delete(vars(i))

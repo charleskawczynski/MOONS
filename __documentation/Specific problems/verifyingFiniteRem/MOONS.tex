@@ -27,7 +27,7 @@
 \setlength{\topmargin}{-1in}     %\topmargin: gap above header
 \setlength{\headheight}{0in}     %\headheight: height of header
 \setlength{\topskip}{0in}        %\topskip: between header and text
-\setlength{\headsep}{0in}        
+\setlength{\headsep}{0in}
 \setlength{\textheight}{692pt}   %\textheight: height of main text
 \setlength{\textwidth}{7.5in}    % \textwidth: width of text
 \setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
@@ -102,9 +102,9 @@ Non-dimensionalizing the momentum equation with
 
 Yields the non-dimensional momentum equation. In the most general case considered, the ith component of the non-dimensional momentum equation is
 \begin{equation}
-	\frac{\partial u_i}{\partial t} + 
+	\frac{\partial u_i}{\partial t} +
 	\frac{\partial (u_i u_j)}{\partial x_j}
-	= 
+	=
 	- \frac{\partial p}{\partial x_i}
 	+ \frac{1}{Re}
 	\frac{\partial^2 u_i}{\partial x_j^2}
@@ -134,15 +134,15 @@ Non-dimensionalizing the induction equation with the same parameters used to non
 Yields the non-dimensional induction equation. In the most general case considered, the ith component of the non-dimensional induction equation is
 
 \begin{equation}
-	\frac{\partial B_i}{\partial t} 
-	+ \frac{\partial}{\partial x_j} (u_j B_i - u_i B_j) 
+	\frac{\partial B_i}{\partial t}
+	+ \frac{\partial}{\partial x_j} (u_j B_i - u_i B_j)
 	+ \frac{1}{Re_m}
-	\frac{\partial}{\partial x_j} 
-	\left\{ \frac{1}{\sigma} 
-	\left[ 
-	\frac{\partial}{\partial x_i} 
-	\left( \frac{B_j}{\mu} \right) - 
-	\frac{\partial}{\partial x_j} 
+	\frac{\partial}{\partial x_j}
+	\left\{ \frac{1}{\sigma}
+	\left[
+	\frac{\partial}{\partial x_i}
+	\left( \frac{B_j}{\mu} \right) -
+	\frac{\partial}{\partial x_j}
 	\left( \frac{B_i}{\mu} \right)
 	\right]
 	\right\} = 0
@@ -163,15 +163,15 @@ If we were to non-dimensionalize $B$ with
 Where $B_k$ and $B^0$ are the induced and applied magnetic fields, we get
 
 \begin{equation}
-	\frac{\partial B_i}{\partial t} 
-	+ \frac{\partial}{\partial x_j} (u_j B_i - u_i B_j) 
+	\frac{\partial B_i}{\partial t}
+	+ \frac{\partial}{\partial x_j} (u_j B_i - u_i B_j)
 	+
-	\frac{\partial}{\partial x_j} 
-	\left\{ \frac{1}{\sigma} 
-	\left[ 
-	\frac{\partial}{\partial x_i} 
-	\left( \frac{B_j}{\mu} \right) - 
-	\frac{\partial}{\partial x_j} 
+	\frac{\partial}{\partial x_j}
+	\left\{ \frac{1}{\sigma}
+	\left[
+	\frac{\partial}{\partial x_i}
+	\left( \frac{B_j}{\mu} \right) -
+	\frac{\partial}{\partial x_j}
 	\left( \frac{B_i}{\mu} \right)
 	\right]
 	\right\} = 0
@@ -181,15 +181,15 @@ Where $B_k$ and $B^0$ are the induced and applied magnetic fields, we get
 In these comparisons, $\mu$ was assumed to be uniform in space and constant in time.
 
 % \begin{equation}
-	% \frac{\partial B_i}{\partial t} 
-	% + \frac{\partial}{\partial x_j} (u_j B_i - u_i B_j) 
+	% \frac{\partial B_i}{\partial t}
+	% + \frac{\partial}{\partial x_j} (u_j B_i - u_i B_j)
 	% + \frac{1}{Re_m}
-	% \frac{\partial}{\partial x_j} 
-	% \left\{ \frac{1}{\sigma} 
-	% \left[ 
-	% \frac{\partial B_j}{\partial x_i} 
-	% - 
-	% \frac{\partial B_i}{\partial x_j} 
+	% \frac{\partial}{\partial x_j}
+	% \left\{ \frac{1}{\sigma}
+	% \left[
+	% \frac{\partial B_j}{\partial x_i}
+	% -
+	% \frac{\partial B_i}{\partial x_j}
 		% \right]
 	% \right\} = 0
 % \end{equation}
@@ -198,9 +198,9 @@ In these comparisons, $\mu$ was assumed to be uniform in space and constant in t
 We may analyze the kinetic energy of the fluid by taking the dot product of the momentum equation with the velocity. Doing so, using the non-dimensional equations above, yields
 
 \begin{equation}
-	\frac{\partial u_i}{\partial t} + 
+	\frac{\partial u_i}{\partial t} +
 	\frac{\partial (u_i u_j)}{\partial x_j}
-	= 
+	=
 	- \frac{\partial p}{\partial x_i}
 	+ \frac{1}{Re}
 	\frac{\partial^2 u_i}{\partial x_j^2}
@@ -213,7 +213,7 @@ We may analyze the kinetic energy of the fluid by taking the dot product of the 
 \section{Boundary Conditions}
 
 \subsection{Velocity field}
-The boundary conditions for the velocity are 
+The boundary conditions for the velocity are
 
 \subsubsection{Dirichlet}
 
@@ -275,9 +275,9 @@ This transformation clusters more points near $y=0$ as the stretching parameter 
 For this transformation, if $\alpha=0$, the mesh will be refined near $y=h$ only, whereas if $\alpha= \frac{1}{2}$, the mesh will be refined equally near $y=0$ and $y=h$.
 
 \begin{equation}
-	y 
-	= 
-	h 
+	y
+	=
+	h
 	\frac{
 	(\beta + 2 \alpha)
 	\left[ \frac{\beta+1}{\beta-1}^{(\bar{y}-\alpha)/(1-\alpha)} \right] - \beta + 2 \alpha}
@@ -331,7 +331,7 @@ Where
 	B
 	=
 	\frac{1}{2\tau}
-	\ln 
+	\ln
 	\left[
 	\frac{1+(e^\tau-1) (y_c/h)}{1+(e^{-\tau}-1) (y_c/h)}
 	\right]
@@ -352,7 +352,7 @@ The induction equation was solved using a 1st order accurate Explicit Euler time
 
 \section{Comparison of Data}
 
-The numerical solutions between the two codes have been compared in several ways. They include 
+The numerical solutions between the two codes have been compared in several ways. They include
 
 \begin{itemize}
 \item Comparing velocity and magnetic field components at an instance in time along a line in the domain
@@ -388,12 +388,12 @@ Here, we made the following assumptions:
 Using the zero velocity and uniform $\sigma$ assumptions, the ith component of the induced magnetic field simplifies to
 
 \begin{equation}
-	\frac{\partial B_i}{\partial t} 
+	\frac{\partial B_i}{\partial t}
 	=
 	-
 	\frac{\partial B_i^0}{\partial t}
 	+
-	\frac{\partial^2 B_i}{\partial x_j^2} 
+	\frac{\partial^2 B_i}{\partial x_j^2}
 \end{equation}
 
 With BCs
@@ -407,11 +407,11 @@ With BCs
 The uniform applied magnetic field provides a source term only for the z-component, so the equations further simplify to
 
 \begin{equation}
-	\frac{\partial B_z}{\partial t} 
+	\frac{\partial B_z}{\partial t}
 	=
 	e^{-t}
 	+
-	\frac{\partial^2 B_z}{\partial x_j^2} 
+	\frac{\partial^2 B_z}{\partial x_j^2}
 	\qquad \qquad
 	B_x = 0
 	\qquad \qquad
@@ -421,11 +421,11 @@ The uniform applied magnetic field provides a source term only for the z-compone
 Since the domain is long in x compared to y and z, the diffusion along x is negligible compared with y and z near the center of the domain. In addition, the $\frac{\partial B_n}{\partial n}$ results in no variation of $B_z$ along $z$. So we have
 
 \begin{equation}
-	\frac{\partial B_z}{\partial t} 
+	\frac{\partial B_z}{\partial t}
 	=
 	e^{-t}
 	+
-	\frac{\partial^2 B_z}{\partial y^2} 
+	\frac{\partial^2 B_z}{\partial y^2}
 	\qquad \qquad
 	B_x = 0
 	\qquad \qquad
@@ -445,7 +445,7 @@ An exact solution exists of the form (Sergey's book)
 
 \begin{equation}
 	\boxed{
-	B_{z,exact}(y,t) 
+	B_{z,exact}(y,t)
 	=
 	\sum_{n=1}^{\infty}
 	\sin \left( \frac{n\pi y}{L} \right)
@@ -462,11 +462,11 @@ Where this solution applies to a domain $0 \le y \le L$. So this result must be 
 
 After performing this test, we modified the applied magnetic field to $B^0=(0,e^{-t},0)$. Using the same assumptions as before, the equations simplify to
 \begin{equation}
-	\frac{\partial B_y}{\partial t} 
+	\frac{\partial B_y}{\partial t}
 	=
 	e^{-t}
 	+
-	\frac{\partial^2 B_y}{\partial z^2} 
+	\frac{\partial^2 B_y}{\partial z^2}
 	\qquad \qquad
 	B_x = 0
 	\qquad \qquad
@@ -483,7 +483,7 @@ Where
 The same analytic solution is valid but with $B_{y,exact}(z,t)$.
 
 \subsubsection{Results}
-Both codes performed these computations using $\Delta t = 10^{-5}$. The solution, $B_z$ was probed at the center of the domain and compared as a function of time. In addition, KB was computed and compared as a function of time. 
+Both codes performed these computations using $\Delta t = 10^{-5}$. The solution, $B_z$ was probed at the center of the domain and compared as a function of time. In addition, KB was computed and compared as a function of time.
 
 \begin{figure}[H]
  \centering
@@ -510,12 +510,12 @@ Here, we made the following assumptions:
 Using the zero velocity and uniform $\sigma$ assumptions, the ith component of the induced magnetic field simplifies to
 
 \begin{equation}
-	\frac{\partial B_i}{\partial t} 
+	\frac{\partial B_i}{\partial t}
 	=
 	-
 	\frac{\partial B_i^0}{\partial t}
 	+
-	\frac{\partial^2 B_i}{\partial x_j^2} 
+	\frac{\partial^2 B_i}{\partial x_j^2}
 \end{equation}
 
 With BCs
@@ -529,17 +529,17 @@ With BCs
 The uniform applied magnetic field provides a source term only for the x and y-components, so the equations further simplify to
 
 \begin{equation}
-	\frac{\partial B_x}{\partial t} 
+	\frac{\partial B_x}{\partial t}
 	=
 	e^{-t}
 	+
-	\frac{\partial^2 B_x}{\partial x_j^2} 
+	\frac{\partial^2 B_x}{\partial x_j^2}
 	\qquad \qquad
-	\frac{\partial B_y}{\partial t} 
+	\frac{\partial B_y}{\partial t}
 	=
 	e^{-t}
 	+
-	\frac{\partial^2 B_y}{\partial x_j^2} 
+	\frac{\partial^2 B_y}{\partial x_j^2}
 	\qquad \qquad
 	B_z = 0
 \end{equation}
@@ -547,19 +547,19 @@ The uniform applied magnetic field provides a source term only for the x and y-c
 Since the domain is long in x compared to y and z, the diffusion along x is negligible compared with y and z near the center of the domain. In addition, the $\frac{\partial B_n}{\partial n}$ results in no variation of $B_x$ along $x$ and $B_y$ along $y$. So we have
 
 \begin{equation}
-	\frac{\partial B_x}{\partial t} 
+	\frac{\partial B_x}{\partial t}
 	=
 	e^{-t}
 	+
-	\frac{\partial^2 B_x}{\partial y^2} 
+	\frac{\partial^2 B_x}{\partial y^2}
 	+
-	\frac{\partial^2 B_x}{\partial z^2} 
+	\frac{\partial^2 B_x}{\partial z^2}
 	\qquad \qquad
-	\frac{\partial B_y}{\partial t} 
+	\frac{\partial B_y}{\partial t}
 	=
 	e^{-t}
 	+
-	\frac{\partial^2 B_y}{\partial z^2} 
+	\frac{\partial^2 B_y}{\partial z^2}
 	\qquad \qquad
 	B_z = 0
 \end{equation}
@@ -603,7 +603,7 @@ A prescribed velocity was assumed of the form
 	,
 	-1 \le z \le 1
 	\qquad \qquad
-	u = 0 
+	u = 0
 	\qquad
 	\text{otherwise}
 \end{equation}
@@ -620,16 +620,16 @@ A prescribed velocity was assumed of the form
 Using the uniform $\sigma$ and uniform applied magnetic field assumptions, the ith component of the induced magnetic field simplifies to
 
 \begin{equation}
-	\frac{\partial B_i}{\partial t} 
+	\frac{\partial B_i}{\partial t}
 	=
 	-
 	\frac{\partial B_i^0}{\partial t}
 	-
-	\frac{\partial}{\partial x_j} (u_j B_i^0 - u_i B_j^0) 
+	\frac{\partial}{\partial x_j} (u_j B_i^0 - u_i B_j^0)
 	-
-	\frac{\partial}{\partial x_j} (u_j B_i - u_i B_j) 
+	\frac{\partial}{\partial x_j} (u_j B_i - u_i B_j)
 	+
-	\frac{\partial^2 B_i}{\partial x_j^2} 
+	\frac{\partial^2 B_i}{\partial x_j^2}
 \end{equation}
 
 Here, we used the BCs
@@ -650,61 +650,61 @@ Here, we used the BCs
 	x_{min}, x_{max}
 \end{equation}
 
-Note that this means there are no variations in the x-direction. 
+Note that this means there are no variations in the x-direction.
 
 Using $v=w=0$, no variations exist in the x direction, we (partially) simplify this to
 \begin{equation}
-	\frac{\partial B_x}{\partial t} 
+	\frac{\partial B_x}{\partial t}
 	=
 	-\frac{\partial B_x^0}{\partial t}
-	+\frac{\partial}{\partial y} (u B_y^0) 
+	+\frac{\partial}{\partial y} (u B_y^0)
 	+\frac{\partial}{\partial z} (u B_z^0) \\
-	+\frac{\partial}{\partial y} (u B_y) 
-	+\frac{\partial}{\partial z} (u B_z) 
-	+\frac{\partial^2 B_x}{\partial y^2} 
-	+\frac{\partial^2 B_x}{\partial z^2} 
+	+\frac{\partial}{\partial y} (u B_y)
+	+\frac{\partial}{\partial z} (u B_z)
+	+\frac{\partial^2 B_x}{\partial y^2}
+	+\frac{\partial^2 B_x}{\partial z^2}
 \end{equation}
 \begin{equation}
-	\frac{\partial B_y}{\partial t} 
+	\frac{\partial B_y}{\partial t}
 	=
 	-\frac{\partial B_y^0}{\partial t}
-	+\frac{\partial}{\partial y} (v B_y^0) 
+	+\frac{\partial}{\partial y} (v B_y^0)
 	+\frac{\partial}{\partial z} (v B_z^0) \\
-	+\frac{\partial}{\partial y} (v B_y) 
-	+\frac{\partial}{\partial z} (v B_z) 
-	+\frac{\partial^2 B_y}{\partial y^2} 
-	+\frac{\partial^2 B_y}{\partial z^2} 
+	+\frac{\partial}{\partial y} (v B_y)
+	+\frac{\partial}{\partial z} (v B_z)
+	+\frac{\partial^2 B_y}{\partial y^2}
+	+\frac{\partial^2 B_y}{\partial z^2}
 \end{equation}
 \begin{equation}
-	\frac{\partial B_z}{\partial t} 
+	\frac{\partial B_z}{\partial t}
 	=
 	-\frac{\partial B_z^0}{\partial t}
-	+\frac{\partial}{\partial y} (w B_y^0) 
+	+\frac{\partial}{\partial y} (w B_y^0)
 	+\frac{\partial}{\partial z} (w B_z^0) \\
-	+\frac{\partial}{\partial y} (w B_y) 
-	+\frac{\partial}{\partial z} (w B_z) 
-	+\frac{\partial^2 B_z}{\partial y^2} 
-	+\frac{\partial^2 B_z}{\partial z^2} 
+	+\frac{\partial}{\partial y} (w B_y)
+	+\frac{\partial}{\partial z} (w B_z)
+	+\frac{\partial^2 B_z}{\partial y^2}
+	+\frac{\partial^2 B_z}{\partial z^2}
 \end{equation}
 
 Taking out some more terms and using the applied magnetic field, we have
 
 \begin{equation}
-	\frac{\partial B_x}{\partial t} 
+	\frac{\partial B_x}{\partial t}
 	=
 	e^{-t}
-	+e^{-t}\frac{\partial u}{\partial y} 
+	+e^{-t}\frac{\partial u}{\partial y}
 	+\frac{\partial u}{\partial z} \\
-	+\frac{\partial (u B_y)}{\partial y} 
-	+\frac{\partial (u B_z)}{\partial z} 
-	+\frac{\partial^2 B_x}{\partial y^2} 
-	+\frac{\partial^2 B_x}{\partial z^2} 
+	+\frac{\partial (u B_y)}{\partial y}
+	+\frac{\partial (u B_z)}{\partial z}
+	+\frac{\partial^2 B_x}{\partial y^2}
+	+\frac{\partial^2 B_x}{\partial z^2}
 \end{equation}
 \begin{equation}
-	\frac{\partial B_y}{\partial t} 
+	\frac{\partial B_y}{\partial t}
 	=
 	e^{-t}
-	+\frac{\partial^2 B_y}{\partial z^2} 
+	+\frac{\partial^2 B_y}{\partial z^2}
 \end{equation}
 \begin{equation}
 	B_z = 0
@@ -782,10 +782,10 @@ First note that there is no pressure force along x, and since the flow is period
 	u=0
 \end{equation}
 \begin{equation}
-	\frac{\partial v}{\partial t} 
+	\frac{\partial v}{\partial t}
 	+ \frac{\partial (v v)}{\partial y}
 	+ \frac{\partial (v w)}{\partial z}
-	= 
+	=
 	- \frac{\partial p}{\partial y}
 	+ \frac{1}{Re}
 	\left(
@@ -796,10 +796,10 @@ First note that there is no pressure force along x, and since the flow is period
 	(j \times (B^{tot}))_y
 \end{equation}
 \begin{equation}
-	\frac{\partial w}{\partial t} 
+	\frac{\partial w}{\partial t}
 	+ \frac{\partial (w v)}{\partial y}
 	+ \frac{\partial (w w)}{\partial z}
-	= 
+	=
 	- \frac{\partial p}{\partial z}
 	+ \frac{1}{Re}
 	\left(
@@ -821,10 +821,10 @@ Where
 The induction equation in its general form is
 
 \begin{equation}
-	\frac{\partial B_i}{\partial t} 
+	\frac{\partial B_i}{\partial t}
 	=
-	- \frac{\partial B_i^0}{\partial t} 
-	- \frac{\partial}{\partial x_j} (u_j B_i^{tot} - u_i B_j^{tot}) 
+	- \frac{\partial B_i^0}{\partial t}
+	- \frac{\partial}{\partial x_j} (u_j B_i^{tot} - u_i B_j^{tot})
 	+
 	\frac{1}{Re_m}
 	\frac{\partial^2 B_i}{\partial x_j^2}
@@ -834,7 +834,7 @@ First note that there is only a source term for the induced magnetic field for t
 
 
 \begin{equation}
-	\frac{\partial B_x}{\partial t} 
+	\frac{\partial B_x}{\partial t}
 	=
 	- \frac{\partial B_x^0}{\partial t}
 	- \frac{\partial}{\partial y} (v B_x^{tot})
@@ -857,9 +857,9 @@ Looking back at the momentum equation, the $j\times B$ force does not act in x, 
 \begin{equation}
 	(j \times B^{tot})_x = 0
 	\qquad \qquad
-	(j \times B^{tot})_y = -	B_x^{tot} \frac{\partial B_x}{\partial y} 
+	(j \times B^{tot})_y = -	B_x^{tot} \frac{\partial B_x}{\partial y}
 	\qquad \qquad
-	(j \times B^{tot})_z = - B_x^{tot} \frac{\partial B_x}{\partial z} 
+	(j \times B^{tot})_z = - B_x^{tot} \frac{\partial B_x}{\partial z}
 \end{equation}
 
 \subsubsection{Steady assumptions}
@@ -868,22 +868,22 @@ Assuming that the flow and magnetic fields (both induced and applied) are steady
 \begin{equation}
 	\frac{\partial (v v)}{\partial y}
 	+ \frac{\partial (v w)}{\partial z}
-	= 
+	=
 	- \frac{\partial p}{\partial y}
 	+ \frac{1}{Re}
 	\left(
 	\frac{\partial^2 v}{\partial y^2}
 	+\frac{\partial^2 v}{\partial z^2}
 	\right)
-	- 
+	-
 	\frac{Ha^2}{Re}
 	B_x^{tot}
-	\frac{\partial B_x}{\partial y} 
+	\frac{\partial B_x}{\partial y}
 \end{equation}
 \begin{equation}
 	\frac{\partial (w v)}{\partial y}
 	+ \frac{\partial (w w)}{\partial z}
-	= 
+	=
 	- \frac{\partial p}{\partial z}
 	+ \frac{1}{Re}
 	\left(
@@ -892,7 +892,7 @@ Assuming that the flow and magnetic fields (both induced and applied) are steady
 	\right)
 	+ \frac{Ha^2}{Re}
 	B_x^{tot}
-	\frac{\partial B_x}{\partial z} 
+	\frac{\partial B_x}{\partial z}
 \end{equation}
 And
 \begin{equation}
@@ -913,22 +913,22 @@ If we assume that the steady state value of the applied magnetic field is zero a
 \begin{equation}
 	\frac{\partial (v v)}{\partial y}
 	+ \frac{\partial (v w)}{\partial z}
-	= 
+	=
 	- \frac{\partial p}{\partial y}
 	+ \frac{1}{Re}
 	\left(
 	\frac{\partial^2 v}{\partial y^2}
 	+\frac{\partial^2 v}{\partial z^2}
 	\right)
-	- 
+	-
 	\frac{Ha^2}{Re}
 	B_x
-	\frac{\partial B_x}{\partial y} 
+	\frac{\partial B_x}{\partial y}
 \end{equation}
 \begin{equation}
 	\frac{\partial (w v)}{\partial y}
 	+ \frac{\partial (w w)}{\partial z}
-	= 
+	=
 	- \frac{\partial p}{\partial z}
 	+ \frac{1}{Re}
 	\left(
@@ -937,7 +937,7 @@ If we assume that the steady state value of the applied magnetic field is zero a
 	\right)
 	+ \frac{Ha^2}{Re}
 	B_x
-	\frac{\partial B_x}{\partial z} 
+	\frac{\partial B_x}{\partial z}
 \end{equation}
 And
 \begin{equation}
@@ -976,7 +976,7 @@ substituting this into the momentum equation, we eliminate pressure, and have
 	\frac{\partial \psi}{\partial z}
 	\frac{\partial \psi}{\partial y}
 	\right)
-	= 
+	=
 	\frac{1}{Re}
 	\left\{
 	\frac{\partial^2}{\partial y^2}
@@ -989,10 +989,10 @@ substituting this into the momentum equation, we eliminate pressure, and have
 	\frac{\partial \psi}{\partial z}
 	\right)
 	\right\}
-	- 
+	-
 	\frac{Ha^2}{Re}
 	B_x
-	\frac{\partial B_x}{\partial y} 
+	\frac{\partial B_x}{\partial y}
 \end{equation}
 \begin{equation}
 	-\frac{\partial}{\partial y}
@@ -1005,7 +1005,7 @@ substituting this into the momentum equation, we eliminate pressure, and have
 	\frac{\partial \psi}{\partial y}
 	\frac{\partial \psi}{\partial y}
 	\right)
-	= 
+	=
 	- \frac{1}{Re}
 	\left\{
 	\frac{\partial^2}{\partial y^2}
@@ -1019,7 +1019,7 @@ substituting this into the momentum equation, we eliminate pressure, and have
 	\right\}
 	+ \frac{Ha^2}{Re}
 	B_x
-	\frac{\partial B_x}{\partial z} 
+	\frac{\partial B_x}{\partial z}
 \end{equation}
 
 And
@@ -1156,11 +1156,11 @@ And the Lorentz force will look like
 
 \begin{equation}
 	\dots
-	- 
+	-
 	\frac{Ha^2}{Re}
 	B_x
 	\left\{
-	\frac{\partial B_x}{\partial y} 
+	\frac{\partial B_x}{\partial y}
 	+
 	\frac{\partial B_x}{\partial z}
 	\right\}
@@ -1216,11 +1216,11 @@ Putting this all together, we have
 	\frac{\partial^3 \psi}{\partial y^3}
 	+\frac{\partial^3 \psi}{\partial y z^2}
 	\right\}
-	- 
+	-
 	\frac{Ha^2}{Re}
 	B_x
 	\left\{
-	\frac{\partial B_x}{\partial y} 
+	\frac{\partial B_x}{\partial y}
 	+
 	\frac{\partial B_x}{\partial z}
 	\right\}
@@ -1258,7 +1258,7 @@ Assuming that the Reynolds number is negligibly small, then we have
 	Ha^2
 	B_x
 	\left\{
-	\frac{\partial B_x}{\partial y} 
+	\frac{\partial B_x}{\partial y}
 	+
 	\frac{\partial B_x}{\partial z}
 	\right\}

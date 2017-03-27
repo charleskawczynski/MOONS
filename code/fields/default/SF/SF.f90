@@ -977,25 +977,34 @@
           do i=1,m%s; SP = SP + plane_sum_z(u%BF(i),m%B(i),p); enddo
         end function
 
-        function boundary_flux_SF(x,y,z,m) result(BF)
+        subroutine boundary_flux_SF(BF,x,y,z,m,x_temp,y_temp,z_temp)
           implicit none
+          real(cp),intent(inout) :: BF
           type(SF),intent(in) :: x,y,z
           type(mesh),intent(in) :: m
+          type(SF),intent(inout) :: x_temp,y_temp,z_temp
+          real(cp) :: temp
           integer :: i
-          real(cp) :: BF
-          BF = 0.0_cp
-          do i=1,m%s; BF = BF + boundary_flux(x%BF(i),y%BF(i),z%BF(i),m%B(i)); enddo
-        end function
+          BF = 0.0_cp; temp = 0.0_cp
+          do i=1,m%s
+            call boundary_flux(temp,x%BF(i),y%BF(i),z%BF(i),m%B(i),&
+                x_temp%BF(i),y_temp%BF(i),z_temp%BF(i)); BF = BF+temp
+          enddo
+        end subroutine
 
-        function boundary_flux_SF_SF(phi,m) result(BF)
+        subroutine boundary_flux_SF_SF(BF,phi,m,temp_phi)
           implicit none
+          real(cp),intent(inout) :: BF
           type(SF),intent(in) :: phi
           type(mesh),intent(in) :: m
+          type(SF),intent(inout) :: temp_phi
+          real(cp) :: temp
           integer :: i
-          real(cp) :: BF
-          BF = 0.0_cp
-          do i=1,m%s; BF = BF + boundary_flux(phi%BF(i),m%B(i)); enddo
-        end function
+          BF = 0.0_cp; temp = 0.0_cp
+          do i=1,m%s;
+            call boundary_flux(temp,phi%BF(i),m%B(i),temp_phi%BF(i)); BF = BF+temp
+          enddo
+        end subroutine
 
         function symmetry_error_x_SF(u) result(SE)
           implicit none

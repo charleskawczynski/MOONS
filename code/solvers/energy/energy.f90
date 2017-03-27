@@ -65,6 +65,7 @@
          type(VF) :: temp_CC1_VF           ! CC data
          type(VF) :: temp_CC2_VF           ! CC data
          type(TF) :: temp_CC_TF            ! CC data
+         type(TF) :: temp_F_TF             ! Face data
          ! --- Scalar fields ---
          type(SF) :: divQ                  ! CC data
          type(SF) :: Q_source
@@ -131,6 +132,7 @@
          call init_CC(nrg%temp_CC1_VF,m,0.0_cp)
          call init_CC(nrg%temp_CC2_VF,m,0.0_cp)
          call init_CC(nrg%temp_CC_TF,m,0.0_cp)
+         call init_Face(nrg%temp_F_TF,m,0.0_cp)
 
          ! --- Scalar Fields ---
          call init_CC(nrg%divQ,m)
@@ -159,7 +161,7 @@
          call init(nrg%Probe_divQ,str(DT%T%residual),'probe_divQ',nrg%SP%VS%T%SS%restart,.true.)
 
          call init(nrg%PCG_T,nrg_diffusion,nrg_diffusion_explicit,prec_lap_SF,nrg%m,&
-         nrg%SP%VS%T%ISP,nrg%SP%VS%T%MFP,nrg%T,nrg%temp_F,str(DT%T%residual),'T',.false.,.false.)
+         nrg%SP%VS%T%ISP,nrg%SP%VS%T%MFP,nrg%T,nrg%temp_F_TF,str(DT%T%residual),'T',.false.,.false.)
 
          temp_unit = new_and_open(str(DT%params),'info_nrg')
          call display(nrg,temp_unit)
@@ -189,6 +191,7 @@
          call delete(nrg%temp_CC1_VF)
          call delete(nrg%temp_CC2_VF)
          call delete(nrg%temp_CC_TF)
+         call delete(nrg%temp_F_TF)
 
          call delete(nrg%divQ)
 

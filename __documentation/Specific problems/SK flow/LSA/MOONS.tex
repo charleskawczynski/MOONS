@@ -1,0 +1,123 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+\usepackage{etoolbox}
+\usepackage{epstopdf}
+% \usepackage[outdir=./]{epstopdf}
+
+\input{./../path_to_useful_commands.tex}
+\input{\PATHTOUSEFULCOMMANDS}
+
+\newcommand{\figS}{22.1em}
+\newcommand{\BfigS}{50em}
+\newcommand{\ffigS}{15.1em}
+\newcommand{\figH}{\figS}
+\newcommand{\figW}{\figS}
+\newcommand{\BfigH}{\BfigS}
+\newcommand{\BfigW}{\BfigS}
+\newcommand{\ffigH}{\ffigS}
+\newcommand{\ffigW}{\ffigS}
+\graphicspath{{figs}}
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+\newtoggle{plotUstream}
+\toggletrue{plotUstream}
+\togglefalse{plotUstream}
+
+% Useful commands:
+
+% \hfill		aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{LSA of SK flow}
+\author{S. Smolentsev, C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{LSA Governing equations}
+
+The LSA governing equations (derived elsewhere) are
+\begin{equation}\begin{aligned}
+\PD_t v = -\frac{1}{\rho}\PD_y P - \frac{1}{\rho \M} B_x^0 \PD_y B_x^{1} \\
+\PD_t w = -\frac{1}{\rho}\PD_z P - \frac{1}{\rho \M} B_x^0 \PD_z B_x^{1} \\
+\theta + \PD_t B_x^{1} = \frac{1}{\sigma \M} (\PD_{yy} B_x^{1}+\PD_{zz} B_x^{1}) \\
+\PD_y v + \PD_z w = 0  \\
+\end{aligned} \end{equation}
+
+\section{Exponential form}
+We have 4 equations and 4 unknowns.
+\begin{equation}\begin{aligned}
+\PD_t v = -\frac{1}{\rho}\PD_y P - \frac{1}{\rho \M} B_x^0 \PD_y B_x^{1} \\
+\PD_t w = -\frac{1}{\rho}\PD_z P - \frac{1}{\rho \M} B_x^0 \PD_z B_x^{1} \\
+\theta + \PD_t B_x^{1} = \frac{1}{\sigma \M} (\PD_{yy} B_x^{1}+\PD_{zz} B_x^{1}) \\
+\PD_y v + \PD_z w = 0  \\
+\end{aligned} \end{equation}
+Assuming a solution of the form
+\begin{equation}\begin{aligned}
+v = \hat{v} e^{i\alpha y} e^{i\beta z} e^{\lambda t} \\
+w = \hat{w} e^{i\alpha y} e^{i\beta z} e^{\lambda t} \\
+P = \hat{P} e^{i\alpha y} e^{i\beta z} e^{\lambda t} \\
+B_x^1 = \hat{B_x^1} e^{i\alpha y} e^{i\beta z} e^{\lambda t} \\
+\end{aligned} \end{equation}
+And multiplying by $\rho$, we have
+\begin{equation}\begin{aligned}
+\rho \lambda \hat{v} = -i \alpha \hat{P} - \frac{1}{\M} B_x^0 \PD_y B_x^{1} \\
+\rho \lambda \hat{w} = -i \beta  \hat{P} - \frac{1}{\M} B_x^0 \PD_z B_x^{1} \\
+\end{aligned} \end{equation}
+Solving for $B_x^1$, we have
+\begin{equation}\begin{aligned}
+\theta + \lambda \hat{B_x^{1}} = \frac{1}{\sigma \M} (-\alpha^2 \hat{B_x^{1}}-\beta^2 \hat{B_x^{1}} ) \\
+\sigma \M \theta + \sigma \M \lambda \hat{B_x^{1}} = -\alpha^2 \hat{B_x^{1}}-\beta^2 \hat{B_x^{1}} \\
+(\alpha^2 +\beta^2 + \sigma \M \lambda ) \hat{B_x^{1}} = -\sigma \M \theta \\
+\hat{B_x^{1}} = - \frac{\sigma \M \theta}{\alpha^2 +\beta^2 + \sigma \M \lambda} \\\begin{equation}\begin{aligned}
+\rho \lambda \hat{v} = -i \alpha \hat{P} - \frac{1}{\M} B_x^0 \PD_y B_x^{1} \\
+\rho \lambda \hat{w} = -i \beta  \hat{P} - \frac{1}{\M} B_x^0 \PD_z B_x^{1} \\
+\theta + \lambda \hat{B_x^{1}} = \frac{1}{\sigma \M} (-\alpha^2 \hat{B_x^{1}}-\beta^2 \hat{B_x^{1}} ) \\
+\sigma \M \theta + \sigma \M \lambda \hat{B_x^{1}} = -\alpha^2 \hat{B_x^{1}}-\beta^2 \hat{B_x^{1}} \\
+(\alpha^2 +\beta^2 + \sigma \M \lambda ) \hat{B_x^{1}} = -\sigma \M \theta \\
+\hat{B_x^{1}} = - \frac{\sigma \M \theta}{\alpha^2 +\beta^2 + \sigma \M \lambda} \\
+\alpha \hat{v} + \beta \hat{w} = 0  \\
+\end{aligned} \end{equation}
+
+\end{aligned} \end{equation}
+
+Canceling pressure and solving for $\hat{v}$, we have
+\begin{equation}\begin{aligned}
+\hat{w} = - \frac{\alpha}{\beta} \hat{v} \\
+-\rho \lambda (\frac{\alpha}{\beta} \hat{v}) = -i\beta \hat{P} - \frac{1}{\M} B_x^0 \PD_z B_x^{1} \\
+-\rho \lambda (\frac{\alpha^2}{\beta^2} \hat{v}) = -i\alpha \hat{P} - \frac{\alpha}{\beta} \frac{1}{\M} B_x^0 \PD_z B_x^{1} \\
+\rho \lambda (\frac{\alpha^2}{\beta^2} \hat{v}) = i\alpha \hat{P} + \frac{\alpha}{\beta} \frac{1}{\M} B_x^0 \PD_z B_x^{1} \\
+\rho \lambda \hat{v} = -i\alpha \hat{P} - \frac{1}{\M} B_x^0 \PD_y B_x^{1} \\
+\rho \lambda (\frac{\alpha^2}{\beta^2} \hat{v}) + \rho \lambda \hat{v} = \frac{\alpha}{\beta} \frac{1}{\M} B_x^0 \PD_z B_x^{1} - \frac{1}{\M} B_x^0 \PD_y B_x^{1} \\
+\rho \lambda \left(1 + \frac{\alpha^2}{\beta^2} \right) \hat{v} = \frac{B_x^0}{\M} \left(\frac{\alpha}{\beta} \PD_z B_x^{1} - \PD_y B_x^{1} \right) \\
+\end{aligned} \end{equation}
+
+
+\end{document}

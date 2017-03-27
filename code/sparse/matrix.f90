@@ -8,6 +8,7 @@
       use apply_BCs_mod
       use SF_mod
       use VF_mod
+      use TF_mod
       use index_mapping_mod
       use ops_interp_mod
       use matrix_free_params_mod
@@ -53,8 +54,8 @@
         implicit none
         procedure(op_SF) :: operator
         type(SF),intent(in) :: x,vol
-        type(VF),intent(in) :: k
-        type(VF),intent(inout) :: tempk
+        type(TF),intent(in) :: k
+        type(TF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         character(len=*),intent(in) :: name
@@ -88,8 +89,9 @@
       subroutine test_symmetry_VF(operator,name,x,k,vol,m,MFP,tempk)
         implicit none
         procedure(op_VF) :: operator
-        type(VF),intent(in) :: x,k,vol
-        type(VF),intent(inout) :: tempk
+        type(VF),intent(in) :: x,vol
+        type(TF),intent(in) :: k
+        type(TF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         character(len=*),intent(in) :: name
@@ -224,8 +226,8 @@
         implicit none
         procedure(op_SF) :: operator
         type(SF),intent(in) :: x,vol
-        type(VF),intent(in) :: k
-        type(VF),intent(inout) :: tempk
+        type(TF),intent(in) :: k
+        type(TF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         character(len=*),intent(in) :: dir,name
@@ -253,8 +255,8 @@
         implicit none
         procedure(op_VF) :: operator
         type(VF),intent(in) :: x,vol
-        type(VF),intent(in) :: k
-        type(VF),intent(inout) :: tempk
+        type(TF),intent(in) :: k
+        type(TF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         character(len=*),intent(in) :: dir,name
@@ -340,8 +342,8 @@
         procedure(op_SF_explicit) :: operator
         type(SF),intent(inout) :: D
         type(SF),intent(in) :: vol,x
-        type(VF),intent(in) :: k
-        type(VF),intent(inout) :: tempk
+        type(TF),intent(in) :: k
+        type(TF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         type(SF) :: un,Aun
@@ -381,8 +383,9 @@
         implicit none
         procedure(op_VF_explicit) :: operator
         type(VF),intent(inout) :: D
-        type(VF),intent(in) :: k,vol,x
-        type(VF),intent(inout) :: tempk
+        type(VF),intent(in) :: vol,x
+        type(TF),intent(in) :: k
+        type(TF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
         type(VF) :: un,Aun

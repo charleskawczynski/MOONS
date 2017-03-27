@@ -40,8 +40,13 @@
            SP%MT%advection_convection%scale,mom%temp_F1,mom%temp_F2,&
            mom%temp_F3,mom%temp_CC)
          endif
+         if (SP%MT%advection_base_flow%add) then ! For linear stability analysis
+           call compute_add_advection_base_flow(F,mom%m,mom%TS%U_ave,mom%U,mom%U_E,&
+           SP%MT%advection_base_flow%scale,mom%temp_F1,mom%temp_F2,&
+           mom%temp_F3,mom%temp_CC)
+         endif
          if (SP%MT%diffusion%add) then
-           call compute_add_diffusion(F,mom%m,mom%U,SP%MT%diffusion%scale,mom%temp_F1)
+           call compute_add_diffusion(F,mom%m,mom%U,SP%MT%diffusion%scale,mom%temp_F1,mom%TF_CC_edge)
          endif
          if (SP%MT%JCrossB%add) then
            call compute_add_JCrossB(F,mom%temp_F1,ind%B,ind%B0,ind%J,ind%m,&

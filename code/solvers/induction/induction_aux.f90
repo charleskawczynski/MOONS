@@ -43,33 +43,30 @@
          call div(divJ,J,m)
        end subroutine
 
-       subroutine compute_J(J,B,scale,m,finite_Rem)
+       subroutine compute_J(J,B,scale,m)
          implicit none
          type(VF),intent(inout) :: B
          type(VF),intent(inout) :: J
          real(cp),intent(in) :: scale
          type(mesh),intent(in) :: m
-         logical,intent(in) :: finite_Rem
          call curl(J,B,m)
-         if (finite_Rem) call multiply(J,scale)
+         call multiply(J,scale)
        end subroutine
 
-       subroutine compute_Total_Energy_Domain(energy,field,TMP,m,scale,MD)
+       subroutine compute_Total_Energy_Domain(energy,field,field_domain,TMP,m,scale,MD)
          implicit none
          type(probe),intent(inout) :: energy
          type(VF),intent(in) :: field
+         type(VF),intent(inout) :: field_domain
          type(time_marching_params),intent(in) :: TMP
          type(mesh),intent(in) :: m
          type(mesh_domain),intent(in) :: MD
          real(cp),intent(in) :: scale
-         type(VF) :: temp_VF
          real(cp) :: temp
-         call init_CC(temp_VF,m,MD)
-         call extractCC(temp_VF,field,MD)
-         call assign_ghost_XPeriodic(temp_VF,0.0_cp)
-         call Ln(temp,temp_VF,2.0_cp,m,MD)
+         call extractCC(field_domain,field,MD)
+         call assign_ghost_XPeriodic(field_domain,0.0_cp)
+         call Ln(temp,field_domain,2.0_cp,m,MD)
          temp = scale*0.5_cp*temp
-         call delete(temp_VF)
          call export(energy,TMP,temp)
        end subroutine
 

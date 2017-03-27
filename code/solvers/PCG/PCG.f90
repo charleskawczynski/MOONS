@@ -9,6 +9,7 @@
       use ops_aux_mod
       use SF_mod
       use VF_mod
+      use TF_mod
       use IO_tools_mod
       use export_raw_processed_mod
 
@@ -47,7 +48,7 @@
 
       type PCG_solver_SF
         type(matrix_free_params) :: MFP
-        type(VF) :: tempk,k
+        type(TF) :: tempk,k
         type(SF) :: r,p,tempx,Ax,vol,z,Minv
         type(norms) :: norm
         integer :: un,un_convergence
@@ -60,7 +61,7 @@
 
       type PCG_solver_VF
         type(matrix_free_params) :: MFP
-        type(VF) :: tempk,k
+        type(TF) :: tempk,k
         type(VF) :: r,p,tempx,Ax,vol,z,Minv
         type(norms) :: norm
         integer :: un,un_convergence
@@ -83,7 +84,7 @@
         type(mesh),intent(in) :: m
         type(iter_solver_params),intent(in) :: ISP
         type(SF),intent(in) :: x
-        type(VF),intent(in) :: k
+        type(TF),intent(in) :: k
         character(len=*),intent(in) :: dir,name
         logical,intent(in) :: testSymmetry,exportOperator
         type(matrix_free_params),intent(in) :: MFP
@@ -148,7 +149,8 @@
         type(PCG_solver_VF),intent(inout) :: PCG
         type(mesh),intent(in) :: m
         type(iter_solver_params),intent(in) :: ISP
-        type(VF),intent(in) :: x,k
+        type(VF),intent(in) :: x
+        type(TF),intent(in) :: k
         character(len=*),intent(in) :: dir,name
         logical,intent(in) :: testSymmetry,exportOperator
         type(matrix_free_params),intent(in) :: MFP
@@ -289,7 +291,7 @@
         implicit none
         type(PCG_solver_SF),intent(inout) :: PCG
         type(mesh),intent(in) :: m
-        type(VF),intent(in) :: k
+        type(TF),intent(in) :: k
         type(matrix_free_params),intent(in) :: MFP
         integer,intent(in) :: dir
         call prolongate(PCG%tempx,m,dir)
@@ -310,7 +312,7 @@
         implicit none
         type(PCG_solver_VF),intent(inout) :: PCG
         type(mesh),intent(in) :: m
-        type(VF),intent(in) :: k
+        type(TF),intent(in) :: k
         type(matrix_free_params),intent(in) :: MFP
         integer,intent(in) :: dir
         call prolongate(PCG%tempx,m,dir)

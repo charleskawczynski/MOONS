@@ -58,7 +58,6 @@
 
        use PCG_mod
        use preconditioners_mod
-       use GS_Poisson_mod
        use E_K_Budget_mod
 
 
@@ -74,8 +73,7 @@
          logical :: suppress_warning
          ! Tensor fields
          type(TF) :: U_E
-         type(TF) :: TF_CC
-         type(TF) :: TF_CC_edge
+         type(TF) :: TF_CC,TF_CC_edge
          ! Vector fields
          type(VF) :: U,Ustar,Unm1
          type(VF) :: U_CC
@@ -83,8 +81,6 @@
          type(VF) :: temp_E,temp_CC_VF
          ! Scalar fields
          type(SF) :: p,divU,temp_CC
-
-         type(GS_Poisson_SF) :: GS_p
 
          type(PCG_Solver_SF) :: PCG_P
          type(PCG_Solver_VF) :: PCG_U
@@ -124,6 +120,7 @@
          type(mesh),intent(in) :: m
          type(sim_params),intent(in) :: SP
          type(dir_tree),intent(in) :: DT
+         type(TF) :: TF_Face
          integer :: temp_unit
          write(*,*) 'Initializing momentum:'
 
@@ -191,15 +188,15 @@
          call init(mom%TS,mom%m,mom%U,mom%SP%TSP,str(DT%U%stats),'U')
 
          ! Initialize interior solvers
-         call init(mom%GS_p,mom%p,mom%m,mom%SP%VS%P%ISP,str(DT%p%residual),'p')
-         write(*,*) '     GS solver initialized for p'
-
          call init(mom%PCG_U,mom_diffusion,mom_diffusion_explicit,prec_mom_VF,mom%m,&
-         mom%SP%VS%U%ISP,mom%SP%VS%U%MFP,mom%Ustar,mom%temp_E,str(DT%U%residual),'U',.false.,.false.)
+         mom%SP%VS%U%ISP,mom%SP%VS%U%MFP,mom%Ustar,mom%TF_CC_edge,str(DT%U%residual),'U',.false.,.false.)
          write(*,*) '     PCG solver initialized for U'
 
+         call delete(TF_Face)
+         call init_Face(TF_Face,m,0.0_cp)
          call init(mom%PCG_P,Lap_uniform_SF,Lap_uniform_SF_explicit,prec_lap_SF,mom%m,&
-         mom%SP%VS%P%ISP,mom%SP%VS%P%MFP,mom%p,mom%temp_F1,str(DT%p%residual),'p',.false.,.false.)
+         mom%SP%VS%P%ISP,mom%SP%VS%P%MFP,mom%p,TF_Face,str(DT%p%residual),'p',.false.,.false.)
+         call delete(TF_Face)
          write(*,*) '     PCG solver initialized for p'
 
          temp_unit = new_and_open(str(DT%params),'info_mom')
@@ -236,7 +233,6 @@
          call delete(mom%m)
          call delete(mom%PCG_P)
          call delete(mom%PCG_U)
-         call delete(mom%GS_p)
          call delete(mom%TS)
          call delete(mom%SP)
          write(*,*) 'Momentum object deleted'
@@ -353,7 +349,7 @@
          call export(mom%probe_KE,TMP,temp)
 
          if (mom%SP%compute_surface_power) then
-         temp = surface_power(mom%U,mom%m,mom%temp_F1,mom%temp_F2,mom%temp_CC_VF,mom%TF_CC)
+         call surface_power(temp,mom%U,mom%m,mom%temp_F1,mom%temp_F2,mom%temp_CC_VF,mom%TF_CC)
          temp = scale*temp/mom%SP%DP%Re
          call export(mom%probe_Q,TMP,temp)
          endif

@@ -23,6 +23,7 @@
        private
        public :: compute_add_advection_divergence
        public :: compute_add_advection_convection
+       public :: compute_add_advection_base_flow
        public :: compute_add_diffusion
        public :: compute_add_MPG
        public :: compute_add_JCrossB
@@ -59,14 +60,28 @@
          call add_product(F,temp_F,scale)
        end subroutine
 
-       subroutine compute_add_diffusion(F,m,U,scale,temp_F)
+       subroutine compute_add_advection_base_flow(F,m,U_base,U,U_E,scale,temp_F,temp_F1,temp_F2,temp_CC)
+         implicit none
+         type(VF),intent(inout) :: F,temp_F
+         type(mesh),intent(in) :: m
+         type(SF),intent(inout) :: temp_CC
+         real(cp),intent(in) :: scale
+         type(VF),intent(in) :: U,U_base
+         type(VF),intent(inout) :: temp_F1,temp_F2
+         type(TF),intent(inout) :: U_E
+         call advect_U_convection(temp_F,U_base,U,U_E,m,temp_F1,temp_F2,temp_CC)
+         call add_product(F,temp_F,scale)
+       end subroutine
+
+       subroutine compute_add_diffusion(F,m,U,scale,temp_F,TF_CC_edge)
          implicit none
          type(VF),intent(inout) :: F,temp_F
          type(mesh),intent(in) :: m
          type(VF),intent(in) :: U
+         type(TF),intent(inout) :: TF_CC_edge
          real(cp),intent(in) :: scale
          ! call lap(temp_F,U,m)
-         call lap_centered(temp_F,U,m)
+         call lap_centered(temp_F,U,m,TF_CC_edge)
          call add_product(F,temp_F,scale)
        end subroutine
 
@@ -129,9 +144,9 @@
          type(TF),intent(inout) :: TF_E
          if (finite_Rem) then
            call add(temp_F1,B0,B)
-           call advect_U_convection(temp_F,temp_F1,temp_F1,m,TF_E,temp_F2,temp_F3,temp_CC)
+           call advect_U_convection(temp_F,temp_F1,temp_F1,TF_E,m,temp_F2,temp_F3,temp_CC)
          else
-           call advect_U_convection(temp_F,B0     ,B      ,m,TF_E,temp_F2,temp_F3,temp_CC)
+           call advect_U_convection(temp_F,B0     ,B      ,TF_E,m,temp_F2,temp_F3,temp_CC)
          endif
          call extractFace(jCrossB,temp_F,D_fluid)
          call assign_ghost_XPeriodic(jCrossB,0.0_cp)

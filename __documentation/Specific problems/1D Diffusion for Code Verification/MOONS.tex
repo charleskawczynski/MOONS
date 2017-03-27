@@ -20,7 +20,7 @@
 \setlength{\topmargin}{-1in}     %\topmargin: gap above header
 \setlength{\headheight}{0in}     %\headheight: height of header
 \setlength{\topskip}{0in}        %\topskip: between header and text
-\setlength{\headsep}{0in}        
+\setlength{\headsep}{0in}
 \setlength{\textheight}{692pt}   %\textheight: height of main text
 \setlength{\textwidth}{7.5in}    % \textwidth: width of text
 \setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
@@ -58,7 +58,7 @@ With the general solution
 	\int_0^L G(x,\xi,t) f(\xi) d\xi
 \end{equation}
 
-Where $f(\xi)$ is the initial condition and 
+Where $f(\xi)$ is the initial condition and
 
 \begin{equation}
 	G(x,\xi,t) = \frac{2}{L} \sum_{n=1}^{\infty}
@@ -86,7 +86,7 @@ Which yields
 Combining the equations, and then the exponential terms, we have
 
 \begin{equation}
-	T(x,t) = \int_0^t \int_0^L 
+	T(x,t) = \int_0^t \int_0^L
 	\frac{2}{L} \sum_{n=1}^{\infty}
 	\sin(n\pi x/L)
 	\sin(n\pi \xi/L)
@@ -98,11 +98,11 @@ Combining the equations, and then the exponential terms, we have
 We may exchange the order of the summation and the integral to get
 
 \begin{equation}
-	T(x,t) 
-	= 
+	T(x,t)
+	=
 	\sum_{n=1}^{\infty}
-	\frac{2}{L} 
-	\int_0^t \int_0^L 
+	\frac{2}{L}
+	\int_0^t \int_0^L
 	\sin(n\pi x/L)
 	\sin(n\pi \xi/L)
 	e^{-\lambda_n (t-\tau)}
@@ -111,11 +111,11 @@ We may exchange the order of the summation and the integral to get
 \end{equation}
 
 \begin{equation}
-	= 
+	=
 	\sum_{n=1}^{\infty}
 	\sin(n\pi x/L)
-	\frac{2}{L} 
-	\int_0^t \int_0^L 
+	\frac{2}{L}
+	\int_0^t \int_0^L
 	\sin(n\pi \xi/L)
 	e^{-\lambda_n (t-\tau)}
 	e^{-\tau}
@@ -126,7 +126,7 @@ Using Wolfram Alpha
 
 \begin{equation}
 	\frac{2}{L}
-	\int_0^t \int_0^L 
+	\int_0^t \int_0^L
 	\sin(n\pi \xi/L)
 	e^{-\lambda_n (t-\tau)}
 	e^{-\tau}
@@ -146,7 +146,7 @@ Therefore
 
 \begin{equation}
 	\boxed{
-	T(x,t) 
+	T(x,t)
 	=
 	\sum_{n=1}^{\infty}
 	\sin \left( \frac{n\pi x}{L} \right)

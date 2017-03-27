@@ -54,7 +54,7 @@
         public :: init_Node
 
         public :: init_CC_Edge
-        public :: init_Node_Edge
+        public :: init_Node_Face
         public :: init_Face_Transpose
 
         public :: assign_Neumann_BCs
@@ -76,6 +76,11 @@
         public :: restrict
         public :: prolongate
         public :: get_DL
+        public :: is_Face
+        public :: is_Edge
+        public :: is_CC
+        public :: is_Node
+        public :: is_CC_Edge
         public :: is_collocated
         ! public :: sum
         ! public :: assignX,assignY,assignZ
@@ -101,7 +106,7 @@
         interface init_Face_Transpose; module procedure init_Face_Transpose_TF;    end interface
         interface init_Face_Transpose; module procedure init_Face_Transpose_assign_TF;    end interface
         interface init_CC_Edge;        module procedure init_CC_Edge_TF;           end interface
-        interface init_Node_Edge;      module procedure init_Node_Edge_TF;         end interface
+        interface init_Node_Face;      module procedure init_Node_Face_TF;         end interface
 
         interface init_CC;             module procedure init_CC_assign_TF;         end interface
         interface init_Face;           module procedure init_Face_assign_TF;       end interface
@@ -159,6 +164,11 @@
         interface prolongate;          module procedure prolongate_dir_TF;         end interface
 
         interface get_DL;              module procedure get_DL_TF;                 end interface
+        interface is_Face;             module procedure is_Face_VF_DL;             end interface
+        interface is_Edge;             module procedure is_Edge_VF_DL;             end interface
+        interface is_CC;               module procedure is_CC_VF_DL;               end interface
+        interface is_Node;             module procedure is_Node_VF_DL;             end interface
+        interface is_CC_Edge;          module procedure is_CC_Edge_VF_DL;          end interface
         interface is_collocated;       module procedure is_collocated_TF_DL;       end interface
 
         interface transpose;           module procedure transpose_TF_TF;           end interface
@@ -443,6 +453,41 @@
           DL(7:9) = get_DL(A%z)
         end function
 
+        function is_Face_VF_DL(f) result(L)
+          implicit none
+          type(TF),intent(in) :: f
+          logical :: L
+          L = is_Face_TF(get_DL(f))
+        end function
+
+        function is_Edge_VF_DL(f) result(L)
+          implicit none
+          type(TF),intent(in) :: f
+          logical :: L
+          L = is_Edge_TF(get_DL(f))
+        end function
+
+        function is_CC_VF_DL(f) result(L)
+          implicit none
+          type(TF),intent(in) :: f
+          logical :: L
+          L = is_CC_TF(get_DL(f))
+        end function
+
+        function is_Node_VF_DL(f) result(L)
+          implicit none
+          type(TF),intent(in) :: f
+          logical :: L
+          L = is_Node_TF(get_DL(f))
+        end function
+
+        function is_CC_Edge_VF_DL(f) result(L)
+          implicit none
+          type(TF),intent(in) :: f
+          logical :: L
+          L = is_CC_edge_TF(get_DL(f))
+        end function
+
         function is_collocated_TF_DL(A) result(L)
           implicit none
           type(TF),intent(in) :: A
@@ -543,7 +588,7 @@
           call init_Edge(f%x,m,MD); call init_Edge(f%y,m,MD); call init_Edge(f%z,m,MD)
         end subroutine
 
-        subroutine init_Node_Edge_TF(f,m)
+        subroutine init_Node_Face_TF(f,m)
           implicit none
           type(TF),intent(inout) :: f
           type(mesh),intent(in) :: m

@@ -80,7 +80,8 @@
        real(cp) :: time,dtime
        logical :: RV_BCs
        call delete(SP)
-       RV_BCs = F
+       RV_BCs = T
+       ! call get_environment_variable(name[, value, length, status, trim_name)
 
        SP%FCL%stop_after_mesh_export = F !
        SP%FCL%stop_before_solve      = F ! Just export ICs, do not run simulation
@@ -91,7 +92,7 @@
        SP%EL%export_analytic         = F ! Export analytic solutions (MOONS.f90)
        SP%EL%export_meshes           = T ! Export all meshes before starting simulation
        SP%EL%export_vort_SF          = T ! Export vorticity-stream-function after simulation
-       SP%EL%export_mat_props        = F ! Export material properties before starting simulation
+       SP%EL%export_mat_props        = T ! Export material properties before starting simulation
        SP%EL%export_ICs              = F ! Export Post-Processed ICs before starting simulation
        SP%EL%export_cell_volume      = F ! Export cell volumes for each mesh
        SP%EL%export_planar           = F ! Export 2D data when N_cell = 1 along given direction
@@ -129,13 +130,13 @@
        call init(SP%EF%name,'EF')
 
        ! call init(MQP,auto_find_N,max_mesh_stretch_ratio,N_max_points_add)
-       call init(SP%MQP,F,2.0_cp,50)
+       call init(SP%MQP,T,2.0_cp,50)
 
        ! call init(TSP,collect,t_start,t_stop)
        call init(SP%TSP,F,100.0_cp,500.0_cp)
 
        time                          = 10000.0_cp
-       dtime                         = 1.0_cp*pow(-4)
+       dtime                         = 5.0_cp*pow(-3)
 
        SP%GP%tw                      = 0.05_cp
        SP%GP%geometry                = 15
@@ -147,10 +148,10 @@
        ! SP%GP%apply_BC_order       = (/3,4,1,2,5,6/) ! good for periodic in z?
 
        call delete(SP%DP)
-       SP%DP%Re                      = 5.0_cp*pow(2)
-       SP%DP%N                       = 5.0_cp*pow(-2)
+       SP%DP%Re                      = 2.3_cp*pow(3)
+       SP%DP%N                       = 5.0_cp*pow(0)
        ! SP%DP%Q                       = 3.0_cp*pow(-1)
-       if (     RV_BCs) SP%DP%Rem                     = 1.0_cp*pow(2)
+       if (     RV_BCs) SP%DP%Rem                     = 1.0_cp*pow(3)
        if (.not.RV_BCs) SP%DP%Rem                     = 1.0_cp*pow(0)
        ! SP%DP%Ha                      = 1.0_cp*pow(1)
        ! SP%DP%N                       = 1.0_cp/SP%DP%Q
@@ -265,7 +266,7 @@
        ! coeff_implicit_time_split = dt*coeff_implicit/coeff_unsteady (computed in time_marching_methods.f90)
 
        SP%VS%B%MFP%alpha = 1.0_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
-       SP%VS%U%MFP%alpha = 0.5_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
+       SP%VS%U%MFP%alpha = 1.0_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
        SP%VS%T%MFP%alpha = 0.5_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
        SP%VS%B%MFP%coeff_natural = -1.0_cp/SP%DP%Rem ! natural diffusion coefficient on RHS
        SP%VS%U%MFP%coeff_natural =  1.0_cp/SP%DP%Re  ! natural diffusion coefficient on RHS
@@ -280,6 +281,7 @@
        SP%MT%diffusion%add              = T ! add diffusion              to momentum equation
        SP%MT%advection_convection%add   = F ! add advection (conv form)  to momentum equation
        SP%MT%advection_divergence%add   = T ! add advection (div  form)  to momentum equation
+       SP%MT%advection_base_flow%add    = F ! add advection using U_base to momentum equation
        SP%MT%mean_pressure_grad%add     = F ! add mean pressure gradient to momentum equation
        SP%MT%JCrossB%add                = T ! add JCrossB                to momentum equation
        SP%MT%Q2D_JCrossB%add            = F ! add Q2D JCrossB            to momentum equation
@@ -300,6 +302,7 @@
        SP%MT%diffusion%scale            = SP%VS%U%MFP%coeff_explicit
        SP%MT%advection_convection%scale = -1.0_cp
        SP%MT%advection_divergence%scale = -1.0_cp
+       SP%MT%advection_base_flow%scale  = -1.0_cp
        ! SP%MT%advection_divergence%scale = -1.0_cp/SP%DP%Rem ! For Rem ne 1 in Bandaru
        SP%MT%mean_pressure_grad%scale   = 1.0_cp
        SP%MT%JCrossB%scale              = SP%DP%N

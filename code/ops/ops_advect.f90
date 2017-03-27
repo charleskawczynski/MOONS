@@ -126,7 +126,7 @@
          call assign_ghost_XPeriodic(div,0.0_cp)
        end subroutine
 
-       subroutine advect_U_convection2(div,U_adv,U,m,U_E,temp_F1,temp_F2,temp_CC)
+       subroutine advect_U_convection2(div,U_adv,U,U_E,m,temp_F1,temp_F2,temp_CC)
          ! Computes
          !                   d
          !  div_i = u_adv_j --- u_i

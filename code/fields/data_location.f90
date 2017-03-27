@@ -6,10 +6,11 @@
        public :: data_location
        public :: init,delete,display,print,export,import ! Essentials
 
-       public :: init_CC,   is_CC,   is_CC_VF
-       public :: init_Node, is_Node, is_Node_VF
-       public :: init_Face, is_Face, is_Face_VF
-       public :: init_Edge, is_Edge, is_Edge_VF
+       public :: init_CC,   is_CC,   is_CC_VF,   is_CC_TF
+       public :: init_Node, is_Node, is_Node_VF, is_Node_TF
+       public :: init_Face, is_Face, is_Face_VF, is_Face_TF
+       public :: init_Edge, is_Edge, is_Edge_VF, is_Edge_TF
+       public :: is_CC_Edge_TF
 
        public :: DL_CC
        public :: DL_Node
@@ -36,8 +37,12 @@
 
        type data_location
          private
-         logical :: C,N,E,F = .false.                ! cell center, cell corner, cell edge, cell face
-         integer :: face,edge = 0                    ! face direction, edge direction
+         logical :: C = .false.                      ! cell center, cell corner, cell edge, cell face
+         logical :: N = .false.                      ! cell center, cell corner, cell edge, cell face
+         logical :: E = .false.                      ! cell center, cell corner, cell edge, cell face
+         logical :: F = .false.                      ! cell center, cell corner, cell edge, cell face
+         integer :: face = 0                         ! face direction, edge direction
+         integer :: edge = 0                         ! face direction, edge direction
          logical,dimension(3) :: CC_along = .false.  !
          logical,dimension(3) :: N_along = .false.   !
          integer,dimension(3) :: CC_eye = 0          !
@@ -68,6 +73,12 @@
        interface is_Node_VF;          module procedure is_Node_VF_DL;           end interface
        interface is_Face_VF;          module procedure is_Face_VF_DL;           end interface
        interface is_Edge_VF;          module procedure is_Edge_VF_DL;           end interface
+
+       interface is_CC_TF;            module procedure is_CC_TF_DL;             end interface
+       interface is_Node_TF;          module procedure is_Node_TF_DL;           end interface
+       interface is_Face_TF;          module procedure is_Face_TF_DL;           end interface
+       interface is_Edge_TF;          module procedure is_Edge_TF_DL;           end interface
+       interface is_CC_Edge_TF;       module procedure is_CC_Edge_TF_DL;        end interface
 
        interface get_Face;            module procedure get_Face_DL;             end interface
        interface get_Edge;            module procedure get_Edge_DL;             end interface
@@ -350,7 +361,7 @@
 
        function is_CC_VF_DL(DL) result(L_final)
          implicit none
-         type(data_location),dimension(3) :: DL
+         type(data_location),dimension(3),intent(in) :: DL
          logical,dimension(3) :: L
          logical :: L_final
          integer :: i
@@ -360,7 +371,7 @@
 
        function is_Node_VF_DL(DL) result(L_final)
          implicit none
-         type(data_location),dimension(3) :: DL
+         type(data_location),dimension(3),intent(in) :: DL
          logical,dimension(3) :: L
          logical :: L_final
          integer :: i
@@ -370,7 +381,7 @@
 
        function is_Edge_VF_DL(DL) result(L_final)
          implicit none
-         type(data_location),dimension(3) :: DL
+         type(data_location),dimension(3),intent(in) :: DL
          logical,dimension(3) :: L
          logical :: L_final
          integer :: i
@@ -380,11 +391,70 @@
 
        function is_Face_VF_DL(DL) result(L_final)
          implicit none
-         type(data_location),dimension(3) :: DL
+         type(data_location),dimension(3),intent(in) :: DL
          logical,dimension(3) :: L
          logical :: L_final
          integer :: i
          do i=1,3; L(i) = is_Face(DL(i)).and.(get_Face(DL(i)).eq.i); enddo
+         L_final = all(L)
+       end function
+
+       function is_CC_TF_DL(DL) result(L_final)
+         implicit none
+         type(data_location),dimension(9),intent(in) :: DL
+         logical,dimension(9) :: L
+         logical :: L_final
+         integer :: i
+         do i=1,9; L(i) = is_CC(DL(i)); enddo
+         L_final = all(L)
+       end function
+
+       function is_Node_TF_DL(DL) result(L_final)
+         implicit none
+         type(data_location),dimension(9),intent(in) :: DL
+         logical,dimension(9) :: L
+         logical :: L_final
+         integer :: i
+         do i=1,9; L(i) = is_Node(DL(i)); enddo
+         L_final = all(L)
+       end function
+
+       function is_Edge_TF_DL(DL) result(L_final)
+         implicit none
+         type(data_location),dimension(9),intent(in) :: DL
+         logical,dimension(9) :: L
+         logical :: L_final
+         integer :: i
+         do i=1,9; L(i) = is_Edge(DL(i)).and.(get_Edge(DL(i)).eq.i); enddo
+         L_final = all(L)
+       end function
+
+       function is_Face_TF_DL(DL) result(L_final)
+         implicit none
+         type(data_location),dimension(9),intent(in) :: DL
+         logical,dimension(9) :: L
+         logical :: L_final
+         integer :: i
+         do i=1,9; L(i) = is_Face(DL(i)).and.(get_Face(DL(i)).eq.i); enddo
+         L_final = all(L)
+       end function
+
+       function is_CC_Edge_TF_DL(DL) result(L_final)
+         implicit none
+         type(data_location),dimension(9),intent(in) :: DL
+         logical,dimension(9) :: L
+         logical :: L_final
+         L(1) = is_CC(DL(1))
+         L(2) = is_Face(DL(2)).and.(get_Face(DL(2)).eq.2)
+         L(3) = is_Face(DL(3)).and.(get_Face(DL(3)).eq.3)
+
+         L(4) = is_Face(DL(4)).and.(get_Face(DL(4)).eq.4)
+         L(5) = is_CC(DL(5))
+         L(6) = is_Face(DL(6)).and.(get_Face(DL(6)).eq.6)
+
+         L(7) = is_Face(DL(7)).and.(get_Face(DL(7)).eq.7)
+         L(8) = is_Face(DL(8)).and.(get_Face(DL(8)).eq.8)
+         L(9) = is_CC(DL(9))
          L_final = all(L)
        end function
 

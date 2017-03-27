@@ -26,34 +26,11 @@
 \usepackage{geometry}
 
 
-\newcommand{\B}{\mathbf{B}}
+\input{./../path_to_useful_commands.tex}
+\input{\PATHTOUSEFULCOMMANDS}
+
 \newcommand{\BS}{B^{SH}}
 \newcommand{\BT}{\tilde{B}}
-\renewcommand{\H}{\mathbf{H}}
-\newcommand{\C}{\mathbf{C}}
-\newcommand{\U}{\mathbf{u}}
-\newcommand{\SI}{\sigma}
-\newcommand{\M}{\mu}
-\newcommand{\curl}{\nabla \times}
-
-\newcommand{\A}{\mathbf{A}}
-\newcommand{\PD}{\partial}
-\newcommand{\MC}{\mathcal}
-\newcommand{\BM}{\frac{\B}{\mu}}
-\newcommand{\J}{\mathbf{j}}
-\newcommand{\E}{\mathbf{E}}
-\newcommand{\N}{\mathbf{n}}
-\newcommand{\JS}{\frac{\J}{\sigma}}
-\newcommand{\JoS}{\frac{\J^1}{\sigma}}
-\newcommand{\JSS}{\frac{\J^2}{\sigma}}
-\newcommand{\SII}{\sigma^{-1}}
-\newcommand{\MO}{\overline{\mu}}
-\newcommand{\SO}{\overline{\sigma}}
-\newcommand{\DOT}{\text{\textbullet}}
-
-\newcommand{\Rei}{\frac{1}{Re}}
-\newcommand{\Remi}{\frac{1}{Re_m}}
-\newcommand{\NRemi}{\frac{N}{Re_m}}
 
 % \setlength{\textfloatsep}{0.1cm}
 \newcommand{\volume}{\mathop{\ooalign{\hfil$V$\hfil\cr\kern0.08em--\hfil\cr}}\nolimits}
@@ -143,7 +120,7 @@ Since we are interested in when $Re_m$ is small, and the induction equation is l
 \begin{equation}\begin{aligned}
 	\B = \B^0 + \B^1 + \B^2 + \hdots , \\
 	\B = \B^0 + Re_m \B^* + Re_m^2 \B^{**} + \hdots \\
-	\J = \curl \B = \curl \B^* + Re_m \curl \B^{**} + \hdots \\
+	\J = \CURL \B = \CURL \B^* + Re_m \CURL \B^{**} + \hdots \\
 	\J \times \B = B_j \PD_j B_i - \underbrace{\tfrac{1}{2} \PD_j (B_i B_i)}_{\text{let pressure absorb}} \\
 	= B_j \PD_j B_i \\
 	= (B_j^0+Re_m B_j^* + \hdots) \PD_j (B_i^*+Re_m B_i^{**} + \hdots) \\
@@ -332,8 +309,8 @@ v^*      = \bar{v}        e^{i(\alpha y + \beta z - \theta t)} \\
 We can substitute to get
 
 \begin{equation}\begin{aligned}
--i\theta \PD_t \bar{\omega_x} = - (\alpha^2 \PD_{yy} \bar{\omega_x} + \beta^2 \PD_{zz} \bar{\omega_x}) + Ha^2 i \beta \PD_z \bar{j_x} \\
-i\theta \PD_t \bar{j_x} + \alpha^2 \PD_{yy} \bar{j_x} + \beta^2 \PD_{zz} \bar{j_x} = \alpha^2 \PD_{yy} \bar{v} + \beta^2 \PD_{zz} \bar{v} \\
+-i\theta \bar{\omega_x} = - (\alpha^2 \bar{\omega_x} + \beta^2 \bar{\omega_x}) + Ha^2 i \beta \bar{j_x} \\
+i\theta \bar{j_x} + \alpha^2 \bar{j_x} + \beta^2 \bar{j_x} = \alpha^2 \bar{v} + \beta^2 \bar{v} \\
 \end{aligned}\end{equation}
 
 Taking the derivative of the momentum equation w.r.t $z$, we may combine the two equations
