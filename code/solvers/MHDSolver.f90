@@ -9,6 +9,7 @@
        use stop_clock_mod
        use export_frequency_mod
        use export_now_mod
+       use export_safe_mod
        use refine_mesh_mod
        use kill_switch_mod
        use probe_mod
@@ -42,6 +43,7 @@
          type(VF) :: F,Fnm1 ! Forces added to momentum equation
          type(export_frequency) :: EF
          type(export_now) :: EN
+         type(export_safe) :: ES
          type(refine_mesh) :: RM
          type(kill_switch) :: KS
          logical :: refine_mesh_now_all
@@ -56,6 +58,7 @@
          call init(EN,str(DT%export_now),'EN'); call export(EN)
          call init(RM,str(DT%refine_mesh),'RM'); call export(RM)
          call init(EF,SP%EF); call export(SP%EF)
+         call init(ES,SP%export_safe_period)
          call init(sc,coupled%n_step_stop-coupled%n_step,str(DT%wall_clock),'WALL_CLOCK_TIME_INFO')
 
          write(*,*) 'Working directory = ',str(DT%tar)
@@ -86,9 +89,10 @@
            endif
 
            call iterate_step(coupled)
+           call update(ES,sc%t_passed)
 
            call import(EN)
-           call update(EN)
+           call update(EN,ES%export_now)
            if (EN%any_next) call export(EN)
 
            call import(RM)
@@ -127,6 +131,7 @@
          call delete(EF)
          call delete(sc)
          call delete(EN)
+         call delete(ES)
          call delete(KS)
          call delete(F)
          call delete(Fnm1)

@@ -20,6 +20,9 @@
 \newcommand{\ffigH}{\ffigS}
 \newcommand{\ffigW}{\ffigS}
 
+\input{./../path_to_useful_commands.tex}
+\input{\PATHTOUSEFULCOMMANDS}
+
 
 \setlength{\oddsidemargin}{0.1in}
 \setlength{\textwidth}{7.25in}
@@ -69,13 +72,13 @@ The current codes use rectilinear coordinate systems and are limited to simple g
 
 For the present code-to-code comparisons, we will restrict ourselves to a long rectangular cavity which may be used as a duct flow or a no slip cavity flow.
 
-\begin{figure}[H]
- \centering
- \subfigure[]{
-  \includegraphics[width=\ffigW,height=\ffigH]{geometry.png}
-  }
-   \caption[Optional ]{}
-\end{figure}
+% \begin{figure}[H]
+%  \centering
+%  \subfigure[]{
+%   \includegraphics[width=\ffigW,height=\ffigH]{geometry.png}
+%   }
+%    \caption[Optional ]{}
+% \end{figure}
 
 Where the domain range is
 \begin{equation}
@@ -102,12 +105,12 @@ Non-dimensionalizing the momentum equation with
 
 Yields the non-dimensional momentum equation. In the most general case considered, the ith component of the non-dimensional momentum equation is
 \begin{equation}
-	\frac{\partial u_i}{\partial t} +
-	\frac{\partial (u_i u_j)}{\partial x_j}
+	\frac{\PD u_i}{\PD t} +
+	\frac{\PD (u_i u_j)}{\PD x_j}
 	=
-	- \frac{\partial p}{\partial x_i}
+	- \frac{\PD p}{\PD x_i}
 	+ \frac{1}{Re}
-	\frac{\partial^2 u_i}{\partial x_j^2}
+	\frac{\PD^2 u_i}{\PD x_j^2}
 	+ \frac{Ha^2}{Re}
 	(j \times B)_i
 \end{equation}
@@ -134,15 +137,15 @@ Non-dimensionalizing the induction equation with the same parameters used to non
 Yields the non-dimensional induction equation. In the most general case considered, the ith component of the non-dimensional induction equation is
 
 \begin{equation}
-	\frac{\partial B_i}{\partial t}
-	+ \frac{\partial}{\partial x_j} (u_j B_i - u_i B_j)
+	\frac{\PD B_i}{\PD t}
+	+ \frac{\PD}{\PD x_j} (u_j B_i - u_i B_j)
 	+ \frac{1}{Re_m}
-	\frac{\partial}{\partial x_j}
+	\frac{\PD}{\PD x_j}
 	\left\{ \frac{1}{\sigma}
 	\left[
-	\frac{\partial}{\partial x_i}
+	\frac{\PD}{\PD x_i}
 	\left( \frac{B_j}{\mu} \right) -
-	\frac{\partial}{\partial x_j}
+	\frac{\PD}{\PD x_j}
 	\left( \frac{B_i}{\mu} \right)
 	\right]
 	\right\} = 0
@@ -163,15 +166,15 @@ If we were to non-dimensionalize $B$ with
 Where $B_k$ and $B^0$ are the induced and applied magnetic fields, we get
 
 \begin{equation}
-	\frac{\partial B_i}{\partial t}
-	+ \frac{\partial}{\partial x_j} (u_j B_i - u_i B_j)
+	\frac{\PD B_i}{\PD t}
+	+ \frac{\PD}{\PD x_j} (u_j B_i - u_i B_j)
 	+
-	\frac{\partial}{\partial x_j}
+	\frac{\PD}{\PD x_j}
 	\left\{ \frac{1}{\sigma}
 	\left[
-	\frac{\partial}{\partial x_i}
+	\frac{\PD}{\PD x_i}
 	\left( \frac{B_j}{\mu} \right) -
-	\frac{\partial}{\partial x_j}
+	\frac{\PD}{\PD x_j}
 	\left( \frac{B_i}{\mu} \right)
 	\right]
 	\right\} = 0
@@ -181,15 +184,15 @@ Where $B_k$ and $B^0$ are the induced and applied magnetic fields, we get
 In these comparisons, $\mu$ was assumed to be uniform in space and constant in time.
 
 % \begin{equation}
-	% \frac{\partial B_i}{\partial t}
-	% + \frac{\partial}{\partial x_j} (u_j B_i - u_i B_j)
+	% \frac{\PD B_i}{\PD t}
+	% + \frac{\PD}{\PD x_j} (u_j B_i - u_i B_j)
 	% + \frac{1}{Re_m}
-	% \frac{\partial}{\partial x_j}
+	% \frac{\PD}{\PD x_j}
 	% \left\{ \frac{1}{\sigma}
 	% \left[
-	% \frac{\partial B_j}{\partial x_i}
+	% \frac{\PD B_j}{\PD x_i}
 	% -
-	% \frac{\partial B_i}{\partial x_j}
+	% \frac{\PD B_i}{\PD x_j}
 		% \right]
 	% \right\} = 0
 % \end{equation}
@@ -198,12 +201,12 @@ In these comparisons, $\mu$ was assumed to be uniform in space and constant in t
 We may analyze the kinetic energy of the fluid by taking the dot product of the momentum equation with the velocity. Doing so, using the non-dimensional equations above, yields
 
 \begin{equation}
-	\frac{\partial u_i}{\partial t} +
-	\frac{\partial (u_i u_j)}{\partial x_j}
+	\frac{\PD u_i}{\PD t} +
+	\frac{\PD (u_i u_j)}{\PD x_j}
 	=
-	- \frac{\partial p}{\partial x_i}
+	- \frac{\PD p}{\PD x_i}
 	+ \frac{1}{Re}
-	\frac{\partial^2 u_i}{\partial x_j^2}
+	\frac{\PD^2 u_i}{\PD x_j^2}
 	+ \frac{Ha^2}{Re}
 	(j \times B)_i
 \end{equation}
@@ -218,38 +221,38 @@ The boundary conditions for the velocity are
 \subsubsection{Dirichlet}
 
 \begin{equation}
-	\pmb{u} = \pmb{u}_{wall}
+	\U = \U_{wall}
 	\qquad \qquad
-	\pmb{u} = \pmb{u}_{inlet}
+	\U = \U_{inlet}
 	\qquad \qquad
-	\pmb{u} = \pmb{u}_{outlet}
+	\U = \U_{outlet}
 \end{equation}
 
 \subsubsection{Neumann}
 \begin{equation}
-	\frac{\partial \pmb{u}}{\partial \pmb{n}} = 0
+	\frac{\PD \U}{\PD \N} = 0
 \end{equation}
 
 \subsection{Magnetic field}
 \subsubsection{Pseudo-vacuum}
 \begin{equation}
-	\frac{\partial \pmb{B}_{n}}{\partial \pmb{n}} = 0
+	\frac{\PD \B_{n}}{\PD \N} = 0
 	\qquad \qquad
-	\pmb{B}_{tangent} = 0
+	\B_{tangent} = 0
 \end{equation}
 
 \subsubsection{Periodic along x}
 \begin{equation}
-	\frac{\partial \pmb{B}_{n}}{\partial \pmb{n}} = 0
+	\frac{\PD \B_{n}}{\PD \N} = 0
 	\qquad
-	\pmb{B}_{tangent} = 0
+	\B_{tangent} = 0
 	\qquad
 	y_{min},y_{max}
 	z_{min},z_{max}
 \end{equation}
 
 \begin{equation}
-	\frac{\partial \pmb{B}}{\partial x} = 0
+	\frac{\PD \B}{\PD x} = 0
 	\qquad
 	x_{min},x_{max}
 \end{equation}
@@ -345,7 +348,7 @@ Both codes use 2nd order finite difference schemes for non-uniform staggered gri
 
 \section{Time Marching}
 \subsection{Momentum}
-The momentum equation was solved using a 1st order accurate Explicit Euler time marching method. A projection based was implemented to enforce $\nabla \bullet \pmb{u} = 0$. Both codes closely followed \cite{griebel1997numerical} when developing this procedure.
+The momentum equation was solved using a 1st order accurate Explicit Euler time marching method. A projection based was implemented to enforce $\DIV \U = 0$. Both codes closely followed \cite{griebel1997numerical} when developing this procedure.
 
 \subsection{Induction}
 The induction equation was solved using a 1st order accurate Explicit Euler time marching method. The Constrained Transport (CT) Method was used to ensure that the divergence of the magnetic field is within machine accuracy zero at every time step. The basic idea is that Explicit Euler is applied to Faraday's Law, where the magnetic field is located on the cell face and the electric field is located on the cell edge. The curl operator is analogous to a line integral about the face of the cell, which provides a perfect cancellation of the magnetic flux \cite{Toth2000}.
@@ -388,18 +391,18 @@ Here, we made the following assumptions:
 Using the zero velocity and uniform $\sigma$ assumptions, the ith component of the induced magnetic field simplifies to
 
 \begin{equation}
-	\frac{\partial B_i}{\partial t}
+	\frac{\PD B_i}{\PD t}
 	=
 	-
-	\frac{\partial B_i^0}{\partial t}
+	\frac{\PD B_i^0}{\PD t}
 	+
-	\frac{\partial^2 B_i}{\partial x_j^2}
+	\frac{\PD^2 B_i}{\PD x_j^2}
 \end{equation}
 
 With BCs
 
 \begin{equation}
-	\frac{\partial B_{n}}{\partial n} = 0
+	\frac{\PD B_{n}}{\PD n} = 0
 	\qquad \qquad
 	B_{tangent} = 0
 \end{equation}
@@ -407,25 +410,25 @@ With BCs
 The uniform applied magnetic field provides a source term only for the z-component, so the equations further simplify to
 
 \begin{equation}
-	\frac{\partial B_z}{\partial t}
+	\frac{\PD B_z}{\PD t}
 	=
 	e^{-t}
 	+
-	\frac{\partial^2 B_z}{\partial x_j^2}
+	\frac{\PD^2 B_z}{\PD x_j^2}
 	\qquad \qquad
 	B_x = 0
 	\qquad \qquad
 	B_y = 0
 \end{equation}
 
-Since the domain is long in x compared to y and z, the diffusion along x is negligible compared with y and z near the center of the domain. In addition, the $\frac{\partial B_n}{\partial n}$ results in no variation of $B_z$ along $z$. So we have
+Since the domain is long in x compared to y and z, the diffusion along x is negligible compared with y and z near the center of the domain. In addition, the $\frac{\PD B_n}{\PD n}$ results in no variation of $B_z$ along $z$. So we have
 
 \begin{equation}
-	\frac{\partial B_z}{\partial t}
+	\frac{\PD B_z}{\PD t}
 	=
 	e^{-t}
 	+
-	\frac{\partial^2 B_z}{\partial y^2}
+	\frac{\PD^2 B_z}{\PD y^2}
 	\qquad \qquad
 	B_x = 0
 	\qquad \qquad
@@ -462,11 +465,11 @@ Where this solution applies to a domain $0 \le y \le L$. So this result must be 
 
 After performing this test, we modified the applied magnetic field to $B^0=(0,e^{-t},0)$. Using the same assumptions as before, the equations simplify to
 \begin{equation}
-	\frac{\partial B_y}{\partial t}
+	\frac{\PD B_y}{\PD t}
 	=
 	e^{-t}
 	+
-	\frac{\partial^2 B_y}{\partial z^2}
+	\frac{\PD^2 B_y}{\PD z^2}
 	\qquad \qquad
 	B_x = 0
 	\qquad \qquad
@@ -485,16 +488,12 @@ The same analytic solution is valid but with $B_{y,exact}(z,t)$.
 \subsubsection{Results}
 Both codes performed these computations using $\Delta t = 10^{-5}$. The solution, $B_z$ was probed at the center of the domain and compared as a function of time. In addition, KB was computed and compared as a function of time.
 
-\begin{figure}[H]
- \centering
- \subfigure[]{
-  \includegraphics[width=\figW,height=\figH]{Bz_u0.png}
-  }
- \subfigure[]{
-  \includegraphics[width=\figW,height=\figH]{KB_u0.png}
-  }
-   \caption[Optional ]{}
-\end{figure}
+% \begin{figure}[H]
+%  \centering
+%  \subfigure[]{\includegraphics[width=\figW,height=\figH]{Bz_u0.png}}
+%  \subfigure[]{\includegraphics[width=\figW,height=\figH]{KB_u0.png}}
+%    \caption[Optional ]{}
+% \end{figure}
 
 \subsection{Case B: Eddy Currents in a stationary block, 3 magnetic field components}
 Here, we made the following assumptions:
@@ -510,18 +509,18 @@ Here, we made the following assumptions:
 Using the zero velocity and uniform $\sigma$ assumptions, the ith component of the induced magnetic field simplifies to
 
 \begin{equation}
-	\frac{\partial B_i}{\partial t}
+	\frac{\PD B_i}{\PD t}
 	=
 	-
-	\frac{\partial B_i^0}{\partial t}
+	\frac{\PD B_i^0}{\PD t}
 	+
-	\frac{\partial^2 B_i}{\partial x_j^2}
+	\frac{\PD^2 B_i}{\PD x_j^2}
 \end{equation}
 
 With BCs
 
 \begin{equation}
-	\frac{\partial B_{n}}{\partial n} = 0
+	\frac{\PD B_{n}}{\PD n} = 0
 	\qquad \qquad
 	B_{tangent} = 0
 \end{equation}
@@ -529,37 +528,37 @@ With BCs
 The uniform applied magnetic field provides a source term only for the x and y-components, so the equations further simplify to
 
 \begin{equation}
-	\frac{\partial B_x}{\partial t}
+	\frac{\PD B_x}{\PD t}
 	=
 	e^{-t}
 	+
-	\frac{\partial^2 B_x}{\partial x_j^2}
+	\frac{\PD^2 B_x}{\PD x_j^2}
 	\qquad \qquad
-	\frac{\partial B_y}{\partial t}
+	\frac{\PD B_y}{\PD t}
 	=
 	e^{-t}
 	+
-	\frac{\partial^2 B_y}{\partial x_j^2}
+	\frac{\PD^2 B_y}{\PD x_j^2}
 	\qquad \qquad
 	B_z = 0
 \end{equation}
 
-Since the domain is long in x compared to y and z, the diffusion along x is negligible compared with y and z near the center of the domain. In addition, the $\frac{\partial B_n}{\partial n}$ results in no variation of $B_x$ along $x$ and $B_y$ along $y$. So we have
+Since the domain is long in x compared to y and z, the diffusion along x is negligible compared with y and z near the center of the domain. In addition, the $\frac{\PD B_n}{\PD n}$ results in no variation of $B_x$ along $x$ and $B_y$ along $y$. So we have
 
 \begin{equation}
-	\frac{\partial B_x}{\partial t}
+	\frac{\PD B_x}{\PD t}
 	=
 	e^{-t}
 	+
-	\frac{\partial^2 B_x}{\partial y^2}
+	\frac{\PD^2 B_x}{\PD y^2}
 	+
-	\frac{\partial^2 B_x}{\partial z^2}
+	\frac{\PD^2 B_x}{\PD z^2}
 	\qquad \qquad
-	\frac{\partial B_y}{\partial t}
+	\frac{\PD B_y}{\PD t}
 	=
 	e^{-t}
 	+
-	\frac{\partial^2 B_y}{\partial z^2}
+	\frac{\PD^2 B_y}{\PD z^2}
 	\qquad \qquad
 	B_z = 0
 \end{equation}
@@ -569,13 +568,11 @@ The same analytic solution for $B_y$ exists from the previous section. For $B_x$
 \subsubsection{Results}
 Both codes performed these computations using $\Delta t = 10^{-5}$. The solutions, $B_x$ and $B_y$ were probed at the center of the domain and compared as a function of time.
 
-\begin{figure}[H]
- \centering
- \subfigure[]{
-  \includegraphics[width=\figW,height=\figH]{B2_u0.png}
-  }
-   \caption[Optional ]{}
-\end{figure}
+% \begin{figure}[H]
+%  \centering
+%  \subfigure[]{\includegraphics[width=\figW,height=\figH]{B2_u0.png}}
+%    \caption[Optional ]{}
+% \end{figure}
 
 
 \subsection{Case C: One-Way Coupled 3 Component Magnetic field in a Parabolic Flow}
@@ -620,22 +617,22 @@ A prescribed velocity was assumed of the form
 Using the uniform $\sigma$ and uniform applied magnetic field assumptions, the ith component of the induced magnetic field simplifies to
 
 \begin{equation}
-	\frac{\partial B_i}{\partial t}
+	\frac{\PD B_i}{\PD t}
 	=
 	-
-	\frac{\partial B_i^0}{\partial t}
+	\frac{\PD B_i^0}{\PD t}
 	-
-	\frac{\partial}{\partial x_j} (u_j B_i^0 - u_i B_j^0)
+	\frac{\PD}{\PD x_j} (u_j B_i^0 - u_i B_j^0)
 	-
-	\frac{\partial}{\partial x_j} (u_j B_i - u_i B_j)
+	\frac{\PD}{\PD x_j} (u_j B_i - u_i B_j)
 	+
-	\frac{\partial^2 B_i}{\partial x_j^2}
+	\frac{\PD^2 B_i}{\PD x_j^2}
 \end{equation}
 
 Here, we used the BCs
 
 \begin{equation}
-	\frac{\partial B_{n}}{\partial n} = 0
+	\frac{\PD B_{n}}{\PD n} = 0
 	\qquad \qquad
 	B_{tangent} = 0
 	\qquad
@@ -645,7 +642,7 @@ Here, we used the BCs
 \end{equation}
 
 \begin{equation}
-	\frac{\partial \pmb{B}}{\partial x} = 0
+	\frac{\PD \B}{\PD x} = 0
 	\qquad
 	x_{min}, x_{max}
 \end{equation}
@@ -654,57 +651,57 @@ Note that this means there are no variations in the x-direction.
 
 Using $v=w=0$, no variations exist in the x direction, we (partially) simplify this to
 \begin{equation}
-	\frac{\partial B_x}{\partial t}
+	\frac{\PD B_x}{\PD t}
 	=
-	-\frac{\partial B_x^0}{\partial t}
-	+\frac{\partial}{\partial y} (u B_y^0)
-	+\frac{\partial}{\partial z} (u B_z^0) \\
-	+\frac{\partial}{\partial y} (u B_y)
-	+\frac{\partial}{\partial z} (u B_z)
-	+\frac{\partial^2 B_x}{\partial y^2}
-	+\frac{\partial^2 B_x}{\partial z^2}
+	-\frac{\PD B_x^0}{\PD t}
+	+\frac{\PD}{\PD y} (u B_y^0)
+	+\frac{\PD}{\PD z} (u B_z^0) \\
+	+\frac{\PD}{\PD y} (u B_y)
+	+\frac{\PD}{\PD z} (u B_z)
+	+\frac{\PD^2 B_x}{\PD y^2}
+	+\frac{\PD^2 B_x}{\PD z^2}
 \end{equation}
 \begin{equation}
-	\frac{\partial B_y}{\partial t}
+	\frac{\PD B_y}{\PD t}
 	=
-	-\frac{\partial B_y^0}{\partial t}
-	+\frac{\partial}{\partial y} (v B_y^0)
-	+\frac{\partial}{\partial z} (v B_z^0) \\
-	+\frac{\partial}{\partial y} (v B_y)
-	+\frac{\partial}{\partial z} (v B_z)
-	+\frac{\partial^2 B_y}{\partial y^2}
-	+\frac{\partial^2 B_y}{\partial z^2}
+	-\frac{\PD B_y^0}{\PD t}
+	+\frac{\PD}{\PD y} (v B_y^0)
+	+\frac{\PD}{\PD z} (v B_z^0) \\
+	+\frac{\PD}{\PD y} (v B_y)
+	+\frac{\PD}{\PD z} (v B_z)
+	+\frac{\PD^2 B_y}{\PD y^2}
+	+\frac{\PD^2 B_y}{\PD z^2}
 \end{equation}
 \begin{equation}
-	\frac{\partial B_z}{\partial t}
+	\frac{\PD B_z}{\PD t}
 	=
-	-\frac{\partial B_z^0}{\partial t}
-	+\frac{\partial}{\partial y} (w B_y^0)
-	+\frac{\partial}{\partial z} (w B_z^0) \\
-	+\frac{\partial}{\partial y} (w B_y)
-	+\frac{\partial}{\partial z} (w B_z)
-	+\frac{\partial^2 B_z}{\partial y^2}
-	+\frac{\partial^2 B_z}{\partial z^2}
+	-\frac{\PD B_z^0}{\PD t}
+	+\frac{\PD}{\PD y} (w B_y^0)
+	+\frac{\PD}{\PD z} (w B_z^0) \\
+	+\frac{\PD}{\PD y} (w B_y)
+	+\frac{\PD}{\PD z} (w B_z)
+	+\frac{\PD^2 B_z}{\PD y^2}
+	+\frac{\PD^2 B_z}{\PD z^2}
 \end{equation}
 
 Taking out some more terms and using the applied magnetic field, we have
 
 \begin{equation}
-	\frac{\partial B_x}{\partial t}
+	\frac{\PD B_x}{\PD t}
 	=
 	e^{-t}
-	+e^{-t}\frac{\partial u}{\partial y}
-	+\frac{\partial u}{\partial z} \\
-	+\frac{\partial (u B_y)}{\partial y}
-	+\frac{\partial (u B_z)}{\partial z}
-	+\frac{\partial^2 B_x}{\partial y^2}
-	+\frac{\partial^2 B_x}{\partial z^2}
+	+e^{-t}\frac{\PD u}{\PD y}
+	+\frac{\PD u}{\PD z} \\
+	+\frac{\PD (u B_y)}{\PD y}
+	+\frac{\PD (u B_z)}{\PD z}
+	+\frac{\PD^2 B_x}{\PD y^2}
+	+\frac{\PD^2 B_x}{\PD z^2}
 \end{equation}
 \begin{equation}
-	\frac{\partial B_y}{\partial t}
+	\frac{\PD B_y}{\PD t}
 	=
 	e^{-t}
-	+\frac{\partial^2 B_y}{\partial z^2}
+	+\frac{\PD^2 B_y}{\PD z^2}
 \end{equation}
 \begin{equation}
 	B_z = 0
@@ -717,27 +714,18 @@ Clearly, the time, and y-z spatial plane evolution for the x-component of the ma
 \subsubsection{Results}
 Both codes performed these computations using $\Delta t = 10^{-5}$. The solutions, $B_x$, $B_y$ and $B_z$ were probed at the center of the domain and compared as a function of time.
 
-\begin{figure}[H]
- \centering
- \subfigure[]{
-  \includegraphics[width=\figW,height=\figH]{B2x_u_parabolic.png}
-  }
- \subfigure[]{
-  \includegraphics[width=\figW,height=\figH]{B2y_u_parabolic.png}
-  }
-   \caption[Optional ]{}
-\end{figure}
-
-\begin{figure}[H]
- \centering
- \subfigure[]{
-  \includegraphics[width=\figW,height=\figH]{B2z_u_parabolic.png}
-  }
- \subfigure[]{
-  \includegraphics[width=\figW,height=\figH]{KB_u_parabolic.png}
-  }
-   \caption[Optional ]{}
-\end{figure}
+% \begin{figure}[H]
+%  \centering
+%  \subfigure[]{\includegraphics[width=\figW,height=\figH]{B2x_u_parabolic.png}}
+%  \subfigure[]{\includegraphics[width=\figW,height=\figH]{B2y_u_parabolic.png}}
+%    \caption[Optional ]{}
+% \end{figure}
+% \begin{figure}[H]
+%  \centering
+%  \subfigure[]{\includegraphics[width=\figW,height=\figH]{B2z_u_parabolic.png}}
+%  \subfigure[]{\includegraphics[width=\figW,height=\figH]{KB_u_parabolic.png}}
+%    \caption[Optional ]{}
+% \end{figure}
 
 \subsection{Case D: Fully Coupled 1 Component Magnetic field in a Periodic Duct}
 
@@ -753,8 +741,8 @@ Here, we made the following assumptions:
 For this problem, we solved the momentum and induction equations. For BCs we used
 
 \begin{equation}
-	\pmb{u},
-	\pmb{B},
+	\U,
+	\B,
 	p = \text{periodic}
 	\qquad
 	x_{min},x_{max}
@@ -762,11 +750,11 @@ For this problem, we solved the momentum and induction equations. For BCs we use
 \end{equation}
 
 \begin{equation}
-	\pmb{u} = \pmb{u}_{walls} = 0
+	\U = \U_{walls} = 0
 	\qquad
-	\frac{\partial p}{\partial n} = 0
+	\frac{\PD p}{\PD n} = 0
 	\qquad
-	\frac{\partial B_{n}}{\partial n} = 0
+	\frac{\PD B_{n}}{\PD n} = 0
 	\qquad
 	B_{tangent} = 0
 	\qquad
@@ -776,35 +764,35 @@ For this problem, we solved the momentum and induction equations. For BCs we use
 
 \subsubsection{Momentum equation}
 
-First note that there is no pressure force along x, and since the flow is periodic in x, the only way for flow to be driven in x requires a non-zero $j\times B$ force, which doesn't exist since the applied magnetic field induces currents in planes of x, resulting in a $j\times B$ only in planes of x. In addition, let's assume that the applied magnetic field does not induce any currents ($\nabla \times B^0=0$). Therefore, using the $\frac{\partial ()}{\partial x} = 0$, and $u = 0$, the momentum equations become
+First note that there is no pressure force along x, and since the flow is periodic in x, the only way for flow to be driven in x requires a non-zero $\J \CROSS \B$ force, which doesn't exist since the applied magnetic field induces currents in planes of x, resulting in a $\J \CROSS \B$ only in planes of x. In addition, let's assume that the applied magnetic field does not induce any currents ($\CURL B^0=0$). Therefore, using the $\frac{\PD ()}{\PD x} = 0$, and $u = 0$, the momentum equations become
 
 \begin{equation}
 	u=0
 \end{equation}
 \begin{equation}
-	\frac{\partial v}{\partial t}
-	+ \frac{\partial (v v)}{\partial y}
-	+ \frac{\partial (v w)}{\partial z}
+	\frac{\PD v}{\PD t}
+	+ \frac{\PD (v v)}{\PD y}
+	+ \frac{\PD (v w)}{\PD z}
 	=
-	- \frac{\partial p}{\partial y}
+	- \frac{\PD p}{\PD y}
 	+ \frac{1}{Re}
 	\left(
-	\frac{\partial^2 v}{\partial y^2}
-	+\frac{\partial^2 v}{\partial z^2}
+	\frac{\PD^2 v}{\PD y^2}
+	+\frac{\PD^2 v}{\PD z^2}
 	\right)
 	+ \frac{Ha^2}{Re}
 	(j \times (B^{tot}))_y
 \end{equation}
 \begin{equation}
-	\frac{\partial w}{\partial t}
-	+ \frac{\partial (w v)}{\partial y}
-	+ \frac{\partial (w w)}{\partial z}
+	\frac{\PD w}{\PD t}
+	+ \frac{\PD (w v)}{\PD y}
+	+ \frac{\PD (w w)}{\PD z}
 	=
-	- \frac{\partial p}{\partial z}
+	- \frac{\PD p}{\PD z}
 	+ \frac{1}{Re}
 	\left(
-	\frac{\partial^2 w}{\partial y^2}
-	+\frac{\partial^2 w}{\partial z^2}
+	\frac{\PD^2 w}{\PD y^2}
+	+\frac{\PD^2 w}{\PD z^2}
 	\right)
 	+ \frac{Ha^2}{Re}
 	(j \times (B^{tot}))_z
@@ -821,29 +809,29 @@ Where
 The induction equation in its general form is
 
 \begin{equation}
-	\frac{\partial B_i}{\partial t}
+	\frac{\PD B_i}{\PD t}
 	=
-	- \frac{\partial B_i^0}{\partial t}
-	- \frac{\partial}{\partial x_j} (u_j B_i^{tot} - u_i B_j^{tot})
+	- \frac{\PD B_i^0}{\PD t}
+	- \frac{\PD}{\PD x_j} (u_j B_i^{tot} - u_i B_j^{tot})
 	+
 	\frac{1}{Re_m}
-	\frac{\partial^2 B_i}{\partial x_j^2}
+	\frac{\PD^2 B_i}{\PD x_j^2}
 \end{equation}
 
-First note that there is only a source term for the induced magnetic field for the x-component. This means that, since the initial induced magnetic field is zero, the y and z components of the induced magnetic field are always zero. Using this fact, $\frac{\partial}{\partial x} ()=0$, the uniform $\sigma$, and uniform $\mu$, the induction equations become
+First note that there is only a source term for the induced magnetic field for the x-component. This means that, since the initial induced magnetic field is zero, the y and z components of the induced magnetic field are always zero. Using this fact, $\frac{\PD}{\PD x} ()=0$, the uniform $\sigma$, and uniform $\mu$, the induction equations become
 
 
 \begin{equation}
-	\frac{\partial B_x}{\partial t}
+	\frac{\PD B_x}{\PD t}
 	=
-	- \frac{\partial B_x^0}{\partial t}
-	- \frac{\partial}{\partial y} (v B_x^{tot})
-	- \frac{\partial}{\partial z} (w B_x^{tot})
+	- \frac{\PD B_x^0}{\PD t}
+	- \frac{\PD}{\PD y} (v B_x^{tot})
+	- \frac{\PD}{\PD z} (w B_x^{tot})
 	+ \frac{1}{Re_m}
 	\left(
-	\frac{\partial^2 B_x}{\partial y^2}
+	\frac{\PD^2 B_x}{\PD y^2}
 	+
-	\frac{\partial^2 B_x}{\partial z^2}
+	\frac{\PD^2 B_x}{\PD z^2}
 	\right)
 \end{equation}
 \begin{equation}
@@ -852,58 +840,58 @@ First note that there is only a source term for the induced magnetic field for t
 
 \subsubsection{Lorentz force}
 
-Looking back at the momentum equation, the $j\times B$ force does not act in x, and we only have one component of the magnetic field, so we have
+Looking back at the momentum equation, the $\J \CROSS \B$ force does not act in x, and we only have one component of the magnetic field, so we have
 
 \begin{equation}
 	(j \times B^{tot})_x = 0
 	\qquad \qquad
-	(j \times B^{tot})_y = -	B_x^{tot} \frac{\partial B_x}{\partial y}
+	(j \times B^{tot})_y = -	B_x^{tot} \frac{\PD B_x}{\PD y}
 	\qquad \qquad
-	(j \times B^{tot})_z = - B_x^{tot} \frac{\partial B_x}{\partial z}
+	(j \times B^{tot})_z = - B_x^{tot} \frac{\PD B_x}{\PD z}
 \end{equation}
 
 \subsubsection{Steady assumptions}
 Assuming that the flow and magnetic fields (both induced and applied) are steady, we have
 
 \begin{equation}
-	\frac{\partial (v v)}{\partial y}
-	+ \frac{\partial (v w)}{\partial z}
+	\frac{\PD (v v)}{\PD y}
+	+ \frac{\PD (v w)}{\PD z}
 	=
-	- \frac{\partial p}{\partial y}
+	- \frac{\PD p}{\PD y}
 	+ \frac{1}{Re}
 	\left(
-	\frac{\partial^2 v}{\partial y^2}
-	+\frac{\partial^2 v}{\partial z^2}
+	\frac{\PD^2 v}{\PD y^2}
+	+\frac{\PD^2 v}{\PD z^2}
 	\right)
 	-
 	\frac{Ha^2}{Re}
 	B_x^{tot}
-	\frac{\partial B_x}{\partial y}
+	\frac{\PD B_x}{\PD y}
 \end{equation}
 \begin{equation}
-	\frac{\partial (w v)}{\partial y}
-	+ \frac{\partial (w w)}{\partial z}
+	\frac{\PD (w v)}{\PD y}
+	+ \frac{\PD (w w)}{\PD z}
 	=
-	- \frac{\partial p}{\partial z}
+	- \frac{\PD p}{\PD z}
 	+ \frac{1}{Re}
 	\left(
-	\frac{\partial^2 w}{\partial y^2}
-	+\frac{\partial^2 w}{\partial z^2}
+	\frac{\PD^2 w}{\PD y^2}
+	+\frac{\PD^2 w}{\PD z^2}
 	\right)
 	+ \frac{Ha^2}{Re}
 	B_x^{tot}
-	\frac{\partial B_x}{\partial z}
+	\frac{\PD B_x}{\PD z}
 \end{equation}
 And
 \begin{equation}
-	\frac{\partial}{\partial y} (v B_x^{tot})
-	+ \frac{\partial}{\partial z} (w B_x^{tot})
+	\frac{\PD}{\PD y} (v B_x^{tot})
+	+ \frac{\PD}{\PD z} (w B_x^{tot})
 	=
 	\frac{1}{Re_m}
 	\left(
-	\frac{\partial^2 B_x}{\partial y^2}
+	\frac{\PD^2 B_x}{\PD y^2}
 	+
-	\frac{\partial^2 B_x}{\partial z^2}
+	\frac{\PD^2 B_x}{\PD z^2}
 	\right)
 \end{equation}
 
@@ -911,178 +899,178 @@ And
 If we assume that the steady state value of the applied magnetic field is zero after a long time, we have
 
 \begin{equation}
-	\frac{\partial (v v)}{\partial y}
-	+ \frac{\partial (v w)}{\partial z}
+	\frac{\PD (v v)}{\PD y}
+	+ \frac{\PD (v w)}{\PD z}
 	=
-	- \frac{\partial p}{\partial y}
+	- \frac{\PD p}{\PD y}
 	+ \frac{1}{Re}
 	\left(
-	\frac{\partial^2 v}{\partial y^2}
-	+\frac{\partial^2 v}{\partial z^2}
+	\frac{\PD^2 v}{\PD y^2}
+	+\frac{\PD^2 v}{\PD z^2}
 	\right)
 	-
 	\frac{Ha^2}{Re}
 	B_x
-	\frac{\partial B_x}{\partial y}
+	\frac{\PD B_x}{\PD y}
 \end{equation}
 \begin{equation}
-	\frac{\partial (w v)}{\partial y}
-	+ \frac{\partial (w w)}{\partial z}
+	\frac{\PD (w v)}{\PD y}
+	+ \frac{\PD (w w)}{\PD z}
 	=
-	- \frac{\partial p}{\partial z}
+	- \frac{\PD p}{\PD z}
 	+ \frac{1}{Re}
 	\left(
-	\frac{\partial^2 w}{\partial y^2}
-	+\frac{\partial^2 w}{\partial z^2}
+	\frac{\PD^2 w}{\PD y^2}
+	+\frac{\PD^2 w}{\PD z^2}
 	\right)
 	+ \frac{Ha^2}{Re}
 	B_x
-	\frac{\partial B_x}{\partial z}
+	\frac{\PD B_x}{\PD z}
 \end{equation}
 And
 \begin{equation}
-	\frac{\partial}{\partial y} (v B_x)
-	+ \frac{\partial}{\partial z} (w B_x)
+	\frac{\PD}{\PD y} (v B_x)
+	+ \frac{\PD}{\PD z} (w B_x)
 	=
 	\frac{1}{Re_m}
 	\left(
-	\frac{\partial^2 B_x}{\partial y^2}
+	\frac{\PD^2 B_x}{\PD y^2}
 	+
-	\frac{\partial^2 B_x}{\partial z^2}
+	\frac{\PD^2 B_x}{\PD z^2}
 	\right)
 \end{equation}
 
 \subsubsection{Vorticity / Streamfunction}
 
-Introducing the stream function, $u = \frac{\partial \psi}{\partial y}$ and $v = - \frac{\partial \psi}{\partial x}$, observing from the positive x axis, we have
+Introducing the stream function, $u = \frac{\PD \psi}{\PD y}$ and $v = - \frac{\PD \psi}{\PD x}$, observing from the positive x axis, we have
 
 \begin{equation}
-	v = \frac{\partial \psi}{\partial z}
+	v = \frac{\PD \psi}{\PD z}
 	\qquad \qquad \qquad \qquad
-	w = - \frac{\partial \psi}{\partial y}
+	w = - \frac{\PD \psi}{\PD y}
 \end{equation}
 
 substituting this into the momentum equation, we eliminate pressure, and have
 
 \begin{equation}
-	\frac{\partial}{\partial y}
+	\frac{\PD}{\PD y}
 	\left(
-	\frac{\partial \psi}{\partial z}
-	\frac{\partial \psi}{\partial z}
+	\frac{\PD \psi}{\PD z}
+	\frac{\PD \psi}{\PD z}
 	\right)
 	-
-	\frac{\partial}{\partial z}
+	\frac{\PD}{\PD z}
 	\left(
-	\frac{\partial \psi}{\partial z}
-	\frac{\partial \psi}{\partial y}
+	\frac{\PD \psi}{\PD z}
+	\frac{\PD \psi}{\PD y}
 	\right)
 	=
 	\frac{1}{Re}
 	\left\{
-	\frac{\partial^2}{\partial y^2}
+	\frac{\PD^2}{\PD y^2}
 	\left(
-	\frac{\partial \psi}{\partial z}
+	\frac{\PD \psi}{\PD z}
 	\right)
 	+
-	\frac{\partial^2}{\partial z^2}
+	\frac{\PD^2}{\PD z^2}
 	\left(
-	\frac{\partial \psi}{\partial z}
+	\frac{\PD \psi}{\PD z}
 	\right)
 	\right\}
 	-
 	\frac{Ha^2}{Re}
 	B_x
-	\frac{\partial B_x}{\partial y}
+	\frac{\PD B_x}{\PD y}
 \end{equation}
 \begin{equation}
-	-\frac{\partial}{\partial y}
+	-\frac{\PD}{\PD y}
 	\left(
-	\frac{\partial \psi}{\partial y}
-	\frac{\partial \psi}{\partial z}
+	\frac{\PD \psi}{\PD y}
+	\frac{\PD \psi}{\PD z}
 	\right)
-	+ \frac{\partial}{\partial z}
+	+ \frac{\PD}{\PD z}
 	\left(
-	\frac{\partial \psi}{\partial y}
-	\frac{\partial \psi}{\partial y}
+	\frac{\PD \psi}{\PD y}
+	\frac{\PD \psi}{\PD y}
 	\right)
 	=
 	- \frac{1}{Re}
 	\left\{
-	\frac{\partial^2}{\partial y^2}
+	\frac{\PD^2}{\PD y^2}
 	\left(
-	\frac{\partial \psi}{\partial y}
+	\frac{\PD \psi}{\PD y}
 	\right)
-	+\frac{\partial^2}{\partial z^2}
+	+\frac{\PD^2}{\PD z^2}
 	\left(
-	\frac{\partial \psi}{\partial y}
+	\frac{\PD \psi}{\PD y}
 	\right)
 	\right\}
 	+ \frac{Ha^2}{Re}
 	B_x
-	\frac{\partial B_x}{\partial z}
+	\frac{\PD B_x}{\PD z}
 \end{equation}
 
 And
 
 \begin{equation}
-	\frac{\partial}{\partial y} \left( B_x \frac{\partial \psi}{\partial z} \right)
-	- \frac{\partial}{\partial z} \left( B_x \frac{\partial \psi}{\partial y} \right)
+	\frac{\PD}{\PD y} \left( B_x \frac{\PD \psi}{\PD z} \right)
+	- \frac{\PD}{\PD z} \left( B_x \frac{\PD \psi}{\PD y} \right)
 	=
 	\frac{1}{Re_m}
 	\left(
-	\frac{\partial^2 B_x}{\partial y^2}
-	+ \frac{\partial^2 B_x}{\partial z^2}
+	\frac{\PD^2 B_x}{\PD y^2}
+	+ \frac{\PD^2 B_x}{\PD z^2}
 	\right)
 \end{equation}
 
 Expanding the advective terms, we have
 
 \begin{equation}
-	\frac{\partial}{\partial y}
+	\frac{\PD}{\PD y}
 	\left(
-	\frac{\partial \psi}{\partial z}
-	\frac{\partial \psi}{\partial z}
+	\frac{\PD \psi}{\PD z}
+	\frac{\PD \psi}{\PD z}
 	\right)
 	=
 	2
-	\frac{\partial \psi }{\partial z}
-	\frac{\partial^2 \psi}{\partial yz}
+	\frac{\PD \psi }{\PD z}
+	\frac{\PD^2 \psi}{\PD yz}
 	\qquad \qquad
 	\qquad \qquad
-	\frac{\partial}{\partial z}
+	\frac{\PD}{\PD z}
 	\left(
-	\frac{\partial \psi}{\partial z}
-	\frac{\partial \psi}{\partial y}
+	\frac{\PD \psi}{\PD z}
+	\frac{\PD \psi}{\PD y}
 	\right)
 	=
-	\frac{\partial \psi}{\partial z}
-	\frac{\partial^2 \psi}{\partial yz} +
-	\frac{\partial \psi}{\partial y}
-	\frac{\partial^2 \psi}{\partial z^2}
+	\frac{\PD \psi}{\PD z}
+	\frac{\PD^2 \psi}{\PD yz} +
+	\frac{\PD \psi}{\PD y}
+	\frac{\PD^2 \psi}{\PD z^2}
 \end{equation}
 
 \begin{equation}
-	\frac{\partial}{\partial y}
+	\frac{\PD}{\PD y}
 	\left(
-	\frac{\partial \psi}{\partial y}
-	\frac{\partial \psi}{\partial z}
+	\frac{\PD \psi}{\PD y}
+	\frac{\PD \psi}{\PD z}
 	\right)
 	=
-	\frac{\partial \psi}{\partial y}
-	\frac{\partial^2 \psi}{\partial yz} +
-	\frac{\partial \psi}{\partial z}
-	\frac{\partial^2 \psi}{\partial y^2}
+	\frac{\PD \psi}{\PD y}
+	\frac{\PD^2 \psi}{\PD yz} +
+	\frac{\PD \psi}{\PD z}
+	\frac{\PD^2 \psi}{\PD y^2}
 	\qquad \qquad
 	\qquad \qquad
-	\frac{\partial}{\partial z}
+	\frac{\PD}{\PD z}
 	\left(
-	\frac{\partial \psi}{\partial y}
-	\frac{\partial \psi}{\partial y}
+	\frac{\PD \psi}{\PD y}
+	\frac{\PD \psi}{\PD y}
 	\right)
 	=
 	2
-	\frac{\partial \psi }{\partial y}
-	\frac{\partial^2 \psi}{\partial yz}
+	\frac{\PD \psi }{\PD y}
+	\frac{\PD^2 \psi}{\PD yz}
 \end{equation}
 
 Subtracting the second momentum equation from the first yields
@@ -1090,24 +1078,24 @@ Subtracting the second momentum equation from the first yields
 \begin{equation}
 	\left\{
 	2
-	\frac{\partial \psi }{\partial z}
-	\frac{\partial^2 \psi}{\partial yz}
+	\frac{\PD \psi }{\PD z}
+	\frac{\PD^2 \psi}{\PD yz}
 	+
-	\frac{\partial \psi}{\partial y}
-	\frac{\partial^2 \psi}{\partial yz} +
-	\frac{\partial \psi}{\partial z}
-	\frac{\partial^2 \psi}{\partial y^2}
+	\frac{\PD \psi}{\PD y}
+	\frac{\PD^2 \psi}{\PD yz} +
+	\frac{\PD \psi}{\PD z}
+	\frac{\PD^2 \psi}{\PD y^2}
 	\right\}
 	-
 	\left\{
-	\frac{\partial \psi}{\partial z}
-	\frac{\partial^2 \psi}{\partial yz} +
-	\frac{\partial \psi}{\partial y}
-	\frac{\partial^2 \psi}{\partial z^2}
+	\frac{\PD \psi}{\PD z}
+	\frac{\PD^2 \psi}{\PD yz} +
+	\frac{\PD \psi}{\PD y}
+	\frac{\PD^2 \psi}{\PD z^2}
 	+
 	2
-	\frac{\partial \psi }{\partial y}
-	\frac{\partial^2 \psi}{\partial yz}
+	\frac{\PD \psi }{\PD y}
+	\frac{\PD^2 \psi}{\PD yz}
 	\right\}
 	=
 	\dots
@@ -1117,18 +1105,18 @@ Canceling some terms and combining, the advection terms will look like
 
 
 \begin{equation}
-	\frac{\partial \psi }{\partial z}
+	\frac{\PD \psi }{\PD z}
 	\left\{
-	\frac{\partial^2 \psi}{\partial yz}
+	\frac{\PD^2 \psi}{\PD yz}
 	+
-	\frac{\partial^2 \psi}{\partial y^2}
+	\frac{\PD^2 \psi}{\PD y^2}
 	\right\}
 	-
-	\frac{\partial \psi}{\partial y}
+	\frac{\PD \psi}{\PD y}
 	\left\{
-	\frac{\partial^2 \psi}{\partial z^2}
+	\frac{\PD^2 \psi}{\PD z^2}
 	+
-	\frac{\partial^2 \psi}{\partial yz}
+	\frac{\PD^2 \psi}{\PD yz}
 	\right\}
 	=
 	\dots
@@ -1142,12 +1130,12 @@ The diffusion terms will look like
 	=
 	\frac{1}{Re}
 	\left\{
-	\frac{\partial^2 \psi}{\partial z y^2}
+	\frac{\PD^2 \psi}{\PD z y^2}
 	+
-	\frac{\partial^3 \psi}{\partial z^3}
+	\frac{\PD^3 \psi}{\PD z^3}
 	+
-	\frac{\partial^3 \psi}{\partial y^3}
-	+\frac{\partial^3 \psi}{\partial y z^2}
+	\frac{\PD^3 \psi}{\PD y^3}
+	+\frac{\PD^3 \psi}{\PD y z^2}
 	\right\}
 	+ \dots
 \end{equation}
@@ -1160,83 +1148,83 @@ And the Lorentz force will look like
 	\frac{Ha^2}{Re}
 	B_x
 	\left\{
-	\frac{\partial B_x}{\partial y}
+	\frac{\PD B_x}{\PD y}
 	+
-	\frac{\partial B_x}{\partial z}
+	\frac{\PD B_x}{\PD z}
 	\right\}
 \end{equation}
 
 Expanding the advection terms in the induction equation, we have
 
 \begin{equation}
-	\frac{\partial}{\partial y} \left( B_x \frac{\partial \psi}{\partial z} \right)
-	- \frac{\partial}{\partial z} \left( B_x \frac{\partial \psi}{\partial y} \right)
+	\frac{\PD}{\PD y} \left( B_x \frac{\PD \psi}{\PD z} \right)
+	- \frac{\PD}{\PD z} \left( B_x \frac{\PD \psi}{\PD y} \right)
 	=
-	B_x \frac{\partial^2 \psi}{\partial yz}
+	B_x \frac{\PD^2 \psi}{\PD yz}
 	+
-	\frac{\partial \psi}{\partial z}
-	\frac{\partial B_x}{\partial y}
+	\frac{\PD \psi}{\PD z}
+	\frac{\PD B_x}{\PD y}
 	-
 	B_x
-	\frac{\partial^2 \psi}{\partial y z}
+	\frac{\PD^2 \psi}{\PD y z}
 	-
-	\frac{\partial \psi}{\partial y}
-	\frac{\partial B_x}{\partial z}
+	\frac{\PD \psi}{\PD y}
+	\frac{\PD B_x}{\PD z}
 	=
-	\frac{\partial \psi}{\partial z}
-	\frac{\partial B_x}{\partial y}
+	\frac{\PD \psi}{\PD z}
+	\frac{\PD B_x}{\PD y}
 	-
-	\frac{\partial \psi}{\partial y}
-	\frac{\partial B_x}{\partial z}
+	\frac{\PD \psi}{\PD y}
+	\frac{\PD B_x}{\PD z}
 \end{equation}
 
 Putting this all together, we have
 
 \begin{equation}
-	\frac{\partial \psi }{\partial z}
+	\frac{\PD \psi }{\PD z}
 	\left\{
-	\frac{\partial^2 \psi}{\partial yz}
+	\frac{\PD^2 \psi}{\PD yz}
 	+
-	\frac{\partial^2 \psi}{\partial y^2}
+	\frac{\PD^2 \psi}{\PD y^2}
 	\right\}
 	-
-	\frac{\partial \psi}{\partial y}
+	\frac{\PD \psi}{\PD y}
 	\left\{
-	\frac{\partial^2 \psi}{\partial z^2}
+	\frac{\PD^2 \psi}{\PD z^2}
 	+
-	\frac{\partial^2 \psi}{\partial yz}
+	\frac{\PD^2 \psi}{\PD yz}
 	\right\}
 	=
 	\frac{1}{Re}
 	\left\{
-	\frac{\partial^2 \psi}{\partial z y^2}
+	\frac{\PD^2 \psi}{\PD z y^2}
 	+
-	\frac{\partial^3 \psi}{\partial z^3}
+	\frac{\PD^3 \psi}{\PD z^3}
 	+
-	\frac{\partial^3 \psi}{\partial y^3}
-	+\frac{\partial^3 \psi}{\partial y z^2}
+	\frac{\PD^3 \psi}{\PD y^3}
+	+\frac{\PD^3 \psi}{\PD y z^2}
 	\right\}
 	-
 	\frac{Ha^2}{Re}
 	B_x
 	\left\{
-	\frac{\partial B_x}{\partial y}
+	\frac{\PD B_x}{\PD y}
 	+
-	\frac{\partial B_x}{\partial z}
+	\frac{\PD B_x}{\PD z}
 	\right\}
 \end{equation}
 
 \begin{equation}
-	\frac{\partial \psi}{\partial z}
-	\frac{\partial B_x}{\partial y}
+	\frac{\PD \psi}{\PD z}
+	\frac{\PD B_x}{\PD y}
 	-
-	\frac{\partial \psi}{\partial y}
-	\frac{\partial B_x}{\partial z}
+	\frac{\PD \psi}{\PD y}
+	\frac{\PD B_x}{\PD z}
 	=
 	\frac{1}{Re_m}
 	\left(
-	\frac{\partial^2 B_x}{\partial y^2}
-	+ \frac{\partial^2 B_x}{\partial z^2}
+	\frac{\PD^2 B_x}{\PD y^2}
+	+ \frac{\PD^2 B_x}{\PD z^2}
 	\right)
 \end{equation}
 
@@ -1248,33 +1236,33 @@ Assuming that the Reynolds number is negligibly small, then we have
 
 
 \begin{equation}
-	\frac{\partial^3 \psi}{\partial z y^2}
+	\frac{\PD^3 \psi}{\PD z y^2}
 	+
-	\frac{\partial^3 \psi}{\partial z^3}
+	\frac{\PD^3 \psi}{\PD z^3}
 	+
-	\frac{\partial^3 \psi}{\partial y^3}
-	+\frac{\partial^3 \psi}{\partial y z^2}
+	\frac{\PD^3 \psi}{\PD y^3}
+	+\frac{\PD^3 \psi}{\PD y z^2}
 	=
 	Ha^2
 	B_x
 	\left\{
-	\frac{\partial B_x}{\partial y}
+	\frac{\PD B_x}{\PD y}
 	+
-	\frac{\partial B_x}{\partial z}
+	\frac{\PD B_x}{\PD z}
 	\right\}
 \end{equation}
 
 \begin{equation}
-	\frac{\partial \psi}{\partial z}
-	\frac{\partial B_x}{\partial y}
+	\frac{\PD \psi}{\PD z}
+	\frac{\PD B_x}{\PD y}
 	-
-	\frac{\partial \psi}{\partial y}
-	\frac{\partial B_x}{\partial z}
+	\frac{\PD \psi}{\PD y}
+	\frac{\PD B_x}{\PD z}
 	=
 	\frac{1}{Re_m}
 	\left(
-	\frac{\partial^2 B_x}{\partial y^2}
-	+ \frac{\partial^2 B_x}{\partial z^2}
+	\frac{\PD^2 B_x}{\PD y^2}
+	+ \frac{\PD^2 B_x}{\PD z^2}
 	\right)
 \end{equation}
 
@@ -1285,13 +1273,13 @@ Assuming that the Reynolds number is negligibly small, then we have
 % Taking the curl of the momentum equation yields the vorticity equation, and since the flow is 2D, we are left with a vorticity equation only in x.
 
 % \begin{equation}
-% 	\nabla \times \text{momentum}
+% 	\CURL \text{momentum}
 % 	=
 % 	\hat{i}
 % 	\left(
-% 	\frac{\partial \text{momentum}_z}{\partial y}
+% 	\frac{\PD \text{momentum}_z}{\PD y}
 % 	-
-% 	\frac{\partial \text{momentum}_y}{\partial z}
+% 	\frac{\PD \text{momentum}_y}{\PD z}
 % 	\right)
 % 	+ \hat{j} \times 0
 % 	+ \hat{k} \times 0
@@ -1303,42 +1291,42 @@ Assuming that the Reynolds number is negligibly small, then we have
 
 % \begin{multline}
 % 	\left\{
-% 	\frac{\partial^2 (wv)}{\partial y^2}
+% 	\frac{\PD^2 (wv)}{\PD y^2}
 % 	+
-% 	\frac{\partial^2 (w^2)}{\partial yz}
+% 	\frac{\PD^2 (w^2)}{\PD yz}
 % 	\right\}
 % 	-
 % 	\left\{
-% 	\frac{\partial^2 (v^2)}{\partial zy}
+% 	\frac{\PD^2 (v^2)}{\PD zy}
 % 	+
-% 	\frac{\partial^2 (vw)}{\partial z^2}
+% 	\frac{\PD^2 (vw)}{\PD z^2}
 % 	\right\}
 % 	=
 % 	\left\{
 % 	\frac{1}{Re}
 % 	\left(
-% 	\frac{\partial^3 w}{\partial y^3}
+% 	\frac{\PD^3 w}{\PD y^3}
 % 	+
-% 	\frac{\partial^3 w}{\partial yz^2}
+% 	\frac{\PD^3 w}{\PD yz^2}
 % 	\right)
 % 	+ \frac{Ha^2}{Re}
-% 	\frac{\partial}{\partial y}
+% 	\frac{\PD}{\PD y}
 % 	\left(
-% 	B_x \frac{\partial B_x}{\partial z}
+% 	B_x \frac{\PD B_x}{\PD z}
 % 	\right)
 % 	\right\}
 % 	- \\
 % 	\left\{
 % 	\frac{1}{Re}
 % 	\left(
-% 	\frac{\partial^3 w}{\partial y^2 z}
+% 	\frac{\PD^3 w}{\PD y^2 z}
 % 	+
-% 	\frac{\partial^3 w}{\partial z^3}
+% 	\frac{\PD^3 w}{\PD z^3}
 % 	\right)
 % 	- \frac{Ha^2}{Re}
-% 	\frac{\partial}{\partial z}
+% 	\frac{\PD}{\PD z}
 % 	\left(
-% 	B_x \frac{\partial B_x}{\partial y}
+% 	B_x \frac{\PD B_x}{\PD y}
 % 	\right)
 % 	\right\}
 % \end{multline}

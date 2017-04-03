@@ -121,7 +121,7 @@
        SP%print_every_MHD_step       = F ! Print nstep every time stop (for debugging)
 
        ! call init(MP,mirror,mirror_face)
-       call init(SP%MP,F,6) ! Must be defined before KE_scale,ME_scale,JE_scale
+       call init(SP%MP,T,6) ! Must be defined before KE_scale,ME_scale,JE_scale
        SP%EL%export_symmetric = SP%MP%mirror
 
        ! call init(EFP,export_ever,export_first_step,frequency_base,frequency_exp)
@@ -145,7 +145,7 @@
        dtime                         = 5.0_cp*pow(-3)
 
        SP%GP%tw                      = 0.05_cp
-       SP%GP%geometry                = 27
+       SP%GP%geometry                = 15
        SP%GP%periodic_dir            = (/0,0,0/)
        ! SP%GP%apply_BC_order          = (/3,4,5,6,1,2/) ! good for LDC
        ! SP%GP%apply_BC_order       = (/3,4,5,6,1,2/) ! good for periodic in y?
@@ -157,7 +157,7 @@
        SP%DP%Re                      = 2.0_cp*pow(3)
        SP%DP%N                       = 5.0_cp*pow(0)
        ! SP%DP%Q                       = 3.0_cp*pow(-1)
-       if (     RV_BCs) SP%DP%Rem                     = 1.0_cp*pow(3)
+       if (     RV_BCs) SP%DP%Rem                     = 5.0_cp*pow(2)
        if (.not.RV_BCs) SP%DP%Rem                     = 1.0_cp*pow(0)
        ! SP%DP%Ha                      = 1.0_cp*pow(1)
        ! SP%DP%N                       = 1.0_cp/SP%DP%Q
@@ -235,10 +235,10 @@
 
        ! call init_IC_BC(var      ,IC   ,BC)
        call init_IC_BC(SP%VS%T    ,0    ,0 )
-       call init_IC_BC(SP%VS%U    ,0    ,1 )
+       call init_IC_BC(SP%VS%U    ,0    ,2 )
        call init_IC_BC(SP%VS%P    ,0    ,0 )
-       if (     RV_BCs) call init_IC_BC(SP%VS%B    ,0    ,0 ) ! 5 for thin wall
-       if (.not.RV_BCs) call init_IC_BC(SP%VS%B    ,0    ,1 ) ! 5 for thin wall
+       if (     RV_BCs) call init_IC_BC(SP%VS%B    ,0    ,9 ) ! 5 for thin wall
+       if (.not.RV_BCs) call init_IC_BC(SP%VS%B    ,0    ,10) ! 5 for thin wall
        call init_IC_BC(SP%VS%B0   ,1    ,0 )
        call init_IC_BC(SP%VS%phi  ,0    ,0 )
        call init_IC_BC(SP%VS%rho  ,0    ,0 )
@@ -246,12 +246,12 @@
        ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,export_convergence,dir,name)
        call init(SP%VS%T%ISP,  5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_T')
        call init(SP%VS%U%ISP,  5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_U')
-       call init(SP%VS%P%ISP,  10 ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_P')
+       call init(SP%VS%P%ISP,  5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_P')
        if (     RV_BCs) call init(SP%VS%B%ISP,  20 ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_B')
        if (.not.RV_BCs) call init(SP%VS%B%ISP,  5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_B')
        ! call init(SP%VS%B%ISP,  5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_B')
        call init(SP%VS%B0%ISP, 5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_B0')
-       call init(SP%VS%phi%ISP,10 ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_phi')
+       call init(SP%VS%phi%ISP,5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_phi')
        call init(SP%VS%rho%ISP,5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_rho')
 
        ! call init(TMP,multistep_iter,n_step_stop,dtime,dir,name)

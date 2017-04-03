@@ -56,6 +56,7 @@
          case (24); call MHD_2D_Duct_Hunt(         m_mom,m_ind,MQP,MD_sigma,DP)
          case (25); call MHD_2D_Duct_Hunt_Walls(   m_mom,m_ind,MQP,MD_sigma,DP)
          case (26); call MHD_3D_Bandaru(           m_mom,m_ind,MQP,MD_sigma,DP)
+         case (27); call MHD_3D_LDC_BC_fine_top(   m_mom,m_ind,MQP,MD_sigma,DP,tw,include_vacuum)
          case default; stop 'Error: bad BMC_geometry in mesh_benchmark_geometries.f90'
          end select
        end subroutine

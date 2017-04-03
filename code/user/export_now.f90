@@ -96,9 +96,11 @@
          close(un)
        end subroutine
 
-       subroutine update_EN(EN)
+       subroutine update_EN(EN,export_safe)
          implicit none
          type(export_now),intent(inout) :: EN
+         logical,intent(in) :: export_safe
+         if (export_safe) EN%all%next = .true.
          EN%any_next = any((/EN%T%next,EN%rho%next,EN%U%next,EN%B%next,EN%all%next/))
          call update_step(EN%T)
          call update_step(EN%rho)

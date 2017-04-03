@@ -29,13 +29,14 @@ dB0_x_dt = dB0_x_dt_max;
 
 %% Solution construction
 Ha = a*B0_z*sqrt(sigma/rho/nu);
-U_c = a*dB0_x_dt/B0_z;
-B_c = U_c*sqrt(mu*sigma*mu_m^2.0);
+% Ha = .1; % For plots
+U_c = -a*dB0_x_dt/B0_z;
+B_c = -U_c*sqrt(mu*sigma*mu_m^2.0);
 y = linspace(-a,a,N_nodes);
 u_temp = sinh_a_over_sinh_b_safe(Ha*y/a,Ha);
 B_temp = cosh_a_over_sinh_b_safe(Ha*y/a,Ha);
-u = U_c*(y/a - u_temp);
-B_x = B_c*(B_temp - 1/tanh(Ha));
+u = U_c*(u_temp - y/a);
+B_x = B_c*(1/tanh(Ha) - B_temp);
 
 disp(['dB0_x_dt = ' num2str(dB0_x_dt)])
 disp(['U_c      = ' num2str(U_c)])
@@ -62,7 +63,6 @@ ylabel('B_x [T]')
 %% Estimate dimensionless parameters
 Re_m = max(u)*a*mu_m*sigma;
 Re = max(u)*a/nu;
-Ha = a*B0_z*sqrt(sigma/mu);
 disp(['Re_m  = ' num2str(Re_m)])
 disp(['Re  = ' num2str(Re)])
 disp(['Ha  = ' num2str(Ha)])
@@ -86,7 +86,7 @@ ylabel('B_x/B_c')
 
 if save_profile_to_file
     T = [y_star' u_star' B_star'];
-    file = ['PD_solution_Ha=' num2str(Ha) '.dat'];
+    file = ['sol/PD_solution_Ha=' num2str(Ha) '.dat'];
     save(file,'T','-ascii')
 end
 

@@ -7,6 +7,19 @@ TO DO LIST COMMANDS:
  ☐ Searches can be made for specific @tags
 --- ✄ -----------------------
 Right Now:
+ ✔ Finish PR for Rama @done (17-03-29 19:08)
+ ✔ Optometrist @done (17-03-29 19:08)
+ ☐ Restart sims on workstation if possible. For those that could not be restarted, pull new version and restart from fresh.
+ ☐ Look up estimate for glasses on Jon's rec, also amazon or something.
+ ☐ Optometrist - Pick up contacts, clarify rebate, get estimate for glasses.
+ ☐ Dentist
+ ☐ Call honda
+ ☐ LSA for finite Rem Shercliff flow
+ ☐ Read finite Rem papers open in sumatra
+ ☐ Pick 2nd Ha for Rem paper
+ ☐ Try case on Hoffman cluster
+ ☐ Continue Prospectus PPT
+
  ☐ 1) Start BC cases
      ☐ Re(L=.5)=1000,N(L=.5)=0.1-->Re(L=1)=500 ,N(L=1)=0.05
      ☐ Re(L=.5)=1000,N(L=.5)= 1 -->Re(L=1)=500 ,N(L=1)=.5
@@ -39,6 +52,8 @@ Right Now:
  ✔ 6) Maybe make debug fields, and store them appropriately, export conditionally @done (17-03-15 08:13)
  ✔ Always check mesh error file after mesh generation @done (17-03-15 09:26)
  ☐ Configure parameter for printing information to file (full vs light)
+ ☐ Parameters: L2 norms (U,p,B,phi)
+ ☐ Parameters: sim time, Convective units per hour/day
  ☐ Try multiple outputs in same folder (via new_and_open)
 
   ☐ PD cases
