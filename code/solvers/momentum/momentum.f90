@@ -125,7 +125,9 @@
          write(*,*) 'Initializing momentum:'
 
          call init(mom%SP,SP)
+         write(*,*) '     SP copied'
          call init(mom%m,m)
+         write(*,*) '     mesh copied'
 
          call init_Edge(mom%U_E       ,m,0.0_cp)
          call init_Face(mom%U         ,m,0.0_cp)
@@ -144,17 +146,17 @@
 
          write(*,*) '     Fields allocated'
          ! Initialize U-field, P-field and all BCs
-         write(*,*) 'about to define U_BCs'
+         write(*,*) '     About to define U_BCs'
          call init_U_BCs(mom%U,m,mom%SP)
          call update_BC_vals(mom%U)
-         write(*,*) 'U_BCs defined'
+         write(*,*) '     U_BCs defined'
          call init_P_BCs(mom%p,m,mom%SP)
          call update_BC_vals(mom%p)
          write(*,*) '     BCs initialized'
-         if (mom%SP%VS%U%SS%solve) call print_BCs(mom%U,'U')
          if (mom%SP%VS%U%SS%solve) call export_BCs(mom%U,str(DT%U%BCs),'U')
-         if (mom%SP%VS%U%SS%solve) call print_BCs(mom%p,'p')
          if (mom%SP%VS%U%SS%solve) call export_BCs(mom%p,str(DT%p%BCs),'p')
+         ! if (mom%SP%VS%U%SS%solve) call print_BCs(mom%U,'U')
+         ! if (mom%SP%VS%U%SS%solve) call print_BCs(mom%p,'p')
 
          call init_U_field(mom%U,m,mom%SP,str(DT%U%restart))
          call init_P_field(mom%p,m,mom%SP,str(DT%p%restart))

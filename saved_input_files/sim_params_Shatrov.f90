@@ -27,6 +27,8 @@
      public :: sim_params
      public :: init,delete,display,print,export,import
 
+     real(cp),parameter :: seconds_per_day = 60.0_cp*60.0_cp*24.0_cp
+
      interface init;    module procedure init_SP;           end interface
      interface delete;  module procedure delete_SP;         end interface
      interface init;    module procedure init_SP_copy;      end interface
@@ -54,6 +56,7 @@
        type(mirror_props) :: MP
        type(time_statistics_params) :: TSP
 
+       real(cp) :: export_safe_period
        logical :: restart_all
 
        logical :: matrix_based
@@ -99,6 +102,7 @@
        SP%EL%export_mesh_block       = F ! Export mesh blocks to FECs
        SP%EL%export_soln_only        = F ! Export processed solution only
 
+       SP%export_safe_period         = 1.0_cp*seconds_per_day ! CPU wall clock time to export regularly
        SP%restart_all                = F ! restart sim (requires no code changes)
        SP%uniform_gravity_dir        = 1 ! Uniform gravity field direction
        SP%uniform_B0_dir             = 1 ! Uniform applied field direction
@@ -151,7 +155,12 @@
        ! SP%DP%Ha                      = 1.0_cp*pow(1)
        ! SP%DP%N                       = 1.0_cp/SP%DP%Q
        SP%DP%N                       = 4.0_cp*pow(-1)
-       SP%DP%cw                      = 0.0_cp
+       SP%DP%c_w(1:6)                = 0.0_cp
+       SP%DP%c_w( 5 )                = 1.0_cp
+       SP%DP%c_w( 6 )                = 1.0_cp
+       SP%DP%Robin_coeff             = 0.0_cp
+       SP%DP%Robin_coeff(5:6)        = -1.0_cp/SP%DP%c_w(5:6)
+       ! SP%DP%c_w_coeff                = (2.0_cp*SP%DP%c_w/dh_nhat-1.0_cp)/(2.0_cp*SP%DP%c_w/dh_nhat+1.0_cp)
        SP%DP%sig_local_over_sig_f    = 1.0_cp*pow(0)
        SP%DP%Gr                      = 0.0_cp
        SP%DP%Pr                      = 0.01_cp
@@ -348,6 +357,7 @@
        implicit none
        type(sim_params),intent(inout) :: SP
        type(sim_params),intent(in) :: SP_in
+       SP%export_safe_period     = SP_in%export_safe_period
        SP%restart_all            = SP_in%restart_all
        SP%couple_time_steps      = SP_in%couple_time_steps
        SP%finite_Rem             = SP_in%finite_Rem
@@ -395,6 +405,7 @@
        implicit none
        type(sim_params),intent(in) :: SP
        integer,intent(in) :: un
+       write(un,*) 'export_safe_period     = ',SP%export_safe_period
        write(un,*) 'restart_all            = ',SP%restart_all
        write(un,*) 'couple_time_steps      = ',SP%couple_time_steps
        write(un,*) 'finite_Rem             = ',SP%finite_Rem
@@ -467,6 +478,7 @@
        implicit none
        type(sim_params),intent(in) :: SP
        integer,intent(in) :: un
+       write(un,*) SP%export_safe_period
        write(un,*) SP%restart_all
        write(un,*) SP%couple_time_steps
        write(un,*) SP%finite_Rem
@@ -497,6 +509,7 @@
        implicit none
        type(sim_params),intent(inout) :: SP
        integer,intent(in) :: un
+       read(un,*) SP%export_safe_period
        read(un,*) SP%restart_all
        read(un,*) SP%couple_time_steps
        read(un,*) SP%finite_Rem

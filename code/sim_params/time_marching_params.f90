@@ -113,6 +113,8 @@
          write(un,*) 't              = '; write(un,*) TMP%t
          write(un,*) 't_final        = '; write(un,*) TMP%t_final
          write(un,*) 'dt             = '; write(un,*) TMP%dt
+         call export(TMP%dir,un)
+         call export(TMP%name,un)
        end subroutine
 
        subroutine export_TMP_wrapper(TMP)
@@ -136,6 +138,8 @@
          read(un,*); read(un,*) TMP%t
          read(un,*); read(un,*) TMP%t_final
          read(un,*); read(un,*) TMP%dt
+         call import(TMP%dir,un)
+         call import(TMP%name,un)
        end subroutine
 
        subroutine import_TMP_wrapper(TMP)

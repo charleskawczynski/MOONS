@@ -146,6 +146,7 @@
           else; continue_loop = .false.; exit
           endif; first_iteration = .false.
         enddo
+        if (s%s(1)%c.eq.' ') call remove_element(s,1)
       end subroutine
 
       subroutine write_formatted_string(s,un)

@@ -104,10 +104,10 @@
        SP%EL%export_mesh_block       = F ! Export mesh blocks to FECs
        SP%EL%export_soln_only        = F ! Export processed solution only
 
-       SP%restart_all                = F ! restart sim (requires no code changes)
        SP%export_safe_period         = 1.0_cp*seconds_per_day ! CPU wall clock time to export regularly
+       SP%restart_all                = F ! restart sim (requires no code changes)
        SP%uniform_gravity_dir        = 1 ! Uniform gravity field direction
-       SP%uniform_B0_dir             = 3 ! Uniform applied field direction
+       SP%uniform_B0_dir             = 1 ! Uniform applied field direction
        SP%mpg_dir                    = 0 ! Uniform applied field direction
        SP%couple_time_steps          = T ! Ensures all dt are equal to coupled%dt
        if (     RV_BCs) SP%finite_Rem                 = T ! Ensures all dt are equal to coupled%dt
@@ -145,8 +145,8 @@
        dtime                         = 5.0_cp*pow(-3)
 
        SP%GP%tw                      = 0.05_cp
-       SP%GP%geometry                = 27
-       SP%GP%periodic_dir            = (/0,0,0/)
+       SP%GP%geometry                = 8
+       SP%GP%periodic_dir            = (/0,0,1/)
        ! SP%GP%apply_BC_order          = (/3,4,5,6,1,2/) ! good for LDC
        ! SP%GP%apply_BC_order       = (/3,4,5,6,1,2/) ! good for periodic in y?
        SP%GP%apply_BC_order       = (/5,6,1,2,3,4/) ! good for periodic in y?
@@ -154,11 +154,10 @@
        ! SP%GP%apply_BC_order       = (/3,4,1,2,5,6/) ! good for periodic in z?
 
        call delete(SP%DP)
-       SP%DP%Re                      = 2.0_cp*pow(3)
-       SP%DP%N                       = 5.0_cp*pow(0)
+       SP%DP%Re                      = 5.0_cp*pow(3)
+       SP%DP%N                       = 4.0_cp*pow(-1)
+       SP%DP%Rem                     = 1.0_cp*pow(0)
        ! SP%DP%Q                       = 3.0_cp*pow(-1)
-       if (     RV_BCs) SP%DP%Rem                     = 1.0_cp*pow(3)
-       if (.not.RV_BCs) SP%DP%Rem                     = 1.0_cp*pow(0)
        ! SP%DP%Ha                      = 1.0_cp*pow(1)
        ! SP%DP%N                       = 1.0_cp/SP%DP%Q
        SP%DP%c_w(1:6)                = 0.0_cp
@@ -235,10 +234,9 @@
 
        ! call init_IC_BC(var      ,IC   ,BC)
        call init_IC_BC(SP%VS%T    ,0    ,0 )
-       call init_IC_BC(SP%VS%U    ,0    ,1 )
+       call init_IC_BC(SP%VS%U    ,0    ,16)
        call init_IC_BC(SP%VS%P    ,0    ,0 )
-       if (     RV_BCs) call init_IC_BC(SP%VS%B    ,0    ,0 ) ! 5 for thin wall
-       if (.not.RV_BCs) call init_IC_BC(SP%VS%B    ,0    ,1 ) ! 5 for thin wall
+       call init_IC_BC(SP%VS%B    ,0    ,1 )
        call init_IC_BC(SP%VS%B0   ,1    ,0 )
        call init_IC_BC(SP%VS%phi  ,0    ,0 )
        call init_IC_BC(SP%VS%rho  ,0    ,0 )
@@ -246,12 +244,10 @@
        ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,export_convergence,dir,name)
        call init(SP%VS%T%ISP,  5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_T')
        call init(SP%VS%U%ISP,  5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_U')
-       call init(SP%VS%P%ISP,  10 ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_P')
-       if (     RV_BCs) call init(SP%VS%B%ISP,  20 ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_B')
-       if (.not.RV_BCs) call init(SP%VS%B%ISP,  5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_B')
-       ! call init(SP%VS%B%ISP,  5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_B')
+       call init(SP%VS%P%ISP,  5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_P')
+       call init(SP%VS%B%ISP,  5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_B')
        call init(SP%VS%B0%ISP, 5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_B0')
-       call init(SP%VS%phi%ISP,10 ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_phi')
+       call init(SP%VS%phi%ISP,5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_phi')
        call init(SP%VS%rho%ISP,5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_rho')
 
        ! call init(TMP,multistep_iter,n_step_stop,dtime,dir,name)

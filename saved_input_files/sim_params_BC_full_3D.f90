@@ -104,8 +104,8 @@
        SP%EL%export_mesh_block       = F ! Export mesh blocks to FECs
        SP%EL%export_soln_only        = F ! Export processed solution only
 
-       SP%restart_all                = F ! restart sim (requires no code changes)
        SP%export_safe_period         = 1.0_cp*seconds_per_day ! CPU wall clock time to export regularly
+       SP%restart_all                = F ! restart sim (requires no code changes)
        SP%uniform_gravity_dir        = 1 ! Uniform gravity field direction
        SP%uniform_B0_dir             = 3 ! Uniform applied field direction
        SP%mpg_dir                    = 0 ! Uniform applied field direction

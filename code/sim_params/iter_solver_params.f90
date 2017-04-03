@@ -125,6 +125,8 @@
          write(un,*) 'n_skip_check_res = ';     write(un,*) ISP%n_skip_check_res
          write(un,*) 'export_convergence = ';   write(un,*) ISP%export_convergence
          write(un,*) 'exit_loop = ';            write(un,*) ISP%exit_loop
+         call export(ISP%dir,un)
+         call export(ISP%name,un)
        end subroutine
 
        subroutine export_ISP_wrapper(ISP)
@@ -148,6 +150,8 @@
          read(un,*); read(un,*) ISP%n_skip_check_res
          read(un,*); read(un,*) ISP%export_convergence
          read(un,*); read(un,*) ISP%exit_loop
+         call import(ISP%dir,un)
+         call import(ISP%name,un)
        end subroutine
 
        subroutine import_ISP_wrapper(ISP)

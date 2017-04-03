@@ -53,6 +53,7 @@
          type(mesh_domain) :: MD_fluid,MD_sigma
          type(dir_tree) :: DT
          type(sim_params) :: SP
+         logical :: restart_sim
          ! ************************************************************** Parallel + directory + input parameters
          call delete_file('','mesh_generation_error')
 #ifdef fopenmp
@@ -61,9 +62,15 @@
 #endif
 
          call init(DT,dir_target)  ! Initialize + make directory tree
+         restart_sim = .false.
+         if (restart_sim) then
+           call import(SP,str(DT%params),'sim_params_raw')
+         else
+           call init(SP,DT)             ! Initializes simulation parameters
+           call export(SP,str(DT%params),'sim_params_raw')
+           call display(SP,str(DT%params),'sim_params_initial')
+         endif
 
-         call init(SP,DT)             ! Initializes simulation parameters
-         call display(SP,str(DT%params),'sim_params_initial')
          call print_version()
          call export_version(str(DT%LDC))
 

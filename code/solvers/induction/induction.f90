@@ -144,10 +144,13 @@
          write(*,*) 'Initializing induction:'
 
          call init(ind%SP,SP)
+         write(*,*) '     SP copied'
 
          call init(ind%m,m)
+         write(*,*) '     Mesh copied'
          call init(ind%MD_fluid,MD_fluid)
          call init(ind%MD_sigma,MD_sigma)
+         write(*,*) '     Domains copied'
          call init_CC(ind%CC_VF_fluid,m,MD_fluid); call assign(ind%CC_VF_fluid,0.0_cp)
          call init_CC(ind%CC_VF_sigma,m,MD_sigma); call assign(ind%CC_VF_sigma,0.0_cp)
          ! --- tensor,vector and scalar fields ---
@@ -204,10 +207,10 @@
 
          write(*,*) '     Intermediate B-field initialized'
 
-         if (ind%SP%VS%B%SS%solve) call print_BCs(ind%B,'B')
          if (ind%SP%VS%B%SS%solve) call export_BCs(ind%B,str(DT%B%BCs),'B')
-         if (ind%SP%VS%B%SS%solve) call print_BCs(ind%phi,'phi')
          if (ind%SP%VS%B%SS%solve) call export_BCs(ind%phi,str(DT%phi%BCs),'phi')
+         ! if (ind%SP%VS%B%SS%solve) call print_BCs(ind%B,'B')
+         ! if (ind%SP%VS%B%SS%solve) call print_BCs(ind%phi,'phi')
 
          ! ******************** MATERIAL PROPERTIES ********************
          call set_sigma_inv(ind)

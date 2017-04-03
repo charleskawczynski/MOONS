@@ -100,7 +100,6 @@
         implicit none
         character(len=*),intent(in) :: dir,name
         integer :: un
-        write(*,*) 'file_exists(dir,name) = ',file_exists(dir,name)
         if (file_exists(dir,name)) then
           un = open_to_read(dir,name)
           close(un, status='delete')

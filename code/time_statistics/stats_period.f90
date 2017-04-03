@@ -102,26 +102,26 @@
          implicit none
          type(stats_period),intent(in) :: SP
          integer,intent(in) :: un
-         write(un,*) 't_start           = '; write(*,*) SP%t_start
-         write(un,*) 't_stop            = '; write(*,*) SP%t_stop
-         write(un,*) 'period            = '; write(*,*) SP%period
-         write(un,*) 'N_stats_collected = '; write(*,*) SP%N_stats_collected
-         write(un,*) 'compute_stats     = '; write(*,*) SP%compute_stats
-         write(un,*) 'export_stats      = '; write(*,*) SP%export_stats
-         write(un,*) 'exported_stats    = '; write(*,*) SP%exported_stats
+         write(un,*) 't_start           = '; write(un,*) SP%t_start
+         write(un,*) 't_stop            = '; write(un,*) SP%t_stop
+         write(un,*) 'period            = '; write(un,*) SP%period
+         write(un,*) 'N_stats_collected = '; write(un,*) SP%N_stats_collected
+         write(un,*) 'compute_stats     = '; write(un,*) SP%compute_stats
+         write(un,*) 'export_stats      = '; write(un,*) SP%export_stats
+         write(un,*) 'exported_stats    = '; write(un,*) SP%exported_stats
        end subroutine
 
        subroutine import_SP(SP,un)
          implicit none
          type(stats_period),intent(inout) :: SP
          integer,intent(in) :: un
-         read(un,*); read(*,*) SP%t_start
-         read(un,*); read(*,*) SP%t_stop
-         read(un,*); read(*,*) SP%period
-         read(un,*); read(*,*) SP%N_stats_collected
-         read(un,*); read(*,*) SP%compute_stats
-         read(un,*); read(*,*) SP%export_stats
-         read(un,*); read(*,*) SP%exported_stats
+         read(un,*); read(un,*) SP%t_start
+         read(un,*); read(un,*) SP%t_stop
+         read(un,*); read(un,*) SP%period
+         read(un,*); read(un,*) SP%N_stats_collected
+         read(un,*); read(un,*) SP%compute_stats
+         read(un,*); read(un,*) SP%export_stats
+         read(un,*); read(un,*) SP%exported_stats
        end subroutine
 
        ! **********************************************************

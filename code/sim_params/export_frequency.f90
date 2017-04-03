@@ -92,6 +92,8 @@
          call export(EF%unsteady_3D,un)
          call export(EF%final_solution,un)
          call export(EF%restart_files,un)
+         call export(EF%dir,un)
+         call export(EF%name,un)
        end subroutine
 
        subroutine import_EF(EF,un)
@@ -105,6 +107,8 @@
          call import(EF%unsteady_3D,un)
          call import(EF%final_solution,un)
          call import(EF%restart_files,un)
+         call import(EF%dir,un)
+         call import(EF%name,un)
        end subroutine
 
        subroutine export_EF_wrapper(EF)
