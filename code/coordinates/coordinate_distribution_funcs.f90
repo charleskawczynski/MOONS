@@ -1,6 +1,5 @@
        module coordinate_distribution_funcs_mod
        use current_precision_mod
-       use coordinate_stretch_parameters_mod
        implicit none
 
        private

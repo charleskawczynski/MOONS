@@ -1,0 +1,123 @@
+\documentclass[11pt]{article}
+% \documentclass[3p,twocolumn,10pt]{elsarticle}
+\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{xspace}
+\usepackage{mathtools}
+\usepackage{tikz}
+\usepackage{epsfig}
+\usepackage{float}
+%\usepackage{natbib}
+\usepackage{subfigure}
+\usepackage{setspace}
+\usepackage{tabularx,ragged2e,booktabs,caption}
+
+\usepackage{xcolor}
+\usepackage{xspace}
+\usepackage{longtable}
+\usepackage{mathtools}
+\usepackage{natbib}
+\usepackage{setspace}
+\usepackage{ragged2e}
+\usepackage{etoolbox}
+\usepackage{geometry}
+
+\input{./../path_to_useful_commands.tex}
+\input{\PATHTOUSEFULCOMMANDS}
+
+\newcommand{\volume}{\mathop{\ooalign{\hfil$V$\hfil\cr\kern0.08em--\hfil\cr}}\nolimits}
+\newcommand{\figWidth}{0.45\textwidth}
+\newcommand{\figSuffix}{_png.png}
+\newcommand{\pushright}[1]{\ifmeasuring@#1\else\omit\hfill$\displaystyle#1$\fi\ignorespaces}
+\newcommand{\hfillMath}{\hskip \textwidth minus \textwidth}
+
+\setlength{\oddsidemargin}{0.1in}
+\setlength{\textwidth}{7.25in}
+
+\setlength{\topmargin}{-1in}     %\topmargin: gap above header
+\setlength{\headheight}{0in}     %\headheight: height of header
+\setlength{\topskip}{0in}        %\topskip: between header and text
+\setlength{\headsep}{0in}
+\setlength{\textheight}{692pt}   %\textheight: height of main text
+\setlength{\textwidth}{7.5in}    % \textwidth: width of text
+\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
+\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
+\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
+\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
+\setlength{\voffset}{0.5in}
+
+% Useful commands:
+
+% \hfill    aligns-right everything right of \hfill
+
+\begin{document}
+\doublespacing
+\title{Finite Rem Shercliff / Hunt flow}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{Perturbations and base solution}
+The expanded dimensional momentum and induction equations for uniform $\rho,\mu,\M,\sigma$ are
+
+\begin{equation}\begin{aligned}
+\PD_t u+ u\PD_x u + v\PD_y u + w\PD_z u = -\frac{1}{\rho}\PD_x p+ \nu (\PD_{xx} u+\PD_{yy} u+\PD_{zz} u) + \frac{1}{\rho \M} (B_x \PD_x B_x + B_y \PD_y B_x + B_z \PD_z B_x) \\
+\PD_t v+ u\PD_x v + v\PD_y v + w\PD_z v = -\frac{1}{\rho}\PD_y p+ \nu (\PD_{xx} v+\PD_{yy} v+\PD_{zz} v) + \frac{1}{\rho \M} (B_x \PD_x B_y + B_y \PD_y B_y + B_z \PD_z B_y) \\
+\PD_t w+ u\PD_x w + v\PD_y w + w\PD_z w = -\frac{1}{\rho}\PD_z p+ \nu (\PD_{xx} w+\PD_{yy} w+\PD_{zz} w) + \frac{1}{\rho \M} (B_x \PD_x B_z + B_y \PD_y B_z + B_z \PD_z B_z) \\
+\PD_t B_x = \frac{1}{\sigma \M} (\PD_{xx} B_x + \PD_{yy} B_x+\PD_{zz} B_x) + (B_x\PD_x u+B_y\PD_y u+B_z\PD_z u) - (u\PD_x B_x+v\PD_y B_x+w\PD_z B_x) \\
+\PD_t B_y = \frac{1}{\sigma \M} (\PD_{xx} B_y + \PD_{yy} B_y+\PD_{zz} B_y) + (B_x\PD_x v+B_y\PD_y v+B_z\PD_z v) - (u\PD_x B_y+v\PD_y B_y+w\PD_z B_y) \\
+\PD_t B_z = \frac{1}{\sigma \M} (\PD_{xx} B_z + \PD_{yy} B_z+\PD_{zz} B_z) + (B_x\PD_x w+B_y\PD_y w+B_z\PD_z w) - (u\PD_x B_z+v\PD_y B_z+w\PD_z B_z) \\
+\end{aligned} \end{equation}
+Introducing a perturbation and base flow along the $x$ direction, we have
+\begin{equation}\begin{aligned}
+ u = \UBx + u' = \UBx(y,z) + u'(t,x,y,z) \\
+ v = v_b + v' =            v'(t,x,y,z) \\
+ w = w_b + w' =            w'(t,x,y,z) \\
+ B_x = B_x^0 + \BBx + B_x'    = \BBx(y,z) + B_x'(t,x,y,z) \\
+ B_y = B_y^0 + B_{b,y} + B_y' =           + B_y'(t,x,y,z) \\
+ B_z = B_z^0 + B_{b,z} + B_z' = B_z^0     + B_z'(t,x,y,z) \\
+ p   = p_b(x) + p'(t,x,y,z) \\
+\end{aligned} \end{equation}
+To aleviate the algebra, let's first just substitute $v,w,B_y,B_z$ and $p$ along $y,z$ first
+\begin{equation}\begin{aligned}
+\PD_t u'+ u\PD_x u  + v'\PD_y u  + w'\PD_z u  = -\frac{1}{\rho}\PD_x p + \nu (\PD_{xx} u +\PD_{yy} u +\PD_{zz} u ) + \frac{1}{\rho \M} (B_x \PD_x B_x  + B_y' \PD_y B_x  + (B_z'+B_z^0) \PD_z B_x ) \\
+\PD_t v'+ u\PD_x v' + v'\PD_y v' + w'\PD_z v' = -\frac{1}{\rho}\PD_y p'+ \nu (\PD_{xx} v'+\PD_{yy} v'+\PD_{zz} v') + \frac{1}{\rho \M} (B_x \PD_x B_y' + B_y' \PD_y B_y' + (B_z'+B_z^0) \PD_z B_y') \\
+\PD_t w'+ u\PD_x w' + v'\PD_y w' + w'\PD_z w' = -\frac{1}{\rho}\PD_z p'+ \nu (\PD_{xx} w'+\PD_{yy} w'+\PD_{zz} w') + \frac{1}{\rho \M} (B_x \PD_x B_z' + B_y' \PD_y B_z' + (B_z'+B_z^0) \PD_z B_z') \\
+\PD_t B_x' = \frac{1}{\sigma \M} (\PD_{xx} B_x  + \PD_{yy} B_x +\PD_{zz} B_x ) + (B_x\PD_x u +B_y'\PD_y u +(B_z'+B_z^0)\PD_z u ) - (u\PD_x B_x +v'\PD_y B_x +w'\PD_z B_x ) \\
+\PD_t B_y' = \frac{1}{\sigma \M} (\PD_{xx} B_y' + \PD_{yy} B_y'+\PD_{zz} B_y') + (B_x\PD_x v'+B_y'\PD_y v'+(B_z'+B_z^0)\PD_z v') - (u\PD_x B_y'+v'\PD_y B_y'+w'\PD_z B_y') \\
+\PD_t B_z' = \frac{1}{\sigma \M} (\PD_{xx} B_z' + \PD_{yy} B_z'+\PD_{zz} B_z') + (B_x\PD_x w'+B_y'\PD_y w'+(B_z'+B_z^0)\PD_z w') - (u\PD_x B_z'+v'\PD_y B_z'+w'\PD_z B_z') \\
+\end{aligned} \end{equation}
+Furthermore, note that the base solutions $\PD_x \bar{x} = 0$ except for pressure, so we have
+\begin{equation}\begin{aligned}
+\PD_t u'+ u\PD_x u' + v'\PD_y u  + w'\PD_z u  = -\frac{1}{\rho}\PD_x p + \nu (\PD_{xx} u'+\PD_{yy} u +\PD_{zz} u ) + \frac{1}{\rho \M} (B_x \PD_x B_x' + B_y' \PD_y B_x  + (B_z'+B_z^0) \PD_z B_x ) \\
+\PD_t v'+ u\PD_x v' + v'\PD_y v' + w'\PD_z v' = -\frac{1}{\rho}\PD_y p'+ \nu (\PD_{xx} v'+\PD_{yy} v'+\PD_{zz} v') + \frac{1}{\rho \M} (B_x \PD_x B_y' + B_y' \PD_y B_y' + (B_z'+B_z^0) \PD_z B_y') \\
+\PD_t w'+ u\PD_x w' + v'\PD_y w' + w'\PD_z w' = -\frac{1}{\rho}\PD_z p'+ \nu (\PD_{xx} w'+\PD_{yy} w'+\PD_{zz} w') + \frac{1}{\rho \M} (B_x \PD_x B_z' + B_y' \PD_y B_z' + (B_z'+B_z^0) \PD_z B_z') \\
+\PD_t B_x' = \frac{1}{\sigma \M} (\PD_{xx} B_x' + \PD_{yy} B_x +\PD_{zz} B_x ) + (B_x\PD_x u'+B_y'\PD_y u +(B_z'+B_z^0)\PD_z u ) - (u\PD_x B_x'+v'\PD_y B_x +w'\PD_z B_x ) \\
+\PD_t B_y' = \frac{1}{\sigma \M} (\PD_{xx} B_y' + \PD_{yy} B_y'+\PD_{zz} B_y') + (B_x\PD_x v'+B_y'\PD_y v'+(B_z'+B_z^0)\PD_z v') - (u\PD_x B_y'+v'\PD_y B_y'+w'\PD_z B_y') \\
+\PD_t B_z' = \frac{1}{\sigma \M} (\PD_{xx} B_z' + \PD_{yy} B_z'+\PD_{zz} B_z') + (B_x\PD_x w'+B_y'\PD_y w'+(B_z'+B_z^0)\PD_z w') - (u\PD_x B_z'+v'\PD_y B_z'+w'\PD_z B_z') \\
+\end{aligned} \end{equation}
+Decomposing more total fields and neglecting easily observable 2nd order terms, we have
+\begin{equation}\begin{aligned}
+\PD_t u'+ \UBx\PD_x u' + v'\PD_y \UBx  + w'\PD_z \UBx = -\frac{1}{\rho}\PD_x p + \nu (\PD_{xx} u'+\PD_{yy} u +\PD_{zz} u ) + \frac{1}{\rho \M} (\BBx \PD_x B_x' + B_y' \PD_y \BBx + (B_z'+B_z^0) \PD_z B_x ) \\
+\PD_t v'+ \UBx\PD_x v'                                = -\frac{1}{\rho}\PD_y p'+ \nu (\PD_{xx} v'+\PD_{yy} v'+\PD_{zz} v') + \frac{1}{\rho \M} (\BBx \PD_x B_y'                   + (     B_z^0) \PD_z B_y') \\
+\PD_t w'+ \UBx\PD_x w'                                = -\frac{1}{\rho}\PD_z p'+ \nu (\PD_{xx} w'+\PD_{yy} w'+\PD_{zz} w') + \frac{1}{\rho \M} (\BBx \PD_x B_z'                   + (     B_z^0) \PD_z B_z') \\
+\PD_t B_x' = \frac{1}{\sigma \M} (\PD_{xx} B_x' + \PD_{yy} B_x +\PD_{zz} B_x ) + (\BBx \PD_x u'+B_y'\PD_y \UBx +B_z'\PD_z \UBx +B_z^0 \PD_z u ) - \UBx\PD_x B_x'+v'\PD_y \BBx +w'\PD_z \BBx \\
+\PD_t B_y' = \frac{1}{\sigma \M} (\PD_{xx} B_y' + \PD_{yy} B_y'+\PD_{zz} B_y') + (\BBx \PD_x v'                +                B_z^0 \PD_z v') - \UBx\PD_x B_y'                            \\
+\PD_t B_z' = \frac{1}{\sigma \M} (\PD_{xx} B_z' + \PD_{yy} B_z'+\PD_{zz} B_z') + (\BBx \PD_x w'                +                B_z^0 \PD_z w') - \UBx\PD_x B_z'                            \\
+\end{aligned} \end{equation}
+Expanding the rest of the total fields yields
+\tiny\begin{equation}\begin{aligned}
+\PD_t u'+ \UBx\PD_x u' + v'\PD_y \UBx  + w'\PD_z \UBx = -\frac{1}{\rho}\PD_x (\PB + p') + \nu (\PD_{xx} u'+\PD_{yy} (\UBx+u') +\PD_{zz} (\UBx+u') ) + \frac{1}{\rho \M} (\BBx \PD_x B_x' + B_y' \PD_y \BBx + B_z^0 \PD_z \BBx + B_z' \PD_z \BBx + B_z^0 \PD_z B_x' ) \\
+\PD_t v'+ \UBx\PD_x v'                                = -\frac{1}{\rho}\PD_y p'+ \nu (\PD_{xx} v'+\PD_{yy} v'+\PD_{zz} v') + \frac{1}{\rho \M} (\BBx \PD_x B_y'                   +  B_z^0  \PD_z B_y') \\
+\PD_t w'+ \UBx\PD_x w'                                = -\frac{1}{\rho}\PD_z p'+ \nu (\PD_{xx} w'+\PD_{yy} w'+\PD_{zz} w') + \frac{1}{\rho \M} (\BBx \PD_x B_z'                   +  B_z^0  \PD_z B_z') \\
+\PD_t B_x' = \frac{1}{\sigma \M} (\PD_{xx} B_x' + \PD_{yy} B_x +\PD_{zz} B_x ) + (\BBx \PD_x u'+B_y'\PD_y \UBx +B_z'\PD_z \UBx +B_z^0 \PD_z (\UBx+u') ) - \UBx\PD_x B_x'+v'\PD_y \BBx +w'\PD_z \BBx \\
+\PD_t B_y' = \frac{1}{\sigma \M} (\PD_{xx} B_y' + \PD_{yy} B_y'+\PD_{zz} B_y') + (\BBx \PD_x v'                +                B_z^0 \PD_z v')         - \UBx\PD_x B_y'                            \\
+\PD_t B_z' = \frac{1}{\sigma \M} (\PD_{xx} B_z' + \PD_{yy} B_z'+\PD_{zz} B_z') + (\BBx \PD_x w'                +                B_z^0 \PD_z w')         - \UBx\PD_x B_z'                            \\
+\end{aligned} \end{equation}\normalsize
+
+\end{document}

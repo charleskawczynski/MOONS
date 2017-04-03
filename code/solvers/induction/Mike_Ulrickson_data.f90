@@ -19,15 +19,13 @@
      subroutine B_r_mean_normalized(B)
        implicit none
        real(cp),dimension(n_points),intent(inout) :: B
-       real(cp),dimension(n_points) :: B_r,B_p
-       call B_radial_mean(B); B = B/B_maxval(B_r,B_p)
+       call B_radial_mean(B); B = B/B_maxval()
      end subroutine
 
      subroutine B_p_mean_normalized(B)
        implicit none
        real(cp),dimension(n_points),intent(inout) :: B
-       real(cp),dimension(n_points) :: B_r,B_p
-       call B_poloidal_mean(B); B = B/B_maxval(B_r,B_p)
+       call B_poloidal_mean(B); B = B/B_maxval()
      end subroutine
 
      subroutine time_normalized(t)
@@ -37,9 +35,9 @@
        t = t*micro_seconds_to_seconds/t_c
      end subroutine
 
-     function B_maxval(B_r,B_p) result(B_max)
+     function B_maxval() result(B_max)
        implicit none
-       real(cp),dimension(n_points),intent(inout) :: B_r,B_p
+       real(cp),dimension(n_points) :: B_r,B_p
        real(cp) :: B_max
        call B_poloidal_mean(B_p)
        call B_radial_mean(B_r)

@@ -1,6 +1,6 @@
 # **************** RUN CONFIGURATION *******************
-# RELEASE = 'DEBUG'
-RELEASE = 'OPTIMIZE'
+RELEASE = 'DEBUG'
+# RELEASE = 'OPTIMIZE'
 # RELEASE = 'PROFILE'
 USE_OPEN_MP = 'TRUE'
 PARALLELIZE_3D_OPS = 'TRUE'
@@ -8,9 +8,10 @@ PARALLELIZE_3D_OPS = 'TRUE'
 # PARALLELIZE_1D_OPS = 'TRUE'
 # FORMAT_OUTPUT = 'FORMATTED'
 # ************* CLUSTER CONFIGURATION ******************
+# On Hoffman / DOE, run "module load gcc/4.9.3" in terminal before compile
+# Submitting on Hoffman run "job.q"
 CLUSTER = 'PC_CK'
 # CLUSTER = 'Workstation_CK'
-# On Hoffman / DOE, run "module load gcc/4.9.3" in terminal before compile
 # CLUSTER = 'Hoffman2'
 # CLUSTER = 'DOE'
 # ************* MAKE CONFIGURATION ******************
@@ -442,6 +443,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)sim_params$(PS)sim_params.f90\
 	$(SRC_DIR)$(PS)user$(PS)kill_switch.f90\
 	$(SRC_DIR)$(PS)user$(PS)export_now.f90\
+	$(SRC_DIR)$(PS)user$(PS)export_safe.f90\
 	$(SRC_DIR)$(PS)user$(PS)refine_mesh.f90\
 	$(SRC_DIR)$(PS)domain$(PS)mesh_domain.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_PD_geometries.f90\
