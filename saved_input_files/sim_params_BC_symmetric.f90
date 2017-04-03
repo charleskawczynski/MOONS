@@ -27,6 +27,8 @@
      public :: sim_params
      public :: init,delete,display,print,export,import
 
+     real(cp),parameter :: seconds_per_day = 60.0_cp*60.0_cp*24.0_cp
+
      interface init;         module procedure init_SP;            end interface
      interface delete;       module procedure delete_SP;          end interface
      interface init;         module procedure init_SP_copy;       end interface
@@ -56,6 +58,7 @@
        type(time_statistics_params) :: TSP
 
        logical :: restart_all
+       real(cp) :: export_safe_period
 
        logical :: matrix_based
        logical :: print_every_MHD_step
@@ -63,6 +66,7 @@
        logical :: couple_time_steps
        logical :: finite_Rem
        logical :: include_vacuum
+       logical :: embed_B_interior
        logical :: compute_surface_power
        integer :: uniform_B0_dir
        integer :: mpg_dir
@@ -101,6 +105,7 @@
        SP%EL%export_soln_only        = F ! Export processed solution only
 
        SP%restart_all                = F ! restart sim (requires no code changes)
+       SP%export_safe_period         = 1.0_cp*seconds_per_day ! CPU wall clock time to export regularly
        SP%uniform_gravity_dir        = 1 ! Uniform gravity field direction
        SP%uniform_B0_dir             = 3 ! Uniform applied field direction
        SP%mpg_dir                    = 0 ! Uniform applied field direction
@@ -109,6 +114,7 @@
        if (.not.RV_BCs) SP%finite_Rem                 = F ! Ensures all dt are equal to coupled%dt
        if (     RV_BCs) SP%include_vacuum             = T ! Ensures all dt are equal to coupled%dt
        if (.not.RV_BCs) SP%include_vacuum             = F ! Ensures all dt are equal to coupled%dt
+       SP%embed_B_interior           = F ! Solve for exterior B using interior B
        SP%compute_surface_power      = T ! Compute surface power for LDC
 
        SP%matrix_based               = F ! Solve induction equation
@@ -148,10 +154,10 @@
        ! SP%GP%apply_BC_order       = (/3,4,1,2,5,6/) ! good for periodic in z?
 
        call delete(SP%DP)
-       SP%DP%Re                      = 2.3_cp*pow(3)
+       SP%DP%Re                      = 2.0_cp*pow(3)
        SP%DP%N                       = 5.0_cp*pow(0)
        ! SP%DP%Q                       = 3.0_cp*pow(-1)
-       if (     RV_BCs) SP%DP%Rem                     = 1.0_cp*pow(3)
+       if (     RV_BCs) SP%DP%Rem                     = 5.0_cp*pow(2)
        if (.not.RV_BCs) SP%DP%Rem                     = 1.0_cp*pow(0)
        ! SP%DP%Ha                      = 1.0_cp*pow(1)
        ! SP%DP%N                       = 1.0_cp/SP%DP%Q
@@ -341,10 +347,12 @@
        implicit none
        type(sim_params),intent(inout) :: SP
        type(sim_params),intent(in) :: SP_in
+       SP%export_safe_period     = SP_in%export_safe_period
        SP%restart_all            = SP_in%restart_all
        SP%couple_time_steps      = SP_in%couple_time_steps
        SP%finite_Rem             = SP_in%finite_Rem
        SP%include_vacuum         = SP_in%include_vacuum
+       SP%embed_B_interior       = SP_in%embed_B_interior
        SP%compute_surface_power  = SP_in%compute_surface_power
        SP%uniform_B0_dir         = SP_in%uniform_B0_dir
        SP%mpg_dir                = SP_in%mpg_dir
@@ -387,10 +395,12 @@
        implicit none
        type(sim_params),intent(in) :: SP
        integer,intent(in) :: un
+       write(un,*) 'export_safe_period     = ',SP%export_safe_period
        write(un,*) 'restart_all            = ',SP%restart_all
        write(un,*) 'couple_time_steps      = ',SP%couple_time_steps
        write(un,*) 'finite_Rem             = ',SP%finite_Rem
        write(un,*) 'include_vacuum         = ',SP%include_vacuum
+       write(un,*) 'embed_B_interior       = ',SP%embed_B_interior
        write(un,*) 'compute_surface_power  = ',SP%compute_surface_power
        write(un,*) 'uniform_B0_dir         = ',SP%uniform_B0_dir
        write(un,*) 'mpg_dir                = ',SP%mpg_dir
@@ -459,10 +469,12 @@
        implicit none
        type(sim_params),intent(in) :: SP
        integer,intent(in) :: un
+       write(un,*) SP%export_safe_period
        write(un,*) SP%restart_all
        write(un,*) SP%couple_time_steps
        write(un,*) SP%finite_Rem
        write(un,*) SP%include_vacuum
+       write(un,*) SP%embed_B_interior
        write(un,*) SP%compute_surface_power
        write(un,*) SP%uniform_B0_dir
        write(un,*) SP%mpg_dir
@@ -488,10 +500,12 @@
        implicit none
        type(sim_params),intent(inout) :: SP
        integer,intent(in) :: un
+       read(un,*) SP%export_safe_period
        read(un,*) SP%restart_all
        read(un,*) SP%couple_time_steps
        read(un,*) SP%finite_Rem
        read(un,*) SP%include_vacuum
+       read(un,*) SP%embed_B_interior
        read(un,*) SP%compute_surface_power
        read(un,*) SP%uniform_B0_dir
        read(un,*) SP%mpg_dir
