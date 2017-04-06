@@ -22,6 +22,7 @@
          type(step) :: U,B,T,rho,all
          type(string) :: dir,name
          logical :: any_next = .false.
+         logical :: any_now = .false.
          integer :: un
        end type
 
@@ -102,6 +103,7 @@
          logical,intent(in) :: export_safe
          if (export_safe) EN%all%next = .true.
          EN%any_next = any((/EN%T%next,EN%rho%next,EN%U%next,EN%B%next,EN%all%next/))
+         EN%any_now  = any((/EN%T%this,EN%rho%this,EN%U%this,EN%B%this,EN%all%this/))
          call update_step(EN%T)
          call update_step(EN%rho)
          call update_step(EN%U)

@@ -26,22 +26,24 @@
          type(string) :: dir,name          ! directory / name
        end type
 
-       interface init;             module procedure init_TMP;             end interface
-       interface init;             module procedure init_copy_TMP;        end interface
-       interface delete;           module procedure delete_TMP;           end interface
-       interface export;           module procedure export_TMP;           end interface
-       interface export;           module procedure export_TMP_wrapper;   end interface
-       interface import;           module procedure import_TMP;           end interface
-       interface import;           module procedure import_TMP_wrapper;   end interface
-       interface display;          module procedure display_TMP;          end interface
-       interface print;            module procedure print_TMP;            end interface
-       interface iterate_step;     module procedure iterate_step_TMP;     end interface
+       interface init;             module procedure init_TMP;                end interface
+       interface init;             module procedure init_copy_TMP;           end interface
+       interface delete;           module procedure delete_TMP;              end interface
+       interface export;           module procedure export_TMP;              end interface
+       interface export;           module procedure export_TMP_wrapper;      end interface
+       interface export;           module procedure export_TMP_wrapper_name; end interface
+       interface import;           module procedure import_TMP;              end interface
+       interface import;           module procedure import_TMP_wrapper;      end interface
+       interface import;           module procedure import_TMP_wrapper_name; end interface
+       interface display;          module procedure display_TMP;             end interface
+       interface print;            module procedure print_TMP;               end interface
+       interface iterate_step;     module procedure iterate_step_TMP;        end interface
 
-       interface couple_time_step; module procedure couple_time_step_TMP; end interface
+       interface couple_time_step; module procedure couple_time_step_TMP;    end interface
 
-       interface prolongate;       module procedure prolongate_TMP;       end interface
-       interface update_dt;        module procedure update_dt_TMP;        end interface
-       interface update_dt_CFL;    module procedure update_dt_CFL_TMP;    end interface
+       interface prolongate;       module procedure prolongate_TMP;          end interface
+       interface update_dt;        module procedure update_dt_TMP;           end interface
+       interface update_dt_CFL;    module procedure update_dt_CFL_TMP;       end interface
 
        contains
 
@@ -117,15 +119,6 @@
          call export(TMP%name,un)
        end subroutine
 
-       subroutine export_TMP_wrapper(TMP)
-         implicit none
-         type(time_marching_params),intent(in) :: TMP
-         integer :: un
-         un = new_and_open(str(TMP%dir),str(TMP%name))
-         call export(TMP,un)
-         call close_and_message(un,str(TMP%dir),str(TMP%name))
-       end subroutine
-
        subroutine import_TMP(TMP,un)
          implicit none
          type(time_marching_params),intent(inout) :: TMP
@@ -142,6 +135,15 @@
          call import(TMP%name,un)
        end subroutine
 
+       subroutine export_TMP_wrapper(TMP)
+         implicit none
+         type(time_marching_params),intent(in) :: TMP
+         integer :: un
+         un = new_and_open(str(TMP%dir),str(TMP%name))
+         call export(TMP,un)
+         call close_and_message(un,str(TMP%dir),str(TMP%name))
+       end subroutine
+
        subroutine import_TMP_wrapper(TMP)
          implicit none
          type(time_marching_params),intent(inout) :: TMP
@@ -149,6 +151,26 @@
          un = open_to_read(str(TMP%dir),str(TMP%name))
          call import(TMP,un)
          call close_and_message(un,str(TMP%dir),str(TMP%name))
+       end subroutine
+
+       subroutine export_TMP_wrapper_name(TMP,dir)
+         implicit none
+         type(time_marching_params),intent(in) :: TMP
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = new_and_open(dir,str(TMP%name))
+         call export(TMP,un)
+         call close_and_message(un,dir,str(TMP%name))
+       end subroutine
+
+       subroutine import_TMP_wrapper_name(TMP,dir)
+         implicit none
+         type(time_marching_params),intent(inout) :: TMP
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,str(TMP%name))
+         call import(TMP,un)
+         call close_and_message(un,dir,str(TMP%name))
        end subroutine
 
        subroutine display_TMP(TMP,un)

@@ -10,6 +10,7 @@
       use time_marching_params_mod
       use face_edge_corner_indexing_mod
       use datatype_conversion_mod
+      use construct_suffix_mod
       implicit none
 
       private
@@ -63,9 +64,6 @@
 
       public :: export_mesh
 
-      interface construct_name; module procedure construct_name_SF;       end interface
-      interface construct_name; module procedure construct_name_VF;       end interface
-
       contains
 
       ! **********************************************************************
@@ -80,7 +78,7 @@
         type(VF),intent(in) :: U
         type(string) :: s
         integer :: un
-        call construct_name(s,name,get_DL(U))
+        call construct_suffix(s,name,get_DL(U))
         un = new_and_open(dir,str(s))
         call exp_3D_3C(m,pad,un,str(s),U)
         call close_and_message(un,dir,str(s))
@@ -95,7 +93,7 @@
         type(time_marching_params),intent(in) :: TMP
         type(string) :: s
         integer :: un
-        call construct_name(s,name,get_DL(U))
+        call construct_suffix(s,name,get_DL(U))
         un = new_and_open(dir,str(s)//'_t='//str(cp2str(TMP%t)))
         call exp_3D_3C(m,pad,un,str(s),U)
         call close_and_message(un,dir,str(s)//'_t='//str(cp2str(TMP%t)))
@@ -110,7 +108,7 @@
         type(VF),intent(in) :: U
         type(string) :: s
         integer :: un
-        call construct_name(s,name,get_DL(U))
+        call construct_suffix(s,name,get_DL(U))
         un = new_and_open(dir,str(s))
         call exp_2D_3C(m,pad,un,str(s),U,direction,plane)
         call close_and_message(un,dir,str(s))
@@ -125,7 +123,7 @@
         type(VF),intent(in) :: U
         type(string) :: s
         integer :: un
-        call construct_name(s,name,get_DL(U))
+        call construct_suffix(s,name,get_DL(U))
         un = new_and_open(dir,str(s)//'_plane_t='//str(cp2str(TMP%t)))
         call exp_2D_3C(m,pad,un,str(s),U,direction,plane)
         call close_and_message(un,dir,str(s)//'_plane_t='//str(cp2str(TMP%t)))
@@ -141,7 +139,7 @@
         integer,dimension(2),intent(in) :: line
         type(string) :: s
         integer :: un
-        call construct_name(s,name,get_DL(U))
+        call construct_suffix(s,name,get_DL(U))
         un = new_and_open(dir,str(s))
         call exp_1D_3C(m,pad,un,str(s),U,direction,line)
         call close_and_message(un,dir,str(s))
@@ -157,7 +155,7 @@
         integer,dimension(2),intent(in) :: line
         type(string) :: s
         integer :: un
-        call construct_name(s,name,get_DL(U))
+        call construct_suffix(s,name,get_DL(U))
         un = new_and_open(dir,str(s)//'_line_t='//str(cp2str(TMP%t)))
         call exp_1D_3C(m,pad,un,str(s),U,direction,line)
         call close_and_message(un,dir,str(s)//'_line_t='//str(cp2str(TMP%t)))
@@ -176,7 +174,7 @@
         type(VF),intent(in) :: U
         type(string) :: s
         integer :: un
-        call construct_name(s,name,get_DL(U))
+        call construct_suffix(s,name,get_DL(U))
         un = new_and_open(dir,str(s))
         call exp_3D_2C(m,pad,un,str(s),U,direction)
         call close_and_message(un,dir,str(s))
@@ -191,7 +189,7 @@
         type(VF),intent(in) :: U
         type(string) :: s
         integer :: un
-        call construct_name(s,name,get_DL(U))
+        call construct_suffix(s,name,get_DL(U))
         un = new_and_open(dir,str(s)//'_t='//str(cp2str(TMP%t)))
         call exp_3D_2C(m,pad,un,str(s),U,direction)
         call close_and_message(un,dir,str(s)//'_t='//str(cp2str(TMP%t)))
@@ -206,7 +204,7 @@
         type(VF),intent(in) :: U
         type(string) :: s
         integer :: un
-        call construct_name(s,name,get_DL(U))
+        call construct_suffix(s,name,get_DL(U))
         un = new_and_open(dir,str(s))
         call exp_2D_2C(m,pad,un,str(s),U,direction,plane)
         call close_and_message(un,dir,str(s))
@@ -221,7 +219,7 @@
         type(VF),intent(in) :: U
         type(string) :: s
         integer :: un
-        call construct_name(s,name,get_DL(U))
+        call construct_suffix(s,name,get_DL(U))
         un = new_and_open(dir,str(s)//'_plane_t='//str(cp2str(TMP%t)))
         call exp_2D_2C(m,pad,un,str(s),U,direction,plane)
         call close_and_message(un,dir,str(s)//'_plane_t='//str(cp2str(TMP%t)))
@@ -237,7 +235,7 @@
         type(VF),intent(in) :: U
         type(string) :: s
         integer :: un
-        call construct_name(s,name,get_DL(U))
+        call construct_suffix(s,name,get_DL(U))
         un = new_and_open(dir,str(s))
         call exp_1D_2C(m,pad,un,str(s),U,direction,line)
         call close_and_message(un,dir,str(s))
@@ -253,7 +251,7 @@
         type(VF),intent(in) :: U
         type(string) :: s
         integer :: un
-        call construct_name(s,name,get_DL(U))
+        call construct_suffix(s,name,get_DL(U))
         un = new_and_open(dir,str(s)//'_line_t='//str(cp2str(TMP%t)))
         call exp_1D_2C(m,pad,un,str(s),U,direction,line)
         call close_and_message(un,dir,str(s)//'_line_t='//str(cp2str(TMP%t)))
@@ -272,7 +270,7 @@
         type(SF),intent(in) :: U
         type(string) :: s
         integer :: un
-        call construct_name(s,name,U%DL)
+        call construct_suffix(s,name,U%DL)
         un = new_and_open(dir,str(s))
         call exp_3D_1C(m,pad,un,str(s),U)
         call close_and_message(un,dir,str(s))
@@ -287,7 +285,7 @@
         type(time_marching_params),intent(in) :: TMP
         type(string) :: s
         integer :: un
-        call construct_name(s,name,U%DL)
+        call construct_suffix(s,name,U%DL)
         un = new_and_open(dir,str(s)//'_t='//str(cp2str(TMP%t)))
         call exp_3D_1C(m,pad,un,str(s),U)
         call close_and_message(un,dir,str(s)//'_t='//str(cp2str(TMP%t)))
@@ -302,7 +300,7 @@
         type(SF),intent(in) :: U
         type(string) :: s
         integer :: un
-        call construct_name(s,name,U%DL)
+        call construct_suffix(s,name,U%DL)
         un = new_and_open(dir,str(s))
         call exp_2D_1C(m,pad,un,str(s),U,direction,plane)
         call close_and_message(un,dir,str(s))
@@ -317,7 +315,7 @@
         type(SF),intent(in) :: U
         type(string) :: s
         integer :: un
-        call construct_name(s,name,U%DL)
+        call construct_suffix(s,name,U%DL)
         un = new_and_open(dir,str(s)//'_plane_t='//str(cp2str(TMP%t)))
         call exp_2D_1C(m,pad,un,str(s),U,direction,plane)
         call close_and_message(un,dir,str(s)//'_plane_t='//str(cp2str(TMP%t)))
@@ -333,7 +331,7 @@
         type(SF),intent(in) :: U
         type(string) :: s
         integer :: un
-        call construct_name(s,name,U%DL)
+        call construct_suffix(s,name,U%DL)
         un = new_and_open(dir,str(s))
         call exp_1D_1C(m,pad,un,str(s),U,direction,line)
         call close_and_message(un,dir,str(s))
@@ -349,7 +347,7 @@
         type(SF),intent(in) :: U
         type(string) :: s
         integer :: un
-        call construct_name(s,name,U%DL)
+        call construct_suffix(s,name,U%DL)
         un = new_and_open(dir,str(s)//'_line_t='//str(cp2str(TMP%t)))
         call exp_1D_1C(m,pad,un,str(s),U,direction,line)
         call close_and_message(un,dir,str(s)//'_line_t='//str(cp2str(TMP%t)))
@@ -369,35 +367,6 @@
         un = new_and_open(dir,name)
         call exp_mesh_SF(m,pad,un,name)
         call close_and_message(un,dir,name)
-      end subroutine
-
-      ! **********************************************************************
-      ! ******************************* NAMING *******************************
-      ! **********************************************************************
-
-      subroutine construct_name_SF(s,name,DL)
-        implicit none
-        type(string),intent(inout) :: s
-        type(data_location),intent(in) :: DL
-        character(len=*),intent(in) :: name
-        call init(s,name//get_char(DL))
-            if (is_Face(DL)) then; call append(s,'_'//xyz_given_dir(get_Face(DL)))
-        elseif (is_Edge(DL)) then; call append(s,'_'//xyz_given_dir(get_Edge(DL)))
-        endif
-      end subroutine
-
-      subroutine construct_name_VF(s,name,DL)
-        implicit none
-        type(string),intent(inout) :: s
-        type(data_location),intent(in),dimension(3) :: DL
-        character(len=*),intent(in) :: name
-#ifdef _DEBUG_IO_EXPORT_
-        call insist_collocated(DL,'construct_name_VF')
-#endif
-
-        call init(s,name//get_char(DL(1)))
-        if (is_Face(DL(1))) call append(s,'_'//xyz_given_dir(get_Face(DL(1))))
-        if (is_Edge(DL(1))) call append(s,'_'//xyz_given_dir(get_Edge(DL(1))))
       end subroutine
 
       end module

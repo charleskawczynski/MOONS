@@ -68,7 +68,7 @@
          type(iter_solver_params) :: ISP
          type(matrix_free_params) :: MFP
          real(cp),dimension(6) :: c_w,Robin_coeff
-         call init(ISP,10000,pow(-15),pow(-15),1,.true.,str(DT%ISP),'vorticity_streamfunction')
+         call init(ISP,10000,pow(-15),pow(-15),1,.true.,.true.,str(DT%ISP),'vorticity_streamfunction')
 
          call init_Edge(omega,m)
          call init_Edge(psi,m)

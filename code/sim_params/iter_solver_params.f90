@@ -26,6 +26,7 @@
          real(cp) :: tol_rel = 10.0_cp**(-10.0_cp)    ! relative tolerance for iterative solver
          real(cp) :: tol_abs = 10.0_cp**(-10.0_cp)    ! absolute tolerance for iterative solver
          logical :: export_convergence = .false.      ! exit condition
+         logical :: export_heavy = .false.            ! number of iterations to skip before checking residual
          logical,dimension(3) :: exit_loop = .false.  ! exit condition
          integer :: iter_total = 0                    ! Number of iterations (total)
          integer :: iter_per_call = 0                 ! Number of iterations per call
@@ -62,12 +63,12 @@
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-       subroutine init_ISP(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,export_convergence,dir,name)
+       subroutine init_ISP(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,export_convergence,export_heavy,dir,name)
          implicit none
          type(iter_solver_params),intent(inout) :: ISP
          integer,intent(in) :: iter_max,n_skip_check_res
          real(cp),intent(in) :: tol_rel,tol_abs
-         logical,intent(in) :: export_convergence
+         logical,intent(in) :: export_convergence,export_heavy
          character(len=*),intent(in) :: dir,name
          ISP%iter_max = iter_max
          ISP%iter_total = 0
@@ -75,6 +76,7 @@
          ISP%tol_rel = tol_rel
          ISP%tol_abs = tol_abs
          ISP%export_convergence = export_convergence
+         ISP%export_heavy = export_heavy
          ISP%n_skip_check_res = n_skip_check_res
          ISP%exit_loop = .false.
          call init(ISP%dir,dir)
@@ -94,6 +96,7 @@
          ISP%un                   = ISP_in%un
          ISP%exit_loop            = ISP_in%exit_loop
          ISP%export_convergence   = ISP_in%export_convergence
+         ISP%export_heavy         = ISP_in%export_heavy
          call init(ISP%dir,ISP_in%dir)
          call init(ISP%name,ISP_in%name)
        end subroutine
@@ -109,6 +112,7 @@
          ISP%tol_abs = 10.0_cp**(-10.0_cp)
          ISP%exit_loop = .false.
          ISP%export_convergence = .false.
+         ISP%export_heavy = .false.
          call delete(ISP%dir)
          call delete(ISP%name)
        end subroutine
@@ -117,14 +121,15 @@
          implicit none
          type(iter_solver_params),intent(in) :: ISP
          integer,intent(in) :: un
-         write(un,*) 'iter_max = ';             write(un,*) ISP%iter_max
-         write(un,*) 'iter_total = ';           write(un,*) ISP%iter_total
-         write(un,*) 'iter_per_call = ';        write(un,*) ISP%iter_per_call
-         write(un,*) 'tol_rel = ';              write(un,*) ISP%tol_rel
-         write(un,*) 'tol_abs = ';              write(un,*) ISP%tol_abs
-         write(un,*) 'n_skip_check_res = ';     write(un,*) ISP%n_skip_check_res
-         write(un,*) 'export_convergence = ';   write(un,*) ISP%export_convergence
-         write(un,*) 'exit_loop = ';            write(un,*) ISP%exit_loop
+         write(un,*) 'iter_max           = '; write(un,*) ISP%iter_max
+         write(un,*) 'iter_total         = '; write(un,*) ISP%iter_total
+         write(un,*) 'iter_per_call      = '; write(un,*) ISP%iter_per_call
+         write(un,*) 'tol_rel            = '; write(un,*) ISP%tol_rel
+         write(un,*) 'tol_abs            = '; write(un,*) ISP%tol_abs
+         write(un,*) 'n_skip_check_res   = '; write(un,*) ISP%n_skip_check_res
+         write(un,*) 'export_convergence = '; write(un,*) ISP%export_convergence
+         write(un,*) 'export_heavy       = '; write(un,*) ISP%export_heavy
+         write(un,*) 'exit_loop          = '; write(un,*) ISP%exit_loop
          call export(ISP%dir,un)
          call export(ISP%name,un)
        end subroutine
@@ -149,6 +154,7 @@
          read(un,*); read(un,*) ISP%tol_abs
          read(un,*); read(un,*) ISP%n_skip_check_res
          read(un,*); read(un,*) ISP%export_convergence
+         read(un,*); read(un,*) ISP%export_heavy
          read(un,*); read(un,*) ISP%exit_loop
          call import(ISP%dir,un)
          call import(ISP%name,un)
@@ -248,11 +254,13 @@
          type(iter_solver_params) :: ISP
          real(cp) :: tol_rel,tol_abs
          integer :: iter_max,n_skip_check_res
+         logical :: export_heavy
          tol_rel = 0.0_cp
          tol_abs = 10.0_cp*machine_epsilon
          iter_max = 10000
          n_skip_check_res = 100
-         call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,.false.,dir,'solve_exact')
+         export_heavy = .true.
+         call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,.false.,export_heavy,dir,'solve_exact')
        end function
 
        function solve_exact_N_ISP(dir,N) result(ISP)
@@ -262,12 +270,14 @@
          type(iter_solver_params) :: ISP
          real(cp) :: tol_rel,tol_abs
          integer :: iter_max,n_skip_check_res
+         logical :: export_heavy
          tol_rel = 0.0_cp
          tol_abs = 10.0_cp*machine_epsilon
          iter_max = N
          n_skip_check_res = 100
+         export_heavy = .true.
          call init(ISP,iter_max,tol_rel,tol_abs,&
-         n_skip_check_res,.false.,dir,'solve_in_'//int2str(N)//'_iter')
+         n_skip_check_res,.false.,export_heavy,dir,'solve_in_'//int2str(N)//'_iter')
        end function
 
        end module

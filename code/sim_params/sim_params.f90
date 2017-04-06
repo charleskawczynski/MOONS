@@ -27,6 +27,8 @@
      public :: sim_params
      public :: init,delete,display,print,export,import
 
+     public :: set_restart
+
      real(cp),parameter :: seconds_per_day = 60.0_cp*60.0_cp*24.0_cp
 
      interface init;         module procedure init_SP;            end interface
@@ -40,6 +42,7 @@
      interface import;       module procedure import_SP;          end interface
      interface import;       module procedure import_SP_wrapper;  end interface
      interface sanity_check; module procedure sanity_check_SP;    end interface
+     interface set_restart;  module procedure set_restart_SP;     end interface
 
      type sim_params
        type(var_set) :: VS
@@ -57,8 +60,9 @@
        type(mirror_props) :: MP
        type(time_statistics_params) :: TSP
 
-       logical :: restart_all
        real(cp) :: export_safe_period
+       logical :: restart_meshes
+       logical :: export_heavy
 
        logical :: matrix_based
        logical :: print_every_MHD_step
@@ -105,7 +109,8 @@
        SP%EL%export_soln_only        = F ! Export processed solution only
 
        SP%export_safe_period         = 1.0_cp*seconds_per_day ! CPU wall clock time to export regularly
-       SP%restart_all                = F ! restart sim (requires no code changes)
+       SP%restart_meshes             = F ! restart sim (requires no code changes)
+       SP%export_heavy               = F ! Export lots of sim info
        SP%uniform_gravity_dir        = 1 ! Uniform gravity field direction
        SP%uniform_B0_dir             = 1 ! Uniform applied field direction
        SP%mpg_dir                    = 0 ! Uniform applied field direction
@@ -242,13 +247,13 @@
        call init_IC_BC(SP%VS%rho  ,0    ,0 )
 
        ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,export_convergence,dir,name)
-       call init(SP%VS%T%ISP,  5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_T')
-       call init(SP%VS%U%ISP,  5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_U')
-       call init(SP%VS%P%ISP,  5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_P')
-       call init(SP%VS%B%ISP,  5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_B')
-       call init(SP%VS%B0%ISP, 5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_B0')
-       call init(SP%VS%phi%ISP,5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_phi')
-       call init(SP%VS%rho%ISP,5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_rho')
+       call init(SP%VS%T%ISP,  5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_T')
+       call init(SP%VS%U%ISP,  5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_U')
+       call init(SP%VS%P%ISP,  5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_P')
+       call init(SP%VS%B%ISP,  5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_B')
+       call init(SP%VS%B0%ISP, 5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_B0')
+       call init(SP%VS%phi%ISP,5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_phi')
+       call init(SP%VS%rho%ISP,5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_rho')
 
        ! call init(TMP,multistep_iter,n_step_stop,dtime,dir,name)
        call init(SP%coupled,   1 ,ceiling(time/dtime,li),dtime        ,str(DT%TMP),'TMP_coupled')
@@ -332,6 +337,28 @@
        call sanity_check(SP)
      end subroutine
 
+     subroutine set_restart_SP(SP,restart_sim)
+       implicit none
+       type(sim_params),intent(inout) :: SP
+       logical,intent(in) :: restart_sim
+       SP%restart_meshes    = restart_sim
+       SP%VS%T%SS%restart   = restart_sim
+       SP%VS%U%SS%restart   = restart_sim
+       SP%VS%P%SS%restart   = restart_sim
+       SP%VS%B%SS%restart   = restart_sim
+       SP%VS%B0%SS%restart  = restart_sim
+       SP%VS%phi%SS%restart = restart_sim
+       SP%VS%rho%SS%restart = restart_sim
+       call import(SP%coupled)
+       if (SP%VS%T%SS%initialize)   call import(SP%VS%T%TMP)
+       if (SP%VS%U%SS%initialize)   call import(SP%VS%U%TMP)
+       if (SP%VS%P%SS%initialize)   call import(SP%VS%P%TMP)
+       if (SP%VS%B%SS%initialize)   call import(SP%VS%B%TMP)
+       if (SP%VS%B0%SS%initialize)  call import(SP%VS%B0%TMP)
+       if (SP%VS%phi%SS%initialize) call import(SP%VS%phi%TMP)
+       if (SP%VS%rho%SS%initialize) call import(SP%VS%rho%TMP)
+     end subroutine
+
      subroutine sanity_check_SP(SP)
        implicit none
        type(sim_params),intent(in) :: SP
@@ -344,7 +371,8 @@
        type(sim_params),intent(inout) :: SP
        type(sim_params),intent(in) :: SP_in
        SP%export_safe_period     = SP_in%export_safe_period
-       SP%restart_all            = SP_in%restart_all
+       SP%restart_meshes         = SP_in%restart_meshes
+       SP%export_heavy           = SP_in%export_heavy
        SP%couple_time_steps      = SP_in%couple_time_steps
        SP%finite_Rem             = SP_in%finite_Rem
        SP%include_vacuum         = SP_in%include_vacuum
@@ -392,7 +420,8 @@
        type(sim_params),intent(in) :: SP
        integer,intent(in) :: un
        write(un,*) 'export_safe_period     = ',SP%export_safe_period
-       write(un,*) 'restart_all            = ',SP%restart_all
+       write(un,*) 'restart_meshes         = ',SP%restart_meshes
+       write(un,*) 'export_heavy           = ',SP%export_heavy
        write(un,*) 'couple_time_steps      = ',SP%couple_time_steps
        write(un,*) 'finite_Rem             = ',SP%finite_Rem
        write(un,*) 'include_vacuum         = ',SP%include_vacuum
@@ -466,7 +495,8 @@
        type(sim_params),intent(in) :: SP
        integer,intent(in) :: un
        write(un,*) SP%export_safe_period
-       write(un,*) SP%restart_all
+       write(un,*) SP%restart_meshes
+       write(un,*) SP%export_heavy
        write(un,*) SP%couple_time_steps
        write(un,*) SP%finite_Rem
        write(un,*) SP%include_vacuum
@@ -497,7 +527,8 @@
        type(sim_params),intent(inout) :: SP
        integer,intent(in) :: un
        read(un,*) SP%export_safe_period
-       read(un,*) SP%restart_all
+       read(un,*) SP%restart_meshes
+       read(un,*) SP%export_heavy
        read(un,*) SP%couple_time_steps
        read(un,*) SP%finite_Rem
        read(un,*) SP%include_vacuum

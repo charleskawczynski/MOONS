@@ -23,6 +23,7 @@
         type(path) :: params,ISP,TMP,EF,export_now,refine_mesh
         type(path) :: e_budget,e_budget_N,e_budget_C
         type(path) :: restart_sim,restart1,restart2,restart
+        type(path) :: mesh_restart
 
         type(path) :: unknowns
         type(dir_group) :: U,B,J,T,p,phi,rho,test
@@ -63,6 +64,7 @@
         call init(DT%BEM         ,DT%LDC         ,'BEM'        ,str(DT%PS))
         call init(DT%restart_sim ,DT%LDC         ,'restart'    ,str(DT%PS))
 
+        call init(DT%mesh_restart,DT%meshes      ,'restart'    ,str(DT%PS))
         call init(DT%e_budget_N  ,DT%e_budget    ,'e_budget_N' ,str(DT%PS))
         call init(DT%e_budget_C  ,DT%e_budget    ,'e_budget_C' ,str(DT%PS))
         call init(DT%restart1    ,DT%restart_sim ,'restart1'   ,str(DT%PS))
@@ -103,7 +105,9 @@
         call make_dir(str(DT%e_budget_N))
         call make_dir(str(DT%mat))
         call make_dir(str(DT%meshes))
+        call make_dir(str(DT%mesh_restart))
         call make_dir(str(DT%BEM))
+        call make_dir(str(DT%restart_sim))
         call make_dir(str(DT%restart))
         call make_dir(str(DT%restart1))
         call make_dir(str(DT%restart2))
@@ -135,6 +139,7 @@
         call delete(DT%refine_mesh)
         call delete(DT%mat)
         call delete(DT%meshes)
+        call delete(DT%mesh_restart)
         call delete(DT%e_budget)
         call delete(DT%e_budget_C)
         call delete(DT%e_budget_N)

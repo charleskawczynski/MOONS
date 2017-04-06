@@ -49,15 +49,11 @@ MX = Symbol('PD_x BB')
 MY = Symbol('PD_y BB')
 MZ = Symbol('PD_z BB')
 
-eq1 = n*u+  UBx*i*theta*u + v*i* alpha *UBx + w*i* beta* UBx -( - R*i* theta*p - K* nu*u +  E*B_x*( BBx*i*theta + B_z0*i*beta) +  E*(B_y *MY + B_z* MZ))
-eq2 = n*v+  UBx*i*theta*v                                    -( - R*i* alpha*p - K* nu*v +  E*B_y*( BBx*i*theta + B_z0*i*beta))
-eq3 = n*w+  UBx*i*theta*w                                    -( - R*i* beta *p - K* nu*w +  E*B_z*( BBx*i*theta + B_z0*i*beta))
-eq4 = n*B_x -( - nu_m*B_x*K + u*( BBx*i*theta +B_z0*i*beta) +B_y *Y +B_z* Z -  UBx*i*theta*B_x + v* MY +w* MZ)
-eq5 = n*B_y -( - nu_m*B_y*K + v*( BBx*i*theta +B_z0*i*beta)                                 -  UBx*i*theta*B_y)
-eq6 = n*B_z -( - nu_m*B_z*K + w*( BBx*i*theta +B_z0*i*beta)                                 -  UBx*i*theta*B_z)
-eq7 = theta*u + alpha*v + beta*w
-eq8 = theta*B_x + alpha*B_y + beta*B_z
-root = solve([eq1,eq2,eq3,eq4,eq5,eq6,eq7,eq8],[u,v,w,p,B_x,B_y,B_z,n])
+eq1 = n*B_x -( - nu_m*B_x*K +B_y *Y +B_z* Z - UBx*i*theta*B_x)
+eq2 = n*B_y -( - nu_m*B_y*K -  UBx*i*theta*B_y)
+eq3 = n*B_z -( - nu_m*B_z*K -  UBx*i*theta*B_z)
+eq4 = theta*B_x + alpha*B_y + beta*B_z
+root = solve([eq1,eq2,eq3,eq4],[B_x,B_y,B_z,n])
 print root
 print ''
 print root[0]

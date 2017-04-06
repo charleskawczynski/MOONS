@@ -60,15 +60,16 @@
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-       subroutine init_TS_SF(TS,m,U,TSP,dir,name)
+       subroutine init_TS_SF(TS,m,U,TSP,TMP,dir,name)
          implicit none
          type(time_statistics_SF),intent(inout) :: TS
          type(mesh),intent(in) :: m
          type(SF),intent(in) :: U
          type(time_statistics_params),intent(in) :: TSP
+         type(time_marching_params),intent(in) :: TMP
          character(len=*),intent(in) :: dir,name
          call init(TS%TSP,TSP)
-         call init(TS%L2_U_ave,dir,'L2_U_ave',.false.,.true.)
+         call init(TS%L2_U_ave,dir,'L2_U_ave',.false.,.true.,TMP)
          call init(TS%U_sum,m,get_DL(U))
          call init(TS%U_ave,m,get_DL(U))
          call init(TS%RMS,m,get_DL(U))
@@ -79,16 +80,17 @@
          call assign(TS%RMS,0.0_cp)
        end subroutine
 
-       subroutine init_TS_VF(TS,m,U,TSP,dir,name)
+       subroutine init_TS_VF(TS,m,U,TSP,TMP,dir,name)
          implicit none
          type(time_statistics_VF),intent(inout) :: TS
          type(mesh),intent(in) :: m
          type(VF),intent(in) :: U
          type(time_statistics_params),intent(in) :: TSP
+         type(time_marching_params),intent(in) :: TMP
          character(len=*),intent(in) :: dir,name
          call init(TS%TSP,TSP)
-         call init(TS%L2_U_ave,dir,'L2_U_ave',.false.,.true.)
-         call init(TS%L2_stresses,dir,'L2_stresses',.false.,.true.)
+         call init(TS%L2_U_ave,dir,'L2_U_ave',.false.,.true.,TMP)
+         call init(TS%L2_stresses,dir,'L2_stresses',.false.,.true.,TMP)
          call init(TS%U_sum,m,get_DL(U))
          call init(TS%U_ave,m,get_DL(U))
          call init(TS%RMS,m,get_DL(U))

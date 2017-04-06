@@ -22,6 +22,8 @@
           write(*,*) 'Error: file does not exist in '//caller//' in IO_tools.f90'
           write(*,*) 'dir = ',dir
           write(*,*) 'name = ',name
+          write(*,*) 'len(dir) = ',len(dir)
+          write(*,*) 'len(name) = ',len(name)
           write(*,*) 'ex = ',file_exists(dir,name)
           write(*,*) 'ios = ',file_iostat(dir,name)
           stop 'Terminating execution.'
@@ -47,6 +49,8 @@
           write(*,*) 'Error: file not open in '//caller//' in IO_tools.f90'
           write(*,*) 'dir = ',dir
           write(*,*) 'name = ',name
+          write(*,*) 'len(dir) = ',len(dir)
+          write(*,*) 'len(name) = ',len(name)
           write(*,*) 'ex = ',file_exists(dir,name)
           write(*,*) 'ios = ',file_iostat(dir,name)
           stop 'Terminating execution.'
@@ -72,6 +76,8 @@
           write(*,*) 'Error: file not closed in '//caller//' in IO_tools.f90'
           write(*,*) 'dir = ',dir
           write(*,*) 'name = ',name
+          write(*,*) 'len(dir) = ',len(dir)
+          write(*,*) 'len(name) = ',len(name)
           write(*,*) 'ex = ',file_exists(dir,name)
           write(*,*) 'ios = ',file_iostat(dir,name)
           stop 'Terminating execution.'

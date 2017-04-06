@@ -102,26 +102,12 @@
          implicit none
          type(export_frequency_params),intent(inout) :: EFP
          integer,intent(in) :: un
-         read(un,*);call safe_read(EFP%export_ever      ,un,'import in export_frequency_params')
-         read(un,*);call safe_read(EFP%export_first_step,un,'import in export_frequency_params')
-         read(un,*);call safe_read(EFP%export_now       ,un,'import in export_frequency_params')
-         read(un,*);call safe_read(EFP%frequency_base   ,un,'import in export_frequency_params')
-         read(un,*);call safe_read(EFP%frequency_coeff  ,un,'import in export_frequency_params')
-         read(un,*);call safe_read(EFP%frequency_exp    ,un,'import in export_frequency_params')
-         call safegaurd_import(EFP)
-       end subroutine
-
-       subroutine safegaurd_import(EFP)
-         implicit none
-         type(export_frequency_params),intent(inout) :: EFP
-         logical,dimension(4) :: L
-         L(1) = EFP%frequency_coeff.lt.0
-         L(2) = EFP%frequency_base.lt.1
-         L(3) = EFP%frequency_exp.lt.0
-         L(4) = EFP%frequency_exp.gt.6
-         if (any(L)) EFP%frequency_coeff = frequency_coeff_default
-         if (any(L)) EFP%frequency_base = frequency_base_default
-         if (any(L)) EFP%frequency_exp  = frequency_exp_default
+         read(un,*); read(un,*) EFP%export_ever
+         read(un,*); read(un,*) EFP%export_first_step
+         read(un,*); read(un,*) EFP%export_now
+         read(un,*); read(un,*) EFP%frequency_coeff
+         read(un,*); read(un,*) EFP%frequency_base
+         read(un,*); read(un,*) EFP%frequency_exp
        end subroutine
 
        subroutine update_EFP(EFP,n_step)

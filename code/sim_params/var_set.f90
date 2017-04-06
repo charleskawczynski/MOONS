@@ -3,6 +3,8 @@
        use var_mod
        use time_marching_params_mod
        use string_mod
+       use path_mod
+       use dir_tree_mod
        implicit none
 
        private
@@ -17,6 +19,9 @@
        public :: assign_coeff_explicit
 
        public :: sanity_check
+
+       public :: export_TMP
+       public :: import_TMP
 
        type var_set
          type(var) :: T,U,p,B,B0,phi,rho
@@ -37,6 +42,8 @@
        interface assign_coeff_explicit; module procedure assign_coeff_explicit_VS; end interface
 
        interface sanity_check;          module procedure sanity_check_VS;          end interface
+       interface export_TMP;            module procedure export_TMP_VS;            end interface
+       interface import_TMP;            module procedure import_TMP_VS;            end interface
 
        contains
 
@@ -202,6 +209,32 @@
          logical :: L
          L = (alpha.lt.min_val).or.(alpha.gt.max_val)
        end function
+
+       subroutine export_TMP_VS(VS,DT)
+         implicit none
+         type(var_set),intent(in) :: VS
+         type(dir_tree),intent(in) :: DT
+         if (VS%T%SS%initialize)   call export(VS%T%TMP)
+         if (VS%U%SS%initialize)   call export(VS%U%TMP)
+         if (VS%P%SS%initialize)   call export(VS%P%TMP)
+         if (VS%B%SS%initialize)   call export(VS%B%TMP)
+         if (VS%B0%SS%initialize)  call export(VS%B0%TMP)
+         if (VS%phi%SS%initialize) call export(VS%phi%TMP)
+         if (VS%rho%SS%initialize) call export(VS%rho%TMP)
+       end subroutine
+
+       subroutine import_TMP_VS(VS,DT)
+         implicit none
+         type(var_set),intent(inout) :: VS
+         type(dir_tree),intent(in) :: DT
+         if (VS%T%SS%initialize)   call import(VS%T%TMP)
+         if (VS%U%SS%initialize)   call import(VS%U%TMP)
+         if (VS%P%SS%initialize)   call import(VS%P%TMP)
+         if (VS%B%SS%initialize)   call import(VS%B%TMP)
+         if (VS%B0%SS%initialize)  call import(VS%B0%TMP)
+         if (VS%phi%SS%initialize) call import(VS%phi%TMP)
+         if (VS%rho%SS%initialize) call import(VS%rho%TMP)
+       end subroutine
 
 
        end module

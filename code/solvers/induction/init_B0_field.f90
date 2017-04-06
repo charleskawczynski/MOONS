@@ -13,10 +13,9 @@
 
        contains
 
-       subroutine init_B0_field(B0,m,SP,dir)
+       subroutine init_B0_field(B0,m,SP)
          implicit none
          type(VF),intent(inout) :: B0
-         character(len=*),intent(in) :: dir
          type(mesh),intent(in) :: m
          type(sim_params),intent(in) :: SP
          integer :: preset_ID
@@ -25,28 +24,14 @@
          preset_ID = SP%VS%B0%IC
          ! preset_ID = 0 ! manual override
 
-         if (SP%VS%B0%SS%restart) then
-               call restart_B(B0,m,dir)
-         else
-           select case(preset_ID)
-           case (0)
-           case (1); call uniform_B_field(B0,SP%uniform_B0_dir)
-           case (2); call initFringingField_Sergey(B0,m,3,1)
-           case (3); call initFringingField_ALEX(B0,m,3,1)
-           case (4); call init_Field_Bandaru(B0,m,2)
-           case default; stop 'Error: bad preset_ID in init_B0_field.f90'
-           end select
-         endif
-       end subroutine
-
-       subroutine restart_B(B,m,dir)
-         implicit none
-         character(len=*),intent(in) :: dir
-         type(mesh),intent(in) :: m
-         type(VF),intent(inout) :: B
-         call import_3D_1C(m,B%x,dir,'Bf_x',0)
-         call import_3D_1C(m,B%y,dir,'Bf_y',0)
-         call import_3D_1C(m,B%z,dir,'Bf_z',0)
+         select case(preset_ID)
+         case (0)
+         case (1); call uniform_B_field(B0,SP%uniform_B0_dir)
+         case (2); call initFringingField_Sergey(B0,m,3,1)
+         case (3); call initFringingField_ALEX(B0,m,3,1)
+         case (4); call init_Field_Bandaru(B0,m,2)
+         case default; stop 'Error: bad preset_ID in init_B0_field.f90'
+         end select
        end subroutine
 
        subroutine uniform_B_field(B,dir)

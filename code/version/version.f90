@@ -27,6 +27,7 @@
          implicit none
          integer,intent(in) :: u
          integer :: today(3), now(3)
+         ! character(len=5) :: fmt
          write(u,*) '-------------------------------------'
          write(u,*) ' University of California Los Angeles'
          write(u,*) '              (UCLA)                 '
@@ -51,6 +52,9 @@
     1000 format ( 'Version: ', i2.2, '/', i2.2, '/', i4.4, '; time ',&
                  i2.2, ':', i2.2, ':', i2.2 )
 
+         ! fmt = '(A10,i2.2,A,i2.2,A,i4.4,A6,i2.2,A,i2.2,A,i2.2)'
+
+         ! write(u,fmt) ' Version: ',today(2),'/',today(1),'/',today(3),'; time',now
          write(u,*) '-------------------------------------'
        end subroutine
 

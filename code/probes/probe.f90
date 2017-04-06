@@ -23,34 +23,39 @@
 
        type probe
          private
-         type(string) :: dir,name                              ! directory and name
-         real(cp) :: d = 0.0_cp                                ! data
-         real(cp) :: d_data_dt = 0.0_cp                        ! change in data over time (Euler)
-         real(cp) :: d_amax = 0.0_cp                           ! max(d) over time
-         real(cp) :: t = 0.0_cp                                ! time
-         integer :: un = 0                                     ! file unit
-         integer(li) :: n_step = 0                             ! time step
-         logical :: restart = .false.                          ! restart probe (append existing)
-         logical :: simple = .false.                           ! simple probe (only data)
+         type(string) :: dir,name        ! directory and name
+         real(cp) :: d = 0.0_cp          ! data
+         real(cp) :: d_data_dt = 0.0_cp  ! change in data over time (Euler)
+         real(cp) :: d_amax = 0.0_cp     ! max(d) over time
+         real(cp) :: t = 0.0_cp          ! time
+         integer :: un = 0               ! file unit
+         integer(li) :: n_step = 0       ! time step
+         logical :: restart = .false.    ! restart probe (append existing)
+         logical :: simple = .false.     ! simple probe (only data)
        end type
 
-       interface init;          module procedure init_probe;           end interface
-       interface delete;        module procedure delete_probe;         end interface
-       interface delete;        module procedure delete_probe_many;    end interface
-       interface export;        module procedure export_probe;         end interface
-       interface import;        module procedure import_probe;         end interface
+       interface init;     module procedure init_probe;               end interface
+       interface delete;   module procedure delete_probe;             end interface
+       interface delete;   module procedure delete_probe_many;        end interface
+       interface export;   module procedure export_probe;             end interface
+       interface export;   module procedure export_probe_wrapper;     end interface
+       interface export;   module procedure export_probe_wrapper_dim; end interface
+       interface import;   module procedure import_probe;             end interface
+       interface import;   module procedure import_probe_wrapper;     end interface
+       interface import;   module procedure import_probe_wrapper_dim; end interface
 
-       interface export;        module procedure export_probe_data;    end interface
-       interface get_data;      module procedure get_data_probe;       end interface
+       interface export;   module procedure export_probe_data;        end interface
+       interface get_data; module procedure get_data_probe;           end interface
 
        contains
 
-       subroutine init_probe(p,dir,name,restart,simple)
+       subroutine init_probe(p,dir,name,restart,simple,TMP)
          implicit none
          type(probe),intent(inout) :: p
-         character(len=*),intent(in) :: dir
-         character(len=*),intent(in) :: name
+         character(len=*),intent(in) :: dir,name
          logical,intent(in) :: restart,simple
+         type(time_marching_params),intent(in) :: TMP
+         integer :: i_last
          type(string) :: s
          call delete(p)
          call init(p%dir,dir)
@@ -71,8 +76,8 @@
            write(p%un,*) 'ZONE DATAPACKING = POINT'
            flush(p%un)
          elseif (p%restart) then
-           p%un = open_to_append(dir,name)
-           ! call import(p,dir,name) ! obviously need this.
+           call truncate_data_in_open_file(p,TMP,dir,name,i_last)
+           p%un = open_to_append(dir,name,i_last)
          else; stop 'Error: no case found in init_probe in probe.f90'
          endif
          p%n_step = 0
@@ -105,10 +110,18 @@
 
        subroutine export_probe(p,un)
          implicit none
-         type(probe),intent(inout) :: p
+         type(probe),intent(in) :: p
          integer,intent(in) :: un
          call export(p%dir,un)
          call export(p%name,un)
+         write(un,*) p%d
+         write(un,*) p%d_data_dt
+         write(un,*) p%d_amax
+         write(un,*) p%t
+         write(un,*) p%un
+         write(un,*) p%n_step
+         write(un,*) p%restart
+         write(un,*) p%simple
        end subroutine
 
        subroutine import_probe(p,un)
@@ -117,6 +130,50 @@
          integer,intent(in) :: un
          call import(p%dir,un)
          call import(p%name,un)
+         read(un,*) p%d
+         read(un,*) p%d_data_dt
+         read(un,*) p%d_amax
+         read(un,*) p%t
+         read(un,*) p%un
+         read(un,*) p%n_step
+         read(un,*) p%restart
+         read(un,*) p%simple
+       end subroutine
+
+       subroutine export_probe_wrapper(p,dir)
+         implicit none
+         type(probe),intent(in) :: p
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = new_and_open(dir,str(p%name))
+         call export(p,un)
+         call close_and_message(un,dir,str(p%name))
+       end subroutine
+
+       subroutine export_probe_wrapper_dim(p,dir)
+         implicit none
+         type(probe),dimension(:),intent(in) :: p
+         character(len=*),intent(in) :: dir
+         integer :: i
+         do i=1,size(p); call export(p(i),dir); enddo
+       end subroutine
+
+       subroutine import_probe_wrapper(p,dir)
+         implicit none
+         type(probe),intent(inout) :: p
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,str(p%name))
+         call import(p,un)
+         call close_and_message(un,dir,str(p%name))
+       end subroutine
+
+       subroutine import_probe_wrapper_dim(p,dir)
+         implicit none
+         type(probe),dimension(:),intent(inout) :: p
+         character(len=*),intent(in) :: dir
+         integer :: i
+         do i=1,size(p); call import(p(i),dir); enddo
        end subroutine
 
        subroutine export_probe_data(p,TMP,d)
@@ -164,5 +221,39 @@
          real(cp) :: d
          d = p%d
        end function
+
+       subroutine truncate_data_in_open_file(p,TMP,dir,name,i_last)
+         implicit none
+         type(probe),intent(in) :: p
+         type(time_marching_params),intent(in) :: TMP
+         character(len=*),intent(in) :: dir,name
+         integer,intent(inout) :: i_last
+         real(cp),dimension(:),allocatable :: d
+         integer(li) :: i,i_first_to_delete,i_EOF
+         integer :: un,stat
+         un = open_to_read(dir,name)
+         if (.not.p%simple) then; i = 6
+         else;                    i = 2
+         endif
+         read(un,*); read(un,*); read(un,*)
+         allocate(d(i))
+         i_first_to_delete = 1
+         i_EOF = 1
+         do i=1,TMP%n_step
+           read(un,*,iostat=stat) d
+           if (TMP%t.gt.d(1)) then; i_first_to_delete = i; endif
+           if (stat .lt. 0) then; i_EOF = i; exit; endif
+         enddo
+         close(un)
+         un = open_to_read_write(dir,name)
+         read(un,*); read(un,*); read(un,*)
+         if (i_first_to_delete.ne.TMP%n_step) then
+           do i=1,i_first_to_delete; read(un,*); enddo
+           do i=i_first_to_delete+1,i_EOF; write(un,*) ''; enddo
+         endif
+         deallocate(d)
+         close(un)
+         i_last = i_first_to_delete+3
+       end subroutine
 
        end module

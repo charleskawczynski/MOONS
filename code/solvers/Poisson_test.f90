@@ -56,7 +56,8 @@
          type(PCG_solver_SF) :: PCG
          type(iter_solver_params) :: ISP
          type(matrix_free_params) :: MFP
-         call init(ISP,10000,pow(-15),pow(-15),1,.true.,str(DT%test%field),'Poisson_test_CC')
+         logical,parameter :: T = .true.
+         call init(ISP,10000,pow(-15),pow(-15),1,T,T,str(DT%test%field),'Poisson_test_CC')
          call init(phi,p)
          call assign(phi,0.0_cp)
          call init_CC(temp_CC,m)
@@ -96,7 +97,8 @@
          type(PCG_solver_VF) :: PCG
          type(iter_solver_params) :: ISP
          type(matrix_free_params) :: MFP
-         call init(ISP,10000,pow(-15),pow(-15),1,.true.,str(DT%test%field),'Poisson_test_Face')
+         logical,parameter :: T = .true.
+         call init(ISP,10000,pow(-15),pow(-15),1,T,T,str(DT%test%field),'Poisson_test_Face')
          call init(U,X)
          call assign(U,0.0_cp)
          call init_CC_edge(temp_CC_edge,m)

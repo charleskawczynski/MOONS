@@ -109,6 +109,9 @@ n \hat{B_y}' = \frac{1}{\sigma \M} \hat{B_y}' (-\theta^2 -\alpha^2 -\beta^2) + \
 n \hat{B_z}' = \frac{1}{\sigma \M} \hat{B_z}' (-\theta^2 -\alpha^2 -\beta^2) + \hat{w}'(\BBx i\theta +B_z^0 i\beta)                                       - \UBx i\theta \hat{B_z}'                                        \\
  \theta \hat{u}' +  \alpha \hat{v}' +  \beta \hat{w}' = 0 \\
 \end{aligned} \end{equation}
+
+
+
 To simplify this, let's remove the hats and primes
 \begin{equation}\begin{aligned}
 n u+ \UBx i\theta u + v i \alpha \UBx + w i \beta \UBx = -\frac{1}{\rho} i \theta p+ \nu u (-\theta^2 -\alpha^2 - \beta^2) + \frac{1}{\rho \M} B_x (\BBx i\theta + B_z^0 i\beta) + \frac{1}{\rho \M} (B_y \PD_y \BBx + B_z \PD_z \BBx) \\
@@ -119,62 +122,71 @@ n B_y = \frac{1}{\sigma \M} B_y (-\theta^2 -\alpha^2 -\beta^2) + v (\BBx i\theta
 n B_z = \frac{1}{\sigma \M} B_z (-\theta^2 -\alpha^2 -\beta^2) + w (\BBx i\theta +B_z^0 i\beta)                                 - \UBx i\theta B_z                                         \\
 \theta u +  \alpha v +  \beta w = 0 \\
 \end{aligned} \end{equation}
-Also, let
+
+Looking at only the induction equation, we have
 \begin{equation}\begin{aligned}
-\eta=\frac{1}{\rho \M} \\
-\nu=\frac{1}{\sigma \M} \\
-A = \frac{1}{\rho} \\
-K=\theta^2 +\alpha^2 + \beta^2 \\
-M=i(\BBx \theta + B_z^0 \beta) \\
+n B_x = \frac{1}{\sigma \M} B_x (-\theta^2 -\alpha^2 -\beta^2) +B_y \PD_y \UBx +B_z \PD_z \UBx - \UBx i\theta B_x \\
+n B_y = \frac{1}{\sigma \M} B_y (-\theta^2 -\alpha^2 -\beta^2)                                 - \UBx i\theta B_y \\
+n B_z = \frac{1}{\sigma \M} B_z (-\theta^2 -\alpha^2 -\beta^2)                                 - \UBx i\theta B_z \\
+\theta B_x +  \alpha B_y +  \beta B_z = 0 \\
 \end{aligned} \end{equation}
-We then have
-\begin{equation}\begin{aligned}
-n u+ \UBx i\theta u + v i \alpha \UBx + w i \beta \UBx = -A i \theta p -K \nu u + \eta B_x M + \eta (B_y \PD_y \BBx + B_z \PD_z \BBx) \\
-n v+ \UBx i\theta v                                    = -A i \alpha p -K \nu v + \eta B_y M \\
-n w+ \UBx i\theta w                                    = -A i \beta  p -K \nu w + \eta B_z M \\
-n B_x = -\nu_m B_x K + u M +B_y \PD_y \UBx +B_z \PD_z \UBx - \UBx i\theta B_x + v \PD_y \BBx +w \PD_z \BBx \\
-n B_y = -\nu_m B_y K + v M                                 - \UBx i\theta B_y                                         \\
-n B_z = -\nu_m B_z K + w M                                 - \UBx i\theta B_z                                         \\
-\theta u +  \alpha v +  \beta w = 0 \\
-\end{aligned} \end{equation}
-Collecting more terms, we have
-\begin{equation}\begin{aligned}
-u(n + K \nu + \UBx i\theta) + v i \alpha \UBx + w i \beta \UBx = -A i \theta p + \eta B_x M + \eta (B_y \PD_y \BBx + B_z \PD_z \BBx) \\
-v(n + K \nu + \UBx i\theta)                                    = -A i \alpha p + \eta B_y M \\
-w(n + K \nu + \UBx i\theta)                                    = -A i \beta  p + \eta B_z M \\
-B_x(n + \nu_m K + \UBx i\theta) = u M +B_y \PD_y \UBx +B_z \PD_z \UBx + v \PD_y \BBx +w \PD_z \BBx \\
-B_y(n + \nu_m K + \UBx i\theta) = v M                                                                         \\
-B_z(n + \nu_m K + \UBx i\theta) = w M                                                                         \\
-\theta u +  \alpha v +  \beta w = 0 \\
-\end{aligned} \end{equation}
-Furthermore, let
-\begin{equation}\begin{aligned}
-G = n + K \nu   + \UBx i\theta \\
-H = n + K \nu_m + \UBx i\theta \\
-X = \PD_x \UBx \\
-Y = \PD_y \UBx \\
-Z = \PD_z \UBx \\
-\MAC X = \PD_x \BBx \\
-\MAC Y = \PD_y \BBx \\
-\MAC Z = \PD_z \BBx \\
-\end{aligned} \end{equation}
-Then we have, applying continuity to x-momentum, we have
-\begin{equation}\begin{aligned}
-u (G - i \theta \UBx) = -A i \theta p + \eta B_x M + \eta (B_y \PD_y \BBx + B_z \MAC Z) \\
-v G                   = -A i \alpha p + \eta B_y M \\
-w G                   = -A i \beta  p + \eta B_z M \\
-B_x H = u M +B_y Y +B_z Z + v \MAC Y +w \MAC Z \\
-B_y H = v M \\
-B_z H = w M \\
-\theta u +  \alpha v +  \beta w = 0 \\
-\end{aligned} \end{equation}
-Solving for $v,w$ in terms of $p$, we have
-\begin{equation}\begin{aligned}
-v (G-\eta \frac{M^2}{H}) = -A i \alpha p \\
-w (G-\eta \frac{M^2}{H}) = -A i \beta  p \\
-v = p \frac{-A i \alpha }{(G-\eta \frac{M^2}{H})} \\
-w = p \frac{-A i \beta  }{(G-\eta \frac{M^2}{H})} \\
-\end{aligned} \end{equation}
+
+% Also, let
+% \begin{equation}\begin{aligned}
+% \eta=\frac{1}{\rho \M} \\
+% \nu=\frac{1}{\sigma \M} \\
+% A = \frac{1}{\rho} \\
+% K=\theta^2 +\alpha^2 + \beta^2 \\
+% M=i(\BBx \theta + B_z^0 \beta) \\
+% \end{aligned} \end{equation}
+% We then have
+% \begin{equation}\begin{aligned}
+% n u+ \UBx i\theta u + v i \alpha \UBx + w i \beta \UBx = -A i \theta p -K \nu u + \eta B_x M + \eta (B_y \PD_y \BBx + B_z \PD_z \BBx) \\
+% n v+ \UBx i\theta v                                    = -A i \alpha p -K \nu v + \eta B_y M \\
+% n w+ \UBx i\theta w                                    = -A i \beta  p -K \nu w + \eta B_z M \\
+% n B_x = -\nu_m B_x K + u M +B_y \PD_y \UBx +B_z \PD_z \UBx - \UBx i\theta B_x + v \PD_y \BBx +w \PD_z \BBx \\
+% n B_y = -\nu_m B_y K + v M                                 - \UBx i\theta B_y                                         \\
+% n B_z = -\nu_m B_z K + w M                                 - \UBx i\theta B_z                                         \\
+% \theta u +  \alpha v +  \beta w = 0 \\
+% \end{aligned} \end{equation}
+% Collecting more terms, we have
+% \begin{equation}\begin{aligned}
+% u(n + K \nu + \UBx i\theta) + v i \alpha \UBx + w i \beta \UBx = -A i \theta p + \eta B_x M + \eta (B_y \PD_y \BBx + B_z \PD_z \BBx) \\
+% v(n + K \nu + \UBx i\theta)                                    = -A i \alpha p + \eta B_y M \\
+% w(n + K \nu + \UBx i\theta)                                    = -A i \beta  p + \eta B_z M \\
+% B_x(n + \nu_m K + \UBx i\theta) = u M +B_y \PD_y \UBx +B_z \PD_z \UBx + v \PD_y \BBx +w \PD_z \BBx \\
+% B_y(n + \nu_m K + \UBx i\theta) = v M                                                                         \\
+% B_z(n + \nu_m K + \UBx i\theta) = w M                                                                         \\
+% \theta u +  \alpha v +  \beta w = 0 \\
+% \end{aligned} \end{equation}
+% Furthermore, let
+% \begin{equation}\begin{aligned}
+% G = n + K \nu   + \UBx i\theta \\
+% H = n + K \nu_m + \UBx i\theta \\
+% X = \PD_x \UBx \\
+% Y = \PD_y \UBx \\
+% Z = \PD_z \UBx \\
+% \MAC X = \PD_x \BBx \\
+% \MAC Y = \PD_y \BBx \\
+% \MAC Z = \PD_z \BBx \\
+% \end{aligned} \end{equation}
+% Then we have, applying continuity to x-momentum, we have
+% \begin{equation}\begin{aligned}
+% u (G - i \theta \UBx) = -A i \theta p + \eta B_x M + \eta (B_y \PD_y \BBx + B_z \MAC Z) \\
+% v G                   = -A i \alpha p + \eta B_y M \\
+% w G                   = -A i \beta  p + \eta B_z M \\
+% B_x H = u M +B_y Y +B_z Z + v \MAC Y +w \MAC Z \\
+% B_y H = v M \\
+% B_z H = w M \\
+% \theta u +  \alpha v +  \beta w = 0 \\
+% \end{aligned} \end{equation}
+% Solving for $v,w$ in terms of $p$, we have
+% \begin{equation}\begin{aligned}
+% v (G-\eta \frac{M^2}{H}) = -A i \alpha p \\
+% w (G-\eta \frac{M^2}{H}) = -A i \beta  p \\
+% v = p \frac{-A i \alpha }{(G-\eta \frac{M^2}{H})} \\
+% w = p \frac{-A i \beta  }{(G-\eta \frac{M^2}{H})} \\
+% \end{aligned} \end{equation}
 
 
 

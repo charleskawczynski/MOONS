@@ -99,6 +99,7 @@ FCFLAGS += -D_DOUBLE_PRECISION_
 # FCFLAGS += -D_QUAD_PRECISION_
 
 FCFLAGS += -D_MATRIX_FREE_
+FCFLAGS += -D_OPTIMIZE_IO_TOOLS_
 
 # FFT_poisson.f90:
 # FCFLAGS += -D_FFT_FULL_
@@ -136,12 +137,18 @@ endif
 # So include all but this one:
 
 # -O0 bad in cygwin generated gfortran
-FC_DEBUG += -Wall -Wextra -fbacktrace -O0 -Og
+ifeq ($(CLUSTER),'Hoffman2')
+	FC_DEBUG += -Wall -Wextra -fbacktrace -O0
+else
+	FC_DEBUG += -Wall -Wextra -fbacktrace -O0 -Og
+endif
 # FC_DEBUG += -Wall -Wextra -fbacktrace
 
 # Suppress temporrary array warning:
 # FC_DEBUG += -Wno-array-temporaries
-FC_DEBUG += -fcheck=bounds -fcheck=do -fcheck=mem -fcheck=pointer -fcheck=recursion
+ifneq ($(CLUSTER),'Hoffman2')
+	FC_DEBUG += -fcheck=bounds -fcheck=do -fcheck=mem -fcheck=pointer -fcheck=recursion
+endif
 
 # These flags are for rigorous mesh / stencil checking
 # FC_DEBUG += -D_DEBUG_COORDINATES_
@@ -203,7 +210,6 @@ ifeq ($(PARALLELIZE_1D_OPS),'TRUE')
 endif
 
 # AUXILIARY OPERATIONS
-# FC_OPTIMIZE += -D_OPTIMIZE_IO_TOOLS_
 # FC_OPTIMIZE += -D_PARALLELIZE_RICHARDSONEXTRAPOLATION_
 
 # FC_OPTIMIZE += mpif90
@@ -458,8 +464,10 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_stencils.f90\
 	$(SRC_DIR)$(PS)IO$(PS)base_export.f90\
 	$(SRC_DIR)$(PS)IO$(PS)base_import.f90\
+	$(SRC_DIR)$(PS)IO$(PS)construct_suffix.f90\
 	$(SRC_DIR)$(PS)IO$(PS)IO_export.f90\
 	$(SRC_DIR)$(PS)IO$(PS)IO_import.f90\
+	$(SRC_DIR)$(PS)IO$(PS)import_raw.f90\
 	$(SRC_DIR)$(PS)version$(PS)version.f90\
 	$(SRC_DIR)$(PS)clock$(PS)unit_conversion.f90\
 	$(SRC_DIR)$(PS)clock$(PS)clock.f90\

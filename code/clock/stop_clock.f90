@@ -19,6 +19,7 @@
        public :: init,delete,export,print
        public :: tic,toc
        public :: reset_Nmax
+       public :: print_light
 
        type stop_clock
         ! Known Quantities
@@ -44,16 +45,18 @@
         integer :: un_plot
        end type
 
-       interface init;      module procedure init_sc;         end interface
-       interface delete;    module procedure delete_sc;       end interface
-       interface tic;       module procedure tic_sc;          end interface
-       interface toc;       module procedure toc_sc;          end interface
-       interface print;     module procedure print_sc;        end interface
-       interface export;    module procedure export_sc;       end interface
-       interface export;    module procedure export_sc_dir;   end interface
-       interface export;    module procedure export_plot_sc;  end interface
+       interface init;         module procedure init_sc;         end interface
+       interface delete;       module procedure delete_sc;       end interface
+       interface tic;          module procedure tic_sc;          end interface
+       interface toc;          module procedure toc_sc;          end interface
+       interface print;        module procedure print_sc;        end interface
+       interface print_light;  module procedure print_light_sc;  end interface
+       interface export;       module procedure export_sc;       end interface
+       interface export_light; module procedure export_light_sc; end interface
+       interface export;       module procedure export_sc_dir;   end interface
+       interface export;       module procedure export_plot_sc;  end interface
 
-       interface reset_Nmax;module procedure reset_Nmax_sc;   end interface
+       interface reset_Nmax;   module procedure reset_Nmax_sc;   end interface
 
        contains
 
@@ -214,6 +217,29 @@
 
         write(un,*) ''
         write(un,*) '********************************************************************'
+      end subroutine
+
+      subroutine print_light_sc(sc,TMP)
+        implicit none
+        type(stop_clock),intent(in) :: sc
+        type(time_marching_params),intent(in) :: TMP
+        call export_light(sc,TMP,6)
+      end subroutine
+
+      subroutine export_light_sc(sc,TMP,un)
+        implicit none
+        type(stop_clock),intent(in) :: sc
+        type(time_marching_params),intent(in) :: TMP
+        integer,intent(in) :: un
+        real(cp) :: temp
+        character(len=1) :: u
+        call negative_time_elapsed_reported(sc)
+        temp = sc%t_passed; call getTimeWithUnits(temp,u,sc%uc)
+        write(un,*) 'Time (wall clock) = ',temp,' (', u,')'
+        write(un,*) 'Time (convective),n_step = ',TMP%t,TMP%n_step
+        write(un,*) 'Iter per (s,m,h,d) = ',sc%iterPerSec,sc%iterPerMin,sc%iterPerHour,sc%iterPerDay
+        write(un,*) 'Convective units/(h,d) = ',(/sc%iterPerHour,sc%iterPerDay/)*TMP%dt
+        write(un,*) '--------------------------------------------------------------'
       end subroutine
 
       subroutine getTimeWithUnits(t,u,uc)

@@ -12,6 +12,7 @@
        use path_mod
        use export_raw_processed_mod
        use export_raw_processed_symmetry_mod
+       use import_raw_mod
        use export_processed_FPL_mod
        use export_frequency_mod
        use export_now_mod
@@ -143,7 +144,6 @@
          integer :: temp_unit
          write(*,*) 'Initializing induction:'
 
-         call init(ind%SP,SP)
          write(*,*) '     SP copied'
 
          call init(ind%m,m)
@@ -182,17 +182,17 @@
          write(*,*) '     Fields allocated'
 
          ! --- Initialize Fields ---
-         call init_B_BCs(ind%B,m,ind%SP);     write(*,*) '     B BCs initialized'
+         call init_B_BCs(ind%B,m,SP);     write(*,*) '     B BCs initialized'
          call update_BC_vals(ind%B)
-         call init_phi_BCs(ind%phi,m,ind%SP); write(*,*) '     phi BCs initialized'
+         call init_phi_BCs(ind%phi,m,SP); write(*,*) '     phi BCs initialized'
          call update_BC_vals(ind%phi)
 
-         call init_B0_field(ind%B0,m,ind%SP,str(DT%B%restart))
-         call init_B_field(ind%B,m,ind%SP,str(DT%B%restart))
-         call init_phi_field(ind%phi,m,ind%SP,str(DT%phi%restart))
+         call init_B0_field(ind%B0,m,SP)
+         call init_B_field(ind%B,SP)
+         call init_phi_field(ind%phi,SP)
          call assign(ind%Bnm1,ind%B)
 
-         if (ind%SP%IT%unsteady_B0%add) call assign_B0_vs_t(ind%B0,ind%SP%VS%B%TMP)
+         if (SP%IT%unsteady_B0%add) call assign_B0_vs_t(ind%B0,SP%VS%B%TMP)
          call multiply(ind%B0,SP%IT%B_applied%scale)
 
          write(*,*) '     B-field initialized'
@@ -203,45 +203,45 @@
 
          call init(ind%Bstar,ind%B)
          if (SP%VS%B%SS%prescribed_BCs) call set_prescribed_BCs(ind%Bstar)
-         call init_Bstar_field(ind%Bstar,m,ind%B,ind%SP,str(DT%B%restart))
+         call init_Bstar_field(ind%Bstar,ind%B)
 
          write(*,*) '     Intermediate B-field initialized'
 
-         if (ind%SP%VS%B%SS%solve) call export_BCs(ind%B,str(DT%B%BCs),'B')
-         if (ind%SP%VS%B%SS%solve) call export_BCs(ind%phi,str(DT%phi%BCs),'phi')
-         ! if (ind%SP%VS%B%SS%solve) call print_BCs(ind%B,'B')
-         ! if (ind%SP%VS%B%SS%solve) call print_BCs(ind%phi,'phi')
+         if (SP%VS%B%SS%solve) call export_BCs(ind%B,str(DT%B%BCs),'B')
+         if (SP%VS%B%SS%solve) call export_BCs(ind%phi,str(DT%phi%BCs),'phi')
+         ! if (SP%VS%B%SS%solve) call print_BCs(ind%B,'B')
+         ! if (SP%VS%B%SS%solve) call print_BCs(ind%phi,'phi')
 
          ! ******************** MATERIAL PROPERTIES ********************
-         call set_sigma_inv(ind)
+         call set_sigma_inv(ind,SP)
          write(*,*) '     Materials initialized'
-         if (ind%SP%EL%export_mat_props) call export_raw(m,ind%sigmaInv_edge,str(DT%mat),'sigmaInv',0)
+         if (SP%EL%export_mat_props) call export_raw(m,ind%sigmaInv_edge,str(DT%mat),'sigmaInv',0)
 
          ! *************************************************************
 
-         call compute_J_ind(ind)
+         call compute_J_ind(ind,SP)
 
-         if (ind%SP%IT%unsteady_B0%add) then
-           call init(ind%probe_dB0dt(1),str(DT%B%energy),'dB0dt_x',ind%SP%VS%B%SS%restart,.true.)
-           call init(ind%probe_dB0dt(2),str(DT%B%energy),'dB0dt_y',ind%SP%VS%B%SS%restart,.true.)
-           call init(ind%probe_dB0dt(3),str(DT%B%energy),'dB0dt_z',ind%SP%VS%B%SS%restart,.true.)
-           call init(ind%probe_B0(1)   ,str(DT%B%energy),'B0_x',   ind%SP%VS%B%SS%restart,.true.)
-           call init(ind%probe_B0(2)   ,str(DT%B%energy),'B0_y',   ind%SP%VS%B%SS%restart,.true.)
-           call init(ind%probe_B0(3)   ,str(DT%B%energy),'B0_z',   ind%SP%VS%B%SS%restart,.true.)
+         if (SP%IT%unsteady_B0%add) then
+           call init(ind%probe_dB0dt(1),str(DT%B%energy),'dB0dt_x',SP%VS%B%SS%restart,.true.,SP%VS%B%TMP)
+           call init(ind%probe_dB0dt(2),str(DT%B%energy),'dB0dt_y',SP%VS%B%SS%restart,.true.,SP%VS%B%TMP)
+           call init(ind%probe_dB0dt(3),str(DT%B%energy),'dB0dt_z',SP%VS%B%SS%restart,.true.,SP%VS%B%TMP)
+           call init(ind%probe_B0(1)   ,str(DT%B%energy),'B0_x',   SP%VS%B%SS%restart,.true.,SP%VS%B%TMP)
+           call init(ind%probe_B0(2)   ,str(DT%B%energy),'B0_y',   SP%VS%B%SS%restart,.true.,SP%VS%B%TMP)
+           call init(ind%probe_B0(3)   ,str(DT%B%energy),'B0_z',   SP%VS%B%SS%restart,.true.,SP%VS%B%TMP)
          endif
-         call init(ind%probe_divB,str(DT%B%residual),'transient_divB',ind%SP%VS%B%SS%restart,.true.)
-         call init(ind%probe_divJ,str(DT%J%residual),'transient_divJ',ind%SP%VS%B%SS%restart,.true.)
-         call init(ind%JE,        str(DT%J%energy),'JE',            ind%SP%VS%B%SS%restart,.true.)
-         call init(ind%JE_fluid,  str(DT%J%energy),'JE_fluid',      ind%SP%VS%B%SS%restart,.true.)
-         call init(ind%ME(1)          ,str(DT%B%energy),'ME',           ind%SP%VS%B%SS%restart,.false.)
-         call init(ind%ME_fluid(1)    ,str(DT%B%energy),'ME_fluid',     ind%SP%VS%B%SS%restart,.false.)
-         call init(ind%ME_conductor(1),str(DT%B%energy),'ME_conductor', ind%SP%VS%B%SS%restart,.false.)
-         call init(ind%ME(2)          ,str(DT%B%energy),'ME0',          ind%SP%VS%B%SS%restart,.false.)
-         call init(ind%ME_fluid(2)    ,str(DT%B%energy),'ME0_fluid',    ind%SP%VS%B%SS%restart,.false.)
-         call init(ind%ME_conductor(2),str(DT%B%energy),'ME0_conductor',ind%SP%VS%B%SS%restart,.false.)
-         call init(ind%ME(3)          ,str(DT%B%energy),'ME1',          ind%SP%VS%B%SS%restart,.false.)
-         call init(ind%ME_fluid(3)    ,str(DT%B%energy),'ME1_fluid',    ind%SP%VS%B%SS%restart,.false.)
-         call init(ind%ME_conductor(3),str(DT%B%energy),'ME1_conductor',ind%SP%VS%B%SS%restart,.false.)
+         call init(ind%probe_divB,str(DT%B%residual),'transient_divB',SP%VS%B%SS%restart,.true.,SP%VS%B%TMP)
+         call init(ind%probe_divJ,str(DT%J%residual),'transient_divJ',SP%VS%B%SS%restart,.true.,SP%VS%B%TMP)
+         call init(ind%JE,        str(DT%J%energy),'JE',            SP%VS%B%SS%restart,.true.,SP%VS%B%TMP)
+         call init(ind%JE_fluid,  str(DT%J%energy),'JE_fluid',      SP%VS%B%SS%restart,.true.,SP%VS%B%TMP)
+         call init(ind%ME(1)          ,str(DT%B%energy),'ME',           SP%VS%B%SS%restart,.false.,SP%VS%B%TMP)
+         call init(ind%ME_fluid(1)    ,str(DT%B%energy),'ME_fluid',     SP%VS%B%SS%restart,.false.,SP%VS%B%TMP)
+         call init(ind%ME_conductor(1),str(DT%B%energy),'ME_conductor', SP%VS%B%SS%restart,.false.,SP%VS%B%TMP)
+         call init(ind%ME(2)          ,str(DT%B%energy),'ME0',          SP%VS%B%SS%restart,.false.,SP%VS%B%TMP)
+         call init(ind%ME_fluid(2)    ,str(DT%B%energy),'ME0_fluid',    SP%VS%B%SS%restart,.false.,SP%VS%B%TMP)
+         call init(ind%ME_conductor(2),str(DT%B%energy),'ME0_conductor',SP%VS%B%SS%restart,.false.,SP%VS%B%TMP)
+         call init(ind%ME(3)          ,str(DT%B%energy),'ME1',          SP%VS%B%SS%restart,.false.,SP%VS%B%TMP)
+         call init(ind%ME_fluid(3)    ,str(DT%B%energy),'ME1_fluid',    SP%VS%B%SS%restart,.false.,SP%VS%B%TMP)
+         call init(ind%ME_conductor(3),str(DT%B%energy),'ME1_conductor',SP%VS%B%SS%restart,.false.,SP%VS%B%TMP)
 
          write(*,*) '     B/J probes initialized'
 
@@ -249,27 +249,27 @@
 
          ! Initialize multigrid
          temp_unit = new_and_open(str(DT%params),'info_ind')
-         call display(ind,temp_unit)
+         call display(ind,SP,temp_unit)
          call close_and_message(temp_unit,str(DT%params),'info_ind')
 
          write(*,*) '     About to assemble curl-curl matrix'
-         if (ind%SP%matrix_based) call init_matrix_based_ops(ind)
+         if (SP%matrix_based) call init_matrix_based_ops(ind,SP)
 
          call init_Edge(sigmaInv_edge_TF%x,m,0.0_cp) ! x-component used in matrix_free_operators.f90
          call assign(sigmaInv_edge_TF%x,ind%sigmaInv_edge)
          call init(ind%PCG_B,ind_diffusion,ind_diffusion_explicit,prec_ind_VF,ind%m,&
-         ind%SP%VS%B%ISP,ind%SP%VS%B%MFP,ind%Bstar,sigmaInv_edge_TF,str(DT%B%residual),'B',.false.,.false.)
+         SP%VS%B%ISP,SP%VS%B%MFP,ind%Bstar,sigmaInv_edge_TF,str(DT%B%residual),'B',.false.,.false.)
          call delete(sigmaInv_edge_TF)
          write(*,*) '     PCG Solver initialized for B'
 
          call init_Face(TF_face%x,m,0.0_cp) ! x-component used in matrix_free_operators.f90
          call init(ind%PCG_cleanB,Lap_uniform_SF,Lap_uniform_SF_explicit,prec_lap_SF,&
-         ind%m,ind%SP%VS%phi%ISP,ind%SP%VS%phi%MFP,ind%phi,TF_face,str(DT%phi%residual),'phi',.false.,.false.)
+         ind%m,SP%VS%phi%ISP,SP%VS%phi%MFP,ind%phi,TF_face,str(DT%phi%residual),'phi',.false.,.false.)
          call delete(TF_face)
          write(*,*) '     PCG Solver initialized for phi'
 
          write(*,*) '     Finished'
-         ! if (restart_induction) call import(ind,DT)
+         if (SP%VS%B%SS%restart) call import(ind,SP,DT)
        end subroutine
 
        subroutine delete_induction(ind)
@@ -321,101 +321,120 @@
 
          call delete(ind%PCG_cleanB)
          call delete(ind%PCG_B)
-         call delete(ind%SP)
 
          write(*,*) 'Induction object deleted'
        end subroutine
 
-       subroutine display_induction(ind,un)
+       subroutine display_induction(ind,SP,un)
          implicit none
          type(induction),intent(in) :: ind
+         type(sim_params),intent(in) :: SP
          integer,intent(in) :: un
-         write(un,*) '**************************************************************'
-         write(un,*) '************************** MAGNETIC **************************'
-         write(un,*) '**************************************************************'
-         write(un,*) 'Rem,finite_Rem,include_vacuum = ',ind%SP%DP%Rem,ind%SP%finite_Rem,ind%SP%include_vacuum
-         write(un,*) 't,dt = ',ind%SP%VS%B%TMP%t,ind%SP%VS%B%TMP%dt
-         write(un,*) 'solveBMethod,N_ind,N_cleanB = ',ind%SP%VS%B%SS%solve_method,&
-         ind%SP%VS%B%ISP%iter_max,ind%SP%VS%phi%ISP%iter_max
-         write(un,*) 'tol_ind,tol_cleanB = ',ind%SP%VS%B%ISP%tol_rel,ind%SP%VS%phi%ISP%tol_rel
-         write(un,*) 'nstep,ME = ',ind%SP%VS%B%TMP%n_step,get_data(ind%ME(1))
-         ! call displayPhysicalMinMax(ind%dB0dt,'dB0dt',un)
-         ! call displayPhysicalMinMax(ind%B0,'B0',un)
-         call displayPhysicalMinMax(ind%divB,'divB',un)
-         call displayPhysicalMinMax(ind%divJ,'divJ',un)
-         write(un,*) ''
-         call display(ind%m,un)
-       end subroutine
-
-       subroutine print_induction(ind)
-         implicit none
-         type(induction),intent(in) :: ind
-         call display(ind,6)
-       end subroutine
-
-       subroutine export_induction(ind,DT)
-         implicit none
-         type(induction),intent(in) :: ind
-         type(dir_tree),intent(in) :: DT
-         if (.not.ind%SP%EL%export_soln_only) then
-           call export(ind%B      ,str(DT%B%restart),'B')
-           call export(ind%Bnm1   ,str(DT%B%restart),'Bnm1')
-           call export(ind%B0     ,str(DT%B%restart),'B0')
-           call export(ind%J      ,str(DT%J%restart),'J')
-           call export(ind%U_E%x  ,str(DT%B%restart),'U_E_x')
-           call export(ind%U_E%y  ,str(DT%B%restart),'U_E_y')
-           call export(ind%U_E%z  ,str(DT%B%restart),'U_E_z')
+         if (SP%export_heavy) then
+           write(un,*) '**************************************************************'
+           write(un,*) '************************** MAGNETIC **************************'
+           write(un,*) '**************************************************************'
+           write(un,*) 'Rem,finite_Rem,include_vacuum = ',SP%DP%Rem,SP%finite_Rem,SP%include_vacuum
+           write(un,*) 't,dt = ',SP%VS%B%TMP%t,SP%VS%B%TMP%dt
+           write(un,*) 'solveBMethod,N_ind,N_cleanB = ',SP%VS%B%SS%solve_method,&
+           SP%VS%B%ISP%iter_max,SP%VS%phi%ISP%iter_max
+           write(un,*) 'tol_ind,tol_cleanB = ',SP%VS%B%ISP%tol_rel,SP%VS%phi%ISP%tol_rel
+           write(un,*) 'nstep,ME = ',SP%VS%B%TMP%n_step,get_data(ind%ME(1))
+           ! call displayPhysicalMinMax(ind%dB0dt,'dB0dt',un)
+           ! call displayPhysicalMinMax(ind%B0,'B0',un)
+           call displayPhysicalMinMax(ind%divB,'divB',un)
+           call displayPhysicalMinMax(ind%divJ,'divJ',un)
+           write(un,*) ''
+           call display(ind%m,un)
          endif
        end subroutine
 
-       subroutine import_induction(ind,DT)
+       subroutine print_induction(ind,SP)
+         implicit none
+         type(induction),intent(in) :: ind
+         type(sim_params),intent(in) :: SP
+         call display(ind,SP,6)
+       end subroutine
+
+       subroutine export_induction(ind,SP,DT)
+         implicit none
+         type(induction),intent(in) :: ind
+         type(sim_params),intent(in) :: SP
+         type(dir_tree),intent(in) :: DT
+         write(*,*) 'export_induction at n_step = ',SP%VS%B%TMP%n_step
+         call export_raw(ind%m,ind%B,str(DT%B%restart),'B',0)
+         call export_raw(ind%m,ind%Bnm1,str(DT%B%restart),'Bnm1',0)
+         call export_raw(ind%m,ind%B0,str(DT%B%restart),'B0',0)
+         call export_raw(ind%m,ind%F,str(DT%B%restart),'F',0)
+         call export_raw(ind%m,ind%Fnm1,str(DT%B%restart),'Fnm1',0)
+         call export_raw(ind%m,ind%Bstar,str(DT%B%restart),'Bstar',0)
+         call export_raw(ind%m,ind%phi,str(DT%phi%restart),'phi',0)
+         call export_raw(ind%m,ind%J,str(DT%J%restart),'J',0)
+         if (SP%IT%unsteady_B0%add) then
+           call export(ind%probe_dB0dt,str(DT%B%restart))
+           call export(ind%probe_B0   ,str(DT%B%restart))
+         endif
+         call export(ind%probe_divB,str(DT%B%restart))
+         call export(ind%probe_divJ,str(DT%J%restart))
+         call export(ind%JE,        str(DT%J%restart))
+         call export(ind%JE_fluid,  str(DT%J%restart))
+         call export(ind%ME          ,str(DT%B%restart))
+         call export(ind%ME_fluid    ,str(DT%B%restart))
+         call export(ind%ME_conductor,str(DT%B%restart))
+       end subroutine
+
+       subroutine import_induction(ind,SP,DT)
          implicit none
          type(induction),intent(inout) :: ind
+         type(sim_params),intent(in) :: SP
          type(dir_tree),intent(in) :: DT
-         if (.not.ind%SP%EL%export_soln_only) then
-           call import(ind%B      ,str(DT%B%restart),'B')
-           call import(ind%Bnm1   ,str(DT%B%restart),'Bnm1')
-           call import(ind%B0     ,str(DT%B%restart),'B0')
-           call import(ind%J      ,str(DT%J%restart),'J')
-           call import(ind%U_E%x  ,str(DT%B%restart),'U_E_x')
-           call import(ind%U_E%y  ,str(DT%B%restart),'U_E_y')
-           call import(ind%U_E%z  ,str(DT%B%restart),'U_E_z')
+         write(*,*) 'import_induction at n_step = ',SP%VS%B%TMP%n_step
+         call import_raw(ind%m,ind%B,str(DT%B%restart),'B',0)
+         call import_raw(ind%m,ind%Bnm1,str(DT%B%restart),'Bnm1',0)
+         call import_raw(ind%m,ind%B0,str(DT%B%restart),'B0',0)
+         call import_raw(ind%m,ind%F,str(DT%B%restart),'F',0)
+         call import_raw(ind%m,ind%Fnm1,str(DT%B%restart),'Fnm1',0)
+         call import_raw(ind%m,ind%Bstar,str(DT%B%restart),'Bstar',0)
+         call import_raw(ind%m,ind%phi,str(DT%phi%restart),'phi',0)
+         call import_raw(ind%m,ind%J,str(DT%J%restart),'J',0)
+         if (SP%IT%unsteady_B0%add) then
+           call import(ind%probe_dB0dt,str(DT%B%restart))
+           call import(ind%probe_B0   ,str(DT%B%restart))
          endif
+         call import(ind%probe_divB,str(DT%B%restart))
+         call import(ind%probe_divJ,str(DT%J%restart))
+         call import(ind%JE,        str(DT%J%restart))
+         call import(ind%JE_fluid,  str(DT%J%restart))
+         call import(ind%ME          ,str(DT%B%restart))
+         call import(ind%ME_fluid    ,str(DT%B%restart))
+         call import(ind%ME_conductor,str(DT%B%restart))
        end subroutine
 
        ! **********************************************************
        ! **********************************************************
        ! **********************************************************
 
-       subroutine export_tec_induction(ind,DT)
+       subroutine export_tec_induction(ind,SP,DT)
          implicit none
          type(induction),intent(inout) :: ind
+         type(sim_params),intent(in) :: SP
          type(dir_tree),intent(in) :: DT
-         if (ind%SP%VS%B%SS%restart.and.(.not.ind%SP%VS%B%SS%solve)) then
+         if (SP%VS%B%SS%restart.and.(.not.SP%VS%B%SS%solve)) then
            ! This preserves the initial data
          else
-           if (ind%SP%VS%B%SS%solve) then
-             write(*,*) 'export_tec_induction at n_step = ',ind%SP%VS%B%TMP%n_step
+           if (SP%VS%B%SS%solve) then
+             write(*,*) 'export_tec_induction at n_step = ',SP%VS%B%TMP%n_step
              call export_processed(ind%m,ind%B,str(DT%B%field),'B',1)
              call export_processed(ind%m,ind%B0,str(DT%B%field),'B0',1)
              call export_processed(ind%m,ind%phi ,str(DT%phi%field),'phi',1)
              call export_processed(ind%m,ind%J ,str(DT%J%field),'J',1)
              call export_raw(ind%m,ind%divB ,str(DT%B%field),'divB',0)
 
-             if (.not.ind%SP%EL%export_soln_only) then
-             if (ind%SP%EL%export_symmetric) then
-             call export_processed(ind%m,ind%B,str(DT%B%field),'B',1,anti_mirror(ind%SP%MP))
-             call export_processed(ind%m,ind%J,str(DT%J%field),'J',1,ind%SP%MP)
+             if (.not.SP%EL%export_soln_only) then
+             if (SP%EL%export_symmetric) then
+             call export_processed(ind%m,ind%B,str(DT%B%field),'B',1,anti_mirror(SP%MP))
+             call export_processed(ind%m,ind%J,str(DT%J%field),'J',1,SP%MP)
              endif
-
-             call export_raw(ind%m,ind%B,str(DT%B%restart),'B',0)
-             call export_raw(ind%m,ind%Bnm1,str(DT%B%restart),'Bnm1',0)
-             call export_raw(ind%m,ind%B0,str(DT%B%restart),'B0',0)
-             call export_raw(ind%m,ind%F,str(DT%B%restart),'F',0)
-             call export_raw(ind%m,ind%Fnm1,str(DT%B%restart),'Fnm1',0)
-             call export_raw(ind%m,ind%Bstar,str(DT%B%restart),'Bstar',0)
-             call export_raw(ind%m,ind%phi,str(DT%phi%restart),'phi',0)
-             call export_raw(ind%m,ind%J,str(DT%J%restart),'J',0)
              call export_raw(ind%m,ind%U_E%x  ,str(DT%B%restart),'U_E_x',0)
              call export_raw(ind%m,ind%U_E%y  ,str(DT%B%restart),'U_E_y',0)
              call export_raw(ind%m,ind%U_E%z  ,str(DT%B%restart),'U_E_z',0)
@@ -425,15 +444,16 @@
          endif
        end subroutine
 
-       subroutine export_unsteady_0D_ind(ind,TMP)
+       subroutine export_unsteady_0D_ind(ind,SP,TMP)
          implicit none
          type(induction),intent(inout) :: ind
+         type(sim_params),intent(in) :: SP
          type(time_marching_params),intent(in) :: TMP
          real(cp) :: temp,scale
          call compute_divBJ(ind%divB,ind%divJ,ind%B,ind%J,ind%m)
          call Ln(temp,ind%divB,2.0_cp,ind%m); call export(ind%probe_divB,TMP,temp)
          call Ln(temp,ind%divJ,2.0_cp,ind%m); call export(ind%probe_divJ,TMP,temp)
-         if (ind%SP%IT%unsteady_B0%add) then
+         if (SP%IT%unsteady_B0%add) then
            call export(ind%probe_dB0dt(1),TMP,ind%dB0dt%x%BF(1)%GF%f(1,1,1))
            call export(ind%probe_dB0dt(2),TMP,ind%dB0dt%y%BF(1)%GF%f(1,1,1))
            call export(ind%probe_dB0dt(3),TMP,ind%dB0dt%z%BF(1)%GF%f(1,1,1))
@@ -442,7 +462,7 @@
            call export(ind%probe_B0(3),TMP,ind%B0%z%BF(1)%GF%f(1,1,1))
          endif
 
-         scale = ind%SP%DP%ME_scale
+         scale = SP%DP%ME_scale
          call add(ind%temp_F1,ind%B,ind%B0)
          call face2cellCenter(ind%temp_CC_VF,ind%temp_F1,ind%m)
          call compute_Total_Energy(ind%ME(1),ind%temp_CC_VF,TMP,ind%m,scale)
@@ -457,69 +477,76 @@
          call compute_Total_Energy_Domain(ind%ME_fluid(3),ind%temp_CC_VF,ind%CC_VF_fluid,TMP,ind%m,scale,ind%MD_fluid)
          call compute_Total_Energy_Domain(ind%ME_conductor(3),ind%temp_CC_VF,ind%CC_VF_sigma,TMP,ind%m,scale,ind%MD_sigma)
 
-         scale = ind%SP%DP%JE_scale
+         scale = SP%DP%JE_scale
          call edge2cellCenter(ind%temp_CC_VF,ind%J,ind%m,ind%temp_F1)
          call compute_Total_Energy(ind%JE,ind%temp_CC_VF,TMP,ind%m,scale)
          call compute_Total_Energy_Domain(ind%JE_fluid,ind%temp_CC_VF,ind%CC_VF_fluid,TMP,ind%m,scale,ind%MD_fluid)
        end subroutine
 
-       subroutine export_unsteady_1D_ind(ind,TMP,DT)
+       subroutine export_unsteady_1D_ind(ind,SP,TMP,DT)
          implicit none
          type(induction),intent(inout) :: ind
+         type(sim_params),intent(in) :: SP
          type(time_marching_params),intent(in) :: TMP
          type(dir_tree),intent(in) :: DT
-         call export_processed(ind%m,ind%B,str(DT%B%unsteady),'B',1,TMP,ind%SP%VS%B%unsteady_lines)
-         call export_processed(ind%m,ind%J,str(DT%J%unsteady),'J',1,TMP,ind%SP%VS%B%unsteady_lines)
+         call export_processed(ind%m,ind%B,str(DT%B%unsteady),'B',1,TMP,SP%VS%B%unsteady_lines)
+         call export_processed(ind%m,ind%J,str(DT%J%unsteady),'J',1,TMP,SP%VS%B%unsteady_lines)
        end subroutine
 
-       subroutine export_unsteady_2D_ind(ind,TMP,DT)
+       subroutine export_unsteady_2D_ind(ind,SP,TMP,DT)
          implicit none
          type(induction),intent(inout) :: ind
-         type(time_marching_params),intent(inout) :: TMP
-         type(dir_tree),intent(in) :: DT
-         call export_processed(ind%m,ind%B,str(DT%B%unsteady),'B',1,TMP,ind%SP%VS%B%unsteady_planes)
-         call export_processed(ind%m,ind%J,str(DT%J%unsteady),'J',1,TMP,ind%SP%VS%B%unsteady_planes)
-       end subroutine
-
-       subroutine export_unsteady_3D_ind(ind,TMP,DT)
-         implicit none
-         type(induction),intent(inout) :: ind
+         type(sim_params),intent(in) :: SP
          type(time_marching_params),intent(in) :: TMP
          type(dir_tree),intent(in) :: DT
-         call export_processed(ind%m,ind%B,str(DT%B%unsteady),'B',1,TMP,ind%SP%VS%B%unsteady_field)
-         call export_processed(ind%m,ind%J,str(DT%J%unsteady),'J',1,TMP,ind%SP%VS%B%unsteady_field)
+         call export_processed(ind%m,ind%B,str(DT%B%unsteady),'B',1,TMP,SP%VS%B%unsteady_planes)
+         call export_processed(ind%m,ind%J,str(DT%J%unsteady),'J',1,TMP,SP%VS%B%unsteady_planes)
        end subroutine
 
-       subroutine compute_J_ind(ind)
+       subroutine export_unsteady_3D_ind(ind,SP,TMP,DT)
          implicit none
          type(induction),intent(inout) :: ind
+         type(sim_params),intent(in) :: SP
+         type(time_marching_params),intent(in) :: TMP
+         type(dir_tree),intent(in) :: DT
+         call export_processed(ind%m,ind%B,str(DT%B%unsteady),'B',1,TMP,SP%VS%B%unsteady_field)
+         call export_processed(ind%m,ind%J,str(DT%J%unsteady),'J',1,TMP,SP%VS%B%unsteady_field)
+       end subroutine
+
+       subroutine compute_J_ind(ind,SP)
+         implicit none
+         type(induction),intent(inout) :: ind
+         type(sim_params),intent(in) :: SP
          ! call assign(ind%J,0.0_cp)
          ! call embedEdge(ind%J,ind%J_interior,ind%MD_sigma)
-         call compute_J(ind%J,ind%B,ind%SP%IT%current%scale,ind%m)
+         call compute_J(ind%J,ind%B,SP%IT%current%scale,ind%m)
        end subroutine
 
-       subroutine set_sigma_inv_ind(ind)
+       subroutine set_sigma_inv_ind(ind,SP)
          implicit none
          type(induction),intent(inout) :: ind
-         call set_sigma_inv_VF(ind%sigmaInv_edge,ind%m,ind%MD_sigma,ind%SP%DP)
+         type(sim_params),intent(in) :: SP
+         call set_sigma_inv_VF(ind%sigmaInv_edge,ind%m,ind%MD_sigma,SP%DP)
        end subroutine
 
-       subroutine init_matrix_based_ops_ind(ind)
+       subroutine init_matrix_based_ops_ind(ind,SP)
          implicit none
          type(induction),intent(inout) :: ind
+         type(sim_params),intent(in) :: SP
          real(cp),dimension(2) :: diffusion_treatment
          ! diffusion_treatment = (/1.0_cp,0.0_cp/) ! No treatment to curl-curl operator
-         diffusion_treatment = (/-ind%SP%VS%B%MFP%coeff_implicit,1.0_cp/)    ! likely broken
-         ! diffusion_treatment = (/ind%SP%VS%B%MFP%coeff_implicit,1.0_cp/)    ! likely broken
+         diffusion_treatment = (/-SP%VS%B%MFP%coeff_implicit,1.0_cp/)    ! likely broken
+         ! diffusion_treatment = (/SP%VS%B%MFP%coeff_implicit,1.0_cp/)    ! likely broken
          call init_curl_curl(ind%m,ind%sigmaInv_edge)
          call init_Laplacian_SF(ind%m)
          call multiply_curl_curl(ind%m,diffusion_treatment(1))
          call add_curl_curl(ind%m,diffusion_treatment(2))
        end subroutine
 
-       subroutine solve_induction(ind,F,Fnm1,TMP,EF,EN,DT)
+       subroutine solve_induction(ind,SP,F,Fnm1,TMP,EF,EN,DT)
          implicit none
          type(induction),intent(inout) :: ind
+         type(sim_params),intent(in) :: SP
          type(VF),intent(in) :: F,Fnm1
          type(time_marching_params),intent(inout) :: TMP
          type(export_frequency),intent(in) :: EF
@@ -527,8 +554,8 @@
          type(dir_tree),intent(in) :: DT
          integer :: i
 
-         do i=1,ind%SP%VS%B%TMP%multistep_iter
-         select case (ind%SP%VS%B%SS%solve_method)
+         do i=1,SP%VS%B%TMP%multistep_iter
+         select case (SP%VS%B%SS%solve_method)
          case (1)
            call Euler_time_no_diff_Euler_sources_no_correction(ind%B,ind%Bstar,F,TMP)
          case (2)
@@ -555,32 +582,33 @@
          case default; stop 'Error: bad solveBMethod input solve_induction in induction.f90'
          end select
          call iterate_step(TMP)
-         if (ind%SP%embed_B_interior) call embedFace(ind%B,ind%B_interior,ind%MD_sigma)
+         if (SP%embed_B_interior) call embedFace(ind%B,ind%B_interior,ind%MD_sigma)
          enddo
 
-         call compute_J_ind(ind)
+         call compute_J_ind(ind,SP)
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
-         if (EF%unsteady_0D%export_now) call export_unsteady_0D(ind,TMP)
-         if (EF%unsteady_1D%export_now) call export_unsteady_1D(ind,TMP,DT)
-         if (EF%unsteady_2D%export_now) call export_unsteady_2D(ind,TMP,DT)
-         if (EF%unsteady_3D%export_now) call export_unsteady_3D(ind,TMP,DT)
-         if (EF%info%export_now) call print(ind)
+         if (EF%unsteady_0D%export_now) call export_unsteady_0D(ind,SP,TMP)
+         if (EF%unsteady_1D%export_now) call export_unsteady_1D(ind,SP,TMP,DT)
+         if (EF%unsteady_2D%export_now) call export_unsteady_2D(ind,SP,TMP,DT)
+         if (EF%unsteady_3D%export_now) call export_unsteady_3D(ind,SP,TMP,DT)
+         if (EF%info%export_now) call print(ind,SP)
 
          if (EF%final_solution%export_now.or.EN%B%this.or.EN%all%this) then
-           ! call export(ind,DT)
-           call export_tec(ind,DT)
+           call export(ind,SP,DT)
+           call export_tec(ind,SP,DT)
          endif
        end subroutine
 
-       subroutine compute_export_E_M_budget(ind,U,DT)
+       subroutine compute_export_E_M_budget(ind,SP,U,DT)
          implicit none
          type(induction),intent(inout) :: ind
+         type(sim_params),intent(in) :: SP
          type(VF),intent(in) :: U
          type(dir_tree),intent(in) :: DT
          call E_M_Budget_wrapper(DT,U,ind%B,ind%Bnm1,ind%B0,ind%B0,ind%J,ind%m,&
-         ind%MD_fluid,ind%MD_sigma,ind%SP%DP,ind%SP%VS%B%TMP,ind%SP%MP)
+         ind%MD_fluid,ind%MD_sigma,SP%DP,SP%VS%B%TMP,SP%MP)
        end subroutine
 
        end module

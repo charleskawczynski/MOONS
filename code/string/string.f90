@@ -146,6 +146,7 @@
           else; continue_loop = .false.; exit
           endif; first_iteration = .false.
         enddo
+        if (s%s(s%n)%c.eq.' ') call remove_element(s,s%n)
         if (s%s(1)%c.eq.' ') call remove_element(s,1)
       end subroutine
 

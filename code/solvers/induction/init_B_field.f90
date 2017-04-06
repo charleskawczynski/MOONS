@@ -12,11 +12,9 @@
 
        contains
 
-       subroutine init_B_field(B,m,SP,dir)
+       subroutine init_B_field(B,SP)
          implicit none
          type(VF),intent(inout) :: B
-         character(len=*),intent(in) :: dir
-         type(mesh),intent(in) :: m
          type(sim_params),intent(in) :: SP
          integer :: preset_ID
 
@@ -25,24 +23,10 @@
          preset_ID = SP%VS%B%IC
          ! preset_ID = 0 ! manual override
 
-         if (SP%VS%B%SS%restart) then
-               call restart_B(B,m,dir)
-         else
-           select case(preset_ID)
-           case (0)
-           case default; stop 'Error: bad preset_ID in init_B_field.f90'
-           end select
-         endif
-       end subroutine
-
-       subroutine restart_B(B,m,dir)
-         implicit none
-         character(len=*),intent(in) :: dir
-         type(mesh),intent(in) :: m
-         type(VF),intent(inout) :: B
-         call import_3D_1C(m,B%x,dir,'Bf_x',0)
-         call import_3D_1C(m,B%y,dir,'Bf_y',0)
-         call import_3D_1C(m,B%z,dir,'Bf_z',0)
+         select case(preset_ID)
+         case (0)
+         case default; stop 'Error: bad preset_ID in init_B_field.f90'
+         end select
        end subroutine
 
        subroutine initZeroField(B)

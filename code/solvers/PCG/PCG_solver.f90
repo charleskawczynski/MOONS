@@ -100,7 +100,6 @@
         if (compute_norms) then
           call compute_export_norms(un,res_norm0,res_norm,ISP,r)
           call print_info(name,ISP,res_norm,res_norm0)
-          write(*,*) ''
         endif
       end subroutine
 
@@ -172,7 +171,6 @@
         if (compute_norms) then
           call compute_export_norms(un,res_norm0,res_norm,ISP,r)
           call print_info(name,ISP,res_norm,res_norm0)
-          write(*,*) ''
         endif
       end subroutine
 
@@ -252,10 +250,15 @@
         character(len=*),intent(in) :: name
         real(cp) :: rel
         rel = compute_relative_norm(res_norm,res_norm0)
-        call print(res_norm0,res_norm,name//' res_norm0,res_norm')
-        call print_exit_loop(ISP)
-        write(*,*) 'iter_executed,rel error = ',ISP%iter_per_call,rel
-        write(*,*) '----------------------------------------'
+        if (ISP%export_heavy) then
+          call print(res_norm0,res_norm,name//' res_norm0,res_norm')
+          call print_exit_loop(ISP)
+          write(*,*) 'iter_executed,rel error = ',ISP%iter_per_call,rel
+          write(*,*) '----------------------------------------'
+          write(*,*) ''
+        else
+          write(*,*) 'L2(res_norm,rel) '//name//' = ',res_norm%L2,rel
+        endif
       end subroutine
 
       function compute_relative_norm(res_norm,res_norm0) result(rel)

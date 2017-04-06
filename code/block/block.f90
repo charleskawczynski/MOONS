@@ -37,13 +37,13 @@
          type(grid),dimension(:),allocatable :: e,eb      ! Edges (boundary,ghost,interior)
          type(grid),dimension(:),allocatable :: c,cb      ! Corners (boundary,ghost,interior)
          type(grid_field),dimension(:),allocatable :: vol ! index must match volume_ID in data_location
+         integer,dimension(6) :: apply_BC_order = (/1,2,3,4,5,6/)
 
          type(stencil_3D),dimension(3) :: curl_curlX   ! X component data
          type(stencil_3D),dimension(3) :: curl_curlY   ! Y component data
          type(stencil_3D),dimension(3) :: curl_curlZ   ! Z component data
          type(stencil_3D),dimension(3) :: lap_VF
          type(stencil_3D) :: lap_SF
-         integer,dimension(6) :: apply_BC_order = (/1,2,3,4,5,6/)
        end type
 
        interface init;               module procedure init_block;               end interface
@@ -262,8 +262,7 @@
 
          do i=1,8;  call export(B%c(i),un); enddo
          do i=1,8;  call export(B%cb(i),un); enddo
-         call export(B%vol(1),un)
-         call export(B%vol(2),un)
+         write(un,*) 'apply_BC_order = '; write(un,*) B%apply_BC_order
        end subroutine
 
        subroutine import_block(B,un)
@@ -271,17 +270,18 @@
          type(block),intent(inout) :: B
          integer,intent(in) :: un
          integer :: i
+         call delete(B)
          call import(B%g,un)
-         do i=1,6;  call import(B%f(i),un); enddo
-         do i=1,6;  call import(B%fb(i),un); enddo
+         allocate(B%f(6));   do i=1,6; call import(B%f(i),un); enddo
+         allocate(B%fb(6));  do i=1,6; call import(B%fb(i),un); enddo
 
-         do i=1,12; call import(B%e(i),un); enddo
-         do i=1,12; call import(B%eb(i),un); enddo
+         allocate(B%e(12));  do i=1,12;call import(B%e(i),un); enddo
+         allocate(B%eb(12)); do i=1,12;call import(B%eb(i),un); enddo
 
-         do i=1,8;  call import(B%c(i),un); enddo
-         do i=1,8;  call import(B%cb(i),un); enddo
-         call import(B%vol(1),un)
-         call import(B%vol(2),un)
+         allocate(B%c(8));   do i=1,8; call import(B%c(i),un); enddo
+         allocate(B%cb(8));  do i=1,8; call import(B%cb(i),un); enddo
+         read(un,*) ; read(un,*) B%apply_BC_order
+         call init_vol(B)
        end subroutine
 
        subroutine export_block_wrapper(B,dir,name)

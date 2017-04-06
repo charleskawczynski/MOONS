@@ -21,40 +21,25 @@
 
        contains
 
-       subroutine init_U_field(U,m,SP,dir)
+       subroutine init_U_field(U,m,SP)
          implicit none
          type(VF),intent(inout) :: U
          type(mesh),intent(in) :: m
-         character(len=*),intent(in) :: dir
          type(sim_params),intent(in) :: SP
          integer :: preset_ID
          call assign(U,0.0_cp)
          preset_ID = SP%VS%U%IC
          ! preset_ID = 0 ! manual override
 
-         if (SP%VS%U%SS%restart) then
-               call restart_U(U,m,dir)
-         else
-           select case(preset_ID)
-           case (0)
-           case (1); call FD_duct(U,m,1,1)
-           case (2); call isolated_eddy_2D(U,m,3,1) ! Isolated Eddy (Weiss)
-           case (3); call single_eddy_2D(U,m,3,1)   ! Single Eddy (Weiss)
-           case (4); call cylinder2D(U,m,3,1)     ! Cylinder
-           case (5); call parabolic1D(U,m,1,2,1)  ! Bandaru (SS of Ha=0)
-           case default; stop 'Error: bad preset_ID in init_P_field.f90'
-           end select
-         endif
-       end subroutine
-
-       subroutine restart_U(U,m,dir)
-         implicit none
-         character(len=*),intent(in) :: dir
-         type(mesh),intent(in) :: m
-         type(VF),intent(inout) :: U
-         call import_3D_1C(m,U%x,dir,'Uf_x',0)
-         call import_3D_1C(m,U%y,dir,'Uf_y',0)
-         call import_3D_1C(m,U%z,dir,'Uf_z',0)
+         select case(preset_ID)
+         case (0)
+         case (1); call FD_duct(U,m,1,1)
+         case (2); call isolated_eddy_2D(U,m,3,1) ! Isolated Eddy (Weiss)
+         case (3); call single_eddy_2D(U,m,3,1)   ! Single Eddy (Weiss)
+         case (4); call cylinder2D(U,m,3,1)     ! Cylinder
+         case (5); call parabolic1D(U,m,1,2,1)  ! Bandaru (SS of Ha=0)
+         case default; stop 'Error: bad preset_ID in init_P_field.f90'
+         end select
        end subroutine
 
        ! **************************************************************************

@@ -1,6 +1,7 @@
        module MHDSolver_mod
        use current_precision_mod
        use sim_params_mod
+       use var_set_mod
        use VF_mod
        use IO_tools_mod
        use string_mod
@@ -40,7 +41,6 @@
          type(sim_params),intent(inout) :: SP
          type(time_marching_params),intent(inout) :: coupled
          type(stop_clock) :: sc
-         type(VF) :: F,Fnm1 ! Forces added to momentum equation
          type(export_frequency) :: EF
          type(export_now) :: EN
          type(export_safe) :: ES
@@ -48,10 +48,6 @@
          type(kill_switch) :: KS
          logical :: refine_mesh_now_all
 
-         call init(F,mom%U)
-         call init(Fnm1,mom%U)
-         call assign(F,0.0_cp)
-         call assign(Fnm1,0.0_cp)
          refine_mesh_now_all = .false.
 
          call init(KS,str(DT%params),'kill_switch'); call export(KS)
@@ -61,7 +57,7 @@
          call init(ES,SP%export_safe_period)
          call init(sc,coupled%n_step_stop-coupled%n_step,str(DT%wall_clock),'WALL_CLOCK_TIME_INFO')
 
-         write(*,*) 'Working directory = ',str(DT%tar)
+         if (SP%export_heavy) write(*,*) 'Working directory = ',str(DT%tar)
 
          write(*,*) '***************************************************************'
          write(*,*) '****************** ENTERING MAIN LOOP *************************'
@@ -76,16 +72,21 @@
              call embedFace(nrg%U_F,mom%U,nrg%MD)
              call embedCC(nrg%U_CC,mom%U_CC,nrg%MD)
              call add_all_energy_sources(nrg%F,nrg%Fnm1,nrg,ind,SP)
-             call solve(nrg,nrg%F,nrg%Fnm1,nrg%SP%VS%T%TMP,EF,EN,DT)
+             call solve(nrg,SP,nrg%F,nrg%Fnm1,SP%VS%T%TMP,EF,EN,DT)
            endif
            if (SP%VS%U%SS%solve) then
-             call add_all_momentum_sources(F,Fnm1,nrg,mom,ind,SP)
-             call solve(mom,F,Fnm1,mom%SP%VS%U%TMP,EF,EN,DT)
+             call add_all_momentum_sources(mom%F,mom%Fnm1,nrg,mom,ind,SP)
+             call solve(mom,SP,mom%F,mom%Fnm1,SP%VS%U%TMP,EF,EN,DT)
            endif
            if (SP%VS%B%SS%solve) then
             call embedVelocity_E(ind%U_E,mom%U_E,ind%MD_fluid)
-            call add_all_induction_sources(ind%F,ind%Fnm1,mom,ind,ind%SP%VS%B%TMP,SP)
-            call solve(ind,ind%F,ind%Fnm1,ind%SP%VS%B%TMP ,EF,EN,DT)
+            call add_all_induction_sources(ind%F,ind%Fnm1,mom,ind,SP%VS%B%TMP,SP)
+            call solve(ind,SP,ind%F,ind%Fnm1,SP%VS%B%TMP ,EF,EN,DT)
+           endif
+
+           if (EN%any_now) then;
+             write(*,*) 'exporting TMPs'
+             call export_TMP(SP%VS,DT); call export(coupled,str(DT%params))
            endif
 
            call iterate_step(coupled)
@@ -105,9 +106,13 @@
              ! would be better to update outside the solvers,
              ! since it should be updated for all solver variables.
              ! call oldest_modified_file(DT%restart,DT%restart1,DT%restart2,'p.dat')
-             call print(sc,coupled)
+             if (SP%export_heavy) call print(sc,coupled)
+             if (.not.SP%export_heavy) then
+               write(*,*) ''
+               call print_light(sc,coupled)
+             endif
              call export(sc,coupled%t)
-             write(*,*) 'Working directory = ',str(DT%tar)
+             if (SP%export_heavy) write(*,*) 'Working directory = ',str(DT%tar)
              call import(KS)
            endif
            ! call import(EF)
@@ -118,23 +123,19 @@
          ! ***************************************************************
          ! ********** FINISHED SOLVING MHD EQUATIONS *********************
          ! ***************************************************************
-         if (SP%VS%T%SS%initialize) call export(SP%VS%T%TMP)
-         if (SP%VS%U%SS%initialize) call export(SP%VS%U%TMP)
-         if (SP%VS%B%SS%initialize) call export(SP%VS%B%TMP)
-         call export(coupled)
+         call export_TMP(SP%VS,DT)
+         call export(coupled,str(DT%params))
 
          ! **************** EXPORT ONE FINAL TIME ***********************
-         if (SP%VS%T%SS%initialize) call export_tec(nrg,DT)
-         if (SP%VS%U%SS%initialize) call export_tec(mom,DT,F,Fnm1)
-         if (SP%VS%B%SS%initialize) call export_tec(ind,DT)
+         if (SP%VS%T%SS%initialize) call export_tec(nrg,SP,DT)
+         if (SP%VS%U%SS%initialize) call export_tec(mom,SP,DT)
+         if (SP%VS%B%SS%initialize) call export_tec(ind,SP,DT)
 
          call delete(EF)
          call delete(sc)
          call delete(EN)
          call delete(ES)
          call delete(KS)
-         call delete(F)
-         call delete(Fnm1)
          call delete(RM)
        end subroutine
 

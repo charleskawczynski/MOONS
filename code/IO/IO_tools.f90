@@ -10,12 +10,15 @@
       public :: get_file_unit
       public :: new_and_open,close_and_message,delete_file
       public :: rewind_unit
-      public :: open_to_read,open_to_write,open_to_append
+      public :: open_to_read,open_to_write,open_to_read_write
+      public :: open_to_append
       public :: safe_read
 
-      interface safe_read;  module procedure safe_read_int_IO;  end interface
-      interface safe_read;  module procedure safe_read_log_IO;  end interface
-      interface safe_read;  module procedure safe_read_cp_IO;   end interface
+      interface safe_read;      module procedure safe_read_int_IO;      end interface
+      interface safe_read;      module procedure safe_read_log_IO;      end interface
+      interface safe_read;      module procedure safe_read_cp_IO;       end interface
+      interface open_to_append; module procedure open_to_append_at_EOF; end interface
+      interface open_to_append; module procedure open_to_append_at_pos; end interface
 
       character(len=4),parameter :: dot_dat = '.dat'
 
@@ -146,15 +149,33 @@
         implicit none
         character(len=*),intent(in) :: dir,name
         integer :: un
+        type(string) :: s
+        call init(s,dir//name//dot_dat)
 #ifdef _DEBUG_IO_TOOLS_
         call check_file_exists(dir,name,'open_to_write')
         call check_file_closed(dir,name,'open_to_write')
 #endif
         un = new_unit()
-        open(unit=un,status='old',action='write')
+        open(un,file=str(s),status='old',action='write')
+        call delete(s)
       end function
 
-      function open_to_append(dir,name) result(un)
+      function open_to_read_write(dir,name) result(un)
+        implicit none
+        character(len=*),intent(in) :: dir,name
+        integer :: un
+        type(string) :: s
+        call init(s,dir//name//dot_dat)
+#ifdef _DEBUG_IO_TOOLS_
+        call check_file_exists(dir,name,'open_to_write')
+        call check_file_closed(dir,name,'open_to_write')
+#endif
+        un = new_unit()
+        open(un,file=str(s),status='old',action='readwrite')
+        call delete(s)
+      end function
+
+      function open_to_append_at_EOF(dir,name) result(un)
         implicit none
         character(len=*),intent(in) :: dir,name
         integer :: un
@@ -166,6 +187,17 @@
 #endif
         un = new_unit()
         open(unit=un,file=str(s),status='old',action='write',position='append')
+      end function
+
+      function open_to_append_at_pos(dir,name,pos) result(un)
+        implicit none
+        character(len=*),intent(in) :: dir,name
+        integer,intent(in) :: pos
+        integer :: un
+        integer :: i
+        un = open_to_read_write(dir,name)
+        rewind(un)
+        do i=1,pos-1; read(un,*); enddo
       end function
 
        subroutine safe_read_int_IO(i,un,caller)

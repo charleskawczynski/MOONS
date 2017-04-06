@@ -13,6 +13,7 @@
        use string_mod
        use path_mod
        use dir_tree_mod
+       use var_set_mod
        use export_analytic_mod
        use mirror_props_mod
        use vorticity_streamfunction_mod
@@ -24,6 +25,7 @@
        use sim_params_mod
        use export_raw_processed_symmetry_mod
        use export_raw_processed_mod
+       use import_raw_mod
        use ops_mirror_field_mod
 
        ! use density_mod
@@ -62,9 +64,12 @@
 #endif
 
          call init(DT,dir_target)  ! Initialize + make directory tree
-         restart_sim = .false.
+         restart_sim = .true.
          if (restart_sim) then
            call import(SP,str(DT%params),'sim_params_raw')
+           call set_restart(SP,restart_sim)
+           call import_TMP(SP%VS,DT)
+           call import(SP%coupled,str(DT%params))
          else
            call init(SP,DT)             ! Initializes simulation parameters
            call export(SP,str(DT%params),'sim_params_raw')
@@ -75,11 +80,11 @@
          call export_version(str(DT%LDC))
 
          ! ************************************************************** Initialize mesh + domains
-         if (SP%restart_all) then
-           call import(m_mom,str(DT%restart),'m_mom')
-           call import(m_ind,str(DT%restart),'m_ind')
-           call import(MD_sigma,str(DT%restart),'MD_sigma')
-           call import(MD_fluid,str(DT%restart),'MD_fluid')
+         if (SP%restart_meshes) then
+           call import(m_mom,str(DT%mesh_restart),'m_mom')
+           call import(m_ind,str(DT%mesh_restart),'m_ind')
+           call import(MD_sigma,str(DT%mesh_restart),'MD_sigma')
+           call import(MD_fluid,str(DT%mesh_restart),'MD_fluid')
          else
            call mesh_generate(m_mom,m_ind,MD_sigma,SP)
            ! call init(m_ind_interior,MD_sigma%m_R2)
@@ -105,6 +110,7 @@
            call export_mesh(m_mom,str(DT%meshes),'m_mom',1)
            call export_mesh(m_ind,str(DT%meshes),'m_ind',1)
            call export_mesh(MD_sigma%m_R2,str(DT%meshes),'mesh_MD_sigma',1)
+           call export_mesh(MD_fluid%m_R2,str(DT%meshes),'mesh_MD_fluid',1)
          if (SP%MP%mirror) then
            call mirror_mesh(m_temp,m_mom,SP%MP)
            call export_mesh(m_temp,str(DT%meshes),'mesh_mom_mirror',1)
@@ -112,9 +118,16 @@
            call export_mesh(m_temp,str(DT%meshes),'mesh_ind_mirror',1)
            call mirror_mesh(m_temp,MD_sigma%m_R1,SP%MP)
            call export_mesh(m_temp,str(DT%meshes),'mesh_MD_sigma_mirror',1)
+           call mirror_mesh(m_temp,MD_fluid%m_R1,SP%MP)
+           call export_mesh(m_temp,str(DT%meshes),'mesh_MD_fluid_mirror',1)
            call delete(m_temp)
          endif
          endif
+
+         call export(m_mom,str(DT%mesh_restart),'m_mom')
+         call export(m_ind,str(DT%mesh_restart),'m_ind')
+         call export(MD_sigma,str(DT%mesh_restart),'MD_sigma')
+         call export(MD_fluid,str(DT%mesh_restart),'MD_fluid')
 
          if (file_exists('','mesh_generation_error')) stop 'Error: non-converged mesh, inspect mesh.'
          if (SP%FCL%stop_after_mesh_export) then
@@ -135,9 +148,9 @@
 
          ! ********************* EXPORT RAW ICs *************************
 
-         if (SP%EL%export_ICs.and.SP%VS%T%SS%initialize) call export_tec(nrg,DT)
-         if (SP%EL%export_ICs.and.SP%VS%U%SS%initialize) call export_tec(mom,DT)
-         if (SP%EL%export_ICs.and.SP%VS%B%SS%initialize) call export_tec(ind,DT)
+         if (SP%EL%export_ICs.and.SP%VS%T%SS%initialize) call export_tec(nrg,SP,DT)
+         if (SP%EL%export_ICs.and.SP%VS%U%SS%initialize) call export_tec(mom,SP,DT)
+         if (SP%EL%export_ICs.and.SP%VS%B%SS%initialize) call export_tec(ind,SP,DT)
 
          if (SP%VS%T%SS%initialize) call print(nrg%m)
          if (SP%VS%U%SS%initialize) call print(mom%m)
@@ -166,21 +179,16 @@
            write(*,*) ' COMPUTING ENERGY BUDGETS:'
            if (SP%VS%U%SS%initialize.and.SP%VS%B%SS%initialize) then
              write(*,*) '       KINETIC ENERGY BUDGET - STARTED'
-             call compute_export_E_K_Budget(mom,ind%B,ind%B0,ind%J,ind%MD_fluid,DT)
+             call compute_export_E_K_Budget(mom,SP,ind%B,ind%B0,ind%J,ind%MD_fluid,DT)
              write(*,*) '       KINETIC ENERGY BUDGET - COMPLETE'
              write(*,*) '       MAGNETIC ENERGY BUDGET - STARTED'
-             call compute_export_E_M_budget(ind,mom%U,DT)
+             call compute_export_E_M_budget(ind,SP,mom%U,DT)
              write(*,*) '       MAGNETIC ENERGY BUDGET - COMPLETE'
            endif
            if (SP%VS%U%SS%initialize.and.SP%EL%export_analytic) then
              call export_SH(mom%m,mom%U%x,SP%DP%Ha,0.0_cp,-1.0_cp,1,DT)
            endif
          endif
-
-         call export(m_mom,str(DT%restart),'m_mom')
-         call export(m_ind,str(DT%restart),'m_ind')
-         call export(MD_sigma,str(DT%restart),'MD_sigma')
-         call export(MD_fluid,str(DT%restart),'MD_fluid')
 
          write(*,*) ' ******************** COMPUTATIONS COMPLETE ********************'
          write(*,*) ' ******************** COMPUTATIONS COMPLETE ********************'

@@ -24,7 +24,7 @@
          type(sim_params),intent(in) :: SP
 
          if (SP%MT%mean_pressure_grad%add) then
-           call compute_add_MPG(mom%U,mom%SP%VS%U%TMP,&
+           call compute_add_MPG(mom%U,SP%VS%U%TMP,&
            SP%MT%mean_pressure_grad%scale,SP%mpg_dir)
          endif
 
