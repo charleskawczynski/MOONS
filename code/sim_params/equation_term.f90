@@ -59,7 +59,7 @@
        type(equation_term),intent(in) :: ET
        integer,intent(in) :: un
        character(len=*),intent(in) :: name
-       write(un,*) 'name  = '; write(un,*) name
+       write(un,*) name
        write(un,*) 'add   = '; write(un,*) ET%add
        write(un,*) 'scale = '; write(un,*) ET%scale
       end subroutine
@@ -68,7 +68,7 @@
        implicit none
        type(equation_term),intent(inout) :: ET
        integer,intent(in) :: un
-       read(un,*); read(un,*)
+       read(un,*)
        read(un,*); read(un,*) ET%add
        read(un,*); read(un,*) ET%scale
       end subroutine

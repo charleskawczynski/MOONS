@@ -71,24 +71,28 @@
        implicit none
        type(energy_terms),intent(in) :: ET
        integer,intent(in) :: un
+       write(un,*) ' --------- energy_terms --------- '
        call export(ET%advection,un,'advection')
        call export(ET%diffusion,un,'diffusion')
        call export(ET%KE_diffusion,un,'KE_diffusion')
        call export(ET%viscous_dissipation,un,'viscous_dissipation')
        call export(ET%joule_heating,un,'joule_heating')
        call export(ET%volumetric_heating,un,'volumetric_heating')
+       write(un,*) ' -------------------------------- '
       end subroutine
 
      subroutine import_ET(ET,un)
        implicit none
        type(energy_terms),intent(inout) :: ET
        integer,intent(in) :: un
+       read(un,*);
        call import(ET%advection,un)
        call import(ET%diffusion,un)
        call import(ET%KE_diffusion,un)
        call import(ET%viscous_dissipation,un)
        call import(ET%joule_heating,un)
        call import(ET%volumetric_heating,un)
+       read(un,*);
       end subroutine
 
      subroutine export_ET_wrapper(ET,dir,name)

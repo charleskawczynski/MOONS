@@ -82,18 +82,22 @@
          implicit none
          type(time_statistics_params),intent(in) :: TSP
          integer,intent(in) :: un
+         write(un,*) ' ---------------- time_statistics_params ---------------- '
          write(un,*) ' collect = '; write(un,*) TSP%collect
          call export(TSP%O1_stats,un)
          call export(TSP%O2_stats,un)
+         write(un,*) ' -------------------------------------------------------- '
        end subroutine
 
        subroutine import_TSP(TSP,un)
          implicit none
          type(time_statistics_params),intent(inout) :: TSP
          integer,intent(in) :: un
+         read(un,*);
          read(un,*); read(un,*) TSP%collect
          call import(TSP%O1_stats,un)
          call import(TSP%O2_stats,un)
+         read(un,*);
        end subroutine
 
        ! **********************************************************

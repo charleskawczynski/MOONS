@@ -128,6 +128,7 @@
          implicit none
          type(dimensionless_params),intent(in) :: DP
          integer,intent(in) :: un
+         write(un,*) ' ------------------- dimensionless_params ------------------- '
          write(un,*) 'Re                   = '; write(un,*) DP%Re
          write(un,*) 'Al                   = '; write(un,*) DP%Al
          write(un,*) 'N                    = '; write(un,*) DP%N
@@ -149,12 +150,14 @@
          write(un,*) 'L_eta                = '; write(un,*) DP%L_eta
          write(un,*) 'U_eta                = '; write(un,*) DP%U_eta
          write(un,*) 't_eta                = '; write(un,*) DP%t_eta
+         write(un,*) ' ------------------------------------------------------------ '
        end subroutine
 
        subroutine import_DP(DP,un)
          implicit none
          type(dimensionless_params),intent(inout) :: DP
          integer,intent(in) :: un
+         read(un,*);
          read(un,*); read(un,*) DP%Re
          read(un,*); read(un,*) DP%Al
          read(un,*); read(un,*) DP%N
@@ -176,6 +179,7 @@
          read(un,*); read(un,*) DP%L_eta
          read(un,*); read(un,*) DP%U_eta
          read(un,*); read(un,*) DP%t_eta
+         read(un,*);
        end subroutine
 
        end module

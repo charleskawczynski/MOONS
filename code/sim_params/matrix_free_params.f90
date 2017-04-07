@@ -77,6 +77,7 @@
         implicit none
         type(matrix_free_params),intent(in) :: m
         integer,intent(in) :: un
+        write(un,*) ' ------ matrix_free_params ------ '
         write(un,*) 'suppress_warning          = '; write(un,*) m%suppress_warning
         write(un,*) 'alpha                     = '; write(un,*) m%alpha
         write(un,*) 'beta                      = '; write(un,*) m%beta
@@ -84,19 +85,22 @@
         write(un,*) 'coeff_explicit            = '; write(un,*) m%coeff_explicit
         write(un,*) 'coeff_implicit            = '; write(un,*) m%coeff_implicit
         write(un,*) 'coeff_implicit_time_split = '; write(un,*) m%coeff_implicit_time_split
+        write(un,*) ' -------------------------------- '
       end subroutine
 
       subroutine import_MFP(m,un)
         implicit none
         type(matrix_free_params),intent(inout) :: m
         integer,intent(in) :: un
-        read(un,*) ; read(un,*) m%suppress_warning
-        read(un,*) ; read(un,*) m%alpha
-        read(un,*) ; read(un,*) m%beta
-        read(un,*) ; read(un,*) m%coeff_natural
-        read(un,*) ; read(un,*) m%coeff_explicit
-        read(un,*) ; read(un,*) m%coeff_implicit
-        read(un,*) ; read(un,*) m%coeff_implicit_time_split
+        read(un,*);
+        read(un,*); read(un,*) m%suppress_warning
+        read(un,*); read(un,*) m%alpha
+        read(un,*); read(un,*) m%beta
+        read(un,*); read(un,*) m%coeff_natural
+        read(un,*); read(un,*) m%coeff_explicit
+        read(un,*); read(un,*) m%coeff_implicit
+        read(un,*); read(un,*) m%coeff_implicit_time_split
+        read(un,*);
       end subroutine
 
       subroutine prolongate_MFP(m,coeff_multiplication_factor)

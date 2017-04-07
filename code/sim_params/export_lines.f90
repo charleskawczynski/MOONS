@@ -104,7 +104,8 @@
          type(export_lines),intent(in) :: ELS
          integer,intent(in) :: un
          integer :: i
-         write(un,*) ELS%N
+         write(un,*) ' -------- export_lines -------- '
+         write(un,*) 'N = '; write(un,*) ELS%N
          if (allocated(ELS%EL)) then
          do i=1,size(ELS%EL); call export(ELS%EL(i),un); enddo
          endif
@@ -116,7 +117,8 @@
          integer,intent(in) :: un
          integer :: i,N
          call delete(ELS)
-         read(un,*) N
+         read(un,*)
+         read(un,*); read(un,*) N
          if (N.gt.0) then
            allocate(ELS%EL(N))
            do i=1,N; call import(ELS%EL(i),un); enddo

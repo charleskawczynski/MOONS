@@ -80,40 +80,42 @@
          implicit none
          type(var_set),intent(in) :: VS
          integer,intent(in) :: un
-         call export(VS%T,un)
-         call export(VS%U,un)
-         call export(VS%P,un)
-         call export(VS%B,un)
-         call export(VS%B0,un)
-         call export(VS%phi,un)
-         call export(VS%rho,un)
+         write(un,*) ' ---------------- VAR T   ---------------- '; call export(VS%T,un)
+         write(un,*) ' ---------------- VAR U   ---------------- '; call export(VS%U,un)
+         write(un,*) ' ---------------- VAR P   ---------------- '; call export(VS%P,un)
+         write(un,*) ' ---------------- VAR B   ---------------- '; call export(VS%B,un)
+         write(un,*) ' ---------------- VAR B0  ---------------- '; call export(VS%B0,un)
+         write(un,*) ' ---------------- VAR phi ---------------- '; call export(VS%phi,un)
+         write(un,*) ' ---------------- VAR rho ---------------- '; call export(VS%rho,un)
+         write(un,*) ' ----------------------------------------- '
        end subroutine
 
        subroutine import_VS(VS,un)
          implicit none
          type(var_set),intent(inout) :: VS
          integer,intent(in) :: un
-         call import(VS%T,un)
-         call import(VS%U,un)
-         call import(VS%P,un)
-         call import(VS%B,un)
-         call import(VS%B0,un)
-         call import(VS%phi,un)
-         call import(VS%rho,un)
+         read(un,*); call import(VS%T,un)
+         read(un,*); call import(VS%U,un)
+         read(un,*); call import(VS%P,un)
+         read(un,*); call import(VS%B,un)
+         read(un,*); call import(VS%B0,un)
+         read(un,*); call import(VS%phi,un)
+         read(un,*); call import(VS%rho,un)
+         read(un,*)
        end subroutine
 
        subroutine display_VS(VS,un)
          implicit none
          type(var_set),intent(in) :: VS
          integer,intent(in) :: un
-         write(un,*) '---------- VAR T ----------';   call display(VS%T,un)
-         write(un,*) '---------- VAR U ----------';   call display(VS%U,un)
-         write(un,*) '---------- VAR P ----------';   call display(VS%P,un)
-         write(un,*) '---------- VAR B ----------';   call display(VS%B,un)
-         write(un,*) '---------- VAR B0 ----------';  call display(VS%B0,un)
-         write(un,*) '---------- VAR phi ----------'; call display(VS%phi,un)
-         write(un,*) '---------- VAR rho ----------'; call display(VS%rho,un)
-         write(un,*) '-----------------------------'
+         write(un,*) ' ---------------- VAR T   ---------------- '; call display(VS%T,un)
+         write(un,*) ' ---------------- VAR U   ---------------- '; call display(VS%U,un)
+         write(un,*) ' ---------------- VAR P   ---------------- '; call display(VS%P,un)
+         write(un,*) ' ---------------- VAR B   ---------------- '; call display(VS%B,un)
+         write(un,*) ' ---------------- VAR B0  ---------------- '; call display(VS%B0,un)
+         write(un,*) ' ---------------- VAR phi ---------------- '; call display(VS%phi,un)
+         write(un,*) ' ---------------- VAR rho ---------------- '; call display(VS%rho,un)
+         write(un,*) ' ----------------------------------------- '
        end subroutine
 
        subroutine print_VS(VS)

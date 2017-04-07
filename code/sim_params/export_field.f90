@@ -47,14 +47,14 @@
          implicit none
          type(export_field),intent(in) :: EP
          integer,intent(in) :: un
-         write(un,*) EP%export_ever
+         write(un,*) 'export_ever = '; write(un,*) EP%export_ever
        end subroutine
 
        subroutine import_EP(EP,un)
          implicit none
          type(export_field),intent(inout) :: EP
          integer,intent(in) :: un
-         read(un,*) EP%export_ever
+         read(un,*); read(un,*) EP%export_ever
        end subroutine
 
        subroutine display_EP(EP,un)

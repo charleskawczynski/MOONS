@@ -85,6 +85,7 @@
          implicit none
          type(export_frequency),intent(in) :: EF
          integer,intent(in) :: un
+         write(un,*) ' ------------ export_frequency ------------ '
          call export(EF%info,un)
          call export(EF%unsteady_0D,un)
          call export(EF%unsteady_1D,un)
@@ -94,12 +95,14 @@
          call export(EF%restart_files,un)
          call export(EF%dir,un)
          call export(EF%name,un)
+         write(un,*) ' ------------------------------------------ '
        end subroutine
 
        subroutine import_EF(EF,un)
          implicit none
          type(export_frequency),intent(inout) :: EF
          integer,intent(in) :: un
+         read(un,*);
          call import(EF%info,un)
          call import(EF%unsteady_0D,un)
          call import(EF%unsteady_1D,un)
@@ -109,6 +112,7 @@
          call import(EF%restart_files,un)
          call import(EF%dir,un)
          call import(EF%name,un)
+         read(un,*);
        end subroutine
 
        subroutine export_EF_wrapper(EF)

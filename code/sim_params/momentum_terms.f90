@@ -83,6 +83,7 @@
        implicit none
        type(momentum_terms),intent(in) :: MT
        integer,intent(in) :: un
+       write(un,*) ' --------- momentum_terms --------- '
        call export(MT%advection_divergence,un,'advection_divergence')
        call export(MT%advection_convection,un,'advection_convection')
        call export(MT%advection_base_flow ,un,'advection_base_flow')
@@ -92,12 +93,14 @@
        call export(MT%Q2D_JCrossB         ,un,'Q2D_JCrossB')
        call export(MT%Buoyancy            ,un,'Buoyancy')
        call export(MT%Gravity             ,un,'Gravity')
+       write(un,*) ' ---------------------------------- '
       end subroutine
 
      subroutine import_MT(MT,un)
        implicit none
        type(momentum_terms),intent(inout) :: MT
        integer,intent(in) :: un
+       read(un,*);
        call import(MT%advection_divergence,un)
        call import(MT%advection_convection,un)
        call import(MT%advection_base_flow ,un)
@@ -107,6 +110,7 @@
        call import(MT%Q2D_JCrossB         ,un)
        call import(MT%Buoyancy            ,un)
        call import(MT%Gravity             ,un)
+       read(un,*);
       end subroutine
 
      subroutine export_MT_wrapper(MT,dir,name)

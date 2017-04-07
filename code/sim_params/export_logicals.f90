@@ -84,6 +84,7 @@
        implicit none
        type(export_logicals),intent(in) :: EL
        integer,intent(in) :: un
+       write(un,*) ' --------- export_logicals --------- '
        write(un,*) 'export_analytic    = '; write(un,*) EL%export_analytic
        write(un,*) 'export_meshes      = '; write(un,*) EL%export_meshes
        write(un,*) 'export_vort_SF     = '; write(un,*) EL%export_vort_SF
@@ -94,12 +95,14 @@
        write(un,*) 'export_symmetric   = '; write(un,*) EL%export_symmetric
        write(un,*) 'export_mesh_block  = '; write(un,*) EL%export_mesh_block
        write(un,*) 'export_soln_only   = '; write(un,*) EL%export_soln_only
+       write(un,*) ' ----------------------------------- '
      end subroutine
 
      subroutine import_EL(EL,un)
        implicit none
        type(export_logicals),intent(inout) :: EL
        integer,intent(in) :: un
+       read(un,*);
        read(un,*); read(un,*) EL%export_analytic
        read(un,*); read(un,*) EL%export_meshes
        read(un,*); read(un,*) EL%export_vort_SF
@@ -110,6 +113,7 @@
        read(un,*); read(un,*) EL%export_symmetric
        read(un,*); read(un,*) EL%export_mesh_block
        read(un,*); read(un,*) EL%export_soln_only
+       read(un,*);
      end subroutine
 
      end module

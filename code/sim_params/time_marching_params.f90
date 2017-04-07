@@ -107,6 +107,7 @@
          implicit none
          type(time_marching_params),intent(in) :: TMP
          integer,intent(in) :: un
+         write(un,*) ' ------------- time_marching_params ------------- '
          write(un,*) 'multistep_iter = '; write(un,*) TMP%multistep_iter
          write(un,*) 'n_step_start   = '; write(un,*) TMP%n_step_start
          write(un,*) 'n_step         = '; write(un,*) TMP%n_step
@@ -117,12 +118,14 @@
          write(un,*) 'dt             = '; write(un,*) TMP%dt
          call export(TMP%dir,un)
          call export(TMP%name,un)
+         write(un,*) ' ------------------------------------------------ '
        end subroutine
 
        subroutine import_TMP(TMP,un)
          implicit none
          type(time_marching_params),intent(inout) :: TMP
          integer,intent(in) :: un
+         read(un,*);
          read(un,*); read(un,*) TMP%multistep_iter
          read(un,*); read(un,*) TMP%n_step_start
          read(un,*); read(un,*) TMP%n_step
@@ -133,6 +136,7 @@
          read(un,*); read(un,*) TMP%dt
          call import(TMP%dir,un)
          call import(TMP%name,un)
+         read(un,*);
        end subroutine
 
        subroutine export_TMP_wrapper(TMP)

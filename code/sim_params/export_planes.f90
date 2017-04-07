@@ -104,7 +104,8 @@
          type(export_planes),intent(in) :: EPS
          integer,intent(in) :: un
          integer :: i
-         write(un,*) EPS%N
+         write(un,*) ' -------- export_planes -------- '
+         write(un,*) 'N = '; write(un,*) EPS%N
          if (allocated(EPS%EP)) then
          do i=1,size(EPS%EP); call export(EPS%EP(i),un); enddo
          endif
@@ -116,7 +117,8 @@
          integer,intent(in) :: un
          integer :: i,N
          call delete(EPS)
-         read(un,*) N
+         read(un,*)
+         read(un,*); read(un,*) N
          if (N.gt.0) then
            allocate(EPS%EP(N))
            do i=1,N; call import(EPS%EP(i),un); enddo

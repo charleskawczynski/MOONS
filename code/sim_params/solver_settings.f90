@@ -68,22 +68,26 @@
          implicit none
          type(solver_settings),intent(in) :: SS
          integer,intent(in) :: un
-         write(un,*) SS%initialize
-         write(un,*) SS%solve
-         write(un,*) SS%restart
-         write(un,*) SS%solve_method
-         write(un,*) SS%prescribed_BCs
+         write(un,*) ' ------------- solver_settings ------------- '
+         write(un,*) 'initialize     = '; write(un,*) SS%initialize
+         write(un,*) 'solve          = '; write(un,*) SS%solve
+         write(un,*) 'restart        = '; write(un,*) SS%restart
+         write(un,*) 'solve_method   = '; write(un,*) SS%solve_method
+         write(un,*) 'prescribed_BCs = '; write(un,*) SS%prescribed_BCs
+         write(un,*) ' ------------------------------------------- '
        end subroutine
 
        subroutine import_SS(SS,un)
          implicit none
          type(solver_settings),intent(inout) :: SS
          integer,intent(in) :: un
-         read(un,*) SS%initialize
-         read(un,*) SS%solve
-         read(un,*) SS%restart
-         read(un,*) SS%solve_method
-         read(un,*) SS%prescribed_BCs
+         read(un,*);
+         read(un,*); read(un,*) SS%initialize
+         read(un,*); read(un,*) SS%solve
+         read(un,*); read(un,*) SS%restart
+         read(un,*); read(un,*) SS%solve_method
+         read(un,*); read(un,*) SS%prescribed_BCs
+         read(un,*);
        end subroutine
 
        subroutine display_SS(SS,un)

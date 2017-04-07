@@ -494,6 +494,7 @@
        implicit none
        type(sim_params),intent(in) :: SP
        integer,intent(in) :: un
+       write(un,*) ' ---------------- sim_params ---------------- '
        write(un,*) 'export_safe_period    = '; write(un,*) SP%export_safe_period
        write(un,*) 'restart_meshes        = '; write(un,*) SP%restart_meshes
        write(un,*) 'export_heavy          = '; write(un,*) SP%export_heavy
@@ -520,12 +521,14 @@
        call export(SP%TSP,un)
        call export(SP%EF,un)
        call export(SP%coupled,un)
+       write(un,*) ' -------------------------------------------- '
      end subroutine
 
      subroutine import_SP(SP,un)
        implicit none
        type(sim_params),intent(inout) :: SP
        integer,intent(in) :: un
+       read(un,*);
        read(un,*); read(un,*) SP%export_safe_period
        read(un,*); read(un,*) SP%restart_meshes
        read(un,*); read(un,*) SP%export_heavy
@@ -552,6 +555,7 @@
        call import(SP%TSP,un)
        call import(SP%EF,un)
        call import(SP%coupled,un)
+       read(un,*);
      end subroutine
 
      subroutine export_SP_wrapper(SP,dir,name)

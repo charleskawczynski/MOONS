@@ -62,20 +62,20 @@
          implicit none
          type(export_line),intent(in) :: EL
          integer,intent(in) :: un
-         write(un,*) EL%export_ever
-         write(un,*) EL%dir
-         write(un,*) EL%line
-         write(un,*) EL%suffix
+         write(un,*) 'export_ever = '; write(un,*) EL%export_ever
+         write(un,*) 'dir         = '; write(un,*) EL%dir
+         write(un,*) 'line        = '; write(un,*) EL%line
+         write(un,*) 'suffix      = '; write(un,*) EL%suffix
        end subroutine
 
        subroutine import_EL(EL,un)
          implicit none
          type(export_line),intent(inout) :: EL
          integer,intent(in) :: un
-         read(un,*) EL%export_ever
-         read(un,*) EL%dir
-         read(un,*) EL%line
-         read(un,*) EL%suffix
+         read(un,*); read(un,*) EL%export_ever
+         read(un,*); read(un,*) EL%dir
+         read(un,*); read(un,*) EL%line
+         read(un,*); read(un,*) EL%suffix
        end subroutine
 
        subroutine display_EL(EL,un)

@@ -121,6 +121,7 @@
          implicit none
          type(iter_solver_params),intent(in) :: ISP
          integer,intent(in) :: un
+         write(un,*) ' -------- iter_solver_params -------- '
          write(un,*) 'iter_max           = '; write(un,*) ISP%iter_max
          write(un,*) 'iter_total         = '; write(un,*) ISP%iter_total
          write(un,*) 'iter_per_call      = '; write(un,*) ISP%iter_per_call
@@ -132,6 +133,7 @@
          write(un,*) 'exit_loop          = '; write(un,*) ISP%exit_loop
          call export(ISP%dir,un)
          call export(ISP%name,un)
+         write(un,*) ' ------------------------------------ '
        end subroutine
 
        subroutine export_ISP_wrapper(ISP)
@@ -147,6 +149,7 @@
          implicit none
          type(iter_solver_params),intent(inout) :: ISP
          integer,intent(in) :: un
+         read(un,*);
          read(un,*); read(un,*) ISP%iter_max
          read(un,*); read(un,*) ISP%iter_total
          read(un,*); read(un,*) ISP%iter_per_call
@@ -158,6 +161,7 @@
          read(un,*); read(un,*) ISP%exit_loop
          call import(ISP%dir,un)
          call import(ISP%name,un)
+         read(un,*);
        end subroutine
 
        subroutine import_ISP_wrapper(ISP)

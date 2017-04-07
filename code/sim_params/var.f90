@@ -83,8 +83,8 @@
          implicit none
          type(var),intent(in) :: V
          integer,intent(in) :: un
-         write(un,*) V%IC
-         write(un,*) V%BC
+         write(un,*) 'IC = '; write(un,*) V%IC
+         write(un,*) 'BC = '; write(un,*) V%BC
          call export(V%SS,un)
          call export(V%TMP,un)
          call export(V%ISP,un)
@@ -98,8 +98,8 @@
          implicit none
          type(var),intent(inout) :: V
          integer,intent(in) :: un
-         read(un,*) V%IC
-         read(un,*) V%BC
+         read(un,*); read(un,*) V%IC
+         read(un,*); read(un,*) V%BC
          call import(V%SS,un)
          call import(V%TMP,un)
          call import(V%ISP,un)

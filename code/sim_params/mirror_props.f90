@@ -89,20 +89,24 @@
          implicit none
          type(mirror_props),intent(in) :: MP
          integer,intent(in) :: un
+         write(un,*) ' ------------ mirror_props ------------ '
          write(un,*) 'mirror        = '; write(un,*) MP%mirror
          write(un,*) 'mirror_face   = '; write(un,*) MP%mirror_face
          write(un,*) 'mirror_sign   = '; write(un,*) MP%mirror_sign
          write(un,*) 'mirror_sign_a = '; write(un,*) MP%mirror_sign_a
+         write(un,*) ' -------------------------------------- '
        end subroutine
 
        subroutine import_MP(MP,un)
          implicit none
          type(mirror_props),intent(inout) :: MP
          integer,intent(in) :: un
+         read(un,*);
          read(un,*); read(un,*) MP%mirror
          read(un,*); read(un,*) MP%mirror_face
          read(un,*); read(un,*) MP%mirror_sign
          read(un,*); read(un,*) MP%mirror_sign_a
+         read(un,*);
        end subroutine
 
        subroutine export_MP_wrapper(MP,dir,name)

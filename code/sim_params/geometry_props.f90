@@ -68,20 +68,24 @@
          implicit none
          type(geometry_props),intent(in) :: GP
          integer,intent(in) :: un
+         write(un,*) ' ------------ geometry_props ------------ '
          write(un,*) 'geometry       = '; write(un,*) GP%geometry
          write(un,*) 'tw             = '; write(un,*) GP%tw
          write(un,*) 'periodic_dir   = '; write(un,*) GP%periodic_dir
          write(un,*) 'apply_BC_order = '; write(un,*) GP%apply_BC_order
+         write(un,*) ' ---------------------------------------- '
        end subroutine
 
        subroutine import_GP(GP,un)
          implicit none
          type(geometry_props),intent(inout) :: GP
          integer,intent(in) :: un
+         read(un,*);
          read(un,*); read(un,*) GP%geometry
          read(un,*); read(un,*) GP%tw
          read(un,*); read(un,*) GP%periodic_dir
          read(un,*); read(un,*) GP%apply_BC_order
+         read(un,*);
        end subroutine
 
        subroutine export_GP_wrapper(GP,dir,name)

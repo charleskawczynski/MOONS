@@ -67,22 +67,26 @@
        implicit none
        type(induction_terms),intent(in) :: IT
        integer,intent(in) :: un
+       write(un,*) ' --------- induction_terms --------- '
        call export(IT%advection,un,'advection')
        call export(IT%diffusion,un,'diffusion')
        call export(IT%unsteady_B0,un,'unsteady_B0')
        call export(IT%current,un,'current')
        call export(IT%B_applied,un,'B_applied')
+       write(un,*) ' ----------------------------------- '
       end subroutine
 
      subroutine import_IT(IT,un)
        implicit none
        type(induction_terms),intent(inout) :: IT
        integer,intent(in) :: un
+       read(un,*);
        call import(IT%advection,un)
        call import(IT%diffusion,un)
        call import(IT%unsteady_B0,un)
        call import(IT%current,un)
        call import(IT%B_applied,un)
+       read(un,*);
       end subroutine
 
      subroutine export_IT_wrapper(IT,dir,name)
