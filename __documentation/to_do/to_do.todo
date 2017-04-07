@@ -7,22 +7,25 @@ TO DO LIST COMMANDS:
  ☐ Searches can be made for specific @tags
 --- ✄ -----------------------
 Right Now:
- ☐ Contact Aurnou - attempt 2
+ ☐ Call Dentist - 310-794-5750
+ ☐ Call Honda   - 877-693-2996
+ ☐ Gather tax docs
+ ☐ Look up estimate for glasses on Jon's rec, also amazon or something.
+
  ☐ Start new set at Re=23e3, instead of Re=2e3, results seem more interesting.
- ☐ Get urllib working in python
- ☐ Finalize input file (either multi-line or safe read)
+ ☐ LSA for finite Rem Shercliff flow
+ ☐ Pick 2nd Ha for Rem paper
+ ☐ Try case on Hoffman cluster
+
+ ☐ Contact Aurnou - attempt 2
+ ☐ Continue Prospectus PPT
  ☐ Papers to read 1: Papers sent by Sergey
  ☐ Papers to read 2: FD MHD turb near crit Rem - Leorat (1981)
  ☐ Papers to read 3: Other finite Rem papers in sumatra
  ☐ Gather conclusions from papers + summarize
- ☐ Gather tax docs
- ☐ Look up estimate for glasses on Jon's rec, also amazon or something.
- ☐ Dentist
- ☐ Call honda
- ☐ LSA for finite Rem Shercliff flow
- ☐ Pick 2nd Ha for Rem paper
- ☐ Try case on Hoffman cluster
- ☐ Continue Prospectus PPT
+
+ ☐ Get urllib working in python
+
 
  ☐ 1) Start BC cases
      ☐ Re(L=.5)=1000,N(L=.5)=0.1-->Re(L=1)=500 ,N(L=1)=0.05
@@ -303,6 +306,7 @@ Misc:
 
 ＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿
 Archive:
+ ✔ Finalize input file (either multi-line or safe read) @done (17-04-07 11:37) @project(Right Now)
  ✔ Prospectus PPT - include lit review @done (17-04-06 15:07) @project(Right Now)
  ✔ Optometrist - Pick up contacts, clarify rebate, get estimate for glasses. @done (17-04-06 14:15) @project(Right Now)
  ✔ Cash Christa's check @done (17-04-06 14:15) @project(Right Now)
