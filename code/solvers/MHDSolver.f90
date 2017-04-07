@@ -85,8 +85,7 @@
            endif
 
            if (EN%any_now) then;
-             write(*,*) 'exporting TMPs'
-             call export_TMP(SP%VS,DT); call export(coupled,str(DT%params))
+             call export_TMP(SP%VS); call export(coupled,str(DT%params))
            endif
 
            call iterate_step(coupled)
@@ -123,7 +122,7 @@
          ! ***************************************************************
          ! ********** FINISHED SOLVING MHD EQUATIONS *********************
          ! ***************************************************************
-         call export_TMP(SP%VS,DT)
+         call export_TMP(SP%VS)
          call export(coupled,str(DT%params))
 
          ! **************** EXPORT ONE FINAL TIME ***********************

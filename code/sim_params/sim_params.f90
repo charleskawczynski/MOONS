@@ -494,19 +494,19 @@
        implicit none
        type(sim_params),intent(in) :: SP
        integer,intent(in) :: un
-       write(un,*) SP%export_safe_period
-       write(un,*) SP%restart_meshes
-       write(un,*) SP%export_heavy
-       write(un,*) SP%couple_time_steps
-       write(un,*) SP%finite_Rem
-       write(un,*) SP%include_vacuum
-       write(un,*) SP%embed_B_interior
-       write(un,*) SP%compute_surface_power
-       write(un,*) SP%uniform_B0_dir
-       write(un,*) SP%mpg_dir
-       write(un,*) SP%uniform_gravity_dir
-       write(un,*) SP%matrix_based
-       write(un,*) SP%print_every_MHD_step
+       write(un,*) 'export_safe_period    = '; write(un,*) SP%export_safe_period
+       write(un,*) 'restart_meshes        = '; write(un,*) SP%restart_meshes
+       write(un,*) 'export_heavy          = '; write(un,*) SP%export_heavy
+       write(un,*) 'couple_time_steps     = '; write(un,*) SP%couple_time_steps
+       write(un,*) 'finite_Rem            = '; write(un,*) SP%finite_Rem
+       write(un,*) 'include_vacuum        = '; write(un,*) SP%include_vacuum
+       write(un,*) 'embed_B_interior      = '; write(un,*) SP%embed_B_interior
+       write(un,*) 'compute_surface_power = '; write(un,*) SP%compute_surface_power
+       write(un,*) 'uniform_B0_dir        = '; write(un,*) SP%uniform_B0_dir
+       write(un,*) 'mpg_dir               = '; write(un,*) SP%mpg_dir
+       write(un,*) 'uniform_gravity_dir   = '; write(un,*) SP%uniform_gravity_dir
+       write(un,*) 'matrix_based          = '; write(un,*) SP%matrix_based
+       write(un,*) 'print_every_MHD_step  = '; write(un,*) SP%print_every_MHD_step
        call export(SP%FCL,un)
        call export(SP%GP,un)
        call export(SP%MP,un)
@@ -526,19 +526,19 @@
        implicit none
        type(sim_params),intent(inout) :: SP
        integer,intent(in) :: un
-       read(un,*) SP%export_safe_period
-       read(un,*) SP%restart_meshes
-       read(un,*) SP%export_heavy
-       read(un,*) SP%couple_time_steps
-       read(un,*) SP%finite_Rem
-       read(un,*) SP%include_vacuum
-       read(un,*) SP%embed_B_interior
-       read(un,*) SP%compute_surface_power
-       read(un,*) SP%uniform_B0_dir
-       read(un,*) SP%mpg_dir
-       read(un,*) SP%uniform_gravity_dir
-       read(un,*) SP%matrix_based
-       read(un,*) SP%print_every_MHD_step
+       read(un,*); read(un,*) SP%export_safe_period
+       read(un,*); read(un,*) SP%restart_meshes
+       read(un,*); read(un,*) SP%export_heavy
+       read(un,*); read(un,*) SP%couple_time_steps
+       read(un,*); read(un,*) SP%finite_Rem
+       read(un,*); read(un,*) SP%include_vacuum
+       read(un,*); read(un,*) SP%embed_B_interior
+       read(un,*); read(un,*) SP%compute_surface_power
+       read(un,*); read(un,*) SP%uniform_B0_dir
+       read(un,*); read(un,*) SP%mpg_dir
+       read(un,*); read(un,*) SP%uniform_gravity_dir
+       read(un,*); read(un,*) SP%matrix_based
+       read(un,*); read(un,*) SP%print_every_MHD_step
        call import(SP%FCL,un)
        call import(SP%GP,un)
        call import(SP%MP,un)

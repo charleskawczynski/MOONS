@@ -59,18 +59,18 @@
        type(equation_term),intent(in) :: ET
        integer,intent(in) :: un
        character(len=*),intent(in) :: name
-       write(un,*) name
-       write(un,*) ET%add
-       write(un,*) ET%scale
+       write(un,*) 'name  = '; write(un,*) name
+       write(un,*) 'add   = '; write(un,*) ET%add
+       write(un,*) 'scale = '; write(un,*) ET%scale
       end subroutine
 
      subroutine import_ET(ET,un)
        implicit none
        type(equation_term),intent(inout) :: ET
        integer,intent(in) :: un
-       read(un,*)
-       read(un,*) ET%add
-       read(un,*) ET%scale
+       read(un,*); read(un,*)
+       read(un,*); read(un,*) ET%add
+       read(un,*); read(un,*) ET%scale
       end subroutine
 
      subroutine export_ET_wrapper(ET,dir,name)

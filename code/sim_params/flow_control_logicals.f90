@@ -64,22 +64,22 @@
        implicit none
        type(flow_control_logicals),intent(in) :: FCL
        integer,intent(in) :: un
-       write(un,*) FCL%post_process
-       write(un,*) FCL%skip_solver_loop
-       write(un,*) FCL%stop_before_solve
-       write(un,*) FCL%stop_after_mesh_export
-       write(un,*) FCL%Poisson_test
+       write(un,*) 'post_process           = '; write(un,*) FCL%post_process
+       write(un,*) 'skip_solver_loop       = '; write(un,*) FCL%skip_solver_loop
+       write(un,*) 'stop_before_solve      = '; write(un,*) FCL%stop_before_solve
+       write(un,*) 'stop_after_mesh_export = '; write(un,*) FCL%stop_after_mesh_export
+       write(un,*) 'Poisson_test           = '; write(un,*) FCL%Poisson_test
      end subroutine
 
      subroutine import_FCL(FCL,un)
        implicit none
        type(flow_control_logicals),intent(inout) :: FCL
        integer,intent(in) :: un
-       read(un,*) FCL%post_process
-       read(un,*) FCL%skip_solver_loop
-       read(un,*) FCL%stop_before_solve
-       read(un,*) FCL%stop_after_mesh_export
-       read(un,*) FCL%Poisson_test
+       read(un,*); read(un,*) FCL%post_process
+       read(un,*); read(un,*) FCL%skip_solver_loop
+       read(un,*); read(un,*) FCL%stop_before_solve
+       read(un,*); read(un,*) FCL%stop_after_mesh_export
+       read(un,*); read(un,*) FCL%Poisson_test
      end subroutine
 
      end module

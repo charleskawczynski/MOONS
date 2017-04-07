@@ -128,54 +128,54 @@
          implicit none
          type(dimensionless_params),intent(in) :: DP
          integer,intent(in) :: un
-         write(un,*) DP%Re
-         write(un,*) DP%Al
-         write(un,*) DP%N
-         write(un,*) DP%Ha
-         write(un,*) DP%tau
-         write(un,*) DP%Rem
-         write(un,*) DP%c_w
-         write(un,*) DP%Robin_coeff
-         write(un,*) DP%Q
-         write(un,*) DP%sig_local_over_sig_f
-         write(un,*) DP%Gr
-         write(un,*) DP%Pr
-         write(un,*) DP%Pe
-         write(un,*) DP%Fr
-         write(un,*) DP%Ec
-         write(un,*) DP%KE_scale
-         write(un,*) DP%ME_scale
-         write(un,*) DP%JE_scale
-         write(un,*) DP%L_eta
-         write(un,*) DP%U_eta
-         write(un,*) DP%t_eta
+         write(un,*) 'Re                   = '; write(un,*) DP%Re
+         write(un,*) 'Al                   = '; write(un,*) DP%Al
+         write(un,*) 'N                    = '; write(un,*) DP%N
+         write(un,*) 'Ha                   = '; write(un,*) DP%Ha
+         write(un,*) 'tau                  = '; write(un,*) DP%tau
+         write(un,*) 'Rem                  = '; write(un,*) DP%Rem
+         write(un,*) 'c_w                  = '; write(un,*) DP%c_w
+         write(un,*) 'Robin_coeff          = '; write(un,*) DP%Robin_coeff
+         write(un,*) 'Q                    = '; write(un,*) DP%Q
+         write(un,*) 'sig_local_over_sig_f = '; write(un,*) DP%sig_local_over_sig_f
+         write(un,*) 'Gr                   = '; write(un,*) DP%Gr
+         write(un,*) 'Pr                   = '; write(un,*) DP%Pr
+         write(un,*) 'Pe                   = '; write(un,*) DP%Pe
+         write(un,*) 'Fr                   = '; write(un,*) DP%Fr
+         write(un,*) 'Ec                   = '; write(un,*) DP%Ec
+         write(un,*) 'KE_scale             = '; write(un,*) DP%KE_scale
+         write(un,*) 'ME_scale             = '; write(un,*) DP%ME_scale
+         write(un,*) 'JE_scale             = '; write(un,*) DP%JE_scale
+         write(un,*) 'L_eta                = '; write(un,*) DP%L_eta
+         write(un,*) 'U_eta                = '; write(un,*) DP%U_eta
+         write(un,*) 't_eta                = '; write(un,*) DP%t_eta
        end subroutine
 
        subroutine import_DP(DP,un)
          implicit none
          type(dimensionless_params),intent(inout) :: DP
          integer,intent(in) :: un
-         read(un,*) DP%Re
-         read(un,*) DP%Al
-         read(un,*) DP%N
-         read(un,*) DP%Ha
-         read(un,*) DP%tau
-         read(un,*) DP%Rem
-         read(un,*) DP%c_w
-         read(un,*) DP%Robin_coeff
-         read(un,*) DP%Q
-         read(un,*) DP%sig_local_over_sig_f
-         read(un,*) DP%Gr
-         read(un,*) DP%Pr
-         read(un,*) DP%Pe
-         read(un,*) DP%Fr
-         read(un,*) DP%Ec
-         read(un,*) DP%KE_scale
-         read(un,*) DP%ME_scale
-         read(un,*) DP%JE_scale
-         read(un,*) DP%L_eta
-         read(un,*) DP%U_eta
-         read(un,*) DP%t_eta
+         read(un,*); read(un,*) DP%Re
+         read(un,*); read(un,*) DP%Al
+         read(un,*); read(un,*) DP%N
+         read(un,*); read(un,*) DP%Ha
+         read(un,*); read(un,*) DP%tau
+         read(un,*); read(un,*) DP%Rem
+         read(un,*); read(un,*) DP%c_w
+         read(un,*); read(un,*) DP%Robin_coeff
+         read(un,*); read(un,*) DP%Q
+         read(un,*); read(un,*) DP%sig_local_over_sig_f
+         read(un,*); read(un,*) DP%Gr
+         read(un,*); read(un,*) DP%Pr
+         read(un,*); read(un,*) DP%Pe
+         read(un,*); read(un,*) DP%Fr
+         read(un,*); read(un,*) DP%Ec
+         read(un,*); read(un,*) DP%KE_scale
+         read(un,*); read(un,*) DP%ME_scale
+         read(un,*); read(un,*) DP%JE_scale
+         read(un,*); read(un,*) DP%L_eta
+         read(un,*); read(un,*) DP%U_eta
+         read(un,*); read(un,*) DP%t_eta
        end subroutine
 
        end module

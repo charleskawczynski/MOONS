@@ -253,7 +253,7 @@
          endif
          deallocate(d)
          close(un)
-         i_last = i_first_to_delete+3
+         i_last = int(i_first_to_delete)+3
        end subroutine
 
        end module

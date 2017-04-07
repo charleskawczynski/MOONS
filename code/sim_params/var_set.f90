@@ -210,10 +210,9 @@
          L = (alpha.lt.min_val).or.(alpha.gt.max_val)
        end function
 
-       subroutine export_TMP_VS(VS,DT)
+       subroutine export_TMP_VS(VS)
          implicit none
          type(var_set),intent(in) :: VS
-         type(dir_tree),intent(in) :: DT
          if (VS%T%SS%initialize)   call export(VS%T%TMP)
          if (VS%U%SS%initialize)   call export(VS%U%TMP)
          if (VS%P%SS%initialize)   call export(VS%P%TMP)
@@ -223,10 +222,9 @@
          if (VS%rho%SS%initialize) call export(VS%rho%TMP)
        end subroutine
 
-       subroutine import_TMP_VS(VS,DT)
+       subroutine import_TMP_VS(VS)
          implicit none
          type(var_set),intent(inout) :: VS
-         type(dir_tree),intent(in) :: DT
          if (VS%T%SS%initialize)   call import(VS%T%TMP)
          if (VS%U%SS%initialize)   call import(VS%U%TMP)
          if (VS%P%SS%initialize)   call import(VS%P%TMP)

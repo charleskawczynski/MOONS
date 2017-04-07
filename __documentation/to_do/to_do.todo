@@ -7,15 +7,19 @@ TO DO LIST COMMANDS:
  ☐ Searches can be made for specific @tags
 --- ✄ -----------------------
 Right Now:
- ✔ Finish PR for Rama @done (17-03-29 19:08)
- ✔ Optometrist @done (17-03-29 19:08)
- ☐ Restart sims on workstation if possible. For those that could not be restarted, pull new version and restart from fresh.
+ ☐ Contact Aurnou - attempt 2
+ ☐ Start new set at Re=23e3, instead of Re=2e3, results seem more interesting.
+ ☐ Get urllib working in python
+ ☐ Finalize input file (either multi-line or safe read)
+ ☐ Papers to read 1: Papers sent by Sergey
+ ☐ Papers to read 2: FD MHD turb near crit Rem - Leorat (1981)
+ ☐ Papers to read 3: Other finite Rem papers in sumatra
+ ☐ Gather conclusions from papers + summarize
+ ☐ Gather tax docs
  ☐ Look up estimate for glasses on Jon's rec, also amazon or something.
- ☐ Optometrist - Pick up contacts, clarify rebate, get estimate for glasses.
  ☐ Dentist
  ☐ Call honda
  ☐ LSA for finite Rem Shercliff flow
- ☐ Read finite Rem papers open in sumatra
  ☐ Pick 2nd Ha for Rem paper
  ☐ Try case on Hoffman cluster
  ☐ Continue Prospectus PPT
@@ -47,10 +51,6 @@ Right Now:
    ☐ Analyze data - If good - then start new full BC MRS
    ☐ Analyze data - else    - Ask Sergey if we can change B0 config to match Shatrov
  ☐ 3) Analyze scaling in Kamkar paper
- ✔ 4) Move data from workstation to backup @done (17-03-15 07:58)
- ✔ 5) Move restart fields to restart @done (17-03-15 08:13)
- ✔ 6) Maybe make debug fields, and store them appropriately, export conditionally @done (17-03-15 08:13)
- ✔ Always check mesh error file after mesh generation @done (17-03-15 09:26)
  ☐ Configure parameter for printing information to file (full vs light)
  ☐ Parameters: L2 norms (U,p,B,phi)
  ☐ Parameters: sim time, Convective units per hour/day
@@ -303,6 +303,15 @@ Misc:
 
 ＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿
 Archive:
+ ✔ Prospectus PPT - include lit review @done (17-04-06 15:07) @project(Right Now)
+ ✔ Optometrist - Pick up contacts, clarify rebate, get estimate for glasses. @done (17-04-06 14:15) @project(Right Now)
+ ✔ Cash Christa's check @done (17-04-06 14:15) @project(Right Now)
+ ✔ Optometrist @done (17-03-29 19:08) @project(Right Now)
+ ✔ Finish PR for Rama @done (17-03-29 19:08) @project(Right Now)
+ ✔ Always check mesh error file after mesh generation @done (17-03-15 09:26) @project(Right Now)
+ ✔ 6) Maybe make debug fields, and store them appropriately, export conditionally @done (17-03-15 08:13) @project(Right Now)
+ ✔ 5) Move restart fields to restart @done (17-03-15 08:13) @project(Right Now)
+ ✔ 4) Move data from workstation to backup @done (17-03-15 07:58) @project(Right Now)
  ✔ 9) Move explicit term scales to input file, and generalize @done (17-03-01 10:36) @project(Right Now)
  ✔ 2) Send emails to committee members @done (17-03-01 10:36) @project(Right Now)
  ✔ 1) Respond to Abdou about committee @done (17-03-01 10:36) @project(Right Now)

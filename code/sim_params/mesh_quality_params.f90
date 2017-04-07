@@ -89,20 +89,20 @@
          implicit none
          type(mesh_quality_params),intent(in) :: MQP
          integer,intent(in) :: un
-         write(un,*) MQP%auto_find_N
-         write(un,*) MQP%max_mesh_stretch_ratio
-         write(un,*) MQP%N_iter
-         write(un,*) MQP%N_max_points_add
+         write(un,*) 'auto_find_N            = '; write(un,*) MQP%auto_find_N
+         write(un,*) 'max_mesh_stretch_ratio = '; write(un,*) MQP%max_mesh_stretch_ratio
+         write(un,*) 'N_iter                 = '; write(un,*) MQP%N_iter
+         write(un,*) 'N_max_points_add       = '; write(un,*) MQP%N_max_points_add
        end subroutine
 
        subroutine import_MQP(MQP,un)
          implicit none
          type(mesh_quality_params),intent(inout) :: MQP
          integer,intent(in) :: un
-         read(un,*) MQP%auto_find_N
-         read(un,*) MQP%max_mesh_stretch_ratio
-         read(un,*) MQP%N_iter
-         read(un,*) MQP%N_max_points_add
+         read(un,*); read(un,*) MQP%auto_find_N
+         read(un,*); read(un,*) MQP%max_mesh_stretch_ratio
+         read(un,*); read(un,*) MQP%N_iter
+         read(un,*); read(un,*) MQP%N_max_points_add
        end subroutine
 
        subroutine export_MQP_wrapper(MQP,dir,name)

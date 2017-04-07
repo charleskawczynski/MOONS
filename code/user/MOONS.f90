@@ -64,11 +64,11 @@
 #endif
 
          call init(DT,dir_target)  ! Initialize + make directory tree
-         restart_sim = .true.
+         restart_sim = .false.
          if (restart_sim) then
            call import(SP,str(DT%params),'sim_params_raw')
            call set_restart(SP,restart_sim)
-           call import_TMP(SP%VS,DT)
+           call import_TMP(SP%VS)
            call import(SP%coupled,str(DT%params))
          else
            call init(SP,DT)             ! Initializes simulation parameters
