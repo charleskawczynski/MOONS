@@ -447,6 +447,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)sim_params$(PS)mirror_props.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)flow_control_logicals.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)sim_params.f90\
+	$(SRC_DIR)$(PS)user$(PS)restart_file.f90\
 	$(SRC_DIR)$(PS)user$(PS)kill_switch.f90\
 	$(SRC_DIR)$(PS)user$(PS)export_now.f90\
 	$(SRC_DIR)$(PS)user$(PS)export_safe.f90\

@@ -337,26 +337,20 @@
        call sanity_check(SP)
      end subroutine
 
-     subroutine set_restart_SP(SP,restart_sim)
+     subroutine set_restart_SP(SP,restart_fields)
        implicit none
        type(sim_params),intent(inout) :: SP
-       logical,intent(in) :: restart_sim
-       SP%restart_meshes    = restart_sim
-       SP%VS%T%SS%restart   = restart_sim
-       SP%VS%U%SS%restart   = restart_sim
-       SP%VS%P%SS%restart   = restart_sim
-       SP%VS%B%SS%restart   = restart_sim
-       SP%VS%B0%SS%restart  = restart_sim
-       SP%VS%phi%SS%restart = restart_sim
-       SP%VS%rho%SS%restart = restart_sim
+       logical,intent(in) :: restart_fields
+       SP%restart_meshes    = restart_fields
+       SP%VS%T%SS%restart   = restart_fields
+       SP%VS%U%SS%restart   = restart_fields
+       SP%VS%P%SS%restart   = restart_fields
+       SP%VS%B%SS%restart   = restart_fields
+       SP%VS%B0%SS%restart  = restart_fields
+       SP%VS%phi%SS%restart = restart_fields
+       SP%VS%rho%SS%restart = restart_fields
        call import(SP%coupled)
-       if (SP%VS%T%SS%initialize)   call import(SP%VS%T%TMP)
-       if (SP%VS%U%SS%initialize)   call import(SP%VS%U%TMP)
-       if (SP%VS%P%SS%initialize)   call import(SP%VS%P%TMP)
-       if (SP%VS%B%SS%initialize)   call import(SP%VS%B%TMP)
-       if (SP%VS%B0%SS%initialize)  call import(SP%VS%B0%TMP)
-       if (SP%VS%phi%SS%initialize) call import(SP%VS%phi%TMP)
-       if (SP%VS%rho%SS%initialize) call import(SP%VS%rho%TMP)
+       call import_TMP(SP%VS)
      end subroutine
 
      subroutine sanity_check_SP(SP)

@@ -101,7 +101,7 @@
          read(un,*); call import(VS%B0,un)
          read(un,*); call import(VS%phi,un)
          read(un,*); call import(VS%rho,un)
-         read(un,*)
+         read(un,*);
        end subroutine
 
        subroutine display_VS(VS,un)

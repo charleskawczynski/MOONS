@@ -19,6 +19,7 @@
        use vorticity_streamfunction_mod
        use Poisson_test_mod
        use export_mesh_aux_mod
+       use restart_file_mod
 
        use iter_solver_params_mod
        use time_marching_params_mod
@@ -55,7 +56,8 @@
          type(mesh_domain) :: MD_fluid,MD_sigma
          type(dir_tree) :: DT
          type(sim_params) :: SP
-         logical :: restart_input_file
+         type(restart_file) :: RF
+         logical :: fresh_restart_file
          ! ************************************************************** Parallel + directory + input parameters
          call delete_file('','mesh_generation_error')
 #ifdef fopenmp
@@ -64,17 +66,25 @@
 #endif
 
          call init(DT,dir_target)  ! Initialize + make directory tree
-         restart_input_file = .false.
-         if (restart_input_file) then
-           call import(SP,str(DT%params),'sim_params_raw')
-           call set_restart(SP,restart_input_file)
-           call import_TMP(SP%VS)
-           call import(SP%coupled,str(DT%params))
-         else
-           call init(SP,DT)             ! Initializes simulation parameters
-           call export(SP,str(DT%params),'sim_params_raw')
-           call display(SP,str(DT%params),'sim_params_initial')
+
+         fresh_restart_file = .false.
+         call init(RF)
+         if (fresh_restart_file) call export(RF,'','restart_file') ! Use default, compiled SP + fields
+         call import(RF,'','restart_file')
+
+         if (RF%restart_input_file) call import(SP,'','sim_params_raw')
+         if ((.not.RF%restart_input_file).and.(.not.RF%restart_fields)) call init(SP,DT)
+
+         if (RF%restart_fields) then
+           call set_restart(SP,RF%restart_fields) ! restart fields+mesh
+           call import_TMP(SP%VS)                 ! start from last exported time step
+           call import(SP%coupled)                ! start from last exported time step
          endif
+
+         call export(SP,str(DT%params),'sim_params_raw_exported')
+         call display(SP,str(DT%params),'sim_params_initial')
+         call export(SP%coupled)
+         call export_TMP(SP%VS)
 
          call print_version()
          call export_version(str(DT%LDC))
