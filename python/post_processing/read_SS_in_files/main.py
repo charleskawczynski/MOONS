@@ -11,20 +11,21 @@ root = 'C:'+PS+'Users'+PS+'Charlie'+PS+'Documents'+PS+'MOONS'+PS+'MOONS1'+PS
 root = 'C:'+PS+'Users'+PS+'charl'+PS+'Documents'+PS+'MOONS'+PS+'SIMS'+PS+'BC_full'+PS+'Shatrov_inspired'+PS
 print 'root = '+root[path_trim:]
 
-energy = 'KE'
+e_file = 'KE'
 var = 'U'
 name = []
-name.append('M0'+PS+'out'+PS+'LDC'+PS+'unknowns'+PS+var+PS+'energy'+PS+energy)
-name.append('M1'+PS+'out'+PS+'LDC'+PS+'unknowns'+PS+var+PS+'energy'+PS+energy)
-name.append('M2'+PS+'out'+PS+'LDC'+PS+'unknowns'+PS+var+PS+'energy'+PS+energy)
-name.append('M3'+PS+'out'+PS+'LDC'+PS+'unknowns'+PS+var+PS+'energy'+PS+energy)
-name.append('M4'+PS+'out'+PS+'LDC'+PS+'unknowns'+PS+var+PS+'energy'+PS+energy)
-name.append('M5'+PS+'out'+PS+'LDC'+PS+'unknowns'+PS+var+PS+'energy'+PS+energy)
-name.append('M6'+PS+'out'+PS+'LDC'+PS+'unknowns'+PS+var+PS+'energy'+PS+energy)
-name.append('M7'+PS+'out'+PS+'LDC'+PS+'unknowns'+PS+var+PS+'energy'+PS+energy)
-name.append('M8'+PS+'out'+PS+'LDC'+PS+'unknowns'+PS+var+PS+'energy'+PS+energy)
-name.append('M9'+PS+'out'+PS+'LDC'+PS+'unknowns'+PS+var+PS+'energy'+PS+energy)
-name.append('M10'+PS+'out'+PS+'LDC'+PS+'unknowns'+PS+var+PS+'energy'+PS+energy)
+path_ending = PS+'out'+PS+'LDC'+PS+'unknowns'+PS+var+PS+'energy'+PS+e_file
+name.append('M0'+path_ending)
+name.append('M1'+path_ending)
+name.append('M2'+path_ending)
+name.append('M3'+path_ending)
+name.append('M4'+path_ending)
+name.append('M5'+path_ending)
+name.append('M6'+path_ending)
+name.append('M7'+path_ending)
+name.append('M8'+path_ending)
+name.append('M9'+path_ending)
+name.append('M10'+path_ending)
 
 ext = '.dat'
 file_name = [root+x+ext for x in name]
