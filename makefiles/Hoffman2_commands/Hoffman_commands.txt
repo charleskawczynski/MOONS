@@ -6,14 +6,22 @@ clear
 nautilus ./
 clear
 
+# Check jobs
+qstat -u ckawczyn
 
-# Prep for pull MOONS
+# pull from MOONS
 cd /u/home/c/ckawczyn/project-morley/MOONS/
 nautilus ./
 clear
-# https://github.com/charliekawczynski/MOONS
+git pull https://github.com/charliekawczynski/MOONS
 
-
-# Prep for new make
+# to make
 cd /u/home/c/ckawczyn/project-morley/MOONS/makefiles/
+gmake clean
+module load gcc/4.9.3
+clear
+gmake
+
+chmod u+x submit.sh
+qsub submit.sh
 
