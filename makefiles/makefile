@@ -99,7 +99,7 @@ FCFLAGS += -D_DOUBLE_PRECISION_
 # FCFLAGS += -D_QUAD_PRECISION_
 
 FCFLAGS += -D_MATRIX_FREE_
-FCFLAGS += -D_OPTIMIZE_IO_TOOLS_
+# FCFLAGS += -D_OPTIMIZE_IO_TOOLS_
 
 # FFT_poisson.f90:
 # FCFLAGS += -D_FFT_FULL_
@@ -309,6 +309,7 @@ VPATH =\
 	$(SRC_DIR)$(PS)table\
 	$(SRC_DIR)$(PS)time_statistics\
 	$(SRC_DIR)$(PS)user\
+	$(SRC_DIR)$(PS)matrix_visualization\
 	$(SRC_DIR)$(PS)version
 
 # **************** SOURCE FILES *********************
@@ -567,6 +568,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)MHDSolver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)Poisson_test.f90\
 	$(SRC_DIR)$(PS)user$(PS)export_mesh_aux.f90\
+	$(SRC_DIR)$(PS)matrix_visualization$(PS)matrix_visualization.f90\
 	$(SRC_DIR)$(PS)user$(PS)MOONS.f90
 
 SRCS_F += $(TARGET_DIR)$(PS)parametricStudy.f90

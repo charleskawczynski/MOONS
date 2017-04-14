@@ -144,8 +144,6 @@
          integer :: temp_unit
          write(*,*) 'Initializing induction:'
 
-         write(*,*) '     SP copied'
-
          call init(ind%m,m)
          write(*,*) '     Mesh copied'
          call init(ind%MD_fluid,MD_fluid)

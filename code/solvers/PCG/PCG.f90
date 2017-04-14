@@ -120,23 +120,22 @@
         call assign(PCG%k,k)
         call PCG%prec(PCG%Minv,m,k,MFP%coeff_implicit,PCG%tempx) ! MFP%coeff_implicit reasonable estimate
 
-        call init(temp_Minv,PCG%Minv)
-        call assign(temp_Minv,PCG%Minv)
         if (verifyPreconditioner) then
+          call init(temp_Minv,PCG%Minv)
+          call assign(temp_Minv,PCG%Minv)
           call export_raw(m,temp_Minv,dir,'PCG_SF_prec_tec_'//str(PCG%name),0)
           call export_matrix(temp_Minv,dir,'PCG_SF_prec_mat_'//str(PCG%name))
           call get_diagonal(operator_explicit,temp_Minv,x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
           call export_raw(m,temp_Minv,dir,'PCG_SF_op_tec_diag_'//str(PCG%name),0)
           call export_matrix(temp_Minv,dir,'PCG_SF_op_mat_diag_'//str(PCG%name))
+          call delete(temp_Minv)
         endif
-        call delete(temp_Minv)
 
         if (testSymmetry) then
           call test_symmetry(operator,'PCG_SF_'//str(PCG%name),x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
         endif
         if (exportOperator) then
-          call export_operator(operator,'PCG_SF_'//str(PCG%name),dir,x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
-          call export_matrix(PCG%Minv,dir,'PCG_SF_diag_'//str(PCG%name))
+          call export_operator(operator_explicit,dir,'PCG_SF_'//str(PCG%name),x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
         endif
       end subroutine
 
@@ -185,22 +184,22 @@
         call assign(PCG%k,k)
         call PCG%prec(PCG%Minv,m,k,MFP%coeff_implicit,PCG%tempx) ! MFP%coeff_implicit reasonable estimate
 
-        call init(temp_Minv,PCG%Minv)
-        call assign(temp_Minv,PCG%Minv)
         if (verifyPreconditioner) then
+          call init(temp_Minv,PCG%Minv)
+          call assign(temp_Minv,PCG%Minv)
           call export_raw(m,temp_Minv,dir,'PCG_VF_prec_tec_'//str(PCG%name),0)
           call export_matrix(temp_Minv,dir,'PCG_VF_prec_mat_'//str(PCG%name))
           call get_diagonal(operator_explicit,temp_Minv,x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
           call export_raw(m,temp_Minv,dir,'PCG_VF_op_tec_diag_'//str(PCG%name),0)
           call export_matrix(temp_Minv,dir,'PCG_VF_op_mat_diag_'//str(PCG%name))
+          call delete(temp_Minv)
         endif
-        call delete(temp_Minv)
 
         if (testSymmetry) then
           call test_symmetry(operator,'PCG_VF_'//str(PCG%name),x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
         endif
         if (exportOperator) then
-          call export_operator(operator,'PCG_VF_op_mat_'//str(PCG%name),dir,x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
+          call export_operator(operator_explicit,dir,'PCG_VF_'//str(PCG%name),x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
         endif
       end subroutine
 

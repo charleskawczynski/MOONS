@@ -27,6 +27,8 @@
      public :: sim_params
      public :: init,delete,display,print,export,import
 
+     public :: set_restart
+
      real(cp),parameter :: seconds_per_day = 60.0_cp*60.0_cp*24.0_cp
 
      interface init;         module procedure init_SP;            end interface
@@ -40,6 +42,7 @@
      interface import;       module procedure import_SP;          end interface
      interface import;       module procedure import_SP_wrapper;  end interface
      interface sanity_check; module procedure sanity_check_SP;    end interface
+     interface set_restart;  module procedure set_restart_SP;     end interface
 
      type sim_params
        type(var_set) :: VS
@@ -57,8 +60,9 @@
        type(mirror_props) :: MP
        type(time_statistics_params) :: TSP
 
-       logical :: restart_all
        real(cp) :: export_safe_period
+       logical :: restart_meshes
+       logical :: export_heavy
 
        logical :: matrix_based
        logical :: print_every_MHD_step
@@ -104,8 +108,9 @@
        SP%EL%export_mesh_block       = F ! Export mesh blocks to FECs
        SP%EL%export_soln_only        = F ! Export processed solution only
 
-       SP%restart_all                = F ! restart sim (requires no code changes)
        SP%export_safe_period         = 1.0_cp*seconds_per_day ! CPU wall clock time to export regularly
+       SP%restart_meshes             = F ! restart sim (requires no code changes)
+       SP%export_heavy               = F ! Export lots of sim info
        SP%uniform_gravity_dir        = 1 ! Uniform gravity field direction
        SP%uniform_B0_dir             = 3 ! Uniform applied field direction
        SP%mpg_dir                    = 0 ! Uniform applied field direction
@@ -244,15 +249,14 @@
        call init_IC_BC(SP%VS%rho  ,0    ,0 )
 
        ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,export_convergence,dir,name)
-       call init(SP%VS%T%ISP,  5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_T')
-       call init(SP%VS%U%ISP,  5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_U')
-       call init(SP%VS%P%ISP,  5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_P')
-       if (     RV_BCs) call init(SP%VS%B%ISP,  20 ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_B')
-       if (.not.RV_BCs) call init(SP%VS%B%ISP,  5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_B')
-       ! call init(SP%VS%B%ISP,  5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_B')
-       call init(SP%VS%B0%ISP, 5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_B0')
-       call init(SP%VS%phi%ISP,5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_phi')
-       call init(SP%VS%rho%ISP,5  ,pow(-6),pow(-13),1,F,str(DT%ISP),'ISP_rho')
+       call init(SP%VS%T%ISP,  5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_T')
+       call init(SP%VS%U%ISP,  5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_U')
+       call init(SP%VS%P%ISP,  5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_P')
+       if (     RV_BCs) call init(SP%VS%B%ISP,  20 ,pow(-6),pow(-13),1,SP%export_heavy,str(DT%ISP),'ISP_B')
+       if (.not.RV_BCs) call init(SP%VS%B%ISP,  5  ,pow(-6),pow(-13),1,SP%export_heavy,str(DT%ISP),'ISP_B')
+       call init(SP%VS%B0%ISP, 5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_B0')
+       call init(SP%VS%phi%ISP,5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_phi')
+       call init(SP%VS%rho%ISP,5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_rho')
 
        ! call init(TMP,multistep_iter,n_step_stop,dtime,dir,name)
        call init(SP%coupled,   1 ,ceiling(time/dtime,li),dtime        ,str(DT%TMP),'TMP_coupled')
@@ -336,6 +340,22 @@
        call sanity_check(SP)
      end subroutine
 
+     subroutine set_restart_SP(SP,restart_fields)
+       implicit none
+       type(sim_params),intent(inout) :: SP
+       logical,intent(in) :: restart_fields
+       SP%restart_meshes    = restart_fields
+       SP%VS%T%SS%restart   = restart_fields
+       SP%VS%U%SS%restart   = restart_fields
+       SP%VS%P%SS%restart   = restart_fields
+       SP%VS%B%SS%restart   = restart_fields
+       SP%VS%B0%SS%restart  = restart_fields
+       SP%VS%phi%SS%restart = restart_fields
+       SP%VS%rho%SS%restart = restart_fields
+       call import(SP%coupled)
+       call import_TMP(SP%VS)
+     end subroutine
+
      subroutine sanity_check_SP(SP)
        implicit none
        type(sim_params),intent(in) :: SP
@@ -348,7 +368,8 @@
        type(sim_params),intent(inout) :: SP
        type(sim_params),intent(in) :: SP_in
        SP%export_safe_period     = SP_in%export_safe_period
-       SP%restart_all            = SP_in%restart_all
+       SP%restart_meshes         = SP_in%restart_meshes
+       SP%export_heavy           = SP_in%export_heavy
        SP%couple_time_steps      = SP_in%couple_time_steps
        SP%finite_Rem             = SP_in%finite_Rem
        SP%include_vacuum         = SP_in%include_vacuum
@@ -396,7 +417,8 @@
        type(sim_params),intent(in) :: SP
        integer,intent(in) :: un
        write(un,*) 'export_safe_period     = ',SP%export_safe_period
-       write(un,*) 'restart_all            = ',SP%restart_all
+       write(un,*) 'restart_meshes         = ',SP%restart_meshes
+       write(un,*) 'export_heavy           = ',SP%export_heavy
        write(un,*) 'couple_time_steps      = ',SP%couple_time_steps
        write(un,*) 'finite_Rem             = ',SP%finite_Rem
        write(un,*) 'include_vacuum         = ',SP%include_vacuum
@@ -469,18 +491,20 @@
        implicit none
        type(sim_params),intent(in) :: SP
        integer,intent(in) :: un
-       write(un,*) SP%export_safe_period
-       write(un,*) SP%restart_all
-       write(un,*) SP%couple_time_steps
-       write(un,*) SP%finite_Rem
-       write(un,*) SP%include_vacuum
-       write(un,*) SP%embed_B_interior
-       write(un,*) SP%compute_surface_power
-       write(un,*) SP%uniform_B0_dir
-       write(un,*) SP%mpg_dir
-       write(un,*) SP%uniform_gravity_dir
-       write(un,*) SP%matrix_based
-       write(un,*) SP%print_every_MHD_step
+       write(un,*) ' ---------------- sim_params ---------------- '
+       write(un,*) 'export_safe_period    = '; write(un,*) SP%export_safe_period
+       write(un,*) 'restart_meshes        = '; write(un,*) SP%restart_meshes
+       write(un,*) 'export_heavy          = '; write(un,*) SP%export_heavy
+       write(un,*) 'couple_time_steps     = '; write(un,*) SP%couple_time_steps
+       write(un,*) 'finite_Rem            = '; write(un,*) SP%finite_Rem
+       write(un,*) 'include_vacuum        = '; write(un,*) SP%include_vacuum
+       write(un,*) 'embed_B_interior      = '; write(un,*) SP%embed_B_interior
+       write(un,*) 'compute_surface_power = '; write(un,*) SP%compute_surface_power
+       write(un,*) 'uniform_B0_dir        = '; write(un,*) SP%uniform_B0_dir
+       write(un,*) 'mpg_dir               = '; write(un,*) SP%mpg_dir
+       write(un,*) 'uniform_gravity_dir   = '; write(un,*) SP%uniform_gravity_dir
+       write(un,*) 'matrix_based          = '; write(un,*) SP%matrix_based
+       write(un,*) 'print_every_MHD_step  = '; write(un,*) SP%print_every_MHD_step
        call export(SP%FCL,un)
        call export(SP%GP,un)
        call export(SP%MP,un)
@@ -494,24 +518,27 @@
        call export(SP%TSP,un)
        call export(SP%EF,un)
        call export(SP%coupled,un)
+       write(un,*) ' -------------------------------------------- '
      end subroutine
 
      subroutine import_SP(SP,un)
        implicit none
        type(sim_params),intent(inout) :: SP
        integer,intent(in) :: un
-       read(un,*) SP%export_safe_period
-       read(un,*) SP%restart_all
-       read(un,*) SP%couple_time_steps
-       read(un,*) SP%finite_Rem
-       read(un,*) SP%include_vacuum
-       read(un,*) SP%embed_B_interior
-       read(un,*) SP%compute_surface_power
-       read(un,*) SP%uniform_B0_dir
-       read(un,*) SP%mpg_dir
-       read(un,*) SP%uniform_gravity_dir
-       read(un,*) SP%matrix_based
-       read(un,*) SP%print_every_MHD_step
+       read(un,*);
+       read(un,*); read(un,*) SP%export_safe_period
+       read(un,*); read(un,*) SP%restart_meshes
+       read(un,*); read(un,*) SP%export_heavy
+       read(un,*); read(un,*) SP%couple_time_steps
+       read(un,*); read(un,*) SP%finite_Rem
+       read(un,*); read(un,*) SP%include_vacuum
+       read(un,*); read(un,*) SP%embed_B_interior
+       read(un,*); read(un,*) SP%compute_surface_power
+       read(un,*); read(un,*) SP%uniform_B0_dir
+       read(un,*); read(un,*) SP%mpg_dir
+       read(un,*); read(un,*) SP%uniform_gravity_dir
+       read(un,*); read(un,*) SP%matrix_based
+       read(un,*); read(un,*) SP%print_every_MHD_step
        call import(SP%FCL,un)
        call import(SP%GP,un)
        call import(SP%MP,un)
@@ -525,6 +552,7 @@
        call import(SP%TSP,un)
        call import(SP%EF,un)
        call import(SP%coupled,un)
+       read(un,*);
      end subroutine
 
      subroutine export_SP_wrapper(SP,dir,name)

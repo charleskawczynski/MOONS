@@ -76,6 +76,8 @@
         call multiply(Av,vol)
         dot_vAu = dot_product(v,Au,x,temp)
         dot_uAv = dot_product(u,Av,x,temp)
+        write(*,*) 'amax(v),amax(Au) = ',amax(v),amax(Au)
+        write(*,*) 'amax(u),amax(Av) = ',amax(u),amax(Av)
         write(*,*) '(v,Au) = ',dot_vAu
         write(*,*) '(u,Av) = ',dot_uAv
         write(*,*) 'Symmetry error = ',abs(dot_vAu-dot_uAv)
@@ -112,6 +114,8 @@
         call multiply(Av,vol)
         dot_vAu = dot_product(v,Au,x,temp)
         dot_uAv = dot_product(u,Av,x,temp)
+        write(*,*) 'amax(v),amax(Au) = ',amax(v),amax(Au)
+        write(*,*) 'amax(u),amax(Av) = ',amax(u),amax(Av)
         write(*,*) '(v,Au) = ',dot_vAu
         write(*,*) '(u,Av) = ',dot_uAv
         write(*,*) 'Symmetry error = ',abs(dot_vAu-dot_uAv)

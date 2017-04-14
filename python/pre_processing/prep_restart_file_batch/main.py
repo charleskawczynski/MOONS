@@ -5,7 +5,9 @@ clear = lambda: os.system('cls')
 clear()
 
 path_trim = 26
-PS = '\\'; print 'PS = '+PS
+PS = '\\' # Windows
+# PS = '/' # Hoffman/Linux
+print 'PS = '+PS
 ext = '.dat'
 restart_fields = 'T' # T/F
 pad = 1
@@ -13,7 +15,7 @@ pad = 1
 # Workstation
 root = 'C:'+PS+'Users'+PS+'charl'+PS+'Documents'+PS+'MOONS'+PS+'SIMS'+PS+'BC_full'+PS+'Shatrov_inspired'+PS
 # Hoffman2
-root = PS+'u'+PS+'project'+PS+'morley'+PS+'ckawczyn'+PS+'MOONS_out'+PS
+root = PS+'u'+PS+'home'+PS+'c'+PS+'ckawczyn'+PS+'project-morley'+PS+'MOONS_out'+PS
 # PC_CK
 root = 'C:'+PS+'Users'+PS+'Charlie'+PS+'Documents'+PS+'MOONS'+PS+'SIMS'+PS
 print 'root = '+root[path_trim:]

@@ -59,14 +59,15 @@
         call init(s,dir//name//dot_dat)
         un = new_unit()
         ! open(un,file=str(s),pad='YES',action='readwrite')
-        call attempt_to_open_to_write(un,s)
+        call attempt_to_open_to_write(un,s,dir,name)
         call delete(s)
       end function
 
-      subroutine attempt_to_open_to_write(un,s)
+      subroutine attempt_to_open_to_write(un,s,dir,name)
         implicit none
         integer,intent(in) :: un
         type(string),intent(in) :: s
+        character(len=*),intent(in) :: dir,name
         integer :: n,i
         logical :: failed
         failed = .true.
@@ -77,6 +78,8 @@
         if (failed) then
           write(*,*) 'Error: tried to open file but failed!!'
           write(*,*) 'File = ',str(s)
+          write(*,*) 'dir = ',dir
+          write(*,*) 'name = ',name
           stop 'Done in attempt_to_open_to_write in IO_tools.f90'
         endif
       end subroutine

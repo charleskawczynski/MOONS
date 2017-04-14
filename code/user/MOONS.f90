@@ -4,6 +4,7 @@
        use IO_import_mod
        use IO_export_mod
        use inquire_funcs_mod
+       use matrix_visualization_mod
 
        use version_mod
        use mesh_mod
@@ -58,6 +59,7 @@
          type(sim_params) :: SP
          type(restart_file) :: RF
          logical :: fresh_restart_file
+         logical :: matrix_visualization
          ! ************************************************************** Parallel + directory + input parameters
          call delete_file('','mesh_generation_error')
 #ifdef fopenmp
@@ -66,6 +68,12 @@
 #endif
 
          call init(DT,dir_target)  ! Initialize + make directory tree
+
+         matrix_visualization = .false.
+         if (matrix_visualization) then
+           call export_matrix_visualization(DT)
+           stop 'exportedd matrix visualization. Done in MOONS.f90'
+         endif
 
          fresh_restart_file = .false.
          call init(RF)

@@ -7,7 +7,7 @@
       public :: init,make,str,rel,full,delete
       public :: oldest_modified_file,latest_modified_file
       public :: make_dir,remove_dir
-      
+
       interface init;          module procedure init_P;            end interface
       interface init;          module procedure init_ext_rel_str;  end interface
       interface init;          module procedure init_ext_rel_path; end interface
@@ -159,7 +159,7 @@
         if (.not.ex) then
           call system('mkdir ' // str(s) )
           write(*,*) 'Directory ' // str(s) // ' created.'
-        else 
+        else
           write(*,*) 'Directory ' // str(s) // ' already exists.'
         endif
         call delete(s)

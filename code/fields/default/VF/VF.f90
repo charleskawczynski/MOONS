@@ -35,6 +35,7 @@
         public :: init_Node_Edge
 
         public :: init_BCs
+        public :: init_BC_mesh
         public :: init_BC_Dirichlet
         public :: init_BC_props
         public :: multiply_volume
@@ -205,6 +206,7 @@
 
         interface print_BCs;                module procedure print_BCs_VF;                  end interface
         interface init_BCs;                 module procedure init_BCs_VF_VF;                end interface
+        interface init_BC_mesh;             module procedure init_BC_mesh_VF;               end interface
         interface init_BC_Dirichlet;        module procedure init_BC_Dirichlet_VF;          end interface
         interface export_BCs;               module procedure export_BCs_VF;                 end interface
         interface init_BC_props;            module procedure init_BC_props_VF;              end interface
@@ -378,6 +380,15 @@
           call init_BCs(f%x,g%x)
           call init_BCs(f%y,g%y)
           call init_BCs(f%z,g%z)
+        end subroutine
+
+        subroutine init_BC_mesh_VF(f,m)
+          implicit none
+          type(VF),intent(inout) :: f
+          type(mesh),intent(in) :: m
+          call init_BC_mesh(f%x,m)
+          call init_BC_mesh(f%y,m)
+          call init_BC_mesh(f%z,m)
         end subroutine
 
         subroutine init_BC_Dirichlet_VF(f)

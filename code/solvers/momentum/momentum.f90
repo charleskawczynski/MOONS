@@ -124,7 +124,6 @@
          integer :: temp_unit
          write(*,*) 'Initializing momentum:'
 
-         write(*,*) '     SP copied'
          call init(mom%m,m)
          write(*,*) '     mesh copied'
 
