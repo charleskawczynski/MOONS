@@ -187,22 +187,23 @@
          endif
        end subroutine
 
-       subroutine solve_density(dens,U,EF,EN,DT)
+       subroutine solve_density(dens,U,TMP,EF,EN,DT)
          implicit none
          type(density),intent(inout) :: dens
          type(VF),intent(in) :: U
          type(export_frequency),intent(in) :: EF
          type(export_now),intent(in) :: EN
          type(dir_tree),intent(in) :: DT
+         type(time_marching_params),intent(inout) :: TMP
 
          call embedFace(dens%U_F,U,dens%MD)
 
          select case (dens%SP%VS%rho%SS%solve_method)
-         case (1); call Euler(dens%rho,dens%U_F,dens%SP%VS%rho%TMP%dt,dens%m,dens%temp_CC1,dens%temp_F)
+         case (1); call Euler(dens%rho,dens%U_F,TMP%dt,dens%m,dens%temp_CC1,dens%temp_F)
 
          case default; stop 'Erorr: bad solveTMethod value in solve_density in density.f90'
          end select
-         call iterate_step(dens%SP%VS%rho%TMP)
+         call iterate_step(TMP)
 
          ! ********************* POST SOLUTION COMPUTATIONS *********************
 

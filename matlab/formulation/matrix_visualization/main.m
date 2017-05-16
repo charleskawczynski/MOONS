@@ -13,21 +13,20 @@ props.label_size = 20;
 props.filedir = 'figs\';
 root = 'C:\Users\Charlie\Documents\MOONS\SIMS\MOONS1\out\LDC\matrix_visualization\';
 
-props.filename = 'PCG_SF_Lap_CC'; props.title = 'Laplacian';
+props.filename = 'PCG_SF_Lap_CC'; props.title = '';
 A = load([root props.filename '.dat' ]); analyzeMatrix(A',props) % A^T is exported, not A
 
-props.filename = 'PCG_VF_Lap_CC'; props.title = 'Laplacian';
+props.filename = 'PCG_VF_Lap_CC'; props.title = '';
 A = load([root props.filename '.dat' ]); analyzeMatrix(A',props) % A^T is exported, not A
 
-props.filename = 'PCG_VF_Lap_Face'; props.title = 'Laplacian';
+props.filename = 'PCG_VF_Lap_Face'; props.title = '';
 A = load([root props.filename '.dat' ]); analyzeMatrix(A',props) % A^T is exported, not A
 
-props.filename = 'PCG_VF_curlcurl_CC'; props.title = 'curl-curl';
+props.filename = 'PCG_VF_curlcurl_CC'; props.title = '';
 A = load([root props.filename '.dat' ]); analyzeMatrix(A',props) % A^T is exported, not A
 
-props.filename = 'PCG_VF_curlcurl_Face'; props.title = 'curl-curl';
+props.filename = 'PCG_VF_curlcurl_Face'; props.title = '';
 A = load([root props.filename '.dat' ]); analyzeMatrix(A',props) % A^T is exported, not A
-
 
 
 

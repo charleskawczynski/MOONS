@@ -1,0 +1,37 @@
+------------------------------------ Full 3D cases ------------------------------------
+
+{u} = {Upn_x}
+{v} = {Upn_y}
+{w} = {Upn_z}
+{Umag}=sqrt({u}**2+{v}**2+{w}**2)
+{U2}={u}**2+{v}**2+{w}**2
+
+{Bx}={Bpn_x}
+{By}={Bpn_y}
+{Bz}={Bpn_z}
+{B2}={Bx}**2+{By}**2+{Bz}**2
+
+{Jx}={Jpn_x}
+{Jy}={Jpn_y}
+{Jz}={Jpn_z}
+{J2}={Jx}**2+{Jy}**2+{Jz}**2
+
+------------------------------------ Symmetric cases ------------------------------------
+
+{u} = {U_mirror_3pn_x}
+{v} = {U_mirror_3pn_y}
+{w} = {U_mirror_3pn_z}
+{Umag}=sqrt({u}**2+{v}**2+{w}**2)
+{U2}={u}**2+{v}**2+{w}**2
+
+{Bx}={B_mirror_3pn_x}
+{By}={B_mirror_3pn_y}
+{Bz}={B_mirror_3pn_z}
+{B2}={Bx}**2+{By}**2+{Bz}**2
+
+{Jx}={J_mirror_3pn_x}
+{Jy}={J_mirror_3pn_y}
+{Jz}={J_mirror_3pn_z}
+{J2}={Jx}**2+{Jy}**2+{Jz}**2
+
+

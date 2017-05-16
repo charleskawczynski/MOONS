@@ -187,22 +187,23 @@
          endif
        end subroutine
 
-       subroutine solve_level_set(LS,U,EF,EN,DT)
+       subroutine solve_level_set(LS,U,TMP,EF,EN,DT)
          implicit none
          type(level_set),intent(inout) :: LS
          type(VF),intent(in) :: U
          type(export_frequency),intent(in) :: EF
          type(export_now),intent(in) :: EN
          type(dir_tree),intent(in) :: DT
+         type(time_marching_params),intent(inout) :: TMP
 
          call embedFace(LS%U_F,U,LS%MD)
 
          select case (LS%SP%VS%phi_LS%SS%solve_method)
-         case (1); call Euler_LS(LS%phi_LS,LS%U_F,LS%SP%VS%phi_LS%TMP%dt,LS%m,LS%temp_CC1,LS%temp_F)
+         case (1); call Euler_LS(LS%phi_LS,LS%U_F,TMP%dt,LS%m,LS%temp_CC1,LS%temp_F)
 
          case default; stop 'Erorr: bad solveTMethod value in solve_level_set in level_set.f90'
          end select
-         call iterate_step(LS%SP%VS%phi_LS%TMP)
+         call iterate_step(TMP)
 
          ! ********************* POST SOLUTION COMPUTATIONS *********************
 

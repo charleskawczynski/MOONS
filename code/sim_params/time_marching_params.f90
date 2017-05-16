@@ -1,6 +1,7 @@
        module time_marching_params_mod
        use current_precision_mod
        use string_mod
+       use RK_Params_mod
        use IO_tools_mod
        implicit none
 
@@ -14,6 +15,7 @@
        public :: update_dt_CFL
 
        type time_marching_params
+         type(RK_Params) :: RKP            ! Runge-Kutta Parameters
          integer(li) :: n_step = 0         ! nth time step
          integer(li) :: n_step_stop = 0    ! nth time step to stop
          integer(li) :: n_step_start = 0   ! nth time step to start
@@ -51,13 +53,14 @@
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-       subroutine init_TMP(TMP,multistep_iter,n_step_stop,dt,dir,name)
+       subroutine init_TMP(TMP,RK_order,multistep_iter,n_step_stop,dt,dir,name)
          implicit none
          type(time_marching_params),intent(inout) :: TMP
-         integer,intent(in) :: multistep_iter
+         integer,intent(in) :: RK_order,multistep_iter
          integer(li),intent(in) :: n_step_stop
          real(cp),intent(in) :: dt
          character(len=*),intent(in) :: dir,name
+         call init(TMP%RKP,RK_order)
          TMP%n_step_start = 0
          TMP%n_step = 0
          TMP%multistep_iter = multistep_iter
@@ -74,6 +77,7 @@
          implicit none
          type(time_marching_params),intent(inout) :: TMP
          type(time_marching_params),intent(in) :: TMP_in
+         call init(TMP%RKP,TMP_in%RKP)
          TMP%n_step_start = TMP_in%n_step_start
          TMP%n_step = TMP_in%n_step
          TMP%n_step_stop = TMP_in%n_step_stop
@@ -98,6 +102,7 @@
          TMP%C_max = 0.0_cp
          TMP%t_final = 0.0_cp
          TMP%dt = 10.0_cp**(-10.0_cp)
+         call delete(TMP%RKP)
          call delete(TMP%dir)
          call delete(TMP%name)
          TMP%un = 0
@@ -116,6 +121,7 @@
          write(un,*) 't              = '; write(un,*) TMP%t
          write(un,*) 't_final        = '; write(un,*) TMP%t_final
          write(un,*) 'dt             = '; write(un,*) TMP%dt
+         call export(TMP%RKP,un)
          call export(TMP%dir,un)
          call export(TMP%name,un)
          write(un,*) ' ------------------------------------------------ '
@@ -134,6 +140,7 @@
          read(un,*); read(un,*) TMP%t
          read(un,*); read(un,*) TMP%t_final
          read(un,*); read(un,*) TMP%dt
+         call import(TMP%RKP,un)
          call import(TMP%dir,un)
          call import(TMP%name,un)
          read(un,*);
@@ -183,6 +190,7 @@
          integer,intent(in) :: un
          call display(TMP%dir,un)
          call display(TMP%name,un)
+         call display(TMP%RKP,un)
          write(un,*) 'multistep_iter = ',TMP%multistep_iter
          write(un,*) 'n_step_start   = ',TMP%n_step_start
          write(un,*) 'n_step         = ',TMP%n_step

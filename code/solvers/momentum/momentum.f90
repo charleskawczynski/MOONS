@@ -426,7 +426,7 @@
          type(time_marching_params),intent(inout) :: TMP
          integer :: i
 
-         do i=1,SP%VS%U%TMP%multistep_iter
+         do i=1,TMP%multistep_iter
          select case(SP%VS%U%SS%solve_method)
          case (1)
            call Euler_time_no_diff_Euler_sources_no_correction(mom%U,mom%Ustar,F,TMP)
@@ -449,6 +449,10 @@
          case (7)
            call O2_BDF_time_AB2_sources(mom%PCG_U,mom%PCG_P,mom%U,mom%Ustar,&
            mom%Unm1,mom%p,F,Fnm1,mom%m,TMP,mom%temp_F1,mom%temp_E,mom%temp_CC,&
+           EF%unsteady_0D%export_now)
+         case (8)
+           call Euler_time_RK_sources(mom%PCG_U,mom%PCG_P,mom%U,mom%Ustar,mom%Unm1,&
+           mom%p,F,Fnm1,mom%m,TMP,TMP%RKP,mom%temp_F1,mom%temp_E,mom%temp_CC,&
            EF%unsteady_0D%export_now)
          case default; stop 'Error: solveUMethod must = 1:4 in momentum.f90.'
          end select

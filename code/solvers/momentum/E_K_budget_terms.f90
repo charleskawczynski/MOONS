@@ -17,14 +17,15 @@
        implicit none
 
        private
-       public :: Unsteady,           export_Unsteady
-       public :: E_K_Convection,     export_E_K_Convection
-       public :: E_K_Diffusion,      export_E_K_Diffusion
-       public :: E_K_Pressure,       export_E_K_Pressure
-       public :: Viscous_Dissipation,export_Viscous_Dissipation
-       public :: E_M_Convection,     export_E_M_Convection
-       public :: E_M_Tension,        export_E_M_Tension
-       public :: Lorentz,            export_Lorentz
+       public :: Unsteady,                 export_Unsteady
+       public :: E_K_Convection,           export_E_K_Convection
+       public :: E_K_Diffusion,            export_E_K_Diffusion
+       public :: E_K_Pressure,             export_E_K_Pressure
+       public :: Total_Viscous_Dissipation,export_Total_Viscous_Dissipation
+       public :: Viscous_Dissipation,      export_Viscous_Dissipation
+       public :: E_M_Convection,           export_E_M_Convection
+       public :: E_M_Tension,              export_E_M_Tension
+       public :: Lorentz,                  export_Lorentz
 
        contains
 
@@ -180,6 +181,37 @@
          call Viscous_Dissipation(e,U_CC,m,scale,TF_CC1,TF_CC2)
          call export_raw      (m,e,str(DT%e_budget_C),'Viscous_Dissipation',0)
          call export_processed(m,e,str(DT%e_budget_N),'Viscous_Dissipation',1)
+         call Ln(e_integral,e,1.0_cp,m)
+       end subroutine
+
+       subroutine Total_Viscous_Dissipation(e,U_CC,m,scale,TF_CC1,TF_CC2)
+         ! Computes: e = scale S_ij S_ij,    S_ij = 0.5(∇u + ∇u^T)
+         implicit none
+         type(SF),intent(inout) :: e
+         type(VF),intent(in) :: U_CC
+         type(mesh),intent(in) :: m
+         real(cp),intent(in) :: scale
+         type(TF),intent(inout) :: TF_CC1,TF_CC2
+         call grad(TF_CC1,U_CC,m)
+         call transpose(TF_CC2,TF_CC1)
+         call add(TF_CC2,TF_CC1)
+         call multiply(TF_CC2,0.5_cp)
+         call square(TF_CC2)
+         call add(e,TF_CC2)
+         call multiply(e,scale)
+       end subroutine
+       subroutine export_Total_Viscous_Dissipation(e_integral,e,U_CC,m,scale,TF_CC1,TF_CC2,DT)
+         implicit none
+         real(cp),intent(inout) :: e_integral
+         type(SF),intent(inout) :: e
+         type(VF),intent(in) :: U_CC
+         type(mesh),intent(in) :: m
+         real(cp),intent(in) :: scale
+         type(TF),intent(inout) :: TF_CC1,TF_CC2
+         type(dir_tree),intent(in) :: DT
+         call Total_Viscous_Dissipation(e,U_CC,m,scale,TF_CC1,TF_CC2)
+         call export_raw      (m,e,str(DT%e_budget_C),'Total_Viscous_Dissipation',0)
+         call export_processed(m,e,str(DT%e_budget_N),'Total_Viscous_Dissipation',1)
          call Ln(e_integral,e,1.0_cp,m)
        end subroutine
 

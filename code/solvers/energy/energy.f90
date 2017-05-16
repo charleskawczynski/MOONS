@@ -336,37 +336,14 @@
          case (4)
            call O2_BDF_time_AB2_sources_SF(nrg%PCG_T,nrg%T,nrg%Tnm1,F,Fnm1,nrg%m,&
            TMP,nrg%temp_CC1,EF%unsteady_0D%export_now)
+         case (5)
+           call Euler_time_RK_sources_SF(nrg%PCG_T,nrg%T,nrg%Tnm1,F,Fnm1,nrg%m,&
+           TMP,TMP%RKP,nrg%temp_CC1,EF%unsteady_0D%export_now)
          case default; stop 'Error: solveTMethod must = 1:4 in energy.f90.'
          end select
          call iterate_step(TMP)
 
-
-         ! select case (SP%VS%T%SS%solve_method)
-         ! case (1)
-         ! call explicitEuler(nrg%T,nrg%U_F,TMP%dt,&
-         ! SP%DP%Pe,nrg%m,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
-         ! case (2) ! O2 time marching
-         ! call explicitEuler(nrg%T,nrg%U_F,TMP%dt,&
-         ! SP%DP%Pe,nrg%m,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
-         ! case (3) ! Diffusion implicit
-         ! call diffusion_implicit(nrg%PCG_T,nrg%T,nrg%U_F,TMP%dt,&
-         ! SP%DP%Pe,nrg%m,EF%unsteady_0D%export_now,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
-         ! case (4)
-         ! if (TMP%n_step.le.1) then
-         !   call volumetric_heating_equation(nrg%Q_source,nrg%m,SP%DP%Pe)
-         ! endif
-         ! call explicitEuler_with_source(nrg%T,nrg%U_F,TMP%dt,&
-         ! SP%DP%Pe,nrg%m,nrg%Q_source,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_F)
-         ! case (5)
-         ! if (TMP%n_step.le.1) then
-           call volumetric_heating_equation(nrg%Q_source,nrg%m,SP%DP%Pe)
-         ! endif
-         ! call CN_with_source(nrg%PCG_T,nrg%T,nrg%U_F,TMP%dt,&
-         ! SP%DP%Pe,nrg%m,nrg%Q_source,EF%unsteady_0D%export_now,nrg%temp_CC1,&
-         ! nrg%temp_CC2,nrg%temp_F)
-         ! case default; stop 'Erorr: bad solveTMethod value in solve_energy in energy.f90'
-         ! end select
-         ! call iterate_step(TMP)
+         call volumetric_heating_equation(nrg%Q_source,nrg%m,SP%DP%Pe)
 
          ! ********************* POST SOLUTION COMPUTATIONS *********************
 

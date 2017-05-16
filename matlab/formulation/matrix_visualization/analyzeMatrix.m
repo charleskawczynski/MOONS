@@ -35,21 +35,30 @@ end
 figure; spy(A,'ko')
 h = gcf;
 ms = 2;
-set( findobj(h, 'Type', 'line'), 'LineWidth',1, 'MarkerEdgeColor','k','MarkerFaceColor',[0 0 0], 'MarkerSize',ms);
+lw = 2;
+set( findobj(h, 'Type', 'line'), 'LineWidth',lw, 'MarkerEdgeColor','k','MarkerFaceColor',[0 0 0], 'MarkerSize',ms);
 
-title([props.title ' operator'], 'FontSize', props.title_size)
+title([props.title], 'FontSize', props.title_size)
 set(gca, 'FontSize', props.axis_size)
 
 temp=findobj(h,'type','axe');
 xtemp=get(get(temp,'xlabel'),'string');
 x_label = strcat('Number of non-zeros = ',xtemp(6:end));
+x_label = '';
 xlabel(x_label, 'FontSize', props.label_size);
+set(gca,'xticklabel',{[]})
+set(gca,'yticklabel',{[]})
 
 if props.save_fig
     saveas(h,[props.filedir props.filename '.fig'])
     saveas(h,[props.filedir props.filename '.eps'])
-    saveas(h,[props.filedir props.filename '.png'])
 end
+if props.save_fig
+    set( findobj(h, 'Type', 'line'), 'LineWidth',lw*2, 'MarkerEdgeColor','k','MarkerFaceColor',[0 0 0], 'MarkerSize',ms);
+    print('-dpng','-r400',[props.filedir props.filename '.png']);
+    set( findobj(h, 'Type', 'line'), 'LineWidth',lw, 'MarkerEdgeColor','k','MarkerFaceColor',[0 0 0], 'MarkerSize',ms);
+end
+
 % h = gcf;
 % set(h,'Color','b')
 % figure; surf(A)

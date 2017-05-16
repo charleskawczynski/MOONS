@@ -1,10 +1,4 @@
        module time_marching_methods_mod
-       ! This seems to work fine for preassure, but not
-       ! always (e.g. Bandaru) for correction field phi.
-       ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%dt,m,temp_F1,temp_CC,compute_norms)
-       ! Instead, the following is used:
-       ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp,m,temp_F1,temp_CC,compute_norms)
-       ! This does not preserve the magnitude of preassure, however
        use current_precision_mod
        use mesh_mod
        use SF_mod
@@ -24,6 +18,7 @@
        use PCG_mod
        use matrix_free_operators_mod
        use matrix_free_params_mod
+       use RK_Params_mod
        use clean_divergence_mod
        use time_marching_params_mod
        use update_intermediate_field_BCs_mod
@@ -34,6 +29,7 @@
        public :: Euler_time_Euler_sources
        public :: O2_BDF_time_AB2_sources
        public :: Euler_time_AB2_sources
+       public :: Euler_time_RK_sources
 
        public :: Euler_time_no_diff_AB2_sources
        public :: Euler_time_no_diff_AB2_sources_no_correction
@@ -149,6 +145,48 @@
          call add(temp_F1,X)
          call assign(Xnm1,X)
          call update_MFP(PCG_VF,m,TMP%dt*1.0_cp*PCG_VF%MFP%coeff_implicit,TMP%n_step.le.2)
+         call solve(PCG_VF,Xstar,temp_F1,m,compute_norms) ! Solve for X*
+         ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%dt,m,temp_F1,temp_CC,compute_norms)
+         call clean_div(PCG_SF,X,Xstar,phi,1.0_cp,m,temp_F1,temp_CC,compute_norms)
+         if (get_any_Prescribed(Xstar)) call update_intermediate_field_BCs(Xstar,phi,1.0_cp,m,temp_F1,temp_E,temp_CC)
+       end subroutine
+
+       subroutine Euler_time_RK_sources(PCG_VF,PCG_SF,X,Xstar,Xnm1,phi,F,Fnm1,m,&
+         TMP,RKP,temp_F1,temp_E,temp_CC,compute_norms)
+         ! Time discretization adopted from:
+         ! Lundbladh, Anders, et al. "An efficient spectral method for
+         ! simulation of incompressible flow over a flat plate."
+         ! Trita-mek. Tech. Rep 11 (1999).
+         !
+         ! Solves:
+         !
+         !  X^{*} - X^{n}
+         ! -------------- + AX^{*} = RK(F^{n})
+         !        dt
+         !
+         ! -->  (I + dt 1 A)X^{*} = X^{n} + dt RK(F^{n})
+         !
+         ! lap(phi^{n+1}) = 1/dt div(X^{*})
+         ! X^{n+1} = X^{*} - dt grad(phi^{n+1})
+         !
+         implicit none
+         type(PCG_solver_VF),intent(inout) :: PCG_VF
+         type(PCG_solver_SF),intent(inout) :: PCG_SF
+         type(SF),intent(inout) :: phi
+         type(VF),intent(inout) :: X,Xstar,Xnm1,temp_E
+         type(VF),intent(in) :: F,Fnm1
+         type(mesh),intent(in) :: m
+         type(time_marching_params),intent(in) :: TMP
+         type(RK_Params),intent(in) :: RKP
+         type(VF),intent(inout) :: temp_F1
+         type(SF),intent(inout) :: temp_CC
+         logical,intent(in) :: compute_norms
+         call multiply(temp_F1,F,TMP%dt*RKP%a(RKP%n))
+         call add_product(temp_F1,Fnm1,TMP%dt*RKP%b(RKP%n))
+         call assign_wall_Dirichlet(temp_F1,0.0_cp,X)
+         call add(temp_F1,X)
+         call assign(Xnm1,X)
+         call update_MFP(PCG_VF,m,TMP%dt*1.0_cp*RKP%d(RKP%n)*PCG_VF%MFP%coeff_implicit,TMP%n_step.le.2)
          call solve(PCG_VF,Xstar,temp_F1,m,compute_norms) ! Solve for X*
          ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%dt,m,temp_F1,temp_CC,compute_norms)
          call clean_div(PCG_SF,X,Xstar,phi,1.0_cp,m,temp_F1,temp_CC,compute_norms)

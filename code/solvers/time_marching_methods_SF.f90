@@ -18,6 +18,7 @@
        use PCG_mod
        use matrix_free_operators_mod
        use matrix_free_params_mod
+       use RK_Params_mod
        use clean_divergence_mod
        use time_marching_params_mod
        use update_intermediate_field_BCs_mod
@@ -27,6 +28,7 @@
 
        public :: O2_BDF_time_AB2_sources_SF
        public :: Euler_time_AB2_sources_SF
+       public :: Euler_time_RK_sources_SF
 
        public :: Euler_time_no_diff_AB2_sources_SF
        public :: Euler_time_no_diff_Euler_sources_SF
@@ -93,6 +95,36 @@
          call add(temp_F1,X)
          call assign(Xnm1,X)
          call update_MFP(PCG_SF,m,TMP%dt*1.0_cp*PCG_SF%MFP%coeff_implicit,TMP%n_step.le.2)
+         call solve(PCG_SF,X,temp_F1,m,compute_norms) ! Solve for X
+       end subroutine
+
+       subroutine Euler_time_RK_sources_SF(PCG_SF,X,Xnm1,F,Fnm1,m,&
+         TMP,RKP,temp_F1,compute_norms)
+         ! Solves:
+         !
+         !  X^{*} - X^{n}
+         ! -------------- + AX^{*} = AB2(F^{n},F^{n-1})
+         !        dt
+         !
+         ! -->  (I + dt 1 A)X^{*} = X^{n} + dt AB2(F^{n},F^{n-1})
+         !
+         ! X^{n+1} = X^{*}
+         !
+         implicit none
+         type(PCG_solver_SF),intent(inout) :: PCG_SF
+         type(SF),intent(inout) :: X,Xnm1
+         type(SF),intent(in) :: F,Fnm1
+         type(mesh),intent(in) :: m
+         type(time_marching_params),intent(in) :: TMP
+         type(RK_Params),intent(in) :: RKP
+         type(SF),intent(inout) :: temp_F1
+         logical,intent(in) :: compute_norms
+         call multiply(temp_F1,F,TMP%dt*RKP%a(RKP%n))
+         call add_product(temp_F1,Fnm1,TMP%dt*RKP%b(RKP%n))
+         call assign_wall_Dirichlet(temp_F1,0.0_cp,X)
+         call add(temp_F1,X)
+         call assign(Xnm1,X)
+         call update_MFP(PCG_SF,m,TMP%dt*1.0_cp*RKP%d(RKP%n)*PCG_SF%MFP%coeff_implicit,TMP%n_step.le.2)
          call solve(PCG_SF,X,temp_F1,m,compute_norms) ! Solve for X
        end subroutine
 

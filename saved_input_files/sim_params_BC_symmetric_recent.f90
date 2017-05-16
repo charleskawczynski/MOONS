@@ -88,7 +88,7 @@
        real(cp) :: time,dtime
        logical :: RV_BCs
        call delete(SP)
-       RV_BCs = F
+       RV_BCs = T
        ! call get_environment_variable(name[, value, length, status, trim_name)
 
        SP%FCL%stop_after_mesh_export = F !
@@ -126,7 +126,7 @@
        SP%print_every_MHD_step       = F ! Print nstep every time stop (for debugging)
 
        ! call init(MP,mirror,mirror_face)
-       call init(SP%MP,F,6) ! Must be defined before KE_scale,ME_scale,JE_scale
+       call init(SP%MP,T,6) ! Must be defined before KE_scale,ME_scale,JE_scale
        SP%EL%export_symmetric = SP%MP%mirror
 
        ! call init(EFP,export_ever,export_first_step,frequency_base,frequency_exp)
@@ -146,11 +146,11 @@
        ! call init(TSP,collect,t_start,t_stop)
        call init(SP%TSP,F,100.0_cp,500.0_cp)
 
-       time                          = 1000.0_cp
-       dtime                         = 1.0_cp*pow(-2)
+       time                          = 10000.0_cp
+       dtime                         = 5.0_cp*pow(-3)
 
        SP%GP%tw                      = 0.05_cp
-       SP%GP%geometry                = 9
+       SP%GP%geometry                = 15
        SP%GP%periodic_dir            = (/0,0,0/)
        ! SP%GP%apply_BC_order          = (/3,4,5,6,1,2/) ! good for LDC
        ! SP%GP%apply_BC_order       = (/3,4,5,6,1,2/) ! good for periodic in y?
@@ -159,12 +159,12 @@
        ! SP%GP%apply_BC_order       = (/3,4,1,2,5,6/) ! good for periodic in z?
 
        call delete(SP%DP)
-       SP%DP%Re                      = 1.0_cp*pow(2)
-       ! SP%DP%N                       = 5.0_cp*pow(0)
+       SP%DP%Re                      = 2.0_cp*pow(3)
+       SP%DP%N                       = 5.0_cp*pow(0)
        ! SP%DP%Q                       = 3.0_cp*pow(-1)
        if (     RV_BCs) SP%DP%Rem                     = 5.0_cp*pow(2)
        if (.not.RV_BCs) SP%DP%Rem                     = 1.0_cp*pow(0)
-       SP%DP%Ha                      = 1.0_cp*pow(1)
+       ! SP%DP%Ha                      = 1.0_cp*pow(1)
        ! SP%DP%N                       = 1.0_cp/SP%DP%Q
        SP%DP%c_w(1:6)                = 0.0_cp
        SP%DP%c_w( 5 )                = 1.0_cp
@@ -179,8 +179,8 @@
        SP%DP%Ec                      = 0.0_cp
 
        ! SP%DP%Ha                      = (1.0_cp/SP%DP%Q*SP%DP%Re)**0.5_cp
-       SP%DP%N                       = SP%DP%Ha**2.0_cp/SP%DP%Re
-       ! SP%DP%Ha                      = (SP%DP%N*SP%DP%Re)**0.5_cp
+       ! SP%DP%N                       = SP%DP%Ha**2.0_cp/SP%DP%Re
+       SP%DP%Ha                      = (SP%DP%N*SP%DP%Re)**0.5_cp
        SP%DP%Al                      = SP%DP%N/SP%DP%Rem
        SP%DP%Pe                      = SP%DP%Pr*SP%DP%Re
        SP%DP%tau                     = SP%DP%Re/SP%DP%Ha
@@ -240,11 +240,10 @@
 
        ! call init_IC_BC(var      ,IC   ,BC)
        call init_IC_BC(SP%VS%T    ,0    ,0 )
-       call init_IC_BC(SP%VS%U    ,0    ,1 )
+       call init_IC_BC(SP%VS%U    ,0    ,2 )
        call init_IC_BC(SP%VS%P    ,0    ,0 )
-       ! if (     RV_BCs) call init_IC_BC(SP%VS%B    ,0    ,9 ) ! 5 for thin wall
-       ! if (.not.RV_BCs) call init_IC_BC(SP%VS%B    ,0    ,10) ! 5 for thin wall
-       call init_IC_BC(SP%VS%B    ,0    ,1 )
+       if (     RV_BCs) call init_IC_BC(SP%VS%B    ,0    ,9 ) ! 5 for thin wall
+       if (.not.RV_BCs) call init_IC_BC(SP%VS%B    ,0    ,10) ! 5 for thin wall
        call init_IC_BC(SP%VS%B0   ,1    ,0 )
        call init_IC_BC(SP%VS%phi  ,0    ,0 )
        call init_IC_BC(SP%VS%rho  ,0    ,0 )
@@ -259,15 +258,15 @@
        call init(SP%VS%phi%ISP,5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_phi')
        call init(SP%VS%rho%ISP,5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_rho')
 
-       ! call init(TMP,RK_order,multistep_iter,n_step_stop,dtime,dir,name)
-       call init(SP%coupled,   4,1 ,ceiling(time/dtime,li),dtime        ,str(DT%TMP),'TMP_coupled')
-       call init(SP%VS%T%TMP,  4,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_T')
-       call init(SP%VS%U%TMP,  4,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_U')
-       call init(SP%VS%P%TMP,  4,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_P')
-       call init(SP%VS%B%TMP,  4,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_B')
-       call init(SP%VS%B0%TMP, 4,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_B0')
-       call init(SP%VS%phi%TMP,4,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_phi')
-       call init(SP%VS%rho%TMP,4,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_rho')
+       ! call init(TMP,multistep_iter,n_step_stop,dtime,dir,name)
+       call init(SP%coupled,   1 ,ceiling(time/dtime,li),dtime        ,str(DT%TMP),'TMP_coupled')
+       call init(SP%VS%T%TMP,  1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_T')
+       call init(SP%VS%U%TMP,  1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_U')
+       call init(SP%VS%P%TMP,  1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_P')
+       call init(SP%VS%B%TMP,  1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_B')
+       call init(SP%VS%B0%TMP, 1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_B0')
+       call init(SP%VS%phi%TMP,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_phi')
+       call init(SP%VS%rho%TMP,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_rho')
 
        ! Matrix-free parameters:
        ! coeff_natural  = coefficient of terms in non-discretized equation

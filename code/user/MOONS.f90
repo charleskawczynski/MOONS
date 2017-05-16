@@ -75,7 +75,7 @@
            stop 'exportedd matrix visualization. Done in MOONS.f90'
          endif
 
-         fresh_restart_file = .false.
+         fresh_restart_file = .true.
          call init(RF)
          if (fresh_restart_file) call export(RF,'','restart_file') ! Use default, compiled SP + fields
          call import(RF,'','restart_file')

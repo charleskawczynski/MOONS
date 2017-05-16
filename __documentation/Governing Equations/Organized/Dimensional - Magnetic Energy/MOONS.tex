@@ -23,7 +23,7 @@
 \setlength{\topmargin}{-1in}     %\topmargin: gap above header
 \setlength{\headheight}{0in}     %\headheight: height of header
 \setlength{\topskip}{0in}        %\topskip: between header and text
-\setlength{\headsep}{0in}        
+\setlength{\headsep}{0in}
 \setlength{\textheight}{692pt}   %\textheight: height of main text
 \setlength{\textwidth}{7.5in}    % \textwidth: width of text
 \setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
@@ -49,7 +49,7 @@ University of California Los Angeles, USA\\
 \section{Dimensional magnetic energy equation}
 The dimensional induction equation:
 \begin{equation}
-	\frac{\PD \B}{\PD t} + \CURL \left( \sigma^{-1}\CURL \H \right) 
+	\frac{\PD \B}{\PD t} + \CURL \left( \sigma^{-1}\CURL \H \right)
 	= \CURL (\U \times \B)
 \end{equation}
 Multiplying by $\B / \M$, we have
@@ -68,7 +68,7 @@ First, let
 
 \subsection{Transient term}
 \begin{equation}
-	\frac{\PD}{\PD t} \frac{\B^2}{\M} = 2 \H \DOT \frac{\PD \B}{\PD t} 
+	\frac{\PD}{\PD t} \frac{\B^2}{\M} = 2 \H \DOT \frac{\PD \B}{\PD t}
 	\rightarrow
 	\H \DOT \frac{\PD \B}{\PD t} =
 	\frac{\PD E_M}{\PD t}
@@ -77,10 +77,10 @@ First, let
 \begin{equation}\begin{aligned}
 	\H \DOT \DEL \times \left( \SII \DEL \times \H \right) = \H \DOT \DEL \times \left( \JS \right) & \\
 	\DEL \DOT (\A \times \B) = \B \DOT \DEL \times \A - \A \DOT \DEL \times \B &, \qquad \text{vector identity} \\
-	\DEL \DOT \left(\JS \times \H \right) = 
-	\H \DOT \DEL \times \JS - \JS \DOT \DEL \times \H = 
+	\DEL \DOT \left(\JS \times \H \right) =
+	\H \DOT \DEL \times \JS - \JS \DOT \DEL \times \H =
 	\H \DOT \DEL \times \JS - \JSS, & \qquad \text{ we may write} \\
-	\H \DOT \DEL \times \JS = 
+	\H \DOT \DEL \times \JS =
 	\left\{ \DEL \DOT \left(\JS \times \H \right) + \JSS \right\}
 \end{aligned}\end{equation}
 
@@ -102,11 +102,11 @@ which used $\J \times \B = (\B \DOT \DEL) \left(\frac{\B}{\M}\right) - \DEL \lef
 \section{Putting it all together}
 Putting it all together, we have
 \begin{equation}
-	\frac{\PD E_M}{\PD t} + 
+	\frac{\PD E_M}{\PD t} +
 	\left\{ \DEL \DOT \left(\JS \times \H \right) + \JSS \right\} =
 	(\U \DOT \DEL) E_M
-	- \U \DOT \left[(\B \DOT \DEL) \left( \H \right) \right] 
-	+ \DEL \DOT \left(\JS \times \H \right) 
+	- \U \DOT \left[(\B \DOT \DEL) \left( \H \right) \right]
+	+ \DEL \DOT \left(\JS \times \H \right)
 	- \DEL \DOT \left(\E \times \H \right)
 \end{equation}
 Canceling terms yields two forms

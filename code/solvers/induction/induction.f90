@@ -552,7 +552,7 @@
          type(dir_tree),intent(in) :: DT
          integer :: i
 
-         do i=1,SP%VS%B%TMP%multistep_iter
+         do i=1,TMP%multistep_iter
          select case (SP%VS%B%SS%solve_method)
          case (1)
            call Euler_time_no_diff_Euler_sources_no_correction(ind%B,ind%Bstar,F,TMP)
@@ -576,6 +576,10 @@
          case (7)
            call O2_BDF_time_AB2_sources(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%Bstar,&
            ind%Bnm1,ind%phi,F,Fnm1,ind%m,TMP,ind%temp_F1,ind%temp_E,ind%temp_CC,&
+           EF%unsteady_0D%export_now)
+         case (8)
+           call Euler_time_RK_sources(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%Bstar,ind%Bnm1,&
+           ind%phi,F,Fnm1,ind%m,TMP,TMP%RKP,ind%temp_F1,ind%temp_E,ind%temp_CC,&
            EF%unsteady_0D%export_now)
          case default; stop 'Error: bad solveBMethod input solve_induction in induction.f90'
          end select
