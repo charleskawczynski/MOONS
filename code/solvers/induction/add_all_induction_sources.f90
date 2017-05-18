@@ -17,7 +17,7 @@
 
        contains
 
-       subroutine add_all_induction_sources(F,Fnm1,mom,ind,TMP,SP)
+       subroutine add_all_induction_sources(F,Fnm1,ind,TMP,SP,mom)
          implicit none
          type(VF),intent(inout) :: F,Fnm1
          type(momentum),intent(in) :: mom
@@ -35,7 +35,7 @@
          endif
          if (SP%IT%diffusion%add) then
            call add_curl_J(F,ind%m,ind%J,ind%sigmaInv_edge,&
-           SP%IT%diffusion%scale,ind%temp_F2,ind%temp_E)
+            SP%IT%diffusion%scale,ind%temp_F2,ind%temp_E)
          endif
          if (SP%IT%unsteady_B0%add) then
            call add_unsteady_B0(F,ind%B0,ind%dB0dt,SP%IT%B_applied%scale,SP%IT%unsteady_B0%scale,TMP)

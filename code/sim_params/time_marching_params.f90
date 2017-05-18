@@ -9,6 +9,8 @@
        public :: time_marching_params
        public :: init,delete,export,import,display,print
        public :: iterate_step
+       public :: iterate_RK
+       public :: assign_RK_stage
        public :: couple_time_step
        public :: prolongate
        public :: update_dt
@@ -28,24 +30,26 @@
          type(string) :: dir,name          ! directory / name
        end type
 
-       interface init;             module procedure init_TMP;                end interface
-       interface init;             module procedure init_copy_TMP;           end interface
-       interface delete;           module procedure delete_TMP;              end interface
-       interface export;           module procedure export_TMP;              end interface
-       interface export;           module procedure export_TMP_wrapper;      end interface
-       interface export;           module procedure export_TMP_wrapper_name; end interface
-       interface import;           module procedure import_TMP;              end interface
-       interface import;           module procedure import_TMP_wrapper;      end interface
-       interface import;           module procedure import_TMP_wrapper_name; end interface
-       interface display;          module procedure display_TMP;             end interface
-       interface print;            module procedure print_TMP;               end interface
-       interface iterate_step;     module procedure iterate_step_TMP;        end interface
+       interface init;              module procedure init_TMP;                end interface
+       interface init;              module procedure init_copy_TMP;           end interface
+       interface delete;            module procedure delete_TMP;              end interface
+       interface export;            module procedure export_TMP;              end interface
+       interface export;            module procedure export_TMP_wrapper;      end interface
+       interface export;            module procedure export_TMP_wrapper_name; end interface
+       interface import;            module procedure import_TMP;              end interface
+       interface import;            module procedure import_TMP_wrapper;      end interface
+       interface import;            module procedure import_TMP_wrapper_name; end interface
+       interface display;           module procedure display_TMP;             end interface
+       interface print;             module procedure print_TMP;               end interface
+       interface iterate_step;      module procedure iterate_step_TMP;        end interface
+       interface iterate_RK;        module procedure iterate_RK_TMP;          end interface
+       interface assign_RK_stage;   module procedure assign_RK_stage_TMP;     end interface
 
-       interface couple_time_step; module procedure couple_time_step_TMP;    end interface
+       interface couple_time_step;  module procedure couple_time_step_TMP;    end interface
 
-       interface prolongate;       module procedure prolongate_TMP;          end interface
-       interface update_dt;        module procedure update_dt_TMP;           end interface
-       interface update_dt_CFL;    module procedure update_dt_CFL_TMP;       end interface
+       interface prolongate;        module procedure prolongate_TMP;          end interface
+       interface update_dt;         module procedure update_dt_TMP;           end interface
+       interface update_dt_CFL;     module procedure update_dt_CFL_TMP;       end interface
 
        contains
 
@@ -53,14 +57,15 @@
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-       subroutine init_TMP(TMP,RK_order,multistep_iter,n_step_stop,dt,dir,name)
+       subroutine init_TMP(TMP,n_stages,active,multistep_iter,n_step_stop,dt,dir,name)
          implicit none
          type(time_marching_params),intent(inout) :: TMP
-         integer,intent(in) :: RK_order,multistep_iter
+         integer,intent(in) :: n_stages,multistep_iter
+         logical,intent(in) :: active
          integer(li),intent(in) :: n_step_stop
          real(cp),intent(in) :: dt
          character(len=*),intent(in) :: dir,name
-         call init(TMP%RKP,RK_order)
+         call init(TMP%RKP,n_stages,active)
          TMP%n_step_start = 0
          TMP%n_step = 0
          TMP%multistep_iter = multistep_iter
@@ -211,7 +216,19 @@
          implicit none
          type(time_marching_params),intent(inout) :: TMP
          TMP%n_step = TMP%n_step + 1
-         TMP%t = TMP%t + TMP%dt
+       end subroutine
+
+       subroutine iterate_RK_TMP(TMP)
+         implicit none
+         type(time_marching_params),intent(inout) :: TMP
+         call update_time(TMP%RKP,TMP%t,TMP%dt)
+       end subroutine
+
+       subroutine assign_RK_stage_TMP(TMP,RK_stage)
+         implicit none
+         type(time_marching_params),intent(inout) :: TMP
+         integer,intent(in) :: RK_stage
+         call assign_stage(TMP%RKP,RK_stage)
        end subroutine
 
        subroutine couple_time_step_TMP(TMP,coupled)

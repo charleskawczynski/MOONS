@@ -19,6 +19,7 @@
        use refine_mesh_mod
        use assign_B0_vs_t_mod
        use datatype_conversion_mod
+       use RK_Params_mod
 
        use mesh_stencils_mod
        use init_B_BCs_mod
@@ -68,6 +69,7 @@
        public :: induction
        public :: init,delete,display,print,export,import ! Essentials
        public :: solve,export_tec,compute_export_E_M_budget
+       public :: export_unsteady
 
        type induction
          ! --- Tensor fields ---
@@ -122,10 +124,11 @@
        interface set_sigma_inv;        module procedure set_sigma_inv_ind;             end interface
        interface init_matrix_based_ops;module procedure init_matrix_based_ops_ind;     end interface
 
-       interface export_unsteady_0D;    module procedure export_unsteady_0D_ind;       end interface
-       interface export_unsteady_1D;    module procedure export_unsteady_1D_ind;       end interface
-       interface export_unsteady_2D;    module procedure export_unsteady_2D_ind;       end interface
-       interface export_unsteady_3D;    module procedure export_unsteady_3D_ind;       end interface
+       interface export_unsteady;      module procedure export_unsteady_ind;           end interface
+       interface export_unsteady_0D;   module procedure export_unsteady_0D_ind;        end interface
+       interface export_unsteady_1D;   module procedure export_unsteady_1D_ind;        end interface
+       interface export_unsteady_2D;   module procedure export_unsteady_2D_ind;        end interface
+       interface export_unsteady_3D;   module procedure export_unsteady_3D_ind;        end interface
 
        contains
 
@@ -541,17 +544,14 @@
          call add_curl_curl(ind%m,diffusion_treatment(2))
        end subroutine
 
-       subroutine solve_induction(ind,SP,F,Fnm1,TMP,EF,EN,DT)
+       subroutine solve_induction(ind,SP,F,Fnm1,TMP,EF)
          implicit none
          type(induction),intent(inout) :: ind
          type(sim_params),intent(in) :: SP
          type(VF),intent(in) :: F,Fnm1
          type(time_marching_params),intent(inout) :: TMP
          type(export_frequency),intent(in) :: EF
-         type(export_now),intent(in) :: EN
-         type(dir_tree),intent(in) :: DT
          integer :: i
-
          do i=1,TMP%multistep_iter
          select case (SP%VS%B%SS%solve_method)
          case (1)
@@ -583,20 +583,25 @@
            EF%unsteady_0D%export_now)
          case default; stop 'Error: bad solveBMethod input solve_induction in induction.f90'
          end select
-         call iterate_step(TMP)
          if (SP%embed_B_interior) call embedFace(ind%B,ind%B_interior,ind%MD_sigma)
          enddo
-
+         ! ********************* POST SOLUTION COMPUTATIONS *********************
          call compute_J_ind(ind,SP)
+       end subroutine
 
-         ! ********************* POST SOLUTION PRINT/EXPORT *********************
-
+       subroutine export_unsteady_ind(ind,SP,TMP,EF,EN,DT)
+         implicit none
+         type(induction),intent(inout) :: ind
+         type(sim_params),intent(in) :: SP
+         type(time_marching_params),intent(inout) :: TMP
+         type(export_frequency),intent(in) :: EF
+         type(export_now),intent(in) :: EN
+         type(dir_tree),intent(in) :: DT
          if (EF%unsteady_0D%export_now) call export_unsteady_0D(ind,SP,TMP)
          if (EF%unsteady_1D%export_now) call export_unsteady_1D(ind,SP,TMP,DT)
          if (EF%unsteady_2D%export_now) call export_unsteady_2D(ind,SP,TMP,DT)
          if (EF%unsteady_3D%export_now) call export_unsteady_3D(ind,SP,TMP,DT)
          if (EF%info%export_now) call print(ind,SP)
-
          if (EF%final_solution%export_now.or.EN%B%this.or.EN%all%this) then
            call export(ind,SP,DT)
            call export_tec(ind,SP,DT)

@@ -54,6 +54,7 @@
        public :: energy
        public :: init,delete,display,print,export,import ! Essentials
        public :: solve,export_tec
+       public :: export_unsteady
 
        type energy
          ! --- Vector fields ---
@@ -90,6 +91,7 @@
        interface import;             module procedure import_energy;          end interface
 
        interface solve;              module procedure solve_energy;           end interface
+       interface export_unsteady;    module procedure export_unsteady_nrg;    end interface
        interface export_unsteady_0D; module procedure export_unsteady_0D_nrg; end interface
        interface export_unsteady_1D; module procedure export_unsteady_1D_nrg; end interface
        interface export_unsteady_2D; module procedure export_unsteady_2D_nrg; end interface
@@ -315,15 +317,13 @@
          call export_processed(nrg%m,nrg%T,str(DT%T%unsteady),'T',1,TMP,SP%VS%T%unsteady_field)
        end subroutine
 
-       subroutine solve_energy(nrg,SP,F,Fnm1,TMP,EF,EN,DT)
+       subroutine solve_energy(nrg,SP,F,Fnm1,TMP,EF)
          implicit none
          type(energy),intent(inout) :: nrg
          type(sim_params),intent(in) :: SP
          type(SF),intent(in) :: F,Fnm1
          type(time_marching_params),intent(inout) :: TMP
          type(export_frequency),intent(in) :: EF
-         type(export_now),intent(in) :: EN
-         type(dir_tree),intent(in) :: DT
 
          select case(SP%VS%T%SS%solve_method)
          case (1)
@@ -341,20 +341,23 @@
            TMP,TMP%RKP,nrg%temp_CC1,EF%unsteady_0D%export_now)
          case default; stop 'Error: solveTMethod must = 1:4 in energy.f90.'
          end select
-         call iterate_step(TMP)
-
-         call volumetric_heating_equation(nrg%Q_source,nrg%m,SP%DP%Pe)
-
          ! ********************* POST SOLUTION COMPUTATIONS *********************
+         call volumetric_heating_equation(nrg%Q_source,nrg%m,SP%DP%Pe)
+       end subroutine
 
-         ! ********************* POST SOLUTION PRINT/EXPORT *********************
-
+       subroutine export_unsteady_nrg(nrg,SP,TMP,EF,EN,DT)
+         implicit none
+         type(energy),intent(inout) :: nrg
+         type(sim_params),intent(in) :: SP
+         type(time_marching_params),intent(inout) :: TMP
+         type(export_frequency),intent(in) :: EF
+         type(export_now),intent(in) :: EN
+         type(dir_tree),intent(in) :: DT
          if (EF%unsteady_0D%export_now) call export_unsteady_0D(nrg,SP,TMP)
          if (EF%unsteady_1D%export_now) call export_unsteady_1D(nrg,SP,TMP,DT)
          if (EF%unsteady_2D%export_now) call export_unsteady_2D(nrg,SP,TMP,DT)
          if (EF%unsteady_3D%export_now) call export_unsteady_3D(nrg,SP,TMP,DT)
          if (EF%info%export_now) call print(nrg,SP)
-
          if (EF%final_solution%export_now.or.EN%T%this.or.EN%all%this) then
            call export(nrg,SP,DT)
            call export_tec(nrg,SP,DT)

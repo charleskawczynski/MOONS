@@ -17,11 +17,12 @@
 
        contains
 
-       subroutine add_all_energy_sources(F,Fnm1,nrg,ind,SP)
+       subroutine add_all_energy_sources(F,Fnm1,nrg,TMP,SP,ind)
          implicit none
          type(energy),intent(inout) :: nrg
          type(SF),intent(inout) :: F,Fnm1
          type(induction),intent(inout) :: ind
+         type(time_marching_params),intent(in) :: TMP
          type(sim_params),intent(in) :: SP
 
          call assign(Fnm1,F)

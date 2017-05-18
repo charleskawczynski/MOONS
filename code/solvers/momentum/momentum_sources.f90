@@ -21,6 +21,7 @@
        implicit none
 
        private
+       public :: compute_add_pressure_grad
        public :: compute_add_advection_divergence
        public :: compute_add_advection_convection
        public :: compute_add_advection_base_flow
@@ -33,6 +34,16 @@
        public :: compute_add_gravity
 
        contains
+
+       subroutine compute_add_pressure_grad(F,m,p,scale,temp_F)
+         implicit none
+         type(VF),intent(inout) :: F,temp_F
+         type(SF),intent(in) :: p
+         type(mesh),intent(in) :: m
+         real(cp),intent(in) :: scale
+         call grad(temp_F,p,m)
+         call add_product(F,temp_F,scale)
+       end subroutine
 
        subroutine compute_add_advection_divergence(F,m,U,U_E,scale,temp_F,temp_E,temp_CC)
          implicit none

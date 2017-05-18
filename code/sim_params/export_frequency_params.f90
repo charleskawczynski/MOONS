@@ -19,7 +19,7 @@
        interface export;  module procedure export_EFP;    end interface
        interface import;  module procedure import_EFP;    end interface
 
-       interface update;  module procedure update_EFP;         end interface
+       interface update;  module procedure update_EFP;    end interface
 
        type export_frequency_params
          logical :: export_ever = .false.
@@ -110,10 +110,11 @@
          read(un,*); read(un,*) EFP%frequency_exp
        end subroutine
 
-       subroutine update_EFP(EFP,n_step)
+       subroutine update_EFP(EFP,n_step,substep)
          implicit none
          type(export_frequency_params),intent(inout) :: EFP
          integer(li),intent(in) :: n_step
+         logical,intent(in) :: substep
          logical :: first_step,past_first_step
          if (EFP%export_ever) then
            first_step = n_step.eq.0
@@ -124,6 +125,7 @@
            endif
          else; EFP%export_now = .false.
          endif
+         if (substep) EFP%export_now = .false.
        end subroutine
 
        end module

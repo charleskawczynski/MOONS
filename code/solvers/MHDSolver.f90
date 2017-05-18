@@ -14,6 +14,7 @@
        use refine_mesh_mod
        use kill_switch_mod
        use probe_mod
+       use RK_Params_mod
 
        use ops_embedExtract_mod
        use time_marching_params_mod
@@ -47,6 +48,7 @@
          type(refine_mesh) :: RM
          type(kill_switch) :: KS
          logical :: refine_mesh_now_all
+         integer :: i_RK
 
          refine_mesh_now_all = .false.
 
@@ -64,31 +66,51 @@
          write(*,*) '***************************************************************'
          do while ((.not.KS%terminate_loop).and.(coupled%n_step.lt.coupled%n_step_stop))
            call tic(sc)
-           call update(EF,coupled%n_step)
            if (SP%print_every_MHD_step) write(*,*) 'coupled%n_step = ',coupled%n_step
 
-           ! if (SP%VS%rho%SS%solve)    call solve(dens,mom%U,  EF,EN,DT)
-           if (SP%VS%T%SS%solve) then
-             call embedFace(nrg%U_F,mom%U,nrg%MD)
-             call embedCC(nrg%U_CC,mom%U_CC,nrg%MD)
-             call add_all_energy_sources(nrg%F,nrg%Fnm1,nrg,ind,SP)
-             call solve(nrg,SP,nrg%F,nrg%Fnm1,SP%VS%T%TMP,EF,EN,DT)
-           endif
-           if (SP%VS%U%SS%solve) then
-             call add_all_momentum_sources(mom%F,mom%Fnm1,nrg,mom,ind,SP)
-             call solve(mom,SP,mom%F,mom%Fnm1,SP%VS%U%TMP,EF,EN,DT)
-           endif
-           if (SP%VS%B%SS%solve) then
-            call embedVelocity_E(ind%U_E,mom%U_E,ind%MD_fluid)
-            call add_all_induction_sources(ind%F,ind%Fnm1,mom,ind,SP%VS%B%TMP,SP)
-            call solve(ind,SP,ind%F,ind%Fnm1,SP%VS%B%TMP ,EF,EN,DT)
-           endif
+           do i_RK=1,coupled%RKP%n_stages
+             call assign_RK_stage(SP%VS%T%TMP,i_RK)
+             call assign_RK_stage(SP%VS%U%TMP,i_RK)
+             call assign_RK_stage(SP%VS%B%TMP,i_RK)
+             call assign_RK_stage(coupled,i_RK)
+             call update(EF,coupled%n_step,i_RK.ne.coupled%RKP%n_stages)
+             ! if (SP%VS%rho%SS%solve)    call solve(dens,mom%U,  EF,EN,DT)
+             if (SP%VS%T%SS%solve) then
+               call embedFace(nrg%U_F,mom%U,nrg%MD)
+               call embedCC(nrg%U_CC,mom%U_CC,nrg%MD)
+               call add_all_energy_sources(nrg%F,nrg%Fnm1,nrg,SP%VS%U%TMP,SP,ind)
+               call solve(nrg,SP,nrg%F,nrg%Fnm1,SP%VS%T%TMP,EF)
+             endif
+             if (SP%VS%U%SS%solve) then
+               call add_all_momentum_sources(mom%F,mom%Fnm1,mom,SP%VS%U%TMP,SP,ind,nrg)
+               call solve(mom,SP,mom%F,mom%Fnm1,SP%VS%U%TMP,EF)
+             endif
+             if (SP%VS%B%SS%solve) then
+               call embedVelocity_E(ind%U_E,mom%U_E,ind%MD_fluid)
+               call add_all_induction_sources(ind%F,ind%Fnm1,ind,SP%VS%B%TMP,SP,mom)
+               call solve(ind,SP,ind%F,ind%Fnm1,SP%VS%B%TMP ,EF)
+             endif
+             call iterate_RK(SP%VS%T%TMP)
+             call iterate_RK(SP%VS%U%TMP)
+             call iterate_RK(SP%VS%B%TMP)
+             call iterate_RK(coupled)
+           enddo
+           call update(EF,coupled%n_step,.false.)
+
+           if (SP%VS%T%SS%solve) call iterate_step(SP%VS%T%TMP)
+           if (SP%VS%U%SS%solve) call iterate_step(SP%VS%U%TMP)
+           if (SP%VS%B%SS%solve) call iterate_step(SP%VS%B%TMP)
+           call iterate_step(coupled)
+
+           if (SP%VS%T%SS%solve) call export_unsteady(nrg,SP,SP%VS%T%TMP,EF,EN,DT)
+           if (SP%VS%U%SS%solve) call export_unsteady(mom,SP,SP%VS%U%TMP,EF,EN,DT)
+           if (SP%VS%B%SS%solve) call export_unsteady(ind,SP,SP%VS%B%TMP,EF,EN,DT)
 
            if (EN%any_now) then;
              call export_TMP(SP%VS); call export(coupled)
            endif
 
-           call iterate_step(coupled)
+           ! call print(coupled%RKP,'coupled')
            call update(ES,sc%t_passed)
 
            call import(EN)

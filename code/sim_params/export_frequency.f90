@@ -133,17 +133,18 @@
          close(un)
        end subroutine
 
-       subroutine update_EF(EF,n_step)
+       subroutine update_EF(EF,n_step,substep)
          implicit none
          type(export_frequency),intent(inout) :: EF
          integer(li),intent(in) :: n_step
-         call update(EF%info,n_step)
-         call update(EF%unsteady_0D,n_step)
-         call update(EF%unsteady_1D,n_step)
-         call update(EF%unsteady_2D,n_step)
-         call update(EF%unsteady_3D,n_step)
-         call update(EF%final_solution,n_step)
-         call update(EF%restart_files,n_step)
+         logical,intent(in) :: substep
+         call update(EF%info,n_step,substep)
+         call update(EF%unsteady_0D,n_step,substep)
+         call update(EF%unsteady_1D,n_step,substep)
+         call update(EF%unsteady_2D,n_step,substep)
+         call update(EF%unsteady_3D,n_step,substep)
+         call update(EF%final_solution,n_step,substep)
+         call update(EF%restart_files,n_step,substep)
        end subroutine
 
        end module

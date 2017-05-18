@@ -1,0 +1,149 @@
+\documentclass[11pt]{article}
+
+\input{../../../packages.tex}
+\input{../../../useful_commands.tex}
+
+\begin{document}
+\doublespacing
+\title{Runge-Kutta Time Marching}
+\author{C. Kawczynski \\
+Department of Mechanical and Aerospace Engineering \\
+University of California Los Angeles, USA\\
+}
+\maketitle
+
+\section{From Moin 1991}
+
+\subsection{Multiple Poisson solves (simpler formulation but more expensive)}
+Using $k+1$ instead of $k$, $k$ instead of $k-1$ etc., equation 2.5 is
+\begin{equation}\begin{aligned}
+\frac{\hat{\U}^{k+1}-\U^k}{\Delta t} = (\alpha_k+\beta_k) \MAC L \U^k + \beta_k \MAC L (\hat{\U}^{k+1} - \U^k)  + \gamma_k \F^k + \zeta_k \F^{k-1}  \\
+\end{aligned} \end{equation}
+Here, $\F^k = - \DEL \DOT (\U^k {\U^k}^T) + \frac{Ha^2}{Re} \J^k \CROSS \B^k$ and this solution is followed by the standard projection correction.
+And coefficients are
+
+\begin{table}\centering\begin{adjustbox}{max width=\textwidth}\begin{tabular}{| c | c | c | c | c |}
+\hline
+Number         & \MR{2}{*}{$\gamma_n$} & \MR{2}{*}{$\zeta_n$}  & \MR{2}{*}{$\alpha_n$}   & \MR{2}{*}{$\beta_n$} \\
+of Stages      &                       &                       &                         &                      \\ \hline
+\MR{3}{*}{3}   &      8/15             &           0           &          4/15           &          4/15        \\
+               &      5/12             &          -17/60       &          1/15           &          1/15        \\
+               &      3/4              &          -5/12        &          1/6            &          1/6         \\ \hline
+\end{tabular} \end{adjustbox} \caption{Original coefficients from Moin 1991} \end{table}
+\begin{table}\centering\begin{adjustbox}{max width=\textwidth}\begin{tabular}{| c | c | c | c | c |}
+\hline
+Number         & \MR{2}{*}{$\gamma_n$} & \MR{2}{*}{$\zeta_n$}  & \MR{2}{*}{$\alpha_n$}   & \MR{2}{*}{$\beta_n$} \\
+of Stages      &                       &                       &                         &                      \\ \hline
+\MR{3}{*}{3}   &      8/15             &           0           &          29/96          &          37/160      \\
+               &      5/12             &          -17/60       &          -3/40          &          5/24        \\
+               &      3/4              &          -5/12        &          1/6            &          1/6         \\ \hline
+\end{tabular} \end{adjustbox} \caption{Original coefficients from Spalart 1991} \end{table}
+
+\begin{table}\centering\begin{adjustbox}{max width=\textwidth}\begin{tabular}{| c | c | c | c |}
+\hline
+Number         & \MR{2}{*}{$a_n$}    & \MR{2}{*}{$b_n$}      & \MR{2}{*}{$c_n$}     \\
+of Stages      &                     &                       &                      \\ \hline
+\MR{3}{*}{3}   &      8/15           &          0            &          0           \\
+               &      5/12           &          -17/60       &          8/15        \\
+               &      3/4            &          -5/12        &          2/3         \\ \hline
+\MR{4}{*}{4}   &      8/17           &          0            &          0           \\
+               &      17/60          &          -15/68       &          8/17        \\
+               &      5/12           &          -17/60       &          8/15        \\
+               &      3/4            &          -5/12        &          2/3         \\ \hline
+\end{tabular} \end{adjustbox} \caption{Original coefficients from Lundbladh.} \label{tab:RK3} \end{table}
+
+This trivially simplifies:
+\begin{equation}\begin{aligned}
+\frac{\hat{\U}^{k+1}-\U^k}{\Delta t} = \alpha_k \MAC L \U^k + \beta_k \MAC L \hat{\U}^{k+1}  + \gamma_k \F^k + \zeta_k \F^{k-1}  \\
+\end{aligned} \end{equation}
+The important detail to note here is that a time-splitting has already taken place. Let's undo this by $\bar{\alpha}_k=2\alpha_k,\bar{\beta}_k=2\beta_k$. While keeping $\theta$ next to $Re$:
+\begin{equation}\begin{aligned}
+\frac{\hat{\U}^{k+1}-\U^k}{\Delta t} = \bar{\alpha}_k (1-\theta) \MAC L \U^k + \bar{\beta}_k \theta \MAC L \hat{\U}^{k+1} + \gamma_k \F^k + \zeta_k \F^{k-1}  \\
+\end{aligned} \end{equation}
+Moving implicit diffusion to LHS:
+\begin{equation}\begin{aligned}
+\frac{\hat{\U}^{k+1}-\U^k}{\Delta t} - \bar{\beta}_k \theta \MAC L \hat{\U}^{k+1} = \bar{\alpha}_k (1-\theta) \MAC L \U^k + \gamma_k \F^k + \zeta_k \F^{k-1}  \\
+\end{aligned} \end{equation}
+This is as far as we can go. Alternatively, splitting diffusion from the start, then we may modify $\F$ to include explicitly treated diffusion
+
+\subsection{Attempt to fit}
+Using
+\begin{equation}\begin{aligned}
+\frac{\hat{\U}^{k+1}-\U^k}{\Delta t} - \bar{\beta}_k \theta \MAC L \hat{\U}^{k+1} = \bar{\alpha}_k (1-\theta) \MAC L \U^k + \gamma_k \F^k + \zeta_k \F^{k-1}  \\
+\end{aligned} \end{equation}
+If we can modify such that
+\begin{equation}\begin{aligned}
+\bar{\alpha}_k (1-\theta) \MAC L \U^k + \gamma_k \F^k + \zeta_k \F^{k-1} = A_k (1-\theta) \MAC L \U^k + B_k \T^k + C_k \T^{k-1}  \\
+\T^k = \F^n + \bar{\alpha}_k (1-\theta)\MAC L\U^k \\
+B_k + C_k = 1
+\end{aligned} \end{equation}
+
+
+
+
+
+
+
+
+
+\subsection{Returning}
+$\F^k = \frac{\bar{\alpha}_k}{\gamma_k} (1-\theta)\MAC L\U^k - \DEL \DOT (\U^k {\U^k}^T) + \frac{Ha^2}{Re} \J^k \CROSS \B^k$
+\begin{equation}\begin{aligned}
+\frac{\hat{\U}^{k+1}-\U^k}{\Delta t} - \theta \MAC L \hat{\U}^{k+1} = \gamma_k \F^k + \zeta_k \F^{k-1}  \\
+\end{aligned} \end{equation}
+
+\begin{table}\centering\begin{adjustbox}{max width=\textwidth}\begin{tabular}{| c | c | c | c | c |}
+\hline
+Number         & \MR{2}{*}{$\gamma_n$} & \MR{2}{*}{$\zeta_n$}  & \MR{2}{*}{$\bar{\alpha}_n$}   & \MR{2}{*}{$\bar{\beta}_n$} \\
+of Stages      &                       &                       &                         &                      \\ \hline
+\MR{3}{*}{3}   &      8/15             &           0           &          8/15           &          8/15        \\
+               &      5/12             &          -17/60       &          2/15           &          2/15        \\
+               &      3/4              &          -5/12        &          1/3            &          1/3         \\ \hline
+\end{tabular} \end{adjustbox} \caption{Modified coefficients for my formulation} \end{table}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\newpage
+\subsection{Single Poisson solve (cheaper computations but more complicated formulation)}
+\begin{equation}\begin{aligned}
+\F^k = (\alpha_k+\beta_k)(1-\theta_u) \MAC L \hat{\U}^k - \frac{\alpha_k}{Re} \DEL (\DIV \hat{\U}^k) + \DEL \DOT (\U^k {\U^k}^T) + \frac{Ha^2}{Re} \J^k \CROSS \B^k \\
+\frac{\hat{\U}^{k+1}-\hat{\U}^k}{\Delta t} - (\alpha_k+\beta_k)\theta_u  \MAC L \hat{\U}^k = a_k\F^k + \beta_k\F^{k-1} \\
+\DEL^2 p^{k+1} = \frac{1}{\Delta t} \DEL \DOT \hat{\U} \\
+\U^{k+1} = \hat{\U} - \Delta t \DEL p^{k+1}
+\end{aligned} \end{equation}
+
+
+\subsection{Corrected coefficients from paper}
+
+The paper "An efficient spectral method for simulation" included time splitting in the Laplacian term, but the original paper incorporated time splitting into the coefficients. This means that the coefficients need correcting to fit the format of the paper.
+
+\begin{table}\centering\begin{adjustbox}{max width=\textwidth}\begin{tabular}{| c | c | c | c |}
+\hline
+Number         & \MR{2}{*}{$a_n$}    & \MR{2}{*}{$b_n$}      & \MR{2}{*}{$c_n$}     \\
+of Stages      &                     &                       &                      \\ \hline
+\MR{3}{*}{3}   &      8/15           &          0            &          0           \\
+               &      5/12           &          -17/60       &          8/15        \\
+               &      3/4            &          -5/12        &          2/3         \\ \hline
+\MR{4}{*}{4}   &      8/17           &          0            &          0           \\
+               &      17/60          &          -15/68       &          8/17        \\
+               &      5/12           &          -17/60       &          8/15        \\
+               &      3/4            &          -5/12        &          2/3         \\ \hline
+\end{tabular} \end{adjustbox} \caption{Coefficients of RK3 Schemes.} \label{tab:RK3} \end{table}
+
+\end{document}

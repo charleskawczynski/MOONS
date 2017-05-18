@@ -184,6 +184,7 @@
          real(cp) :: abs_d_data_dt,abs_d_data_dt_by_dmax
          ! Breaks if double exported data (TMP%t = p%t)
          p%d_data_dt = (d - p%d)/(TMP%t - p%t)
+         if (TMP%n_step.eq.0) p%d_data_dt = 0.0_cp
          if (p%t.lt.10.0_cp**(-10.0_cp)) p%d_data_dt = 0.0_cp
          abs_d_data_dt = abs(p%d_data_dt)
          p%t = TMP%t
@@ -191,9 +192,10 @@
          p%d_amax = maxval((/p%d_amax,p%d,abs(d)/))
          abs_d_data_dt_by_dmax = abs_d_data_dt/p%d_amax
          if (p%d_amax.lt.10.0_cp**(-10.0_cp)) abs_d_data_dt_by_dmax = abs_d_data_dt
-
-         if (p%n_step.eq.TMP%n_step) then
+         if (p%n_step.eq.TMP%n_step.and.(TMP%n_step.gt.0)) then
           write(*,*) 'Error: cannot export probe '//str(p%name)//' consecutively.'
+          write(*,*) 'TMP%n_step = ',TMP%n_step
+          write(*,*) 'p%n_step = ',p%n_step
           stop 'Done'
          endif
          p%n_step = TMP%n_step

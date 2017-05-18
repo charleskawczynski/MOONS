@@ -181,8 +181,8 @@
          type(VF),intent(inout) :: temp_F1
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
-         call multiply(temp_F1,F,TMP%dt*RKP%a(RKP%n))
-         call add_product(temp_F1,Fnm1,TMP%dt*RKP%b(RKP%n))
+         call multiply(temp_F1,F,TMP%dt)
+         call add_product(temp_F1,Fnm1,TMP%dt)
          call assign_wall_Dirichlet(temp_F1,0.0_cp,X)
          call add(temp_F1,X)
          call assign(Xnm1,X)

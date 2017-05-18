@@ -13,6 +13,7 @@
        use string_mod
        use path_mod
        use dir_tree_mod
+       use RK_Params_mod
 
        use mesh_stencils_mod
        use time_marching_methods_mod
@@ -69,6 +70,7 @@
        public :: init,delete,display,print,export,import ! Essentials
 
        public :: solve,export_tec,compute_export_E_K_Budget
+       public :: export_unsteady
 
        type momentum
          logical :: suppress_warning
@@ -103,6 +105,7 @@
        interface solve;                module procedure solve_momentum;             end interface
        interface init_matrix_based_ops;module procedure init_matrix_based_ops_mom;  end interface
 
+       interface export_unsteady;       module procedure export_unsteady_mom;        end interface
        interface export_unsteady_0D;    module procedure export_unsteady_0D_mom;      end interface
        interface export_unsteady_1D;    module procedure export_unsteady_1D_mom;      end interface
        interface export_unsteady_2D;    module procedure export_unsteady_2D_mom;      end interface
@@ -415,14 +418,12 @@
 
        ! ******************* SOLVER ****************************
 
-       subroutine solve_momentum(mom,SP,F,Fnm1,TMP,EF,EN,DT)
+       subroutine solve_momentum(mom,SP,F,Fnm1,TMP,EF)
          implicit none
          type(momentum),intent(inout) :: mom
          type(sim_params),intent(in) :: SP
          type(VF),intent(in) :: F,Fnm1
          type(export_frequency),intent(in) :: EF
-         type(export_now),intent(in) :: EN
-         type(dir_tree),intent(in) :: DT
          type(time_marching_params),intent(inout) :: TMP
          integer :: i
 
@@ -456,29 +457,31 @@
            EF%unsteady_0D%export_now)
          case default; stop 'Error: solveUMethod must = 1:4 in momentum.f90.'
          end select
-         call iterate_step(TMP)
          enddo
-
          ! ********************* POST SOLUTION COMPUTATIONS *********************
          call face2CellCenter(mom%U_CC,mom%U,mom%m)
-
          ! U at cell edge is needed for advection term at next time step
          ! and in induction solver. Neither case requires the diagonal.
          call face2edge_no_diag(mom%U_E,mom%U,mom%m)
+       end subroutine
 
-         ! ********************* POST SOLUTION PRINT/EXPORT *********************
-
+       subroutine export_unsteady_mom(mom,SP,TMP,EF,EN,DT)
+         implicit none
+         type(momentum),intent(inout) :: mom
+         type(sim_params),intent(in) :: SP
+         type(export_frequency),intent(in) :: EF
+         type(export_now),intent(in) :: EN
+         type(dir_tree),intent(in) :: DT
+         type(time_marching_params),intent(inout) :: TMP
          if (EF%unsteady_0D%export_now) call export_unsteady_0D(mom,SP,TMP)
          if (EF%unsteady_1D%export_now) call export_unsteady_1D(mom,SP,TMP,DT)
          if (EF%unsteady_2D%export_now) call export_unsteady_2D(mom,SP,TMP,DT)
          if (EF%unsteady_3D%export_now) call export_unsteady_3D(mom,SP,TMP,DT)
          if (EF%info%export_now) call print(mom,SP)
-
          if (EF%final_solution%export_now.or.EN%U%this.or.EN%all%this) then
            call export(mom,SP,DT)
            call export_tec(mom,SP,DT)
          endif
-         call update(mom%TS,mom%m,mom%U,TMP,mom%temp_F1,mom%temp_CC_VF,mom%TF_CC)
        end subroutine
 
        subroutine compute_export_E_K_Budget(mom,SP,B,B0,J,MD_fluid,DT)

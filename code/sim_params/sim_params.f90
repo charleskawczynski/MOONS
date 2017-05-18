@@ -98,9 +98,9 @@
        SP%FCL%Poisson_test           = F ! not used anywhere
 
        SP%EL%export_analytic         = F ! Export analytic solutions (MOONS.f90)
-       SP%EL%export_meshes           = T ! Export all meshes before starting simulation
+       SP%EL%export_meshes           = F ! Export all meshes before starting simulation
        SP%EL%export_vort_SF          = T ! Export vorticity-stream-function after simulation
-       SP%EL%export_mat_props        = T ! Export material properties before starting simulation
+       SP%EL%export_mat_props        = F ! Export material properties before starting simulation
        SP%EL%export_ICs              = F ! Export Post-Processed ICs before starting simulation
        SP%EL%export_cell_volume      = F ! Export cell volumes for each mesh
        SP%EL%export_planar           = F ! Export 2D data when N_cell = 1 along given direction
@@ -110,7 +110,7 @@
 
        SP%export_safe_period         = 1.0_cp*seconds_per_day ! CPU wall clock time to export regularly
        SP%restart_meshes             = F ! restart sim (requires no code changes)
-       SP%export_heavy               = F ! Export lots of sim info
+       SP%export_heavy               = T ! Export lots of sim info
        SP%uniform_gravity_dir        = 1 ! Uniform gravity field direction
        SP%uniform_B0_dir             = 3 ! Uniform applied field direction
        SP%mpg_dir                    = 0 ! Uniform applied field direction
@@ -130,8 +130,8 @@
        SP%EL%export_symmetric = SP%MP%mirror
 
        ! call init(EFP,export_ever,export_first_step,frequency_base,frequency_exp)
-       call init(SP%EF%info          ,T,T,1,10,2)
-       call init(SP%EF%unsteady_0D   ,T,T,1,10,2)
+       call init(SP%EF%info          ,T,T,1,10,1)
+       call init(SP%EF%unsteady_0D   ,T,T,1,10,1)
        call init(SP%EF%unsteady_1D   ,F,F,1,10,2)
        call init(SP%EF%unsteady_2D   ,F,F,1,10,2)
        call init(SP%EF%unsteady_3D   ,F,F,1,10,4)
@@ -147,7 +147,7 @@
        call init(SP%TSP,F,100.0_cp,500.0_cp)
 
        time                          = 1000.0_cp
-       dtime                         = 1.0_cp*pow(-2)
+       dtime                         = 1.0_cp*pow(-1)
 
        SP%GP%tw                      = 0.05_cp
        SP%GP%geometry                = 9
@@ -223,9 +223,9 @@
 
        ! call init(SS        ,initialize,solve,restart,prescribe_BCs,solve_method)
        call init(SP%VS%T%SS  ,F         ,F    ,F      ,F            ,0)
-       call init(SP%VS%U%SS  ,T         ,T    ,F      ,T            ,6)
+       call init(SP%VS%U%SS  ,T         ,T    ,F      ,T            ,8)
        call init(SP%VS%P%SS  ,T         ,T    ,F      ,F            ,0)
-       call init(SP%VS%B%SS  ,T         ,T    ,F      ,F            ,6)
+       call init(SP%VS%B%SS  ,T         ,T    ,F      ,F            ,8)
        call init(SP%VS%B0%SS ,T         ,T    ,F      ,F            ,0)
        call init(SP%VS%phi%SS,F         ,F    ,F      ,F            ,0)
        call init(SP%VS%rho%SS,F         ,F    ,F      ,F            ,0)
@@ -259,15 +259,15 @@
        call init(SP%VS%phi%ISP,5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_phi')
        call init(SP%VS%rho%ISP,5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_rho')
 
-       ! call init(TMP,RK_order,multistep_iter,n_step_stop,dtime,dir,name)
-       call init(SP%coupled,   4,1 ,ceiling(time/dtime,li),dtime        ,str(DT%TMP),'TMP_coupled')
-       call init(SP%VS%T%TMP,  4,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_T')
-       call init(SP%VS%U%TMP,  4,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_U')
-       call init(SP%VS%P%TMP,  4,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_P')
-       call init(SP%VS%B%TMP,  4,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_B')
-       call init(SP%VS%B0%TMP, 4,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_B0')
-       call init(SP%VS%phi%TMP,4,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_phi')
-       call init(SP%VS%rho%TMP,4,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_rho')
+       ! call init(TMP,RK_n_stages,RK_active,multistep_iter,n_step_stop,dtime,dir,name)
+       call init(SP%coupled,   4,.true.,1 ,ceiling(time/dtime,li),dtime        ,str(DT%TMP),'TMP_coupled')
+       call init(SP%VS%T%TMP,  4,.true.,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_T')
+       call init(SP%VS%U%TMP,  4,.true.,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_U')
+       call init(SP%VS%P%TMP,  4,.true.,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_P')
+       call init(SP%VS%B%TMP,  4,.true.,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_B')
+       call init(SP%VS%B0%TMP, 4,.true.,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_B0')
+       call init(SP%VS%phi%TMP,4,.true.,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_phi')
+       call init(SP%VS%rho%TMP,4,.true.,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_rho')
 
        ! Matrix-free parameters:
        ! coeff_natural  = coefficient of terms in non-discretized equation
@@ -276,7 +276,7 @@
        ! coeff_implicit_time_split = dt*coeff_implicit/coeff_unsteady (computed in time_marching_methods.f90)
 
        SP%VS%B%MFP%alpha = 1.0_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
-       SP%VS%U%MFP%alpha = 1.0_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
+       SP%VS%U%MFP%alpha = 0.5_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
        SP%VS%T%MFP%alpha = 0.5_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
        SP%VS%B%MFP%coeff_natural = -1.0_cp/SP%DP%Rem ! natural diffusion coefficient on RHS
        SP%VS%U%MFP%coeff_natural =  1.0_cp/SP%DP%Re  ! natural diffusion coefficient on RHS
@@ -288,6 +288,7 @@
        ! The following is needed only if curl-curl(B) is used, opposed to J in solver.
        ! if (SP%finite_Rem) SP%VS%B%MFP%coeff_explicit = SP%VS%B%MFP%coeff_explicit/SP%DP%Rem
 
+       SP%MT%pressure_grad%add          = F ! add explicit pressure      to momentum equation
        SP%MT%diffusion%add              = T ! add diffusion              to momentum equation
        SP%MT%advection_convection%add   = F ! add advection (conv form)  to momentum equation
        SP%MT%advection_divergence%add   = T ! add advection (div  form)  to momentum equation
@@ -309,6 +310,7 @@
        SP%ET%joule_heating%add          = F ! add joule_heating       to energy equation
        SP%ET%volumetric_heating%add     = F ! add volumetric_heating  to energy equation
 
+       SP%MT%pressure_grad%scale        = -1.0_cp
        SP%MT%diffusion%scale            = SP%VS%U%MFP%coeff_explicit
        SP%MT%advection_convection%scale = -1.0_cp
        SP%MT%advection_divergence%scale = -1.0_cp
