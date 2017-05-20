@@ -1,0 +1,126 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Kinetic, Magnetic, and Thermal energy equations}
+
+\subsection{Kinetic}
+\begin{equation}
+	E_K = \frac{1}{2} \rho u_i u_i
+	,\qquad
+	S_{ij} = \frac{1}{2} \left( \frac{\PD u_i}{\PD x_j} + \frac{\PD u_j}{\PD x_i} \right)
+	,\qquad
+	2S_{ij}S_{ij} = \frac{\PD u_i}{\PD x_j} \frac{\PD u_i}{\PD x_j}
+	+ \frac{\PD u_i}{\PD x_j} \frac{\PD u_j}{\PD x_i}
+\end{equation}
+\subsubsection{Variation 1}
+\begin{equation}
+	\boxed{
+	\underbrace{\frac{\PD E_K}{\PD t}}_{\substack{\text{Time rate $\dot{\MAC E}$ of} \\ \text{change of $E_K$}}} +
+	\underbrace{u_j \frac{\PD E_K}{\PD x_j}}_
+	{\substack{\text{Convection } \MAC C_K \\\text{of $E_K$}}}
+	+
+	\underbrace{\frac{\PD}{\PD x_i} \left( u_i p - 2 \mu u_j S_{ij} \right)}_{\text{Transport } \MAC T} =
+	- \underbrace{2 \mu S_{ij} S_{ij}}_{\substack{\text{Viscous } \\ \text{dissipation } \varepsilon_v}}
+	+ \underbrace{u_i B_j \frac{\PD}{\PD x_j} \frac{B_i}{\mu}}_
+	{\substack{\text{Power $\MAC P_{m}$ of}\\\text{maxwell stresses}}}
+	- \underbrace{u_j \frac{\PD E_m}{\PD x_j}}_
+	{\substack{\text{Convection $\MAC C_m$}\\\text{of $E_m$}}}
+	}
+\end{equation}
+\subsubsection{Variation 2}
+\begin{equation}
+	\boxed{
+	\underbrace{\frac{\PD E_K}{\PD t}}_{\substack{\text{Time rate $\dot{\MAC E}$ of} \\ \text{change of $E_K$}}} +
+	\underbrace{u_j \frac{\PD E_K}{\PD x_j}}_
+	{\substack{\text{Convection } \MAC C_K \\\text{of $E_K$}}}
+	=
+	- \underbrace{\frac{\PD (u_i p)}{\PD x_i}}_{\text{Pressure } \MAC P}
+	+ \underbrace{ \mu \frac{\PD^2 E_K}{\PD x_j^2} }_{\substack{\text{Diffusion } \MAC D_K \\ \text{of $E_K$ }}}
+	- \underbrace{\mu \frac{\PD u_i}{\PD x_j}\frac{\PD u_i}{\PD x_j} }_{\substack{\text{Viscous } \\ \text{dissipation } \varepsilon_v'}}
+	+ \underbrace{u_i B_j \frac{\PD}{\PD x_j} \frac{B_i}{\mu}}_
+	{\substack{\text{Power $\MAC P_{m}$ of}\\\text{maxwell stresses}}}
+	- \underbrace{u_j \frac{\PD E_m}{\PD x_j}}_
+	{\substack{\text{Convection $\MAC C_m$}\\\text{of $E_m$}}}
+	}
+\end{equation}
+
+\subsection{Magnetic}
+\begin{equation}
+	\boxed{
+	\underbrace{\frac{\PD E_m}{\PD t} }_
+	{\substack{\text{Time rate $\dot{\MAC B}$ of}\\\text{change of $E_M$}}}
+	=
+	- \underbrace{\DIV \left(\E \CROSS \H \right)}_
+	{\substack{\text{Radiation}\\\text{term $\MAC P_{r}$}}}
+	- \underbrace{\U \DOT \left[\B \DOT \DEL \left( \H \right) \right]}_
+	{\substack{\text{Power $\MAC P_{m}$ of}\\\text{maxwell stresses}}}
+	+ \underbrace{(\U \DOT \DEL) E_m}_
+	{\substack{\text{Convection $\MAC C_m$}\\\text{of $E_m$}}}
+	- \underbrace{\JSS}_
+	{\substack{\text{Joule}\\\text{dissipation}\\\text{$\MAC E_J$}}}
+	}
+\end{equation}
+
+\subsection{Thermal}
+\begin{equation}
+	\boxed{
+	\underbrace{\frac{\PD T}{\PD t}}_{\substack{\text{Time rate $\MAC E_T$ of} \\ \text{change of $E_T$}}} +
+	\underbrace{(\U \DOT \DEL) T}_{\substack{\text{Convection $\MAC C_T$ of} \\ \text{thermal energy}}}
+	=
+	\underbrace{\DIV (k \DEL T)}_{\substack{\text{Thermal} \\ \text{diffusion } \MAC D_T}} +
+	\underbrace{\JSS}_
+	{\substack{\text{Joule}\\\text{dissipation}\\\text{$\MAC E_J$}}} +
+	\underbrace{2 \mu S_{ij}S_{ij}}_{\substack{\text{Viscous } \\ \text{dissipation } \varepsilon_v}} +
+	\underbrace{\dot{Q}}_{\substack{\text{volumetric} \\ \text{heating } \dot{\MAC Q}}}
+	}
+\end{equation}
+
+\section{Symbolic form}
+First note that $\MAC T + \MAC E_v = -\MAC P_p + \MAC D_K - \MAC E_v'$.
+\subsection{Kinetic}
+\begin{equation}
+	\dot{\MAC E} + \MAC C_K + \MAC T = - \MAC E_v + \MAC P_{ms} - \MAC C_m
+\end{equation}
+\begin{equation}
+	\dot{\MAC E} + \MAC C_K = -\MAC P_p + \MAC D_K - \MAC E_v' + \MAC P_{ms} - \MAC C_m
+\end{equation}
+\subsection{Magnetic}
+\begin{equation}
+	\dot{\MAC B} = -\MAC P_r - \MAC P_{ms} + \MAC C_m - \MAC E_J
+\end{equation}
+\subsection{Thermal}
+\begin{equation}
+	\dot{\MAC T} + \MAC C_T = \MAC D_T + \MAC E_J + \MAC E_v + \dot{\MAC Q}
+\end{equation}
+
+\section{Combining above}
+\subsection{Kinetic + Magnetic}
+The term $\MAC P_{em}$ drops out:
+\begin{equation}
+	(\dot{\MAC E} + \dot{\MAC B}) + \MAC C_K + \MAC T = -\MAC P_r - (\MAC E_v + \MAC E_J)
+\end{equation}
+
+\subsection{Thermal + Magnetic}
+The term $\MAC D_J$ drops out
+\begin{equation}
+	(\dot{\MAC T}+\dot{\MAC B}) + \MAC C_T = -\MAC P_r + \MAC D_T - \MAC P_{em} + \MAC E_v + \dot{\MAC Q}
+\end{equation}
+
+\subsection{Kinetic + Thermal}
+The term $\MAC E_v$ drops out
+\begin{equation}
+	(\dot{\MAC E}+\dot{\MAC T}) + \MAC C_K + \MAC C_T + \MAC T = \MAC D_T + \MAC P_{em} + \MAC E_J + \dot{\MAC Q}
+\end{equation}
+
+\subsection{Total = Kinetic + Magnetic + Thermal}
+Terms $\MAC P_{em}, \MAC D_J, \MAC E_v$ drop out
+\begin{equation}
+	(\dot{\MAC E}+\dot{\MAC B}+\dot{\MAC T}) + \MAC C_K + \MAC C_T + \MAC T = \MAC D_T - \MAC P_r + \dot{\MAC Q}
+\end{equation}
+
+\end{document}

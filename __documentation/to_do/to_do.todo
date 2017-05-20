@@ -7,10 +7,31 @@ TO DO LIST COMMANDS:
  ☐ Searches can be made for specific @tags
 --- ✄ -----------------------
 Right Now:
- ☐ Bring form to Eldrege, then give to abel.
- ☐ Make sure Hoffman2 cluster account does not expire
- ☐ Write down questions from prospectus
  ☐ Finish reviewing FED paper
+ ☐ Roll back RK in MOONS, keep solve decomposition
+ ☐ Benchmarks for finite Rm
+   ☐ Can use straight duct flow (1-way coupled on Moreau page 45)
+
+ ☐ Full BC paper:
+   ☐ Shatrov-inspired parameters seem good. Stick with params in last run.
+   ☐ Compute total viscous dissipation (from turbulence class)
+   ☐ Magnetic and cross helicity
+   ☐ Make folder dedicated to paper/organize
+   ☐ Start mesh refinement cases - make fluid domain more fine
+   ☐ Kulikovskii surfaces / characteristic surfaces
+   ☐ Energy analysis
+   ☐ Brainstorm what to plot - think in terms of establishing a benchmark/characterizing flow:
+     ☐ Penetration depth of B1 into vacuum
+     ☐ Measurement of boundary layers
+     ☐ U/B/J distributions in cavity center
+   ☐ Review/revise paper
+
+ ☐ Try changing fields to all same sizes:
+   ☐ 0) Git commit first, maybe make a branch
+   ☐ 1) Change dependencies from shape to DL
+   ☐ 2) Remove all instances of deffered shape (:) and replace with specified shape based on DL.
+   ☐ 3) Change initialization for fields
+   ☐ 4) Test for bugs
 
  ☐ Call UCLA Dentist - 310-794-5750
  ☐ Order/buy soccer laces

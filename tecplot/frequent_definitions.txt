@@ -10,11 +10,17 @@
 {By}={Bpn_y}
 {Bz}={Bpn_z}
 {B2}={Bx}**2+{By}**2+{Bz}**2
+{Bz_tot}={Bz}+1
 
 {Jx}={Jpn_x}
 {Jy}={Jpn_y}
 {Jz}={Jpn_z}
 {J2}={Jx}**2+{Jy}**2+{Jz}**2
+
+{B_helicity} = {Bx}*{Jx}+{By}*{Jy}+{Bz}*{Jz}
+{cross_helicity} = {Bx}*{u}+{By}*{v}+{Bz}*{w}
+{cross_helicity_tot} = {Bx}*{u}+{By}*{v}+{Bz_tot}*{w}
+{B_helicity_tot} = {Bx}*{Jx}+{By}*{Jy}+{Bz_tot}*{Jz}
 
 ------------------------------------ Symmetric cases ------------------------------------
 
@@ -27,11 +33,26 @@
 {Bx}={B_mirror_3pn_x}
 {By}={B_mirror_3pn_y}
 {Bz}={B_mirror_3pn_z}
+{Bz_tot}={Bz}+1
 {B2}={Bx}**2+{By}**2+{Bz}**2
 
 {Jx}={J_mirror_3pn_x}
 {Jy}={J_mirror_3pn_y}
 {Jz}={J_mirror_3pn_z}
 {J2}={Jx}**2+{Jy}**2+{Jz}**2
+
+{Bx_diff} = {B_mirror_3pn_x}[4]-{B_mirror_3pn_x}[1]
+{By_diff} = {B_mirror_3pn_y}[4]-{B_mirror_3pn_y}[1]
+{Bz_diff} = {B_mirror_3pn_z}[4]-{B_mirror_3pn_z}[1]
+{B_helicity} = {Bx}*{Jx}+{By}*{Jy}+{Bz}*{Jz}
+{cross_helicity} = {Bx}*{u}+{By}*{v}+{Bz}*{w}
+{cross_helicity_tot} = {Bx}*{u}+{By}*{v}+{Bz_tot}*{w}
+{B_helicity_tot} = {Bx}*{Jx}+{By}*{Jy}+{Bz_tot}*{Jz}
+
+{omega_x}={vorticitypn_x}
+{omega_y}={vorticitypn_y}
+{omega_z}={vorticitypn_z}
+{omega2}={omega_x}**2+{omega_y}**2+{omega_z}**2
+{omega_mag}=sqrt({omega2})
 
 

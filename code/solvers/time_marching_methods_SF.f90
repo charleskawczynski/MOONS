@@ -98,7 +98,7 @@
          call solve(PCG_SF,X,temp_F1,m,compute_norms) ! Solve for X
        end subroutine
 
-       subroutine Euler_time_RK_sources_SF(PCG_SF,X,Xnm1,F,Fnm1,m,&
+       subroutine Euler_time_RK_sources_SF(PCG_SF,X,Xnm1,F,Fnm1,L,m,&
          TMP,RKP,temp_F1,compute_norms)
          ! Solves:
          !
@@ -113,18 +113,19 @@
          implicit none
          type(PCG_solver_SF),intent(inout) :: PCG_SF
          type(SF),intent(inout) :: X,Xnm1
-         type(SF),intent(in) :: F,Fnm1
+         type(SF),intent(in) :: F,Fnm1,L
          type(mesh),intent(in) :: m
          type(time_marching_params),intent(in) :: TMP
          type(RK_Params),intent(in) :: RKP
          type(SF),intent(inout) :: temp_F1
          logical,intent(in) :: compute_norms
-         call multiply(temp_F1,F,TMP%dt*RKP%a(RKP%n))
-         call add_product(temp_F1,Fnm1,TMP%dt*RKP%b(RKP%n))
+         call multiply(temp_F1,F      ,TMP%dt*RKP%gamma%f(RKP%n))
+         call add_product(temp_F1,Fnm1,TMP%dt*RKP%zeta%f(RKP%n))
+         call add_product(temp_F1,L   ,TMP%dt*RKP%alpha%f(RKP%n))
          call assign_wall_Dirichlet(temp_F1,0.0_cp,X)
          call add(temp_F1,X)
          call assign(Xnm1,X)
-         call update_MFP(PCG_SF,m,TMP%dt*1.0_cp*RKP%d(RKP%n)*PCG_SF%MFP%coeff_implicit,TMP%n_step.le.2)
+         call update_MFP(PCG_SF,m,TMP%dt*RKP%beta%f(RKP%n)*PCG_SF%MFP%coeff_implicit,.true.)
          call solve(PCG_SF,X,temp_F1,m,compute_norms) ! Solve for X
        end subroutine
 

@@ -1,0 +1,125 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+% \maketitle
+
+\section{Low Rm formulation}
+The dimensional induction equation is
+\begin{equation}
+  \frac{\PD \B}{\PD t}
+  =
+  (\CROSS \CROSS \U \CROSS \B)
+  - \\
+  \left(
+  \CROSS \CROSS
+  \left\{
+  \frac{1}{\sigma}
+  \CROSS \CROSS
+  \frac{\B}{\M}
+  \right\}
+  \right)
+\end{equation}
+Non-dimensionalizing time, velocity, length, conductivity and magnetic permeability by $L/U,U,L,\sigma,\M$, we have
+\begin{equation}
+  \frac{\PD \B}{\PD t}
+  =
+  (\CROSS \CROSS \U \CROSS \B)
+  - \\
+  \frac{1}{Re_m}
+  \left(
+  \CROSS \CROSS
+  \left\{
+  \frac{1}{\sigma}
+  \CROSS \CROSS
+  \frac{\B}{\M}
+  \right\}
+  \right)
+  ,\qquad Re_m = \sigma \M LU
+\end{equation}
+Note that, in the above equation, $\B$ has not been non-dimensionalized. Let
+\begin{equation}
+  G(\B)
+  =
+  \frac{\PD \B}{\PD t}
+  -
+  (\CROSS \CROSS \U \CROSS \B)
+  +
+  \frac{1}{Re_m}
+  \left(
+  \CROSS \CROSS
+  \left\{
+  \frac{1}{\sigma}
+  \CROSS \CROSS
+  \frac{\B}{\M}
+  \right\}
+  \right)
+  =
+  \mathbf{0}
+\end{equation}
+Since this equation applies to the external $\B$ as well as any induced $\B$ fields, we may write (generally)
+
+\noindent
+\rule{\textwidth}{1pt}
+\begin{center}
+This is where the two formulations part ways.
+\end{center}
+\noindent
+\rule{\textwidth}{1pt}
+% \newpage
+% test
+% \newpage
+\begin{equation}
+	\sum_{k=0}^{\infty} G(\B^k)
+  Re_m^k
+	=
+	\mathbf{0}
+\end{equation}
+Considering the first two terms we have
+\begin{equation}
+  G(\B^0)
+  +
+  G(\B^{*}) Re_m
+  =
+  \mathbf{0}
+\end{equation}
+For a uniform and steady external field ($\B^0$), this simplifies to
+\begin{equation}
+  Re_m \frac{\PD \B^{*}}{\PD t}
+  -
+  (\CROSS \CROSS \U \CROSS (\B^0 + Re_m \B^*))
+  +
+  \left(
+  \CROSS \CROSS
+  \left\{
+  \frac{1}{\sigma}
+  \CROSS \CROSS
+  \frac{\B^{*}}{\M}
+  \right\}
+  \right)
+  =
+  \mathbf{0}
+\end{equation}
+It's clear from the above equation that as $Re_m \rightarrow 0$, $\B^*$ can be computed from
+\begin{equation}
+  \CROSS \CROSS
+  \left\{
+  \frac{1}{\sigma}
+  \CROSS \CROSS
+  \frac{\B^{*}}{\M}
+  \right\}
+  =
+  (\CROSS \CROSS \U \CROSS \B^0)
+\end{equation}
+For uniform $\sigma, \M$, this yields the Poisson equation for $\B^*$:
+\begin{equation}
+  \CROSS^2 \B^{*}
+  =
+  -
+  (\CROSS \CROSS \U \CROSS \B^0)
+\end{equation}
+
+
+\end{document}

@@ -1,0 +1,83 @@
+\documentclass[landscape,11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+% \maketitle
+
+\section{Thermal Energy}
+\Large
+\begin{equation}
+	\frac{\PD \theta}{\PD t}
+	+ \DIV (\U \theta)
+	=
+	\frac{1}{Pe} \DIV (k \DEL \theta)
+	+ Ec N \frac{{\J}^2}{\sigma}
+	- \frac{Ec}{Re} \DEL^2 E_K
+	+ \frac{Ec}{Re} (\DEL \U) \DOT (\DEL \U)
+	+ \dot{Q}
+\end{equation}
+\section{Momentum}
+\begin{equation}
+	\frac{\PD \U}{\PD t}
+	+ \DIV (\U^T \U)
+	=
+	- \DEL p
+	+ \frac{1}{Re} \DEL^2 \U
+	+ \frac{1}{Fr^2} \G
+	+ \frac{Gr}{Re^2} \theta \G
+	+ N \J \CROSS \B
+\end{equation}
+\section{Magnetic Field}
+\begin{equation}
+	\frac{\PD \B}{\PD t}
+	+ \frac{1}{Re_m} \CURL \left(\frac{1}{\SO} \CURL \B \right)
+	= \CURL (\U \CROSS \B)
+\end{equation}
+\section{Kinetic energy equation}
+\begin{multline}
+	\frac{\PD E_K}{\PD t}
+	+ (\U \DOT \DEL) E_K
+	=
+	- \DIV (\U p)
+	+ \frac{1}{Re} \DEL^2 E_K
+	- \frac{1}{Re} (\DEL \U) \DOT (\DEL \U)
+	- Al (\U \DOT \DEL) E_M
+	+ Al \U \DOT (\B \DOT \DEL \H) \\
+	+ \frac{Gr}{Re^2} \U \DOT (\rho \G \beta \theta)
+	+ \U \DOT (\rho \G)
+	+ \frac{L_c f_c}{\rho_c U_c^2} \U \DOT \F
+\end{multline}
+\section{Magnetic energy equation}
+\begin{equation}
+	\frac{\PD E_m}{\PD t} =
+	- Re_m \frac{{\J}^2}{\SI}
+	+ \DIV \left[\left(\U \CROSS \B - \frac{\J}{\SI} \right) \CROSS \H \right]
+	+ (\U \DOT \DEL) E_m
+	- \U \DOT \left[(\B \DOT \DEL) \H \right]
+\end{equation}
+\section{Dimensionless groups, definitions and chosen scales}
+\begin{equation}
+	Re = \frac{U_c L_c}{\nu_c} \qquad
+	Ha = B_c L_c \sqrt{\frac{\sigma_c}{\mu_c}} \qquad
+	Re_m = \mu_c \sigma_c U_c L_c \qquad
+	Pr = \frac{\nu_c}{\alpha_c} \qquad
+	Al = \frac{B_c^2}{\mu_c \rho_c U_c^2} \qquad
+\end{equation}
+\begin{equation}
+	Gr = \frac{g_c \beta_c \theta_c L_c^3}{\nu_c^2} \qquad
+	Ec = \frac{U_c^2}{C_{p,c} \theta_c} \qquad
+	Fr = \frac{U_c}{\sqrt{g_c L_c}} \qquad
+	N = \frac{Ha^2}{Re} \qquad
+	Pr = \frac{Pe}{Re}=\frac{Ra}{Gr}
+\end{equation}
+\begin{equation}
+	Pr_{m} = \frac{Re_m}{Re} \qquad
+	[t_c] = L_c/U_c \qquad
+	[p] = \rho_c U_c^2 \qquad
+	[j] = \sigma_c U_c B_c \qquad
+	[\dot{Q}] = \rho_c C_{p,c} \theta_c / t_c
+\end{equation}
+
+\end{document}

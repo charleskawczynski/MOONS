@@ -1,0 +1,87 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+% \maketitle
+
+\section{Thermal Energy}
+\Large
+\begin{equation}
+	\frac{\PD \theta}{\PD t}
+	+ \DIV (\U \theta)
+	=
+	\frac{1}{Pe} \DIV (k \DEL \theta)
+	+ Ec N \frac{{\J}^2}{\sigma}
+	- \frac{Ec}{Re} \DEL^2 E_K
+	+ \frac{Ec}{Re} (\DEL \U) \DOT (\DEL \U)
+	+ \dot{Q}
+\end{equation}
+\section{Momentum}
+\begin{equation}
+	\frac{\PD \U}{\PD t}
+	+ \DIV (\U^T \U)
+	=
+	- \DEL p
+	+ \frac{1}{Re} \DEL^2 \U
+	+ \frac{1}{Fr^2} \G
+	+ \frac{Gr}{Re^2} \theta \G
+	+ N \J \CROSS \B
+\end{equation}
+\section{Magnetic Field}
+\begin{equation}
+	\frac{\PD \B}{\PD t}
+	+ \frac{1}{Re_m} \CURL \left(\frac{1}{\SO} \CURL \B \right)
+	= \CURL (\U \CROSS \B)
+\end{equation}
+
+\section{Dimensionless groups}
+\begin{equation}
+	Re = \frac{U_c L_c}{\nu_c} \qquad
+	Ha = B_c L_c \sqrt{\frac{\sigma_c}{\mu_c}} \qquad
+	Re_m = \mu_c \sigma_c U_c L_c \qquad
+	Pr = \frac{\nu_c}{\alpha_c} \qquad
+\end{equation}
+\begin{equation}
+	Al = \frac{B_c^2}{\mu_c \rho_c U_c^2} \qquad
+	Gr = \frac{g_c \beta_c \theta_c L_c^3}{\nu_c^2} \qquad
+	Ec = \frac{U_c^2}{C_{p,c} \theta_c} \qquad
+	Fr = \frac{U_c}{\sqrt{g_c L_c}} \qquad
+\end{equation}
+\begin{equation}
+	N = \frac{Ha^2}{Re} \qquad
+	Pe = Re Pe \qquad
+	Pr_{m} = \frac{Re_m}{Re} \qquad
+	Ra = Gr Pr
+\end{equation}
+\section{Definitions and Non-dimensionalization}
+\begin{equation}
+	[T] = T_c \qquad
+	\theta = T-T_c \qquad
+	[\rho] = \rho_c \qquad
+	[\mu] = \mu_c \qquad
+	[C_p] = C_{p,c} \qquad
+	[k] = k_c
+\end{equation}
+\begin{equation}
+	[t_c] = L_c/U_c \qquad
+	[u] = U_c \qquad
+	[t] = t_c \qquad
+	[x] = L_c \qquad
+	[p] = \rho_c U_c^2 \qquad
+	[\theta] = \theta_c
+\end{equation}
+\begin{equation}
+	[B] = B_c  \qquad
+	[j] = \sigma_c U_c B_c \qquad
+	[E] = U_c B_c \qquad
+	[\sigma] = \sigma_c \qquad
+	[\mu] = \mu_c \qquad
+	\bar{\sigma} = \frac{\sigma}{\sigma_c}
+\end{equation}
+\begin{equation}
+	[\dot{Q}] = \rho_c C_{p,c} \theta_c / t_c
+\end{equation}
+
+\end{document}

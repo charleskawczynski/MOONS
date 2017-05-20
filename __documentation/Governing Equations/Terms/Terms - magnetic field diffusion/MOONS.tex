@@ -1,0 +1,21 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Divergence form of magnetic field diffusion}
+
+Using the kronecker delta identity, the diffusion term may be written as
+\begin{equation}\begin{aligned}
+	\CURL \left( \SII \CURL \frac{B}{\mu} \right)
+	 = \varepsilon_{ijk} \PD_j \left( \SII \varepsilon_{kmn} \PD_m \frac{B_n}{\mu} \right) \\
+	 = \varepsilon_{ijk} \varepsilon_{kmn} \PD_j \left( \SII \PD_m \frac{B_n}{\mu} \right) \\
+	 = (\delta_{im}\delta_{jn} - \delta_{in}\delta_{jm}) \PD_j \left( \SII \PD_m \frac{B_n}{\mu} \right) \\
+	  = \PD_j \left( \SII \PD_i \frac{B_j}{\mu} \right) - \PD_j \left( \SII \PD_j \frac{B_i}{\mu} \right) \\
+	  = \PD_j \left[ \SII \left( \PD_i \frac{B_j}{\mu} - \PD_j \frac{B_i}{\mu} \right) \right]
+\end{aligned}\end{equation}
+
+\end{document}

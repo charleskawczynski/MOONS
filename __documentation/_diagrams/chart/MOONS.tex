@@ -15,7 +15,7 @@
 \begin{tikzpicture}[level distance=25mm,level/.style={sibling distance=40mm}]
 \node[level 1] {Discrete operators (div,grad,curl)}
 	child {
-		node[level 1] (c1) {Del operator 
+		node[level 1] (c1) {Del operator
 		($\frac{\partial }{\partial x},\frac{\partial }{\partial y},\frac{\partial }{\partial z}$)}
 		child {
 			node[level 1] (c2) {Grid (3D, has all staggered and collocated locations)
@@ -38,16 +38,16 @@
 \noindent
 \begin{tikzpicture}[level distance=25mm,level/.style={sibling distance=40mm}]
 \node[level 1] {General Interpolation
-	(CC$\leftrightarrow$N, 
-	CC$\leftrightarrow$F, 
+	(CC$\leftrightarrow$N,
+	CC$\leftrightarrow$F,
 	CC$\leftrightarrow$E
-	N$\leftrightarrow$F, 
-	N$\leftrightarrow$E, 
+	N$\leftrightarrow$F,
+	N$\leftrightarrow$E,
 	F$\leftrightarrow$E)
 	}
   child {node[level 1] (c1) {Interpolation operator (1D)
-	(CC$\leftrightarrow$F, 
-	F$\leftrightarrow$E, 
+	(CC$\leftrightarrow$F,
+	F$\leftrightarrow$E,
 	E$\leftrightarrow$N)
   }
   child {node[level 1] (c2) {Grid (3D, has all staggered and collocated locations)}

@@ -1,0 +1,60 @@
+\documentclass[landscape,11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Thermal energy equation}
+\begin{equation}
+	\frac{\PD \theta}{\PD t}
+	+ (\U \DOT \DEL) \theta
+	= \frac{1}{Pe} \DIV (k \DEL \theta)
+	- \frac{Ec}{Re} \DEL^2 E_K
+	+ \frac{Ec}{Re} (\DEL \U) \DOT (\DEL \U)
+	+ Ec \left( \frac{L_c}{U_c} \frac{\dot{Q}_c}{\rho_c U_c^2} \right) \dot{Q}
+\end{equation}
+\section{Kinetic energy equation}
+\begin{multline}
+	\frac{\PD E_K}{\PD t}
+	+ (\U \DOT \DEL) E_K
+	=
+	- \DIV (\U p)
+	+ \frac{1}{Re} \DEL^2 E_K
+	- \frac{1}{Re} (\DEL \U) \DOT (\DEL \U)
+	- Al (\U \DOT \DEL) E_M
+	+ Al \U \DOT (\B \DOT \DEL \H) \\
+	+ \U \DOT (\rho \G)
+	+ \frac{Gr}{Re^2} \U \DOT (\rho \G \beta \theta)
+	+ \frac{L_c f_c}{\rho_c U_c^2} \U \DOT \F
+\end{multline}
+
+\section{Magnetic energy equation}
+\begin{equation}
+	\frac{\PD E_m}{\PD t} =
+	- Re_m \frac{{\J}^2}{\SI}
+	+ \DIV \left[\left(\U \CROSS \B - \frac{\J}{\SI} \right) \CROSS \H \right]
+	+ (\U \DOT \DEL) E_m
+	- \U \DOT \left[(\B \DOT \DEL) \H \right]
+\end{equation}
+
+
+\section{Note and scales}
+Scales:
+\begin{equation}\begin{aligned}
+	t_c = L_c/ U_c \qquad
+	J_c = U_c \sigma_c B_c \qquad
+	g_c = U_c^2/L_c \qquad
+	p_c = \rho_c U_c^2 \qquad
+	\alpha_c = \frac{k_c}{\rho_c {C_p}_c}
+\end{aligned}\end{equation}
+
+NOTES:
+\begin{itemize}
+	\item Equations are note scaled to compare ($E_m = \frac{1}{2} \B \DOT \H$).
+	\item $E_K, E_M$ are dimensionless.
+\end{itemize}
+
+
+\end{document}

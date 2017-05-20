@@ -1,0 +1,28 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+The total dimensional kinetic energy is
+\begin{equation}\begin{aligned}
+KE_{\PH} =& \frac{1}{2} \int_m \U \DOT \U dm [J] \\
+         =& \frac{1}{2} \rho \int_V \U \DOT \U dV [J] \\
+         =& \frac{1}{2} U_c^2 \rho_c L_c^3 \rho^* \int_{V^*} \U^* \DOT \U^* dV^* [J], \qquad \text{assuming $\rho^*=1$} \\
+         =& \frac{1}{2} U_c^2 \rho_c L_c^3        \int_{V^*} \U^* \DOT \U^* dV^* [J] \\
+         =& U_c^2 \rho_c L_c^3 \left( \frac{1}{2} \int_{V^*} \U^* \DOT \U^* dV^* \right) [J] \\
+         =& U_c^2 \rho_c L_c^3 KE [J] \\
+\end{aligned}\end{equation}
+
+The total dimensional magnetic energy is
+\begin{equation}\begin{aligned}
+ME_{\PH} =& \frac{1}{2} \int_V \B \DOT \H dV [J] \\
+         =& \frac{B_c^2}{{\mu_m}_c} L_c^3 \frac{1}{2} \int_{V^*} \B^* \DOT \H^* dV^* [J] \\
+         =& \frac{B_c^2}{{\mu_m}_c} L_c^3 \left( \frac{1}{2} \int_{V^*} \B^* \DOT \B^* dV^* \right) [J], \qquad \text{assuming $\mu^*=1$} \\
+\end{aligned}\end{equation}
+
+
+
+\end{document}

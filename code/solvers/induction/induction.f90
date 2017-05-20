@@ -77,7 +77,7 @@
          type(TF) :: temp_F1_TF,temp_F2_TF            ! Face data
 
          ! --- Vector fields ---
-         type(VF) :: F,Fnm1                           ! Face data
+         type(VF) :: F,Fnm1,L                           ! Face data
          type(VF) :: J,temp_E                         ! Edge data
          type(VF) :: B,Bnm1,B0,B_interior,temp_F1,temp_F2  ! Face data
          type(VF) :: Bstar                            ! Intermediate magnetic field
@@ -163,6 +163,7 @@
          call init_Face(ind%temp_F2_TF     ,m,0.0_cp)
          call init_Face(ind%F              ,m,0.0_cp)
          call init_Face(ind%Fnm1           ,m,0.0_cp)
+         call init_Face(ind%L              ,m,0.0_cp)
          call init_Face(ind%B              ,m,0.0_cp)
          call init_Face(ind%Bnm1           ,m,0.0_cp)
          call init_Face(ind%B0             ,m,0.0_cp)
@@ -283,6 +284,7 @@
 
          call delete(ind%F)
          call delete(ind%Fnm1)
+         call delete(ind%L)
          call delete(ind%B)
          call delete(ind%Bnm1)
          call delete(ind%Bstar)
@@ -368,6 +370,7 @@
          call export_raw(ind%m,ind%B0,str(DT%B%restart),'B0',0)
          call export_raw(ind%m,ind%F,str(DT%B%restart),'F',0)
          call export_raw(ind%m,ind%Fnm1,str(DT%B%restart),'Fnm1',0)
+         call export_raw(ind%m,ind%L,str(DT%B%restart),'L',0)
          call export_raw(ind%m,ind%Bstar,str(DT%B%restart),'Bstar',0)
          call export_raw(ind%m,ind%phi,str(DT%phi%restart),'phi',0)
          call export_raw(ind%m,ind%J,str(DT%J%restart),'J',0)
@@ -395,6 +398,7 @@
          call import_raw(ind%m,ind%B0,str(DT%B%restart),'B0',0)
          call import_raw(ind%m,ind%F,str(DT%B%restart),'F',0)
          call import_raw(ind%m,ind%Fnm1,str(DT%B%restart),'Fnm1',0)
+         call import_raw(ind%m,ind%L,str(DT%B%restart),'L',0)
          call import_raw(ind%m,ind%Bstar,str(DT%B%restart),'Bstar',0)
          call import_raw(ind%m,ind%phi,str(DT%phi%restart),'phi',0)
          call import_raw(ind%m,ind%J,str(DT%J%restart),'J',0)
@@ -544,11 +548,11 @@
          call add_curl_curl(ind%m,diffusion_treatment(2))
        end subroutine
 
-       subroutine solve_induction(ind,SP,F,Fnm1,TMP,EF)
+       subroutine solve_induction(ind,SP,F,Fnm1,L,TMP,EF)
          implicit none
          type(induction),intent(inout) :: ind
          type(sim_params),intent(in) :: SP
-         type(VF),intent(in) :: F,Fnm1
+         type(VF),intent(in) :: F,Fnm1,L
          type(time_marching_params),intent(inout) :: TMP
          type(export_frequency),intent(in) :: EF
          integer :: i
@@ -579,7 +583,7 @@
            EF%unsteady_0D%export_now)
          case (8)
            call Euler_time_RK_sources(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%Bstar,ind%Bnm1,&
-           ind%phi,F,Fnm1,ind%m,TMP,TMP%RKP,ind%temp_F1,ind%temp_E,ind%temp_CC,&
+           ind%phi,F,Fnm1,L,ind%m,TMP,TMP%RKP,ind%temp_F1,ind%temp_E,ind%temp_CC,&
            EF%unsteady_0D%export_now)
          case default; stop 'Error: bad solveBMethod input solve_induction in induction.f90'
          end select

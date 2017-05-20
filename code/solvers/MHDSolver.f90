@@ -78,17 +78,17 @@
              if (SP%VS%T%SS%solve) then
                call embedFace(nrg%U_F,mom%U,nrg%MD)
                call embedCC(nrg%U_CC,mom%U_CC,nrg%MD)
-               call add_all_energy_sources(nrg%F,nrg%Fnm1,nrg,SP%VS%U%TMP,SP,ind)
-               call solve(nrg,SP,nrg%F,nrg%Fnm1,SP%VS%T%TMP,EF)
+               call add_all_energy_sources(nrg%F,nrg%Fnm1,nrg%L,nrg,SP%VS%U%TMP,SP,ind)
+               call solve(nrg,SP,nrg%F,nrg%Fnm1,nrg%L,SP%VS%T%TMP,EF)
              endif
              if (SP%VS%U%SS%solve) then
-               call add_all_momentum_sources(mom%F,mom%Fnm1,mom,SP%VS%U%TMP,SP,ind,nrg)
-               call solve(mom,SP,mom%F,mom%Fnm1,SP%VS%U%TMP,EF)
+               call add_all_momentum_sources(mom%F,mom%Fnm1,mom%L,mom,SP%VS%U%TMP,SP,ind,nrg)
+               call solve(mom,SP,mom%F,mom%Fnm1,mom%L,SP%VS%U%TMP,EF)
              endif
              if (SP%VS%B%SS%solve) then
                call embedVelocity_E(ind%U_E,mom%U_E,ind%MD_fluid)
-               call add_all_induction_sources(ind%F,ind%Fnm1,ind,SP%VS%B%TMP,SP,mom)
-               call solve(ind,SP,ind%F,ind%Fnm1,SP%VS%B%TMP ,EF)
+               call add_all_induction_sources(ind%F,ind%Fnm1,ind%L,ind,SP%VS%B%TMP,SP,mom)
+               call solve(ind,SP,ind%F,ind%Fnm1,ind%L,SP%VS%B%TMP ,EF)
              endif
              call iterate_RK(SP%VS%T%TMP)
              call iterate_RK(SP%VS%U%TMP)

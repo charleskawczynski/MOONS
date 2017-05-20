@@ -1,0 +1,34 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Forms of the Lorentz force}
+
+We may write the $\J\CROSS \B$ force as
+
+\begin{equation}
+	\J\CROSS \B = \epsilon_ijk j_j B_k =
+	\epsilon_ijk \left( \epsilon_jmn \PD_m \frac{B_n}{\mu} B_k \right)
+\end{equation}
+\begin{equation}
+	= \epsilon_ijk \epsilon_jmn \left( \PD_m \frac{B_n}{\mu} B_k \right)
+	= \epsilon_jki \epsilon_jmn \left( \PD_m \frac{B_n}{\mu} B_k \right)
+\end{equation}
+\begin{equation}
+	= (\delta_{km} \delta_{in} - \delta_{kn} \delta_{im} ) \left( \PD_m \frac{B_n}{\mu} B_k \right)
+\end{equation}
+\begin{equation}
+	= \left( \PD_k \frac{B_i}{\mu} B_k \right) -
+	\left( \PD_i \frac{B_k}{\mu} B_k \right)
+\end{equation}
+
+\begin{equation}
+	\J \CROSS \B = B_k
+	\left( \PD_k \frac{B_i}{\mu} - \PD_i \frac{B_k}{\mu} \right)
+\end{equation}
+
+\end{document}

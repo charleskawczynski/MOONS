@@ -3,7 +3,7 @@
 RELEASE = 'OPTIMIZE'
 # RELEASE = 'PROFILE'
 USE_OPEN_MP = 'TRUE'
-PARALLELIZE_3D_OPS = 'TRUE'
+# PARALLELIZE_3D_OPS = 'TRUE'
 # PARALLELIZE_2D_OPS = 'TRUE'
 # PARALLELIZE_1D_OPS = 'TRUE'
 # FORMAT_OUTPUT = 'FORMATTED'
@@ -332,6 +332,8 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)IO$(PS)IO_tools.f90\
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Zone.f90\
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Header.f90\
+	$(SRC_DIR)$(PS)sparse$(PS)array.f90\
+	$(SRC_DIR)$(PS)sparse$(PS)sparse.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)export_logicals.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)dimensionless_params.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)geometry_props.f90\
@@ -344,8 +346,6 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)directory$(PS)path.f90\
 	$(SRC_DIR)$(PS)directory$(PS)dir_group.f90\
 	$(SRC_DIR)$(PS)directory$(PS)dir_tree.f90\
-	$(SRC_DIR)$(PS)sparse$(PS)array.f90\
-	$(SRC_DIR)$(PS)sparse$(PS)sparse.f90\
 	$(SRC_DIR)$(PS)stitches$(PS)stitch.f90\
 	$(SRC_DIR)$(PS)coordinates$(PS)derivative_stencils.f90\
 	$(SRC_DIR)$(PS)coordinates$(PS)interpolation_stencils.f90\

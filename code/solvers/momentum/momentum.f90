@@ -80,7 +80,7 @@
          ! Vector fields
          type(VF) :: U,Ustar,Unm1
          type(VF) :: U_CC
-         type(VF) :: F,Fnm1
+         type(VF) :: F,Fnm1,L
          type(VF) :: temp_F1,temp_F2,temp_F3
          type(VF) :: temp_E,temp_CC_VF
          ! Scalar fields
@@ -137,6 +137,7 @@
          call init_Face(mom%temp_F2   ,m,0.0_cp)
          call init_Face(mom%F         ,m,0.0_cp)
          call init_Face(mom%Fnm1      ,m,0.0_cp)
+         call init_Face(mom%L         ,m,0.0_cp)
          call init_Face(mom%temp_F3   ,m,0.0_cp)
          call init_Edge(mom%temp_E    ,m,0.0_cp)
          call init_CC(mom%p           ,m,0.0_cp)
@@ -224,6 +225,7 @@
          call delete(mom%temp_F2)
          call delete(mom%F)
          call delete(mom%Fnm1)
+         call delete(mom%L)
          call delete(mom%temp_F3)
          call delete(mom%p)
          call delete(mom%temp_CC)
@@ -288,6 +290,7 @@
          call export_raw(mom%m,mom%p    ,str(DT%p%restart),'p',0)
          call export_raw(mom%m,mom%F    ,str(DT%U%restart),'F_external',0)
          call export_raw(mom%m,mom%Fnm1 ,str(DT%U%restart),'Fnm1_external',0)
+         call export_raw(mom%m,mom%L    ,str(DT%U%restart),'L_external',0)
          call export(mom%probe_divU,str(DT%U%restart))
          call export(mom%probe_KE,str(DT%U%restart))
          call export(mom%probe_Q,str(DT%U%restart))
@@ -306,6 +309,7 @@
          call import_raw(mom%m,mom%p    ,str(DT%p%restart),'p',0)
          call import_raw(mom%m,mom%F    ,str(DT%U%restart),'F_external',0)
          call import_raw(mom%m,mom%Fnm1 ,str(DT%U%restart),'Fnm1_external',0)
+         call import_raw(mom%m,mom%L    ,str(DT%U%restart),'L_external',0)
          call import(mom%probe_divU,str(DT%U%restart))
          call import(mom%probe_KE,str(DT%U%restart))
          call import(mom%probe_Q,str(DT%U%restart))
@@ -418,11 +422,11 @@
 
        ! ******************* SOLVER ****************************
 
-       subroutine solve_momentum(mom,SP,F,Fnm1,TMP,EF)
+       subroutine solve_momentum(mom,SP,F,Fnm1,L,TMP,EF)
          implicit none
          type(momentum),intent(inout) :: mom
          type(sim_params),intent(in) :: SP
-         type(VF),intent(in) :: F,Fnm1
+         type(VF),intent(in) :: F,Fnm1,L
          type(export_frequency),intent(in) :: EF
          type(time_marching_params),intent(inout) :: TMP
          integer :: i
@@ -453,7 +457,7 @@
            EF%unsteady_0D%export_now)
          case (8)
            call Euler_time_RK_sources(mom%PCG_U,mom%PCG_P,mom%U,mom%Ustar,mom%Unm1,&
-           mom%p,F,Fnm1,mom%m,TMP,TMP%RKP,mom%temp_F1,mom%temp_E,mom%temp_CC,&
+           mom%p,F,Fnm1,L,mom%m,TMP,TMP%RKP,mom%temp_F1,mom%temp_E,mom%temp_CC,&
            EF%unsteady_0D%export_now)
          case default; stop 'Error: solveUMethod must = 1:4 in momentum.f90.'
          end select

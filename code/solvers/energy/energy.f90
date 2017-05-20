@@ -59,7 +59,7 @@
        type energy
          ! --- Vector fields ---
          type(SF) :: T,Tnm1,temp_CC1,temp_CC2   ! CC data
-         type(SF) :: F,Fnm1
+         type(SF) :: F,Fnm1,L
          type(VF) :: temp_F,k              ! Face data
          type(VF) :: U_F                   ! Face data
          type(VF) :: U_CC                  ! Face data
@@ -122,6 +122,7 @@
          call init_CC(nrg%Tnm1,m,0.0_cp)
          call init_CC(nrg%F,m,0.0_cp)
          call init_CC(nrg%Fnm1,m,0.0_cp)
+         call init_CC(nrg%L,m,0.0_cp)
          call init_CC(nrg%Q_source,m,0.0_cp)
          call init_CC(nrg%temp_CC2,m,0.0_cp)
          call init_Face(nrg%temp_F,m,0.0_cp)
@@ -182,6 +183,7 @@
          call delete(nrg%Tnm1)
          call delete(nrg%F)
          call delete(nrg%Fnm1)
+         call delete(nrg%L)
          call delete(nrg%Q_source)
          call delete(nrg%temp_F)
          call delete(nrg%k)
@@ -244,6 +246,7 @@
          call export_raw(nrg%m,nrg%Tnm1,str(DT%T%field),'Tnm1',0)
          call export_raw(nrg%m,nrg%F,str(DT%T%field),'F',0)
          call export_raw(nrg%m,nrg%Fnm1,str(DT%T%field),'Fnm1',0)
+         call export_raw(nrg%m,nrg%L,str(DT%T%field),'L',0)
        end subroutine
 
        subroutine import_energy(nrg,SP,DT)
@@ -256,6 +259,7 @@
          call import_raw(nrg%m,nrg%Tnm1,str(DT%T%field),'Tnm1',0)
          call import_raw(nrg%m,nrg%F,str(DT%T%field),'F',0)
          call import_raw(nrg%m,nrg%Fnm1,str(DT%T%field),'Fnm1',0)
+         call import_raw(nrg%m,nrg%L,str(DT%T%field),'L',0)
        end subroutine
 
        ! **********************************************************
@@ -317,11 +321,11 @@
          call export_processed(nrg%m,nrg%T,str(DT%T%unsteady),'T',1,TMP,SP%VS%T%unsteady_field)
        end subroutine
 
-       subroutine solve_energy(nrg,SP,F,Fnm1,TMP,EF)
+       subroutine solve_energy(nrg,SP,F,Fnm1,L,TMP,EF)
          implicit none
          type(energy),intent(inout) :: nrg
          type(sim_params),intent(in) :: SP
-         type(SF),intent(in) :: F,Fnm1
+         type(SF),intent(in) :: F,Fnm1,L
          type(time_marching_params),intent(inout) :: TMP
          type(export_frequency),intent(in) :: EF
 
@@ -337,7 +341,7 @@
            call O2_BDF_time_AB2_sources_SF(nrg%PCG_T,nrg%T,nrg%Tnm1,F,Fnm1,nrg%m,&
            TMP,nrg%temp_CC1,EF%unsteady_0D%export_now)
          case (5)
-           call Euler_time_RK_sources_SF(nrg%PCG_T,nrg%T,nrg%Tnm1,F,Fnm1,nrg%m,&
+           call Euler_time_RK_sources_SF(nrg%PCG_T,nrg%T,nrg%Tnm1,F,Fnm1,L,nrg%m,&
            TMP,TMP%RKP,nrg%temp_CC1,EF%unsteady_0D%export_now)
          case default; stop 'Error: solveTMethod must = 1:4 in energy.f90.'
          end select

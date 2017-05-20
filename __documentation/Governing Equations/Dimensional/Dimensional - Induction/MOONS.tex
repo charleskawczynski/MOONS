@@ -1,0 +1,26 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Dimensional induction equation}
+This is a derivation of the induction equation from Maxwell's equations.
+\begin{equation}\begin{aligned}
+	\J = \CURL \H, \qquad
+	\frac{\PD \B}{\PD t} = - \CURL \E, \qquad
+	\J = \sigma (\E + \U \CROSS \B), \qquad
+	\DIV \J = \zero, \qquad
+	\DIV \B = \zero, \qquad \H = \frac{\B}{\M}
+\end{aligned}\end{equation}
+Solving for $\E$ in Ohm's law, plugging $\E$ into Faraday's law, and substituting $\J$ from Ampere's law yields:
+\begin{equation}
+	\boxed{
+	\frac{\PD \B}{\PD t} + \CURL \left( \sigma^{-1}\CURL \H \right)
+	= \CURL (\U \CROSS \B)
+	}
+\end{equation}
+The derivation of the dimensionless induction equation and magnetic energy equation should begin from this form.
+\end{document}

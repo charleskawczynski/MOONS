@@ -1,0 +1,85 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Dimensional magnetic energy equation}
+The dimensional induction equation:
+\begin{equation}
+	\frac{\PD \B}{\PD t} + \CURL \left( \sigma^{-1}\CURL \H \right)
+	= \CURL (\U \CROSS \B)
+\end{equation}
+Multiplying by $\B / \M$, we have
+\begin{equation}
+	\H \DOT
+	\left(
+	\frac{\PD \B}{\PD t} +
+	\CURL (\SII \CURL \H) =
+	\CURL (\U \CROSS \B)
+	\right), \qquad \H = \frac{\B}{\M}
+\end{equation}
+First, let
+\begin{equation}
+	E_M = \frac{\B^2}{2\M}
+\end{equation}
+
+\subsection{Transient term}
+\begin{equation}
+	\frac{\PD}{\PD t} \frac{\B^2}{\M} = 2 \H \DOT \frac{\PD \B}{\PD t}
+	\rightarrow
+	\H \DOT \frac{\PD \B}{\PD t} =
+	\frac{\PD E_M}{\PD t}
+\end{equation}
+\subsection{Diffusion term}
+\begin{equation}\begin{aligned}
+	\H \DOT \CURL \left( \SII \CURL \H \right) = \H \DOT \CURL \left( \JS \right) & \\
+	\DIV (\A \CROSS \B) = \B \DOT \CURL \A - \A \DOT \CURL \B &, \qquad \text{vector identity} \\
+	\DIV \left(\JS \CROSS \H \right) =
+	\H \DOT \CURL \JS - \JS \DOT \CURL \H =
+	\H \DOT \CURL \JS - \JSS, & \qquad \text{ we may write} \\
+	\H \DOT \CURL \JS =
+	\left\{ \DIV \left(\JS \CROSS \H \right) + \JSS \right\}
+\end{aligned}\end{equation}
+
+\section{Convection term}
+We may apply the vector identity from above to the advection term
+\begin{equation}\begin{aligned}
+	\DIV (\A \CROSS \B) = \B \DOT \CURL \A - \A \DOT \CURL \B                                                                                                                      , & \qquad \text{vector identity} \\
+	\DIV \left(\H \CROSS \A \right) = \A \DOT \CURL \H - \H \DOT \CURL \A, \qquad \A = \U \CROSS \B                                                                             , & \qquad \text{using vector identity} \\
+	\H \DOT \CURL \A = \A \DOT \CURL \H - \DIV \left(\H \CROSS \A \right), \qquad \A = \U \CROSS \B                                                                             , & \\
+	\H \DOT \CURL (\U \CROSS \B) = (\U \CROSS \B) \DOT \J - \DIV \left(\H \CROSS (\U \CROSS \B) \right)                                                                                  , & \qquad \text{subs $\A$ \& Ampere's law} \\
+	\A \DOT (\B \CROSS \C) = \B \DOT (\C \CROSS \A) = \C \DOT (\A \CROSS \B) = - \C \DOT (\B \CROSS \A)                                                                                                   , & \qquad \text{vector identity} & \\
+	\H \DOT \CURL (\U \CROSS \B) = -\U \DOT (\J \CROSS \B) - \DIV \left(\H \CROSS (\U \CROSS \B) \right)                                                                                 , & \\
+	\H \DOT \CURL (\U \CROSS \B) = - \U \DOT (\J \CROSS \B) - \DIV \left(\H \CROSS \left(\JS - \E \right) \right)                                                                        , & \qquad \text{Apply Ohm's law} \\
+	\H \DOT \CURL (\U \CROSS \B) = - \U \DOT (\J \CROSS \B) + \DIV \left(\JS \CROSS \H \right) - \DIV \left(\E \CROSS \H \right)                                                         , & \\
+	\H \DOT \CURL (\U \CROSS \B) = (\U \DOT \DEL) E_M - \U \DOT \left[(\B \DOT \DEL) \left( \H \right) \right] + \DIV \left(\JS \CROSS \H \right) - \DIV \left(\E \CROSS \H \right) , & \qquad \text{$\B$ pressure \& shear}
+\end{aligned}\end{equation}
+which used $\J \CROSS \B = (\B \DOT \DEL) \left(\frac{\B}{\M}\right) - \DEL \left( \frac{\B^2}{2\M} \right) = (\B \DOT \DEL) \left(\frac{\B}{\M}\right) - \DEL E_M$
+
+\section{Putting it all together}
+Putting it all together, we have
+\begin{equation}
+	\frac{\PD E_M}{\PD t} +
+	\left\{ \DIV \left(\JS \CROSS \H \right) + \JSS \right\} =
+	(\U \DOT \DEL) E_M
+	- \U \DOT \left[(\B \DOT \DEL) \left( \H \right) \right]
+	+ \DIV \left(\JS \CROSS \H \right)
+	- \DIV \left(\E \CROSS \H \right)
+\end{equation}
+Canceling terms yields two forms
+\begin{equation}\boxed{\begin{aligned}
+	\frac{\PD E_M}{\PD t} = &
+	- \JSS
+	- \DIV \left(\E \CROSS \H \right)
+	+ (\U \DOT \DEL) E_M
+	- \U \DOT \left[(\B \DOT \DEL) \left( \H \right) \right]  \\
+	\frac{\PD E_M}{\PD t} = &
+	- \JSS
+	- \DIV \left(\E \CROSS \H \right)
+	- \U \DOT (\J \CROSS \B)
+\end{aligned}}\end{equation}
+
+\end{document}

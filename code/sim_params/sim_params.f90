@@ -130,8 +130,8 @@
        SP%EL%export_symmetric = SP%MP%mirror
 
        ! call init(EFP,export_ever,export_first_step,frequency_base,frequency_exp)
-       call init(SP%EF%info          ,T,T,1,10,1)
-       call init(SP%EF%unsteady_0D   ,T,T,1,10,1)
+       call init(SP%EF%info          ,T,T,1,10,2)
+       call init(SP%EF%unsteady_0D   ,T,T,1,10,2)
        call init(SP%EF%unsteady_1D   ,F,F,1,10,2)
        call init(SP%EF%unsteady_2D   ,F,F,1,10,2)
        call init(SP%EF%unsteady_3D   ,F,F,1,10,4)
@@ -147,11 +147,11 @@
        call init(SP%TSP,F,100.0_cp,500.0_cp)
 
        time                          = 1000.0_cp
-       dtime                         = 1.0_cp*pow(-1)
+       dtime                         = 5.0_cp*pow(-3)
 
        SP%GP%tw                      = 0.05_cp
-       SP%GP%geometry                = 9
-       SP%GP%periodic_dir            = (/0,0,0/)
+       SP%GP%geometry                = 1
+       SP%GP%periodic_dir            = (/0,0,1/)
        ! SP%GP%apply_BC_order          = (/3,4,5,6,1,2/) ! good for LDC
        ! SP%GP%apply_BC_order       = (/3,4,5,6,1,2/) ! good for periodic in y?
        SP%GP%apply_BC_order       = (/5,6,1,2,3,4/) ! good for periodic in y?
@@ -225,8 +225,8 @@
        call init(SP%VS%T%SS  ,F         ,F    ,F      ,F            ,0)
        call init(SP%VS%U%SS  ,T         ,T    ,F      ,T            ,8)
        call init(SP%VS%P%SS  ,T         ,T    ,F      ,F            ,0)
-       call init(SP%VS%B%SS  ,T         ,T    ,F      ,F            ,8)
-       call init(SP%VS%B0%SS ,T         ,T    ,F      ,F            ,0)
+       call init(SP%VS%B%SS  ,F         ,F    ,F      ,F            ,8)
+       call init(SP%VS%B0%SS ,F         ,F    ,F      ,F            ,0)
        call init(SP%VS%phi%SS,F         ,F    ,F      ,F            ,0)
        call init(SP%VS%rho%SS,F         ,F    ,F      ,F            ,0)
        !     solve_method = 1 = Euler_time_no_diff_Euler_sources_no_correction
@@ -260,14 +260,14 @@
        call init(SP%VS%rho%ISP,5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_rho')
 
        ! call init(TMP,RK_n_stages,RK_active,multistep_iter,n_step_stop,dtime,dir,name)
-       call init(SP%coupled,   4,.true.,1 ,ceiling(time/dtime,li),dtime        ,str(DT%TMP),'TMP_coupled')
-       call init(SP%VS%T%TMP,  4,.true.,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_T')
-       call init(SP%VS%U%TMP,  4,.true.,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_U')
-       call init(SP%VS%P%TMP,  4,.true.,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_P')
-       call init(SP%VS%B%TMP,  4,.true.,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_B')
-       call init(SP%VS%B0%TMP, 4,.true.,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_B0')
-       call init(SP%VS%phi%TMP,4,.true.,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_phi')
-       call init(SP%VS%rho%TMP,4,.true.,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_rho')
+       call init(SP%coupled,   3,.true.,1 ,ceiling(time/dtime,li),dtime        ,str(DT%TMP),'TMP_coupled')
+       call init(SP%VS%T%TMP,  3,.true.,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_T')
+       call init(SP%VS%U%TMP,  3,.true.,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_U')
+       call init(SP%VS%P%TMP,  3,.true.,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_P')
+       call init(SP%VS%B%TMP,  3,.true.,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_B')
+       call init(SP%VS%B0%TMP, 3,.true.,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_B0')
+       call init(SP%VS%phi%TMP,3,.true.,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_phi')
+       call init(SP%VS%rho%TMP,3,.true.,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_rho')
 
        ! Matrix-free parameters:
        ! coeff_natural  = coefficient of terms in non-discretized equation
@@ -275,7 +275,7 @@
        ! coeff_implicit = coefficient of implicit terms without time discretization
        ! coeff_implicit_time_split = dt*coeff_implicit/coeff_unsteady (computed in time_marching_methods.f90)
 
-       SP%VS%B%MFP%alpha = 1.0_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
+       SP%VS%B%MFP%alpha = 0.5_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
        SP%VS%U%MFP%alpha = 0.5_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
        SP%VS%T%MFP%alpha = 0.5_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
        SP%VS%B%MFP%coeff_natural = -1.0_cp/SP%DP%Rem ! natural diffusion coefficient on RHS
@@ -294,7 +294,7 @@
        SP%MT%advection_divergence%add   = T ! add advection (div  form)  to momentum equation
        SP%MT%advection_base_flow%add    = F ! add advection using U_base to momentum equation
        SP%MT%mean_pressure_grad%add     = F ! add mean pressure gradient to momentum equation
-       SP%MT%JCrossB%add                = T ! add JCrossB                to momentum equation
+       SP%MT%JCrossB%add                = F ! add JCrossB                to momentum equation
        SP%MT%Q2D_JCrossB%add            = F ! add Q2D JCrossB            to momentum equation
        SP%MT%Buoyancy%add               = F ! add Buoyancy               to momentum equation
        SP%MT%Gravity%add                = F ! add Gravity                to momentum equation

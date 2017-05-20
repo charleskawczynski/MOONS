@@ -1,5 +1,6 @@
        module RK_Params_mod
        ! Pre-processor directives: (_DEBUG_RK_PARAMS_)
+       use array_mod
        use current_precision_mod
        implicit none
 
@@ -10,13 +11,13 @@
        public :: update_time
 
        type RK_Params
-         logical :: active = .false.
+         logical :: RK_active = .false.
          integer :: n_stages = 0
          integer :: n = 0
-         real(cp),dimension(:),allocatable :: a
-         real(cp),dimension(:),allocatable :: b
-         real(cp),dimension(:),allocatable :: c
-         real(cp),dimension(:),allocatable :: d
+         type(array) :: gamma
+         type(array) :: zeta
+         type(array) :: alpha
+         type(array) :: beta
        end type
 
        interface init;               module procedure init_RKP;               end interface
@@ -30,13 +31,17 @@
        interface assign_stage;       module procedure assign_stage_RKP;       end interface
        interface update_time;        module procedure update_time_RKP;        end interface
 
+#ifdef _DEBUG_RK_PARAMS_
+       interface insist_allocated;   module procedure insist_allocated_RKP;   end interface
+#endif
+
        contains
 
        ! **********************************************************
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-       subroutine init_RKP(RKP,n_stages,active)
+       subroutine init_RKP(RKP,n_stages,RK_active)
          ! Coefficients taken from:
          ! Lundbladh, Anders, et al. "An efficient spectral method
          ! for simulation of incompressible flow over a flat plate."
@@ -44,34 +49,29 @@
          implicit none
          type(RK_Params),intent(inout) :: RKP
          integer,intent(in) :: n_stages
-         logical,intent(in) :: active
+         logical,intent(in) :: RK_active
          call delete(RKP)
-         if (active) then
-           call verify_valid_order(n_stages,'init_RKP')
-           RKP%active = active
-           RKP%n = 1
-           RKP%n_stages = n_stages
-           allocate(RKP%a(n_stages))
-           allocate(RKP%b(n_stages))
-           allocate(RKP%c(n_stages))
-           allocate(RKP%d(n_stages))
-           if (n_stages.eq.1) then
-           RKP%a = 1.0_cp
-           RKP%b = 1.0_cp
-           RKP%c = 1.0_cp
-           RKP%d = 1.0_cp
-           elseif (n_stages.eq.3) then
-           RKP%a(1) = 8.0_cp/15.0_cp;  RKP%b(1) =  0.0_cp        ; RKP%c(1) = 0.0_cp
-           RKP%a(2) = 5.0_cp/12.0_cp;  RKP%b(2) =-17.0_cp/60.0_cp; RKP%c(2) = 8.0_cp/15.0_cp
-           RKP%a(3) = 3.0_cp/ 4.0_cp;  RKP%b(3) =- 5.0_cp/12.0_cp; RKP%c(3) = 2.0_cp/ 3.0_cp
-           RKP%d = RKP%a+RKP%b
-           elseif (n_stages.eq.4) then
-           RKP%a(1) =  8.0_cp/17.0_cp; RKP%b(1) =  0.0_cp        ; RKP%c(1) = 0.0_cp
-           RKP%a(2) = 17.0_cp/60.0_cp; RKP%b(2) =-15.0_cp/68.0_cp; RKP%c(2) = 8.0_cp/17.0_cp
-           RKP%a(3) =  5.0_cp/12.0_cp; RKP%b(3) =-17.0_cp/60.0_cp; RKP%c(3) = 8.0_cp/15.0_cp
-           RKP%a(4) =  3.0_cp/ 4.0_cp; RKP%b(4) =- 5.0_cp/12.0_cp; RKP%c(4) = 2.0_cp/ 3.0_cp
-           RKP%d = RKP%a+RKP%b
-           endif
+         RKP%RK_active = RK_active
+         if (RK_active) then; RKP%n_stages = n_stages
+         else;                RKP%n_stages = 1
+         endif
+         call verify_valid_order(n_stages,'init_RKP')
+         RKP%n = 1
+         call init(RKP%gamma,RKP%n_stages)
+         call init(RKP%zeta,RKP%n_stages)
+         call init(RKP%alpha,RKP%n_stages)
+         call init(RKP%beta,RKP%n_stages)
+         if (.not.RK_active) then
+         RKP%gamma%f = 1.0_cp
+         RKP%zeta%f = 1.0_cp
+         RKP%alpha%f = 1.0_cp
+         RKP%beta%f = 1.0_cp
+         elseif (RKP%n_stages.eq.3) then
+         RKP%gamma%f(1) = 8.0_cp/15.0_cp;  RKP%zeta%f(1) =  0.0_cp        ; RKP%alpha%f(1) = 4.0_cp/15.0_cp
+         RKP%gamma%f(2) = 5.0_cp/12.0_cp;  RKP%zeta%f(2) =-17.0_cp/60.0_cp; RKP%alpha%f(2) = 1.0_cp/15.0_cp
+         RKP%gamma%f(3) = 3.0_cp/ 4.0_cp;  RKP%zeta%f(3) =- 5.0_cp/12.0_cp; RKP%alpha%f(3) = 1.0_cp/ 6.0_cp
+         RKP%beta%f = RKP%alpha%f
+         else; stop 'Error: bad input to init_RKP in RK_Params.f90'
          endif
        end subroutine
 
@@ -80,35 +80,23 @@
          type(RK_Params),intent(inout) :: RKP
          type(RK_Params),intent(in) :: RKP_in
          call delete(RKP)
-         RKP%active = RKP_in%active
+         RKP%RK_active = RKP_in%RK_active
          RKP%n = RKP_in%n
          RKP%n_stages = RKP_in%n_stages
-         if (allocated(RKP_in%a)) then
-           allocate(RKP%a(RKP_in%n_stages))
-           RKP%a = RKP_in%a
-         endif
-         if (allocated(RKP_in%b)) then
-           allocate(RKP%b(RKP_in%n_stages))
-           RKP%b = RKP_in%b
-         endif
-         if (allocated(RKP_in%c)) then
-           allocate(RKP%c(RKP_in%n_stages))
-           RKP%c = RKP_in%c
-         endif
-         if (allocated(RKP_in%d)) then
-           allocate(RKP%d(RKP_in%n_stages))
-           RKP%d = RKP_in%d
-         endif
+         call init(RKP%gamma,RKP_in%gamma)
+         call init(RKP%zeta,RKP_in%zeta)
+         call init(RKP%alpha,RKP_in%alpha)
+         call init(RKP%beta,RKP_in%beta)
        end subroutine
 
        subroutine delete_RKP(RKP)
          implicit none
          type(RK_Params),intent(inout) :: RKP
-         if (allocated(RKP%a)) deallocate(RKP%a)
-         if (allocated(RKP%b)) deallocate(RKP%b)
-         if (allocated(RKP%c)) deallocate(RKP%c)
-         if (allocated(RKP%d)) deallocate(RKP%d)
-         RKP%active = .false.
+         call delete(RKP%gamma)
+         call delete(RKP%zeta)
+         call delete(RKP%alpha)
+         call delete(RKP%beta)
+         RKP%RK_active = .false.
          RKP%n = 0
          RKP%n_stages = 0
        end subroutine
@@ -123,11 +111,11 @@
          write(un,*) ' ------------- RK_Params ------------- '
          write(un,*) 'n_stages      = '; write(un,*) RKP%n_stages
          write(un,*) 'n             = '; write(un,*) RKP%n
-         write(un,*) 'active        = '; write(un,*) RKP%active
-         write(un,*) 'a             = '; write(un,*) RKP%a
-         write(un,*) 'b             = '; write(un,*) RKP%b
-         write(un,*) 'c             = '; write(un,*) RKP%c
-         write(un,*) 'd             = '; write(un,*) RKP%d
+         write(un,*) 'RK_active     = '; write(un,*) RKP%RK_active
+         call export(RKP%gamma,un)
+         call export(RKP%zeta,un)
+         call export(RKP%alpha,un)
+         call export(RKP%beta,un)
          write(un,*) ' ------------------------------------------------ '
        end subroutine
 
@@ -139,15 +127,11 @@
          read(un,*);
          read(un,*); read(un,*) RKP%n_stages
          read(un,*); read(un,*) RKP%n
-         allocate(RKP%a(RKP%n_stages))
-         allocate(RKP%b(RKP%n_stages))
-         allocate(RKP%c(RKP%n_stages))
-         allocate(RKP%d(RKP%n_stages))
-         read(un,*); read(un,*) RKP%active
-         read(un,*); read(un,*) RKP%a
-         read(un,*); read(un,*) RKP%b
-         read(un,*); read(un,*) RKP%c
-         read(un,*); read(un,*) RKP%d
+         read(un,*); read(un,*) RKP%RK_active
+         call import(RKP%gamma,un)
+         call import(RKP%zeta,un)
+         call import(RKP%alpha,un)
+         call import(RKP%beta,un)
          read(un,*);
        end subroutine
 
@@ -158,13 +142,13 @@
 #ifdef _DEBUG_RK_PARAMS_
          call insist_allocated(RKP)
 #endif
-         write(un,*) 'active = ',RKP%active
-         write(un,*) 'a = ',RKP%a
-         write(un,*) 'b = ',RKP%b
-         write(un,*) 'c = ',RKP%c
-         write(un,*) 'd = ',RKP%d
+         write(un,*) 'RK_active = ',RKP%RK_active
          write(un,*) 'n = ',RKP%n
          write(un,*) 'n_stages = ',RKP%n_stages
+         call display(RKP%gamma,un)
+         call display(RKP%zeta,un)
+         call display(RKP%alpha,un)
+         call display(RKP%beta,un)
        end subroutine
 
        subroutine print_RKP(RKP)
@@ -189,7 +173,9 @@
 #ifdef _DEBUG_RK_PARAMS_
          call insist_allocated(RKP)
 #endif
-         t = t + RKP%c(RKP%n)*dt
+         if (RKP%RK_active) then; t = t + RKP%alpha%f(RKP%n)*dt
+         else;                 t = t + dt
+         endif
        end subroutine
 
        subroutine assign_stage_RKP(RKP,n)
@@ -200,13 +186,13 @@
        end subroutine
 
 #ifdef _DEBUG_RK_PARAMS_
-       subroutine insist_allocated(RKP)
+       subroutine insist_allocated_RKP(RKP)
          implicit none
          type(RK_Params),intent(in) :: RKP
-         if (.not.allocated(RKP%a)) stop 'a not allocated in RKP in RK_Params.f90'
-         if (.not.allocated(RKP%b)) stop 'b not allocated in RKP in RK_Params.f90'
-         if (.not.allocated(RKP%c)) stop 'c not allocated in RKP in RK_Params.f90'
-         if (.not.allocated(RKP%d)) stop 'd not allocated in RKP in RK_Params.f90'
+         call insist_allocated(RKP%gamma,'insist_allocated_RKP')
+         call insist_allocated(RKP%zeta,'insist_allocated_RKP')
+         call insist_allocated(RKP%alpha,'insist_allocated_RKP')
+         call insist_allocated(RKP%beta,'insist_allocated_RKP')
        end subroutine
 #endif
 
