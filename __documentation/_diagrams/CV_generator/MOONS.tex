@@ -1,23 +1,10 @@
-% \documentclass[11pt]{article}
 \documentclass[tikz,border=5pt]{standalone}
-% \documentclass[landscape, 12pt]{report}
-% \usepackage[a4paper, total={4in, 4in}]{geometry}
-\usepackage[a4paper,margin=0pt]{geometry}
-\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
-\usepackage{epstopdf}
-\usepackage{amsmath}
-% \usepackage{hyperref}
-\usepackage{xspace}
-\usepackage{mathtools}
-\usepackage{tikz}
+\input{../includes.tex}
+\input{../include_zero_margins.tex}
+\setlength{\voffset}{-1in}
+\setlength{\hoffset}{-1in}
 \usetikzlibrary{positioning}
-\usepackage{epsfig}
-\usepackage{float}
-\usepackage{natbib}
-\usepackage{subfigure}
-\usepackage{setspace}
 \usetikzlibrary{shapes.geometric,calc}
-\usepackage{tabularx,ragged2e,booktabs,caption}
 
 % Angle of incidence
 \newcommand{\phiAngle}{45}   % 0 <  phi  < 45 : Controls left to right rotation
@@ -29,7 +16,7 @@
 \newcommand{\sinTheta}{sin(\thetaAngle)}
 
 % Origin location
-\newcommand{\OR}{0.1} % Origin
+\newcommand{\OR}{0} % Origin
 
 % Length of arrowed parts
 % \newcommand{\arrowL}{1.2}
@@ -69,10 +56,6 @@
 % \newcommand{\s}{5.6} % Previously used
 \newcommand{\s}{4.8} % New
 
-\newcommand{\vs}{5in}
-\newcommand{\hs}{6in}
-
-% \newcommand{\s}{3.96}
 \newcommand{\ra}{0.04}
 
 % \newcommand{\w}{1}
@@ -89,40 +72,12 @@
 \newcommand{\arrLR}{-stealth-}
 
 
-% Numbering from: https://www.sharelatex.com/learn-scripts/images/f/fc/Layout-dimensions.png
-\setlength{\hoffset}{-1in}       % 1
-\setlength{\voffset}{0in}        % 2
-\setlength{\oddsidemargin}{0in}  % 3
-\setlength{\topmargin}{-1in}     % 4
-\setlength{\headheight}{0in}     % 5
-\setlength{\headsep}{0in}        % 6
-\setlength{\textheight}{350pt}   % 7
-\setlength{\textwidth}{5in}    % 8
-\setlength{\marginparsep}{0in}   % 9
-\setlength{\marginparwidth}{0in} % 10
-\setlength{\footskip}{0in}       % 11 a (see fig)
-\setlength{\marginparpush}{0in}  % 11 b (see fig)
-\setlength{\hoffset}{-1in}        % 11 c (see fig)
-\setlength{\voffset}{0in}        % 11 d (see fig)
-\setlength{\paperwidth}{0in}     % 11 e (see fig)
-\setlength{\paperheight}{390pt}  % 11 f (see fig)
-
-% \setlength{\topskip}{0in}        % 
-% \setlength{\parindent}{0.25in}   % 
-% \setlength{\parskip}{0pt}        % 
-% \setlength{\evensidemargin}{0in} % 
-
-
-
-% Useful commands:
-
-% \hfill		aligns-right everything right of \hfill
-
 \begin{document}
+\MOONSTITLE
+% \maketitle
 \pagenumbering{gobble}
 % For some reason, if -{\cosL} or {\sinL} is not the first term WITH a sign, compilation fails.
-
-% \resizebox{\hs}{\vs}{
+\noindent
 \begin{tikzpicture}[scale=\s]
 % SIZES: \tiny \scriptsize \footnotesize \small \normalsize \large \Large \LARGE \huge \Huge
 \tikzstyle{every node}=[font=\LARGE]
@@ -161,28 +116,28 @@
 \draw[line width=\wCrissCross,dashed] (\OR,\OR+\dy) -- ++(\dx,-\dy);
 
 % E/J Field
-\draw[\arrR,anchor=east,line width=\wArr]  
+\draw[\arrR,anchor=east,line width=\wArr]
 (\OR+\dx/2,\OR) -- ++(\dx/1.5,0) node[right=1.3,anchor=north]
-{$(\nabla \times \mathbf{B})_{x,i,j-\frac{1}{2},k-\frac{1}{2}}$};
-\draw[\arrR,anchor=east,line width=\wArr]  
+{$(\CURL \B)_{x,i,j-\frac{1}{2},k-\frac{1}{2}}$};
+\draw[\arrR,anchor=east,line width=\wArr]
 (\OR,\OR+\dy/2) -- ++(0,\dy/1.5) node[anchor=east]
-{$(\nabla \times \mathbf{B})_{y,i-\frac{1}{2},j,k-\frac{1}{2}}$};
-\draw[\arrR,anchor=east,line width=\wArr]  
+{$(\CURL \B)_{y,i-\frac{1}{2},j,k-\frac{1}{2}}$};
+\draw[\arrR,anchor=east,line width=\wArr]
 ({\OR-\cosL/2},{\OR-\sinL/2}) -- ++({-\cosL},{-\sinL}) node[anchor=north]
-{$(\nabla \times \mathbf{B})_{z,i-\frac{1}{2},j-\frac{1}{2},k}$};
+{$(\CURL \B)_{z,i-\frac{1}{2},j-\frac{1}{2},k}$};
 
-% \draw[\arrR,anchor=east,line width=\w]  (\OR+\dx/2,\OR) -- ++(\dx/1.5,0) node[anchor=west]{$(\nabla \times \mathbf{B})_x, (\mathbf{u} \times \mathbf{B})_x$};
-% \draw[\arrR,anchor=east,line width=\w]  (\OR,\OR+\dy/2) -- ++(0,\dy/1.5) node[anchor=east]{$(\nabla \times \mathbf{B})_y, (\mathbf{u} \times \mathbf{\text{B}})_y$};
-% \draw[\arrR,anchor=east,line width=\w]  ({\OR-\cosL/2},{\OR-\sinL/2}) -- ++({-\cosL/1.3},{-\sinL/1.3}) node[anchor=east]{$(\nabla \times \mathbf{B})_z, (\mathbf{u} \times \mathbf{B})_z$};
+% \draw[\arrR,anchor=east,line width=\w]  (\OR+\dx/2,\OR) -- ++(\dx/1.5,0) node[anchor=west]{$(\CURL \B)_x, (\U \times \B)_x$};
+% \draw[\arrR,anchor=east,line width=\w]  (\OR,\OR+\dy/2) -- ++(0,\dy/1.5) node[anchor=east]{$(\CURL \B)_y, (\U \times \mathbf{\text{B}})_y$};
+% \draw[\arrR,anchor=east,line width=\w]  ({\OR-\cosL/2},{\OR-\sinL/2}) -- ++({-\cosL/1.3},{-\sinL/1.3}) node[anchor=east]{$(\CURL \B)_z, (\U \times \B)_z$};
 
 % u,v,w
-\draw[line width=\wArr,\arrL] (\CCx-\dx/2,\CCy)     
+\draw[line width=\wArr,\arrL] (\CCx-\dx/2,\CCy)
 -- ++(-\arrowL,0) node[anchor=south west]
 {$(u,B_x)_{i-\frac{1}{2},j,k}$};%x
-\draw[line width=\wArr,\arrL] (\CCx,\CCy-\dy/2)     
+\draw[line width=\wArr,\arrL] (\CCx,\CCy-\dy/2)
 -- ++(0,-\arrowL) node[anchor=south east]
 {$(v,B_y)_{i,j-\frac{1}{2},k}$};%y
-\draw[line width=\wArr,\arrL] (\OR+\dx/2,\OR+\dy/2) 
+\draw[line width=\wArr,\arrL] (\OR+\dx/2,\OR+\dy/2)
 -- ++({\cosL*\arrowLZ},{\sinL*\arrowLZ}) node[left=-0.5,anchor=south]
 {$(w,B_z)_{i,j,k-\frac{1}{2}}$};%z
 
@@ -192,23 +147,22 @@
 % \draw[line width=\w,\arrR] (\OR+\COx,\OR+\COy) -- ++({-\cosL*\coordL},{-\sinL*\coordL}) node[anchor=east]{$z$};
 
 % B system
-\draw[line width=\wCoord,\arrR] 
+\draw[line width=\wCoord,\arrR]
 	(\CCx,\CCy) -- ++
 	(0,\coordL) node[anchor=south]{$y$};
-\draw[line width=\wCoord,\arrR] 
+\draw[line width=\wCoord,\arrR]
 	(\CCx,\CCy) -- ++
 	(\coordL,0) node[anchor=south]{$x$};
-\draw[line width=\wCoord,\arrR] 
+\draw[line width=\wCoord,\arrR]
 	(\CCx,\CCy) -- ++
 	({-\cosL*\coordL},{-\sinL*\coordL}) node[anchor=east]{$z$};
 
 % Pressure circle
 % \draw [fill] (\CCx,\CCy) circle [radius=0.03];
 \draw (\CCx,\CCy) node[below=0.4,anchor=north west]
-{$(p, \nabla \text{\textbullet} \mathbf{u}, \nabla \text{\textbullet} \mathbf{B})_{i,j,k}$};
+{$(p, \DEL \DOT \U, \DEL \DOT \B)_{i,j,k}$};
 
 \end{tikzpicture}
-% }
 
 
 

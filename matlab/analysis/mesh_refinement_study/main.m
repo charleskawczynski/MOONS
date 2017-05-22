@@ -7,7 +7,7 @@ clc; close all; clear all
 % -------------- Shatrov case (took 8 days):
 % The grid was modified in order to ensure that the ratio of dx_i to dx_i+1 was less than 2
 x.N_FWV = [80 14 16]; z = x; y = x;
-y.N_FWV(1) = y.N_FWV(1) - 13; % Approximate
+y.N_FWV(1) = y.N_FWV(1) + 8; % Approximate
 % --------------
 
 % y.N_FWV(2) = y.N_FWV(2) + 2;
@@ -15,6 +15,7 @@ y.N_FWV(1) = y.N_FWV(1) - 13; % Approximate
 
 r = 1.25;
 
+disp(['NOTE: The y direction is slightly modified automatically'])
 disp(['Ratio increase factor = ' num2str(r)])
 disp(' --------- Very Coarse Grid ---------- '); print_N_cells(x,y,z,r,-2)
 disp(' ----------- Coarse Grid ------------- '); print_N_cells(x,y,z,r,-1)

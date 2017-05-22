@@ -1,52 +1,13 @@
 \documentclass[11pt]{article}
-\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
-\usepackage{epstopdf}
-\usepackage{amsmath}
-\usepackage{hyperref}
-\usepackage{xspace}
-\usepackage{mathtools}
-\usepackage{tikz}
-\usepackage{epsfig}
-\usepackage{float}
-\usepackage{natbib}
-\usepackage{subfigure}
-\usepackage{setspace}
-\usepackage{tabularx,ragged2e,booktabs,caption}
-
-
-\setlength{\oddsidemargin}{0.1in}
-\setlength{\textwidth}{7.25in}
-
-\setlength{\topmargin}{-1in}     %\topmargin: gap above header
-\setlength{\headheight}{0in}     %\headheight: height of header
-\setlength{\topskip}{0in}        %\topskip: between header and text
-\setlength{\headsep}{0in}        
-\setlength{\textheight}{692pt}   %\textheight: height of main text
-\setlength{\textwidth}{7.5in}    % \textwidth: width of text
-\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
-\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
-\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
-\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
-\setlength{\voffset}{0.5in}
-
-
-% Useful commands:
-
-% \hfill		aligns-right everything right of \hfill
+\input{../includes.tex}
 
 \begin{document}
 \doublespacing
-\title{Magnetohydrodynamic Object-Oriented Numerical Solver (MOONS)}
-\author{C. Kawczynski \\
-Department of Mechanical and Aerospace Engineering \\
-University of California Los Angeles, USA\\
-}
+\MOONSTITLE
 % \maketitle
 
-We would like to transpose the cell centered derivative operator
-
-\subsection{Cell centered data. System:
-\texorpdfstring{$ (s-2 \times s) \times (s \times 1) = s-2 \times 1$}{}}
+\section{Cell centered data.}
+System: $(s-2 \times s) \times (s \times 1) = s-2 \times 1$. We would like to transpose the cell centered derivative operator
 
 \[ Af = \left[
 \begin{array}{ccccccccc}
@@ -59,7 +20,7 @@ L_{1} & D_{1}    & U_{1}     &           &           &           &       &      
       &       &          &           &           & L_{s-3}   & D_{s-3}   & U_{s-3} & \\
       &      &       &          &           &           & L_{s-2}   & D_{s-2}   & U_{s-2} \\
   &      &       &           &           &           &       &      0  & 0 \\
-\end{array} \right] 
+\end{array} \right]
 \left[ \begin{array}{c}
 f_{1} \\ f_{2} \\ \vdots \\ f_{i-1} \\ f_{i} \\ f_{i+1} \\ \vdots \\ f_{s-1} \\ f_{s}
 \end{array} \right]
@@ -78,7 +39,7 @@ We get
       &       &          &           &           & U_{s-4}   & D_{s-3}   & L_{s-2} & \\
       &      &       &          &           &           & U_{s-3}   & D_{s-2}   & 0 \\
   &      &       &           &           &           &       &      U_{s-2}  & 0 \\
-\end{array} \right] 
+\end{array} \right]
 \left[ \begin{array}{c}
 f_{1} \\ f_{2} \\ \vdots \\ f_{i-1} \\ f_{i} \\ f_{i+1} \\ \vdots \\ f_{s-1} \\ f_{s}
 \end{array} \right]

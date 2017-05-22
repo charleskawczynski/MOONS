@@ -1,0 +1,126 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Outline of Grid Convergence Tests and Richardson Extrapolation}
+Let the error to a CFD problem for a grid size $h$ be
+\begin{equation}
+	\varepsilon_{h} = |u^{h} - u^{exact}|
+\end{equation}
+This error is equal to some constant times the grid spacing to some power plus higher order terms. This constant is the same for any discretization for the given solution method.
+\begin{equation}
+	\varepsilon_{h}
+	=
+	|u^{h} - u^{exact}|
+	=
+	C h^p + H.O.T.
+\end{equation}
+\subsection{Unknown Exact Solution}
+Now suppose three grid sizes $h_1,h_2$ and $h_3$ are used. We have
+\begin{equation}
+	\varepsilon_{h_1} = |u^{h_1} - u^{exact}| = C (h_1)^p
+\end{equation}
+\begin{equation}
+	\varepsilon_{h_2} = |u^{h_2} - u^{exact}| = C (h_2)^p
+\end{equation}
+\begin{equation}
+	\varepsilon_{h_3} = |u^{h_3} - u^{exact}| = C (h_3)^p
+\end{equation}
+Here we have 6 equations, and 6 unknowns:
+\begin{equation}
+	u^{exact},
+	\varepsilon_{h_1} ,
+	\varepsilon_{h_2} ,
+	\varepsilon_{h_3} ,
+	p ,
+	C
+\end{equation}
+Subtracting the equations, we eliminate $u^{exact}$ and get
+\begin{equation}
+	\varepsilon_{h_3}
+	-
+	\varepsilon_{h_2}
+	=
+	|u^{h_3} - u^{h_2}|
+	=
+	C (h_3^p - h_2^p)
+\end{equation}
+\begin{equation}
+	\varepsilon_{h_2}
+	-
+	\varepsilon_{h_1}
+	=
+	|u^{h_2} - u^{h_1}|
+	=
+	C (h_2^p - h_1^p)
+\end{equation}
+Dividing theses equations eliminates the constant $C$ and we get
+\begin{equation}
+	\boxed{
+	\frac{|u^{h_3} - u^{h_2}|}
+	     {|u^{h_2} - u^{h_1}|}
+	=
+	\frac{h_3^p - h_2^p}{h_2^p - h_1^p}
+	}
+\end{equation}
+\pmb{This can be solved numerically to determine $p$}. A simpler approach is to assume a constant mesh refinement $h_3/h_2 = h_2/h_1 = \lambda$, we have
+\begin{equation}
+	\frac{h_3^p - h_2^p}{h_2^p - h_1^p}
+	=
+	\frac{(h_3/h_2)^p - 1}{1 - (h_1/h_2)^p}
+	=
+	\frac{\lambda^p - 1}{1 - (1/\lambda)^p}
+	=
+	\lambda^p
+	\frac{\lambda^p - 1}{\lambda^p - 1}
+	=
+	\lambda^p
+\end{equation}
+Finally, solving for the estimated order of accuracy, we have
+\begin{equation}
+	\boxed{
+	p =
+	\frac{\ln{\frac{|u^{h_3} - u^{h_2}|}
+	     {|u^{h_2} - u^{h_1}|}}}{\ln(\lambda)}
+	     }
+     \qquad \qquad
+     \text{where}
+     \qquad \qquad
+	\boxed{
+	\lambda
+	=
+	\frac{h_3}{h_2}
+	=
+	\frac{h_2}{h_1}
+	}
+\end{equation}
+\subsection{Known Exact Solution}
+Now suppose two grid sizes $h_1,h_2$ are used. We have
+\begin{equation}
+	\varepsilon_{h_1} = |u^{h_1} - u^{exact}| = C (h_1)^p
+\end{equation}
+\begin{equation}
+	\varepsilon_{h_2} = |u^{h_2} - u^{exact}| = C (h_2)^p
+\end{equation}
+Dividing these equations, we have
+\begin{equation}
+	\frac{\varepsilon_{h_1}}{\varepsilon_{h_2}}
+	=
+	\frac{|u^{h_1} - u^{exact}|}{|u^{h_2} - u^{exact}|}
+	=
+	\frac{C (h_1)^p}{C (h_2)^p}
+	=
+	\left(\frac{h_1}{h_2}\right)^p
+\end{equation}
+The order of accuracy between these two errors is then
+\begin{equation}
+	\boxed{
+	p = \frac{\ln(\frac{\varepsilon_{h_1}}{\varepsilon_{h_2}})}{\ln(h_1/h_2)}
+	}
+\end{equation}
+
+\end{document}

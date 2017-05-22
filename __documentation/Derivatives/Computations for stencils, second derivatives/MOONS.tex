@@ -1,58 +1,20 @@
 \documentclass[11pt]{article}
-\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
-\usepackage{epstopdf}
-\usepackage{amsmath}
-\usepackage{hyperref}
-\usepackage{xspace}
-\usepackage{mathtools}
-\usepackage{tikz}
-\usepackage{epsfig}
-\usepackage{float}
-\usepackage{natbib}
-\usepackage{subfigure}
-\usepackage{setspace}
-\usepackage{tabularx,ragged2e,booktabs,caption}
+\input{../includes.tex}
 
 \newcommand{\height}{0.4}
 \newcommand{\radius}{0.1}
 \newcommand{\offSet}{12}
 \newcommand{\Deltah}{3}
 
-
-\setlength{\oddsidemargin}{0.1in}
-\setlength{\textwidth}{7.25in}
-
-\setlength{\topmargin}{-1in}     %\topmargin: gap above header
-\setlength{\headheight}{0in}     %\headheight: height of header
-\setlength{\topskip}{0in}        %\topskip: between header and text
-\setlength{\headsep}{0in}        
-\setlength{\textheight}{692pt}   %\textheight: height of main text
-\setlength{\textwidth}{7.5in}    % \textwidth: width of text
-\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
-\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
-\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
-\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
-\setlength{\voffset}{0.5in}
-
-
-% Useful commands:
-
-% \hfill		aligns-right everything right of \hfill
-
 \begin{document}
 \doublespacing
-\title{Magnetohydrodynamic Object-Oriented Numerical Solver (MOONS)}
-\author{C. Kawczynski \\
-Department of Mechanical and Aerospace Engineering \\
-University of California Los Angeles, USA\\
-}
+\MOONSTITLE
 \maketitle
-
 
 \section{Grid}
 Cell corner and cell centered data (and their indexing) are shown below.
 
-\begin{figure}[h!]
+\begin{figure}[H]
   \begin{center}
     \begin{tikzpicture}
       \draw [black] (0,0) to (2*\Deltah,0);
@@ -164,7 +126,7 @@ Let's assume $u\in CC$, and $i=2$, then we have
  \left\{\frac{\partial}{\partial h} \left( \frac{\partial u}{\partial h} \right) \right\}_{c,2}
  =
  \frac{
- \frac{u_{c,3}-u_{c,2}}{h_{c,3}-h_{c,2}} - 
+ \frac{u_{c,3}-u_{c,2}}{h_{c,3}-h_{c,2}} -
  \frac{u_{c,2}-u_{c,1}}{h_{c,2}-h_{c,1}}
  }{h_{c,2+1/2} - h_{c,2-1/2}}
 \end{equation}
@@ -201,7 +163,7 @@ Let's assume $u\in N$, and $i=2$, then we have
  \left\{\frac{\partial}{\partial h} \left( \frac{\partial u}{\partial h} \right) \right\}_{n,2}
  =
  \frac{
- \frac{u_{n,3}-u_{n,2}}{h_{n,3}-h_{n,2}} - 
+ \frac{u_{n,3}-u_{n,2}}{h_{n,3}-h_{n,2}} -
  \frac{u_{n,2}-u_{n,1}}{h_{n,2}-h_{n,1}}
  }{h_{n,2+1/2} - h_{n,2-1/2}}
 \end{equation}
@@ -229,12 +191,12 @@ This means we may write a general form of the dual grid indexes, based on the gr
 \begin{equation}
   h_{p,i+1/2} - h_{p,i-1/2} = \Delta h_{d,i-1+gt} = h_{d,i+gt} - h_{d,i-1+gt}
   , \qquad
- gt = 
-\begin{cases} 
+ gt =
+\begin{cases}
     0 & \text{if $u \in $ N} \\
     1 & \text{if $u \in $ CC} \\
  \end{cases}
-\end{equation} 
+\end{equation}
 
 
 % Let $i+1/2$ of the primary grid be $i+1$ of the dual grid (this can easily be seen by replacing $i$ with 1). This means that if $\textcolor{green}{i=2}$ then $i-1+1=2-1+1=2$ refers to the \textit{second} index of $\Delta h_{d,i-1+1}$ which is $\textcolor{purple}{\Delta h_{d,2}}$ (which, again is what we want). This verifies the index for the N data case.
@@ -260,8 +222,8 @@ Now we have successfully removed the half indexes, and this form is more easily 
 \begin{equation}
 \boxed{
 \frac{\partial}{\partial h} \left( k \frac{\partial u}{\partial h} \right)
- = \left( \frac{k_{d,i-1+gt}}{\Delta h_{p,i-1} \Delta h_{d,i-1+gt}} \right) u_{i - 1} - 
-   \left( \frac{k_{d,i-1+gt}}{\Delta h_{p,i-1} \Delta h_{d,i-1+gt}} + \frac{k_{d,i+gt}}{\Delta h_{p,i} \Delta h_{d,i-1+gt}} \right) u_{i} + 
+ = \left( \frac{k_{d,i-1+gt}}{\Delta h_{p,i-1} \Delta h_{d,i-1+gt}} \right) u_{i - 1} -
+   \left( \frac{k_{d,i-1+gt}}{\Delta h_{p,i-1} \Delta h_{d,i-1+gt}} + \frac{k_{d,i+gt}}{\Delta h_{p,i} \Delta h_{d,i-1+gt}} \right) u_{i} +
    \left( \frac{k_{d,i+gt}}{\Delta h_{p,i} \Delta h_{d,i-1+gt}} \right) u_{i+1}
  }
 \end{equation}
@@ -271,8 +233,8 @@ In the case of uniform properties
 \begin{equation}
 \boxed{
 \frac{\partial}{\partial h} \left( \frac{\partial u}{\partial h} \right)
- = \left( \frac{1}{\Delta h_{p,i-1} \Delta h_{d,i-1+gt}} \right) u_{i - 1} - 
-   \left( \frac{1}{\Delta h_{p,i-1} \Delta h_{d,i-1+gt}} + \frac{1}{\Delta h_{p,i} \Delta h_{d,i-1+gt}} \right) u_{i} + 
+ = \left( \frac{1}{\Delta h_{p,i-1} \Delta h_{d,i-1+gt}} \right) u_{i - 1} -
+   \left( \frac{1}{\Delta h_{p,i-1} \Delta h_{d,i-1+gt}} + \frac{1}{\Delta h_{p,i} \Delta h_{d,i-1+gt}} \right) u_{i} +
    \left( \frac{1}{\Delta h_{p,i} \Delta h_{d,i-1+gt}} \right) u_{i+1}
  }
 \end{equation}
@@ -283,9 +245,9 @@ The coefficient must be linearly interpolated when $u \in N$, otherwise and ordi
 
 \begin{equation}
   \frac{k_{p,i+1} - k_{p,i}}{h_{p,i+1} - h_{p,i}}
-   = 
+   =
   \frac{k_{p,i+1/2} - k_{p,i}}{h_{p,i+1/2} - h_{p,i}}
-   = 
+   =
   \frac{k_{d,i+gt} - k_{p,i}}{h_{d,i+gt} - h_{p,i}}
 \end{equation}
 Therefore we may compute $k_{p,i+1/2} = k_{d,i+gt}$ to be
@@ -304,5 +266,3 @@ Which verifies the case when the linearly interpolation becomes a simple average
 
 
 \end{document}
-
-

@@ -1,0 +1,69 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Analysis of currents across interfaces}
+
+For a discontinuous interface, the electrical conductivity is defined as
+
+\begin{equation}
+	\sigma = H(x,y,z)
+\end{equation}
+Where
+\begin{equation}
+	D_n(x) = \frac{n}{\sqrt{2\pi}} e^{- \frac{1}{2}x^2n^2}
+\end{equation}
+
+Note that
+
+\begin{equation}
+	\int_{-\infty}^{\infty} D_n(x) dx = 1
+\end{equation}
+
+Or more generally,
+
+\begin{equation}
+	\int_{-\infty}^{\infty} x^m D_n(x) dx = n^{-m} \hat{\mu}_m
+\end{equation}
+
+Where $\hat{\mu}_0$,$\hat{\mu}_0$,..., $=1,0,1,0,3$ are the moments of the standard Gaussian distribution.
+
+Let
+\begin{equation}
+	S_n(x) = \int_{-\infty}^{x} D_n(y) dy
+\end{equation}
+
+\begin{equation}
+	lim_{n\rightarrow \infty} S_n(x)
+	=
+	\begin{cases}
+	0 & x<0 \\
+	1 & x>0 \\
+	\end{cases}
+\end{equation}
+
+Also note that
+
+\begin{equation}
+	\int_{-\infty}^{\infty} H(x) g(x) dx
+	=
+	lim_{n\rightarrow \infty}
+	\int_{-\infty}^{\infty} S_n(x) g(x) dx
+	=
+	\int_0^{\infty} g(x) dx
+\end{equation}
+
+\begin{equation}
+	\frac{\partial H(x)}{\partial x} = \delta (x)
+\end{equation}
+Where
+\begin{equation}
+	H(x) = \int_{-\infty}^{x} \delta (y) dy
+\end{equation}
+
+
+\end{document}

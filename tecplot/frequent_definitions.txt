@@ -41,9 +41,10 @@
 {Jz}={J_mirror_3pn_z}
 {J2}={Jx}**2+{Jy}**2+{Jz}**2
 
-{Bx_diff} = {B_mirror_3pn_x}[4]-{B_mirror_3pn_x}[1]
-{By_diff} = {B_mirror_3pn_y}[4]-{B_mirror_3pn_y}[1]
-{Bz_diff} = {B_mirror_3pn_z}[4]-{B_mirror_3pn_z}[1]
+{Bx_diff} = {B_mirror_3pn_x}[2]-{B_mirror_3pn_x}[1]
+{By_diff} = {B_mirror_3pn_y}[2]-{B_mirror_3pn_y}[1]
+{Bz_diff} = {B_mirror_3pn_z}[2]-{B_mirror_3pn_z}[1]
+{B2_diff}={Bx_diff}**2+{By_diff}**2+{Bz_diff}**2
 {B_helicity} = {Bx}*{Jx}+{By}*{Jy}+{Bz}*{Jz}
 {cross_helicity} = {Bx}*{u}+{By}*{v}+{Bz}*{w}
 {cross_helicity_tot} = {Bx}*{u}+{By}*{v}+{Bz_tot}*{w}

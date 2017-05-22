@@ -1,0 +1,111 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Root solver for matching grid stretching parameter}
+
+This document describes the method used to solve the nonlinear algebraic equation in MOONS to match the grid stretching parameter. The equation to solve is
+
+\begin{equation}
+	\frac{(\beta+2\alpha)\gamma_{sn} - \beta + 2\alpha}{(2\alpha+1)(1+\gamma_{sn})}
+	-
+	\left[
+	\frac{(\beta+2\alpha)\gamma_{sn-1} - \beta + 2\alpha}{(2\alpha+1)(1+\gamma_{sn-1})}
+	\right]
+	=
+	\frac{\Delta h}{h_{max}-h_{min}}
+\end{equation}
+
+Where $\beta$ is the unknown. Clearly, this equation is non-linear and must be solved numerically. The method I used is a sort of a binary search method. For ease of notation, I will write the solution as would be done in matlab. The same method can be used in Fortran with the intrinsic minloc() function.
+
+\section{Problem statement}
+We may write our equation by moving everything to one side:
+\begin{equation}
+	f(h) = root(h) = 0
+\end{equation}
+
+To solve for the solution $h^*$, make a vector, $h$
+
+\begin{equation}
+	h = \text{linspace}(h_{min},h_{max},N)
+\end{equation}
+\begin{equation}
+	root(h) = \ldots
+\end{equation}
+\begin{equation}
+	[\text{minVal} \, \text{minLoc}] = \text{min}(abs(root(h)))
+\end{equation}
+\begin{equation}
+	h^* = h(minLoc)
+\end{equation}
+
+Note that the accuracy depends on the range and number of points used in the array, $h_{min}$, $h_{max}$, $N$. Therefore, the resolution is
+\begin{equation}
+	dh = \frac{h_{max}-h_{min}}{N}
+\end{equation}
+
+This means that we adjust searching for the root if the initial range is poor.
+Since
+\begin{equation}
+	1 < \beta < \infty
+\end{equation}
+We have two asymptotic boundaries (1 refers to infinite stretching).
+
+The next discussions are for advancing the search front in different scenarios given our knowledge of how $\beta$ is supposed to be used.
+
+\subsection{Central search}
+We may adjust the bounds of the solution to enhance the resolution by movind the boundary to $2 \Delta h$ from the initial solution.
+\begin{equation}
+	h_{min}^{n+1} = h^* - 2\Delta h
+\end{equation}
+\begin{equation}
+	h_{max}^{n+1} = h^* + 2\Delta h
+\end{equation}
+Where $h^*$ is the solution at step $n$.
+
+\subsection{Search Right}
+Increase the search to the right, leave the search to the left narrow:
+\begin{equation}
+	h_{min}^{n+1} = h^* - 2\Delta h
+\end{equation}
+\begin{equation}
+	h_{max}^{n+1} = h^* + 2N\Delta h
+\end{equation}
+
+\subsection{Search Left}
+Increase the search to the left, leave the search to the right narrow:
+\begin{equation}
+	h_{min}^{n+1} = h^* - 2N\Delta h
+\end{equation}
+\begin{equation}
+	h_{max}^{n+1} = h^* + 2\Delta h
+\end{equation}
+
+\subsection{Steep asymptotic search left (for \texorpdfstring{$\beta \rightarrow 1$}{beta approaching 1})}
+If we are searching near a known asymptote, where the root becomes nearly vertical, we may want to make the search expand at a slower rate as the asymptote is reached.
+\begin{equation}
+	h_{min}^{n+1}=A-(A-h^*)\times(1-\gamma)
+\end{equation}
+\begin{equation}
+	h_{max}^{n+1} = h^*+2\Delta h
+\end{equation}
+Where $A$ is the location of the asymptote and as $\gamma \rightarrow 1$, $h_{min}^{n+1} \rightarrow A$ and as $\gamma \rightarrow 0$, $h_{min}^{n+1} \rightarrow h_{min}^{n}$. I believe a value of $\gamma = 0.8$ should be a good conservative choice in order to slowly ascend/descend to the asymptote (in order to avoid NaNs by truncation error).
+
+\subsection{Steep asymptotic search right (for \texorpdfstring{$\beta \rightarrow 1$}{beta approaching 1})}
+For search right we have
+\begin{equation}
+	h_{min}^{n+1}=A+(A-h^*)\times(1-\gamma)
+\end{equation}
+\begin{equation}
+	h_{max}^{n+1} = h^*-2\Delta h
+\end{equation}
+
+\section{Iterations}
+This process can be repeated in order to reach a high precision. It has been my experience that, for a central search, this method is very effective at reaching high resolution in a very short time.
+
+
+\end{document}

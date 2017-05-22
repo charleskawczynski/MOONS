@@ -1,46 +1,9 @@
 \documentclass[11pt]{article}
-\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
-\usepackage{epstopdf}
-\usepackage{amsmath}
-\usepackage{hyperref}
-\usepackage{xspace}
-\usepackage{mathtools}
-\usepackage{tikz}
-\usepackage{epsfig}
-\usepackage{float}
-\usepackage{natbib}
-\usepackage{subfigure}
-\usepackage{setspace}
-\usepackage{tabularx,ragged2e,booktabs,caption}
-
-
-\setlength{\oddsidemargin}{0.1in}
-\setlength{\textwidth}{7.25in}
-
-\setlength{\topmargin}{-1in}     %\topmargin: gap above header
-\setlength{\headheight}{0in}     %\headheight: height of header
-\setlength{\topskip}{0in}        %\topskip: between header and text
-\setlength{\headsep}{0in}        
-\setlength{\textheight}{692pt}   %\textheight: height of main text
-\setlength{\textwidth}{7.5in}    % \textwidth: width of text
-\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
-\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
-\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
-\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
-\setlength{\voffset}{0.5in}
-
-
-% Useful commands:
-
-% \hfill		aligns-right everything right of \hfill
+\input{../includes.tex}
 
 \begin{document}
 \doublespacing
-\title{Magnetohydrodynamic Object-Oriented Numerical Solver (MOONS)}
-\author{C. Kawczynski \\
-Department of Mechanical and Aerospace Engineering \\
-University of California Los Angeles, USA\\
-}
+\MOONSTITLE
 \maketitle
 
 \section{Outline of Discrete Operators}
@@ -54,8 +17,8 @@ In this document, N,CC,F,E represent Node (Cell Corner), Cell Center, Face, and 
 All of these operators should be capable of operating on collocated data with a result that lives on the original grid, which means that, in addition to the operators to follow, all operators include:
 
 \begin{equation}
-	\text{N} \rightarrow \text{N} 
-	\qquad / \qquad 
+	\text{N} \rightarrow \text{N}
+	\qquad / \qquad
 	\text{CC} \rightarrow \text{CC}
 \end{equation}
 
@@ -64,7 +27,7 @@ All of these operators should be capable of operating on collocated data with a 
 
 \begin{equation}
 	\text{F} \rightarrow \text{CC}
-	\qquad / \qquad 
+	\qquad / \qquad
 	\text{E} \rightarrow \text{N}
 \end{equation}
 
@@ -72,7 +35,7 @@ All of these operators should be capable of operating on collocated data with a 
 
 \begin{equation}
 	\text{F} \rightarrow \text{F}
-	\qquad / \qquad 
+	\qquad / \qquad
 	\text{E} \rightarrow \text{E}
 \end{equation}
 
@@ -80,11 +43,11 @@ All of these operators should be capable of operating on collocated data with a 
 
 \begin{equation}
 	\text{F} \rightarrow \text{CC}
-	\qquad / \qquad 
+	\qquad / \qquad
 	\text{CC} \rightarrow \text{F}
-	\qquad / \qquad 
+	\qquad / \qquad
 	\text{E} \rightarrow \text{N}
-	\qquad / \qquad 
+	\qquad / \qquad
 	\text{N} \rightarrow \text{E}
 \end{equation}
 
@@ -92,7 +55,7 @@ All of these operators should be capable of operating on collocated data with a 
 
 \begin{equation}
 	\text{F} \rightarrow \text{E}
-	\qquad / \qquad 
+	\qquad / \qquad
 	\text{E} \rightarrow \text{F}
 \end{equation}
 
@@ -116,14 +79,14 @@ Where $i$ may or may not equal $j$. Note that if $i=j$, then we just have the L 
 This case can easily be imagined by considering the mixed derivative as a divergence of some quantity within a rotated control volume
 
 \begin{equation}
-	\text{CC} \rightarrow \text{E} : 
+	\text{CC} \rightarrow \text{E} :
 	\begin{cases}
 	f \in \text{CC} \\
 	k \in \text{F} \\
 	f'' \in \text{E}
 	\end{cases}
 	\qquad \qquad
-	\text{N} \rightarrow \text{F} : 
+	\text{N} \rightarrow \text{F} :
 	\begin{cases}
 	f \in \text{N} \\
 	k \in \text{E} \\
@@ -134,11 +97,11 @@ This case can easily be imagined by considering the mixed derivative as a diverg
 \subsection{Shifted, and rotated control volumes}
 
 \begin{equation}
-	\text{F} \rightarrow \text{N}/\tilde{\text{F}} : 
+	\text{F} \rightarrow \text{N}/\tilde{\text{F}} :
 	\begin{cases}
 		f \in \text{F}
 		\begin{cases}
-		k \in \text{CC} 
+		k \in \text{CC}
 			\begin{cases}
 			f'' \in \tilde{\text{F}}
 			\end{cases}
@@ -151,11 +114,11 @@ This case can easily be imagined by considering the mixed derivative as a diverg
 		\end{cases}
 	\end{cases}
 	\qquad
-	\text{E} \rightarrow \text{CC}/\tilde{\text{E}} : 
+	\text{E} \rightarrow \text{CC}/\tilde{\text{E}} :
 	\begin{cases}
 		f \in \text{E}
 		\begin{cases}
-		k \in \text{N} 
+		k \in \text{N}
 			\begin{cases}
 			f'' \in \tilde{\text{E}}
 			\end{cases}
@@ -169,7 +132,7 @@ This case can easily be imagined by considering the mixed derivative as a diverg
 	\end{cases}
 \end{equation}
 
-First, note that $\tilde{\text{F}} \ne \text{F}$, i.e. the data starts on a face and the result lands on a neighboring face. 
+First, note that $\tilde{\text{F}} \ne \text{F}$, i.e. the data starts on a face and the result lands on a neighboring face.
 
 Second, note that there are multiple paths to reach a neighboring face, this set of multiple paths can be thought of as exchanging derivatives.
 

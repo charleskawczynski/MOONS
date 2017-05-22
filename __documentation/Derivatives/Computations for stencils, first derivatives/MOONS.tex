@@ -1,46 +1,9 @@
 \documentclass[11pt]{article}
-\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
-\usepackage{epstopdf}
-\usepackage{amsmath}
-\usepackage{hyperref}
-\usepackage{xspace}
-\usepackage{mathtools}
-\usepackage{tikz}
-\usepackage{epsfig}
-\usepackage{float}
-\usepackage{natbib}
-\usepackage{subfigure}
-\usepackage{setspace}
-\usepackage{tabularx,ragged2e,booktabs,caption}
-
-
-\setlength{\oddsidemargin}{0.1in}
-\setlength{\textwidth}{7.25in}
-
-\setlength{\topmargin}{-1in}     %\topmargin: gap above header
-\setlength{\headheight}{0in}     %\headheight: height of header
-\setlength{\topskip}{0in}        %\topskip: between header and text
-\setlength{\headsep}{0in}        
-\setlength{\textheight}{692pt}   %\textheight: height of main text
-\setlength{\textwidth}{7.5in}    % \textwidth: width of text
-\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
-\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
-\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
-\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
-\setlength{\voffset}{0.5in}
-
-
-% Useful commands:
-
-% \hfill		aligns-right everything right of \hfill
+\input{../includes.tex}
 
 \begin{document}
 \doublespacing
-\title{Magnetohydrodynamic Object-Oriented Numerical Solver (MOONS)}
-\author{C. Kawczynski \\
-Department of Mechanical and Aerospace Engineering \\
-University of California Los Angeles, USA\\
-}
+\MOONSTITLE
 \maketitle
 
 \section{Stencils for first derivatives}
@@ -49,11 +12,11 @@ This document uses results from the non-uniform grid stencil results.
 \subsection{Staggered}
 By staggered derivative, what is meant is
 
-if the field $f\in CC$ then $\frac{\partial f}{\partial h}\in N$.  
+if the field $f\in CC$ then $\frac{\PD f}{\PD h}\in N$.
 
 Likewise
 
-if the field $f\in N$ then $\frac{\partial f}{\partial h}\in CC$.  
+if the field $f\in N$ then $\frac{\PD f}{\PD h}\in CC$.
 
 Where $CC$ and $N$ mean cell center and cell corner data. To put in words, if data lives on the primary grid, then its derivative lives on the dual grid. That is what a staggered derivative means in MOONS.
 
@@ -69,8 +32,8 @@ Where the subscript $p$ means primary grid, and $sf$ means the size of $f$. Note
 
 Where
  \begin{equation}
-   gt = gridType = 
-  \begin{cases} 
+   gt = gridType =
+  \begin{cases}
       0 & \text{if $f \in $ cell center} \\
       1 & \text{if $f \in $ cell corner} \\
    \end{cases}
@@ -79,7 +42,7 @@ Note that the result, $f'$, lives on the dual grid (hence the subscript $d$). Al
 
 
 \subsection{Collocated}
-For the collocated case (when both $f$ and $\frac{\partial f}{\partial h}$ live on the primary grid), MOONS uses the results from the non-uniform grid-stencils. 
+For the collocated case (when both $f$ and $\frac{\PD f}{\PD h}$ live on the primary grid), MOONS uses the results from the non-uniform grid-stencils.
 
 THESE FORMULAS NEED TO BE CHECKED FOR CC VS NODE DATA SINCE THERE EXISTS A GHOST CELL. THIS VERY WELL MAY CHANGE THE NECESSARY INDEX FOR CC VS N DATA. THIS SHOULD BE SIMPLE TO FIX, SIMPLY ADD A gt TO THE INDEXING FOR $\alpha_k$ and $\beta_j$.
 
@@ -118,5 +81,3 @@ Use the non-uniform grid stencil results with
 \end{equation}
 
 \end{document}
-
-

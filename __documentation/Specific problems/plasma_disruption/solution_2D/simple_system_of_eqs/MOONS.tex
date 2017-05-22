@@ -1,0 +1,38 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+% \maketitle
+
+\section{Solution of simplified system of equations}
+\footnotesize Both sets of equations are in the form
+\begin{equation}\begin{aligned}
+A_1 E_1 + A_2 E_2 = H \\
+A_1 F_1 + A_2 F_2 = H \\
+A_2 E_2 = H - A_1 E_1 \\
+A_2 = \frac{1}{E_2} (H - A_1 E_1) \\
+A_1 F_1 + \frac{F_2}{E_2} (H - A_1 E_1) = H \\
+A_1 F_1 + \frac{F_2}{E_2} H - \frac{F_2}{E_2} A_1 E_1 = H \\
+A_1 \left( F_1 - \frac{F_2}{E_2} E_1 \right) = H -\frac{F_2}{E_2} H \\
+A_1 \left( F_1 - \frac{F_2}{E_2} E_1 \right) = H \left( 1 - \frac{F_2}{E_2} \right) \\
+A_1 = H \frac{\left( 1 - \frac{F_2}{E_2} \right)}{\left( F_1 - \frac{F_2}{E_2} E_1 \right)} \\
+\boxed{A_1 = H \left( \frac{E_2 - F_2}{F_1 E_2 - F_2 E_1} \right) } \\
+A_2 = \frac{1}{E_2} \left(H - A_1 E_1 \right) \\
+A_2 = \frac{1}{E_2} \left(H - H \frac{( E_2 - F_2 )}{( F_1 E_2 - F_2 E_1)} E_1 \right) \\
+A_2 = \frac{H}{E_2} \left(1 - \frac{(E_2 E_1 - F_2 E_1)}{(F_1 E_2 - F_2 E_1)} \right) \\
+A_2 = \frac{H}{E_2} \left(\frac{F_1 E_2 - F_2 E_1}{F_1 E_2 - F_2 E_1} - \frac{(E_2 E_1 - F_2 E_1)}{(F_1 E_2 - F_2 E_1)} \right) \\
+A_2 = \frac{H}{E_2} \left(\frac{F_1 E_2 - F_2 E_1 - (E_2 E_1 - F_2 E_1)}{F_1 E_2 - F_2 E_1}\right) \\
+A_2 = \frac{H}{E_2} \left(\frac{F_1 E_2 - F_2 E_1 - E_2 E_1 + F_2 E_1}{F_1 E_2 - F_2 E_1}\right) \\
+A_2 = \frac{H}{E_2} \left(\frac{F_1 E_2 - E_2 E_1}{F_1 E_2 - F_2 E_1}\right) \\
+\boxed{A_2 = H \left(\frac{F_1 - E_1}{F_1 E_2 - F_2 E_1}\right)} \\
+\end{aligned} \end{equation}
+
+\begin{equation}\begin{aligned}
+A_1 =& \frac{H}{\theta} (E_2 - F_2) \\
+A_2 =& \frac{H}{\theta} (F_1 - E_1), \qquad \theta = F_1 E_2 - F_2 E_1 \\
+\end{aligned} \end{equation}
+
+
+\end{document}

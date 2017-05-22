@@ -1,0 +1,368 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Case E: Fully Coupled 3 Component Magnetic field in a Periodic Duct}
+
+Here, we made the following assumptions:
+
+\begin{itemize}
+\item Uniform $\sigma$, uniform $\mu$
+\item A uniform applied magnetic field of the form $B^0 = (B_x^0,B_y^0,B_z^0) = (e^{-t},e^{-t},1)$
+\item We considered the domain enclosure of size $-10.1 < x < 10.1 \qquad -1.1 < y < 1.1 \qquad -1.1 < z < 1.1$
+\item The number of cells in the fluid and walls were $N_{fluid} = (75,45,45)$ \qquad $N_{wall} = (11,11,11)$
+\end{itemize}
+
+% \FIG[H]
+%  \CE
+%   \IG[width=.3\TW]{figs/geometry.eps}
+%    \caption[Optional ]{Geometry}
+% \EFIG
+
+For this problem, we solved the momentum and induction equations. For boundary conditions used were the following
+
+\begin{equation}
+	\U,
+	\B,
+	p = \text{periodic}
+	\qquad
+	x_{min},x_{max}
+	\qquad \qquad
+\end{equation}
+
+\begin{equation}
+	\U = \U_{walls} = 0
+	\qquad
+	\frac{\PD p}{\PD n} = 0
+	\qquad
+	\frac{\PD B_{n}}{\PD n} = 0
+	\qquad
+	B_{tangent} = 0
+	\qquad
+	y_{min},y_{max},
+	z_{min},z_{max}
+\end{equation}
+
+Using the $\frac{\PD ()}{\PD x} = 0$, the momentum equations become
+
+\begin{equation}
+	\frac{\PD u}{\PD t}
+	+ \frac{\PD (u v)}{\PD y}
+	+ \frac{\PD (u w)}{\PD z}
+	=
+	- \frac{\PD p}{\PD x}
+	+ \frac{1}{Re}
+	\left(
+	\frac{\PD^2 u}{\PD y^2}
+	+\frac{\PD^2 u}{\PD z^2}
+	\right)
+	+ \frac{Ha^2}{Re}
+	(j \times B)_x
+\end{equation}
+\begin{equation}
+	\frac{\PD v}{\PD t}
+	+ \frac{\PD (v v)}{\PD y}
+	+ \frac{\PD (v w)}{\PD z}
+	=
+	- \frac{\PD p}{\PD y}
+	+ \frac{1}{Re}
+	\left(
+	\frac{\PD^2 v}{\PD y^2}
+	+\frac{\PD^2 v}{\PD z^2}
+	\right)
+	+ \frac{Ha^2}{Re}
+	(j \times B)_y
+\end{equation}
+\begin{equation}
+	\frac{\PD w}{\PD t}
+	+ \frac{\PD (w v)}{\PD y}
+	+ \frac{\PD (w w)}{\PD z}
+	=
+	- \frac{\PD p}{\PD z}
+	+ \frac{1}{Re}
+	\left(
+	\frac{\PD^2 w}{\PD y^2}
+	+\frac{\PD^2 w}{\PD z^2}
+	\right)
+	+ \frac{Ha^2}{Re}
+	(j \times B)_z
+\end{equation}
+
+Using the uniform $\sigma$, uniform $\mu$ the induction equations become
+
+\begin{equation}
+	\frac{\PD B_i}{\PD t}
+	=
+	- \frac{\PD B_i^0}{\PD t}
+	- \frac{\PD}{\PD x_j} (u_j B_i^0 - u_i B_j^0)
+	- \frac{\PD}{\PD x_j} (u_j B_i - u_i B_j)
+	+
+	\frac{1}{Re_m}
+	\frac{\PD^2 B_i}{\PD x_j^2}
+\end{equation}
+
+Using the $\frac{\PD ()}{\PD x} = 0$, we have
+
+\begin{equation}
+	\frac{\PD B_x}{\PD t}
+	=
+	- \frac{\PD B_x^0}{\PD t}
+	- \frac{\PD}{\PD y} (v B_x - u B_y)
+	- \frac{\PD}{\PD z} (w B_x - u B_z)
+	- \frac{\PD}{\PD y} (v B_x^0 - u B_y^0)
+	- \frac{\PD}{\PD z} (w B_x^0 - u B_z^0)
+	+
+	\frac{1}{Re_m}
+	\left(
+	\frac{\PD^2 B_x}{\PD y^2}
+	+ \frac{\PD^2 B_x}{\PD z^2}
+	\right)
+\end{equation}
+\begin{equation}
+	\frac{\PD B_y}{\PD t}
+	=
+	- \frac{\PD B_y^0}{\PD t}
+	- \frac{\PD}{\PD z} (w B_y - v B_z)
+	- \frac{\PD}{\PD z} (w B_y^0 - v B_z^0)
+	+
+	\frac{1}{Re_m}
+	\left(
+	\frac{\PD^2 B_y}{\PD y^2}
+	+ \frac{\PD^2 B_y}{\PD z^2}
+	\right)
+\end{equation}
+\begin{equation}
+	\frac{\PD B_z}{\PD t}
+	=
+	- \frac{\PD B_z^0}{\PD t}
+	- \frac{\PD}{\PD y} (v B_z - w B_y)
+	- \frac{\PD}{\PD y} (v B_z^0 - w B_y^0)
+	+
+	\frac{1}{Re_m}
+	\left(
+	\frac{\PD^2 B_z}{\PD y^2}
+	+ \frac{\PD^2 B_z}{\PD z^2}
+	\right)
+\end{equation}
+
+Using the applied magnetic field, we have
+
+\begin{equation}
+	\frac{\PD B_x}{\PD t}
+	=
+	e^{-t}
+	- \frac{\PD}{\PD y} (v B_x - u B_y)
+	- \frac{\PD}{\PD z} (w B_x - u B_z)
+	+ e^{-t} \frac{\PD}{\PD y} (v - u)
+	- \frac{\PD}{\PD z} (-w e^{-t} - u)
+	+
+	\frac{1}{Re_m}
+	\left(
+	\frac{\PD^2 B_x}{\PD y^2}
+	+ \frac{\PD^2 B_x}{\PD z^2}
+	\right)
+\end{equation}
+\begin{equation}
+	\frac{\PD B_y}{\PD t}
+	=
+	e^{-t}
+	- \frac{\PD}{\PD z} (w B_y - v B_z)
+	+ \frac{\PD}{\PD z} (w e^{-t} + v)
+	+
+	\frac{1}{Re_m}
+	\left(
+	\frac{\PD^2 B_y}{\PD y^2}
+	+ \frac{\PD^2 B_y}{\PD z^2}
+	\right)
+\end{equation}
+\begin{equation}
+	\frac{\PD B_z}{\PD t}
+	=
+	- \frac{\PD}{\PD y} (v B_z - w B_y)
+	- \frac{\PD}{\PD y} (v + w e^{-t})
+	+
+	\frac{1}{Re_m}
+	\left(
+	\frac{\PD^2 B_z}{\PD y^2}
+	+ \frac{\PD^2 B_z}{\PD z^2}
+	\right)
+\end{equation}
+
+\section{Energy}
+The plots have been organized using colors=(black,red,blue,green) $\rightarrow$ Re=(100,500,1000,10000) and different symbols have been used for difference magnetic Reynolds numbers.
+
+Not all simulations reached a maximum energy. In fact, many simulations seem like motion and induced magnetic field have just begun to develop. Particularly, those with low $Ha$ number (10).
+
+% \subsection{Kinetic}
+% \FIG[H]
+%  \CE
+%   \subfigure[standard scale] {\IG[width=.3\TW]{figs/KU/KU.eps}}
+%   \subfigure[semi-log y scale] {\IG[width=.3\TW]{figs/KU/KU_log.eps}}
+%    \caption[Optional ]{Kinetic Energy vs Time Step}
+% \EFIG
+
+% \subsection{Magnetic}
+% \FIG[H]
+%  \CE
+%   \subfigure[standard scale] {\IG[width=.3\TW]{figs/KB/KB.eps}}
+%   \subfigure[semi-log y scale] {\IG[width=.3\TW]{figs/KB/KB_log.eps}}
+%    \caption[Optional ]{Magnetic Energy vs Time Step}
+% \EFIG
+
+
+\section{Results}
+
+\FIG[H] \CE
+	\subfigure[Velocity Field] {\IG[width=.3\TW]{figs/Ha10Rem1Re100/U.eps}}
+	\subfigure[Current Field] {\IG[width=.3\TW]{figs/Ha10Rem1Re100/J.eps}}
+	\subfigure[Velocity streamtraces]{\IG[width=.3\TW]{figs/Ha10Rem1Re100/Ustream.png}}
+	\caption[Optional ]{$Ha=10$,$Re_m=1$,$Re=100$}
+\EFIG
+
+\FIG[H] \CE
+	\subfigure[Velocity Field] {\IG[width=.3\TW]{figs/Ha10Rem1Re500/U.eps}}
+	\subfigure[Current Field] {\IG[width=.3\TW]{figs/Ha10Rem1Re500/J.eps}}
+	\subfigure[Velocity streamtraces]{\IG[width=.3\TW]{figs/Ha10Rem1Re500/Ustream.png}}
+	\caption[Optional ]{$Ha=10$,$Re_m=1$,$Re=500$}
+\EFIG
+
+\FIG[H] \CE
+	\subfigure[Velocity Field] {\IG[width=.3\TW]{figs/Ha10Rem1Re1000/U.eps}}
+	\subfigure[Current Field] {\IG[width=.3\TW]{figs/Ha10Rem1Re1000/J.eps}}
+	\subfigure[Velocity streamtraces]{\IG[width=.3\TW]{figs/Ha10Rem1Re1000/Ustream.png}}
+	\caption[Optional ]{$Ha=10$,$Re_m=1$,$Re=1000$}
+\EFIG
+
+\FIG[H] \CE
+	\subfigure[Velocity Field] {\IG[width=.3\TW]{figs/Ha10Rem1Re10000/U.eps}}
+	\subfigure[Current Field] {\IG[width=.3\TW]{figs/Ha10Rem1Re10000/J.eps}}
+	\subfigure[Velocity streamtraces]{\IG[width=.3\TW]{figs/Ha10Rem1Re10000/Ustream.png}}
+	\caption[Optional ]{$Ha=10$,$Re_m=1$,$Re=10000$}
+\EFIG
+
+\FIG[H] \CE
+	\subfigure[Velocity Field] {\IG[width=.3\TW]{figs/Ha10Rem10Re100/U.eps}}
+	\subfigure[Current Field] {\IG[width=.3\TW]{figs/Ha10Rem10Re100/J.eps}}
+	\subfigure[Velocity streamtraces]{\IG[width=.3\TW]{figs/Ha10Rem10Re100/Ustream.png}}
+	\caption[Optional ]{$Ha=10$,$Re_m=10$,$Re=100$}
+\EFIG
+
+\FIG[H] \CE
+	\subfigure[Velocity Field] {\IG[width=.3\TW]{figs/Ha10Rem10Re500/U.eps}}
+	\subfigure[Current Field] {\IG[width=.3\TW]{figs/Ha10Rem10Re500/J.eps}}
+	\subfigure[Velocity streamtraces]{\IG[width=.3\TW]{figs/Ha10Rem10Re500/Ustream.png}}
+	\caption[Optional ]{$Ha=10$,$Re_m=10$,$Re=500$}
+\EFIG
+
+\FIG[H] \CE
+	\subfigure[Velocity Field] {\IG[width=.3\TW]{figs/Ha10Rem10Re1000/U.eps}}
+	\subfigure[Current Field] {\IG[width=.3\TW]{figs/Ha10Rem10Re1000/J.eps}}
+	\subfigure[Velocity streamtraces]{\IG[width=.3\TW]{figs/Ha10Rem10Re1000/Ustream.png}}
+	\caption[Optional ]{$Ha=10$,$Re_m=10$,$Re=1000$}
+\EFIG
+
+\FIG[H] \CE
+	\subfigure[Velocity Field] {\IG[width=.3\TW]{figs/Ha10Rem10Re10000/U.eps}}
+	\subfigure[Current Field] {\IG[width=.3\TW]{figs/Ha10Rem10Re10000/J.eps}}
+	\subfigure[Velocity streamtraces]{\IG[width=.3\TW]{figs/Ha10Rem10Re10000/Ustream.png}}
+	\caption[Optional ]{$Ha=10$,$Re_m=10$,$Re=10000$}
+\EFIG
+
+\FIG[H] \CE
+	\subfigure[Velocity Field] {\IG[width=.3\TW]{figs/Ha10Rem100Re100/U.eps}}
+	\subfigure[Current Field] {\IG[width=.3\TW]{figs/Ha10Rem100Re100/J.eps}}
+	\subfigure[Velocity streamtraces]{\IG[width=.3\TW]{figs/Ha10Rem100Re100/Ustream.png}}
+	\caption[Optional ]{$Ha=10$,$Re_m=100$,$Re=100$}
+\EFIG
+\FIG[H] \CE
+	\subfigure[Velocity Field] {\IG[width=.3\TW]{figs/Ha10Rem100Re500/U.eps}}
+	\subfigure[Current Field] {\IG[width=.3\TW]{figs/Ha10Rem100Re500/J.eps}}
+	% \subfigure[Velocity streamtraces] {\IG[width=.3\TW]{figs/Ha10Rem100Re500/Ustream.png}}
+	\caption[Optional ]{$Ha=10$,$Re_m=100$,$Re=500$}
+\EFIG
+\FIG[H] \CE
+	\subfigure[Velocity Field] {\IG[width=.3\TW]{figs/Ha10Rem100Re1000/U.eps}}
+	\subfigure[Current Field] {\IG[width=.3\TW]{figs/Ha10Rem100Re1000/J.eps}}
+	% \subfigure[Velocity streamtraces] {\IG[width=.3\TW]{figs/Ha10Rem100Re1000/Ustream.png}}
+	\caption[Optional ]{$Ha=10$,$Re_m=100$,$Re=1000$}
+\EFIG
+
+\FIG[H] \CE
+	\subfigure[Velocity Field] {\IG[width=.3\TW]{figs/Ha10Rem100Re10000/U.eps}}
+	\subfigure[Current Field] {\IG[width=.3\TW]{figs/Ha10Rem100Re10000/J.eps}}
+	% \subfigure[Velocity streamtraces] {\IG[width=.3\TW]{figs/Ha10Rem100Re10000/Ustream.png}}
+	\caption[Optional ]{$Ha=10$,$Re_m=100$,$Re=10000$}
+\EFIG
+
+\FIG[H] \CE
+	\subfigure[Velocity Field] {\IG[width=.3\TW]{figs/Ha100Rem1Re100/U.eps}}
+	\subfigure[Current Field] {\IG[width=.3\TW]{figs/Ha100Rem1Re100/J.eps}}
+	% \subfigure[Velocity streamtraces] {\IG[width=.3\TW]{figs/Ha100Rem1Re100/Ustream.png}}
+	\caption[Optional ]{$Ha=100$,$Re_m=1$,$Re=100$}
+\EFIG
+\FIG[H] \CE
+	\subfigure[Velocity Field] {\IG[width=.3\TW]{figs/Ha100Rem1Re500/U.eps}}
+	\subfigure[Current Field] {\IG[width=.3\TW]{figs/Ha100Rem1Re500/J.eps}}
+	% \subfigure[Velocity streamtraces] {\IG[width=.3\TW]{figs/Ha100Rem1Re500/Ustream.png}}
+	\caption[Optional ]{$Ha=100$,$Re_m=1$,$Re=500$}
+\EFIG
+\FIG[H] \CE
+	\subfigure[Velocity Field] {\IG[width=.3\TW]{figs/Ha100Rem1Re1000/U.eps}}
+	\subfigure[Current Field] {\IG[width=.3\TW]{figs/Ha100Rem1Re1000/J.eps}}
+	% \subfigure[Velocity streamtraces] {\IG[width=.3\TW]{figs/Ha100Rem1Re1000/Ustream.png}}
+	\caption[Optional ]{$Ha=100$,$Re_m=1$,$Re=1000$}
+\EFIG
+\FIG[H] \CE
+	\subfigure[Velocity Field] {\IG[width=.3\TW]{figs/Ha100Rem1Re10000/U.eps}}
+	\subfigure[Current Field] {\IG[width=.3\TW]{figs/Ha100Rem1Re10000/J.eps}}
+	% \subfigure[Velocity streamtraces] {\IG[width=.3\TW]{figs/Ha100Rem1Re10000/Ustream.png}}
+	\caption[Optional ]{$Ha=100$,$Re_m=1$,$Re=10000$}
+\EFIG
+\FIG[H] \CE
+	\subfigure[Velocity Field] {\IG[width=.3\TW]{figs/Ha100Rem10Re100/U.eps}}
+	\subfigure[Current Field] {\IG[width=.3\TW]{figs/Ha100Rem10Re100/J.eps}}
+	% \subfigure[Velocity streamtraces] {\IG[width=.3\TW]{figs/Ha100Rem10Re100/Ustream.png}}
+	\caption[Optional ]{$Ha=100$,$Re_m=10$,$Re=100$}
+\EFIG
+\FIG[H] \CE
+	\subfigure[Velocity Field] {\IG[width=.3\TW]{figs/Ha100Rem10Re500/U.eps}}
+	\subfigure[Current Field] {\IG[width=.3\TW]{figs/Ha100Rem10Re500/J.eps}}
+	% \subfigure[Velocity streamtraces] {\IG[width=.3\TW]{figs/Ha100Rem10Re500/Ustream.png}}
+	\caption[Optional ]{$Ha=100$,$Re_m=10$,$Re=500$}
+\EFIG
+\FIG[H] \CE
+	\subfigure[Velocity Field] {\IG[width=.3\TW]{figs/Ha100Rem10Re1000/U.eps}}
+	\subfigure[Current Field] {\IG[width=.3\TW]{figs/Ha100Rem10Re1000/J.eps}}
+	% \subfigure[Velocity streamtraces] {\IG[width=.3\TW]{figs/Ha100Rem10Re1000/Ustream.png}}
+	\caption[Optional ]{$Ha=100$,$Re_m=10$,$Re=1000$}
+\EFIG
+\FIG[H] \CE
+	\subfigure[Velocity Field] {\IG[width=.3\TW]{figs/Ha100Rem10Re10000/U.eps}}
+	\subfigure[Current Field] {\IG[width=.3\TW]{figs/Ha100Rem10Re10000/J.eps}}
+	% \subfigure[Velocity streamtraces] {\IG[width=.3\TW]{figs/Ha100Rem10Re10000/Ustream.png}}
+	\caption[Optional ]{$Ha=100$,$Re_m=10$,$Re=10000$}
+\EFIG
+
+
+\section{Unconverged results, at Rm=100}
+\subsection{Given Re=100 **Problems start**}
+Until now, all flows have been observed to be 2-dimensional in the sense that there are no changes with respect to the x-direction. In addition, most of the solutions have seemed smooth. For the Re=100 case, the solution shows what look like numerical instabilities, and it seems that the mesh must be refined. The rest of the cases will be carried out once I find a mesh that can suppress these instabilities.
+
+\FIG[H] \CE
+  \IG[width=\TW]{figs/Ha100Rem100Re100/U.eps}
+	\caption[Optional ]{Velocity Field}
+\EFIG
+
+\FIG[H] \CE
+  \IG[width=\TW]{figs/Ha100Rem100Re100/V.eps}
+	\caption[Optional ]{V-component of Velocity Field}
+\EFIG
+
+\bibliographystyle{unsrt}
+\bibliography{MHD,Math,Interface,fluids,CFD,handpicked}
+
+\end{document}

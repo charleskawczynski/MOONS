@@ -2,24 +2,24 @@
 
 \bibitem{pletcher2012computational}
 Richard~H Pletcher, John~C Tannehill, and Dale Anderson.
-\newblock {\em Computational fluid mechanics and heat transfer}.
+\newblock {\em Computational Fluid Mechanics And Heat Transfer}.
 \newblock CRC Press, 2012.
 
 \bibitem{Roberts1971}
-Glyn Roberts.
-\newblock {Computational Meshes for Boundary Layer Problems}.
-\newblock {\em Proceedings of the Second International Conference on Numerical
-  Methods in Fluid Dynamics}, (2), 1971.
+G.~O. Roberts.
+\newblock {Computational meshes for boundary layer problems}.
+\newblock {\em 2nd Int. Conf. Num. Fluid Dyn.}, (2):171--177, 1971.
 
 \bibitem{griebel1997numerical}
 Michael Griebel, Thomas Dornseifer, and Tilman Neunhoeffer.
-\newblock {\em Numerical simulation in fluid dynamics: a practical
-  introduction}, volume~3.
+\newblock {\em Numerical Simulation In Fluid Dynamics: A Practical
+  Introduction}, volume~3.
 \newblock Siam, 1997.
 
 \bibitem{Toth2000}
-G\'{a}bor T\'{o}th.
-\newblock {The divergence Constraint in Shock-Capturing MHD Codes}.
-\newblock {\em Journal of Computational Physics}, 161(2):605--652, July 2000.
+G{\'{a}}bor T{\'{o}}th.
+\newblock {The divergence B = 0 Constraint in Shock-Capturing
+  Magnetohydrodynamics Codes}.
+\newblock {\em J. Comput. Phys.}, 161(2):605--652, jul 2000.
 
 \end{thebibliography}

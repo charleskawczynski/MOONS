@@ -1,57 +1,20 @@
 \documentclass[11pt]{article}
-\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
-\usepackage{epstopdf}
-\usepackage{amsmath}
-\usepackage{hyperref}
-\usepackage{xspace}
-\usepackage{mathtools}
-\usepackage{tikz}
-\usepackage{epsfig}
-\usepackage{float}
-%\usepackage{natbib}
-\usepackage{subfigure}
-\usepackage{setspace}
-\usepackage{tabularx,ragged2e,booktabs,caption}
-
-\input{C:/Users/Charlie/Documents/GitHub/MOONS/__documentation/useful_commands.tex}
-
-\setlength{\oddsidemargin}{0.1in}
-\setlength{\textwidth}{7.25in}
-
-\setlength{\topmargin}{-1in}     %\topmargin: gap above header
-\setlength{\headheight}{0in}     %\headheight: height of header
-\setlength{\topskip}{0in}        %\topskip: between header and text
-\setlength{\headsep}{0in}        
-\setlength{\textheight}{692pt}   %\textheight: height of main text
-\setlength{\textwidth}{7.5in}    % \textwidth: width of text
-\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
-\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
-\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
-\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
-\setlength{\voffset}{0.5in}
-
-% Useful commands:
-
-% \hfill		aligns-right everything right of \hfill
+\input{../includes.tex}
 
 \begin{document}
 \doublespacing
-\title{Magnetohydrodynamic Object-Oriented Numerical Solver (MOONS)}
-\author{C. Kawczynski \\
-Department of Mechanical and Aerospace Engineering \\
-University of California Los Angeles, USA\\
-}
+\MOONSTITLE
 % \maketitle
 
 \section{Boundary Element Method (BEM)}
 Here, I follow the work of \cite{Iskakov2004}. Consider boundary $\Gamma$. The tangential component of the electric field on the boundary is
 \begin{equation}
-  E_{\tau} = -\mathbf{\tau} \DOT (\mathbf{u} \times \B)_{\Gamma} + 
+  E_{\tau} = -\mathbf{\tau} \DOT (\mathbf{u} \times \B)_{\Gamma} +
   Re_m^{-1} \mathbf{\tau} \DOT (\DEL \times \B)_{\Gamma}
 \end{equation}
 If we assume $\mathbf{u}_{\Gamma} \DOT \mathbf{n} = 0$ then this simplifies to
 \begin{equation}
-  E_{\tau} = -\mathbf{\tau} \DOT (\mathbf{u} \times (B_n \mathbf{n})_{\Gamma}) + 
+  E_{\tau} = -\mathbf{\tau} \DOT (\mathbf{u} \times (B_n \mathbf{n})_{\Gamma}) +
   Re_m^{-1} \mathbf{\tau} \DOT (\DEL \times \B)_{\Gamma}
 \end{equation}
 % \begin{equation}
@@ -110,7 +73,7 @@ Expressing this as surface integrals over the fundamental solution $\Delta G = \
 
 Denoting an open ball, $B$, of radius $R$ such that $\overline{\Omega}\in B$, as a consequence of Green's theorem, the magnetic potential at the boundary satisfies
 \begin{equation}
-  \phi(\X) = 
+  \phi(\X) =
   -2 \int_{\Gamma} \left( \phi(\Y)
   \frac{\PD G}{\PD n} + B_n(\Y) G \right) ds(\Y)
   +2 \int_{\PD B_R} \left( \phi(\Y)
@@ -118,13 +81,13 @@ Denoting an open ball, $B$, of radius $R$ such that $\overline{\Omega}\in B$, as
 \end{equation}
 Where $n$ is the coordinate along the outward normal to $\Omega$ and $\tilde{n}$ is the coordinate along the outward normal to the ball. The second term vanishes when $R\rightarrow \infty$ (keeping the center of the ball fixed). So we may write
 \begin{equation} \label{eq:phi}
-  \phi(\X) = 
+  \phi(\X) =
   -2 \int_{\Gamma} \left( \phi(\Y)
   \frac{\PD G}{\PD n} + B_n(\Y) G \right) ds(\Y)
 \end{equation}
-Consequently, the tangential component of the magnetic field on $\Gamma$ along the unit vector $\tau$ is 
+Consequently, the tangential component of the magnetic field on $\Gamma$ along the unit vector $\tau$ is
 \begin{equation}
-  B_{\tau} = - \mathbf{\tau} \DOT \DEL \phi(\X) = 
+  B_{\tau} = - \mathbf{\tau} \DOT \DEL \phi(\X) =
   2 \mathbf{\tau} \DOT
   \int_{\Gamma}
   \left(
@@ -132,7 +95,7 @@ Consequently, the tangential component of the magnetic field on $\Gamma$ along t
   + B_n(\Y) \DEL_x G(\X,\Y)
   \right) ds(\Y)
 \end{equation}
-The discrete form of this may be assembeled as 
+The discrete form of this may be assembeled as
 \begin{equation}
   \frac{1}{2} \Phi = A \Phi + C B_n
 \end{equation}
@@ -147,7 +110,7 @@ This can be computed once at the beginning of the sim. Returning to \ref{eq:phi}
 \begin{split}
 \phi(\X_i) & = -2 \sum_j \phi_j \int_{S_j} \frac{\PD G(\X_i,\Y)}{\PD n} ds(\Y)
            -2 \sum_j B_{nj} \int_{S_j} G(\X_i,\Y) ds(\Y) \\
-       & = \frac{1}{2 \pi} 
+       & = \frac{1}{2 \pi}
        \left[
        \sum_j \phi_j \int_{S_j} \frac{\PD}{\PD n} \frac{1}{|\X_i-\Y|} ds(\Y)
      + \sum_j B_{nj} \int_{S_j} \frac{1}{|\X_i-\Y|} ds(\Y)
@@ -156,15 +119,13 @@ This can be computed once at the beginning of the sim. Returning to \ref{eq:phi}
 \end{equation}
 The term $\frac{\PD}{\PD n} \frac{1}{|\X_i-\Y|} $ may be evaluated to give us
 \begin{equation}
-\phi(\X_i) = \frac{1}{2 \pi} 
+\phi(\X_i) = \frac{1}{2 \pi}
        \left[
        \sum_j \phi_j \int_{S_j} \frac{\Y - \X_i}{| \Y - \X_i|^3} \DOT \N ds(\Y)
      + \sum_j B_{nj} \int_{S_j} \frac{1}{|\X_i-\Y|} ds(\Y)
        \right] \\
 \end{equation}
 
-\begin{thebibliography}{1}
-\bibitem{Iskakov2004} Iskakov, A. B., Descombes, S. and Dormy, E. An integro-differential formulation for magnetic induction in bounded domains: boundary element–finite volume method. J. Comput. Phys. 197, 540–554 (2004)..
-\end{thebibliography}
+\input{../include_bib.tex}
 
 \end{document}

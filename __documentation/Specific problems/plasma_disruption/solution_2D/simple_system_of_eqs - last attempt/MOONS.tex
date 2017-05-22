@@ -1,0 +1,268 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+% \maketitle
+
+\section{Solving Shercliff-modified governing equations}
+In this document, we attempt the solution to the decoupled equations
+\begin{equation}\begin{aligned}
+\DEL^2 X + A \PD_x X = - C, \qquad \text{BCs: $X = 0 $ on $\PD \Omega$} \\
+\DEL^2 Y - A \PD_x Y = - D, \qquad \text{BCs: $Y = 0 $ on $\PD \Omega$} \\
+\end{aligned} \end{equation}
+Where constant $A$ is assumed to be positive. We assume the solution is the sum of a homogeneous equation, where $C,D$, are neglected, plus a solution with the coefficients present.
+\begin{equation}\begin{aligned}
+X = X_h(x,y) + X_p(y) \\
+Y = Y_h(x,y) + Y_p(y) \\
+\end{aligned} \end{equation}
+\begin{equation}\begin{aligned}
+\DEL^2 X_h + A \PD_x X_h = 0, \qquad\qquad \DEL^2 X_p = -C \\
+\DEL^2 Y_h - A \PD_x Y_h = 0, \qquad\qquad \DEL^2 Y_p = -D \\
+\end{aligned} \end{equation}
+
+\section{Homogeneous solution for X}
+Governing equation
+\begin{equation}\begin{aligned}
+\DEL^2 X_h + A \PD_x X_h = 0, \qquad\qquad X_h = X_h(x,y) \\
+\end{aligned} \end{equation}
+Assume the solution is separable:
+\begin{equation}\begin{aligned}
+X_h(x,y) = F(x)G(y) \\
+\end{aligned} \end{equation}
+Governing equation becomes
+\begin{equation}\begin{aligned}
+G F'' + FG'' + A G F' = 0 \\
+ \frac{F''}{F} + \frac{G''}{G} + A \frac{F'}{F} = 0 \\
+ \frac{F''}{F} + A \frac{F'}{F} = - \frac{G''}{G} = \lambda \\
+\end{aligned} \end{equation}
+
+\noindent\begin{minipage}[b]{.5\linewidth}\centering
+\begin{equation}\begin{aligned}
+\frac{F''}{F} + A \frac{F'}{F} = \lambda \\
+F'' + A F' - F \lambda = 0 \\
+F = \alpha e^{\gamma x} \\
+\gamma^2 + A \gamma - \lambda = 0 \\
+\gamma_{1,2} = -A \pm \frac{\sqrt{A^2 + 4\lambda}}{2} \\
+F_n = \alpha_1 e^{\left(-A + \frac{\sqrt{A^2 + 4\lambda}}{2}\right) x} + \alpha_2 e^{\left(-A - \frac{\sqrt{A^2 + 4\lambda}}{2} \right) x} \\
+F_n(0) = \alpha_1 + \alpha_2  = 0 \\
+\alpha_2 = - \alpha_1 \\
+F_n = \alpha_1 \left( e^{\left(-A + \frac{\sqrt{A^2 + 4\lambda_n}}{2}\right) x} - e^{\left(-A - \frac{\sqrt{A^2 + 4\lambda_n}}{2} \right) x} \right) \\
+F_n = \alpha_1 e^{-A} 2 \sinh \left( \left[\frac{\sqrt{A^2 + \left(2 n \pi \frac{L}{b} \right)^2}}{2}\right] x \right) \\
+\end{aligned} \end{equation}
+\end{minipage}
+\noindent\begin{minipage}[b]{.5\linewidth}\centering
+\begin{equation}\begin{aligned}
+\frac{G''}{G} = - \lambda \\
+G'' + G \lambda = 0 \\
+G = \beta e^{\theta y} \\
+\theta^2 + \lambda = 0 \\
+\theta_{1,2} = \pm i \sqrt{\lambda} \\
+G = \beta_1 e^{i \sqrt{\lambda} y} + \beta_2 e^{-i \sqrt{\lambda} y} \\
+G(0) = \beta_1 + \beta_2 = 0 \\
+\beta_2 = - \beta_1 \\
+G = \beta_1 \left( e^{i \sqrt{\lambda} y} - e^{-i \sqrt{\lambda} y} \right) \\
+G(b/L) = \beta_1 \left( e^{i \sqrt{\lambda} b/L} - e^{-i \sqrt{\lambda} b/L} \right) = 0 \\
+                 \left( e^{2 i \sqrt{\lambda} b/L} - 1 \right) = 0 \\
+2 i \sqrt{\lambda_n} b/L = \pi i 2n, \qquad n = 0,1,2,3,... \\
+\lambda_n = \left( n \pi \frac{L}{b} \right)^2 \\
+G_n = \beta_1 \left( e^{i n \pi \frac{L}{b} y} - e^{-i n \pi \frac{L}{b} y} \right) \\
+G_n = 2i \beta_1 \sin \left(n \pi \frac{L}{b} y \right) \\
+\end{aligned} \end{equation}
+\end{minipage}
+Our general solution to the homogeneous solution is then
+\begin{equation}\begin{aligned}
+X_h = \sum_{n=1}^{\infty} \zeta_n \sinh \left( \left[\frac{\sqrt{A^2 + \left(2 n \pi \frac{L}{b} \right)^2}}{2}\right] x \right) \sin \left(n \pi \frac{L}{b} y \right) \\
+\end{aligned} \end{equation}
+
+\section{Homogeneous solution for Y}
+Governing equation
+\begin{equation}\begin{aligned}
+\DEL^2 Y_h - A \PD_x Y_h = 0, \qquad\qquad Y_h = Y_h(x,y) \\
+\end{aligned} \end{equation}
+Assume the solution is separable:
+\begin{equation}\begin{aligned}
+Y_h(x,y) = F(x)G(y) \\
+\end{aligned} \end{equation}
+\begin{equation}\begin{aligned}
+G F'' + FG'' - A G F' = 0 \\
+ \frac{F''}{F} + \frac{G''}{G} - A \frac{F'}{F} = 0 \\
+ \frac{F''}{F} - A \frac{F'}{F} = - \frac{G''}{G} = \lambda \\
+\end{aligned} \end{equation}
+
+\noindent\begin{minipage}[b]{.5\linewidth}\centering
+\begin{equation}\begin{aligned}
+\frac{F''}{F} - A \frac{F'}{F} = \lambda \\
+F'' - A F' - F \lambda = 0 \\
+F = \alpha e^{\gamma x} \\
+\gamma^2 - A \gamma - \lambda = 0 \\
+\gamma_{1,2} = A \pm \frac{\sqrt{A^2 + 4\lambda}}{2} \\
+F_n = \alpha_1 e^{\left(A + \frac{\sqrt{A^2 + 4\lambda}}{2}\right) x} + \alpha_2 e^{\left(A - \frac{\sqrt{A^2 + 4\lambda}}{2} \right) x} \\
+F_n(0) = \alpha_1 + \alpha_2  = 0 \\
+\alpha_2 = - \alpha_1 \\
+F_n = \alpha_1 \left( e^{\left(A + \frac{\sqrt{A^2 + 4\lambda_n}}{2}\right) x} - e^{\left(A - \frac{\sqrt{A^2 + 4\lambda_n}}{2} \right) x} \right) \\
+F_n = \alpha_1 e^{A} 2 \sinh \left( \left[\frac{\sqrt{A^2 + \left(2 n \pi \frac{L}{b} \right)^2}}{2}\right] x \right) \\
+\end{aligned} \end{equation}
+\end{minipage}
+\noindent\begin{minipage}[b]{.5\linewidth}\centering
+\begin{equation}\begin{aligned}
+\frac{G''}{G} = - \lambda \\
+G'' + G \lambda = 0 \\
+G = \beta e^{\theta y} \\
+\theta^2 + \lambda = 0 \\
+\theta_{1,2} = \pm i \sqrt{\lambda} \\
+G = \beta_1 e^{i \sqrt{\lambda} y} + \beta_2 e^{-i \sqrt{\lambda} y} \\
+G(0) = \beta_1 + \beta_2 = 0 \\
+\beta_2 = - \beta_1 \\
+G = \beta_1 \left( e^{i \sqrt{\lambda} y} - e^{-i \sqrt{\lambda} y} \right) \\
+G(b/L) = \beta_1 \left( e^{i \sqrt{\lambda} b/L} - e^{-i \sqrt{\lambda} b/L} \right) = 0 \\
+                 \left( e^{2 i \sqrt{\lambda} b/L} - 1 \right) = 0 \\
+2 i \sqrt{\lambda_n} b/L = \pi i 2n, \qquad n = 0,1,2,3,... \\
+\lambda_n = \left( n \pi \frac{L}{b} \right)^2 \\
+G_n = \beta_1 \left( e^{i n \pi \frac{L}{b} y} - e^{-i n \pi \frac{L}{b} y} \right) \\
+G_n = 2i \beta_1 \sin \left(n \pi \frac{L}{b} y \right) \\
+\end{aligned} \end{equation}
+\end{minipage}
+Our general solution to the homogeneous solution is then
+\begin{equation}\begin{aligned}
+Y_h = \sum_{n=1}^{\infty} \Phi_n \sinh \left( \left[\frac{\sqrt{A^2 + \left(2 n \pi \frac{L}{b} \right)^2}}{2}\right] x \right) \sin \left(n \pi \frac{L}{b} y \right) \\
+\end{aligned} \end{equation}
+
+\section{Homogeneous solution summary}
+\begin{equation}\begin{aligned}
+X_h = \sum_{n=1}^{\infty} \zeta_n \sinh \left( \left[\frac{\sqrt{A^2 + \left(2 n \pi \frac{L}{b} \right)^2}}{2}\right] x \right) \sin \left(n \pi \frac{L}{b} y \right) \\
+\end{aligned} \end{equation}
+\begin{equation}\begin{aligned}
+Y_h = \sum_{n=1}^{\infty} \Phi_n \sinh \left( \left[\frac{\sqrt{A^2 + \left(2 n \pi \frac{L}{b} \right)^2}}{2}\right] x \right) \sin \left(n \pi \frac{L}{b} y \right) \\
+\end{aligned} \end{equation}
+
+\section{Non-homogeneous solution}
+Governing equation
+\begin{equation}\begin{aligned}
+\DEL^2 X_p = -C, \qquad X_p = X_p(y) \\
+\DEL^2 Y_p = -D, \qquad Y_p = Y_p(y) \\
+\end{aligned} \end{equation}
+The solution only depends on $y$:
+\begin{equation}\begin{aligned}
+X_p'' = -C \\
+Y_p'' = -D \\
+\end{aligned} \end{equation}
+So integration is trivially performed. First integration yields
+\begin{equation}\begin{aligned}
+X_p' = -C y + c_1 \\
+Y_p' = -D y + b_1 \\
+\end{aligned} \end{equation}
+Second integration yields
+\begin{equation}\begin{aligned}
+X_p = -C \frac{1}{2} y^2 + c_1 y + c_2 \\
+Y_p = -D \frac{1}{2} y^2 + b_1 y + b_2 \\
+\end{aligned} \end{equation}
+Applying BCs, we have:
+\begin{equation}\begin{aligned}
+X_p(0) = 0 = c_2 \\
+Y_p(0) = 0 = b_2 \\
+X_p(b/L) = 0 = -C \frac{1}{2} (b/L)^2 + c_1 (b/L) \\
+Y_p(b/L) = 0 = -D \frac{1}{2} (b/L)^2 + b_1 (b/L) \\
+c_1 = \frac{L}{b} C \frac{1}{2} (b/L)^2 = \frac{b C}{2L} \\
+b_1 = \frac{L}{b} D \frac{1}{2} (b/L)^2 = \frac{b D}{2L} \\
+\end{aligned} \end{equation}
+The particular solution is then
+\begin{equation}\begin{aligned}
+X_p = -C \frac{1}{2} y^2 + \frac{b C}{2L} y \\
+Y_p = -D \frac{1}{2} y^2 + \frac{b D}{2L} y \\
+\end{aligned} \end{equation}
+Or
+\begin{equation}\begin{aligned}
+X_p = \frac{C y}{2} \left(\frac{b}{L} - y \right) \\
+Y_p = \frac{D y}{2} \left(\frac{b}{L} - y \right) \\
+\end{aligned} \end{equation}
+
+\section{Total solution}
+The total general solution is therefore:
+\begin{equation}\begin{aligned}
+X = \frac{C y}{2} \left(\frac{b}{L} - y \right) + \sum_{n=1}^{\infty} \zeta_n \sinh \left( \left[\frac{\sqrt{A^2 + \left(2 n \pi \frac{L}{b} \right)^2}}{2}\right] x \right) \sin \left(n \pi \frac{L}{b} y \right) \\
+Y = \frac{D y}{2} \left(\frac{b}{L} - y \right) + \sum_{n=1}^{\infty} \Phi_n  \sinh \left( \left[\frac{\sqrt{A^2 + \left(2 n \pi \frac{L}{b} \right)^2}}{2}\right] x \right) \sin \left(n \pi \frac{L}{b} y \right) \\
+\end{aligned} \end{equation}
+Finally, the BC at $x=a/L$ must be applied:
+\begin{equation}\begin{aligned}
+X(a/L,y) = \frac{C y}{2} \left(\frac{b}{L} - y \right) + \sum_{n=1}^{\infty} \zeta_n \sinh \left( \left[\frac{\sqrt{A^2 + \left(2 n \pi \frac{L}{b} \right)^2}}{2}\right] (a/L) \right) \sin \left(n \pi \frac{L}{b} y \right) = 0 \\
+Y(a/L,y) = \frac{D y}{2} \left(\frac{b}{L} - y \right) + \sum_{n=1}^{\infty} \Phi_n  \sinh \left( \left[\frac{\sqrt{A^2 + \left(2 n \pi \frac{L}{b} \right)^2}}{2}\right] (a/L) \right) \sin \left(n \pi \frac{L}{b} y \right) = 0 \\
+\end{aligned} \end{equation}
+Or
+\begin{equation}\begin{aligned}
+\sum_{n=1}^{\infty} \zeta_n \sinh \left( \left[\sqrt{A^2 + \left(2 n \pi \frac{L}{b} \right)^2}\right] \frac{a}{2L} \right) \sin \left(n \pi \frac{L}{b} y \right) = \frac{C y}{2} \left(y - \frac{b}{L}\right) \\
+\sum_{n=1}^{\infty} \Phi_n  \sinh \left( \left[\sqrt{A^2 + \left(2 n \pi \frac{L}{b} \right)^2}\right] \frac{a}{2L} \right) \sin \left(n \pi \frac{L}{b} y \right) = \frac{D y}{2} \left(y - \frac{b}{L}\right) \\
+\end{aligned} \end{equation}
+Let
+\begin{equation}\begin{aligned}
+K_n = \sinh \left( \left[\sqrt{A^2 + \left(2 n \pi \frac{L}{b} \right)^2}\right] \frac{a}{2L} \right) \\
+\end{aligned} \end{equation}
+Then we have
+\begin{equation}\begin{aligned}
+\sum_{n=1}^{\infty} \zeta_n K_n \sin \left(n \pi \frac{L}{b} y \right) = \frac{C y}{2} \left(y - \frac{b}{L}\right) \\
+\sum_{n=1}^{\infty} \Phi_n  K_n \sin \left(n \pi \frac{L}{b} y \right) = \frac{D y}{2} \left(y - \frac{b}{L}\right) \\
+\end{aligned} \end{equation}
+Quick aside
+
+\noindent \rule{\textwidth}{1pt}
+Fourier series coefficients over the domain $[0,L]$
+\begin{equation}\begin{aligned}
+f(x) = \frac{A_0}{2} + \sum_{n=1}^{\infty} \left[ A_n \cos\left( \frac{n \pi x}{L} \right) + B_n \sin\left( \frac{n \pi x}{L} \right) \right] \\
+\end{aligned} \end{equation}
+may be solved using
+\begin{equation}\begin{aligned}
+A_0 = \frac{2}{L} \int_0^L f(x) dx, \qquad
+A_n = \frac{2}{L} \int_0^L f(x) \cos\left( \frac{n \pi x}{L} \right) dx, \qquad
+B_n = \frac{2}{L} \int_0^L f(x) \sin\left( \frac{n \pi x}{L} \right) dx
+\end{aligned} \end{equation}
+\noindent \rule{\textwidth}{1pt}
+
+These are sine series expansions with respect to $y$, whose coefficients may be found from
+\begin{equation}\begin{aligned}
+\zeta_n K_n = \frac{2L}{b} \int_0^{b/L} \frac{C y}{2} \left(y - \frac{b}{L}\right) \sin\left( n \pi \frac{b}{L}y \right) dy \\
+\Phi_n  K_n = \frac{2L}{b} \int_0^{b/L} \frac{D y}{2} \left(y - \frac{b}{L}\right) \sin\left( n \pi \frac{b}{L}y \right) dy \\
+\end{aligned} \end{equation}
+Solving for $\zeta_n,\Phi_n$, we have
+\begin{equation}\begin{aligned}
+\zeta_n = \frac{1}{K_n} \frac{2L}{b} \int_0^{b/L} \frac{C y}{2} \left(y - \frac{b}{L}\right) \sin\left( n \pi \frac{b}{L}y \right) dy \\
+\Phi_n  = \frac{1}{K_n} \frac{2L}{b} \int_0^{b/L} \frac{D y}{2} \left(y - \frac{b}{L}\right) \sin\left( n \pi \frac{b}{L}y \right) dy \\
+\end{aligned} \end{equation}
+Simplifying a bit
+\begin{equation}\begin{aligned}
+\zeta_n = C \frac{1}{K_n} \frac{L}{b} \int_0^{b/L} y \left(y - \frac{b}{L}\right) \sin\left( n \pi \frac{b}{L}y \right) dy \\
+\Phi_n  = D \frac{1}{K_n} \frac{L}{b} \int_0^{b/L} y \left(y - \frac{b}{L}\right) \sin\left( n \pi \frac{b}{L}y \right) dy \\
+\end{aligned} \end{equation}
+Integration yields
+\begin{equation}\begin{aligned}
+I_n=\frac{2 L^3  \left( -1+\cos \left( \frac{b^2 n \pi}{L^2} \right) \right) +b^2 L n \pi \sin \left( \frac{b^2 n \pi}{L^2} \right) }{b^3 n^3 \pi^3}
+\end{aligned} \end{equation}
+So we have
+\begin{equation}\begin{aligned}
+\zeta_n = C \frac{1}{K_n} \frac{L}{b} I_n \\
+\Phi_n  = D \frac{1}{K_n} \frac{L}{b} I_n \\
+\end{aligned} \end{equation}
+
+Returning to our total solution, we have
+
+\begin{equation}\begin{aligned}
+X = \frac{C y}{2} \left(\frac{b}{L} - y \right) + \sum_{n=1}^{\infty} C \frac{1}{K_n} \frac{L}{b} I_n \sinh \left( \left[\frac{\sqrt{A^2 + \left(2 n \pi \frac{L}{b} \right)^2}}{2}\right] x \right) \sin \left(n \pi \frac{L}{b} y \right) \\
+Y = \frac{D y}{2} \left(\frac{b}{L} - y \right) + \sum_{n=1}^{\infty} D \frac{1}{K_n} \frac{L}{b} I_n \sinh \left( \left[\frac{\sqrt{A^2 + \left(2 n \pi \frac{L}{b} \right)^2}}{2}\right] x \right) \sin \left(n \pi \frac{L}{b} y \right) \\
+\end{aligned} \end{equation}
+Where
+\begin{equation}\begin{aligned}
+I_n=\frac{2 L^3  \left( -1+\cos \left( \frac{b^2 n \pi}{L^2} \right) \right) +b^2 L n \pi \sin \left( \frac{b^2 n \pi}{L^2} \right) }{b^3 n^3 \pi^3} \\
+K_n = \sinh \left( \left[\sqrt{A^2 + \left(2 n \pi \frac{L}{b} \right)^2}\right] \frac{a}{2L} \right) \\
+-Re \PD_z p = k \\
+A = Ha B_x^0 \\
+C = k - Ha \PD_t B_z^0 \\
+D = k + Ha \PD_t B_z^0 \\
+\end{aligned} \end{equation}
+Solutions are reconstructed using:
+\begin{equation}\begin{aligned}
+w   =                 \frac{1}{2} (X + Y)\\
+B_z = \frac{Re_m}{Ha} \frac{1}{2} (X - Y)\\
+\end{aligned} \end{equation}
+
+
+\end{document}

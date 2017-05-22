@@ -1,43 +1,11 @@
 \documentclass[landscape]{article}
-\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
-\usepackage{epstopdf}
-\usepackage{amsmath}
-\usepackage{hyperref}
-\usepackage{xspace}
-\usepackage{mathtools}
-\usepackage{tikz}
-\usepackage{epsfig}
-\usepackage{float}
-\usepackage{natbib}
-\usepackage{subfigure}
-\usepackage{setspace}
-\usepackage{tabularx,ragged2e,booktabs,caption}
-
-
-\setlength{\topmargin}{-1in}     %\topmargin: gap above header
-\setlength{\headheight}{0in}     %\headheight: height of header
-\setlength{\topskip}{0in}        %\topskip: between header and text
-% \setlength{\headsep}{0in}        
-\setlength{\textheight}{525pt}   %\textheight: height of main text
-\setlength{\textwidth}{10in}    % \textwidth: width of text
-\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
-\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
-\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
-\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
-
-
-% Useful commands:
-
-% \hfill		aligns-right everything right of \hfill
+\input{../includes.tex}
 
 \begin{document}
 \doublespacing
-\title{Magnetohydrodynamic Object-Oriented Numerical Solver (MOONS)}
-\author{C. Kawczynski \\
-Department of Mechanical and Aerospace Engineering \\
-University of California Los Angeles, USA\\
-}
+\MOONSTITLE
 \maketitle
+
 \section{Derivation of TDMA}
 The TDMA algorithm is derived by using LU factorization and back solving. We start with the matrix:
 \[
@@ -50,7 +18,7 @@ a_{1} & b_{2}    & c_{2}     &           &           &           &         \\
       &          &           & \ddots    & \ddots    & \ddots    &         \\
       &          &           &           & a_{n-2}   & b_{n-1}   & c_{n-1} \\
       &          &           &           &           & a_{n-1}   & b_{n}   \\
-\end{array} \right] 
+\end{array} \right]
 \left[ \begin{array}{c}
 x_{1} \\ \vdots \\ x_{i-1} \\ x_{i} \\ x_{i+1} \\ \vdots \\ x_{n}
 \end{array} \right]
@@ -70,7 +38,7 @@ a_{1} & b_{2}    & c_{2}     &           &           &           &         \\
       &          &           & \ddots    & \ddots    & \ddots    &         \\
       &          &           &           & a_{n-2}   & b_{n-1}   & c_{n-1} \\
       &          &           &           &           & a_{n-1}   & b_{n}   \\
-\end{array} \right] 
+\end{array} \right]
 \left[ \begin{array}{c}
 x_{1} \\ \vdots \\ x_{i-1} \\ x_{i} \\ x_{i+1} \\ \vdots \\ x_{n}
 \end{array} \right]
@@ -83,7 +51,7 @@ a_{1}      & \beta_{2}     &              &              &              &       
            &               &              & \ddots       & \ddots       &             &           \\
            &               &              &              & a_{n-2}      & \beta_{n-1} &           \\
            &               &              &              &              & a_{n-1}     & \beta_{n} \\
-\end{array} \right] 
+\end{array} \right]
 \left[\begin{array}{ccccccccc}
 1     & \gamma_{1}  &           &           &              &           &             \\
       & 1           & \gamma_{2}            &              &           &             \\
@@ -92,7 +60,7 @@ a_{1}      & \beta_{2}     &              &              &              &       
       &             &           &           & \ddots       & \ddots    &             \\
       &             &           &           &              & 1         & \gamma_{n-1}\\
       &             &           &           &              &           & 1           \\
-\end{array} \right] 
+\end{array} \right]
 \left[ \begin{array}{c}
 x_{1} \\ \vdots \\ x_{i-1} \\ x_{i} \\ x_{i+1} \\ \vdots \\ x_{n}
 \end{array} \right]
@@ -113,7 +81,7 @@ a_{1} & b_{2}    & c_{2}     &           &           &           &         \\
       &          &           & \ddots    & \ddots    & \ddots    &         \\
       &          &           &           & a_{n-2}   & b_{n-1}   & c_{n-1} \\
       &          &           &           &           & a_{n-1}   & b_{n}   \\
-\end{array} \right] 
+\end{array} \right]
 =
 \left[\begin{array}{ccccccccc}
 \beta_{1}  &               &              &              &              &             &           \\
@@ -123,7 +91,7 @@ a_{1} &      \beta_{2}     &              &              &              &       
            &               &              & \ddots       & \ddots       &             &           \\
            &               &              &              & a_{n-2}      & \beta_{n-1} &           \\
            &               &              &              &              & a_{n-1}     & \beta_{n} \\
-\end{array} \right] 
+\end{array} \right]
 \left[\begin{array}{ccccccccc}
 1     & \gamma_{1}  &           &           &              &           &             \\
       & 1           & \gamma_{2}            &              &           &             \\
@@ -132,7 +100,7 @@ a_{1} &      \beta_{2}     &              &              &              &       
       &             &           &           & \ddots       & \ddots    &             \\
       &             &           &           &              & 1         & \gamma_{n-1}\\
       &             &           &           &              &           & 1           \\
-\end{array} \right] 
+\end{array} \right]
 \]
 
 Solving for these coefficients, we have
@@ -185,7 +153,7 @@ Row i
            &               &              & \ddots       & \ddots       &             &           \\
            &               &              &              & \alpha_{n-2} & \beta_{n-1} &           \\
            &               &              &              &              & \alpha_{n-1}& \beta_{n} \\
-\end{array} \right] 
+\end{array} \right]
 \left[ \begin{array}{c}
 x^*_{1} \\ \vdots \\ x^*_{i-1} \\ x^*_{i} \\ x^*_{i+1} \\ \vdots \\ x^*_{n}
 \end{array} \right]
@@ -224,7 +192,7 @@ Row i
 %   \qquad
 %   \rightarrow
 %   \qquad
-%   x_i^* 
+%   x_i^*
 %   =
 %   \frac{1}{\beta_i} (d_i - x_{i-1}^* \alpha_{i-1})
 %   \qquad
@@ -242,7 +210,7 @@ We have
       &             &           &           & \ddots       & \ddots    &             \\
       &             &           &           &              & 1         & \gamma_{n-1}\\
       &             &           &           &              &           & 1           \\
-\end{array} \right] 
+\end{array} \right]
 \left[ \begin{array}{c}
 x_{1} \\ \vdots \\ x_{i-1} \\ x_{i} \\ x_{i+1} \\ \vdots \\ x_{n}
 \end{array} \right]
@@ -288,7 +256,7 @@ Forward substitution
 \begin{equation}
   x_1^* = d_1 / \beta_1
   ,\qquad
-  x_i^* 
+  x_i^*
   =
   \frac{1}{\beta_i} (d_i - x_{i-1}^* \alpha_{i-1})
   ,\qquad
@@ -316,7 +284,7 @@ Backward substitution
   =
   \frac{c_i}{b_i - \gamma_{i-1} a_{i-1}}
   ,\qquad
-  \gamma_1 = c_1/b_1 
+  \gamma_1 = c_1/b_1
   ,\qquad
   i = [2,n-1]
 \end{equation}
@@ -326,7 +294,7 @@ Forward substitution
 \begin{equation}
   x_1^* = d_1 / b_1
   ,\qquad
-  x_i^* 
+  x_i^*
   =
   \frac{\gamma_i}{c_i} (d_i - x_{i-1}^* a_{i-1})
   ,\qquad

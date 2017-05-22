@@ -1,19 +1,201 @@
 \documentclass[11pt]{article}
+\input{../includes.tex}
 
-\input{../../../packages/packages.tex}
-\input{../../../commands/useful_commands.tex}
-\restylefloat{table}
+\newcommand{\ReInv}{Re^{-1}}
+\newcommand{\RemInv}{Re_m^{-1}}
+\newcommand{\Al}{N Re_m^{-1}}
+\newcommand{\Interaction}{N}
 
 \begin{document}
 \doublespacing
 \MOONSTITLE
 % \maketitle
 
-\section{MHD equations}
-They are:
+\section{Formalizing time marching - block LU decomposition}
+Here, we attempt to formalize the time marching schemes used for the MHD equations using the same framework in \cite{Perot1993}. In this analysis, the temporal order of accuracy is analyzed by comparing the fractional step method with the time discretization in the light of block LU decomposition. The dimensionless MHD equations are
 \begin{equation}\begin{aligned}
-\PD_t \U
+\PD_t \U + \DEL \DOT (\U \U) = - \DEL p + \ReInv \DEL^2 \U + \Interaction \J \CROSS \B, \qquad \J = \RemInv \CURL \B, \\
+ \DIV \U = 0, \\
+\PD_t \B + \RemInv \CURL \left[ \SO^{-1} \CURL \B \right] = \CURL (\U \CROSS \B), \\
+ \DIV \B = 0.
+\end{aligned} \end{equation}
+We may cast this set of equations as
+\begin{equation}\begin{aligned}
+\PD_t \U + D (\U \U) = - G p + \ReInv L \U + \Al C(\B) \CROSS \B, \\
+ D \U = 0, \\
+\PD_t \B + \RemInv C (\left[ \SO^{-1} C(\B)) \right] = C (\U \CROSS \B), \\
+ D \B = 0.
+\end{aligned} \end{equation}
+Here, $L,D,G,C$ are the discrete Laplacian, divergence, gradient and curl operators.
+
+\newpage
+\section{Review of Perot analysis}
+In \cite{Perot1993}, the general form of the analyzed equations are put into the form
+\[
+\MAT{c c}
+A & G \\
+D & 0 \\
+\EMAT
+\MAT{c}
+\U^{n+1} \\
+ p^{n+1} \\
+\EMAT
+=
+\MAT{c}
+\R \\
+0  \\
+\EMAT +
+\MAT{c}
+BC_1 \\
+BC_2 \\
+\EMAT \label{eq:blockLU}
+\]
+A $\theta$-implicit diffusion, Adams-Bashforth advection and implicit pressure results in
+\begin{equation}\begin{aligned} \label{eq:TD_desired}
+\frac{\U^{n+1}-\U^n}{\Delta t} - \theta \ReInv L(\U^{n+1}) = - G p^{n+1} + (1-\theta)\ReInv L(\U^n) + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1} + BC_1 , \\
+\F^n = - D(\U^n \U^n), \\
+ D \U^{n+1} = 0 + BC_2, \\
+\end{aligned} \end{equation}
+From this, we can recover $A$ and $\R$ from the block LU decomposition:
+\begin{equation}\begin{aligned}
+A  = \frac{1}{\Delta t} \left(I - \Delta t \theta \ReInv L \right), \\
+\R = \frac{1}{\Delta t} \left(I + \Delta t (1-\theta) \ReInv L \right) \U^n + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}. \\
+\end{aligned} \end{equation}
+Equation \ref{eq:TD_desired} can be approximated using a fractional step method, resulting in:
+\begin{equation}\begin{aligned} \label{eq:TD_FSM}
+\frac{\hat{\U}-\U^n}{\Delta t} - \theta \ReInv L(\hat{\U}) = (1-\theta)\ReInv L(\U^n) + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}, \\
+L(p^{n+1}) = \frac{1}{\Delta t} D(\hat{\U}), \\
+\U^{n+1} = \hat{\U} - \Delta t G (p^{n+1}). \\
+\end{aligned} \end{equation}
+The error of the fractional step method is $\Delta t \theta \ReInv L(G(p^{n+1}))$, which can be found by adding \ref{eq:TD_FSM} and comparing with \ref{eq:TD_desired}.
+If we approximate \ref{eq:blockLU} with
+\[
+\MAT{c c}
+A & (AB)G \\
+D & 0 \\
+\EMAT
+\MAT{c}
+\U^{n+1} \\
+ p^{n+1} \\
+\EMAT
+=
+\MAT{c}
+\R \\
+0  \\
+\EMAT +
+\MAT{c}
+BC_1 \\
+BC_2 \\
+\EMAT
+\]
+and factorize, we get
+\[
+\MAT{c c}
+A & 0 \\
+D & -DBG \\
+\EMAT
+\underbrace{
+\MAT{c c}
+I & BG \\
+0 & I  \\
+\EMAT
+\MAT{c}
+\U^{n+1} \\
+ p^{n+1} \\
+\EMAT}_{
+\MAT{c}
+\hat{\U} \\
+ p^{n+1} \\
+\EMAT}
+=
+\MAT{c}
+\R \\
+0  \\
+\EMAT +
+\MAT{c}
+BC_1 \\
+BC_2 \\
+\EMAT
+\]
+Ideally $B = A^{-1}$. Here, we solve the outer problem first (for $\hat{\U}$) then the inner problem (for $\U^{n+1}$). For example, if we use
+
+\begin{equation}\begin{aligned}
+B = \Delta t I, \quad \rightarrow \quad \text{1st order error term} \\
+B = \Delta t \left[I + \Delta t \frac{\theta}{Re} L \right], \quad \rightarrow \quad \text{2nd order error term} \\
+B = \Delta t \left[I + \Delta t \frac{\theta}{Re} L + \left(\Delta t \frac{\theta}{Re} L \right)^2 \right], \quad \rightarrow \quad \text{3rd order error term} \\
+B = A^{-1}, \quad \rightarrow \quad \text{Uzawa method, requires nested iterations (typically avoided)}
+\end{aligned} \end{equation}
+Then
+
+\newpage
+\section{Review of Kim and Moin - Fractional Step Method}
+Equations 3, the divergence of equation 4, and equation 4 are:
+\begin{equation}\begin{aligned} \label{eq:TD_FSM_KM}
+\frac{\hat{\U}-\U^n}{\Delta t} = \frac{1}{2} \ReInv L(\U^n+\hat{\U}) + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}, \\
+\frac{\U^{n+1}-\hat{\U}}{\Delta t} =  - G (\phi^{n+1}), \\
+D(\U^{n+1}) = 0.
+\end{aligned} \end{equation}
+Note: $p = \phi + \frac{\Delta t}{2} \ReInv L \phi$. To analyze the time accuracy, we add (and combine) the first two equations to get
+\begin{equation}\begin{aligned}
+& \frac{\U^{n+1}-\hat{\U}}{\Delta t} + \frac{\hat{\U}-\U^n}{\Delta t} = - G (\phi^{n+1}) + \frac{1}{2} \ReInv L(\U^n+\hat{\U}) + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}, \\
+& \frac{\U^{n+1}-\U^n}{\Delta t} = - G (\phi^{n+1}) + \frac{1}{2} \ReInv L\left(\U^{n+1}+ \Delta t G\phi^{n+1} \right) + \frac{1}{2} \ReInv L\U^n + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}, \\
+& \frac{\U^{n+1}-\U^n}{\Delta t} = - G (\phi^{n+1}) + \frac{\Delta t}{2} \ReInv L G\phi^{n+1} + \frac{1}{2} \ReInv L(\U^n+\U^{n+1}) + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}, \\
+& \frac{\U^{n+1}-\U^n}{\Delta t} = - G \left(p^{n+1} - \frac{\Delta t}{2} \ReInv L \phi^{n+1}\right) + \frac{\Delta t}{2} \ReInv L G\phi^{n+1} + \frac{1}{2} \ReInv L(\U^n+\U^{n+1}) + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}, \\
+& \frac{\U^{n+1}-\U^n}{\Delta t} = - G (p^{n+1}) + \frac{\Delta t}{2} \ReInv G L \phi^{n+1} + \frac{\Delta t}{2} \ReInv L G\phi^{n+1} + \frac{1}{2} \ReInv L(\U^n+\U^{n+1}) + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}, \\
+\end{aligned} \end{equation}
+% \begin{equation}\begin{aligned}
+% & \frac{\U^{n+1}-\U^n}{\Delta t} = - G (\phi^{n+1}) + \frac{1}{2} \ReInv L(\U^n + \hat{\U}) + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}, \\
+% & \frac{\U^{n+1}-\U^n}{\Delta t} = - G (\phi^{n+1}) + \frac{1}{2} \ReInv L(\U^n + (\U^{n+1} + \Delta t G \phi^{n+1})) + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}, \\
+% & \frac{\U^{n+1}-\U^n}{\Delta t} = - G (\phi^{n+1}) + \frac{1}{2} \ReInv L(\U^n + \U^{n+1}) + \frac{\Delta t}{2} \ReInv LG \phi^{n+1} + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}, \\
+% & \frac{\U^{n+1}-\U^n}{\Delta t} = - G \left(\phi^{n+1} - \frac{\Delta t}{2} \ReInv L \phi^{n+1} \right) + \frac{1}{2} \ReInv L(\U^n + \U^{n+1}) + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}, \\
+% & \frac{\U^{n+1}-\U^n}{\Delta t} = - G \left(p^{n+1} - \frac{\Delta t}{2} \ReInv L \phi^{n+1}  - \frac{\Delta t}{2} \ReInv L \phi^{n+1} \right) + \frac{1}{2} \ReInv L(\U^n + \U^{n+1}) + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}, \\
+% \end{aligned} \end{equation}
+Since the relation between $p$ and $\phi$ includes a Laplacian term, we must
+\begin{equation}\begin{aligned}
+L \phi^{n+1} = \frac{1}{\Delta t} D\hat{\U}, \\
 \end{aligned} \end{equation}
 
+\newpage
+\section{Perot analysis applied to MHD equations}
+\begin{equation}\begin{aligned}
+\frac{\U^{n+1}-\U^n}{\Delta t} - \theta \ReInv L(\U^{n+1}) = - G p^{n+1} + \F^n , \\
+\F^n = (1-\theta) \ReInv L(\U^n) - D(\U^n \U^n) + \Al C(\B^n) \CROSS \B^n, \\
+ D \U^{n+1} = 0, \\
+\frac{\B^{n+1}-\B^n}{\Delta t} + \theta \RemInv C (\left[ \SO^{-1} C(\B^{n+1})) \right] = \T^n, \\
+\T^n = C (\U^n \CROSS \B^n) - (1-\theta) \RemInv C (\left[ \SO^{-1} C(\B^n)) \right], \\
+ D \B^{n+1} = 0.
+\end{aligned} \end{equation}
+
+In matrix form, we have
+\[
+\MAT{c c c c}
+A_u & G & 0   & 0 \\
+D   & 0 & 0   & 0 \\
+0   & 0 & A_B & G \\
+0   & 0 & D   & 0 \\
+\EMAT
+\MAT{c}
+\U^{n+1} \\
+ p^{n+1} \\
+\B^{n+1} \\
+\cleanB^{n+1} \\
+\EMAT
+=
+\MAT{c}
+\R \\
+0  \\
+\T \\
+0  \\
+\EMAT +
+\MAT{c}
+BC_1 \\
+BC_2 \\
+BC_3 \\
+BC_4 \\
+\EMAT
+\]
+
+
+\input{../include_bib.tex}
 
 \end{document}
