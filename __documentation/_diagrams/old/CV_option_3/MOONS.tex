@@ -18,12 +18,12 @@
 
 % Angle of incidence
 \newcommand{\phiAngle}{35}   % 0 <  phi  < 45 : Controls left to right rotation
-\newcommand{\thetaAngle}{20} % 0 < theta < 90 : Controls top to bottom rotation
+\newcommand{\thetaAngle}{30} % 0 < theta < 90 : Controls top to bottom rotation
 \newcommand{\cosPhi}{cos(\phiAngle)}
 \newcommand{\sinPhi}{sin(\phiAngle)}
 
 % Equation font size
-\newcommand{\EQS}{\large}
+\newcommand{\EQS}{\Huge}
 
 \newcommand{\cosTheta}{cos(\thetaAngle)}
 \newcommand{\sinTheta}{sin(\thetaAngle)}
@@ -63,7 +63,7 @@
 \newcommand{\wSquare}{\w}
 \newcommand{\wCrissCross}{\w/2}
 \newcommand{\wCoord}{\w}
-\newcommand{\wArr}{2}
+\newcommand{\wArr}{4}
 \newcommand{\s}{4.8} % New
 
 % Arrow head type and direction
@@ -102,12 +102,12 @@
 
 % Edge fields:
 	\draw[\arrR,anchor=east,line width=\wArr](\OR+\dx/2-\arrowL,\OR) -- ++(\arrowL,0)                                                               node[left=1,anchor=south]  {\EQS $J_{x,i,j-\frac{1}{2},k-\frac{1}{2}}$};
-	\draw[\arrR,anchor=east,line width=\wArr](\OR,\OR+\dy/2-\arrowL) -- ++(0,\arrowL)                                                               node[above=.1,anchor=west]{\EQS $J_{y,i-\frac{1}{2},j,k-\frac{1}{2}}$};
+	\draw[\arrR,anchor=east,line width=\wArr](\OR,\OR+\dy/2-\arrowL) -- ++(0,\arrowL)                                                               node[left=.1,anchor=south]{\EQS $J_{y,i-\frac{1}{2},j,k-\frac{1}{2}}$};
 	\draw[\arrR,anchor=east,line width=\wArr]({\OR-\cosL/2+\cosL*\arrowLZ},{\OR-\sinL/2+\sinL*\arrowLZ}) -- ++({-\cosL*\arrowLZ},{-\sinL*\arrowLZ}) node[above=.4,anchor=south]{\EQS $J_{z,i-\frac{1}{2},j-\frac{1}{2},k}$};
 
 % Face fields:
 	% \draw[line width=\wArr,\arrR] (\CCx-\dx/2-\arrowL,\CCy) -- ++(\arrowL,0)                     node[left=0.1,anchor=west] {\EQS $\ARRAY{l} u_{i-\frac{1}{2},j,k} \\ {B_x}_{i-\frac{1}{2},j,k} \EARRAY$};
-	\draw[line width=\wArr,\arrR] (\CCx-\dx/2-\arrowL,\CCy) -- ++(\arrowL,0)                     node[left=0.1,anchor=west] {\EQS $(u,B_x)_{i-\frac{1}{2},j,k}$};
+	\draw[line width=\wArr,\arrR] (\CCx-\dx/2-\arrowL,\CCy) -- ++(\arrowL,0)                     node[anchor=north] {\EQS $(u,B_x)_{i-\frac{1}{2},j,k}$};
 	\draw[line width=\wArr,\arrL] (\CCx,\CCy-\dy/2) -- ++(0,-\arrowL)                            node[anchor=north]         {\EQS $(v,B_y)_{i,j-\frac{1}{2},k}$};
 	\draw[line width=\wArr,\arrL] (\OR+\dx/2,\OR+\dy/2) -- ++({\cosL*\arrowLZ},{\sinL*\arrowLZ}) node[anchor=west]          {\EQS $(w,B_z)_{i,j,k-\frac{1}{2}}$};
 
