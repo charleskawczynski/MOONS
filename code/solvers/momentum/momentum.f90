@@ -257,6 +257,7 @@
            write(un,*) '**************************************************************'
            write(un,*) 'Re,Ha = ',SP%DP%Re,SP%DP%Ha
            write(un,*) 'N,Gr = ',SP%DP%N,SP%DP%Gr
+           ! write(un,*) 'flow_rate = ',plane_sum_x(mom%U%x%BF(1)%GF,mom%m%B(1)%g,2,1.0_cp)/SP%DP%Re
            write(un,*) 't,dt = ',SP%VS%U%TMP%t,SP%VS%U%TMP%dt
            write(un,*) 'solveUMethod,N_mom,N_PPE = ',SP%VS%U%SS%solve_method,&
            SP%VS%U%ISP%iter_max,SP%VS%P%ISP%iter_max

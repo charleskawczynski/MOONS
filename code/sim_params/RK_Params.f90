@@ -174,7 +174,7 @@
          call insist_allocated(RKP)
 #endif
          if (RKP%RK_active) then; t = t + RKP%alpha%f(RKP%n)*dt
-         else;                 t = t + dt
+         else;                    t = t + dt
          endif
        end subroutine
 

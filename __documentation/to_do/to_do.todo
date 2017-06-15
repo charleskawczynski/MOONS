@@ -6,8 +6,8 @@ TO DO LIST COMMANDS:
  ☐ --tab creates a separator
  ☐ Searches can be made for specific @tags
 --- ✄ -----------------------
+
 Right Now:
- ☐ Finish reviewing FED paper
  ☐ Roll back RK in MOONS, keep solve decomposition
  ☐ Benchmarks for finite Rm
    ☐ Can use straight duct flow (1-way coupled on Moreau page 45)
@@ -17,7 +17,7 @@ Right Now:
    ☐ Compute total viscous dissipation (from turbulence class)
    ☐ Magnetic and cross helicity
    ☐ Make folder dedicated to paper/organize
-   ☐ Start mesh refinement cases - make fluid domain more fine
+   ☐ Run same MRS with insulating lid
    ☐ Kulikovskii surfaces / characteristic surfaces
    ☐ Energy analysis
    ☐ Brainstorm what to plot - think in terms of establishing a benchmark/characterizing flow:

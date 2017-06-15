@@ -1,5 +1,6 @@
-\documentclass[11pt]{article}
+\documentclass[landscape]{article}
 \input{../includes.tex}
+\usepackage[a4paper,margin=1in,landscape]{geometry} % For local use
 
 \newcommand{\ReInv}{Re^{-1}}
 \newcommand{\RemInv}{Re_m^{-1}}
@@ -117,6 +118,13 @@ BC_1 \\
 BC_2 \\
 \EMAT
 \]
+Further simplified, this results in a series of operations
+\begin{equation}\LL\begin{aligned}
+A\hat{\U} = \R + BC_1 \\
+\Delta t DG p^{n+1} = D\hat{\U} - BC_2 \\
+\U^{n+1} = \hat{\U} - \Delta t G p^{n+1} \\
+\end{aligned} \end{equation}
+
 Ideally $B = A^{-1}$. Here, we solve the outer problem first (for $\hat{\U}$) then the inner problem (for $\U^{n+1}$). For example, if we use
 
 \begin{equation}\begin{aligned}
@@ -129,39 +137,41 @@ Then
 
 \newpage
 \section{Review of Kim and Moin - Fractional Step Method}
+\underline{NOTE}: It seems that there is a typo in Kim and Moin's paper. The defined $p$-$\phi$ relationship is stated as $p = \phi + \frac{\Delta t}{2} \ReInv L \phi$, when cross referencing this with Perot's paper, and by a later paper by Moin (and confirming ourselves), it seems that the correct expression is $p = \phi - \frac{\Delta t}{2} \ReInv L \phi$.
+
 Equations 3, the divergence of equation 4, and equation 4 are:
 \begin{equation}\begin{aligned} \label{eq:TD_FSM_KM}
 \frac{\hat{\U}-\U^n}{\Delta t} = \frac{1}{2} \ReInv L(\U^n+\hat{\U}) + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}, \\
 \frac{\U^{n+1}-\hat{\U}}{\Delta t} =  - G (\phi^{n+1}), \\
 D(\U^{n+1}) = 0.
 \end{aligned} \end{equation}
-Note: $p = \phi + \frac{\Delta t}{2} \ReInv L \phi$. To analyze the time accuracy, we add (and combine) the first two equations to get
+To analyze the time accuracy, we add (and combine) the first two equations to get
 \begin{equation}\begin{aligned}
 & \frac{\U^{n+1}-\hat{\U}}{\Delta t} + \frac{\hat{\U}-\U^n}{\Delta t} = - G (\phi^{n+1}) + \frac{1}{2} \ReInv L(\U^n+\hat{\U}) + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}, \\
 & \frac{\U^{n+1}-\U^n}{\Delta t} = - G (\phi^{n+1}) + \frac{1}{2} \ReInv L\left(\U^{n+1}+ \Delta t G\phi^{n+1} \right) + \frac{1}{2} \ReInv L\U^n + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}, \\
 & \frac{\U^{n+1}-\U^n}{\Delta t} = - G (\phi^{n+1}) + \frac{\Delta t}{2} \ReInv L G\phi^{n+1} + \frac{1}{2} \ReInv L(\U^n+\U^{n+1}) + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}, \\
-& \frac{\U^{n+1}-\U^n}{\Delta t} = - G \left(\phi^{n+1} - \frac{\Delta t}{2} \ReInv L \phi^{n+1} \right) + \frac{1}{2} \ReInv L(\U^n+\U^{n+1}) + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}, \\
-% & \frac{\U^{n+1}-\U^n}{\Delta t} = - G \left(p^{n+1} - \frac{\Delta t}{2} \ReInv L \phi^{n+1}\right) + \frac{\Delta t}{2} \ReInv L G\phi^{n+1} + \frac{1}{2} \ReInv L(\U^n+\U^{n+1}) + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}, \\
-% & \frac{\U^{n+1}-\U^n}{\Delta t} = - G (p^{n+1}) + \frac{\Delta t}{2} \ReInv G L \phi^{n+1} + \frac{\Delta t}{2} \ReInv L G\phi^{n+1} + \frac{1}{2} \ReInv L(\U^n+\U^{n+1}) + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}, \\
+& \frac{\U^{n+1}-\U^n}{\Delta t} = - G \underbrace{\left(\phi^{n+1} - \frac{\Delta t}{2} \ReInv L \phi^{n+1} \right)}_{p^{n+1}} + \frac{1}{2} \ReInv L(\U^n+\U^{n+1}) + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}, \qquad \text{ assuming $L,G$ are commutative} \\
 \end{aligned} \end{equation}
-% \begin{equation}\begin{aligned}
-% & \frac{\U^{n+1}-\U^n}{\Delta t} = - G (\phi^{n+1}) + \frac{1}{2} \ReInv L(\U^n + \hat{\U}) + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}, \\
-% & \frac{\U^{n+1}-\U^n}{\Delta t} = - G (\phi^{n+1}) + \frac{1}{2} \ReInv L(\U^n + (\U^{n+1} + \Delta t G \phi^{n+1})) + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}, \\
-% & \frac{\U^{n+1}-\U^n}{\Delta t} = - G (\phi^{n+1}) + \frac{1}{2} \ReInv L(\U^n + \U^{n+1}) + \frac{\Delta t}{2} \ReInv LG \phi^{n+1} + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}, \\
-% & \frac{\U^{n+1}-\U^n}{\Delta t} = - G \left(\phi^{n+1} - \frac{\Delta t}{2} \ReInv L \phi^{n+1} \right) + \frac{1}{2} \ReInv L(\U^n + \U^{n+1}) + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}, \\
-% & \frac{\U^{n+1}-\U^n}{\Delta t} = - G \left(p^{n+1} - \frac{\Delta t}{2} \ReInv L \phi^{n+1}  - \frac{\Delta t}{2} \ReInv L \phi^{n+1} \right) + \frac{1}{2} \ReInv L(\U^n + \U^{n+1}) + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}, \\
-% \end{aligned} \end{equation}
-Since the relation between $p$ and $\phi$ includes a Laplacian term, we must
+
+For general $\theta$ treatment of diffusion, the first equation is slightly different
 \begin{equation}\begin{aligned}
-L \phi^{n+1} = \frac{1}{\Delta t} D\hat{\U}, \\
+\frac{\hat{\U}-\U^n}{\Delta t} = \ReInv L((1-\theta)\U^n+\theta\hat{\U}) + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}, \\
 \end{aligned} \end{equation}
+To analyze the time accuracy, we add (and combine) the first two equations to get
+\begin{equation}\begin{aligned}
+& \frac{\U^{n+1}-\hat{\U}}{\Delta t} + \frac{\hat{\U}-\U^n}{\Delta t} = - G (\phi^{n+1}) + \ReInv L((1-\theta)\U^n+\theta\hat{\U}) + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}, \\
+& \frac{\U^{n+1}-\U^n}{\Delta t} = - G (\phi^{n+1}) + \theta \ReInv L(\U^{n+1}+ \Delta t G\phi^{n+1}) + (1-\theta) \ReInv L\U^n + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}, \\
+& \frac{\U^{n+1}-\U^n}{\Delta t} = - G (\phi^{n+1}) + \theta \Delta t \ReInv L G\phi^{n+1} + \ReInv L(\theta\U^n+(1-\theta)\U^{n+1}) + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}, \\
+& \frac{\U^{n+1}-\U^n}{\Delta t} = - G \underbrace{\left(\phi^{n+1} - \theta \Delta t \ReInv L \phi^{n+1} \right)}_{p^{n+1}} + \ReInv L(\theta\U^n+(1-\theta)\U^{n+1}) + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}, \qquad \text{ assuming $L,G$ are commutative} \\
+\end{aligned} \end{equation}
+
 
 \newpage
 \section{Perot analysis applied to MHD equations}
 The second order temporally accurate finite difference equations we wish to solve are
 \begin{equation}\begin{aligned}
-\frac{\U^{n+1}-\U^n}{\Delta t} - \theta_u \ReInv L(\U^{n+1}) = - G p^{n+1} + (1-\theta_u) \ReInv L(\U^n) + \frac{3}{2} \F^n - \frac{1}{2} \F^{n-1} , \\
-\F^n = - D(\U^n \U^n) + \Al C(\B^n) \CROSS \B^n, \\
+\frac{\U^{n+1}-\U^n}{\Delta t} - \theta_u \ReInv L(\U^{n+1}) = - G p^{n+1} + (1-\theta_u) \ReInv L(\U^n) + \frac{3}{2} \R^n - \frac{1}{2} \R^{n-1} , \\
+\R^n = - D(\U^n \U^n) + \Al C(\B^n) \CROSS \B^n, \\
  D \U^{n+1} = 0, \\
 \frac{\B^{n+1}-\B^n}{\Delta t} + \theta_B \RemInv C (\left[ \SO^{-1} C\B^{n+1}) \right] = - G\cleanB^{n+1} - (1-\theta_B) \RemInv C (\left[ \SO^{-1} C\B^n) \right] + \frac{3}{2} \T^n - \frac{1}{2} \T^{n-1}, \\
 \T^n = C (\U^n \CROSS \B^n), \\
@@ -198,7 +208,7 @@ BC_4 \\
 \begin{equation}\LL\begin{aligned}
 & A_u  = \frac{1}{\Delta t} \left(I - \Delta t \theta_u \ReInv L \right), \\
 & A_B  = \frac{1}{\Delta t} \left(I + \Delta t \theta_B \RemInv C (\SO^{-1} C) \right), \\
-& \MAC R = \frac{1}{\Delta t} \left(I + \Delta t (1-\theta_u) \ReInv L \right) \U^n + \frac{3}{2}\F^n - \frac{1}{2}\F^{n-1}. \\
+& \MAC R = \frac{1}{\Delta t} \left(I + \Delta t (1-\theta_u) \ReInv L \right) \U^n + \frac{3}{2}\R^n - \frac{1}{2}\R^{n-1}. \\
 & \MAC T = \frac{1}{\Delta t} [I - \Delta t(1-\theta_B) \RemInv C ( \SO^{-1} C) ]\B^n + \frac{3}{2} \T^n - \frac{1}{2} \T^{n-1}. \\
 \end{aligned} \end{equation}
 Now, consider the approximation (which we've seen can achieve 2nd order from Perot):
@@ -229,20 +239,20 @@ BC_3 \\
 BC_4 \\
 \EMAT
 \]
-Let's factorize:
-
+Factorizing (using \textquote{wxMaxima} software), we get
+% wxMaxima website: http://andrejv.github.io/wxmaxima/
 \[
 \MAT{c c c c}
-A_u &     0           &    0      &          0    \\
-D   &  -D \Theta_u G  &    0      &          0    \\
-0   &     0           &    0      &          0    \\
-0   &     0           &    0      &          0    \\
+I      &     0           &    0      &          0    \\
+D/A_u  &     I           &    0      &          0    \\
+0      &     0           &    I      &          0    \\
+0      &     0           &    D/A_B  &          I    \\
 \EMAT
 \MAT{c c c c}
-A_u & \Theta_u G    &    0      &          0    \\
-D   &     0         &    0      &          0    \\
-0   &     0         &    A_B    & \Theta_B G    \\
-0   &     0         &    D      &          0    \\
+A_u & A_u G \Theta_u    &    0      &          0              \\
+0   &    -DG\Theta_u    &    0      &          0              \\
+0   &     0             &    A_B    & A_B G \Theta_B          \\
+0   &     0             &    0      &          -DG\Theta_B    \\
 \EMAT
 \MAT{c}
 \U^{n+1} \\
@@ -264,8 +274,112 @@ BC_3 \\
 BC_4 \\
 \EMAT
 \]
-
-
+Re-arranging a bit, we get
+\[
+\MAT{c c c c}
+A_u    &     0           &    0      &          0      \\
+D      &  -D\Theta_u G   &    0      &          0      \\
+0      &     0           &    A_B    &          0      \\
+0      &     0           &    D      &   -D\Theta_B G  \\
+\EMAT
+\underbrace{
+\MAT{c c c c}
+I   &     \Theta_u G    &    0      &          0       \\
+0   &     I             &    0      &          0       \\
+0   &     0             &    I      &     \Theta_B G   \\
+0   &     0             &    0      &          I       \\
+\EMAT
+\MAT{c}
+\U^{n+1} \\
+ p^{n+1} \\
+\B^{n+1} \\
+\cleanB^{n+1} \\
+\EMAT}_{
+\MAT{c}
+\hat{\U} \\
+ p^{n+1} \\
+\hat{\B} \\
+\cleanB^{n+1} \\
+\EMAT
+}
+=
+\MAT{c}
+\MAC R \\
+0  \\
+\MAC T \\
+0  \\
+\EMAT +
+\MAT{c}
+BC_1 \\
+BC_2 \\
+BC_3 \\
+BC_4 \\
+\EMAT
+\]
+Further simplified, this results in a series of operations, which can be viewed as first solving the outer problem:
+\[
+\MAT{c c c c}
+A_u    &     0           &    0      &          0      \\
+D      &  -D\Theta_u G   &    0      &          0      \\
+0      &     0           &    A_B    &          0      \\
+0      &     0           &    D      &   -D\Theta_B G  \\
+\EMAT
+\MAT{c}
+\hat{\U} \\
+ p^{n+1} \\
+\hat{\B} \\
+\cleanB^{n+1} \\
+\EMAT
+=
+\MAT{c}
+\MAC R \\
+0  \\
+\MAC T \\
+0  \\
+\EMAT +
+\MAT{c}
+BC_1 \\
+BC_2 \\
+BC_3 \\
+BC_4 \\
+\EMAT,
+\]
+then the inner problem:
+\[
+\MAT{c c c c}
+I   &     \Theta_u G    &    0      &          0       \\
+0   &     I             &    0      &          0       \\
+0   &     0             &    I      &     \Theta_B G   \\
+0   &     0             &    0      &          I       \\
+\EMAT
+\MAT{c}
+\U^{n+1} \\
+ p^{n+1} \\
+\B^{n+1} \\
+\cleanB^{n+1} \\
+\EMAT =
+\MAT{c}
+\hat{\U} \\
+ p^{n+1} \\
+\hat{\B} \\
+\cleanB^{n+1} \\
+\EMAT.
+\]
+The sequence of operations are:
+\begin{equation}\LL\begin{aligned}
+A_u \hat{\U} = \MAC R + BC_1 \\
+D \Theta_u G p^{n+1} = D\hat{\U} - BC_2 \\
+\U^{n+1} = \hat{\U} - \Theta_u G p^{n+1} \\
+A_B \hat{\B} = \MAC T + BC_3 \\
+D \Theta_B G \cleanB^{n+1} = D\hat{\B} - BC_4 \\
+\B^{n+1} = \hat{\B} - \Theta_B G \cleanB^{n+1} \\
+\end{aligned} \end{equation}
+Again, the matrix $\Theta$ may be
+\begin{equation}\begin{aligned}
+\Theta = \Delta t I, \quad \rightarrow \quad \text{1st order error term} \\
+\Theta = A^{-1}, \quad \rightarrow \quad \text{Uzawa method, requires nested iterations (typically avoided)}
+\end{aligned} \end{equation}
+As noted in Perot, the 1st order error term may be circumvented by absorbing the error in the pressure (and, we assume, correction parameter) gradient
 
 \input{../include_bib.tex}
 

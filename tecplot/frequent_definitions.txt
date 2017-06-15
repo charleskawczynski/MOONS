@@ -35,11 +35,14 @@
 {Bz}={B_mirror_3pn_z}
 {Bz_tot}={Bz}+1
 {B2}={Bx}**2+{By}**2+{Bz}**2
+{B2}={B_mirror_3pn_x}**2+{B_mirror_3pn_y}**2+{B_mirror_3pn_z}**2
+{Bz_tot}={B_mirror_3pn_z}+1
 
 {Jx}={J_mirror_3pn_x}
 {Jy}={J_mirror_3pn_y}
 {Jz}={J_mirror_3pn_z}
 {J2}={Jx}**2+{Jy}**2+{Jz}**2
+{J2}={J_mirror_3pn_x}**2+{J_mirror_3pn_y}**2+{J_mirror_3pn_z}**2
 
 {Bx_diff} = {B_mirror_3pn_x}[2]-{B_mirror_3pn_x}[1]
 {By_diff} = {B_mirror_3pn_y}[2]-{B_mirror_3pn_y}[1]

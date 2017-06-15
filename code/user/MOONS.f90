@@ -206,6 +206,9 @@
            if (SP%VS%U%SS%initialize.and.SP%EL%export_analytic) then
              call export_SH(mom%m,mom%U%x,SP%DP%Ha,0.0_cp,-1.0_cp,1,DT)
            endif
+           if (SP%VS%U%SS%initialize.and.SP%VS%B%SS%initialize) then
+             call export_numerical_flow_rate(mom%m,mom%U%x,SP%DP%Re,DT,mom%temp_F1%x)
+           endif
          endif
 
          write(*,*) ' ******************** COMPUTATIONS COMPLETE ********************'

@@ -11,13 +11,13 @@ The dimensional induction equation is
 \begin{equation}
   \frac{\PD \B}{\PD t}
   =
-  (\CROSS \CROSS \U \CROSS \B)
+  (\CURL \U \CROSS \B)
   - \\
   \left(
-  \CROSS \CROSS
+  \CURL
   \left\{
   \frac{1}{\sigma}
-  \CROSS \CROSS
+  \CURL
   \frac{\B}{\M}
   \right\}
   \right)
@@ -26,14 +26,14 @@ Non-dimensionalizing time, velocity, length, conductivity and magnetic permeabil
 \begin{equation}
   \frac{\PD \B}{\PD t}
   =
-  (\CROSS \CROSS \U \CROSS \B)
+  (\CURL \U \CROSS \B)
   - \\
   \frac{1}{Re_m}
   \left(
-  \CROSS \CROSS
+  \CURL
   \left\{
   \frac{1}{\sigma}
-  \CROSS \CROSS
+  \CURL
   \frac{\B}{\M}
   \right\}
   \right)
@@ -45,14 +45,14 @@ Note that, in the above equation, $\B$ has not been non-dimensionalized. Let
   =
   \frac{\PD \B}{\PD t}
   -
-  (\CROSS \CROSS \U \CROSS \B)
+  (\CURL \U \CROSS \B)
   +
   \frac{1}{Re_m}
   \left(
-  \CROSS \CROSS
+  \CURL
   \left\{
   \frac{1}{\sigma}
-  \CROSS \CROSS
+  \CURL
   \frac{\B}{\M}
   \right\}
   \right)
@@ -89,13 +89,13 @@ For a uniform and steady external field ($\B^0$), this simplifies to
 \begin{equation}
   Re_m \frac{\PD \B^{*}}{\PD t}
   -
-  (\CROSS \CROSS \U \CROSS (\B^0 + Re_m \B^*))
+  (\CURL \U \CROSS (\B^0 + Re_m \B^*))
   +
   \left(
-  \CROSS \CROSS
+  \CURL
   \left\{
   \frac{1}{\sigma}
-  \CROSS \CROSS
+  \CURL
   \frac{\B^{*}}{\M}
   \right\}
   \right)
@@ -104,21 +104,21 @@ For a uniform and steady external field ($\B^0$), this simplifies to
 \end{equation}
 It's clear from the above equation that as $Re_m \rightarrow 0$, $\B^*$ can be computed from
 \begin{equation}
-  \CROSS \CROSS
+  \CURL
   \left\{
   \frac{1}{\sigma}
-  \CROSS \CROSS
+  \CURL
   \frac{\B^{*}}{\M}
   \right\}
   =
-  (\CROSS \CROSS \U \CROSS \B^0)
+  (\CURL \U \CROSS \B^0)
 \end{equation}
 For uniform $\sigma, \M$, this yields the Poisson equation for $\B^*$:
 \begin{equation}
-  \CROSS^2 \B^{*}
+  \DEL^2 \B^{*}
   =
   -
-  (\CROSS \CROSS \U \CROSS \B^0)
+  (\CURL \U \CROSS \B^0)
 \end{equation}
 
 

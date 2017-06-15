@@ -1,0 +1,79 @@
+TO DO LIST COMMANDS:
+ ☐ Semi-colon at sentence end makes headers
+ ☐ ctrl-I makes list items
+ ☐ ctrl-D checks off list items
+ ☐ shift-ctrl-A moves checked items to archive
+ ☐ --tab creates a separator
+ ☐ Searches can be made for specific @tags
+--- ✄ -----------------------
+Big picture items:
+  ☐ Full-BC paper
+  ☐ BC comparison paper
+  ☐ Plasma disruption paper
+  ☐ Writing Dissertation document
+  ☐ Preparing for dissertation presentation
+  ☐ Take advantage of dentist
+Medium picture items:
+  ✔ Perform high Shercliff/high Hartmann cases and summarize results @done (17-06-06 10:05)
+  ☐ Re-run unsteady Bandaru cases and consider recording statistics
+  ☐ Implement RK3 to some effect
+  ☐ Re-vamp website using pelican
+  ☐ Update resume - ask Jayshri
+  ☐ Magnetic BCs using Biosavart law? - no time
+  ☐ Organize code into appropriately named folders
+  ☐ Scan books, organize dropbox/git
+  ✔ Formalize MHD fractional step method (Perot) @done (17-06-02 08:34)
+Small picture items:
+ ☐ Get parking form (signed) from Lance - Fall
+ ☐ Bring Evgenia GSR form for summer on WEDNESDAY
+ ✔ Grade Abdou's class - Spring @done (17-06-02 15:48)
+ ☐ Look back at intermediate BCs in light of Perot paper - Kim approach necessary?
+ ☐ Modify source all terms to be 2nd order accurate (BC is taken into account in Au_BC)
+
+Week-by-week (starting Mondays):
+
+weeks remaining
+     |
+     v
+  ☐ 33) 06/05/2017 - finish getting plots/table in paper:
+  ☐ 32) 06/12/2017 - Finish first draft of paper, give to Sergey for first iteration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SPRING QUARTER ENDS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SUMMER QUARTER BEGINS
+  ☐ 31) 06/19/2017 - 
+  ☐ 30) 06/26/2017 - 
+  ☐ 29) 07/03/2017 - 
+  ☐ 28) 07/10/2017 - 
+  ☐ 27) 07/17/2017 - 
+  ☐ 26) 07/24/2017 - VACATION MOST OF WEEK - scan books/organize other days?
+  ☐ 25) 07/31/2017 - 
+  ☐ 24) 08/07/2017 - VACATION MOST OF WEEK
+  ☐ 23) 08/14/2017 - 
+  ☐ 22) 08/21/2017 - DEADLINE FOR FULL BC PAPER
+  ☐ 21) 08/28/2017 - 
+  ☐ 20) 09/04/2017 - 
+  ☐ 19) 09/11/2017 - 
+  ☐ 18) 09/18/2017 - 
+  ☐ 17) 09/25/2017 - 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SUMMER QUARTER ENDS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ FALL QUARTER BEGINS
+-- Fall quarter     begins September 25
+-- Fall instruction begins September 28
+  ☐ 16) 10/09/2017 - 
+  ☐ 15) 10/16/2017 - 
+  ☐ 14) 10/23/2017 - 
+  ☐ 13) 10/30/2017 - 
+  ☐ 12) 11/06/2017 - DEADLINE FOR BC COMPARISON PAPER
+  ☐ 11) 11/13/2017 - 
+  ☐ 10) 11/20/2017 - 
+  ☐ 9 ) 11/27/2017 - 
+  ☐ 8 ) 12/04/2017 - 
+  ☐ 7 ) 12/11/2017 - 
+  ☐ 6 ) 12/18/2017 - 
+  ☐ 5 ) 12/25/2017 - 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ FALL QUARTER ENDS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ WINTER QUARTER BEGINS
+  ☐ 4 ) 01/01/2018 - 
+  ☐ 3 ) 01/08/2018 - 
+  ☐ 2 ) 01/15/2018 - DEADLINE FOR PLASMA DISRUPTION PAPER
+  ☐ 1 ) 01/22/2018 - 
+  ☐ 0 ) 01/29/2018 - Ph.inally D.one

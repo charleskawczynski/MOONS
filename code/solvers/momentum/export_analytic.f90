@@ -1,6 +1,8 @@
        module export_analytic_mod
        use current_precision_mod
        use SF_mod
+       use VF_mod
+       use IO_tools_mod
        use mesh_mod
        use profile_funcs_mod
        use export_raw_processed_mod
@@ -13,6 +15,7 @@
        public :: export_Shercliff
        public :: export_Hunt
        public :: export_SH
+       public :: export_numerical_flow_rate
 
        contains
 
@@ -113,5 +116,22 @@
          call delete(temp)
        end subroutine
 
+       subroutine export_numerical_flow_rate(m,u_numerical,Re,DT,u_temp)
+         implicit none
+         type(SF),intent(in) :: u_numerical
+         real(cp),intent(in) :: Re
+         type(mesh),intent(in) :: m
+         type(dir_tree),intent(in) :: DT
+         type(SF),intent(inout) :: u_temp
+         real(cp) :: Q
+         integer :: un
+         un = new_and_open(str(DT%LDC),'numerical_flow_rate')
+         ! call boundary_flux(Q,u_numerical,m,u_temp) ! Cancels in and output!
+         ! Just need outflux, not net flux
+         Q = plane_sum_x(u_numerical%BF(1)%GF,m%B(1)%g,2,1.0_cp)/Re
+         write(*,*) 'Numerical flow rate = ',Q
+         write(un,*) 'Numerical flow rate = ',Q
+         call close_and_message(un,str(DT%LDC),'numerical_flow_rate')
+       end subroutine
 
        end module

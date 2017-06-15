@@ -15,6 +15,7 @@
        use kill_switch_mod
        use probe_mod
        use RK_Params_mod
+       use time_statistics_mod
 
        use ops_embedExtract_mod
        use time_marching_params_mod
@@ -105,6 +106,9 @@
            if (SP%VS%T%SS%solve) call export_unsteady(nrg,SP,SP%VS%T%TMP,EF,EN,DT)
            if (SP%VS%U%SS%solve) call export_unsteady(mom,SP,SP%VS%U%TMP,EF,EN,DT)
            if (SP%VS%B%SS%solve) call export_unsteady(ind,SP,SP%VS%B%TMP,EF,EN,DT)
+
+           ! Statistics
+           call update(mom%TS,mom%m,mom%U,SP%VS%U%TMP,mom%temp_F1,mom%temp_CC_VF,mom%TF_CC)
 
            if (EN%any_now) then;
              call export_TMP(SP%VS); call export(coupled)

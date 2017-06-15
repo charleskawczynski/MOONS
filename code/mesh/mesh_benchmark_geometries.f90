@@ -57,6 +57,8 @@
          case (25); call MHD_2D_Duct_Hunt_Walls(   m_mom,m_ind,MQP,MD_sigma,DP)
          case (26); call MHD_3D_Bandaru(           m_mom,m_ind,MQP,MD_sigma,DP)
          case (27); call MHD_3D_LDC_BC_fine_top(   m_mom,m_ind,MQP,MD_sigma,DP,tw,include_vacuum)
+         case (28); call MHD_2D_Shercliff(         m_mom,m_ind,MQP,MD_sigma,DP)
+         case (29); call MHD_2D_Hunt(              m_mom,m_ind,MQP,MD_sigma,DP)
          case default; stop 'Error: bad BMC_geometry in mesh_benchmark_geometries.f90'
          end select
        end subroutine
@@ -144,7 +146,7 @@
          integer,dimension(3) :: N
          integer :: i
          call delete(m_mom)
-         N = 50; hmin = -1.0_cp; hmax = 1.0_cp
+         N = 60; hmin = -1.0_cp; hmax = 1.0_cp
          beta = ReynoldsBL(DP%Re,hmin,hmax)
          i = 1; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
          i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
@@ -233,7 +235,7 @@
        end subroutine
 
        ! ********************************************************************
-       ! ******************************* MHD ********************************
+       ! ******************************* 2D MHD *****************************
        ! ********************************************************************
 
        subroutine MHD_2D_LDC_Shatrov(m_mom,m_ind,MQP,MD_sigma,DP)
@@ -260,6 +262,161 @@
          call init(m_ind,m_mom)
          call init(MD_sigma,m_mom,m_ind)
        end subroutine
+
+       subroutine MHD_2D_Duct_Hunt(m_mom,m_ind,MQP,MD_sigma,DP)
+         implicit none
+         type(mesh),intent(inout) :: m_mom,m_ind
+         type(mesh_quality_params),intent(in) :: MQP
+         type(mesh_domain),intent(inout) :: MD_sigma
+         type(dimensionless_params),intent(in) :: DP
+         type(grid) :: g
+         real(cp),dimension(3) :: hmin,hmax,beta
+         integer,dimension(3) :: N
+         integer :: i
+         call delete(m_mom)
+         N = (/1,40,40/)
+         hmin = -1.0_cp; hmax = 1.0_cp
+         hmin(1) = -0.5_cp; hmax(1) = 0.5_cp
+         beta = Re_Ha_BL(DP%Re,DP%Ha,hmin,hmax)
+         i = 1; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
+         i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
+         i = 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
+         call add(m_mom,g)
+         call init_props(m_mom)
+         call patch(m_mom)
+         call init(m_ind,m_mom)
+         call delete(g)
+         call init(MD_sigma,m_mom,m_ind)
+       end subroutine
+
+       subroutine MHD_2D_Duct_Hunt_Walls(m_mom,m_ind,MQP,MD_sigma,DP)
+         implicit none
+         type(mesh),intent(inout) :: m_mom,m_ind
+         type(mesh_quality_params),intent(in) :: MQP
+         type(mesh_domain),intent(inout) :: MD_sigma
+         type(dimensionless_params),intent(in) :: DP
+         type(grid) :: g
+         real(cp),dimension(3) :: hmin,hmax,beta
+         integer,dimension(3) :: N
+         integer :: i
+         call delete(m_mom)
+         N = (/1,40,40/)
+         hmin = -1.0_cp; hmax = 1.0_cp
+         hmin(1) = -0.5_cp; hmax(1) = 0.5_cp
+         beta = Re_Ha_BL(DP%Re,DP%Ha,hmin,hmax)
+         i = 1; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
+         i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
+         i = 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
+         call add(m_mom,g)
+         call init_props(m_mom)
+         call patch(m_mom)
+         call init(g,m_mom%B(1)%g)
+         N = 5
+         i = 2; call ext_Roberts_near_IO(g,DP%c_w(1),N(i),i,MQP)
+         i = 3; call ext_Roberts_near_IO(g,DP%c_w(1),N(i),i,MQP)
+         call init(m_ind,g)
+         call init_props(m_ind)
+         call patch(m_ind)
+         call delete(g)
+         call init(MD_sigma,m_mom,m_ind)
+       end subroutine
+
+       subroutine MHD_2D_Bandaru(m_mom,m_ind,MQP,MD_sigma,DP)
+         implicit none
+         type(mesh),intent(inout) :: m_mom,m_ind
+         type(mesh_quality_params),intent(in) :: MQP
+         type(mesh_domain),intent(inout) :: MD_sigma
+         type(dimensionless_params),intent(in) :: DP
+         type(grid) :: g
+         real(cp),dimension(3) :: hmin,hmax,beta
+         integer,dimension(3) :: N
+         integer :: i
+         call delete(m_mom)
+         N = (/64,1,64/);   hmin = -1.0_cp; hmax = 1.0_cp ! Approximate
+         ! N = (/129,1,129/); hmin = -1.0_cp; hmax = 1.0_cp ! DNS
+         hmin(2) = -0.5_cp; hmax(2) = 0.5_cp
+         hmin(1) = 0.0_cp; hmax(1) = 2.0_cp*PI
+         beta = Re_Ha_BL(DP%Re,DP%Ha,hmin,hmax)
+         i = 1; call grid_uniform(  g,hmin(i),hmax(i),N(i),i)
+         i = 2; call grid_uniform(  g,hmin(i),hmax(i),N(i),i)
+         i = 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
+         call add(m_mom,g)
+         call init_props(m_mom)
+         call patch(m_mom)
+         call delete(g)
+         call init(m_ind,m_mom)
+         call init(MD_sigma,m_mom,m_ind)
+       end subroutine
+
+       subroutine MHD_2D_Shercliff(m_mom,m_ind,MQP,MD_sigma,DP)
+         implicit none
+         type(mesh),intent(inout) :: m_mom,m_ind
+         type(mesh_quality_params),intent(in) :: MQP
+         type(mesh_domain),intent(inout) :: MD_sigma
+         type(dimensionless_params),intent(in) :: DP
+         type(grid) :: g
+         real(cp),dimension(3) :: hmin,hmax,beta
+         integer,dimension(3) :: N
+         integer :: i
+         call delete(m_mom)
+         N = (/1,50,50/)   ! Ha = 500
+         ! N = (/1,60,60/)   ! Ha = 5000
+         ! N = (/1,80,80/)   ! Ha = 10000
+         ! N = (/1,100,100/) ! Ha = 15000
+         hmin = -1.0_cp; hmax = 1.0_cp
+         hmin(1) = -0.5_cp; hmax(1) = 0.5_cp
+         beta = Re_Ha_BL(DP%Re,DP%Ha,hmin,hmax)
+         i = 1; call grid_uniform(  g,hmin(i),hmax(i),N(i),i)
+         i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
+         i = 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
+         call add(m_mom,g)
+         call init_props(m_mom)
+         call patch(m_mom)
+         call delete(g)
+         call init(m_ind,m_mom)
+         call init(MD_sigma,m_mom,m_ind)
+       end subroutine
+
+       subroutine MHD_2D_Hunt(m_mom,m_ind,MQP,MD_sigma,DP)
+         implicit none
+         type(mesh),intent(inout) :: m_mom,m_ind
+         type(mesh_quality_params),intent(in) :: MQP
+         type(mesh_domain),intent(inout) :: MD_sigma
+         type(dimensionless_params),intent(in) :: DP
+         type(grid) :: g
+         real(cp),dimension(3) :: hmin,hmax,beta
+         integer,dimension(3) :: N,N_wall
+         real(cp) :: t_wall
+         integer :: i
+         call delete(m_mom); call delete(m_ind)
+         ! N = (/1,50,50/);   N_wall = 10 ! Ha = 500
+         N = (/1,80,80/);   N_wall = 10 ! Ha = 5000
+         ! N = (/1,80,80/);   N_wall = 10 ! Ha = 10000
+         ! N = (/1,100,100/); N_wall = 10 ! Ha = 15000
+         hmin = -1.0_cp; hmax = 1.0_cp
+         hmin(1) = -0.5_cp; hmax(1) = 0.5_cp
+         beta = Re_Ha_BL(DP%Re,DP%Ha,hmin,hmax)
+         i = 1; call grid_uniform(  g,hmin(i),hmax(i),N(i),i)
+         i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
+         i = 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
+         call add(m_mom,g)
+         call init_props(m_mom)
+         call patch(m_mom)
+         call delete(g)
+         call init(m_ind,m_mom)
+         call init(g,m_mom%B(1)%g)
+         t_wall = 0.01_cp
+         i = 3; call ext_Roberts_near_IO(g,t_wall,N_wall(i),i,MQP)
+         call init(m_ind,g)
+         call init_props(m_ind)
+         call patch(m_ind)
+         call delete(g)
+         call init(MD_sigma,m_mom,m_ind)
+       end subroutine
+
+       ! ********************************************************************
+       ! ******************************* 3D MHD *****************************
+       ! ********************************************************************
 
        subroutine MHD_3D_LDC_Shatrov(m_mom,m_ind,MQP,MD_sigma,DP)
          implicit none
@@ -336,64 +493,6 @@
          call patch(m_mom)
          call delete(g)
          call init(m_ind,m_mom)
-         call init(MD_sigma,m_mom,m_ind)
-       end subroutine
-
-       subroutine MHD_2D_Duct_Hunt(m_mom,m_ind,MQP,MD_sigma,DP)
-         implicit none
-         type(mesh),intent(inout) :: m_mom,m_ind
-         type(mesh_quality_params),intent(in) :: MQP
-         type(mesh_domain),intent(inout) :: MD_sigma
-         type(dimensionless_params),intent(in) :: DP
-         type(grid) :: g
-         real(cp),dimension(3) :: hmin,hmax,beta
-         integer,dimension(3) :: N
-         integer :: i
-         call delete(m_mom)
-         N = (/1,40,40/)
-         hmin = -1.0_cp; hmax = 1.0_cp
-         hmin(1) = -0.5_cp; hmax(1) = 0.5_cp
-         beta = Re_Ha_BL(DP%Re,DP%Ha,hmin,hmax)
-         i = 1; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
-         i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
-         i = 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
-         call add(m_mom,g)
-         call init_props(m_mom)
-         call patch(m_mom)
-         call init(m_ind,m_mom)
-         call delete(g)
-         call init(MD_sigma,m_mom,m_ind)
-       end subroutine
-
-       subroutine MHD_2D_Duct_Hunt_Walls(m_mom,m_ind,MQP,MD_sigma,DP)
-         implicit none
-         type(mesh),intent(inout) :: m_mom,m_ind
-         type(mesh_quality_params),intent(in) :: MQP
-         type(mesh_domain),intent(inout) :: MD_sigma
-         type(dimensionless_params),intent(in) :: DP
-         type(grid) :: g
-         real(cp),dimension(3) :: hmin,hmax,beta
-         integer,dimension(3) :: N
-         integer :: i
-         call delete(m_mom)
-         N = (/1,40,40/)
-         hmin = -1.0_cp; hmax = 1.0_cp
-         hmin(1) = -0.5_cp; hmax(1) = 0.5_cp
-         beta = Re_Ha_BL(DP%Re,DP%Ha,hmin,hmax)
-         i = 1; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
-         i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
-         i = 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
-         call add(m_mom,g)
-         call init_props(m_mom)
-         call patch(m_mom)
-         call init(g,m_mom%B(1)%g)
-         N = 5
-         i = 2; call ext_Roberts_near_IO(g,DP%c_w(1),N(i),i,MQP)
-         i = 3; call ext_Roberts_near_IO(g,DP%c_w(1),N(i),i,MQP)
-         call init(m_ind,g)
-         call init_props(m_ind)
-         call patch(m_ind)
-         call delete(g)
          call init(MD_sigma,m_mom,m_ind)
        end subroutine
 
@@ -483,7 +582,7 @@
          call init(MD_sigma,m_mom,m_ind)
        end subroutine
 
-       subroutine MHD_2D_Bandaru(m_mom,m_ind,MQP,MD_sigma,DP)
+       subroutine MHD_3D_Shercliff(m_mom,m_ind,MQP,MD_sigma,DP)
          implicit none
          type(mesh),intent(inout) :: m_mom,m_ind
          type(mesh_quality_params),intent(in) :: MQP
@@ -494,34 +593,7 @@
          integer,dimension(3) :: N
          integer :: i
          call delete(m_mom)
-         N = (/64,1,64/);   hmin = -1.0_cp; hmax = 1.0_cp ! Approximate
-         ! N = (/129,1,129/); hmin = -1.0_cp; hmax = 1.0_cp ! DNS
-         hmin(2) = -0.5_cp; hmax(2) = 0.5_cp
-         hmin(1) = 0.0_cp; hmax(1) = 2.0_cp*PI
-         beta = Re_Ha_BL(DP%Re,DP%Ha,hmin,hmax)
-         i = 1; call grid_uniform(  g,hmin(i),hmax(i),N(i),i)
-         i = 2; call grid_uniform(  g,hmin(i),hmax(i),N(i),i)
-         i = 3; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
-         call add(m_mom,g)
-         call init_props(m_mom)
-         call patch(m_mom)
-         call delete(g)
-         call init(m_ind,m_mom)
-         call init(MD_sigma,m_mom,m_ind)
-       end subroutine
-
-       subroutine mhd_3D_Shercliff(m_mom,m_ind,MQP,MD_sigma,DP)
-         implicit none
-         type(mesh),intent(inout) :: m_mom,m_ind
-         type(mesh_quality_params),intent(in) :: MQP
-         type(mesh_domain),intent(inout) :: MD_sigma
-         type(dimensionless_params),intent(in) :: DP
-         type(grid) :: g
-         real(cp),dimension(3) :: hmin,hmax,beta
-         integer,dimension(3) :: N
-         integer :: i
-         call delete(m_mom)
-         N = (/200,50,1/); hmin = -0.5_cp; hmax = 0.5_cp
+         N = (/200,50,50/); hmin = -0.5_cp; hmax = 0.5_cp
          hmin(1) = 0.0_cp; hmax(1) = 80.0_cp
          beta = Re_Ha_BL(DP%Re,DP%Ha,hmin,hmax)
          i = 1; call grid_uniform(  g,hmin(i),hmax(i),N(i),i)
@@ -535,7 +607,7 @@
          call init(MD_sigma,m_mom,m_ind)
        end subroutine
 
-       subroutine mhd_3D_Hunt(m_mom,m_ind,MQP,MD_sigma,DP)
+       subroutine MHD_3D_Hunt(m_mom,m_ind,MQP,MD_sigma,DP)
          implicit none
          type(mesh),intent(inout) :: m_mom,m_ind
          type(mesh_quality_params),intent(in) :: MQP
@@ -546,7 +618,7 @@
          integer,dimension(3) :: N
          integer :: i
          call delete(m_mom); call delete(m_ind)
-         N = (/200,50,1/); hmin = -0.5_cp; hmax = 0.5_cp
+         N = (/200,50,50/); hmin = -0.5_cp; hmax = 0.5_cp
          hmin(1) = 0.0_cp; hmax(1) = 80.0_cp
          beta = Re_Ha_BL(DP%Re,DP%Ha,hmin,hmax)
          i = 1; call grid_uniform(  g,hmin(i),hmax(i),N(i),i)

@@ -91,8 +91,8 @@
          type(VF),intent(in) :: U
          type(TF),intent(inout) :: TF_CC_edge
          real(cp),intent(in) :: scale
-         ! call lap(temp_F,U,m)
-         call lap_centered(temp_F,U,m,TF_CC_edge)
+         call lap(temp_F,U,m)
+         ! call lap_centered(temp_F,U,m,TF_CC_edge)
          call add_product(F,temp_F,scale)
        end subroutine
 

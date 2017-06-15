@@ -1,0 +1,21 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+\newcommand{\figdir}{figs/}
+\newcommand{\fig}{\figdir/test.eps}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+% \maketitle
+
+\section{Original image}
+\fbox{\includegraphics[width=.5\TW]{\fig}}
+
+\section{Cropped}
+\fbox{\includegraphics[width=.5\TW,trim=6.5cm 6cm 6.5cm 4cm,clip]{\fig}}
+
+% \section{Automatic crop}
+% Note: compile with \verb|--shell-escape|\\
+% \fbox{\cropped{\figdir/}}
+
+\end{document}

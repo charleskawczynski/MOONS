@@ -30,7 +30,6 @@
        public :: O2_BDF_time_AB2_sources
        public :: Euler_time_AB2_sources
        public :: Euler_time_RK_sources
-       public :: Euler_time_RK
 
        public :: Euler_time_no_diff_AB2_sources
        public :: Euler_time_no_diff_AB2_sources_no_correction
@@ -153,7 +152,7 @@
        end subroutine
 
        subroutine Euler_time_RK_sources(PCG_VF,PCG_SF,X,Xstar,Xnm1,phi,F,Fnm1,L,m,&
-         TMP,RKP,temp_F1,temp_CC,compute_norms)
+         TMP,RKP,temp_F1,temp_E,temp_CC,compute_norms)
          ! Time discretization adopted from:
          ! Lundbladh, Anders, et al. "An efficient spectral method for
          ! simulation of incompressible flow over a flat plate."
@@ -174,7 +173,7 @@
          type(PCG_solver_VF),intent(inout) :: PCG_VF
          type(PCG_solver_SF),intent(inout) :: PCG_SF
          type(SF),intent(inout) :: phi
-         type(VF),intent(inout) :: X,Xstar,Xnm1
+         type(VF),intent(inout) :: X,Xstar,Xnm1,temp_E
          type(VF),intent(in) :: F,Fnm1,L
          type(mesh),intent(in) :: m
          type(time_marching_params),intent(in) :: TMP
@@ -186,78 +185,6 @@
          call add_product(temp_F1,Fnm1,TMP%dt*RKP%zeta%f(RKP%n))
          ! call add_product(temp_F1,L   ,TMP%dt*RKP%alpha%f(RKP%n))
          call add_product(temp_F1,L   ,TMP%dt*2.0_cp*RKP%alpha%f(RKP%n))
-         call assign_wall_Dirichlet(temp_F1,0.0_cp,X)
-         call add(temp_F1,X)
-         call assign(Xnm1,X)
-         ! call update_MFP(PCG_VF,m,TMP%dt*RKP%d%f(RKP%n)*PCG_VF%MFP%coeff_implicit,.true.)
-         call update_MFP(PCG_VF,m,TMP%dt*2.0_cp*RKP%beta%f(RKP%n)*PCG_VF%MFP%coeff_implicit,.true.)
-         call solve(PCG_VF,Xstar,temp_F1,m,compute_norms) ! Solve for X*
-         ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%dt,m,temp_F1,temp_CC,compute_norms)
-         call clean_div(PCG_SF,X,Xstar,phi,1.0_cp,m,temp_F1,temp_CC,compute_norms)
-         ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/(TMP%dt*RKP%gamma%f(RKP%n)),m,temp_F1,temp_CC,compute_norms)
-         if (get_any_Prescribed(Xstar)) call update_intermediate_field_BCs(Xstar,phi,1.0_cp,m,temp_F1,temp_E,temp_CC)
-       end subroutine
-
-       subroutine Euler_time_RK4(PCG_VF,PCG_SF,X,Xstar,Xnm1,phi,F,Fnm1,L,m,&
-         TMP,RKP,temp_F1,K1,K2,K3,K4,temp_CC,compute_norms)
-         implicit none
-         type(PCG_solver_VF),intent(inout) :: PCG_VF
-         type(PCG_solver_SF),intent(inout) :: PCG_SF
-         type(SF),intent(inout) :: phi
-         type(VF),intent(inout) :: X,Xstar,Xnm1,K1,K2,K3,K4
-         type(VF),intent(in) :: F,Fnm1,L
-         type(mesh),intent(in) :: m
-         type(time_marching_params),intent(in) :: TMP
-         type(RK_Params),intent(in) :: RKP
-         type(VF),intent(inout) :: temp_F1
-         type(SF),intent(inout) :: temp_CC
-         logical,intent(in) :: compute_norms
-         K1 = F(Un)
-         K2 = F(Un+.5*dt*K1)
-         K3 = F(Un+.5*dt*K2)
-         K4 = F(Un+dt*K3)
-         Unp1 = Un + 1/6*dt*F(K1 + 2*K2 + 2*K3 + K4)
-
-         call    multiply(temp_F1,K1,TMP%dt/6.0_cp)
-         call add_product(temp_F1,K2,TMP%dt/6.0_cp*2.0_cp)
-         call add_product(temp_F1,K3,TMP%dt/6.0_cp*2.0_cp)
-         call add_product(temp_F1,K4,TMP%dt/6.0_cp)
-         call assign_wall_Dirichlet(temp_F1,0.0_cp,X)
-         call add(temp_F1,X)
-         call assign(Xnm1,X)
-         ! call update_MFP(PCG_VF,m,TMP%dt*RKP%d%f(RKP%n)*PCG_VF%MFP%coeff_implicit,.true.)
-         call update_MFP(PCG_VF,m,TMP%dt*2.0_cp*RKP%beta%f(RKP%n)*PCG_VF%MFP%coeff_implicit,.true.)
-         call solve(PCG_VF,Xstar,temp_F1,m,compute_norms) ! Solve for X*
-         ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%dt,m,temp_F1,temp_CC,compute_norms)
-         call clean_div(PCG_SF,X,Xstar,phi,1.0_cp,m,temp_F1,temp_CC,compute_norms)
-         ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/(TMP%dt*RKP%gamma%f(RKP%n)),m,temp_F1,temp_CC,compute_norms)
-         if (get_any_Prescribed(Xstar)) call update_intermediate_field_BCs(Xstar,phi,1.0_cp,m,temp_F1,temp_E,temp_CC)
-       end subroutine
-
-       subroutine Euler_time_RK3(PCG_VF,PCG_SF,X,Xstar,Xnm1,phi,F,Fnm1,L,m,&
-         TMP,RKP,temp_F1,K1,K2,K3,K4,temp_CC,compute_norms)
-         implicit none
-         type(PCG_solver_VF),intent(inout) :: PCG_VF
-         type(PCG_solver_SF),intent(inout) :: PCG_SF
-         type(SF),intent(inout) :: phi
-         type(VF),intent(inout) :: X,Xstar,Xnm1,K1,K2,K3,K4
-         type(VF),intent(in) :: F,Fnm1,L
-         type(mesh),intent(in) :: m
-         type(time_marching_params),intent(in) :: TMP
-         type(RK_Params),intent(in) :: RKP
-         type(VF),intent(inout) :: temp_F1
-         type(SF),intent(inout) :: temp_CC
-         logical,intent(in) :: compute_norms
-         K1 = F(Un)
-         K2 = F(Un+.5*dt*K1)
-         K3 = F(Un+.5*dt*K2)
-         K4 = F(Un+dt*K3)
-         Unp1 = Un + 1/6*dt*F(K1 + 2*K2 + 2*K3 + K4)
-
-         call    multiply(temp_F1,K1,TMP%dt/6.0_cp)
-         call add_product(temp_F1,K2,TMP%dt/6.0_cp*2.0_cp)
-         call add_product(temp_F1,K3,TMP%dt/6.0_cp*2.0_cp)
-         call add_product(temp_F1,K4,TMP%dt/6.0_cp)
          call assign_wall_Dirichlet(temp_F1,0.0_cp,X)
          call add(temp_F1,X)
          call assign(Xnm1,X)

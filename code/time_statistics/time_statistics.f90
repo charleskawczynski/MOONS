@@ -30,7 +30,7 @@
          type(string) :: dir,name
          type(SF) :: U_sum
          type(SF) :: U_ave
-         type(probe) :: L2_U_ave
+         type(probe) :: mean_energy
          type(SF) :: RMS
          type(time_statistics_params) :: TSP
        end type
@@ -39,7 +39,7 @@
          type(string) :: dir,name
          type(VF) :: U_sum
          type(VF) :: U_ave
-         type(probe) :: L2_U_ave
+         type(probe) :: mean_energy
          type(VF) :: RMS
          type(TF) :: stresses
          type(TF) :: stresses_sum
@@ -69,7 +69,7 @@
          type(time_marching_params),intent(in) :: TMP
          character(len=*),intent(in) :: dir,name
          call init(TS%TSP,TSP)
-         call init(TS%L2_U_ave,dir,'L2_U_ave',.false.,.true.,TMP)
+         call init(TS%mean_energy,dir,'mean_energy',.false.,.true.,TMP)
          call init(TS%U_sum,m,get_DL(U))
          call init(TS%U_ave,m,get_DL(U))
          call init(TS%RMS,m,get_DL(U))
@@ -89,7 +89,7 @@
          type(time_marching_params),intent(in) :: TMP
          character(len=*),intent(in) :: dir,name
          call init(TS%TSP,TSP)
-         call init(TS%L2_U_ave,dir,'L2_U_ave',.false.,.true.,TMP)
+         call init(TS%mean_energy,dir,'mean_energy',.false.,.true.,TMP)
          call init(TS%L2_stresses,dir,'L2_stresses',.false.,.true.,TMP)
          call init(TS%U_sum,m,get_DL(U))
          call init(TS%U_ave,m,get_DL(U))
@@ -109,7 +109,7 @@
          implicit none
          type(time_statistics_SF),intent(inout) :: TS
          call delete(TS%TSP)
-         call delete(TS%L2_U_ave)
+         call delete(TS%mean_energy)
          call delete(TS%U_sum)
          call delete(TS%U_ave)
          call delete(TS%RMS)
@@ -121,7 +121,7 @@
          implicit none
          type(time_statistics_VF),intent(inout) :: TS
          call delete(TS%TSP)
-         call delete(TS%L2_U_ave)
+         call delete(TS%mean_energy)
          call delete(TS%L2_stresses)
          call delete(TS%U_sum)
          call delete(TS%U_ave)
@@ -149,12 +149,12 @@
              call assign(TS%U_ave,TS%U_sum)
              call multiply(TS%U_ave,get_coeff(TS%TSP%O1_stats,TMP,m))
              call Ln(temp_cp,TS%U_ave,2.0_cp,m)
-             call export(TS%L2_U_ave,TMP,temp_cp)
+             temp_cp = 0.5_cp*temp_cp
+             call export(TS%mean_energy,TMP,temp_cp)
 
              call assign(temp,U)
              call square(temp)
              call add_product(TS%RMS,temp,TMP%dt)
-             call update(TS%TSP,TMP)
            endif
 
            if (TS%TSP%O1_stats%export_stats) then
@@ -184,10 +184,14 @@
            if (TS%TSP%O1_stats%compute_stats) then ! Compute 1st order statistics (ubar)
              call add_product(TS%U_sum,U,TMP%dt)
 
+             ! call add(temp_VF,U,Unm1)
+             call multiply(TS%U_ave,get_coeff(TS%TSP%O1_stats,TMP,m))
              call assign(TS%U_ave,TS%U_sum)
              call multiply(TS%U_ave,get_coeff(TS%TSP%O1_stats,TMP,m))
-             call Ln(temp_cp,TS%U_ave,2.0_cp,m)
-             call export(TS%L2_U_ave,TMP,temp_cp)
+             call face2cellcenter(temp_CC,TS%U_ave,m)
+             call Ln(temp_cp,temp_CC,2.0_cp,m)
+             temp_cp = 0.5_cp*temp_cp
+             call export(TS%mean_energy,TMP,temp_cp)
 
              call assign(temp_VF,U)
              call square(temp_VF)
@@ -241,7 +245,9 @@
          type(time_marching_params),intent(in) :: TMP
          type(mesh),intent(in) :: m
          real(cp) :: coeff
-         coeff = 1.0_cp/m%MP%volume/(TMP%t-SP%t_start+TMP%dt)
+         coeff = 1.0_cp/(TMP%t-SP%t_start)
+         coeff = 1.0_cp/(TMP%t-SP%t_start+TMP%dt)
+         ! coeff = 1.0_cp/m%MP%volume/(TMP%t-SP%t_start+TMP%dt)
        end function
 
        end module
