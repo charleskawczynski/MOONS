@@ -88,7 +88,7 @@
        real(cp) :: time,dtime
        logical :: RV_BCs
        call delete(SP)
-       RV_BCs = F
+       RV_BCs = T
        ! call get_environment_variable(name[, value, length, status, trim_name)
 
        SP%FCL%stop_after_mesh_export = F !
@@ -150,11 +150,11 @@
 
        time                          = 2000.0_cp
        ! dtime                         = 1.0_cp*pow(-2)
-       dtime                         = 1.0_cp*pow(-2)
+       dtime                         = 1.0_cp*pow(-3)
 
        SP%GP%tw                      = 0.05_cp
-       SP%GP%geometry                = 9
-       SP%GP%periodic_dir            = (/0,0,0/)
+       SP%GP%geometry                = 7
+       SP%GP%periodic_dir            = (/0,1,0/)
        ! SP%GP%apply_BC_order          = (/3,4,5,6,1,2/) ! good for LDC
        ! SP%GP%apply_BC_order       = (/3,4,5,6,1,2/) ! good for periodic in y?
        SP%GP%apply_BC_order       = (/5,6,1,2,3,4/) ! good for periodic in y?
@@ -162,16 +162,16 @@
        ! SP%GP%apply_BC_order       = (/3,4,1,2,5,6/) ! good for periodic in z?
 
        call delete(SP%DP)
-       SP%DP%Re                      = 100.0_cp
+       SP%DP%Re                      = 200.0_cp
        ! SP%DP%N                       = 5.0_cp*pow(0)
-       ! SP%DP%Q                       = 3.0_cp*pow(-1)
-       if (     RV_BCs) SP%DP%Rem                     = 5.0_cp*pow(2)
+       SP%DP%Q                       = 3.0_cp*pow(-1)
+       if (     RV_BCs) SP%DP%Rem                     = 1.0_cp*pow(0)
        if (.not.RV_BCs) SP%DP%Rem                     = 1.0_cp*pow(0)
        ! SP%DP%Ha                      = 5.0_cp*pow(2)
-       SP%DP%Ha                      = 10.0_cp
+       ! SP%DP%Ha                      = 10.0_cp
        ! SP%DP%Ha                      = 10.0_cp*pow(3)
        ! SP%DP%Ha                      = 15.0_cp*pow(3)
-       ! SP%DP%N                       = 1.0_cp/SP%DP%Q
+       SP%DP%N                       = 1.0_cp/SP%DP%Q
        SP%DP%c_w(1:6)                = 0.0_cp
        SP%DP%c_w( 5 )                = 1.0_cp
        SP%DP%c_w( 6 )                = 1.0_cp
@@ -185,8 +185,8 @@
        SP%DP%Fr                      = 1.0_cp
        SP%DP%Ec                      = 0.0_cp
 
-       ! SP%DP%Ha                      = (1.0_cp/SP%DP%Q*SP%DP%Re)**0.5_cp
-       SP%DP%N                       = SP%DP%Ha**2.0_cp/SP%DP%Re
+       SP%DP%Ha                      = (1.0_cp/SP%DP%Q*SP%DP%Re)**0.5_cp
+       ! SP%DP%N                       = SP%DP%Ha**2.0_cp/SP%DP%Re
        ! SP%DP%Ha                      = (SP%DP%N*SP%DP%Re)**0.5_cp
        SP%DP%Al                      = SP%DP%N/SP%DP%Rem
        SP%DP%Pe                      = SP%DP%Pr*SP%DP%Re
@@ -247,12 +247,12 @@
 
        ! call init_IC_BC(var      ,IC   ,BC)
        call init_IC_BC(SP%VS%T    ,0    ,0 )
-       call init_IC_BC(SP%VS%U    ,0    ,1 )
-       call init_IC_BC(SP%VS%P    ,0    ,0 )
+       call init_IC_BC(SP%VS%U    ,0    ,6 )
+       call init_IC_BC(SP%VS%P    ,0    ,2 )
        ! if (     RV_BCs) call init_IC_BC(SP%VS%B    ,0    ,9 ) ! 5 for thin wall
        ! if (.not.RV_BCs) call init_IC_BC(SP%VS%B    ,0    ,10) ! 5 for thin wall
-       call init_IC_BC(SP%VS%B    ,0    ,1 )
-       call init_IC_BC(SP%VS%B0   ,1    ,0 )
+       call init_IC_BC(SP%VS%B    ,0    ,2 )
+       call init_IC_BC(SP%VS%B0   ,4    ,0 )
        call init_IC_BC(SP%VS%phi  ,0    ,0 )
        call init_IC_BC(SP%VS%rho  ,0    ,0 )
 
@@ -283,7 +283,7 @@
        ! coeff_implicit_time_split = dt*coeff_implicit/coeff_unsteady (computed in time_marching_methods.f90)
 
        SP%VS%B%MFP%alpha = 1.0_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
-       SP%VS%U%MFP%alpha = 0.5_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
+       SP%VS%U%MFP%alpha = 1.0_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
        SP%VS%T%MFP%alpha = 1.0_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
        SP%VS%B%MFP%coeff_natural = -1.0_cp/SP%DP%Rem ! natural diffusion coefficient on RHS
        SP%VS%U%MFP%coeff_natural =  1.0_cp/SP%DP%Re  ! natural diffusion coefficient on RHS
@@ -295,54 +295,35 @@
        ! The following is needed only if curl-curl(B) is used, opposed to J in solver.
        ! if (SP%finite_Rem) SP%VS%B%MFP%coeff_explicit = SP%VS%B%MFP%coeff_explicit/SP%DP%Rem
 
-       SP%MT%pressure_grad%add          = F ! add explicit pressure      to momentum equation
-       SP%MT%diffusion%add              = T ! add diffusion              to momentum equation
-       SP%MT%advection_convection%add   = F ! add advection (conv form)  to momentum equation
-       SP%MT%advection_divergence%add   = T ! add advection (div  form)  to momentum equation
-       SP%MT%advection_base_flow%add    = F ! add advection using U_base to momentum equation
-       SP%MT%mean_pressure_grad%add     = F ! add mean pressure gradient to momentum equation
-       SP%MT%JCrossB%add                = T ! add JCrossB                to momentum equation
-       SP%MT%Q2D_JCrossB%add            = F ! add Q2D JCrossB            to momentum equation
-       SP%MT%Buoyancy%add               = F ! add Buoyancy               to momentum equation
-       SP%MT%Gravity%add                = F ! add Gravity                to momentum equation
+       ! Sources to add to momentum equation. NOTE: scale is not set if add=false
+       call init(SP%MT%pressure_grad       ,F,-1.0_cp                   )
+       call init(SP%MT%diffusion           ,T,SP%VS%U%MFP%coeff_explicit)
+       call init(SP%MT%advection_convection,F,-1.0_cp                   )
+       call init(SP%MT%advection_divergence,F,-1.0_cp                   )
+       call init(SP%MT%advection_divergence,T,-1.0_cp/SP%DP%Rem         ) ! For Rem ne 1 in Bandaru
+       call init(SP%MT%advection_base_flow ,F,-1.0_cp                   )
+       call init(SP%MT%mean_pressure_grad  ,T,1.0_cp                    )
+       call init(SP%MT%JCrossB             ,F,SP%DP%N                   )
+       call init(SP%MT%JCrossB             ,T,SP%DP%N*SP%DP%Rem         ) ! For Rem ne 1 in Bandaru (look at J definition in Bandaru)
+       call init(SP%MT%Q2D_JCrossB         ,F,-1.0_cp/SP%DP%tau         )
+       call init(SP%MT%Buoyancy            ,F,SP%DP%Gr/SP%DP%Re**2.0_cp )
+       call init(SP%MT%Gravity             ,F,1.0_cp/SP%DP%Fr**2.0_cp   )
 
-       SP%IT%advection%add              = T ! add advection              to induction equation
-       SP%IT%diffusion%add              = T ! add diffusion              to induction equation
-       SP%IT%unsteady_B0%add            = F ! add unsteady_B0            to induction equation
+       ! Sources to add to induction equation. NOTE: scale is not set if add=false
+       call init(SP%IT%B_applied  ,T, 1.0_cp           ) ! B0 = scale*B0
+       call init(SP%IT%current    ,T, 1.0_cp/SP%DP%Rem ) ! J = scale curl(B)
+       call init(SP%IT%advection  ,F, 1.0_cp           )
+       call init(SP%IT%advection  ,T, 1.0_cp/SP%DP%Rem ) ! For Rem ne 1 in Bandaru
+       call init(SP%IT%diffusion  ,T, -SP%VS%B%MFP%beta) ! since LHS and J includes scale
+       call init(SP%IT%unsteady_B0,F, -1.0_cp          ) ! since RHS
 
-       SP%ET%advection%add              = F ! add advection           to energy equation
-       SP%ET%diffusion%add              = F ! add diffusion           to energy equation
-       SP%ET%KE_diffusion%add           = F ! add KE_diffusion        to energy equation
-       SP%ET%viscous_dissipation%add    = F ! add viscous_dissipation to energy equation
-       SP%ET%joule_heating%add          = F ! add joule_heating       to energy equation
-       SP%ET%volumetric_heating%add     = F ! add volumetric_heating  to energy equation
-
-       SP%MT%pressure_grad%scale        = -1.0_cp
-       SP%MT%diffusion%scale            = SP%VS%U%MFP%coeff_explicit
-       SP%MT%advection_convection%scale = -1.0_cp
-       SP%MT%advection_divergence%scale = -1.0_cp
-       SP%MT%advection_base_flow%scale  = -1.0_cp
-       ! SP%MT%advection_divergence%scale = -1.0_cp/SP%DP%Rem ! For Rem ne 1 in Bandaru
-       SP%MT%mean_pressure_grad%scale   = 1.0_cp
-       SP%MT%JCrossB%scale              = SP%DP%N
-       SP%MT%Q2D_JCrossB%scale          = -1.0_cp/SP%DP%tau
-       SP%MT%Buoyancy%scale             = SP%DP%Gr/SP%DP%Re**2.0_cp
-       SP%MT%Gravity%scale              = 1.0_cp/SP%DP%Fr**2.0_cp
-       ! SP%MT%JCrossB%scale              = SP%DP%N*SP%DP%Rem ! For Rem ne 1 in Bandaru (look at J definition)
-
-       SP%IT%advection%scale            = 1.0_cp
-       SP%IT%diffusion%scale            = -SP%VS%B%MFP%beta ! since LHS and J includes scale
-       SP%IT%unsteady_B0%scale          = -1.0_cp ! since RHS
-       SP%IT%current%scale              = 1.0_cp/SP%DP%Rem ! J = scale curl(B)
-       SP%IT%B_applied%scale            = 1.0_cp           ! B0 = scale*B0
-       ! SP%IT%advection%scale            = 1.0_cp/SP%DP%Rem ! For Rem ne 1 in Bandaru
-
-       SP%ET%advection%scale            = -1.0_cp
-       SP%ET%diffusion%scale            = 1.0_cp/SP%DP%Pe
-       SP%ET%KE_diffusion%scale         = -SP%DP%Ec/SP%DP%Re
-       SP%ET%viscous_dissipation%scale  =  SP%DP%Ec/SP%DP%Re
-       SP%ET%joule_heating%scale        = SP%DP%Ec*SP%DP%N
-       SP%ET%volumetric_heating%scale   = 1.0_cp ! Not sure what this scale was...
+       ! Sources to add to energy equation. NOTE: scale is not set if add=false
+       call init(SP%ET%advection          , F,-1.0_cp           )
+       call init(SP%ET%diffusion          , F,1.0_cp/SP%DP%Pe   )
+       call init(SP%ET%KE_diffusion       , F,-SP%DP%Ec/SP%DP%Re)
+       call init(SP%ET%viscous_dissipation, F, SP%DP%Ec/SP%DP%Re)
+       call init(SP%ET%joule_heating      , F,SP%DP%Ec*SP%DP%N  )
+       call init(SP%ET%volumetric_heating , F,1.0_cp            )
 
        if (SP%couple_time_steps) call couple_time_step(SP%VS,SP%coupled)
        ! call export_import_SS(SP%VS)

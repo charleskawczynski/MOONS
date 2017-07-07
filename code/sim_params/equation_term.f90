@@ -7,8 +7,9 @@
      public :: equation_term
      public :: init,delete,display,print,export,import
 
-     interface delete;  module procedure delete_ET;         end interface
      interface init;    module procedure init_ET_copy;      end interface
+     interface init;    module procedure init_ET;           end interface
+     interface delete;  module procedure delete_ET;         end interface
      interface display; module procedure display_ET;        end interface
      interface print;   module procedure print_ET;          end interface
      interface export;  module procedure export_ET;         end interface
@@ -21,6 +22,15 @@
      end type
 
      contains
+
+     subroutine init_ET(ET,add,scale)
+       implicit none
+       type(equation_term),intent(inout) :: ET
+       logical,intent(in) :: add
+       real(cp),intent(in) :: scale
+       ET%add   = add
+       if (add) ET%scale = scale
+      end subroutine
 
      subroutine init_ET_copy(ET,ET_in)
        implicit none

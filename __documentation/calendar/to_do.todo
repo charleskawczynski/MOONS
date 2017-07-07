@@ -17,7 +17,6 @@ Medium picture items:
   ✔ Perform high Shercliff/high Hartmann cases and summarize results @done (17-06-06 10:05)
   ☐ Re-run unsteady Bandaru cases and consider recording statistics
   ☐ Implement RK3 to some effect
-  ☐ Re-vamp website using pelican
   ☐ Update resume - ask Jayshri
   ☐ Magnetic BCs using Biosavart law? - no time
   ☐ Organize code into appropriately named folders
@@ -25,7 +24,6 @@ Medium picture items:
   ✔ Formalize MHD fractional step method (Perot) @done (17-06-02 08:34)
 Small picture items:
  ☐ Get parking form (signed) from Lance - Fall
- ☐ Bring Evgenia GSR form for summer on WEDNESDAY
  ✔ Grade Abdou's class - Spring @done (17-06-02 15:48)
  ☐ Look back at intermediate BCs in light of Perot paper - Kim approach necessary?
  ☐ Modify source all terms to be 2nd order accurate (BC is taken into account in Au_BC)
@@ -36,12 +34,12 @@ weeks remaining
      |
      v
   ☐ 33) 06/05/2017 - finish getting plots/table in paper:
-  ☐ 32) 06/12/2017 - Finish first draft of paper, give to Sergey for first iteration
+  ✔ 32) 06/12/2017 - Work on paper @done (17-06-26 08:56)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SPRING QUARTER ENDS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SUMMER QUARTER BEGINS
-  ☐ 31) 06/19/2017 - 
-  ☐ 30) 06/26/2017 - 
-  ☐ 29) 07/03/2017 - 
+  ✔ 31) 06/19/2017 - Work on paper @done (17-06-26 08:56)
+  ☐ 30) 06/26/2017 - Finish first draft of paper, give to Sergey for first iteration
+  ☐ 29) 07/03/2017 - Perform 2nd iterations with Sergey, restart unsteady Bandaru cases
   ☐ 28) 07/10/2017 - 
   ☐ 27) 07/17/2017 - 
   ☐ 26) 07/24/2017 - VACATION MOST OF WEEK - scan books/organize other days?

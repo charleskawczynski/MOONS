@@ -62,7 +62,7 @@ def file_len(fname):
         for i, l in enumerate(f):
             pass
     return i + 1
-    
+
 def highest_matching_directory(f1,f2,PS):
 	p1 = f1.split(PS); p1 = filter(None,p1)
 	p2 = f2.split(PS); p2 = filter(None,p2)
