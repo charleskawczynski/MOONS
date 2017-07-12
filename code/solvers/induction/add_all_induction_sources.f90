@@ -32,7 +32,7 @@
          if (SP%IT%advection%add) then
            call add_curl_U_cross_B(F,ind%m,mom%U_E,ind%U_E,ind%B0,ind%B,&
            ind%curlUCrossB,ind%MD_fluid,SP%IT%advection%scale,&
-           ind%SP%finite_Rem,ind%temp_F2,ind%temp_E_TF,ind%temp_E)
+           SP%finite_Rem,ind%temp_F2,ind%temp_E_TF,ind%temp_E)
          endif
          if (SP%IT%diffusion%add) then
            if (TMP%RKP%RK_active) then

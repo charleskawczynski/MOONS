@@ -106,8 +106,6 @@
          type(mesh) :: m
          type(mesh_domain) :: MD_fluid,MD_sigma ! Latter for vacuum case
 
-         type(sim_params) :: SP
-
          logical :: suppress_warning
        end type
 
