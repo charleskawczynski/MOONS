@@ -19,6 +19,7 @@
        use mirror_props_mod
        use vorticity_streamfunction_mod
        use Poisson_test_mod
+       use Taylor_Green_Vortex_test_mod
        use export_mesh_aux_mod
        use restart_file_mod
 
@@ -208,6 +209,9 @@
            endif
            if (SP%VS%U%SS%initialize.and.SP%VS%B%SS%initialize) then
              call export_numerical_flow_rate(mom%m,mom%U%x,SP%DP%Re,DT,mom%temp_F1%x)
+           endif
+           if (SP%FCL%Taylor_Green_Vortex_test) then
+             if (SP%VS%U%SS%initialize) call Taylor_Green_Vortex_test(mom%U,mom%p,mom%m,DT,SP)
            endif
          endif
 

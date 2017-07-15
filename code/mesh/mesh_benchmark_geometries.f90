@@ -59,6 +59,7 @@
          case (27); call MHD_3D_LDC_BC_fine_top(   m_mom,m_ind,MQP,MD_sigma,DP,tw,include_vacuum)
          case (28); call MHD_2D_Shercliff(         m_mom,m_ind,MQP,MD_sigma,DP)
          case (29); call MHD_2D_Hunt(              m_mom,m_ind,MQP,MD_sigma,DP)
+         case (30); call Hydro_2D_Taylor_Green_Vortex_z(m_mom,m_ind,MQP,DP)
          case default; stop 'Error: bad BMC_geometry in mesh_benchmark_geometries.f90'
          end select
        end subroutine
@@ -105,6 +106,30 @@
          N = (/70,20,1/)
          beta = ReynoldsBL(DP%Re,hmin,hmax)
          i = 1; call grid_Roberts_L(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
+         i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
+         i = 3; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
+         call add(m_mom,g)
+         call init_props(m_mom)
+         call patch(m_mom)
+         call delete(g)
+         call init(m_ind,m_mom)
+       end subroutine
+
+       subroutine Hydro_2D_Taylor_Green_Vortex_z(m_mom,m_ind,MQP,DP)
+         implicit none
+         type(mesh),intent(inout) :: m_mom,m_ind
+         type(mesh_quality_params),intent(in) :: MQP
+         type(dimensionless_params),intent(in) :: DP
+         type(grid) :: g
+         real(cp),dimension(3) :: hmin,hmax,beta
+         integer,dimension(3) :: N
+         integer :: i
+         call delete(m_mom)
+         hmin = 0.0_cp; hmax = 2.0_cp*PI
+         hmin(3) = -0.5_cp; hmax(3) = 0.5_cp
+         N = (/45,45,1/)
+         beta = ReynoldsBL(DP%Re,hmin,hmax)
+         i = 1; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
          i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
          i = 3; call grid_uniform(g,hmin(i),hmax(i),N(i),i)
          call add(m_mom,g)

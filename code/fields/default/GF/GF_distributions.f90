@@ -28,21 +28,27 @@
         public :: single_2D_eddy
         public :: cylinder_2D_velocity
         public :: parabolic_1D
+        public :: Taylor_Green_Vortex_U
+        public :: Taylor_Green_Vortex_V
+        public :: Taylor_Green_Vortex_P
 
-        interface volume;             module procedure volume_DL_GF;          end interface
-        interface volume;             module procedure volume_GF;             end interface
-        interface sine_waves;         module procedure sine_waves_GF;         end interface
-        interface sinh_waves;         module procedure sinh_waves_GF;         end interface
-        interface cosine_waves;       module procedure cosine_waves_GF;       end interface
-        interface cosh_waves;         module procedure cosh_waves_GF;         end interface
-        interface fringe_ALEX;        module procedure fringe_ALEX_GF;        end interface
-        interface fringe_SERGEY;      module procedure fringe_SERGEY_GF;      end interface
-        interface smooth_lid;         module procedure smooth_lid_GF;         end interface
-        interface smooth_lid_Leriche; module procedure smooth_lid_Leriche_GF; end interface
-        interface smooth_lid_Shatrov; module procedure smooth_lid_Shatrov_GF; end interface
-        interface random_noise;       module procedure random_noise_GF;       end interface
-        interface random_noise;       module procedure random_noise_GF_dir;   end interface
-        interface parabolic_1D;       module procedure parabolic_1D_GF;       end interface
+        interface volume;                module procedure volume_DL_GF;             end interface
+        interface volume;                module procedure volume_GF;                end interface
+        interface sine_waves;            module procedure sine_waves_GF;            end interface
+        interface sinh_waves;            module procedure sinh_waves_GF;            end interface
+        interface cosine_waves;          module procedure cosine_waves_GF;          end interface
+        interface cosh_waves;            module procedure cosh_waves_GF;            end interface
+        interface fringe_ALEX;           module procedure fringe_ALEX_GF;           end interface
+        interface fringe_SERGEY;         module procedure fringe_SERGEY_GF;         end interface
+        interface smooth_lid;            module procedure smooth_lid_GF;            end interface
+        interface smooth_lid_Leriche;    module procedure smooth_lid_Leriche_GF;    end interface
+        interface smooth_lid_Shatrov;    module procedure smooth_lid_Shatrov_GF;    end interface
+        interface random_noise;          module procedure random_noise_GF;          end interface
+        interface random_noise;          module procedure random_noise_GF_dir;      end interface
+        interface parabolic_1D;          module procedure parabolic_1D_GF;          end interface
+        interface Taylor_Green_Vortex_U; module procedure Taylor_Green_Vortex_U_GF; end interface
+        interface Taylor_Green_Vortex_V; module procedure Taylor_Green_Vortex_V_GF; end interface
+        interface Taylor_Green_Vortex_P; module procedure Taylor_Green_Vortex_P_GF; end interface
 
         contains
 
@@ -623,6 +629,58 @@
             f%f(:,:,k) = r
             enddo
           end select
+        end subroutine
+
+        subroutine Taylor_Green_Vortex_U_GF(U,g,DL,Re,t)
+          implicit none
+          type(grid_field),intent(inout) :: U
+          type(grid),intent(in) :: g
+          type(data_location),intent(in) :: DL
+          real(cp),intent(in) :: Re,t
+          type(array),dimension(3) :: h
+          real(cp) :: F,nu
+          integer :: i,j,k
+          nu = 1.0_cp/Re
+          F = exp(-2.0_cp*nu*t)
+          call get_coordinates_h(h,g,DL)
+          do k=1,U%s(3); do j=1,U%s(2); do i=1,U%s(1)
+          U%f(i,j,k) = cos(h(1)%f(i))*sin(h(2)%f(j))*F
+          enddo; enddo; enddo
+          do i=1,3; call delete(h(i)); enddo
+        end subroutine
+        subroutine Taylor_Green_Vortex_V_GF(V,g,DL,Re,t)
+          implicit none
+          type(grid_field),intent(inout) :: V
+          type(grid),intent(in) :: g
+          type(data_location),intent(in) :: DL
+          real(cp),intent(in) :: Re,t
+          type(array),dimension(3) :: h
+          real(cp) :: F,nu
+          integer :: i,j,k
+          nu = 1.0_cp/Re
+          F = exp(-2.0_cp*nu*t)
+          call get_coordinates_h(h,g,DL)
+          do k=1,V%s(3); do j=1,V%s(2); do i=1,V%s(1)
+          V%f(i,j,k) = -sin(h(1)%f(i))*cos(h(2)%f(j))*F
+          enddo; enddo; enddo
+          do i=1,3; call delete(h(i)); enddo
+        end subroutine
+        subroutine Taylor_Green_Vortex_P_GF(P,g,DL,Re,t)
+          implicit none
+          type(grid_field),intent(inout) :: P
+          type(grid),intent(in) :: g
+          type(data_location),intent(in) :: DL
+          real(cp),intent(in) :: Re,t
+          type(array),dimension(3) :: h
+          real(cp) :: F,nu
+          integer :: i,j,k
+          nu = 1.0_cp/Re
+          F = exp(-2.0_cp*nu*t)
+          call get_coordinates_h(h,g,DL)
+          do k=1,P%s(3); do j=1,P%s(2); do i=1,P%s(1)
+          P%f(i,j,k) = - 0.25_cp*( cos(2.0_cp*h(1)%f(i))+cos(2.0_cp*h(2)%f(j)) ) * F*F
+          enddo; enddo; enddo
+          do i=1,3; call delete(h(i)); enddo
         end subroutine
 
       end module

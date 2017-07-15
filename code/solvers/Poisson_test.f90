@@ -70,7 +70,7 @@
          ISP,MFP,phi,temp_F,str(DT%test%residual),'Poisson_test_CC',.false.,.false.)
 
          call random_noise(phi) ! Does not work for periodic BCs, but does work for Dirichlet BCs
-         call cosine_waves(phi,m,(/2.0_cp/PI,2.0_cp,2.0_cp/),(/0.0_cp,0.0_cp,0.0_cp/))
+         call cosine_waves(phi,m,(/2.0_cp/PI,2.0_cp/PI,2.0_cp/),(/0.0_cp,0.0_cp,0.0_cp/))
          call apply_BCs(phi)
          call assign(temp_CC,phi)
          call assign(phi,0.0_cp)

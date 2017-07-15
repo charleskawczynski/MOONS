@@ -3,7 +3,7 @@ RELEASE = 'DEBUG'
 # RELEASE = 'OPTIMIZE'
 # RELEASE = 'PROFILE'
 USE_OPEN_MP = 'TRUE'
-PARALLELIZE_3D_OPS = 'TRUE'
+# PARALLELIZE_3D_OPS = 'TRUE'
 # PARALLELIZE_2D_OPS = 'TRUE'
 # PARALLELIZE_1D_OPS = 'TRUE'
 # FORMAT_OUTPUT = 'FORMATTED'
@@ -43,7 +43,7 @@ endif
 SRC_DIR = ..$(PS)code
 
 ifeq ($(CLUSTER),'PC_CK')
-	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS1
+	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS3
 endif
 
 ifeq ($(CLUSTER),'Workstation_CK')
@@ -569,6 +569,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)add_all_induction_sources.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)MHDSolver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)Poisson_test.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)Taylor_Green_Vortex_test.f90\
 	$(SRC_DIR)$(PS)user$(PS)export_mesh_aux.f90\
 	$(SRC_DIR)$(PS)matrix_visualization$(PS)matrix_visualization.f90\
 	$(SRC_DIR)$(PS)user$(PS)MOONS.f90

@@ -68,6 +68,7 @@
          do while ((.not.KS%terminate_loop).and.(coupled%n_step.lt.coupled%n_step_stop))
            call tic(sc)
            if (SP%print_every_MHD_step) write(*,*) 'coupled%n_step = ',coupled%n_step
+           ! if (EF%info%export_now) call print(SP)
 
            do i_RK=1,coupled%RKP%n_stages
              call assign_RK_stage(SP%VS%T%TMP,i_RK)

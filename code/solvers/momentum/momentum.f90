@@ -163,7 +163,7 @@
          ! if (SP%VS%U%SS%solve) call print_BCs(mom%p,'p')
 
          call init_U_field(mom%U,m,SP)
-         call init_P_field(mom%p,SP)
+         call init_P_field(mom%p,m,SP)
          call assign(mom%Unm1,mom%U)
          write(*,*) '     Field initialized'
 
@@ -171,6 +171,8 @@
          write(*,*) '     P BCs applied'
          call apply_BCs(mom%U)
          write(*,*) '     U BCs applied'
+         call export_processed(mom%m,mom%U,str(DT%U%field),'U_IC',1)
+         call export_processed(mom%m,mom%P,str(DT%P%field),'P_IC',1)
 
          call init(mom%Ustar,mom%U)
          if (SP%VS%U%SS%prescribed_BCs) call set_prescribed_BCs(mom%Ustar)

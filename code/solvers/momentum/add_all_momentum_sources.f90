@@ -50,10 +50,10 @@
          if (SP%MT%diffusion%add) then
            if (TMP%RKP%RK_active) then
              call compute_add_diffusion(L,mom%m,mom%U,&
-             SP%MT%diffusion%scale,mom%temp_F1,mom%TF_CC_edge)
+             SP%MT%diffusion%scale,mom%temp_F1)
            else
              call compute_add_diffusion(F,mom%m,mom%U,&
-             SP%MT%diffusion%scale,mom%temp_F1,mom%TF_CC_edge)
+             SP%MT%diffusion%scale,mom%temp_F1)
            endif
          endif
          if (SP%MT%advection_base_flow%add) then ! For linear stability analysis

@@ -11,6 +11,7 @@
        logical :: stop_before_solve = .false.
        logical :: stop_after_mesh_export = .false.
        logical :: Poisson_test = .false.
+       logical :: Taylor_Green_Vortex_test = .false.
      end type
 
      interface init;    module procedure init_copy_FCL; end interface
@@ -31,6 +32,7 @@
        FCL%stop_before_solve      = FCL_in%stop_before_solve
        FCL%stop_after_mesh_export = FCL_in%stop_after_mesh_export
        FCL%Poisson_test           = FCL_in%Poisson_test
+       FCL%Taylor_Green_Vortex_test= FCL_in%Taylor_Green_Vortex_test
      end subroutine
 
      subroutine delete_FCL(FCL)
@@ -41,6 +43,7 @@
        FCL%stop_before_solve      = .false.
        FCL%stop_after_mesh_export = .false.
        FCL%Poisson_test           = .false.
+       FCL%Taylor_Green_Vortex_test           = .false.
      end subroutine
 
      subroutine display_FCL(FCL,un)
@@ -52,6 +55,7 @@
        write(un,*) 'stop_before_solve      = ',FCL%stop_before_solve
        write(un,*) 'stop_after_mesh_export = ',FCL%stop_after_mesh_export
        write(un,*) 'Poisson_test           = ',FCL%Poisson_test
+       write(un,*) 'Taylor_Green_Vortex_test           = ',FCL%Taylor_Green_Vortex_test
      end subroutine
 
      subroutine print_FCL(FCL)
@@ -70,6 +74,7 @@
        write(un,*) 'stop_before_solve      = '; write(un,*) FCL%stop_before_solve
        write(un,*) 'stop_after_mesh_export = '; write(un,*) FCL%stop_after_mesh_export
        write(un,*) 'Poisson_test           = '; write(un,*) FCL%Poisson_test
+       write(un,*) 'Taylor_Green_Vortex_test           = '; write(un,*) FCL%Taylor_Green_Vortex_test
        write(un,*) ' --------------------------------------- '
      end subroutine
 
@@ -83,6 +88,7 @@
        read(un,*); read(un,*) FCL%stop_before_solve
        read(un,*); read(un,*) FCL%stop_after_mesh_export
        read(un,*); read(un,*) FCL%Poisson_test
+       read(un,*); read(un,*) FCL%Taylor_Green_Vortex_test
        read(un,*);
      end subroutine
 

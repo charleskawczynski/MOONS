@@ -17,16 +17,15 @@
 
        contains
 
-       subroutine Ln_weights_1_GF(e,u,n,vol,caller)
+       subroutine Ln_weights_1_GF(e,u,n,vol)
          implicit none
          real(cp),intent(inout) :: e
          type(grid_field),intent(in) :: u,vol
          real(cp),intent(in) :: n
-         character(len=*),intent(in) :: caller
          real(cp) :: temp
          integer :: i,j,k
 #ifdef _DEBUG_GF_NORMS_
-         call insist_shape_match(u,vol,'Ln_weights_1_GF->'//caller)
+         call insist_shape_match(u,vol,'Ln_weights_1_GF')
 #endif
          temp = 0.0_cp
 #ifdef _PARALLELIZE_GF_NORMS_

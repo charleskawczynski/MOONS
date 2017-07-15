@@ -2,6 +2,7 @@
        use current_precision_mod
        use SF_mod
        use VF_mod
+       use export_raw_processed_mod
        use TF_mod
        use ops_embedExtract_mod
        use time_marching_params_mod
@@ -84,15 +85,13 @@
          call add_product(F,temp_F,scale)
        end subroutine
 
-       subroutine compute_add_diffusion(F,m,U,scale,temp_F,TF_CC_edge)
+       subroutine compute_add_diffusion(F,m,U,scale,temp_F)
          implicit none
          type(VF),intent(inout) :: F,temp_F
          type(mesh),intent(in) :: m
          type(VF),intent(in) :: U
-         type(TF),intent(inout) :: TF_CC_edge
          real(cp),intent(in) :: scale
          call lap(temp_F,U,m)
-         ! call lap_centered(temp_F,U,m,TF_CC_edge)
          call add_product(F,temp_F,scale)
        end subroutine
 

@@ -65,6 +65,9 @@
         public :: single_2D_eddy
         public :: cylinder_2D_velocity
         public :: parabolic_1D
+        public :: Taylor_Green_Vortex_U
+        public :: Taylor_Green_Vortex_V
+        public :: Taylor_Green_Vortex_P
 
         public :: laplacian
         public :: curl_curl_x

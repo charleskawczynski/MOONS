@@ -9,8 +9,10 @@
        use GF_mod
        use SF_mod
        use VF_mod
+       use TF_mod
        use boundary_conditions_mod
        use ops_aux_mod
+       use ops_discrete_mod
        use export_raw_processed_mod
        use constants_mod
        use sim_params_mod
@@ -34,10 +36,11 @@
          select case(preset_ID)
          case (0)
          case (1); call FD_duct(U,m,1,1)
-         case (2); call isolated_eddy_2D(U,m,3,1) ! Isolated Eddy (Weiss)
-         case (3); call single_eddy_2D(U,m,3,1)   ! Single Eddy (Weiss)
-         case (4); call cylinder2D(U,m,3,1)     ! Cylinder
-         case (5); call parabolic1D(U,m,1,2,1)  ! Bandaru (SS of Ha=0)
+         case (2); call isolated_eddy_2D(U,m,3,1)    ! Isolated Eddy (Weiss)
+         case (3); call single_eddy_2D(U,m,3,1)      ! Single Eddy (Weiss)
+         case (4); call cylinder2D(U,m,3,1)          ! Cylinder
+         case (5); call parabolic1D(U,m,1,2,1)       ! Bandaru (SS of Ha=0)
+         case (6); call Taylor_Green_Vortex(U,m,SP%DP%Re)  !
          case default; stop 'Error: bad preset_ID in init_P_field.f90'
          end select
        end subroutine
@@ -82,6 +85,24 @@
            end select
          enddo
          call multiply(U,Re*real(posNeg,cp))
+       end subroutine
+
+       subroutine Taylor_Green_Vortex(U,m,Re)
+         implicit none
+         type(VF),intent(inout) :: U
+         type(mesh),intent(in) :: m
+         real(cp),intent(in) :: Re
+         type(TF) :: TF_CC_edge
+         type(VF) :: lapU
+         call init_CC_edge(TF_CC_edge,m)
+         call init(lapU,U)
+         call Taylor_Green_Vortex_U(U%x%BF(1)%GF,m%B(1)%g,U%x%DL,Re,0.0_cp)
+         call Taylor_Green_Vortex_V(U%y%BF(1)%GF,m%B(1)%g,U%y%DL,Re,0.0_cp)
+         call lap_centered(lapU,U,m,TF_CC_edge)
+         call multiply(lapU,0.5_cp) ! since adding derivatives in 2 directions
+         call assign(U,lapU)
+         call delete(lapU)
+         call delete(TF_CC_edge)
        end subroutine
 
        subroutine isolated_eddy_2D(U,m,dir,posNeg)

@@ -50,7 +50,7 @@
          integer :: t
          e = 0.0_cp
          do t=1,m%s
-          call Ln(temp,u%BF(t)%GF,n,m%B(t)%vol(vol_ID(u%DL)),'Ln_mesh_SF (2)')
+          call Ln(temp,u%BF(t)%GF,n,m%B(t)%vol(vol_ID(u%DL)))
           e = e + temp
          enddo
        end subroutine
@@ -64,14 +64,22 @@
          real(cp) :: temp
          integer :: t
          e = 0.0_cp
-         do t=1,m%s;
-           call Ln(temp,u%x%BF(t)%GF,&
-                        u%y%BF(t)%GF,&
-                        u%z%BF(t)%GF,&
-                        n,&
-                        m%B(t)%vol(vol_ID(u%x%DL)))
-           e = e + temp
-         enddo
+         if (is_collocated(u)) then
+           do t=1,m%s;
+             call Ln(temp,u%x%BF(t)%GF,&
+                          u%y%BF(t)%GF,&
+                          u%z%BF(t)%GF,&
+                          n,&
+                          m%B(t)%vol(vol_ID(u%x%DL)))
+             e = e + temp
+           enddo
+         else
+           do t=1,m%s;
+             call Ln(temp,u%x%BF(t)%GF,n,m%B(t)%vol(vol_ID(u%x%DL))); e = e + temp
+             call Ln(temp,u%y%BF(t)%GF,n,m%B(t)%vol(vol_ID(u%y%DL))); e = e + temp
+             call Ln(temp,u%z%BF(t)%GF,n,m%B(t)%vol(vol_ID(u%z%DL))); e = e + temp
+           enddo
+         endif
        end subroutine
 
        subroutine Ln_mesh_TF(e,u,n,m)
@@ -149,7 +157,7 @@
          integer :: t
          e = 0.0_cp
          do t=1,u%s
-           call Ln(temp,u%BF(t)%GF,n,vol%BF(t)%GF,'Ln_vol_SF')
+           call Ln(temp,u%BF(t)%GF,n,vol%BF(t)%GF)
            e = e + temp
          enddo
        end subroutine
@@ -180,9 +188,9 @@
          if (is_collocated(u)) then; call Ln(e,u,n,vol%x)
          else
            do t=1,u%x%s
-             call Ln(temp,u%x%BF(t)%GF,n,vol%x%BF(t)%GF,'Ln_vol_VF'); e = e + temp
-             call Ln(temp,u%y%BF(t)%GF,n,vol%y%BF(t)%GF,'Ln_vol_VF'); e = e + temp
-             call Ln(temp,u%z%BF(t)%GF,n,vol%z%BF(t)%GF,'Ln_vol_VF'); e = e + temp
+             call Ln(temp,u%x%BF(t)%GF,n,vol%x%BF(t)%GF); e = e + temp
+             call Ln(temp,u%y%BF(t)%GF,n,vol%y%BF(t)%GF); e = e + temp
+             call Ln(temp,u%z%BF(t)%GF,n,vol%z%BF(t)%GF); e = e + temp
            enddo
          endif
        end subroutine

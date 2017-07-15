@@ -147,7 +147,7 @@
              call add_product(TS%U_sum,U,TMP%dt)
 
              call assign(TS%U_ave,TS%U_sum)
-             call multiply(TS%U_ave,get_coeff(TS%TSP%O1_stats,TMP,m))
+             call multiply(TS%U_ave,get_coeff(TS%TSP%O1_stats,TMP))
              call Ln(temp_cp,TS%U_ave,2.0_cp,m)
              temp_cp = 0.5_cp*temp_cp
              call export(TS%mean_energy,TMP,temp_cp)
@@ -185,9 +185,9 @@
              call add_product(TS%U_sum,U,TMP%dt)
 
              ! call add(temp_VF,U,Unm1)
-             call multiply(TS%U_ave,get_coeff(TS%TSP%O1_stats,TMP,m))
+             call multiply(TS%U_ave,get_coeff(TS%TSP%O1_stats,TMP))
              call assign(TS%U_ave,TS%U_sum)
-             call multiply(TS%U_ave,get_coeff(TS%TSP%O1_stats,TMP,m))
+             call multiply(TS%U_ave,get_coeff(TS%TSP%O1_stats,TMP))
              call face2cellcenter(temp_CC,TS%U_ave,m)
              call Ln(temp_cp,temp_CC,2.0_cp,m)
              temp_cp = 0.5_cp*temp_cp
@@ -214,7 +214,7 @@
              call add_product(TS%stresses_sum,TF_CC,TMP%dt)
 
              call assign(TS%stresses,TS%stresses_sum)
-             call multiply(TS%stresses,get_coeff(TS%TSP%O2_stats,TMP,m))
+             call multiply(TS%stresses,get_coeff(TS%TSP%O2_stats,TMP))
              call Ln(temp_cp,TS%stresses,2.0_cp,m)
              call export(TS%L2_stresses,TMP,temp_cp)
              call add_stat(TS%TSP%O2_stats)
@@ -239,15 +239,13 @@
          endif
        end subroutine
 
-       function get_coeff(SP,TMP,m) result(coeff)
+       function get_coeff(SP,TMP) result(coeff)
          implicit none
          type(stats_period),intent(in) :: SP
          type(time_marching_params),intent(in) :: TMP
-         type(mesh),intent(in) :: m
          real(cp) :: coeff
          coeff = 1.0_cp/(TMP%t-SP%t_start)
          coeff = 1.0_cp/(TMP%t-SP%t_start+TMP%dt)
-         ! coeff = 1.0_cp/m%MP%volume/(TMP%t-SP%t_start+TMP%dt)
        end function
 
        end module

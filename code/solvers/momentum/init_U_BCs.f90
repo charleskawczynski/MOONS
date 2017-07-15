@@ -55,6 +55,7 @@
          case (15); call LDC_9_domains(U)
          case (16); call LDC_at_ymax_Shatrov_smooth(U,m)
          case (17); call LDC_at_ymax_Leriche_smooth(U,m)
+         case (18); call Taylor_Green_Vortex(U)
          case default; stop 'Error: bad preset_ID in init_UBCs.f90'
          end select
          call make_periodic(U,m,periodic_dir)
@@ -96,6 +97,22 @@
          call init(U%x%BF(1)%BCs,1.0_cp,4)
          n_lid = 18.0_cp
          call smooth_lid_Leriche(U%x%BF(1)%BCs%face%SB(4)%b,m%B(1)%fb(4),U%x%DL,2,n_lid)
+       end subroutine
+
+       subroutine Taylor_Green_Vortex(U)
+         implicit none
+         type(VF),intent(inout) :: U
+         integer :: i
+         do i=1,U%x%s
+         call init_Neumann(U%x%BF(i)%BCs,1)
+         call init_Neumann(U%x%BF(i)%BCs,2)
+         call init_Dirichlet(U%x%BF(i)%BCs,3)
+         call init_Dirichlet(U%x%BF(i)%BCs,4)
+         call init_Neumann(U%y%BF(i)%BCs,3)
+         call init_Neumann(U%y%BF(i)%BCs,4)
+         call init_Dirichlet(U%y%BF(i)%BCs,1)
+         call init_Dirichlet(U%y%BF(i)%BCs,2)
+         enddo
        end subroutine
 
        subroutine LDC_at_ymax_symmetric_zmax(U)
