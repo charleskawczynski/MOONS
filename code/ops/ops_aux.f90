@@ -163,7 +163,7 @@
          type(SF),intent(in) :: vol
          real(cp) :: meanU
          call multiply(temp,u,vol)
-         meanU = sum(temp,1)/real(u%numPhysEl,cp)
+         meanU = sum(temp,1)/vol%vol
        end function
 
        function phys_mean_SF(u) result(meanU)

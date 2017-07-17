@@ -99,10 +99,10 @@
        SP%FCL%Taylor_Green_Vortex_test= T
 
        SP%EL%export_analytic         = F ! Export analytic solutions (MOONS.f90)
-       SP%EL%export_meshes           = T ! Export all meshes before starting simulation
-       SP%EL%export_vort_SF          = T ! Export vorticity-stream-function after simulation
-       SP%EL%export_mat_props        = T ! Export material properties before starting simulation
-       SP%EL%export_ICs              = T ! Export Post-Processed ICs before starting simulation
+       SP%EL%export_meshes           = F ! Export all meshes before starting simulation
+       SP%EL%export_vort_SF          = F ! Export vorticity-stream-function after simulation
+       SP%EL%export_mat_props        = F ! Export material properties before starting simulation
+       SP%EL%export_ICs              = F ! Export Post-Processed ICs before starting simulation
        SP%EL%export_cell_volume      = F ! Export cell volumes for each mesh
        SP%EL%export_planar           = F ! Export 2D data when N_cell = 1 along given direction
        SP%EL%export_symmetric        = F !
@@ -261,7 +261,7 @@
        ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,export_convergence,export_heavy,dir,name)
        call init(SP%VS%T%ISP,  5   ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_T')
        call init(SP%VS%U%ISP,  50  ,pow(-6),pow(-13),1,T,SP%export_heavy,str(DT%ISP),'ISP_U')
-       call init(SP%VS%P%ISP,  500 ,pow(-6),pow(-13),1,T,SP%export_heavy,str(DT%ISP),'ISP_P')
+       call init(SP%VS%P%ISP,  500 ,pow(-20),pow(-13),1,T,SP%export_heavy,str(DT%ISP),'ISP_P')
        if (     RV_BCs) call init(SP%VS%B%ISP,  20 ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_B')
        if (.not.RV_BCs) call init(SP%VS%B%ISP,  5 ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_B')
        call init(SP%VS%B0%ISP, 5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_B0')

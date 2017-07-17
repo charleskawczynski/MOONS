@@ -110,7 +110,6 @@
          temp_CC%BF(t)%GF%f(i,j,k) = F*exp(-m_*(m%B(t)%g%c(2)%hc%f(j)+1.0_cp))
          enddo; enddo; enddo; enddo
          !$OMP END PARALLEL DO
-         ! call subtract_physical_mean(temp_CC)
          call add_product(S_CC,temp_CC,scale)
        end subroutine
 

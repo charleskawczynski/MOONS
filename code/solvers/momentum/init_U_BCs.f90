@@ -102,7 +102,12 @@
        subroutine Taylor_Green_Vortex(U)
          implicit none
          type(VF),intent(inout) :: U
-         integer :: i
+         integer :: i,j
+         do i=1,U%x%s
+         do j=1,6
+         call init_periodic(U%z%BF(i)%BCs,j)
+         enddo
+         enddo
          do i=1,U%x%s
          call init_Neumann(U%x%BF(i)%BCs,1)
          call init_Neumann(U%x%BF(i)%BCs,2)

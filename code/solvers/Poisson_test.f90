@@ -10,6 +10,7 @@
        use path_mod
        use export_raw_processed_mod
        use ops_discrete_mod
+       use ops_aux_mod
        use PCG_mod
        use apply_BCs_mod
        use matrix_free_operators_mod
@@ -40,7 +41,7 @@
          write(*,*) ' ------------------------- TEST 1 --------------------------- '
          call Poisson_test_CC(p,m,DT)     ! Tests residual drop for CC data
          write(*,*) ' ------------------------- TEST 2 --------------------------- '
-         call Poisson_test_Face(U,m,DT)   ! Tests residual drop for Face data
+         ! call Poisson_test_Face(U,m,DT)   ! Tests residual drop for Face data
          write(*,*) ' ************************************************************ '
          write(*,*) ' ********************** END POISSON TEST ******************** '
          write(*,*) ' ************************************************************ '
@@ -57,11 +58,12 @@
          type(iter_solver_params) :: ISP
          type(matrix_free_params) :: MFP
          logical,parameter :: T = .true.
-         call init(ISP,10000,pow(-15),pow(-15),1,T,T,str(DT%test%field),'Poisson_test_CC')
+         call init(ISP,2000,pow(-20),pow(-18),1,T,T,str(DT%test%field),'Poisson_test_CC')
          call init(phi,p)
          call assign(phi,0.0_cp)
          call init_CC(temp_CC,m)
          call init_Face(temp_F,m)
+         call Neumann_BCs(phi,m)
 
          phi%all_Neumann = .true.
          call print_BCs(phi,'phi')
@@ -70,15 +72,16 @@
          ISP,MFP,phi,temp_F,str(DT%test%residual),'Poisson_test_CC',.false.,.false.)
 
          call random_noise(phi) ! Does not work for periodic BCs, but does work for Dirichlet BCs
-         call cosine_waves(phi,m,(/2.0_cp/PI,2.0_cp/PI,2.0_cp/),(/0.0_cp,0.0_cp,0.0_cp/))
-         call apply_BCs(phi)
+         ! call cosine_waves(phi,m,(/2.0_cp/PI,2.0_cp/PI,2.0_cp/),(/0.0_cp,0.0_cp,0.0_cp/))
          call assign(temp_CC,phi)
+         call assign_ghost_XPeriodic(temp_CC,0.0_cp)
          call assign(phi,0.0_cp)
-         call export_processed(m,temp_CC,str(DT%test%field),'source_CC',1)
+         call export_raw(m,temp_CC,str(DT%test%field),'source_CC',0)
 
          call solve(PCG,phi,temp_CC,m,.false.)
+         call export_raw(m,PCG%r,str(DT%test%residual),'residual_CC',0)
 
-         call export_processed(m,phi,str(DT%test%field),'phi_CC',1)
+         call export_raw(m,phi,str(DT%test%field),'phi_CC',0)
          call delete(phi)
          call delete(temp_CC)
          call delete(temp_F)

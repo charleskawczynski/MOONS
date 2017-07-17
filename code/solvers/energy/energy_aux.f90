@@ -71,7 +71,6 @@
          Q_CC%BF(t)%GF%f(i,j,k) = F*exp(-m_*(m%B(t)%g%c(2)%hc%f(j)+1.0_cp))
          enddo; enddo; enddo; enddo
          !$OMP END PARALLEL DO
-         ! call subtract_physical_mean(Q_CC)
        end subroutine
 
        end module

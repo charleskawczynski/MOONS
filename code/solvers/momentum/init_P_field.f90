@@ -47,17 +47,7 @@
          type(SF),intent(inout) :: p
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: Re
-         type(VF) :: temp_F
-         type(SF) :: lapP
-         call init(lapP,P)
-         call init_Face(temp_F,m)
          call Taylor_Green_Vortex_P(P%BF(1)%GF  ,m%B(1)%g,P%DL  ,Re,0.0_cp)
-         call lap_centered(lapP,P,m,temp_F)
-         call multiply(lapP,0.5_cp) ! since adding derivatives in 2 directions
-         call multiply(lapP,0.25_cp) ! for 2 in cos
-         call assign(P,lapP)
-         call delete(temp_F)
-         call delete(lapP)
        end subroutine
 
        end module

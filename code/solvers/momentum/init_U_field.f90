@@ -92,17 +92,9 @@
          type(VF),intent(inout) :: U
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: Re
-         type(TF) :: TF_CC_edge
-         type(VF) :: lapU
-         call init_CC_edge(TF_CC_edge,m)
-         call init(lapU,U)
          call Taylor_Green_Vortex_U(U%x%BF(1)%GF,m%B(1)%g,U%x%DL,Re,0.0_cp)
          call Taylor_Green_Vortex_V(U%y%BF(1)%GF,m%B(1)%g,U%y%DL,Re,0.0_cp)
-         call lap_centered(lapU,U,m,TF_CC_edge)
-         call multiply(lapU,0.5_cp) ! since adding derivatives in 2 directions
-         call assign(U,lapU)
-         call delete(lapU)
-         call delete(TF_CC_edge)
+         call assign(U%z,0.0_cp)
        end subroutine
 
        subroutine isolated_eddy_2D(U,m,dir,posNeg)

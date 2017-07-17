@@ -60,10 +60,8 @@
          call multiply(p_actual,-SP%VS%U%MFP%alpha*dtime/Re)
          call add(p_actual,p)
          call export_raw(m,p_actual,str(DT%test%field),'p_actual',0)
-         call Ln(e,U_analytic,2.0_cp,m)
-         write(*,*) 'dt,e(U) = ',dtime,e
-         call Ln(e,P_analytic,2.0_cp,m)
-         write(*,*) 'dt,e(P) = ',dtime,e
+         call Ln(e,U_analytic,2.0_cp,m); write(*,*) 'dt,e(U) = ',dtime,e
+         call Ln(e,P_analytic,2.0_cp,m); write(*,*) 'dt,e(P) = ',dtime,e
          call delete(U_analytic)
          call delete(P_analytic)
          call delete(p_actual)
@@ -85,6 +83,7 @@
          ! Define u
          call Taylor_Green_Vortex_U(U%x%BF(1)%GF,m%B(1)%g,U%x%DL,Re,t)
          call Taylor_Green_Vortex_V(U%y%BF(1)%GF,m%B(1)%g,U%y%DL,Re,t)
+         call assign(U%z,0.0_cp)
          call Taylor_Green_Vortex_P(P%BF(1)%GF  ,m%B(1)%g,P%DL  ,Re,t)
          call export_processed(m,U,str(DT%test%field),'U_TGV_analytic',0)
          call export_processed(m,P,str(DT%test%field),'P_TGV_analytic',0)
