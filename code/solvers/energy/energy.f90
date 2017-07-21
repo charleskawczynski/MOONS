@@ -164,7 +164,7 @@
          call init(nrg%Probe_divQ,str(DT%T%residual),'probe_divQ',SP%VS%T%SS%restart,.true.,SP%VS%T%TMP)
 
          call init(nrg%PCG_T,nrg_diffusion,nrg_diffusion_explicit,prec_lap_SF,nrg%m,&
-         SP%VS%T%ISP,SP%VS%T%MFP,nrg%T,nrg%temp_F_TF,str(DT%T%residual),'T',.false.,.false.)
+         SP%VS%T%ISP,SP%VS%T%MFP,nrg%T,nrg%T,nrg%temp_F_TF,str(DT%T%residual),'T',.false.,.false.)
 
          temp_unit = new_and_open(str(DT%params),'info_nrg')
          call display(nrg,SP,temp_unit)

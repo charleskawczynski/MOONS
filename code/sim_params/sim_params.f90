@@ -96,7 +96,7 @@
        SP%FCL%skip_solver_loop       = F
        SP%FCL%post_process           = T
        SP%FCL%Poisson_test           = F
-       SP%FCL%Taylor_Green_Vortex_test= T
+       SP%FCL%Taylor_Green_Vortex_test= F
 
        SP%EL%export_analytic         = F ! Export analytic solutions (MOONS.f90)
        SP%EL%export_meshes           = F ! Export all meshes before starting simulation
@@ -149,13 +149,15 @@
        ! call init(SP%TSP,T,30.0_cp,60.0_cp)
        call init(SP%TSP,F,700.0_cp,800.0_cp)
 
-       ! time                          = 3.0_cp
-       time                          = 0.01_cp
+       time                          = 6000.0_cp
+       ! time                          = 0.01_cp
        ! dtime                         = 1.0_cp*pow(-2)
        dtime                         = 5.0_cp*pow(-3)*0.5_cp**(0.0_cp)
+       dtime                         = 1.0_cp*pow(-2)*0.5_cp**(0.0_cp)
+       ! dtime                         = 5.0_cp*pow(-3)*0.5_cp**(0.0_cp)
 
        SP%GP%tw                      = 0.05_cp
-       SP%GP%geometry                = 30
+       SP%GP%geometry                = 2
        SP%GP%periodic_dir            = (/0,0,1/)
        ! SP%GP%apply_BC_order          = (/3,4,5,6,1,2/) ! good for LDC
        ! SP%GP%apply_BC_order       = (/3,4,5,6,1,2/) ! good for periodic in y?
@@ -249,8 +251,8 @@
 
        ! call init_IC_BC(var      ,IC   ,BC)
        call init_IC_BC(SP%VS%T    ,0    ,0 )
-       call init_IC_BC(SP%VS%U    ,6    ,18)
-       call init_IC_BC(SP%VS%P    ,2    ,0 )
+       call init_IC_BC(SP%VS%U    ,0    ,5 )
+       call init_IC_BC(SP%VS%P    ,0    ,1 )
        ! if (     RV_BCs) call init_IC_BC(SP%VS%B    ,0    ,9 ) ! 5 for thin wall
        ! if (.not.RV_BCs) call init_IC_BC(SP%VS%B    ,0    ,10) ! 5 for thin wall
        call init_IC_BC(SP%VS%B    ,0    ,2 )
@@ -260,8 +262,8 @@
 
        ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,export_convergence,export_heavy,dir,name)
        call init(SP%VS%T%ISP,  5   ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_T')
-       call init(SP%VS%U%ISP,  50  ,pow(-6),pow(-13),1,T,SP%export_heavy,str(DT%ISP),'ISP_U')
-       call init(SP%VS%P%ISP,  500 ,pow(-20),pow(-13),1,T,SP%export_heavy,str(DT%ISP),'ISP_P')
+       call init(SP%VS%U%ISP,  5   ,pow(-15),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_U')
+       call init(SP%VS%P%ISP,  5   ,pow(-15),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_P')
        if (     RV_BCs) call init(SP%VS%B%ISP,  20 ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_B')
        if (.not.RV_BCs) call init(SP%VS%B%ISP,  5 ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_B')
        call init(SP%VS%B0%ISP, 5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_B0')
@@ -285,7 +287,7 @@
        ! coeff_implicit_time_split = dt*coeff_implicit/coeff_unsteady (computed in time_marching_methods.f90)
 
        SP%VS%B%MFP%alpha = 1.0_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
-       SP%VS%U%MFP%alpha = 0.5_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
+       SP%VS%U%MFP%alpha = 1.0_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
        SP%VS%T%MFP%alpha = 1.0_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
        SP%VS%B%MFP%coeff_natural = -1.0_cp/SP%DP%Rem ! natural diffusion coefficient on RHS
        SP%VS%U%MFP%coeff_natural =  1.0_cp/SP%DP%Re  ! natural diffusion coefficient on RHS
@@ -300,9 +302,9 @@
        ! Sources to add to momentum equation. NOTE: scale is not set if add=false. ORDER MATTERS
        call init(SP%MT%pressure_grad       ,F,-1.0_cp                   )
        call init(SP%MT%diffusion           ,T,SP%VS%U%MFP%coeff_explicit)
-       call init(SP%MT%advection_convection,F,-1.0_cp                   )
+       call init(SP%MT%advection_convection,T,-1.0_cp                   )
        call init(SP%MT%advection_divergence,F,-1.0_cp/SP%DP%Rem         ) ! For Rem ne 1 in Bandaru
-       call init(SP%MT%advection_divergence,T,-1.0_cp                   )
+       call init(SP%MT%advection_divergence,F,-1.0_cp                   )
        call init(SP%MT%advection_base_flow ,F,-1.0_cp                   )
        call init(SP%MT%mean_pressure_grad  ,F,1.0_cp                    )
        call init(SP%MT%JCrossB             ,F,SP%DP%N                   )
@@ -330,6 +332,7 @@
        if (SP%couple_time_steps) call couple_time_step(SP%VS,SP%coupled)
        ! call export_import_SS(SP%VS)
        call sanity_check(SP)
+       ! call set_restart(SP,T)
      end subroutine
 
      subroutine set_restart_SP(SP,restart_fields)
@@ -565,6 +568,37 @@
        un = new_and_open(dir,name)
        call import(SP,un)
        call close_and_message(un,dir,name)
+     end subroutine
+
+     subroutine display_sim_params_sim(SP,un)
+       implicit none
+       type(sim_params),intent(in) :: SP
+       integer,intent(in) :: un
+       if (SP%export_heavy) then
+         write(un,*) '************************ SIM PARAMS **************************'
+         write(un,*) ' -------------- dimensionless params '
+         write(un,*) 'Rem = ',SP%DP%Re
+         write(un,*) 'Ha  = ',SP%DP%Ha
+         write(un,*) 'N   = ',SP%DP%N
+         write(un,*) 'Rem = ',SP%DP%Rem
+         write(un,*) 'Q   = ',SP%DP%Q
+         write(un,*) 'Gr  = ',SP%DP%Gr
+         write(un,*) 'Pr  = ',SP%DP%Pr
+         write(un,*) 'Fr  = ',SP%DP%Fr
+         write(un,*) ' -------------- TMPs '
+         write(un,*) 't,dt,n_step (T) = ',SP%VS%T%TMP%t,SP%VS%T%TMP%dt,SP%VS%T%TMP%n_step
+         write(un,*) 't,dt,n_step (B) = ',SP%VS%B%TMP%t,SP%VS%B%TMP%dt,SP%VS%B%TMP%n_step
+         write(un,*) 't,dt,n_step (U) = ',SP%VS%U%TMP%t,SP%VS%U%TMP%dt,SP%VS%U%TMP%n_step
+         write(un,*) ' -------------- ISPs '
+         write(un,*) 'iter_max,tol_rel (T) = ',SP%VS%T%ISP%iter_max,SP%VS%T%ISP%tol_rel
+         write(un,*) 'iter_max,tol_rel (B) = ',SP%VS%B%ISP%iter_max,SP%VS%B%ISP%tol_rel
+         write(un,*) 'iter_max,tol_rel (U) = ',SP%VS%U%ISP%iter_max,SP%VS%U%ISP%tol_rel
+         write(un,*) ' -------------- SSs '
+         write(un,*) 'solve_method (T) = ',SP%VS%T%SS%solve_method
+         write(un,*) 'solve_method (B) = ',SP%VS%B%SS%solve_method
+         write(un,*) 'solve_method (U) = ',SP%VS%U%SS%solve_method
+         write(un,*) '**************************************************************'
+       endif
      end subroutine
 
      end module

@@ -32,13 +32,13 @@
 
       contains
 
-      subroutine solve_PCG_SF(operator,operator_explicit,name,x,b,vol,k,m,&
+      subroutine solve_PCG_SF(operator,operator_explicit,name,x,x_BC,b,vol,k,m,&
         MFP,ISP,res_norm,compute_norms,un,un_convergence,tempx,tempk,Ax,r,p,z,Minv)
         implicit none
         procedure(op_SF) :: operator
         procedure(op_SF_explicit) :: operator_explicit
         character(len=*),intent(in) :: name
-        type(SF),intent(inout) :: x
+        type(SF),intent(inout) :: x,x_BC
         type(SF),intent(in) :: b,vol,Minv
         type(TF),intent(in) :: k
         type(TF),intent(inout) :: tempk
@@ -52,7 +52,10 @@
         type(norms) :: res_norm0
         real(cp) :: alpha,rhok,rhokp1 ! betak = rhokp1/rhok
         integer :: i
-        call modify_RHS(operator,operator_explicit,x,b,vol,k,m,MFP,tempx,tempk,Ax,r,p)
+        ! call export_raw(m,r,'out/LDC/unknowns/test/','r_SF_before',0)
+        call modify_RHS(operator,operator_explicit,x,x_BC,b,vol,k,m,MFP,tempx,tempk,Ax,r)
+        ! call export_raw(m,r,'out/LDC/unknowns/test/','r_SF_after',0)
+        ! stop 'Done in PCG_solver_mod'
 
         ! ********************* START PCG ALGORITHM *********************
         call compute(res_norm0,r)
@@ -66,9 +69,9 @@
         if (.not.ISP%exit_loop(2)) then ! Only do PCG if necessary!
           do i=1,ISP%iter_max
             call operator(Ax,p,k,m,MFP,tempk)
-            call multiply_wall_Neumann(Ax,0.5_cp,x)
-            call assign_wall_Dirichlet(Ax,0.0_cp,x)
-            call assign_wall_Periodic_single(Ax,0.0_cp,x)
+            call multiply_wall_Neumann(Ax,0.5_cp,x_BC)
+            call assign_wall_Dirichlet(Ax,0.0_cp,x_BC)
+            call assign_wall_Periodic_single(Ax,0.0_cp,x_BC)
             call multiply(Ax,vol)
             alpha = rhok/dot_product(p,Ax,x,tempx)
             call add_product(x,p,alpha) ! x = x + alpha p
@@ -103,13 +106,13 @@
         endif
       end subroutine
 
-      subroutine solve_PCG_VF(operator,operator_explicit,name,x,b,vol,k,m,&
+      subroutine solve_PCG_VF(operator,operator_explicit,name,x,x_BC,b,vol,k,m,&
         MFP,ISP,res_norm,compute_norms,un,un_convergence,tempx,tempk,Ax,r,p,z,Minv)
         implicit none
         procedure(op_VF) :: operator
         procedure(op_VF_explicit) :: operator_explicit
         character(len=*),intent(in) :: name
-        type(VF),intent(inout) :: x
+        type(VF),intent(inout) :: x,x_BC
         type(VF),intent(in) :: b,vol,Minv
         type(TF),intent(in) :: k
         type(TF),intent(inout) :: tempk
@@ -123,7 +126,9 @@
         integer :: i
         type(norms) :: res_norm0
         real(cp) :: alpha,rhok,rhokp1 ! betak = rhokp1/rhok
-        call modify_RHS(operator,operator_explicit,x,b,vol,k,m,MFP,tempx,tempk,Ax,r,p)
+        ! call export_raw(m,r,'out/LDC/unknowns/test/','r_VF_before',0)
+        call modify_RHS(operator,operator_explicit,x,x_BC,b,vol,k,m,MFP,tempx,tempk,Ax,r)
+        ! call export_raw(m,r,'out/LDC/unknowns/test/','r_VF_after',0)
 
         ! ********************* START PCG ALGORITHM *********************
         call compute(res_norm0,r)
@@ -137,9 +142,9 @@
         if (.not.ISP%exit_loop(2)) then ! Only do PCG if necessary!
           do i=1,ISP%iter_max
             call operator(Ax,p,k,m,MFP,tempk)
-            call multiply_wall_Neumann(Ax,0.5_cp,x)
-            call assign_wall_Dirichlet(Ax,0.0_cp,x)
-            call assign_wall_Periodic_single(Ax,0.0_cp,x)
+            call multiply_wall_Neumann(Ax,0.5_cp,x_BC)
+            call assign_wall_Dirichlet(Ax,0.0_cp,x_BC)
+            call assign_wall_Periodic_single(Ax,0.0_cp,x_BC)
             call multiply(Ax,vol)
             alpha = rhok/dot_product(p,Ax,x,tempx)
             call add_product(x,p,alpha) ! x = x + alpha p

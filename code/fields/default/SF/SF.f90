@@ -63,6 +63,7 @@
         public :: assign_wall_Dirichlet
         public :: multiply_wall_Neumann
         public :: set_prescribed_BCs
+        public :: set_BCs_homogeneous
 
         public :: get_any_Dirichlet
         public :: get_any_Neumann
@@ -195,6 +196,7 @@
         interface multiply_wall_Neumann;    module procedure multiply_wall_Neumann_SF;     end interface
         interface multiply_wall_Neumann;    module procedure multiply_wall_Neumann_SF2;    end interface
         interface set_prescribed_BCs;       module procedure set_prescribed_BCs_SF;        end interface
+        interface set_BCs_homogeneous;      module procedure set_BCs_homogeneous_SF;       end interface
 
         interface get_any_Dirichlet;        module procedure get_any_Dirichlet_SF;         end interface
         interface get_any_Neumann;          module procedure get_any_Neumann_SF;           end interface
@@ -910,6 +912,13 @@
           type(SF),intent(inout) :: u
           integer :: i
           do i=1,u%s; call set_prescribed_BCs(u%BF(i)); enddo
+        end subroutine
+
+        subroutine set_BCs_homogeneous_SF(u)
+          implicit none
+          type(SF),intent(inout) :: u
+          integer :: i
+          do i=1,u%s; call set_BCs_homogeneous(u%BF(i)); enddo
         end subroutine
 
         function get_any_Dirichlet_SF(u) result(L)

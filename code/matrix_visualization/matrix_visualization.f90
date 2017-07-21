@@ -109,7 +109,7 @@
          call init_Face(temp_dummy,m); call assign(temp_dummy,1.0_cp)
          call prep_BCs_SF(X,m)
          call init(PCG,Lap_uniform_SF,Lap_uniform_SF_explicit,prec_Lap_SF,m,&
-         ISP,MFP,X,temp_dummy,str(DT%matrix_visualization),'Lap_CC',&
+         ISP,MFP,X,X,temp_dummy,str(DT%matrix_visualization),'Lap_CC',&
          test_symmetry,export_operator)
          call delete(temp_dummy)
          call delete(X)
@@ -130,7 +130,7 @@
          call init_Face(temp_dummy,m); call assign(temp_dummy,1.0_cp)
          call prep_BCs_VF(X,m)
          call init(PCG,Lap_uniform_VF,Lap_uniform_VF_explicit,prec_Lap_VF,m,&
-         ISP,MFP,X,temp_dummy,str(DT%matrix_visualization),'Lap_CC',&
+         ISP,MFP,X,X,temp_dummy,str(DT%matrix_visualization),'Lap_CC',&
          test_symmetry,export_operator)
          call delete(temp_dummy)
          call delete(X)
@@ -151,7 +151,7 @@
          call init_CC_Edge(temp_dummy,m); call assign(temp_dummy,1.0_cp)
          call prep_BCs_VF(X,m)
          call init(PCG,mom_diffusion,mom_diffusion_explicit,prec_mom_VF,m,&
-         ISP,MFP,X,temp_dummy,str(DT%matrix_visualization),'Lap_Face',&
+         ISP,MFP,X,X,temp_dummy,str(DT%matrix_visualization),'Lap_Face',&
          test_symmetry,export_operator)
          call delete(temp_dummy)
          call delete(X)
@@ -172,7 +172,7 @@
          call init_CC(temp_dummy,m); call assign(temp_dummy,1.0_cp)
          call prep_BCs_VF(X,m)
          call init(PCG,ind_diffusion,ind_diffusion_explicit,prec_ind_VF,m,&
-         ISP,MFP,X,temp_dummy,str(DT%matrix_visualization),'curlcurl_CC',&
+         ISP,MFP,X,X,temp_dummy,str(DT%matrix_visualization),'curlcurl_CC',&
          test_symmetry,export_operator)
          call delete(temp_dummy)
          call delete(X)
@@ -193,7 +193,7 @@
          call init_Edge(temp_dummy,m); call assign(temp_dummy,1.0_cp)
          call prep_BCs_VF(X,m)
          call init(PCG,ind_diffusion,ind_diffusion_explicit,prec_ind_VF,m,&
-         ISP,MFP,X,temp_dummy,str(DT%matrix_visualization),'curlcurl_Face',&
+         ISP,MFP,X,X,temp_dummy,str(DT%matrix_visualization),'curlcurl_Face',&
          test_symmetry,export_operator)
          call delete(temp_dummy)
          call delete(X)

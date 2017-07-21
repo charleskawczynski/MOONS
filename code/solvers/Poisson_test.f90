@@ -69,7 +69,7 @@
          call print_BCs(phi,'phi')
 
          call init(PCG,Lap_uniform_SF,Lap_uniform_SF_explicit,prec_Lap_SF,m,&
-         ISP,MFP,phi,temp_F,str(DT%test%residual),'Poisson_test_CC',.false.,.false.)
+         ISP,MFP,phi,phi,temp_F,str(DT%test%residual),'Poisson_test_CC',.false.,.false.)
 
          call random_noise(phi) ! Does not work for periodic BCs, but does work for Dirichlet BCs
          ! call cosine_waves(phi,m,(/2.0_cp/PI,2.0_cp/PI,2.0_cp/),(/0.0_cp,0.0_cp,0.0_cp/))
@@ -110,7 +110,7 @@
          call print_BCs(U,'Face')
 
          call init(PCG,Lap_uniform_VF,Lap_uniform_VF_explicit,prec_Lap_VF,m,&
-         ISP,MFP,U,temp_CC_edge,str(DT%test%residual),'Poisson_test_Face',.false.,.false.)
+         ISP,MFP,U,U,temp_CC_edge,str(DT%test%residual),'Poisson_test_Face',.false.,.false.)
 
          call random_noise(U) ! Does not work for periodic BCs, but does work for Dirichlet BCs
          call sine_waves(U,m,(/2.0_cp/PI,1.0_cp,2.0_cp/),(/0.0_cp,-0.5_cp,0.0_cp/))

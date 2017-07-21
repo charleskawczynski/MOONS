@@ -93,14 +93,15 @@
 
        SP%FCL%stop_after_mesh_export = F !
        SP%FCL%stop_before_solve      = F ! Just export ICs, do not run simulation
-       SP%FCL%skip_solver_loop       = F ! not used anywhere
-       SP%FCL%post_process           = T ! not used anywhere
-       SP%FCL%Poisson_test           = F ! not used anywhere
+       SP%FCL%skip_solver_loop       = F
+       SP%FCL%post_process           = T
+       SP%FCL%Poisson_test           = F
+       SP%FCL%Taylor_Green_Vortex_test= T
 
        SP%EL%export_analytic         = F ! Export analytic solutions (MOONS.f90)
-       SP%EL%export_meshes           = T ! Export all meshes before starting simulation
-       SP%EL%export_vort_SF          = T ! Export vorticity-stream-function after simulation
-       SP%EL%export_mat_props        = T ! Export material properties before starting simulation
+       SP%EL%export_meshes           = F ! Export all meshes before starting simulation
+       SP%EL%export_vort_SF          = F ! Export vorticity-stream-function after simulation
+       SP%EL%export_mat_props        = F ! Export material properties before starting simulation
        SP%EL%export_ICs              = F ! Export Post-Processed ICs before starting simulation
        SP%EL%export_cell_volume      = F ! Export cell volumes for each mesh
        SP%EL%export_planar           = F ! Export 2D data when N_cell = 1 along given direction
@@ -148,13 +149,15 @@
        ! call init(SP%TSP,T,30.0_cp,60.0_cp)
        call init(SP%TSP,F,700.0_cp,800.0_cp)
 
-       time                          = 2000.0_cp
+       time                          = 10.0_cp
+       ! time                          = 0.01_cp
        ! dtime                         = 1.0_cp*pow(-2)
-       dtime                         = 5.0_cp*pow(-3)
+       dtime                         = 1.0_cp*pow(-2)*0.5_cp**(0.0_cp)
+       ! dtime                         = 5.0_cp*pow(-3)*0.5_cp**(0.0_cp)
 
        SP%GP%tw                      = 0.05_cp
-       SP%GP%geometry                = 7
-       SP%GP%periodic_dir            = (/0,1,0/)
+       SP%GP%geometry                = 30
+       SP%GP%periodic_dir            = (/0,0,1/)
        ! SP%GP%apply_BC_order          = (/3,4,5,6,1,2/) ! good for LDC
        ! SP%GP%apply_BC_order       = (/3,4,5,6,1,2/) ! good for periodic in y?
        SP%GP%apply_BC_order       = (/5,6,1,2,3,4/) ! good for periodic in y?
@@ -162,10 +165,10 @@
        ! SP%GP%apply_BC_order       = (/3,4,1,2,5,6/) ! good for periodic in z?
 
        call delete(SP%DP)
-       SP%DP%Re                      = 200.0_cp
+       SP%DP%Re                      = 10.0_cp
        ! SP%DP%N                       = 5.0_cp*pow(0)
-       SP%DP%Q                       = 3.0_cp*pow(-1)
-       if (     RV_BCs) SP%DP%Rem                     = 1.0_cp*pow(0)
+       SP%DP%Q                       = 9.0_cp*pow(-1)
+       if (     RV_BCs) SP%DP%Rem                     = 10.0_cp*pow(0)
        if (.not.RV_BCs) SP%DP%Rem                     = 1.0_cp*pow(0)
        ! SP%DP%Ha                      = 5.0_cp*pow(2)
        ! SP%DP%Ha                      = 10.0_cp
@@ -232,9 +235,9 @@
        call init(SP%VS%T%SS  ,F         ,F    ,F      ,F            ,0)
        call init(SP%VS%U%SS  ,T         ,T    ,F      ,T            ,6)
        call init(SP%VS%P%SS  ,T         ,T    ,F      ,F            ,0)
-       call init(SP%VS%B%SS  ,T         ,T    ,F      ,T            ,6)
-       call init(SP%VS%B0%SS ,T         ,T    ,F      ,F            ,0)
-       call init(SP%VS%phi%SS,T         ,T    ,F      ,F            ,0)
+       call init(SP%VS%B%SS  ,F         ,F    ,F      ,T            ,6)
+       call init(SP%VS%B0%SS ,F         ,F    ,F      ,F            ,0)
+       call init(SP%VS%phi%SS,F         ,F    ,F      ,F            ,0)
        call init(SP%VS%rho%SS,F         ,F    ,F      ,F            ,0)
        !     solve_method = 1 = Euler_time_no_diff_Euler_sources_no_correction
        !     solve_method = 2 = Euler_time_no_diff_AB2_sources_no_correction
@@ -247,8 +250,8 @@
 
        ! call init_IC_BC(var      ,IC   ,BC)
        call init_IC_BC(SP%VS%T    ,0    ,0 )
-       call init_IC_BC(SP%VS%U    ,0    ,6 )
-       call init_IC_BC(SP%VS%P    ,0    ,2 )
+       call init_IC_BC(SP%VS%U    ,6    ,18)
+       call init_IC_BC(SP%VS%P    ,2    ,0 )
        ! if (     RV_BCs) call init_IC_BC(SP%VS%B    ,0    ,9 ) ! 5 for thin wall
        ! if (.not.RV_BCs) call init_IC_BC(SP%VS%B    ,0    ,10) ! 5 for thin wall
        call init_IC_BC(SP%VS%B    ,0    ,2 )
@@ -256,10 +259,10 @@
        call init_IC_BC(SP%VS%phi  ,0    ,0 )
        call init_IC_BC(SP%VS%rho  ,0    ,0 )
 
-       ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,export_convergence,dir,name)
-       call init(SP%VS%T%ISP,  5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_T')
-       call init(SP%VS%U%ISP,  5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_U')
-       call init(SP%VS%P%ISP,  5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_P')
+       ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,export_convergence,export_heavy,dir,name)
+       call init(SP%VS%T%ISP,  5   ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_T')
+       call init(SP%VS%U%ISP,  50  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_U')
+       call init(SP%VS%P%ISP,  500 ,pow(-20),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_P')
        if (     RV_BCs) call init(SP%VS%B%ISP,  20 ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_B')
        if (.not.RV_BCs) call init(SP%VS%B%ISP,  5 ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_B')
        call init(SP%VS%B0%ISP, 5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_B0')
@@ -283,7 +286,7 @@
        ! coeff_implicit_time_split = dt*coeff_implicit/coeff_unsteady (computed in time_marching_methods.f90)
 
        SP%VS%B%MFP%alpha = 1.0_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
-       SP%VS%U%MFP%alpha = 1.0_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
+       SP%VS%U%MFP%alpha = 0.5_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
        SP%VS%T%MFP%alpha = 1.0_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
        SP%VS%B%MFP%coeff_natural = -1.0_cp/SP%DP%Rem ! natural diffusion coefficient on RHS
        SP%VS%U%MFP%coeff_natural =  1.0_cp/SP%DP%Re  ! natural diffusion coefficient on RHS
@@ -295,21 +298,21 @@
        ! The following is needed only if curl-curl(B) is used, opposed to J in solver.
        ! if (SP%finite_Rem) SP%VS%B%MFP%coeff_explicit = SP%VS%B%MFP%coeff_explicit/SP%DP%Rem
 
-       ! Sources to add to momentum equation. NOTE: scale is not set if add=false
+       ! Sources to add to momentum equation. NOTE: scale is not set if add=false. ORDER MATTERS
        call init(SP%MT%pressure_grad       ,F,-1.0_cp                   )
        call init(SP%MT%diffusion           ,T,SP%VS%U%MFP%coeff_explicit)
        call init(SP%MT%advection_convection,F,-1.0_cp                   )
-       call init(SP%MT%advection_divergence,F,-1.0_cp                   )
-       call init(SP%MT%advection_divergence,T,-1.0_cp/SP%DP%Rem         ) ! For Rem ne 1 in Bandaru
+       call init(SP%MT%advection_divergence,F,-1.0_cp/SP%DP%Rem         ) ! For Rem ne 1 in Bandaru
+       call init(SP%MT%advection_divergence,T,-1.0_cp                   )
        call init(SP%MT%advection_base_flow ,F,-1.0_cp                   )
-       call init(SP%MT%mean_pressure_grad  ,T,1.0_cp                    )
+       call init(SP%MT%mean_pressure_grad  ,F,1.0_cp                    )
        call init(SP%MT%JCrossB             ,F,SP%DP%N                   )
-       call init(SP%MT%JCrossB             ,T,SP%DP%N*SP%DP%Rem         ) ! For Rem ne 1 in Bandaru (look at J definition in Bandaru)
+       call init(SP%MT%JCrossB             ,F,SP%DP%N*SP%DP%Rem         ) ! For Rem ne 1 in Bandaru (look at J definition in Bandaru)
        call init(SP%MT%Q2D_JCrossB         ,F,-1.0_cp/SP%DP%tau         )
        call init(SP%MT%Buoyancy            ,F,SP%DP%Gr/SP%DP%Re**2.0_cp )
        call init(SP%MT%Gravity             ,F,1.0_cp/SP%DP%Fr**2.0_cp   )
 
-       ! Sources to add to induction equation. NOTE: scale is not set if add=false
+       ! Sources to add to induction equation. NOTE: scale is not set if add=false. ORDER MATTERS
        call init(SP%IT%B_applied  ,T, 1.0_cp           ) ! B0 = scale*B0
        call init(SP%IT%current    ,T, 1.0_cp/SP%DP%Rem ) ! J = scale curl(B)
        call init(SP%IT%advection  ,F, 1.0_cp           )
@@ -317,7 +320,7 @@
        call init(SP%IT%diffusion  ,T, -SP%VS%B%MFP%beta) ! since LHS and J includes scale
        call init(SP%IT%unsteady_B0,F, -1.0_cp          ) ! since RHS
 
-       ! Sources to add to energy equation. NOTE: scale is not set if add=false
+       ! Sources to add to energy equation. NOTE: scale is not set if add=false. ORDER MATTERS
        call init(SP%ET%advection          , F,-1.0_cp           )
        call init(SP%ET%diffusion          , F,1.0_cp/SP%DP%Pe   )
        call init(SP%ET%KE_diffusion       , F,-SP%DP%Ec/SP%DP%Re)

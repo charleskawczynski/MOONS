@@ -5,6 +5,7 @@
       use ops_discrete_mod
       use ops_aux_mod
       use bctype_mod
+      use export_raw_processed_mod
       use SF_mod
       use VF_mod
       use TF_mod
@@ -26,104 +27,99 @@
 
       contains
 
-      subroutine modify_RHS_SF(operator,operator_explicit,x,b,vol,k,m,&
-        MFP,tempx,tempk,Ax,r,p)
+      subroutine modify_RHS_SF(operator,operator_explicit,x,x_BC,b,vol,k,m,&
+        MFP,tempx,tempk,Ax,r)
         implicit none
         procedure(op_SF) :: operator
         procedure(op_SF_explicit) :: operator_explicit
-        type(SF),intent(inout) :: x
+        type(SF),intent(inout) :: x,x_BC
         type(SF),intent(in) :: b,vol
         type(TF),intent(in) :: k
         type(TF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
-        type(SF),intent(inout) :: tempx,Ax,r,p
-        call assign_BC_vals(p,x)                      ! update BCs
+        type(SF),intent(inout) :: tempx,Ax,r
         call assign(r,b)                              ! r = b
-        call multiply_wall_Neumann(r,0.5_cp,x)        ! r = b_mod
         if (x%all_Neumann) call subtract_physical_mean(r,vol,tempx) ! Not sure correct loc
-        call compute_Ax_BC(operator_explicit,tempx,p,x,k,m,MFP,tempk)
+        call compute_Ax_BC(operator_explicit,tempx,x,x_BC,k,m,MFP,tempk)
         call subtract(r,tempx)                        ! r = (b_mod - Ax_BC - Ax)
-        ! if (x%all_Neumann) call subtract_physical_mean(r,vol,tempx) ! Not sure correct loc
         call operator(Ax,x,k,m,MFP,tempk)
-        call multiply_wall_Neumann(Ax,0.5_cp,x)
         call subtract(r,Ax)                           ! r = (b_mod - Ax_BC - Ax_mod)
-        call assign_wall_Periodic_single(r,0.0_cp,x)
         call multiply(r,vol)                          ! r = vol*(b_mod - Ax_BC - Ax_mod)
-        if (.not.is_CC(x)) call assign_wall_Dirichlet(r,0.0_cp,x)
+        if (.not.is_CC(x)) then
+          call assign_wall_Periodic_single(r,0.0_cp,x_BC)
+          call assign_wall_Dirichlet(r,0.0_cp,x_BC)
+          call multiply_wall_Neumann(r,0.5_cp,x_BC)     ! To make A symmetric
+        endif
       end subroutine
 
-      subroutine modify_RHS_VF(operator,operator_explicit,x,b,vol,k,m,&
-        MFP,tempx,tempk,Ax,r,p)
+      subroutine modify_RHS_VF(operator,operator_explicit,x,x_BC,b,vol,k,m,&
+        MFP,tempx,tempk,Ax,r)
         implicit none
         procedure(op_VF) :: operator
         procedure(op_VF_explicit) :: operator_explicit
-        type(VF),intent(inout) :: x
+        type(VF),intent(inout) :: x,x_BC
         type(VF),intent(in) :: b,vol
         type(TF),intent(in) :: k
         type(TF),intent(inout) :: tempk
         type(mesh),intent(in) :: m
         type(matrix_free_params),intent(in) :: MFP
-        type(VF),intent(inout) :: tempx,Ax,r,p
-        call assign_BC_vals(p,x)                      ! update BCs
+        type(VF),intent(inout) :: tempx,Ax,r
         call assign(r,b)                              ! r = b
-        call multiply_wall_Neumann(r,0.5_cp,x)        ! r = b_mod
-        ! if (x%all_Neumann) call subtract_physical_mean(r,vol,tempx) ! Not sure correct loc
-        call compute_Ax_BC(operator_explicit,tempx,p,x,k,m,MFP,tempk)
+        call compute_Ax_BC(operator_explicit,tempx,x,x_BC,k,m,MFP,tempk)
         call subtract(r,tempx)                        ! r = (b_mod - Ax_BC - Ax)
-        ! if (x%all_Neumann) call subtract_physical_mean(r,vol,tempx) ! Not sure correct loc
         call operator(Ax,x,k,m,MFP,tempk)
-        call multiply_wall_Neumann(Ax,0.5_cp,x)
         call subtract(r,Ax)                           ! r = (b_mod - Ax_BC - Ax_mod)
-        call assign_wall_Periodic_single(r,0.0_cp,x)
         call multiply(r,vol)                          ! r = vol*(b_mod - Ax_BC - Ax_mod)
-        if (.not.is_CC(x)) call assign_wall_Dirichlet(r,0.0_cp,x)
+        if (.not.is_CC(x)) then
+          call assign_wall_Periodic_single(r,0.0_cp,x_BC)
+          call assign_wall_Dirichlet(r,0.0_cp,x_BC)
+          call multiply_wall_Neumann(r,0.5_cp,x_BC)     ! To make A symmetric
+        endif
       end subroutine
 
-      subroutine compute_Ax_BC_MF_SF(operator_explicit,Ax_BC,p,x,k,m,MFP,tempk)
+      subroutine compute_Ax_BC_MF_SF(operator_explicit,Ax_BC,x,x_BC,k,m,MFP,tempk)
         implicit none
         procedure(op_SF_explicit) :: operator_explicit
-        type(SF),intent(inout) :: Ax_BC,p
+        type(SF),intent(inout) :: Ax_BC,x_BC
         type(TF),intent(in) :: k
         type(TF),intent(inout) :: tempk
         type(SF),intent(in) :: x
         type(matrix_free_params),intent(in) :: MFP
         type(mesh),intent(in) :: m
-        call compute_x_BC(p)
-        call operator_explicit(Ax_BC,p,k,m,MFP,tempk)
-        call assign_wall_Dirichlet(Ax_BC,0.0_cp,x)
+        call compute_x_BC(x_BC)
+        call operator_explicit(Ax_BC,x_BC,k,m,MFP,tempk)
         call assign_ghost_XPeriodic(Ax_BC,0.0_cp,x)
       end subroutine
 
-      subroutine compute_Ax_BC_MF_VF(operator_explicit,Ax_BC,p,x,k,m,MFP,tempk)
+      subroutine compute_Ax_BC_MF_VF(operator_explicit,Ax_BC,x,x_BC,k,m,MFP,tempk)
         implicit none
         procedure(op_VF_explicit) :: operator_explicit
-        type(VF),intent(inout) :: Ax_BC,p
+        type(VF),intent(inout) :: Ax_BC,x_BC
         type(VF),intent(in) :: x
         type(TF),intent(in) :: k
         type(TF),intent(inout) :: tempk
         type(matrix_free_params),intent(in) :: MFP
         type(mesh),intent(in) :: m
-        call compute_x_BC(p)
-        call operator_explicit(Ax_BC,p,k,m,MFP,tempk)
-        call assign_wall_Dirichlet(Ax_BC,0.0_cp,x)
+        call compute_x_BC(x_BC)
+        call operator_explicit(Ax_BC,x_BC,k,m,MFP,tempk)
         call assign_ghost_XPeriodic(Ax_BC,0.0_cp,x)
       end subroutine
 
-      subroutine compute_x_BC_SF(p)
+      subroutine compute_x_BC_SF(x_BC)
         implicit none
-        type(SF),intent(inout) :: p
-        call assign(p,0.0_cp)
-        call apply_BCs(p)
-        call assign_ghost_N_XPeriodic(p,0.0_cp)
+        type(SF),intent(inout) :: x_BC
+        call assign(x_BC,0.0_cp)
+        call apply_BCs(x_BC)
+        call assign_ghost_N_XPeriodic(x_BC,0.0_cp)
       end subroutine
 
-      subroutine compute_x_BC_VF(p)
+      subroutine compute_x_BC_VF(x_BC)
         implicit none
-        type(VF),intent(inout) :: p
-        call assign(p,0.0_cp)
-        call apply_BCs(p)
-        call assign_ghost_N_XPeriodic(p,0.0_cp)
+        type(VF),intent(inout) :: x_BC
+        call assign(x_BC,0.0_cp)
+        call apply_BCs(x_BC)
+        call assign_ghost_N_XPeriodic(x_BC,0.0_cp)
       end subroutine
 
       end module

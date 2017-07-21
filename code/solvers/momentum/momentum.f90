@@ -4,6 +4,7 @@
        use sim_params_mod
        use boundary_conditions_mod
        use block_mod
+       use BC_funcs_mod
        use mesh_block_mod
        use mesh_mod
        use SF_mod
@@ -182,8 +183,6 @@
          write(*,*) '     about to assemble Laplacian matrices'
          if (SP%matrix_based) call init_matrix_based_ops(mom,SP)
 
-         call face2CellCenter(mom%U_CC,mom%U,mom%m)
-         call face2edge_no_diag(mom%U_E,mom%U,mom%m)
          write(*,*) '     Interpolated fields initialized'
 
          call init(mom%probe_divU,str(DT%U%residual),'probe_divU',SP%VS%U%SS%restart,.true.,SP%VS%U%TMP)
@@ -197,13 +196,13 @@
 
          ! Initialize interior solvers
          call init(mom%PCG_U,mom_diffusion,mom_diffusion_explicit,prec_mom_VF,mom%m,&
-         SP%VS%U%ISP,SP%VS%U%MFP,mom%Ustar,mom%TF_CC_edge,str(DT%U%residual),'U',.false.,.false.)
+         SP%VS%U%ISP,SP%VS%U%MFP,mom%Ustar,mom%U,mom%TF_CC_edge,str(DT%U%residual),'U',.false.,.false.)
          write(*,*) '     PCG solver initialized for U'
 
          call delete(TF_Face)
          call init_Face(TF_Face,m,0.0_cp)
          call init(mom%PCG_P,Lap_uniform_SF,Lap_uniform_SF_explicit,prec_lap_SF,mom%m,&
-         SP%VS%P%ISP,SP%VS%P%MFP,mom%p,TF_Face,str(DT%p%residual),'p',.false.,.false.)
+         SP%VS%P%ISP,SP%VS%P%MFP,mom%p,mom%p,TF_Face,str(DT%p%residual),'p',.false.,.false.)
          call delete(TF_Face)
          write(*,*) '     PCG solver initialized for p'
 
@@ -211,6 +210,8 @@
          call display(mom,SP,temp_unit)
          call close_and_message(temp_unit,str(DT%params),'info_mom')
          if (SP%VS%U%SS%restart) call import(mom,SP,DT)
+         call face2CellCenter(mom%U_CC,mom%U,mom%m)  ! Needed after import
+         call face2edge_no_diag(mom%U_E,mom%U,mom%m) ! Needed after import
          write(*,*) '     Solver settings initialized'
          write(*,*) '     Finished'
          write(*,*) ''
@@ -288,16 +289,20 @@
          type(dir_tree),intent(in) :: DT
          write(*,*) 'export_momentum at n_step = ',SP%VS%U%TMP%n_step
          call export_raw(mom%m,mom%U    ,str(DT%U%restart),'U',0)
-         call export_raw(mom%m,mom%Unm1 ,str(DT%U%restart),'Unm1',0)
          call export_raw(mom%m,mom%Ustar,str(DT%U%restart),'Ustar',0)
+         call export_raw(mom%m,mom%Unm1 ,str(DT%U%restart),'Unm1',0)
          call export_raw(mom%m,mom%p    ,str(DT%p%restart),'p',0)
          call export_raw(mom%m,mom%F    ,str(DT%U%restart),'F_external',0)
          call export_raw(mom%m,mom%Fnm1 ,str(DT%U%restart),'Fnm1_external',0)
          call export_raw(mom%m,mom%L    ,str(DT%U%restart),'L_external',0)
-         call export(mom%probe_divU,str(DT%U%restart))
-         call export(mom%probe_KE,str(DT%U%restart))
-         call export(mom%probe_Q,str(DT%U%restart))
-         if (mom%m%MP%plane_any) call export(mom%probe_KE_2C,str(DT%U%restart))
+         call export_raw(mom%m,mom%PCG_U%r,str(DT%U%restart),'r_PCG_U',0)
+         call export_raw(mom%m,mom%PCG_P%r,str(DT%P%restart),'r_PCG_P',0)
+         call export(mom%PCG_U,str(DT%U%restart),'PCG_U')
+         call export(mom%PCG_P,str(DT%P%restart),'PCG_P')
+         call export(mom%probe_divU,str(DT%U%restart),'probe_divU')
+         call export(mom%probe_KE,str(DT%U%restart),'probe_KE')
+         call export(mom%probe_Q,str(DT%U%restart),'probe_Q')
+         if (mom%m%MP%plane_any) call export(mom%probe_KE_2C,str(DT%U%restart),'probe_KE_2C')
        end subroutine
 
        subroutine import_momentum(mom,SP,DT)
@@ -313,10 +318,15 @@
          call import_raw(mom%m,mom%F    ,str(DT%U%restart),'F_external',0)
          call import_raw(mom%m,mom%Fnm1 ,str(DT%U%restart),'Fnm1_external',0)
          call import_raw(mom%m,mom%L    ,str(DT%U%restart),'L_external',0)
-         call import(mom%probe_divU,str(DT%U%restart))
-         call import(mom%probe_KE,str(DT%U%restart))
-         call import(mom%probe_Q,str(DT%U%restart))
-         if (mom%m%MP%plane_any) call import(mom%probe_KE_2C,str(DT%U%restart))
+         call import_raw(mom%m,mom%PCG_U%r,str(DT%U%restart),'r_PCG_U',0)
+         call import_raw(mom%m,mom%PCG_P%r,str(DT%P%restart),'r_PCG_P',0)
+         call import(mom%PCG_U,str(DT%U%restart),'PCG_U')
+         call import(mom%PCG_P,str(DT%P%restart),'PCG_P')
+         call import(mom%probe_divU,str(DT%U%restart),'probe_divU')
+         call import(mom%probe_divU,str(DT%U%restart),'probe_divU')
+         call import(mom%probe_KE,str(DT%U%restart),'probe_KE')
+         call import(mom%probe_Q,str(DT%U%restart),'probe_Q')
+         if (mom%m%MP%plane_any) call import(mom%probe_KE_2C,str(DT%U%restart),'probe_KE_2C')
        end subroutine
 
        ! **********************************************************
@@ -333,10 +343,12 @@
          else
            write(*,*) 'export_tec_momentum at n_step = ',SP%VS%U%TMP%n_step
            call export_processed(mom%m,mom%U,str(DT%U%field),'U',1)
+           call export_raw(mom%m,mom%Ustar,str(DT%U%field),'Ustar',0)
 
            if (.not.SP%EL%export_soln_only) then
              call export_processed(mom%m,mom%p,str(DT%p%field),'p',1)
-             call export_raw(mom%m,mom%divU,str(DT%U%field),'divU',0)
+             call export_raw(mom%m,mom%divU,str(DT%U%field),'divU',1)
+             call export_raw(mom%m,mom%p,str(DT%P%field),'p',0)
              if (SP%EL%export_symmetric) then
                call export_processed(mom%m,mom%U,str(DT%U%field),'U',1,SP%MP)
                call export_processed(mom%m,mom%p,str(DT%p%field),'p',1,SP%MP)

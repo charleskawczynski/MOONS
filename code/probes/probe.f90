@@ -29,6 +29,7 @@
          real(cp) :: d_amax = 0.0_cp     ! max(d) over time
          real(cp) :: t = 0.0_cp          ! time
          integer :: un = 0               ! file unit
+         integer :: cols = 0             ! columns of data
          integer(li) :: n_step = 0       ! time step
          logical :: restart = .false.    ! restart probe (append existing)
          logical :: simple = .false.     ! simple probe (only data)
@@ -67,21 +68,27 @@
            write(p%un,*) 'TITLE = "'//name//' probe"'
            call init(s,'VARIABLES = t')
            call append(s,','//name)
-           if (.not.p%simple) call append(s,',d('//name//')/dt')
-           if (.not.p%simple) call append(s,',|d('//name//')/dt|')
-           if (.not.p%simple) call append(s,',|d('//name//')/dt|/max(d)_used')
-           if (.not.p%simple) call append(s,',max(d)')
+           p%cols = 2
+           if (.not.p%simple) then
+             p%cols = p%cols+1;call append(s,',d('//name//')/dt')
+             p%cols = p%cols+1;call append(s,',|d('//name//')/dt|')
+             p%cols = p%cols+1;call append(s,',|d('//name//')/dt|/max(d)_used')
+             p%cols = p%cols+1;call append(s,',max(d)')
+           endif
+           write(*,*) 'cols = ',p%cols
            write(p%un,*) str(s)
            call delete(s)
            write(p%un,*) 'ZONE DATAPACKING = POINT'
            flush(p%un)
+           p%n_step = 0
+           p%d_amax = 0.0_cp
          elseif (p%restart) then
-           call truncate_data_in_open_file(p,TMP,dir,name,i_last)
-           p%un = open_to_append(dir,name,i_last)
+           ! call truncate_data_in_open_file(p,TMP,dir,name,i_last)
+           i_last = get_last_data_point_location(dir,name)
+           ! p%un = open_to_append(dir,name,i_last) ! Does not work yet.
+           p%un = open_to_append(dir,name)
          else; stop 'Error: no case found in init_probe in probe.f90'
          endif
-         p%n_step = 0
-         p%d_amax = 0.0_cp
        end subroutine
 
        subroutine delete_probe(p)
@@ -96,6 +103,7 @@
          p%d_data_dt = 0.0_cp
          p%t = 0.0_cp
          p%un = 0
+         p%cols = 0
          p%restart = .false.
          p%simple = .false.
        end subroutine
@@ -103,9 +111,10 @@
        subroutine delete_probe_many(p)
          implicit none
          type(probe),dimension(:),intent(inout) :: p
-         integer :: i,s
-         s = size(p)
-         if (s.gt.0) then; do i=1,s; call delete(p(i)); enddo; endif
+         integer :: i
+         if (size(p).gt.0) then
+           do i=1,size(p); call delete(p(i)); enddo
+         endif
        end subroutine
 
        subroutine export_probe(p,un)
@@ -119,6 +128,7 @@
          write(un,*) p%d_amax
          write(un,*) p%t
          write(un,*) p%un
+         write(un,*) p%cols
          write(un,*) p%n_step
          write(un,*) p%restart
          write(un,*) p%simple
@@ -135,45 +145,50 @@
          read(un,*) p%d_amax
          read(un,*) p%t
          read(un,*) p%un
+         read(un,*) p%cols
          read(un,*) p%n_step
          read(un,*) p%restart
          read(un,*) p%simple
        end subroutine
 
-       subroutine export_probe_wrapper(p,dir)
+       subroutine export_probe_wrapper(p,dir,name)
          implicit none
          type(probe),intent(in) :: p
-         character(len=*),intent(in) :: dir
+         character(len=*),intent(in) :: dir,name
          integer :: un
-         un = new_and_open(dir,str(p%name))
+         un = new_and_open(dir,name)
          call export(p,un)
-         call close_and_message(un,dir,str(p%name))
+         call close_and_message(un,dir,name)
        end subroutine
 
-       subroutine export_probe_wrapper_dim(p,dir)
+       subroutine export_probe_wrapper_dim(p,dir,name)
          implicit none
          type(probe),dimension(:),intent(in) :: p
-         character(len=*),intent(in) :: dir
+         character(len=*),intent(in) :: dir,name
          integer :: i
-         do i=1,size(p); call export(p(i),dir); enddo
+         if (size(p).gt.0) then
+           do i=1,size(p); call export(p(i),dir,name); enddo
+         endif
        end subroutine
 
-       subroutine import_probe_wrapper(p,dir)
+       subroutine import_probe_wrapper(p,dir,name)
          implicit none
          type(probe),intent(inout) :: p
-         character(len=*),intent(in) :: dir
+         character(len=*),intent(in) :: dir,name
          integer :: un
-         un = open_to_read(dir,str(p%name))
+         un = open_to_read(dir,name)
          call import(p,un)
-         call close_and_message(un,dir,str(p%name))
+         call close_and_message(un,dir,name)
        end subroutine
 
-       subroutine import_probe_wrapper_dim(p,dir)
+       subroutine import_probe_wrapper_dim(p,dir,name)
          implicit none
          type(probe),dimension(:),intent(inout) :: p
-         character(len=*),intent(in) :: dir
+         character(len=*),intent(in) :: dir,name
          integer :: i
-         do i=1,size(p); call import(p(i),dir); enddo
+         if (size(p).gt.0) then
+         do i=1,size(p); call import(p(i),dir,name); enddo
+         endif
        end subroutine
 
        subroutine export_probe_data(p,TMP,d)
@@ -234,11 +249,8 @@
          integer(li) :: i,i_first_to_delete,i_EOF
          integer :: un,stat
          un = open_to_read(dir,name)
-         if (.not.p%simple) then; i = 6
-         else;                    i = 2
-         endif
          read(un,*); read(un,*); read(un,*)
-         allocate(d(i))
+         allocate(d(p%cols))
          i_first_to_delete = 1
          i_EOF = 1
          do i=1,TMP%n_step
@@ -257,5 +269,26 @@
          close(un)
          i_last = int(i_first_to_delete)+3
        end subroutine
+
+       function get_last_data_point_location(dir,name) result(i_last)
+         implicit none
+         character(len=*),intent(in) :: dir,name
+         integer(li) :: i,i_EOF
+         integer :: i_last
+         integer :: un,stat
+         logical :: L
+         un = open_to_read(dir,name)
+         i_EOF = 1
+         i = 1
+         L = .true.
+         do while (L)
+           read(un,*,iostat=stat)
+           i_EOF = i
+           L = .not.(stat .lt. 0)
+           i=i+1
+         enddo
+         close(un)
+         i_last = int(i_EOF)
+       end function
 
        end module

@@ -203,6 +203,7 @@
 
          call init(ind%Bstar,ind%B)
          if (SP%VS%B%SS%prescribed_BCs) call set_prescribed_BCs(ind%Bstar)
+         call set_BCs_homogeneous(ind%Bstar)
          call init_Bstar_field(ind%Bstar,ind%B)
 
          write(*,*) '     Intermediate B-field initialized'
@@ -258,13 +259,13 @@
          call init_Edge(sigmaInv_edge_TF%x,m,0.0_cp) ! x-component used in matrix_free_operators.f90
          call assign(sigmaInv_edge_TF%x,ind%sigmaInv_edge)
          call init(ind%PCG_B,ind_diffusion,ind_diffusion_explicit,prec_ind_VF,ind%m,&
-         SP%VS%B%ISP,SP%VS%B%MFP,ind%Bstar,sigmaInv_edge_TF,str(DT%B%residual),'B',.false.,.false.)
+         SP%VS%B%ISP,SP%VS%B%MFP,ind%Bstar,ind%B,sigmaInv_edge_TF,str(DT%B%residual),'B',.false.,.false.)
          call delete(sigmaInv_edge_TF)
          write(*,*) '     PCG Solver initialized for B'
 
          call init_Face(TF_face%x,m,0.0_cp) ! x-component used in matrix_free_operators.f90
          call init(ind%PCG_cleanB,Lap_uniform_SF,Lap_uniform_SF_explicit,prec_lap_SF,&
-         ind%m,SP%VS%phi%ISP,SP%VS%phi%MFP,ind%phi,TF_face,str(DT%phi%residual),'phi',.false.,.false.)
+         ind%m,SP%VS%phi%ISP,SP%VS%phi%MFP,ind%phi,ind%phi,TF_face,str(DT%phi%residual),'phi',.false.,.false.)
          call delete(TF_face)
          write(*,*) '     PCG Solver initialized for phi'
 
@@ -373,16 +374,16 @@
          call export_raw(ind%m,ind%phi,str(DT%phi%restart),'phi',0)
          call export_raw(ind%m,ind%J,str(DT%J%restart),'J',0)
          if (SP%IT%unsteady_B0%add) then
-           call export(ind%probe_dB0dt,str(DT%B%restart))
-           call export(ind%probe_B0   ,str(DT%B%restart))
+           call export(ind%probe_dB0dt,str(DT%B%restart),'probe_dB0dt')
+           call export(ind%probe_B0   ,str(DT%B%restart),'probe_B0')
          endif
-         call export(ind%probe_divB,str(DT%B%restart))
-         call export(ind%probe_divJ,str(DT%J%restart))
-         call export(ind%JE,        str(DT%J%restart))
-         call export(ind%JE_fluid,  str(DT%J%restart))
-         call export(ind%ME          ,str(DT%B%restart))
-         call export(ind%ME_fluid    ,str(DT%B%restart))
-         call export(ind%ME_conductor,str(DT%B%restart))
+         call export(ind%probe_divB,str(DT%B%restart),'probe_divB')
+         call export(ind%probe_divJ,str(DT%J%restart),'probe_divJ')
+         call export(ind%JE,        str(DT%J%restart),'JE')
+         call export(ind%JE_fluid,  str(DT%J%restart),'JE_fluid')
+         call export(ind%ME          ,str(DT%B%restart),'ME')
+         call export(ind%ME_fluid    ,str(DT%B%restart),'ME_fluid')
+         call export(ind%ME_conductor,str(DT%B%restart),'ME_conductor')
        end subroutine
 
        subroutine import_induction(ind,SP,DT)
@@ -401,16 +402,16 @@
          call import_raw(ind%m,ind%phi,str(DT%phi%restart),'phi',0)
          call import_raw(ind%m,ind%J,str(DT%J%restart),'J',0)
          if (SP%IT%unsteady_B0%add) then
-           call import(ind%probe_dB0dt,str(DT%B%restart))
-           call import(ind%probe_B0   ,str(DT%B%restart))
+           call import(ind%probe_dB0dt,str(DT%B%restart),'probe_dB0dt')
+           call import(ind%probe_B0   ,str(DT%B%restart),'probe_B0')
          endif
-         call import(ind%probe_divB,str(DT%B%restart))
-         call import(ind%probe_divJ,str(DT%J%restart))
-         call import(ind%JE,        str(DT%J%restart))
-         call import(ind%JE_fluid,  str(DT%J%restart))
-         call import(ind%ME          ,str(DT%B%restart))
-         call import(ind%ME_fluid    ,str(DT%B%restart))
-         call import(ind%ME_conductor,str(DT%B%restart))
+         call import(ind%probe_divB,str(DT%B%restart),'probe_divB')
+         call import(ind%probe_divJ,str(DT%J%restart),'probe_divJ')
+         call import(ind%JE,        str(DT%J%restart),'JE')
+         call import(ind%JE_fluid,  str(DT%J%restart),'JE_fluid')
+         call import(ind%ME          ,str(DT%B%restart),'ME')
+         call import(ind%ME_fluid    ,str(DT%B%restart),'ME_fluid')
+         call import(ind%ME_conductor,str(DT%B%restart),'ME_conductor')
        end subroutine
 
        ! **********************************************************

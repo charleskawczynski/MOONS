@@ -83,7 +83,7 @@
 
          ! Make sure that Lap_uniform_VF does not
          call init(PCG,Lap_uniform_VF,Lap_uniform_VF_explicit,prec_Lap_VF,m,&
-         ISP,MFP,psi,temp_dummy,str(DT%U%residual),'streamfunction',.false.,.false.)
+         ISP,MFP,psi,psi,temp_dummy,str(DT%U%residual),'streamfunction',.false.,.false.)
 
          call compute_vorticity_streamfunction(PCG,psi,omega,U,m,.true.)
 

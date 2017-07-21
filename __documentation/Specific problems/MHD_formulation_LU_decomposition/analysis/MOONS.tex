@@ -1,0 +1,42 @@
+\documentclass{article}
+\input{../includes.tex}
+\usepackage{geometry} % For local use
+
+\newcommand{\ReInv}{Re^{-1}}
+\newcommand{\RemInv}{Re_m^{-1}}
+\newcommand{\Al}{N Re_m^{-1}}
+\newcommand{\Interaction}{N}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+% \maketitle
+
+\section{Time marching analysis}
+The solution process is performed as follows
+\begin{equation}\begin{aligned}
+\X = \X_{h} + \X_{BC} \\
+A\hat{\X}_{h} = b - A\X^{n+1}_{BC} \\
+L \phi^{n+1} = \Delta t^{-1} D \hat{\X} - L \phi^{n+1}_{BC} \\
+\X^{n+1} = \hat{\X} - \Delta t G \phi^{n+1}
+\end{aligned} \end{equation}
+
+\section{Temp}
+\begin{equation}\LL\begin{aligned}
+\U = \U_U+\U_{BC} \\
+A_u \hat{\U} = \MAC R + BC_1 \\
+D \Theta_u G p^{n+1} = D\hat{\U} - BC_2 \\
+\U^{n+1}_U = \hat{\U} - \Theta_u G p^{n+1}
+\end{aligned} \end{equation}
+Plugging in, we have
+
+\begin{equation}\LL\begin{aligned}
+A_u (\U^{n+1}_U + \Theta_u G p^{n+1}) = \MAC R - A_u \U^{n+1}_{BC} \\
+A_u (\U^{n+1} + \Theta_u G p^{n+1}) = \MAC R \\
+D \Theta_u G p^{n+1}_U = D(\U^{n+1} + \Theta_u G p^{n+1}) - D \Theta_u G p^{n+1}_{BC} \\
+D \Theta_u G p^{n+1} = D(\U^{n+1} + \Theta_u G p^{n+1}) \\
+\end{aligned} \end{equation}
+
+\input{../include_bib.tex}
+
+\end{document}

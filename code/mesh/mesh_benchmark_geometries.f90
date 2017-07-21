@@ -78,7 +78,7 @@
          integer,dimension(3) :: N
          integer :: i
          call delete(m_mom)
-         N = 60; hmin = -0.5_cp; hmax = 0.5_cp
+         N = 40; hmin = -0.5_cp; hmax = 0.5_cp
          N(3) = 1
          beta = ReynoldsBL(DP%Re,hmin,hmax)
          i = 1; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
@@ -102,8 +102,8 @@
          integer :: i
          call delete(m_mom)
          hmin = -1.0_cp; hmax = 1.0_cp
-         hmin(1) = 0.0_cp; hmax(1) = 60.0_cp
-         N = (/70,20,1/)
+         hmin(1) = 0.0_cp; hmax(1) = 400.0_cp
+         N = (/200,20,1/)
          beta = ReynoldsBL(DP%Re,hmin,hmax)
          i = 1; call grid_Roberts_L(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)
          i = 2; call grid_Roberts_B(g,hmin(i),hmax(i),N(i),beta(i),i,MQP)

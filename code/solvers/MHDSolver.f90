@@ -157,6 +157,10 @@
          if (SP%VS%U%SS%initialize) call export_tec(mom,SP,DT)
          if (SP%VS%B%SS%initialize) call export_tec(ind,SP,DT)
 
+         if (SP%VS%T%SS%initialize) call export(nrg,SP,DT)
+         if (SP%VS%U%SS%initialize) call export(mom,SP,DT)
+         if (SP%VS%B%SS%initialize) call export(ind,SP,DT)
+
          call delete(EF)
          call delete(sc)
          call delete(EN)

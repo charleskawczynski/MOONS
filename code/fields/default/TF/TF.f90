@@ -34,6 +34,7 @@
         ! c = a / b => call divide(c,a,b)
         ! c = b / a => call divide(c,b,a)
 
+        use IO_tools_mod
         use current_precision_mod
         use data_location_mod
         use mesh_mod
@@ -45,7 +46,7 @@
 
         ! Initialization / Deletion (allocate/deallocate)
         public :: TF
-        public :: init,delete
+        public :: init,delete,export,import
 
         ! Grid initialization
         public :: init_CC
@@ -120,6 +121,10 @@
         interface multiply_Neumann_BCs;module procedure multiply_Neumann_BCs_faces_TF; end interface
 
         interface delete;              module procedure delete_TF;                 end interface
+        interface export;              module procedure export_TF;                 end interface
+        interface import;              module procedure import_TF;                 end interface
+        interface export;              module procedure export_TF_wrapper;         end interface
+        interface import;              module procedure import_TF_wrapper;         end interface
         interface print;               module procedure print_TF;                  end interface
 
         interface assign;              module procedure assign_TF_S;               end interface
@@ -753,6 +758,44 @@
           implicit none
           type(TF),intent(in) :: f
           call print(f%x); call print(f%y); call print(f%z)
+        end subroutine
+
+        subroutine export_TF(f,un)
+          implicit none
+          type(TF),intent(in) :: f
+          integer,intent(in) :: un
+          call export(f%x,un)
+          call export(f%y,un)
+          call export(f%z,un)
+        end subroutine
+
+        subroutine import_TF(f,un)
+          implicit none
+          type(TF),intent(inout) :: f
+          integer,intent(in) :: un
+          call import(f%x,un)
+          call import(f%y,un)
+          call import(f%z,un)
+        end subroutine
+
+        subroutine export_TF_wrapper(f,dir,name)
+          implicit none
+          type(TF),intent(in) :: f
+          character(len=*),intent(in) :: dir,name
+          integer :: un
+          un = new_and_open(dir,name)
+          call export(f,un)
+          close(un)
+        end subroutine
+
+        subroutine import_TF_wrapper(f,dir,name)
+          implicit none
+          type(TF),intent(inout) :: f
+          character(len=*),intent(in) :: dir,name
+          integer :: un
+          un = open_to_read(dir,name)
+          call import(f,un)
+          close(un)
         end subroutine
 
       end module

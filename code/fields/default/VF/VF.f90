@@ -68,6 +68,7 @@
         public :: assign_wall_Periodic_single
         public :: multiply_wall_Neumann
         public :: set_prescribed_BCs
+        public :: set_BCs_homogeneous
 
         public :: symmetry_error_x,symmetry_local_x
         public :: symmetry_error_y,symmetry_local_y
@@ -182,6 +183,7 @@
         interface multiply_wall_Neumann;    module procedure multiply_wall_Neumann_VF;      end interface
         interface multiply_wall_Neumann;    module procedure multiply_wall_Neumann_VF2;     end interface
         interface set_prescribed_BCs;       module procedure set_prescribed_BCs_VF;         end interface
+        interface set_BCs_homogeneous;      module procedure set_BCs_homogeneous_VF;        end interface
 
         interface dot_product;              module procedure dot_product_VF;                end interface
         interface dot;                      module procedure dot_VF_SF;                     end interface
@@ -1366,6 +1368,14 @@
           call set_prescribed_BCs(A%x)
           call set_prescribed_BCs(A%y)
           call set_prescribed_BCs(A%z)
+        end subroutine
+
+        subroutine set_BCs_homogeneous_VF(A)
+          implicit none
+          type(VF),intent(inout) :: A
+          call set_BCs_homogeneous(A%x)
+          call set_BCs_homogeneous(A%y)
+          call set_BCs_homogeneous(A%z)
         end subroutine
 
       end module

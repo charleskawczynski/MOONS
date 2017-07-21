@@ -285,7 +285,6 @@
          implicit none
          type(boundary_conditions),intent(in) :: BC
          integer,intent(in) :: un
-         call insist_allocated(BC,'export_BCs')
          write(un,*) 'defined'
          write(un,*) BC%BCL%defined
          if (BC%BCL%defined) then

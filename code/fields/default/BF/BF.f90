@@ -51,6 +51,7 @@
         public :: assign_wall_Dirichlet
         public :: multiply_wall_Neumann
         public :: set_prescribed_BCs
+        public :: set_BCs_homogeneous
 
         public :: plane_sum_x
         public :: plane_sum_y
@@ -167,6 +168,7 @@
        interface multiply_wall_Neumann;       module procedure multiply_wall_Neumann_BF;        end interface
        interface multiply_wall_Neumann;       module procedure multiply_wall_Neumann_BF2;       end interface
        interface set_prescribed_BCs;          module procedure set_prescribed_BCs_BF;           end interface
+       interface set_BCs_homogeneous;         module procedure set_BCs_homogeneous_BF;          end interface
 
        interface plane_sum_x;                 module procedure plane_sum_x_BF;                  end interface
        interface plane_sum_y;                 module procedure plane_sum_y_BF;                  end interface
@@ -877,6 +879,15 @@
             if (A%many_cell(dir)) call set_prescribed(A%BCs,i)
             call init_PA_face(A%BCs,i)
            enddo
+         endif
+       end subroutine
+
+       subroutine set_BCs_homogeneous_BF(A)
+         implicit none
+         type(block_field),intent(inout) :: A
+         integer :: i
+         if (defined(A%BCs)) then
+           do i=1,6; call init(A%BCs,0.0_cp,i); enddo
          endif
        end subroutine
 

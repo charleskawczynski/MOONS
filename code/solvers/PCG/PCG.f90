@@ -24,7 +24,8 @@
       private
       public :: PCG_solver_SF
       public :: PCG_solver_VF
-      public :: init,delete
+      public :: init,delete,export,import
+      ! public :: init,delete,display,print,export,import
       public :: solve
       public :: prolongate
       public :: update_MFP
@@ -46,10 +47,20 @@
       interface delete;     module procedure delete_PCG_SF;     end interface
       interface delete;     module procedure delete_PCG_VF;     end interface
 
+      interface export;     module procedure export_PCG_SF;     end interface
+      interface export;     module procedure export_PCG_VF;     end interface
+      interface import;     module procedure import_PCG_SF;     end interface
+      interface import;     module procedure import_PCG_VF;     end interface
+
+      interface export;     module procedure export_PCG_SF_wrapper;     end interface
+      interface export;     module procedure export_PCG_VF_wrapper;     end interface
+      interface import;     module procedure import_PCG_SF_wrapper;     end interface
+      interface import;     module procedure import_PCG_VF_wrapper;     end interface
+
       type PCG_solver_SF
         type(matrix_free_params) :: MFP
         type(TF) :: tempk,k
-        type(SF) :: r,p,tempx,Ax,vol,z,Minv
+        type(SF) :: r,p,tempx,Ax,x_BC,vol,z,Minv
         type(norms) :: norm
         integer :: un,un_convergence
         type(iter_solver_params) :: ISP
@@ -62,7 +73,7 @@
       type PCG_solver_VF
         type(matrix_free_params) :: MFP
         type(TF) :: tempk,k
-        type(VF) :: r,p,tempx,Ax,vol,z,Minv
+        type(VF) :: r,p,tempx,Ax,x_BC,vol,z,Minv
         type(norms) :: norm
         integer :: un,un_convergence
         type(iter_solver_params) :: ISP
@@ -75,7 +86,7 @@
       contains
 
       subroutine init_PCG_SF(PCG,operator,operator_explicit,prec,m,ISP,MFP,&
-        x,k,dir,name,testSymmetry,exportOperator)
+        x,x_BC,k,dir,name,testSymmetry,exportOperator)
         implicit none
         procedure(op_SF) :: operator
         procedure(op_SF_explicit) :: operator_explicit
@@ -83,7 +94,7 @@
         type(PCG_solver_SF),intent(inout) :: PCG
         type(mesh),intent(in) :: m
         type(iter_solver_params),intent(in) :: ISP
-        type(SF),intent(in) :: x
+        type(SF),intent(in) :: x,x_BC
         type(TF),intent(in) :: k
         character(len=*),intent(in) :: dir,name
         logical,intent(in) :: testSymmetry,exportOperator
@@ -96,6 +107,7 @@
         else; stop 'Error: bad input type into init_PCG_SF in PCG.f90'
         endif
         call init(PCG%p,x) ! Copies BCs for x
+        call init(PCG%x_BC,x_BC) ! Copies BCs for x
         call init(PCG%r,PCG%tempx)
         call init(PCG%Ax,PCG%tempx)
         call init(PCG%vol,PCG%tempx)
@@ -140,7 +152,7 @@
       end subroutine
 
       subroutine init_PCG_VF(PCG,operator,operator_explicit,prec,m,ISP,MFP,&
-        x,k,dir,name,testSymmetry,exportOperator)
+        x,x_BC,k,dir,name,testSymmetry,exportOperator)
         implicit none
         procedure(op_VF) :: operator
         procedure(op_VF_explicit) :: operator_explicit
@@ -148,7 +160,7 @@
         type(PCG_solver_VF),intent(inout) :: PCG
         type(mesh),intent(in) :: m
         type(iter_solver_params),intent(in) :: ISP
-        type(VF),intent(in) :: x
+        type(VF),intent(in) :: x,x_BC
         type(TF),intent(in) :: k
         character(len=*),intent(in) :: dir,name
         logical,intent(in) :: testSymmetry,exportOperator
@@ -161,6 +173,7 @@
         else; stop 'Error: bad input type into init_PCG_VF in PCG.f90'
         endif
         call init(PCG%p,x) ! Copies BCs for x
+        call init(PCG%x_BC,x_BC) ! Copies BCs for x
         call init(PCG%r,PCG%tempx)
         call init(PCG%Ax,PCG%tempx)
         call init(PCG%vol,PCG%tempx)
@@ -211,7 +224,7 @@
         type(mesh),intent(in) :: m
         logical,intent(in) :: compute_norms
         call solve_PCG(PCG%operator,PCG%operator_explicit,str(PCG%name),&
-        x,b,PCG%vol,PCG%k,m,PCG%MFP,PCG%ISP,PCG%norm,compute_norms,PCG%un,&
+        x,PCG%x_BC,b,PCG%vol,PCG%k,m,PCG%MFP,PCG%ISP,PCG%norm,compute_norms,PCG%un,&
         PCG%un_convergence,PCG%tempx,PCG%tempk,PCG%Ax,PCG%r,PCG%p,&
         PCG%z,PCG%Minv)
       end subroutine
@@ -224,7 +237,7 @@
         type(mesh),intent(in) :: m
         logical,intent(in) :: compute_norms
         call solve_PCG(PCG%operator,PCG%operator_explicit,str(PCG%name),&
-        x,b,PCG%vol,PCG%k,m,PCG%MFP,PCG%ISP,PCG%norm,compute_norms,PCG%un,&
+        x,PCG%x_BC,b,PCG%vol,PCG%k,m,PCG%MFP,PCG%ISP,PCG%norm,compute_norms,PCG%un,&
         PCG%un_convergence,PCG%tempx,PCG%tempk,PCG%Ax,PCG%r,PCG%p,&
         PCG%z,PCG%Minv)
       end subroutine
@@ -236,6 +249,7 @@
         call delete(PCG%p)
         call delete(PCG%tempx)
         call delete(PCG%Ax)
+        call delete(PCG%x_BC)
         call delete(PCG%vol)
         call delete(PCG%k)
         call delete(PCG%tempk)
@@ -255,6 +269,7 @@
         call delete(PCG%p)
         call delete(PCG%tempx)
         call delete(PCG%Ax)
+        call delete(PCG%x_BC)
         call delete(PCG%vol)
         call delete(PCG%k)
         call delete(PCG%tempk)
@@ -265,6 +280,138 @@
         close(PCG%un_convergence)
         call delete(PCG%dir)
         call delete(PCG%name)
+      end subroutine
+
+      subroutine export_PCG_SF(PCG,un)
+        implicit none
+        type(PCG_solver_SF),intent(in) :: PCG
+        integer,intent(in) :: un
+        write(un,*) PCG%un
+        write(un,*) PCG%un_convergence
+        call export(PCG%ISP,un)
+        call export(PCG%dir,un)
+        call export(PCG%name,un)
+        call export(PCG%norm,un)
+        call export(PCG%r,un)
+        call export(PCG%p,un)
+        call export(PCG%tempx,un)
+        call export(PCG%Ax,un)
+        call export(PCG%x_BC,un)
+        call export(PCG%vol,un)
+        call export(PCG%z,un)
+        call export(PCG%Minv,un)
+        call export(PCG%k,un)
+        call export(PCG%tempk,un)
+        call export(PCG%MFP,un)
+      end subroutine
+
+      subroutine export_PCG_VF(PCG,un)
+        implicit none
+        type(PCG_solver_VF),intent(in) :: PCG
+        integer,intent(in) :: un
+        write(un,*) PCG%un
+        write(un,*) PCG%un_convergence
+        call export(PCG%ISP,un)
+        call export(PCG%dir,un)
+        call export(PCG%name,un)
+        call export(PCG%norm,un)
+        call export(PCG%r,un)
+        call export(PCG%p,un)
+        call export(PCG%tempx,un)
+        call export(PCG%Ax,un)
+        call export(PCG%x_BC,un)
+        call export(PCG%vol,un)
+        call export(PCG%z,un)
+        call export(PCG%Minv,un)
+        call export(PCG%k,un)
+        call export(PCG%tempk,un)
+        call export(PCG%MFP,un)
+      end subroutine
+
+      subroutine import_PCG_SF(PCG,un)
+        implicit none
+        type(PCG_solver_SF),intent(inout) :: PCG
+        integer,intent(in) :: un
+        read(un,*) PCG%un
+        read(un,*) PCG%un_convergence
+        call import(PCG%ISP,un)
+        call import(PCG%dir,un)
+        call import(PCG%name,un)
+        call import(PCG%norm,un)
+        call import(PCG%r,un)
+        call import(PCG%p,un)
+        call import(PCG%tempx,un)
+        call import(PCG%Ax,un)
+        call import(PCG%x_BC,un)
+        call import(PCG%vol,un)
+        call import(PCG%z,un)
+        call import(PCG%Minv,un)
+        call import(PCG%k,un)
+        call import(PCG%tempk,un)
+        call import(PCG%MFP,un)
+      end subroutine
+
+      subroutine import_PCG_VF(PCG,un)
+        implicit none
+        type(PCG_solver_VF),intent(inout) :: PCG
+        integer,intent(in) :: un
+        read(un,*) PCG%un
+        read(un,*) PCG%un_convergence
+        call import(PCG%ISP,un)
+        call import(PCG%dir,un)
+        call import(PCG%name,un)
+        call import(PCG%norm,un)
+        call import(PCG%r,un)
+        call import(PCG%p,un)
+        call import(PCG%tempx,un)
+        call import(PCG%Ax,un)
+        call import(PCG%x_BC,un)
+        call import(PCG%vol,un)
+        call import(PCG%z,un)
+        call import(PCG%Minv,un)
+        call import(PCG%k,un)
+        call import(PCG%tempk,un)
+        call import(PCG%MFP,un)
+      end subroutine
+
+      subroutine export_PCG_SF_wrapper(PCG,dir,name)
+        implicit none
+        type(PCG_solver_SF),intent(in) :: PCG
+        character(len=*),intent(in) :: dir,name
+        integer :: un
+        un = new_and_open(dir,name)
+        call export(PCG,un)
+        close(un)
+      end subroutine
+
+      subroutine export_PCG_VF_wrapper(PCG,dir,name)
+        implicit none
+        type(PCG_solver_VF),intent(in) :: PCG
+        character(len=*),intent(in) :: dir,name
+        integer :: un
+        un = new_and_open(dir,name)
+        call export(PCG,un)
+        close(un)
+      end subroutine
+
+      subroutine import_PCG_SF_wrapper(PCG,dir,name)
+        implicit none
+        type(PCG_solver_SF),intent(inout) :: PCG
+        character(len=*),intent(in) :: dir,name
+        integer :: un
+        un = open_to_read(dir,name)
+        call import(PCG,un)
+        close(un)
+      end subroutine
+
+      subroutine import_PCG_VF_wrapper(PCG,dir,name)
+        implicit none
+        type(PCG_solver_VF),intent(inout) :: PCG
+        character(len=*),intent(in) :: dir,name
+        integer :: un
+        un = open_to_read(dir,name)
+        call import(PCG,un)
+        close(un)
       end subroutine
 
       subroutine tecHeader(name,un,VF)

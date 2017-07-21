@@ -198,7 +198,7 @@
         integer,intent(in) :: pos
         integer :: un
         integer :: i
-        un = open_to_read_write(dir,name)
+        un = open_to_append(dir,name)
         rewind(un)
         do i=1,pos-1; read(un,*); enddo
       end function
