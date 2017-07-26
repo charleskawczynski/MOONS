@@ -75,7 +75,6 @@
              p%cols = p%cols+1;call append(s,',|d('//name//')/dt|/max(d)_used')
              p%cols = p%cols+1;call append(s,',max(d)')
            endif
-           write(*,*) 'cols = ',p%cols
            write(p%un,*) str(s)
            call delete(s)
            write(p%un,*) 'ZONE DATAPACKING = POINT'

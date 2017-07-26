@@ -77,6 +77,7 @@
         public :: cross_product_z
 
         public :: CFL_number
+        public :: dt_given_CFL_number
         public :: Fourier_number
         public :: Robin_BC_coeff
 
@@ -131,6 +132,7 @@
        interface cross_product_z;             module procedure cross_product_z_BF;              end interface
 
        interface CFL_number;                  module procedure CFL_number_BF;                   end interface
+       interface dt_given_CFL_number;         module procedure dt_given_CFL_number_BF;          end interface
        interface Fourier_number;              module procedure Fourier_number_BF;               end interface
        interface Robin_BC_coeff;              module procedure Robin_BC_coeff_BF;               end interface
 
@@ -567,6 +569,15 @@
          real(cp),intent(in) :: dt
          real(cp) :: CFL
          CFL = CFL_number(U_CC%GF,V_CC%GF,W_CC%GF,B%g,dt)
+       end function
+
+       function dt_given_CFL_number_BF(U_CC,V_CC,W_CC,B,CFL) result(dt)
+         implicit none
+         type(block_field),intent(in) :: U_CC,V_CC,W_CC
+         type(block),intent(in) :: B
+         real(cp),intent(in) :: CFL
+         real(cp) :: dt
+         dt = dt_given_CFL_number(U_CC%GF,V_CC%GF,W_CC%GF,B%g,CFL)
        end function
 
        function Fourier_number_BF(alpha,B,dt) result(Fourier)

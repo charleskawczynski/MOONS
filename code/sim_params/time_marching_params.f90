@@ -14,7 +14,6 @@
        public :: couple_time_step
        public :: prolongate
        public :: update_dt
-       public :: update_dt_CFL
 
        type time_marching_params
          type(RK_Params) :: RKP            ! Runge-Kutta Parameters
@@ -49,7 +48,6 @@
 
        interface prolongate;        module procedure prolongate_TMP;          end interface
        interface update_dt;         module procedure update_dt_TMP;           end interface
-       interface update_dt_CFL;     module procedure update_dt_CFL_TMP;       end interface
 
        contains
 
@@ -260,14 +258,6 @@
          type(time_marching_params),intent(inout) :: TMP
          real(cp),intent(in) :: dt
          TMP%dt = dt
-         TMP%n_step_stop = ceiling(TMP%t_final/TMP%dt)
-       end subroutine
-
-       subroutine update_dt_CFL_TMP(TMP,CFL)
-         implicit none
-         type(time_marching_params),intent(inout) :: TMP
-         real(cp),intent(in) :: CFL
-         TMP%dt = TMP%C_max/(CFL/TMP%dt)
          TMP%n_step_stop = ceiling(TMP%t_final/TMP%dt)
        end subroutine
 

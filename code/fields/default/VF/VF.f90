@@ -75,6 +75,7 @@
         public :: symmetry_error_z,symmetry_local_z
 
         public :: CFL_number
+        public :: dt_given_CFL_number
 
         public :: dot_product,dot
         public :: cross_product
@@ -158,6 +159,7 @@
         interface symmetry_local_z;         module procedure symmetry_local_z_VF;           end interface
 
         interface CFL_number;               module procedure CFL_number_VF;                 end interface
+        interface dt_given_CFL_number;      module procedure dt_given_CFL_number_VF;        end interface
 
         interface assign_BCs;               module procedure assign_BCs_VF;                 end interface
         interface assign_BC_vals;           module procedure assign_BC_vals_VF;             end interface
@@ -1166,6 +1168,15 @@
           real(cp),intent(in) :: dt
           real(cp) :: CFL
           CFL = CFL_number(A%x,A%y,A%z,m,dt)
+        end function
+
+        function dt_given_CFL_number_VF(A,m,CFL) result(dt)
+          implicit none
+          type(VF),intent(in) :: A
+          type(mesh),intent(in) :: m
+          real(cp),intent(in) :: CFL
+          real(cp) :: dt
+          dt = dt_given_CFL_number(A%x,A%y,A%z,m,CFL)
         end function
 
         subroutine assign_BC_vals_VF(A,B)

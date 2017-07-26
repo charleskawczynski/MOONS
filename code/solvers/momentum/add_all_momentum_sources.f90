@@ -31,7 +31,8 @@
          endif
 
          call assign(Fnm1,F)
-         if (TMP%RKP%RK_active) call assign(L,0.0_cp)
+         ! if (TMP%RKP%RK_active) call assign(L,0.0_cp)
+         call assign(L,0.0_cp)
          call assign(F,0.0_cp) ! DO NOT REMOVE THIS, FOLLOW THE COMPUTE_ADD PROCEDURE BELOW
 
          if (SP%MT%pressure_grad%add) then
@@ -48,13 +49,13 @@
            mom%temp_F3,mom%temp_CC)
          endif
          if (SP%MT%diffusion%add) then
-           if (TMP%RKP%RK_active) then
+           ! if (TMP%RKP%RK_active) then
              call compute_add_diffusion(L,mom%m,mom%U,&
              SP%MT%diffusion%scale,mom%temp_F1)
-           else
-             call compute_add_diffusion(F,mom%m,mom%U,&
-             SP%MT%diffusion%scale,mom%temp_F1)
-           endif
+           ! else
+           !   call compute_add_diffusion(F,mom%m,mom%U,&
+           !   SP%MT%diffusion%scale,mom%temp_F1)
+           ! endif
          endif
          if (SP%MT%advection_base_flow%add) then ! For linear stability analysis
            call compute_add_advection_base_flow(F,mom%m,mom%TS%U_ave,mom%U,mom%U_E,&

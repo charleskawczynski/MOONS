@@ -1,6 +1,7 @@
       module SF_mod
         use current_precision_mod
         use IO_tools_mod
+        use array_mod
         use data_location_mod
         use mesh_mod
         use mesh_domain_mod
@@ -77,6 +78,7 @@
         public :: cross_product_z
 
         public :: CFL_number
+        public :: dt_given_CFL_number
         public :: Fourier_number
         public :: Robin_BC_coeff
 
@@ -229,6 +231,7 @@
         interface cross_product_z;          module procedure cross_product_z_SF;           end interface
 
         interface CFL_number;               module procedure CFL_number_SF;                end interface
+        interface dt_given_CFL_number;      module procedure dt_given_CFL_number_SF;       end interface
         interface Fourier_number;           module procedure Fourier_number_SF;            end interface
         interface Robin_BC_coeff;           module procedure Robin_BC_coeff_SF;            end interface
 
@@ -1599,12 +1602,31 @@
           type(SF),intent(in) :: U_CC,V_CC,W_CC
           type(mesh),intent(in) :: m
           real(cp),intent(in) :: dt
+          type(array) :: a
           real(cp) :: CFL
           integer :: t
-          CFL = 0.0_cp
+          call init(a,m%s)
           do t=1,m%s
-            CFL = maxval((/CFL,CFL_number(U_CC%BF(t),V_CC%BF(t),W_CC%BF(t),m%B(t),dt)/))
+            call init(a,CFL_number(U_CC%BF(t),V_CC%BF(t),W_CC%BF(t),m%B(t),dt),t)
           enddo
+          CFL = maxval(a%f)
+          call delete(a)
+        end function
+
+        function dt_given_CFL_number_SF(U_CC,V_CC,W_CC,m,CFL) result(dt)
+          implicit none
+          type(SF),intent(in) :: U_CC,V_CC,W_CC
+          type(mesh),intent(in) :: m
+          real(cp),intent(in) :: CFL
+          type(array) :: a
+          real(cp) :: dt
+          integer :: t
+          call init(a,m%s)
+          do t=1,m%s
+            call init(a,dt_given_CFL_number(U_CC%BF(t),V_CC%BF(t),W_CC%BF(t),m%B(t),CFL),t)
+          enddo
+          dt = minval(a%f)
+          call delete(a)
         end function
 
         function Fourier_number_SF(alpha,m,dt) result(Fourier)
@@ -1612,12 +1634,15 @@
           real(cp),intent(in) :: alpha
           type(mesh),intent(in) :: m
           real(cp),intent(in) :: dt
+          type(array) :: a
           real(cp) :: Fourier
           integer :: t
-          Fourier = 0.0_cp
+          call init(a,m%s)
           do t=1,m%s
-            Fourier = maxval((/Fourier,Fourier_number(alpha,m%B(t),dt)/))
+            call init(a,Fourier_number(alpha,m%B(t),dt),t)
           enddo
+          Fourier = maxval(a%f)
+          call delete(a)
         end function
 
         function Robin_BC_coeff_SF(c_w,m) result(coeff)

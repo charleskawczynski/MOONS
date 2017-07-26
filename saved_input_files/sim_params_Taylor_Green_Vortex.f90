@@ -301,9 +301,9 @@
        ! Sources to add to momentum equation. NOTE: scale is not set if add=false. ORDER MATTERS
        call init(SP%MT%pressure_grad       ,F,-1.0_cp                   )
        call init(SP%MT%diffusion           ,T,SP%VS%U%MFP%coeff_explicit)
-       call init(SP%MT%advection_convection,F,-1.0_cp                   )
+       call init(SP%MT%advection_convection,T,-1.0_cp                   )
        call init(SP%MT%advection_divergence,F,-1.0_cp/SP%DP%Rem         ) ! For Rem ne 1 in Bandaru
-       call init(SP%MT%advection_divergence,T,-1.0_cp                   )
+       call init(SP%MT%advection_divergence,F,-1.0_cp                   )
        call init(SP%MT%advection_base_flow ,F,-1.0_cp                   )
        call init(SP%MT%mean_pressure_grad  ,F,1.0_cp                    )
        call init(SP%MT%JCrossB             ,F,SP%DP%N                   )

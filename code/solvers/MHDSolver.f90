@@ -65,7 +65,7 @@
          write(*,*) '***************************************************************'
          write(*,*) '****************** ENTERING MAIN LOOP *************************'
          write(*,*) '***************************************************************'
-         do while ((.not.KS%terminate_loop).and.(coupled%n_step.lt.coupled%n_step_stop))
+         do while ((.not.KS%terminate_loop).and.(coupled%t.lt.coupled%t_final-coupled%dt*0.5_cp))
            call tic(sc)
            if (SP%print_every_MHD_step) write(*,*) 'coupled%n_step = ',coupled%n_step
            ! if (EF%info%export_now) call print(SP)

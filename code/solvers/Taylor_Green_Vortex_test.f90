@@ -38,7 +38,7 @@
          type(dir_tree),intent(in) :: DT
          type(sim_params),intent(in) :: SP
          type(VF) :: U_analytic
-         type(SF) :: P_analytic,p_actual
+         type(SF) :: P_error,P_analytic,p_actual,p_mod
          real(cp) :: e,dtime,Re
          Re = SP%DP%Re
          dtime = SP%VS%U%TMP%dt
@@ -48,23 +48,31 @@
          call init(U_analytic,U)
          call init(P_analytic,p)
          call init(p_actual,p)
+         call init(p_mod,p)
+         call init(P_error,p)
          call export_processed(m,U,str(DT%test%field),'U_numerical',0)
          call export_processed(m,P,str(DT%test%field),'P_numerical',0)
          call export_raw(m,P,str(DT%test%field),'P_numerical',0)
          call compute_analytic_solution(U_analytic,P_analytic,m,DT,SP)
          call subtract(U_analytic,U)
-         call subtract(P_analytic,p)
+         call subtract(P_error,P_analytic,p)
          call export_raw(m,U_analytic,str(DT%test%field),'U_error',0)
-         call export_raw(m,P_analytic,str(DT%test%field),'P_error',0)
-         call lap(p_actual,p,m)
-         call multiply(p_actual,-SP%VS%U%MFP%alpha*dtime/Re)
-         call add(p_actual,p)
+         call export_raw(m,P_error,str(DT%test%field),'P_error',0)
+         call lap(p_mod,p,m)
+         call multiply(p_mod,-SP%VS%U%MFP%alpha*dtime/Re)
+         call export_raw(m,p_mod,str(DT%test%field),'P_modify',0)
+         call add(p_actual,p,p_mod)
          call export_raw(m,p_actual,str(DT%test%field),'p_actual',0)
+         call subtract(P_error,P_analytic,p_actual)
+         call export_raw(m,P_error,str(DT%test%field),'P_error_actual',0)
+         write(*,*) 't = ',SP%VS%U%TMP%t
          call Ln(e,U_analytic,2.0_cp,m); write(*,*) 'dt,e(U) = ',dtime,e
          call Ln(e,P_analytic,2.0_cp,m); write(*,*) 'dt,e(P) = ',dtime,e
          call delete(U_analytic)
          call delete(P_analytic)
          call delete(p_actual)
+         call delete(p_mod)
+         call delete(P_error)
          write(*,*) ' ************************************************************ '
          write(*,*) ' *************** END TAYLOR GREEN VORTEX TEST *************** '
          write(*,*) ' ************************************************************ '

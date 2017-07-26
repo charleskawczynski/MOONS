@@ -134,6 +134,7 @@
         public :: prolongate_N,restrict_N
 
         public :: CFL_number
+        public :: dt_given_CFL_number
         public :: Fourier_number
         public :: Robin_BC_coeff
 

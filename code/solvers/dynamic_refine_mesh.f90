@@ -87,7 +87,6 @@
              call prolongate(ind,DT,RM,refine_mesh_now_all)
            endif
            call prolongate(coupled,SP%DMR%dt_reduction_factor)
-           call reset_Nmax(sc,coupled%n_step_stop-coupled%n_step)
          endif
 
          if (SP%VS%T%SS%solve) then; steady_solution(1) = steady_final(nrg%probe_divQ)

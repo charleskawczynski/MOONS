@@ -464,7 +464,7 @@
            EF%unsteady_0D%export_now)
          case (6)
            call Euler_time_AB2_sources(mom%PCG_U,mom%PCG_P,mom%U,mom%Ustar,mom%Unm1,&
-           mom%p,F,Fnm1,mom%m,TMP,mom%temp_F1,mom%temp_E,mom%temp_CC,&
+           mom%p,F,Fnm1,mom%m,TMP,mom%temp_F1,mom%L,mom%temp_CC,&
            EF%unsteady_0D%export_now)
          case (7)
            call O2_BDF_time_AB2_sources(mom%PCG_U,mom%PCG_P,mom%U,mom%Ustar,&
