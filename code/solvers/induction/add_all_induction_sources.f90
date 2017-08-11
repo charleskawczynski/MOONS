@@ -26,7 +26,7 @@
          type(sim_params),intent(in) :: SP
 
          call assign(Fnm1,F)
-         if (TMP%RKP%RK_active) call assign(L,0.0_cp)
+         call assign(L,0.0_cp)
          call assign(F,0.0_cp) ! DO NOT REMOVE THIS, FOLLOW THE COMPUTE_ADD PROCEDURE BELOW
 
          if (SP%IT%advection%add) then
@@ -34,14 +34,11 @@
            ind%curlUCrossB,ind%MD_fluid,SP%IT%advection%scale,&
            SP%finite_Rem,ind%temp_F2,ind%temp_E_TF,ind%temp_E)
          endif
+         if (SP%IT%diffusion_linear%add) then
+           call add_curl_J(L,ind%m,ind%J,ind%sigmaInv_edge,SP%IT%diffusion%scale,ind%temp_F2,ind%temp_E)
+         endif
          if (SP%IT%diffusion%add) then
-           if (TMP%RKP%RK_active) then
-             call add_curl_J(L,ind%m,ind%J,ind%sigmaInv_edge,&
-             SP%IT%diffusion%scale,ind%temp_F2,ind%temp_E)
-           else
-             call add_curl_J(F,ind%m,ind%J,ind%sigmaInv_edge,&
-             SP%IT%diffusion%scale,ind%temp_F2,ind%temp_E)
-           endif
+           call add_curl_J(F,ind%m,ind%J,ind%sigmaInv_edge,SP%IT%diffusion%scale,ind%temp_F2,ind%temp_E)
          endif
          if (SP%IT%unsteady_B0%add) then
            call add_unsteady_B0(F,ind%B0,ind%dB0dt,SP%IT%B_applied%scale,SP%IT%unsteady_B0%scale,TMP)

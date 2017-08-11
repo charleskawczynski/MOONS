@@ -13,6 +13,7 @@
        public :: init,delete,export,import,display,print
 
        public :: init_IC_BC
+       public :: print_info
 
        type var
          integer :: IC = 0
@@ -28,13 +29,15 @@
          ! type(export_now) :: EN
        end type
 
-       interface init;      module procedure init_copy_V; end interface
-       interface init_IC_BC;module procedure init_IC_BC_V;end interface
-       interface delete;    module procedure delete_V;    end interface
-       interface export;    module procedure export_V;    end interface
-       interface import;    module procedure import_V;    end interface
-       interface display;   module procedure display_V;   end interface
-       interface print;     module procedure print_V;     end interface
+       interface init;        module procedure init_copy_V;   end interface
+       interface init_IC_BC;  module procedure init_IC_BC_V;  end interface
+       interface delete;      module procedure delete_V;      end interface
+       interface export;      module procedure export_V;      end interface
+       interface import;      module procedure import_V;      end interface
+       interface display;     module procedure display_V;     end interface
+       interface print;       module procedure print_V;       end interface
+       interface print_info;  module procedure print_info_V;  end interface
+       interface display_info;module procedure display_info_V;end interface
 
        contains
 
@@ -126,8 +129,27 @@
 
        subroutine print_V(V)
          implicit none
-         type(var),intent(inout) :: V
+         type(var),intent(in) :: V
          call display(V,6)
+       end subroutine
+
+       subroutine display_info_V(V,un)
+         implicit none
+         type(var),intent(in) :: V
+         integer,intent(in) :: un
+         write(un,*) 'solve_method = ',V%SS%solve_method
+         write(un,*) 'alpha        = ',V%MFP%alpha
+         write(un,*) 'dt           = ',V%TMP%dt
+         write(un,*) 't            = ',V%TMP%t
+         write(un,*) 'tol_rel      = ',V%ISP%tol_rel
+         write(un,*) 'tol_abs      = ',V%ISP%tol_abs
+         write(un,*) 'iter_max     = ',V%ISP%iter_max
+       end subroutine
+
+       subroutine print_info_V(V)
+         implicit none
+         type(var),intent(in) :: V
+         call display_info(V,6)
        end subroutine
 
        end module

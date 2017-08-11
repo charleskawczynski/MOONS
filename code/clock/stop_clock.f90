@@ -18,7 +18,6 @@
        public :: stop_clock
        public :: init,delete,export,print
        public :: tic,toc
-       public :: reset_Nmax
        public :: print_light
 
        type stop_clock
@@ -26,21 +25,13 @@
         type(unit_conversion) :: uc
         type(clock) :: c
         type(string) :: dir,name
-        real(cp) :: seconds_per_iter
+        real(cp) :: seconds_per_step
         real(cp) :: t_passed
-
-        integer(li) :: N,Nmax,NRemaining
-
-        real(cp) :: Nr,Nmaxr
         ! Estimated Quantities
         real(cp) :: estimated_total
         real(cp) :: estimated_remaining
         real(cp) :: percentage_complete,t_elapsed
 
-        integer :: iterPerSec
-        integer :: iterPerMin
-        integer :: iterPerHour
-        integer :: iterPerDay
         logical :: frozen_elapsed = .false. ! For when elapsed is returned negative
         integer :: un_plot
        end type
@@ -56,20 +47,15 @@
        interface export;       module procedure export_sc_dir;   end interface
        interface export;       module procedure export_plot_sc;  end interface
 
-       interface reset_Nmax;   module procedure reset_Nmax_sc;   end interface
-
        contains
 
-      subroutine init_sc(sc,Nmax,dir,name)
+      subroutine init_sc(sc,dir,name)
         implicit none
         type(stop_clock),intent(inout) :: sc
-        integer(li),intent(in) :: Nmax
         character(len=*),intent(in) :: dir,name
         type(string) :: vars
         call delete(sc)
         call init(sc%c)
-        sc%Nmax = Nmax
-        sc%Nmaxr = real(sc%Nmax,cp)
         call init(sc%dir,dir)
         call init(sc%name,name)
 
@@ -95,23 +81,14 @@
         implicit none
         type(stop_clock),intent(inout) :: sc
         call init(sc%c)
-        sc%seconds_per_iter = 0.0_cp
+        sc%seconds_per_step = 0.0_cp
         sc%t_passed = 0.0_cp
-        sc%N = 0
-        sc%Nmax = 0
-        sc%NRemaining = 0
-        sc%Nr = real(sc%N,cp)
-        sc%Nmaxr = real(sc%Nmax,cp)
         sc%frozen_elapsed = .false.
 
         sc%estimated_total = 0.0_cp
         sc%estimated_remaining = 0.0_cp
         sc%percentage_complete = 0.0_cp
 
-        sc%iterPerSec = 0
-        sc%iterPerMin = 0
-        sc%iterPerHour = 0
-        sc%iterPerDay = 0
         close(sc%un_plot)
         call delete(sc%dir)
         call delete(sc%name)
@@ -123,25 +100,19 @@
         call tic(sc%c)
       end subroutine
 
-      subroutine toc_sc(sc)
+      subroutine toc_sc(sc,TMP)
         implicit none
         type(stop_clock),intent(inout) :: sc
+        type(time_marching_params),intent(in) :: TMP
         call toc(sc%c)
         if (sc%c%t_elapsed.lt.0.0_cp) then; sc%frozen_elapsed = .true.
         else;                               sc%t_elapsed = sc%c%t_elapsed
         endif
         sc%t_passed = sc%t_passed + sc%t_elapsed
-        sc%N = sc%N + 1
-        sc%Nr = real(sc%N,cp)
-        sc%seconds_per_iter = sc%t_passed/sc%Nr
-        sc%estimated_total = sc%seconds_per_iter*sc%Nmaxr
+        sc%seconds_per_step = sc%t_elapsed
+        sc%percentage_complete = TMP%t/TMP%t_final*100.0_cp
+        sc%estimated_total = sc%t_passed/(sc%percentage_complete/100.0_cp)
         sc%estimated_remaining = sc%estimated_total - sc%t_passed
-        sc%percentage_complete = sc%Nr/sc%Nmaxr*100.0_cp
-        sc%NRemaining = sc%Nmax - sc%N + 1
-        sc%iterPerSec = floor(1.0_cp/sc%seconds_per_iter)
-        sc%iterPerMin = floor(sc%uc%seconds_per_minute/sc%seconds_per_iter)
-        sc%iterPerHour = floor(sc%uc%seconds_per_hour/sc%seconds_per_iter)
-        sc%iterPerDay = floor(sc%uc%seconds_per_day/sc%seconds_per_iter)
       end subroutine
 
       subroutine export_plot_sc(sc,t)
@@ -178,45 +149,38 @@
         type(time_marching_params),intent(in) :: TMP
         integer,intent(in) :: un
         real(cp) :: temp
-        real(cp),dimension(2) :: temp2
         character(len=1) :: u
         write(un,*) ''
-        write(un,*) '******************* KNOWN WALL CLOCK TIME INFO *********************'
+        write(un,*) ' ****************************** CLOCK INFO ************************* '
         call negative_time_elapsed_reported(sc)
 
-        temp = sc%t_passed; call getTimeWithUnits(temp,u,sc%uc)
-        write(un,*) 'Completed (iter,time) = ',sc%N,temp,' (', u,')'
-
-        temp = sc%seconds_per_iter; call getTimeWithUnits(temp,u,sc%uc)
-        write(un,*) 'Time (seconds/iteration) = ',temp,' (', u,')'
-
-        write(un,*) 'Iter per (s,m,h,d) = ',sc%iterPerSec,sc%iterPerMin,sc%iterPerHour,sc%iterPerDay
-
-        temp2 = (/sc%iterPerHour,sc%iterPerDay/)*TMP%dt
-        write(un,*) 'Convective units/(h,d) = ',temp2
-
-        write(un,*) 'Final convective time = ',TMP%t_final
-
+        write(un,*) 'Convective time'
+        write(un,*) '     per hour       = ',sc%uc%seconds_per_hour/sc%seconds_per_step*TMP%dt
+        write(un,*) '     per day        = ',sc%uc%seconds_per_day/sc%seconds_per_step*TMP%dt
+        ! write(un,*) '     per hour       = ',sc%dt_per_hour*TMP%dt
         ! Or, as Eldredge did it:
         ! CPU_TIME/(convective unit)
         ! CPU_TIME/(convective unit)/unknown
         ! Where unknowns = (3 momentum + 3 induction)*problem size
-
+        write(un,*) '     now            = ',TMP%t
+        write(un,*) '     final          = ',TMP%t_final
         write(un,*) ''
-        write(un,*) '***************** ESTIMATED WALL CLOCK TIME INFO *******************'
 
-        write(un,*) 'Iter (remaining/max) = ',sc%NRemaining,sc%Nmax
-
+        write(un,*) 'Wall clock time '
+        temp = sc%seconds_per_step; call getTimeWithUnits(temp,u,sc%uc)
+        write(un,*) '     per step   (', u,') = ',temp
         temp = sc%estimated_total; call getTimeWithUnits(temp,u,sc%uc)
-        write(un,*) 'Time (total) = ',temp,' (', u,')'
+        write(un,*) '     total      (', u,') = ',temp
 
         temp = sc%estimated_remaining; call getTimeWithUnits(temp,u,sc%uc)
-        write(un,*) 'Time (remaining) = ',temp,' (', u,')'
+        write(un,*) '     remaining  (', u,') = ',temp
 
+        temp = sc%t_passed; call getTimeWithUnits(temp,u,sc%uc)
+        write(un,*) '     completed  (', u,') = ',temp
+        write(un,*) ''
         write(un,*) 'Percentage complete = ',sc%percentage_complete
 
-        write(un,*) ''
-        write(un,*) '********************************************************************'
+        write(un,*) ' ******************************************************************* '
       end subroutine
 
       subroutine print_light_sc(sc,TMP)
@@ -235,10 +199,11 @@
         character(len=1) :: u
         call negative_time_elapsed_reported(sc)
         temp = sc%t_passed; call getTimeWithUnits(temp,u,sc%uc)
-        write(un,*) 'Time (wall clock) = ',temp,' (', u,')'
+        write(un,*) 'Wall clock time *completed* (', u,') = ',temp
         write(un,*) 'Time (convective),n_step = ',TMP%t,TMP%n_step
-        write(un,*) 'Iter per (s,m,h,d) = ',sc%iterPerSec,sc%iterPerMin,sc%iterPerHour,sc%iterPerDay
-        write(un,*) 'Convective units/(h,d) = ',(/sc%iterPerHour,sc%iterPerDay/)*TMP%dt
+        write(un,*) 'Convective time'
+        write(un,*) '     per hour       = ',sc%uc%seconds_per_hour/sc%seconds_per_step*TMP%dt
+        write(un,*) '     per day        = ',sc%uc%seconds_per_day/sc%seconds_per_step*TMP%dt
         write(un,*) '--------------------------------------------------------------'
       end subroutine
 
@@ -267,14 +232,6 @@
           write(*,*) 'WARNING: negative time estimate in stop_clock.f90'
           write(*,*) 'Using last positive elapsed time for time estimates'
         endif
-       end subroutine
-
-      subroutine reset_Nmax_sc(sc,Nmax)
-        implicit none
-        type(stop_clock),intent(inout) :: sc
-        integer(li),intent(in) :: Nmax
-        sc%Nmax = Nmax
-        sc%Nmaxr = real(Nmax,cp)
        end subroutine
 
        end module

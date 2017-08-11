@@ -149,11 +149,10 @@
        ! call init(SP%TSP,T,30.0_cp,60.0_cp)
        call init(SP%TSP,F,700.0_cp,800.0_cp)
 
-       time                          = 10.0_cp
+       time                          = 3.0_cp
        ! time                          = 0.01_cp
        ! dtime                         = 1.0_cp*pow(-2)
-       dtime                         = 1.0_cp*pow(-2)*0.5_cp**(0.0_cp)
-       ! dtime                         = 5.0_cp*pow(-3)*0.5_cp**(0.0_cp)
+       dtime                         = 1.0_cp*pow(-2)*0.5_cp**(4.0_cp)
 
        SP%GP%tw                      = 0.05_cp
        SP%GP%geometry                = 30
@@ -262,7 +261,7 @@
        ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,export_convergence,export_heavy,dir,name)
        call init(SP%VS%T%ISP,  5   ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_T')
        call init(SP%VS%U%ISP,  50  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_U')
-       call init(SP%VS%P%ISP,  500 ,pow(-20),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_P')
+       call init(SP%VS%P%ISP,  100 ,pow(-20),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_P')
        if (     RV_BCs) call init(SP%VS%B%ISP,  20 ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_B')
        if (.not.RV_BCs) call init(SP%VS%B%ISP,  5 ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_B')
        call init(SP%VS%B0%ISP, 5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_B0')
@@ -301,6 +300,7 @@
        ! Sources to add to momentum equation. NOTE: scale is not set if add=false. ORDER MATTERS
        call init(SP%MT%pressure_grad       ,F,-1.0_cp                   )
        call init(SP%MT%diffusion           ,T,SP%VS%U%MFP%coeff_explicit)
+       call init(SP%MT%diffusion_linear    ,F,SP%VS%U%MFP%coeff_explicit)
        call init(SP%MT%advection_convection,T,-1.0_cp                   )
        call init(SP%MT%advection_divergence,F,-1.0_cp/SP%DP%Rem         ) ! For Rem ne 1 in Bandaru
        call init(SP%MT%advection_divergence,F,-1.0_cp                   )
@@ -313,12 +313,13 @@
        call init(SP%MT%Gravity             ,F,1.0_cp/SP%DP%Fr**2.0_cp   )
 
        ! Sources to add to induction equation. NOTE: scale is not set if add=false. ORDER MATTERS
-       call init(SP%IT%B_applied  ,T, 1.0_cp           ) ! B0 = scale*B0
-       call init(SP%IT%current    ,T, 1.0_cp/SP%DP%Rem ) ! J = scale curl(B)
-       call init(SP%IT%advection  ,F, 1.0_cp           )
-       call init(SP%IT%advection  ,T, 1.0_cp/SP%DP%Rem ) ! For Rem ne 1 in Bandaru
-       call init(SP%IT%diffusion  ,T, -SP%VS%B%MFP%beta) ! since LHS and J includes scale
-       call init(SP%IT%unsteady_B0,F, -1.0_cp          ) ! since RHS
+       call init(SP%IT%B_applied       ,T, 1.0_cp           ) ! B0 = scale*B0
+       call init(SP%IT%current         ,T, 1.0_cp/SP%DP%Rem ) ! J = scale curl(B)
+       call init(SP%IT%advection       ,F, 1.0_cp           )
+       call init(SP%IT%advection       ,T, 1.0_cp/SP%DP%Rem ) ! For Rem ne 1 in Bandaru
+       call init(SP%IT%diffusion       ,T, -SP%VS%B%MFP%beta) ! since LHS and J includes scale
+       call init(SP%IT%diffusion_linear,F, -SP%VS%B%MFP%beta) ! since LHS and J includes scale
+       call init(SP%IT%unsteady_B0     ,F, -1.0_cp          ) ! since RHS
 
        ! Sources to add to energy equation. NOTE: scale is not set if add=false. ORDER MATTERS
        call init(SP%ET%advection          , F,-1.0_cp           )

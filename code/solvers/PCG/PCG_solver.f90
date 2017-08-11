@@ -52,10 +52,7 @@
         type(norms) :: res_norm0
         real(cp) :: alpha,rhok,rhokp1 ! betak = rhokp1/rhok
         integer :: i
-        ! call export_raw(m,r,'out/LDC/unknowns/test/','r_SF_before',0)
         call modify_RHS(operator,operator_explicit,x,x_BC,b,vol,k,m,MFP,tempx,tempk,Ax,r)
-        ! call export_raw(m,r,'out/LDC/unknowns/test/','r_SF_after',0)
-        ! stop 'Done in PCG_solver_mod'
 
         ! ********************* START PCG ALGORITHM *********************
         call compute(res_norm0,r)
@@ -126,9 +123,7 @@
         integer :: i
         type(norms) :: res_norm0
         real(cp) :: alpha,rhok,rhokp1 ! betak = rhokp1/rhok
-        ! call export_raw(m,r,'out/LDC/unknowns/test/','r_VF_before',0)
         call modify_RHS(operator,operator_explicit,x,x_BC,b,vol,k,m,MFP,tempx,tempk,Ax,r)
-        ! call export_raw(m,r,'out/LDC/unknowns/test/','r_VF_after',0)
 
         ! ********************* START PCG ALGORITHM *********************
         call compute(res_norm0,r)

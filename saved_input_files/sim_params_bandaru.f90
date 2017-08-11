@@ -146,7 +146,7 @@
        ! Statistics
        ! call init(TSP,collect,t_start,t_stop)
        ! call init(SP%TSP,T,30.0_cp,60.0_cp)
-       call init(SP%TSP,F,700.0_cp,800.0_cp)
+       call init(SP%TSP,F,1000.0_cp,1200.0_cp)
 
        time                          = 2000.0_cp
        ! dtime                         = 1.0_cp*pow(-2)
@@ -164,7 +164,7 @@
        call delete(SP%DP)
        SP%DP%Re                      = 200.0_cp
        ! SP%DP%N                       = 5.0_cp*pow(0)
-       SP%DP%Q                       = 3.0_cp*pow(-1)
+       SP%DP%Q                       = 10.0_cp*pow(-1)
        if (     RV_BCs) SP%DP%Rem                     = 1.0_cp*pow(0)
        if (.not.RV_BCs) SP%DP%Rem                     = 1.0_cp*pow(0)
        ! SP%DP%Ha                      = 5.0_cp*pow(2)
@@ -298,6 +298,7 @@
        ! Sources to add to momentum equation. NOTE: scale is not set if add=false
        call init(SP%MT%pressure_grad       ,F,-1.0_cp                   )
        call init(SP%MT%diffusion           ,T,SP%VS%U%MFP%coeff_explicit)
+       call init(SP%MT%diffusion_linear    ,F,SP%VS%U%MFP%coeff_explicit)
        call init(SP%MT%advection_convection,F,-1.0_cp                   )
        call init(SP%MT%advection_divergence,F,-1.0_cp                   )
        call init(SP%MT%advection_divergence,T,-1.0_cp/SP%DP%Rem         ) ! For Rem ne 1 in Bandaru
@@ -310,12 +311,13 @@
        call init(SP%MT%Gravity             ,F,1.0_cp/SP%DP%Fr**2.0_cp   )
 
        ! Sources to add to induction equation. NOTE: scale is not set if add=false
-       call init(SP%IT%B_applied  ,T, 1.0_cp           ) ! B0 = scale*B0
-       call init(SP%IT%current    ,T, 1.0_cp/SP%DP%Rem ) ! J = scale curl(B)
-       call init(SP%IT%advection  ,F, 1.0_cp           )
-       call init(SP%IT%advection  ,T, 1.0_cp/SP%DP%Rem ) ! For Rem ne 1 in Bandaru
-       call init(SP%IT%diffusion  ,T, -SP%VS%B%MFP%beta) ! since LHS and J includes scale
-       call init(SP%IT%unsteady_B0,F, -1.0_cp          ) ! since RHS
+       call init(SP%IT%B_applied       ,T, 1.0_cp           ) ! B0 = scale*B0
+       call init(SP%IT%current         ,T, 1.0_cp/SP%DP%Rem ) ! J = scale curl(B)
+       call init(SP%IT%advection       ,F, 1.0_cp           )
+       call init(SP%IT%advection       ,T, 1.0_cp/SP%DP%Rem ) ! For Rem ne 1 in Bandaru
+       call init(SP%IT%diffusion       ,T, -SP%VS%B%MFP%beta) ! since LHS and J includes scale
+       call init(SP%IT%diffusion_linear,F, -SP%VS%B%MFP%beta) ! since LHS and J includes scale
+       call init(SP%IT%unsteady_B0     ,F, -1.0_cp          ) ! since RHS
 
        ! Sources to add to energy equation. NOTE: scale is not set if add=false
        call init(SP%ET%advection          , F,-1.0_cp           )

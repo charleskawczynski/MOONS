@@ -10,6 +10,7 @@
        public :: init,delete,export,import,display,print
        public :: display_exit_loop
        public :: print_exit_loop
+       public :: import_exit_criteria
 
        public :: check_res
        public :: solve_exact
@@ -33,29 +34,30 @@
          integer :: n_skip_check_res = 1              ! number of iterations to skip before checking residual
        end type
 
-       interface init;              module procedure init_ISP;              end interface
-       interface init;              module procedure init_copy_ISP;         end interface
-       interface delete;            module procedure delete_ISP;            end interface
-       interface export;            module procedure export_ISP;            end interface
-       interface export;            module procedure export_ISP_wrapper;    end interface
-       interface import;            module procedure import_ISP;            end interface
-       interface import;            module procedure import_ISP_wrapper;    end interface
-       interface display;           module procedure display_ISP;           end interface
-       interface print;             module procedure print_ISP;             end interface
-       interface display_exit_loop; module procedure display_exit_loop_ISP; end interface
-       interface print_exit_loop;   module procedure print_exit_loop_ISP;   end interface
+       interface init;                 module procedure init_ISP;                 end interface
+       interface init;                 module procedure init_copy_ISP;            end interface
+       interface delete;               module procedure delete_ISP;               end interface
+       interface export;               module procedure export_ISP;               end interface
+       interface export;               module procedure export_ISP_wrapper;       end interface
+       interface import;               module procedure import_ISP;               end interface
+       interface import;               module procedure import_ISP_wrapper;       end interface
+       interface import_exit_criteria; module procedure import_exit_criteria_ISP; end interface
+       interface display;              module procedure display_ISP;              end interface
+       interface print;                module procedure print_ISP;                end interface
+       interface display_exit_loop;    module procedure display_exit_loop_ISP;    end interface
+       interface print_exit_loop;      module procedure print_exit_loop_ISP;      end interface
 
-       interface check_res;         module procedure check_res_ISP;         end interface
-       interface update_exit_loop;  module procedure update_exit_loop_ISP;  end interface
-       interface update_exit_loop;  module procedure update_exit_loop_ISP2; end interface
-       interface update_iter;       module procedure update_iter_ISP;       end interface
-       interface init_iter_per_call;module procedure init_iter_per_call_ISP;end interface
+       interface check_res;            module procedure check_res_ISP;            end interface
+       interface update_exit_loop;     module procedure update_exit_loop_ISP;     end interface
+       interface update_exit_loop;     module procedure update_exit_loop_ISP2;    end interface
+       interface update_iter;          module procedure update_iter_ISP;          end interface
+       interface init_iter_per_call;   module procedure init_iter_per_call_ISP;   end interface
 
-       interface boost;             module procedure boost_ISP;             end interface
-       interface reset;             module procedure reset_ISP;             end interface
+       interface boost;                module procedure boost_ISP;                end interface
+       interface reset;                module procedure reset_ISP;                end interface
 
-       interface solve_exact;       module procedure solve_exact_ISP;       end interface
-       interface solve_exact;       module procedure solve_exact_N_ISP;     end interface
+       interface solve_exact;          module procedure solve_exact_ISP;          end interface
+       interface solve_exact;          module procedure solve_exact_N_ISP;        end interface
 
        contains
 
@@ -123,10 +125,10 @@
          integer,intent(in) :: un
          write(un,*) ' -------- iter_solver_params -------- '
          write(un,*) 'iter_max           = '; write(un,*) ISP%iter_max
-         write(un,*) 'iter_total         = '; write(un,*) ISP%iter_total
-         write(un,*) 'iter_per_call      = '; write(un,*) ISP%iter_per_call
          write(un,*) 'tol_rel            = '; write(un,*) ISP%tol_rel
          write(un,*) 'tol_abs            = '; write(un,*) ISP%tol_abs
+         write(un,*) 'iter_total         = '; write(un,*) ISP%iter_total
+         write(un,*) 'iter_per_call      = '; write(un,*) ISP%iter_per_call
          write(un,*) 'n_skip_check_res   = '; write(un,*) ISP%n_skip_check_res
          write(un,*) 'export_convergence = '; write(un,*) ISP%export_convergence
          write(un,*) 'export_heavy       = '; write(un,*) ISP%export_heavy
@@ -151,10 +153,10 @@
          integer,intent(in) :: un
          read(un,*);
          read(un,*); read(un,*) ISP%iter_max
-         read(un,*); read(un,*) ISP%iter_total
-         read(un,*); read(un,*) ISP%iter_per_call
          read(un,*); read(un,*) ISP%tol_rel
          read(un,*); read(un,*) ISP%tol_abs
+         read(un,*); read(un,*) ISP%iter_total
+         read(un,*); read(un,*) ISP%iter_per_call
          read(un,*); read(un,*) ISP%n_skip_check_res
          read(un,*); read(un,*) ISP%export_convergence
          read(un,*); read(un,*) ISP%export_heavy
@@ -177,13 +179,27 @@
          implicit none
          type(iter_solver_params),intent(in) :: ISP
          integer,intent(in) :: un
-         write(un,*) 'iter_max             = ',ISP%iter_max
-         write(un,*) 'iter_total           = ',ISP%iter_total
-         write(un,*) 'iter_per_call        = ',ISP%iter_per_call
-         write(un,*) 'tol_rel              = ',ISP%tol_rel
-         write(un,*) 'tol_abs              = ',ISP%tol_abs
-         write(un,*) 'n_skip_check_res     = ',ISP%n_skip_check_res
-         write(un,*) 'exit_loop            = ',ISP%exit_loop
+         write(un,*) 'iter_max           = ',ISP%iter_max
+         write(un,*) 'tol_rel            = ',ISP%tol_rel
+         write(un,*) 'tol_abs            = ',ISP%tol_abs
+         write(un,*) 'iter_total         = ',ISP%iter_total
+         write(un,*) 'iter_per_call      = ',ISP%iter_per_call
+         write(un,*) 'n_skip_check_res   = ',ISP%n_skip_check_res
+         write(un,*) 'export_convergence = ',ISP%export_convergence
+         write(un,*) 'export_heavy       = ',ISP%export_heavy
+         write(un,*) 'exit_loop          = ',ISP%exit_loop
+       end subroutine
+
+       subroutine import_exit_criteria_ISP(ISP)
+         implicit none
+         type(iter_solver_params),intent(inout) :: ISP
+         type(iter_solver_params) :: temp
+         call init(temp,ISP)
+         call import(temp)
+         ISP%tol_rel = temp%tol_rel
+         ISP%tol_abs = temp%tol_abs
+         ISP%iter_max = temp%iter_max
+         call delete(temp)
        end subroutine
 
        subroutine display_exit_loop_ISP(ISP,un)

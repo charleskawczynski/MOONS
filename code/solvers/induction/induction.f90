@@ -574,7 +574,7 @@
            EF%unsteady_0D%export_now)
          case (6)
            call Euler_time_AB2_sources(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%Bstar,ind%Bnm1,&
-           ind%phi,F,Fnm1,ind%m,TMP,ind%temp_F1,ind%temp_E,ind%temp_CC,&
+           ind%phi,F,Fnm1,ind%m,TMP,ind%temp_F1,ind%L,ind%temp_CC,&
            EF%unsteady_0D%export_now)
          case (7)
            call O2_BDF_time_AB2_sources(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%Bstar,&

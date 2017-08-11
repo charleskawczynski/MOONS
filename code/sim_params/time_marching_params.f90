@@ -9,6 +9,7 @@
        public :: time_marching_params
        public :: init,delete,export,import,display,print
        public :: iterate_step
+       public :: import_dt
        public :: iterate_RK
        public :: assign_RK_stage
        public :: couple_time_step
@@ -38,6 +39,7 @@
        interface import;            module procedure import_TMP;              end interface
        interface import;            module procedure import_TMP_wrapper;      end interface
        interface import;            module procedure import_TMP_wrapper_name; end interface
+       interface import_dt;         module procedure import_dt_TMP_wrapper;   end interface
        interface display;           module procedure display_TMP;             end interface
        interface print;             module procedure print_TMP;               end interface
        interface iterate_step;      module procedure iterate_step_TMP;        end interface
@@ -164,7 +166,18 @@
          integer :: un
          un = open_to_read(str(TMP%dir),str(TMP%name))
          call import(TMP,un)
-         call close_and_message(un,str(TMP%dir),str(TMP%name))
+         ! call close_and_message(un,str(TMP%dir),str(TMP%name))
+         close(un)
+       end subroutine
+
+       subroutine import_dt_TMP_wrapper(TMP)
+         implicit none
+         type(time_marching_params),intent(inout) :: TMP
+         type(time_marching_params) :: temp
+         call init(temp,TMP)
+         call import(temp)
+         TMP%dt = temp%dt
+         call delete(temp)
        end subroutine
 
        subroutine export_TMP_wrapper_name(TMP,dir)

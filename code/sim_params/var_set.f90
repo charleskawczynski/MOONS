@@ -1,6 +1,7 @@
        module var_set_mod
        use current_precision_mod
        use var_mod
+       use iter_solver_params_mod
        use time_marching_params_mod
        use string_mod
        use path_mod
@@ -11,6 +12,7 @@
        public :: var_set
        public :: init,delete,export,import,display,print
 
+       public :: print_info
        public :: export_import_SS
        public :: couple_time_step
 
@@ -22,6 +24,10 @@
 
        public :: export_TMP
        public :: import_TMP
+       public :: import_TMP_dt
+       public :: export_ISP
+       public :: import_ISP
+       public :: import_exit_criteria
 
        type var_set
          type(var) :: T,U,p,B,B0,phi,rho
@@ -35,6 +41,7 @@
        interface print;                 module procedure print_VS;                 end interface
 
        interface export_import_SS;      module procedure export_import_SS_VS;      end interface
+       interface print_info;            module procedure print_info_VS;            end interface
 
        interface couple_time_step;      module procedure couple_time_step_VS;      end interface
        interface assign_beta;           module procedure assign_beta_VS;           end interface
@@ -42,8 +49,12 @@
        interface assign_coeff_explicit; module procedure assign_coeff_explicit_VS; end interface
 
        interface sanity_check;          module procedure sanity_check_VS;          end interface
+       interface export_ISP;            module procedure export_ISP_VS;            end interface
+       interface import_ISP;            module procedure import_ISP_VS;            end interface
+       interface import_exit_criteria;  module procedure import_exit_criteria_VS;  end interface
        interface export_TMP;            module procedure export_TMP_VS;            end interface
        interface import_TMP;            module procedure import_TMP_VS;            end interface
+       interface import_TMP_dt;         module procedure import_TMP_dt_VS;         end interface
 
        contains
 
@@ -144,6 +155,42 @@
          if(VS%rho%SS%restart) then;call import(VS%rho%TMP);else;call export(VS%rho%TMP);endif
        end subroutine
 
+       subroutine export_ISP_VS(VS)
+         implicit none
+         type(var_set),intent(in) :: VS
+         if(VS%T%SS%initialize) call export(VS%T%ISP)
+         if(VS%U%SS%initialize) call export(VS%U%ISP)
+         if(VS%P%SS%initialize) call export(VS%P%ISP)
+         if(VS%B%SS%initialize) call export(VS%B%ISP)
+         if(VS%B0%SS%initialize) call export(VS%B0%ISP)
+         if(VS%phi%SS%initialize) call export(VS%phi%ISP)
+         if(VS%rho%SS%initialize) call export(VS%rho%ISP)
+       end subroutine
+
+       subroutine import_ISP_VS(VS)
+         implicit none
+         type(var_set),intent(inout) :: VS
+         if(VS%T%SS%initialize) call import(VS%T%ISP)
+         if(VS%U%SS%initialize) call import(VS%U%ISP)
+         if(VS%P%SS%initialize) call import(VS%P%ISP)
+         if(VS%B%SS%initialize) call import(VS%B%ISP)
+         if(VS%B0%SS%initialize) call import(VS%B0%ISP)
+         if(VS%phi%SS%initialize) call import(VS%phi%ISP)
+         if(VS%rho%SS%initialize) call import(VS%rho%ISP)
+       end subroutine
+
+       subroutine import_exit_criteria_VS(VS)
+         implicit none
+         type(var_set),intent(inout) :: VS
+         if(VS%T%SS%initialize) call import_exit_criteria(VS%T%ISP)
+         if(VS%U%SS%initialize) call import_exit_criteria(VS%U%ISP)
+         if(VS%P%SS%initialize) call import_exit_criteria(VS%P%ISP)
+         if(VS%B%SS%initialize) call import_exit_criteria(VS%B%ISP)
+         if(VS%B0%SS%initialize) call import_exit_criteria(VS%B0%ISP)
+         if(VS%phi%SS%initialize) call import_exit_criteria(VS%phi%ISP)
+         if(VS%rho%SS%initialize) call import_exit_criteria(VS%rho%ISP)
+       end subroutine
+
        subroutine couple_time_step_VS(VS,coupled)
          implicit none
          type(var_set),intent(inout) :: VS
@@ -236,5 +283,28 @@
          if (VS%rho%SS%initialize) call import(VS%rho%TMP)
        end subroutine
 
+       subroutine import_TMP_dt_VS(VS)
+         implicit none
+         type(var_set),intent(inout) :: VS
+         if (VS%T%SS%initialize)   call import_dt(VS%T%TMP)
+         if (VS%U%SS%initialize)   call import_dt(VS%U%TMP)
+         if (VS%P%SS%initialize)   call import_dt(VS%P%TMP)
+         if (VS%B%SS%initialize)   call import_dt(VS%B%TMP)
+         if (VS%B0%SS%initialize)  call import_dt(VS%B0%TMP)
+         if (VS%phi%SS%initialize) call import_dt(VS%phi%TMP)
+         if (VS%rho%SS%initialize) call import_dt(VS%rho%TMP)
+       end subroutine
+
+       subroutine print_info_VS(VS)
+         implicit none
+         type(var_set),intent(in) :: VS
+         if (VS%T%SS%initialize)   call print_info(VS%T)
+         if (VS%U%SS%initialize)   call print_info(VS%U)
+         if (VS%P%SS%initialize)   call print_info(VS%P)
+         if (VS%B%SS%initialize)   call print_info(VS%B)
+         if (VS%B0%SS%initialize)  call print_info(VS%B0)
+         if (VS%phi%SS%initialize) call print_info(VS%phi)
+         if (VS%rho%SS%initialize) call print_info(VS%rho)
+       end subroutine
 
        end module

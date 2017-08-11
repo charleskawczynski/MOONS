@@ -58,7 +58,11 @@
          call init(RM,str(DT%refine_mesh),'RM'); call export(RM)
          call init(EF,SP%EF); call export(SP%EF)
          call init(ES,SP%export_safe_period)
-         call init(sc,coupled%n_step_stop-coupled%n_step,str(DT%wall_clock),'WALL_CLOCK_TIME_INFO')
+         call init(sc,str(DT%wall_clock),'WALL_CLOCK_TIME_INFO')
+
+         call export_ISP(SP%VS)
+         call export_TMP(SP%VS)
+         call export(coupled)
 
          if (SP%export_heavy) write(*,*) 'Working directory = ',str(DT%tar)
 
@@ -90,7 +94,7 @@
              if (SP%VS%B%SS%solve) then
                call embedVelocity_E(ind%U_E,mom%U_E,ind%MD_fluid)
                call add_all_induction_sources(ind%F,ind%Fnm1,ind%L,ind,SP%VS%B%TMP,SP,mom)
-               call solve(ind,SP,ind%F,ind%Fnm1,ind%L,SP%VS%B%TMP ,EF)
+               call solve(ind,SP,ind%F,ind%Fnm1,ind%L,SP%VS%B%TMP,EF)
              endif
              call iterate_RK(SP%VS%T%TMP)
              call iterate_RK(SP%VS%U%TMP)
@@ -111,9 +115,20 @@
            ! Statistics
            call update(mom%TS,mom%m,mom%U,SP%VS%U%TMP,mom%temp_F1,mom%temp_CC_VF,mom%TF_CC)
 
-           if (EN%any_now) then;
-             call export_TMP(SP%VS); call export(coupled)
+           if (EN%any_now) then
+             call export_ISP(SP%VS)
+             call export_TMP(SP%VS)
+             call export(coupled)
            endif
+
+           call import_exit_criteria(mom%PCG_U%ISP)
+           call import_exit_criteria(mom%PCG_P%ISP)
+           call import_exit_criteria(ind%PCG_B%ISP)
+           call import_exit_criteria(ind%PCG_cleanB%ISP)
+           call import_exit_criteria(SP%VS)
+           call import_TMP_dt(SP%VS)
+           call import_dt(coupled)
+           if (SP%couple_time_steps) call couple_time_step(SP%VS,coupled)
 
            ! call print(coupled%RKP,'coupled')
            call update(ES,sc%t_passed)
@@ -126,7 +141,7 @@
            call update(RM)
            if (RM%any_next) call export(RM)
 
-           call toc(sc)
+           call toc(sc,coupled)
            if (EF%info%export_now) then
              ! oldest_modified_file violates intent, but this
              ! would be better to update outside the solvers,
@@ -149,6 +164,7 @@
          ! ***************************************************************
          ! ********** FINISHED SOLVING MHD EQUATIONS *********************
          ! ***************************************************************
+         call export_ISP(SP%VS)
          call export_TMP(SP%VS)
          call export(coupled)
 

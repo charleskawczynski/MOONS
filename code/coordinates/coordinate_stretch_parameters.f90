@@ -5,8 +5,11 @@
        private
        public :: RobertsBL
        public :: HartmannBL
+       public :: Hartmann_BL_1D
        public :: ReynoldsBL
+       public :: Reynolds_BL_1D
        public :: Re_Ha_BL
+       public :: Re_Ha_BL_1D
 
        contains
 
@@ -65,6 +68,19 @@
          enddo
        end function
 
+       function Hartmann_BL_1D(Ha,hmin,hmax) result (beta)
+         implicit none
+         real(cp),intent(in) :: hmin,hmax
+         real(cp),intent(in) :: Ha
+         real(cp) :: beta
+         real(cp) :: tol
+         tol = 10.0_cp**(-10.0_cp)
+         if (Ha.lt.tol) then
+          stop 'Error: Hartmann number is nearly zero in HartmannBL in coordinate_stretch_parameters.f90'
+         endif
+         beta = robertsBL((hmax-hmin)/Ha,hmin,hmax)
+       end function
+
        function ReynoldsBL(Re,hmin,hmax) result (beta)
          implicit none
          real(cp),dimension(3),intent(in) :: hmin,hmax
@@ -81,6 +97,19 @@
          enddo
        end function
 
+       function Reynolds_BL_1D(Re,hmin,hmax) result (beta)
+         implicit none
+         real(cp),intent(in) :: hmin,hmax
+         real(cp),intent(in) :: Re
+         real(cp) :: beta
+         real(cp) :: tol
+         tol = 10.0_cp**(-10.0_cp)
+         if (Re.lt.tol) then
+          stop 'Error: Reynolds number is nearly zero in ReynoldsBL in coordinate_stretch_parameters.f90'
+         endif
+         beta = robertsBL((hmax-hmin)/sqrt(Re),hmin,hmax)
+       end function
+
        function Re_Ha_BL(Re,Ha,hmin,hmax) result (beta)
          implicit none
          real(cp),dimension(3),intent(in) :: hmin,hmax
@@ -92,6 +121,16 @@
          do i=1,3
            beta(i) = minval((/temp1(i),temp2(i)/))
          enddo
+       end function
+
+       function Re_Ha_BL_1D(Re,Ha,hmin,hmax) result (beta)
+         implicit none
+         real(cp),intent(in) :: hmin,hmax
+         real(cp),intent(in) :: Re,Ha
+         real(cp) :: beta,temp1,temp2
+         temp1 = Reynolds_BL_1D(Re,hmin,hmax)
+         temp2 = Hartmann_BL_1D(Ha,hmin,hmax)
+         beta = minval((/temp1,temp2/))
        end function
 
        end module

@@ -21,6 +21,7 @@
        type(equation_term) :: advection_convection
        type(equation_term) :: advection_base_flow
        type(equation_term) :: diffusion
+       type(equation_term) :: diffusion_linear
        type(equation_term) :: mean_pressure_grad
        type(equation_term) :: JCrossB
        type(equation_term) :: Q2D_JCrossB
@@ -39,6 +40,7 @@
        call init(MT%advection_convection,MT_in%advection_convection)
        call init(MT%advection_base_flow,MT_in%advection_base_flow)
        call init(MT%diffusion,MT_in%diffusion)
+       call init(MT%diffusion_linear,MT_in%diffusion_linear)
        call init(MT%mean_pressure_grad,MT_in%mean_pressure_grad)
        call init(MT%JCrossB,MT_in%JCrossB)
        call init(MT%Q2D_JCrossB,MT_in%Q2D_JCrossB)
@@ -54,6 +56,7 @@
        call delete(MT%advection_convection)
        call delete(MT%advection_base_flow)
        call delete(MT%diffusion)
+       call delete(MT%diffusion_linear)
        call delete(MT%mean_pressure_grad)
        call delete(MT%JCrossB)
        call delete(MT%Q2D_JCrossB)
@@ -70,6 +73,7 @@
        call display(MT%advection_convection,un,'advection_convection')
        call display(MT%advection_base_flow ,un,'advection_base_flow')
        call display(MT%diffusion           ,un,'diffusion')
+       call display(MT%diffusion_linear    ,un,'diffusion_linear')
        call display(MT%mean_pressure_grad  ,un,'mean_pressure_grad')
        call display(MT%JCrossB             ,un,'JCrossB')
        call display(MT%Q2D_JCrossB         ,un,'Q2D_JCrossB')
@@ -93,6 +97,7 @@
        call export(MT%advection_convection,un,'advection_convection')
        call export(MT%advection_base_flow ,un,'advection_base_flow')
        call export(MT%diffusion           ,un,'diffusion')
+       call export(MT%diffusion_linear    ,un,'diffusion_linear')
        call export(MT%mean_pressure_grad  ,un,'mean_pressure_grad')
        call export(MT%JCrossB             ,un,'JCrossB')
        call export(MT%Q2D_JCrossB         ,un,'Q2D_JCrossB')
@@ -111,6 +116,7 @@
        call import(MT%advection_convection,un)
        call import(MT%advection_base_flow ,un)
        call import(MT%diffusion           ,un)
+       call import(MT%diffusion_linear    ,un)
        call import(MT%mean_pressure_grad  ,un)
        call import(MT%JCrossB             ,un)
        call import(MT%Q2D_JCrossB         ,un)

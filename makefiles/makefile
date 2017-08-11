@@ -3,7 +3,7 @@
 RELEASE = 'OPTIMIZE'
 # RELEASE = 'PROFILE'
 USE_OPEN_MP = 'TRUE'
-# PARALLELIZE_3D_OPS = 'TRUE'
+PARALLELIZE_3D_OPS = 'TRUE'
 # PARALLELIZE_2D_OPS = 'TRUE'
 # PARALLELIZE_1D_OPS = 'TRUE'
 # FORMAT_OUTPUT = 'FORMATTED'
@@ -43,7 +43,7 @@ endif
 SRC_DIR = ..$(PS)code
 
 ifeq ($(CLUSTER),'PC_CK')
-	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS3
+	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS2
 endif
 
 ifeq ($(CLUSTER),'Workstation_CK')
@@ -338,6 +338,9 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)sim_params$(PS)dimensionless_params.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)geometry_props.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)mesh_quality_params.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)segment.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)segment_extend.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)mesh_params.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)iter_solver_params.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)solver_settings.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)RK_Params.f90\
@@ -461,6 +464,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_complex_BC_geometries.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_benchmark_geometries.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_generate.f90\
+	$(SRC_DIR)$(PS)mesh$(PS)generate_mesh_generic.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)SF$(PS)SF.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)VF$(PS)VF.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)TF$(PS)TF.f90\
