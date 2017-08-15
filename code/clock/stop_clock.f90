@@ -26,11 +26,14 @@
         type(clock) :: c
         type(string) :: dir,name
         real(cp) :: seconds_per_step
+        real(cp) :: sim_time_per_sec
         real(cp) :: t_passed
         ! Estimated Quantities
         real(cp) :: estimated_total
         real(cp) :: estimated_remaining
-        real(cp) :: percentage_complete,t_elapsed
+        real(cp) :: percentage_complete_RB
+        real(cp) :: percentage_complete_SB
+        real(cp) :: t_elapsed
 
         logical :: frozen_elapsed = .false. ! For when elapsed is returned negative
         integer :: un_plot
@@ -82,12 +85,14 @@
         type(stop_clock),intent(inout) :: sc
         call init(sc%c)
         sc%seconds_per_step = 0.0_cp
+        sc%sim_time_per_sec = 0.0_cp
         sc%t_passed = 0.0_cp
         sc%frozen_elapsed = .false.
 
         sc%estimated_total = 0.0_cp
         sc%estimated_remaining = 0.0_cp
-        sc%percentage_complete = 0.0_cp
+        sc%percentage_complete_RB = 0.0_cp
+        sc%percentage_complete_SB = 0.0_cp
 
         close(sc%un_plot)
         call delete(sc%dir)
@@ -110,9 +115,11 @@
         endif
         sc%t_passed = sc%t_passed + sc%t_elapsed
         sc%seconds_per_step = sc%t_elapsed
-        sc%percentage_complete = TMP%t/TMP%t_final*100.0_cp
-        sc%estimated_total = sc%t_passed/(sc%percentage_complete/100.0_cp)
-        sc%estimated_remaining = sc%estimated_total - sc%t_passed
+        sc%sim_time_per_sec = TMP%dt/sc%seconds_per_step
+        sc%estimated_remaining = (TMP%t_final-TMP%t)/sc%sim_time_per_sec
+        sc%estimated_total = sc%t_passed + sc%estimated_remaining
+        sc%percentage_complete_RB = (sc%estimated_total-sc%estimated_remaining)/sc%estimated_total*100.0_cp
+        sc%percentage_complete_SB = TMP%t/TMP%t_final*100.0_cp
       end subroutine
 
       subroutine export_plot_sc(sc,t)
@@ -155,30 +162,31 @@
         call negative_time_elapsed_reported(sc)
 
         write(un,*) 'Convective time'
-        write(un,*) '     per hour       = ',sc%uc%seconds_per_hour/sc%seconds_per_step*TMP%dt
-        write(un,*) '     per day        = ',sc%uc%seconds_per_day/sc%seconds_per_step*TMP%dt
-        ! write(un,*) '     per hour       = ',sc%dt_per_hour*TMP%dt
+        write(un,*) '     per hour             = ',sc%sim_time_per_sec*sc%uc%seconds_per_hour
+        write(un,*) '     per day              = ',sc%sim_time_per_sec*sc%uc%seconds_per_day
         ! Or, as Eldredge did it:
         ! CPU_TIME/(convective unit)
         ! CPU_TIME/(convective unit)/unknown
         ! Where unknowns = (3 momentum + 3 induction)*problem size
-        write(un,*) '     now            = ',TMP%t
-        write(un,*) '     final          = ',TMP%t_final
+        write(un,*) '     now                  = ',TMP%t
+        write(un,*) '     final                = ',TMP%t_final
         write(un,*) ''
 
         write(un,*) 'Wall clock time '
         temp = sc%seconds_per_step; call getTimeWithUnits(temp,u,sc%uc)
-        write(un,*) '     per step   (', u,') = ',temp
+        write(un,*) '     per step         (', u,') = ',temp
         temp = sc%estimated_total; call getTimeWithUnits(temp,u,sc%uc)
-        write(un,*) '     total      (', u,') = ',temp
+        write(un,*) '     total            (', u,') = ',temp
 
         temp = sc%estimated_remaining; call getTimeWithUnits(temp,u,sc%uc)
-        write(un,*) '     remaining  (', u,') = ',temp
+        write(un,*) '     remaining        (', u,') = ',temp
 
         temp = sc%t_passed; call getTimeWithUnits(temp,u,sc%uc)
-        write(un,*) '     completed  (', u,') = ',temp
+        write(un,*) '     completed        (', u,') = ',temp
         write(un,*) ''
-        write(un,*) 'Percentage complete = ',sc%percentage_complete
+        write(un,*) 'Percentage complete'
+        write(un,*) '     Rate  based estimate = ',sc%percentage_complete_RB
+        write(un,*) '     State based estimate = ',sc%percentage_complete_SB
 
         write(un,*) ' ******************************************************************* '
       end subroutine

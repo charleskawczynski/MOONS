@@ -10,6 +10,7 @@
        use mesh_mod
        use mesh_domain_mod
        use mesh_generate_mod
+       use generate_mesh_generic_mod
        use VF_mod
        use string_mod
        use path_mod
@@ -52,7 +53,7 @@
          type(induction) :: ind
          type(energy) :: nrg
          ! type(density) :: dens
-         type(mesh) :: m_mom,m_ind,m_temp
+         type(mesh) :: m_mom,m_ind,m_temp,m_sigma
          ! type(mesh) :: m_ind_interior
          ! ********************** MEDIUM VARIABLES **********************
          type(mesh_domain) :: MD_fluid,MD_sigma
@@ -105,7 +106,12 @@
            call import(MD_sigma,str(DT%mesh_restart),'MD_sigma')
            call import(MD_fluid,str(DT%mesh_restart),'MD_fluid')
          else
-           call mesh_generate(m_mom,m_ind,MD_sigma,SP)
+           ! call mesh_generate(m_mom,m_ind,MD_sigma,SP) ! original mesh
+           call generate_mesh_generic(m_mom,SP%MP_mom,SP%DP,'momentum in MOONS.f90')
+           call generate_mesh_generic(m_sigma,SP%MP_sigma,SP%DP,'sigma in MOONS.f90')
+           call generate_mesh_generic(m_ind,SP%MP_ind,SP%DP,'induction in MOONS.f90')
+           call init(MD_sigma,m_sigma,m_ind)
+           call delete(m_sigma)
            ! call init(m_ind_interior,MD_sigma%m_R2)
 
            if (SP%VS%U%SS%initialize) then; call init_props(m_mom); call patch(m_mom); endif

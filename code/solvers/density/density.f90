@@ -52,8 +52,6 @@
 
          type(mesh) :: m
          type(mesh_domain) :: MD
-
-         type(sim_params) :: SP
        end type
 
        interface init;               module procedure init_density;             end interface
@@ -81,7 +79,6 @@
          type(dir_tree),intent(in) :: DT
          integer :: temp_unit
          write(*,*) 'Initializing density:'
-         call init(dens%SP,SP)
 
          call init(dens%m,m)
          call init(dens%MD,MD)
@@ -95,19 +92,19 @@
          write(*,*) '     Fields allocated'
 
          ! --- Initialize Fields ---
-         call init_rho_BCs(dens%rho,m,dens%SP)
-         if (dens%SP%VS%rho%SS%solve) call print_BCs(dens%rho,'rho')
-         if (dens%SP%VS%rho%SS%solve) call export_BCs(dens%rho,str(DT%rho%BCs),'rho')
+         call init_rho_BCs(dens%rho,m,SP)
+         if (SP%VS%rho%SS%solve) call print_BCs(dens%rho,'rho')
+         if (SP%VS%rho%SS%solve) call export_BCs(dens%rho,str(DT%rho%BCs),'rho')
          write(*,*) '     BCs initialized'
 
-         call init_rho_field(dens%rho,m,dens%SP,str(DT%rho%field))
+         call init_rho_field(dens%rho,m,SP,str(DT%rho%field))
          write(*,*) '     rho-field initialized'
 
          call apply_BCs(dens%rho)
          write(*,*) '     BCs applied'
 
          temp_unit = new_and_open(str(DT%params),'info_nrg')
-         call display(dens,temp_unit)
+         call display(dens,SP,temp_unit)
          call close_and_message(temp_unit,str(DT%params),'info_nrg')
 
          write(*,*) '     probes initialized'
@@ -131,26 +128,28 @@
          write(*,*) 'density object deleted'
        end subroutine
 
-       subroutine display_density(dens,un)
+       subroutine display_density(dens,SP,un)
          implicit none
          type(density),intent(in) :: dens
+         type(sim_params),intent(in) :: SP
          integer,intent(in) :: un
          write(un,*) '**************************************************************'
          write(un,*) '*************************** density ***************************'
          write(un,*) '**************************************************************'
-         write(un,*) 't,dt = ',dens%SP%VS%rho%TMP%t,dens%SP%VS%rho%TMP%dt
-         write(un,*) 'solveTMethod,N_dens = ',dens%SP%VS%rho%SS%solve_method,dens%SP%VS%rho%ISP%iter_max
-         write(un,*) 'tol_dens = ',dens%SP%VS%rho%ISP%tol_rel
+         write(un,*) 't,dt = ',SP%VS%rho%TMP%t,SP%VS%rho%TMP%dt
+         write(un,*) 'solveTMethod,N_dens = ',SP%VS%rho%SS%solve_method,SP%VS%rho%ISP%iter_max
+         write(un,*) 'tol_dens = ',SP%VS%rho%ISP%tol_rel
          call displayPhysicalMinMax(dens%rho,'rho',un)
          write(un,*) ''
          call print(dens%m)
          write(un,*) ''
        end subroutine
 
-       subroutine print_density(dens)
+       subroutine print_density(dens,SP)
          implicit none
          type(density),intent(in) :: dens
-         call display(dens,6)
+         type(sim_params),intent(in) :: SP
+         call display(dens,SP,6)
        end subroutine
 
        subroutine export_density(dens,DT)
@@ -175,21 +174,23 @@
        ! **********************************************************
        ! **********************************************************
 
-       subroutine export_tec_density(dens,DT)
+       subroutine export_tec_density(dens,SP,DT)
          implicit none
          type(density),intent(inout) :: dens
          type(dir_tree),intent(in) :: DT
-         if (dens%SP%VS%rho%SS%solve) then
-           write(*,*) 'export_tec_density at n_step = ',dens%SP%VS%rho%TMP%n_step
+         type(sim_params),intent(in) :: SP
+         if (SP%VS%rho%SS%solve) then
+           write(*,*) 'export_tec_density at n_step = ',SP%VS%rho%TMP%n_step
            call export_processed(dens%m,dens%rho,str(DT%rho%field),'rho',0)
            call export_raw(dens%m,dens%rho,str(DT%rho%field),'rho',0)
            write(*,*) '     finished'
          endif
        end subroutine
 
-       subroutine solve_density(dens,U,TMP,EF,EN,DT)
+       subroutine solve_density(dens,SP,U,TMP,EF,EN,DT)
          implicit none
          type(density),intent(inout) :: dens
+         type(sim_params),intent(in) :: SP
          type(VF),intent(in) :: U
          type(export_frequency),intent(in) :: EF
          type(export_now),intent(in) :: EN
@@ -198,7 +199,7 @@
 
          call embedFace(dens%U_F,U,dens%MD)
 
-         select case (dens%SP%VS%rho%SS%solve_method)
+         select case (SP%VS%rho%SS%solve_method)
          case (1); call Euler(dens%rho,dens%U_F,TMP%dt,dens%m,dens%temp_CC1,dens%temp_F)
 
          case default; stop 'Erorr: bad solveTMethod value in solve_density in density.f90'
@@ -209,9 +210,9 @@
 
          ! ********************* POST SOLUTION PRINT/EXPORT *********************
 
-         if (EF%info%export_now) call print(dens)
+         if (EF%info%export_now) call print(dens,SP)
          if (EF%final_solution%export_now.or.EN%rho%this.or.EN%all%this) then
-           call export_tec(dens,DT)
+           call export_tec(dens,SP,DT)
          endif
        end subroutine
 

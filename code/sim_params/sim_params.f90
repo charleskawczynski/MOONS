@@ -1,10 +1,14 @@
      module sim_params_mod
      use current_precision_mod
+     use constants_mod
      use IO_tools_mod
      use string_mod
      use path_mod
      use var_mod
      use var_set_mod
+     use mesh_params_mod
+     use segment_extend_mod
+     use mesh_params_extend_mod
      use solver_settings_mod
      use time_marching_params_mod
      use dir_tree_mod
@@ -32,6 +36,7 @@
      real(cp),parameter :: seconds_per_day = 60.0_cp*60.0_cp*24.0_cp
 
      interface init;         module procedure init_SP;            end interface
+     interface define_mesh;  module procedure define_mesh_SP;     end interface
      interface delete;       module procedure delete_SP;          end interface
      interface init;         module procedure init_SP_copy;       end interface
      interface display;      module procedure display_SP;         end interface
@@ -47,6 +52,9 @@
      type sim_params
        type(var_set) :: VS
        type(mesh_quality_params) :: MQP
+       type(mesh_params) :: MP_mom
+       type(mesh_params) :: MP_ind
+       type(mesh_params) :: MP_sigma
        type(time_marching_params) :: coupled
        type(dimensionless_params) :: DP
        type(export_logicals) :: EL
@@ -78,6 +86,20 @@
      end type
 
      contains
+
+     subroutine define_mesh_SP(SP)
+       implicit none
+       type(sim_params),intent(inout) :: SP
+       ! call init(MP,MQP)
+       call init(SP%MP_mom,SP%MQP)
+       call init(SP%MP_sigma,SP%MQP)
+       call init(SP%MP_ind,SP%MQP)
+       call add_base(SP%MP_mom,seg_1d(1,'grid_uniform'  ,64,0.0_cp,2.0_cp*PI))
+       call add_base(SP%MP_mom,seg_1d(3,'grid_Roberts_B',64,-1.0_cp,1.0_cp))
+       call add_base(SP%MP_mom,seg_1d(2,'grid_uniform'  ,1,-0.5_cp,0.5_cp))
+       call init(SP%MP_ind,SP%MP_mom)
+       call init(SP%MP_sigma,SP%MP_ind)
+     end subroutine
 
      subroutine init_SP(SP,DT)
        implicit none
@@ -142,6 +164,8 @@
 
        ! call init(MQP,auto_find_N,max_mesh_stretch_ratio,N_max_points_add)
        call init(SP%MQP,T,1.5_cp,50)
+
+       call define_mesh(SP)
 
        ! Statistics
        ! call init(TSP,collect,t_start,t_stop)
@@ -383,6 +407,9 @@
        call init(SP%DP,     SP_in%DP)
        call init(SP%coupled,SP_in%coupled)
        call init(SP%MQP,    SP_in%MQP)
+       call init(SP%MP_mom, SP_in%MP_mom)
+       call init(SP%MP_ind, SP_in%MP_ind)
+       call init(SP%MP_sigma,SP_in%MP_sigma)
        call init(SP%TSP,    SP_in%TSP)
        call init(SP%EF,     SP_in%EF)
      end subroutine
@@ -400,6 +427,9 @@
        call delete(SP%DP)
        call delete(SP%coupled)
        call delete(SP%MQP)
+       call delete(SP%MP_mom)
+       call delete(SP%MP_ind)
+       call delete(SP%MP_sigma)
        call delete(SP%TSP)
        call delete(SP%EF)
      end subroutine
@@ -431,6 +461,9 @@
        call display(SP%VS,un)
        call display(SP%DP,un)
        call display(SP%MQP,un)
+       call display(SP%MP_mom,un)
+       call display(SP%MP_ind,un)
+       call display(SP%MP_sigma,un)
        call display(SP%TSP,un)
        call display(SP%EF,un)
        call display(SP%coupled,un)
@@ -507,6 +540,9 @@
        call export(SP%VS,un)
        call export(SP%DP,un)
        call export(SP%MQP,un)
+       call export(SP%MP_mom,un)
+       call export(SP%MP_ind,un)
+       call export(SP%MP_sigma,un)
        call export(SP%TSP,un)
        call export(SP%EF,un)
        call export(SP%coupled,un)
@@ -541,6 +577,9 @@
        call import(SP%VS,un)
        call import(SP%DP,un)
        call import(SP%MQP,un)
+       call import(SP%MP_mom,un)
+       call import(SP%MP_ind,un)
+       call import(SP%MP_sigma,un)
        call import(SP%TSP,un)
        call import(SP%EF,un)
        call import(SP%coupled,un)

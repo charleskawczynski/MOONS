@@ -1,7 +1,7 @@
        module mesh_params_mod
        use IO_tools_mod
-       use mesh_quality_params_mod
        use segment_mod
+       use mesh_quality_params_mod
        implicit none
 
        private
@@ -105,8 +105,12 @@
          type(mesh_params),intent(in) :: this
          integer,intent(in) :: un
          call display(this%mqp,un)
+         if (allocated(this%s_base)) then
          call display(this%s_base,un)
+         endif
+         if (allocated(this%s_ext)) then
          call display(this%s_ext,un)
+         endif
          write(un,*) 'n_base = ',this%n_base
          write(un,*) 'n_ext  = ',this%n_ext
        end subroutine
@@ -140,8 +144,12 @@
          type(mesh_params),intent(in) :: this
          integer,intent(in) :: un
          call export(this%mqp,un)
+         if (allocated(this%s_base)) then
          call export(this%s_base,un)
+         endif
+         if (allocated(this%s_ext)) then
          call export(this%s_ext,un)
+         endif
          write(un,*) this%n_base
          write(un,*) this%n_ext
        end subroutine
@@ -163,8 +171,12 @@
          type(mesh_params),intent(inout) :: this
          integer,intent(in) :: un
          call import(this%mqp,un)
+         if (allocated(this%s_base)) then
          call import(this%s_base,un)
+         endif
+         if (allocated(this%s_ext)) then
          call import(this%s_ext,un)
+         endif
          read(un,*) this%n_base
          read(un,*) this%n_ext
        end subroutine

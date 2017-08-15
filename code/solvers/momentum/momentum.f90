@@ -323,7 +323,6 @@
          call import(mom%PCG_U,str(DT%U%restart),'PCG_U')
          call import(mom%PCG_P,str(DT%P%restart),'PCG_P')
          call import(mom%probe_divU,str(DT%U%restart),'probe_divU')
-         call import(mom%probe_divU,str(DT%U%restart),'probe_divU')
          call import(mom%probe_KE,str(DT%U%restart),'probe_KE')
          call import(mom%probe_Q,str(DT%U%restart),'probe_Q')
          if (mom%m%MP%plane_any) call import(mom%probe_KE_2C,str(DT%U%restart),'probe_KE_2C')

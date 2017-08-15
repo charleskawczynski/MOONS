@@ -78,7 +78,6 @@
          type(mesh_domain) :: MD
 
          type(PCG_Solver_SF) :: PCG_T
-         type(sim_params) :: SP
 
          logical :: suppress_warning
        end type

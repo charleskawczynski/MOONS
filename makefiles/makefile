@@ -1,6 +1,6 @@
 # **************** RUN CONFIGURATION *******************
-# RELEASE = 'DEBUG'
-RELEASE = 'OPTIMIZE'
+RELEASE = 'DEBUG'
+# RELEASE = 'OPTIMIZE'
 # RELEASE = 'PROFILE'
 USE_OPEN_MP = 'TRUE'
 PARALLELIZE_3D_OPS = 'TRUE'
@@ -341,6 +341,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)sim_params$(PS)segment.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)segment_extend.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)mesh_params.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)mesh_params_extend.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)iter_solver_params.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)solver_settings.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)RK_Params.f90\

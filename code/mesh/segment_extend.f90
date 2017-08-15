@@ -25,7 +25,7 @@
 
        function seg_1d_segment_minmax(dir,distribution,n_cells,hmin,hmax) result(s)
          implicit none
-         type(string),intent(in) :: distribution
+         character(len=*),intent(in) :: distribution
          integer,intent(in) :: dir,n_cells
          real(cp),intent(in) :: hmin,hmax
          type(segment) :: s
@@ -38,7 +38,7 @@
 
        function seg_1d_segment_length(dir,distribution,n_cells,L) result(s)
          implicit none
-         type(string),intent(in) :: distribution
+         character(len=*),intent(in) :: distribution
          integer,intent(in) :: dir,n_cells
          real(cp),intent(in) :: L
          type(segment) :: s
