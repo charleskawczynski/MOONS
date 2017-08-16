@@ -1,6 +1,6 @@
 # **************** RUN CONFIGURATION *******************
-RELEASE = 'DEBUG'
-# RELEASE = 'OPTIMIZE'
+# RELEASE = 'DEBUG'
+RELEASE = 'OPTIMIZE'
 # RELEASE = 'PROFILE'
 USE_OPEN_MP = 'TRUE'
 PARALLELIZE_3D_OPS = 'TRUE'
@@ -245,8 +245,10 @@ endif
 
 TARGET = $(TARGET_DIR)$(PS)MOONS.exe
 
+include generated.make
+
 # **************** INCLUDE PATHS ********************
-VPATH =\
+VPATH +=\
 	$(TARGET_DIR)\
 	$(SRC_DIR)$(PS)block\
 	$(SRC_DIR)$(PS)BCs\
@@ -314,8 +316,8 @@ VPATH =\
 	$(SRC_DIR)$(PS)version
 
 # **************** SOURCE FILES *********************
-SRCS_F =\
-	$(SRC_DIR)$(PS)globals$(PS)current_precision.f90\
+
+SRCS_F +=\
 	$(SRC_DIR)$(PS)globals$(PS)constants.f90\
 	$(SRC_DIR)$(PS)material_props$(PS)material_props.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)face_edge_corner_indexing.f90\
@@ -336,6 +338,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)sparse$(PS)sparse.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)export_logicals.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)dimensionless_params.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)dimensionless_params_extend.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)geometry_props.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)mesh_quality_params.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)segment.f90\
@@ -580,6 +583,7 @@ SRCS_F =\
 	$(SRC_DIR)$(PS)user$(PS)MOONS.f90
 
 SRCS_F += $(TARGET_DIR)$(PS)parametricStudy.f90
+
 
 # **************** DO NOT EDIT BELOW HERE *********************
 # **************** DO NOT EDIT BELOW HERE *********************

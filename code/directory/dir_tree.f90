@@ -22,6 +22,7 @@
         type(path) :: mat,meshes,BEM,wall_clock
         type(path) :: matrix_visualization
         type(path) :: params,ISP,TMP,EF,export_now,refine_mesh
+        type(path) :: dimensionless_params
         type(path) :: e_budget,e_budget_N,e_budget_C
         type(path) :: restart_sim,restart1,restart2,restart
         type(path) :: mesh_restart
@@ -60,6 +61,7 @@
         call init(DT%wall_clock  ,DT%LDC         ,'wall_clock' ,str(DT%PS))
         call init(DT%TMP         ,DT%params      ,'TMP'        ,str(DT%PS))
         call init(DT%ISP         ,DT%params      ,'ISP'        ,str(DT%PS))
+        call init(DT%dimensionless_params,DT%params,'dimensionless_params',str(DT%PS))
         call init(DT%EF          ,DT%params      ,'EF'         ,str(DT%PS))
         call init(DT%export_now  ,DT%params      ,'export_now' ,str(DT%PS))
         call init(DT%refine_mesh ,DT%params      ,'refine_mesh',str(DT%PS))
@@ -108,6 +110,7 @@
         call make_dir(str(DT%mat))
         call make_dir(str(DT%meshes))
         call make_dir(str(DT%matrix_visualization))
+        call make_dir(str(DT%dimensionless_params))
         call make_dir(str(DT%mesh_restart))
         call make_dir(str(DT%BEM))
         call make_dir(str(DT%restart_sim))
@@ -143,6 +146,7 @@
         call delete(DT%mat)
         call delete(DT%meshes)
         call delete(DT%matrix_visualization)
+        call delete(DT%dimensionless_params)
         call delete(DT%mesh_restart)
         call delete(DT%e_budget)
         call delete(DT%e_budget_C)

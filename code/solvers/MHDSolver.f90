@@ -92,7 +92,6 @@
                call solve(mom,SP,mom%F,mom%Fnm1,mom%L,SP%VS%U%TMP,EF)
              endif
              if (SP%VS%B%SS%solve) then
-               call embedVelocity_E(ind%U_E,mom%U_E,ind%MD_fluid)
                call add_all_induction_sources(ind%F,ind%Fnm1,ind%L,ind,SP%VS%B%TMP,SP,mom)
                call solve(ind,SP,ind%F,ind%Fnm1,ind%L,SP%VS%B%TMP,EF)
              endif
@@ -121,6 +120,7 @@
              call export(coupled)
            endif
 
+           ! call import(SP%DP,str(DT%dimensionless_params),'dimensionless_params')
            call import_exit_criteria(mom%PCG_U%ISP)
            call import_exit_criteria(mom%PCG_P%ISP)
            call import_exit_criteria(ind%PCG_B%ISP)

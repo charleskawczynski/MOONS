@@ -9,17 +9,11 @@
        public :: init,delete,display,print,export,import
 
        interface init;   module procedure init_mesh_params;          end interface
-       interface init;   module procedure init_many_mesh_params;     end interface
        interface delete; module procedure delete_mesh_params;        end interface
-       interface delete; module procedure delete_many_mesh_params;   end interface
        interface display;module procedure display_mesh_params;       end interface
-       interface display;module procedure display_many_mesh_params;  end interface
        interface print;  module procedure print_mesh_params;         end interface
-       interface print;  module procedure print_many_mesh_params;    end interface
        interface export; module procedure export_mesh_params;        end interface
-       interface export; module procedure export_many_mesh_params;   end interface
        interface import; module procedure import_mesh_params;        end interface
-       interface import; module procedure import_many_mesh_params;   end interface
        interface export; module procedure export_wrapper_mesh_params;end interface
        interface import; module procedure import_wrapper_mesh_params;end interface
 
@@ -37,51 +31,53 @@
          implicit none
          type(mesh_params),intent(inout) :: this
          type(mesh_params),intent(in) :: that
-         integer :: i_iter
+         integer :: i_s_base
+         integer :: i_s_ext
+         integer :: s_s_base
+         integer :: s_s_ext
          call delete(this)
          call init(this%mqp,that%mqp)
          if (allocated(that%s_base)) then
-           allocate(this%s_base(size(that%s_base)))
-           do i_iter=1,size(this%s_base)
-             call init(this%s_base(i_iter),that%s_base(i_iter))
-           enddo
+           s_s_base = size(that%s_base)
+           if (s_s_base.gt.0) then
+             allocate(this%s_base(s_s_base))
+             do i_s_base=1,s_s_base
+               call init(this%s_base(i_s_base),that%s_base(i_s_base))
+             enddo
+           endif
          endif
          if (allocated(that%s_ext)) then
-           allocate(this%s_ext(size(that%s_ext)))
-           do i_iter=1,size(this%s_ext)
-             call init(this%s_ext(i_iter),that%s_ext(i_iter))
-           enddo
+           s_s_ext = size(that%s_ext)
+           if (s_s_ext.gt.0) then
+             allocate(this%s_ext(s_s_ext))
+             do i_s_ext=1,s_s_ext
+               call init(this%s_ext(i_s_ext),that%s_ext(i_s_ext))
+             enddo
+           endif
          endif
          this%n_base = that%n_base
          this%n_ext = that%n_ext
        end subroutine
 
-       subroutine init_many_mesh_params(this,that)
-         implicit none
-         type(mesh_params),dimension(:),intent(inout) :: this
-         type(mesh_params),dimension(:),intent(in) :: that
-         integer :: i_iter
-         if (size(that).gt.0) then
-           do i_iter=1,size(this)
-             call init(this(i_iter),that(i_iter))
-           enddo
-         endif
-       end subroutine
-
        subroutine delete_mesh_params(this)
          implicit none
          type(mesh_params),intent(inout) :: this
-         integer :: i_iter
+         integer :: i_s_base
+         integer :: i_s_ext
+         integer :: s_s_base
+         integer :: s_s_ext
          call delete(this%mqp)
          if (allocated(this%s_base)) then
-           do i_iter=1,size(this%s_base)
-             call delete(this%s_base(i_iter))
+           s_s_base = size(this%s_base)
+           do i_s_base=1,s_s_base
+             call delete(this%s_base(i_s_base))
            enddo
            deallocate(this%s_base)
          endif
          if (allocated(this%s_ext)) then
-           do i_iter=1,size(this%s_ext)
-             call delete(this%s_ext(i_iter))
+           s_s_ext = size(this%s_ext)
+           do i_s_ext=1,s_s_ext
+             call delete(this%s_ext(i_s_ext))
            enddo
            deallocate(this%s_ext)
          endif
@@ -89,42 +85,29 @@
          this%n_ext = 0
        end subroutine
 
-       subroutine delete_many_mesh_params(this)
-         implicit none
-         type(mesh_params),dimension(:),intent(inout) :: this
-         integer :: i_iter
-         if (size(this).gt.0) then
-           do i_iter=1,size(this)
-             call delete(this(i_iter))
-           enddo
-         endif
-       end subroutine
-
        subroutine display_mesh_params(this,un)
          implicit none
          type(mesh_params),intent(in) :: this
          integer,intent(in) :: un
+         integer :: i_s_base
+         integer :: i_s_ext
+         integer :: s_s_base
+         integer :: s_s_ext
          call display(this%mqp,un)
          if (allocated(this%s_base)) then
-         call display(this%s_base,un)
+           s_s_base = size(this%s_base)
+           do i_s_base=1,s_s_base
+             call display(this%s_base(i_s_base),un)
+           enddo
          endif
          if (allocated(this%s_ext)) then
-         call display(this%s_ext,un)
+           s_s_ext = size(this%s_ext)
+           do i_s_ext=1,s_s_ext
+             call display(this%s_ext(i_s_ext),un)
+           enddo
          endif
          write(un,*) 'n_base = ',this%n_base
          write(un,*) 'n_ext  = ',this%n_ext
-       end subroutine
-
-       subroutine display_many_mesh_params(this,un)
-         implicit none
-         type(mesh_params),dimension(:),intent(in) :: this
-         integer,intent(in) :: un
-         integer :: i_iter
-         if (size(this).gt.0) then
-           do i_iter=1,size(this)
-             call display(this(i_iter),un)
-           enddo
-         endif
        end subroutine
 
        subroutine print_mesh_params(this)
@@ -133,64 +116,57 @@
          call display(this,6)
        end subroutine
 
-       subroutine print_many_mesh_params(this)
-         implicit none
-         type(mesh_params),dimension(:),intent(in),allocatable :: this
-         call display(this,6)
-       end subroutine
-
        subroutine export_mesh_params(this,un)
          implicit none
          type(mesh_params),intent(in) :: this
          integer,intent(in) :: un
+         integer :: i_s_base
+         integer :: i_s_ext
+         integer :: s_s_base
+         integer :: s_s_ext
          call export(this%mqp,un)
          if (allocated(this%s_base)) then
-         call export(this%s_base,un)
+           s_s_base = size(this%s_base)
+           write(un,*) s_s_base
+           do i_s_base=1,s_s_base
+             call export(this%s_base(i_s_base),un)
+           enddo
          endif
          if (allocated(this%s_ext)) then
-         call export(this%s_ext,un)
+           s_s_ext = size(this%s_ext)
+           write(un,*) s_s_ext
+           do i_s_ext=1,s_s_ext
+             call export(this%s_ext(i_s_ext),un)
+           enddo
          endif
          write(un,*) this%n_base
          write(un,*) this%n_ext
-       end subroutine
-
-       subroutine export_many_mesh_params(this,un)
-         implicit none
-         type(mesh_params),dimension(:),intent(in) :: this
-         integer,intent(in) :: un
-         integer :: i_iter
-         if (size(this).gt.0) then
-           do i_iter=1,size(this)
-             call export(this(i_iter),un)
-           enddo
-         endif
        end subroutine
 
        subroutine import_mesh_params(this,un)
          implicit none
          type(mesh_params),intent(inout) :: this
          integer,intent(in) :: un
+         integer :: i_s_base
+         integer :: i_s_ext
+         integer :: s_s_base
+         integer :: s_s_ext
+         call delete(this)
          call import(this%mqp,un)
          if (allocated(this%s_base)) then
-         call import(this%s_base,un)
+           read(un,*) s_s_base
+           do i_s_base=1,s_s_base
+             call import(this%s_base(i_s_base),un)
+           enddo
          endif
          if (allocated(this%s_ext)) then
-         call import(this%s_ext,un)
+           read(un,*) s_s_ext
+           do i_s_ext=1,s_s_ext
+             call import(this%s_ext(i_s_ext),un)
+           enddo
          endif
          read(un,*) this%n_base
          read(un,*) this%n_ext
-       end subroutine
-
-       subroutine import_many_mesh_params(this,un)
-         implicit none
-         type(mesh_params),dimension(:),intent(inout) :: this
-         integer,intent(in) :: un
-         integer :: i_iter
-         if (size(this).gt.0) then
-           do i_iter=1,size(this)
-             call import(this(i_iter),un)
-           enddo
-         endif
        end subroutine
 
        subroutine export_wrapper_mesh_params(this,dir,name)

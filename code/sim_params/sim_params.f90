@@ -13,6 +13,7 @@
      use time_marching_params_mod
      use dir_tree_mod
      use dimensionless_params_mod
+     use dimensionless_params_extend_mod
      use export_logicals_mod
      use flow_control_logicals_mod
      use mesh_quality_params_mod
@@ -94,9 +95,9 @@
        call init(SP%MP_mom,SP%MQP)
        call init(SP%MP_sigma,SP%MQP)
        call init(SP%MP_ind,SP%MQP)
-       call add_base(SP%MP_mom,seg_1d(1,'grid_uniform'  ,64,0.0_cp,2.0_cp*PI))
-       call add_base(SP%MP_mom,seg_1d(3,'grid_Roberts_B',64,-1.0_cp,1.0_cp))
-       call add_base(SP%MP_mom,seg_1d(2,'grid_uniform'  ,1,-0.5_cp,0.5_cp))
+       call add_base(SP%MP_mom,seg_1d(1,'grid_Roberts_B' ,50 ,-1.0_cp,1.0_cp))
+       call add_base(SP%MP_mom,seg_1d(2,'grid_Roberts_B' ,50 ,-1.0_cp,1.0_cp))
+       call add_base(SP%MP_mom,seg_1d(3,'grid_uniform'   ,1,-0.5_cp,0.5_cp))
        call init(SP%MP_ind,SP%MP_mom)
        call init(SP%MP_sigma,SP%MP_ind)
      end subroutine
@@ -108,9 +109,7 @@
        logical,parameter :: T = .true.
        logical,parameter :: F = .false.
        real(cp) :: time,dtime
-       logical :: RV_BCs
        call delete(SP)
-       RV_BCs = T
        ! call get_environment_variable(name[, value, length, status, trim_name)
 
        SP%FCL%stop_after_mesh_export = F !
@@ -137,10 +136,8 @@
        SP%uniform_B0_dir             = 3 ! Uniform applied field direction
        SP%mpg_dir                    = 1 ! Uniform applied field direction
        SP%couple_time_steps          = T ! Ensures all dt are equal to coupled%dt
-       if (     RV_BCs) SP%finite_Rem                 = T ! Ensures all dt are equal to coupled%dt
-       if (.not.RV_BCs) SP%finite_Rem                 = F ! Ensures all dt are equal to coupled%dt
-       if (     RV_BCs) SP%include_vacuum             = T ! Ensures all dt are equal to coupled%dt
-       if (.not.RV_BCs) SP%include_vacuum             = F ! Ensures all dt are equal to coupled%dt
+       SP%finite_Rem                 = T ! Ensures all dt are equal to coupled%dt
+       SP%include_vacuum             = F ! Ensures all dt are equal to coupled%dt
        SP%embed_B_interior           = F ! Solve for exterior B using interior B
        SP%compute_surface_power      = T ! Compute surface power for LDC
 
@@ -170,15 +167,15 @@
        ! Statistics
        ! call init(TSP,collect,t_start,t_stop)
        ! call init(SP%TSP,T,30.0_cp,60.0_cp)
-       call init(SP%TSP,T,700.0_cp,800.0_cp)
+       call init(SP%TSP,F,700.0_cp,800.0_cp)
 
-       time                          = 1000.0_cp
+       time                          = 3000.0_cp
        ! dtime                         = 1.0_cp*pow(-2)
-       dtime                         = 1.0_cp*pow(-4)
+       dtime                         = 1.0_cp*pow(-1)
 
        SP%GP%tw                      = 0.05_cp
        SP%GP%geometry                = 7
-       SP%GP%periodic_dir            = (/0,1,0/)
+       SP%GP%periodic_dir            = (/0,0,1/)
        ! SP%GP%apply_BC_order          = (/3,4,5,6,1,2/) ! good for LDC
        ! SP%GP%apply_BC_order       = (/3,4,5,6,1,2/) ! good for periodic in y?
        SP%GP%apply_BC_order       = (/5,6,1,2,3,4/) ! good for periodic in y?
@@ -186,16 +183,16 @@
        ! SP%GP%apply_BC_order       = (/3,4,1,2,5,6/) ! good for periodic in z?
 
        call delete(SP%DP)
-       SP%DP%Re                      = 200.0_cp
+       call init(SP%DP,str(DT%dimensionless_params),'dimensionless_params')
+       SP%DP%Re                      = 100.0_cp
        ! SP%DP%N                       = 5.0_cp*pow(0)
        SP%DP%Q                       = 8.0_cp*pow(-1)
-       if (     RV_BCs) SP%DP%Rem                     = 1.0_cp*pow(1)
-       if (.not.RV_BCs) SP%DP%Rem                     = 1.0_cp*pow(0)
+       SP%DP%Rem                     = 5.0_cp*pow(0)
        ! SP%DP%Ha                      = 5.0_cp*pow(2)
-       ! SP%DP%Ha                      = 10.0_cp
+       SP%DP%Ha                      = 10.0_cp
        ! SP%DP%Ha                      = 10.0_cp*pow(3)
        ! SP%DP%Ha                      = 15.0_cp*pow(3)
-       SP%DP%N                       = 1.0_cp/SP%DP%Q
+       ! SP%DP%N                       = 1.0_cp/SP%DP%Q
        SP%DP%c_w(1:6)                = 0.0_cp
        SP%DP%c_w( 5 )                = 1.0_cp
        SP%DP%c_w( 6 )                = 1.0_cp
@@ -209,8 +206,8 @@
        SP%DP%Fr                      = 1.0_cp
        SP%DP%Ec                      = 0.0_cp
 
-       SP%DP%Ha                      = (1.0_cp/SP%DP%Q*SP%DP%Re)**0.5_cp
-       ! SP%DP%N                       = SP%DP%Ha**2.0_cp/SP%DP%Re
+       ! SP%DP%Ha                      = (1.0_cp/SP%DP%Q*SP%DP%Re)**0.5_cp
+       SP%DP%N                       = SP%DP%Ha**2.0_cp/SP%DP%Re
        ! SP%DP%Ha                      = (SP%DP%N*SP%DP%Re)**0.5_cp
        SP%DP%Al                      = SP%DP%N/SP%DP%Rem
        SP%DP%Pe                      = SP%DP%Pr*SP%DP%Re
@@ -271,21 +268,18 @@
 
        ! call init_IC_BC(var      ,IC   ,BC)
        call init_IC_BC(SP%VS%T    ,0    ,0 )
-       call init_IC_BC(SP%VS%U    ,0    ,6 )
-       call init_IC_BC(SP%VS%P    ,0    ,2 )
-       ! if (     RV_BCs) call init_IC_BC(SP%VS%B    ,0    ,9 ) ! 5 for thin wall
-       ! if (.not.RV_BCs) call init_IC_BC(SP%VS%B    ,0    ,10) ! 5 for thin wall
-       call init_IC_BC(SP%VS%B    ,0    ,2 )
-       call init_IC_BC(SP%VS%B0   ,4    ,0 )
+       call init_IC_BC(SP%VS%U    ,0    ,0 )
+       call init_IC_BC(SP%VS%P    ,0    ,0 )
+       call init_IC_BC(SP%VS%B    ,0    ,1 )
+       call init_IC_BC(SP%VS%B0   ,1    ,0 )
        call init_IC_BC(SP%VS%phi  ,0    ,0 )
        call init_IC_BC(SP%VS%rho  ,0    ,0 )
 
        ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,export_convergence,dir,name)
        call init(SP%VS%T%ISP,  5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_T')
        call init(SP%VS%U%ISP,  5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_U')
-       call init(SP%VS%P%ISP,  40 ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_P')
-       if (     RV_BCs) call init(SP%VS%B%ISP,  20 ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_B')
-       if (.not.RV_BCs) call init(SP%VS%B%ISP,  5 ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_B')
+       call init(SP%VS%P%ISP,  20 ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_P')
+       call init(SP%VS%B%ISP,  20 ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_B')
        call init(SP%VS%B0%ISP, 5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_B0')
        call init(SP%VS%phi%ISP,5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_phi')
        call init(SP%VS%rho%ISP,5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_rho')
@@ -307,7 +301,7 @@
        ! coeff_implicit_time_split = dt*coeff_implicit/coeff_unsteady (computed in time_marching_methods.f90)
 
        SP%VS%B%MFP%alpha = 1.0_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
-       SP%VS%U%MFP%alpha = 0.5_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
+       SP%VS%U%MFP%alpha = 1.0_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
        SP%VS%T%MFP%alpha = 1.0_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
        SP%VS%B%MFP%coeff_natural = -1.0_cp/SP%DP%Rem ! natural diffusion coefficient on RHS
        SP%VS%U%MFP%coeff_natural =  1.0_cp/SP%DP%Re  ! natural diffusion coefficient on RHS
@@ -323,25 +317,26 @@
        call init(SP%MT%pressure_grad       ,F,-1.0_cp                   )
        call init(SP%MT%diffusion           ,T,SP%VS%U%MFP%coeff_explicit)
        call init(SP%MT%diffusion_linear    ,F,SP%VS%U%MFP%coeff_explicit)
-       call init(SP%MT%advection_convection,F,-1.0_cp                   )
+       call init(SP%MT%advection_convection,F,-1.0_cp/SP%DP%Rem         )
+       call init(SP%MT%advection_convection,T,-1.0_cp                   )
        call init(SP%MT%advection_divergence,F,-1.0_cp                   )
-       call init(SP%MT%advection_divergence,T,-1.0_cp/SP%DP%Rem         ) ! For Rem ne 1 in Bandaru
+       call init(SP%MT%advection_divergence,F,-1.0_cp/SP%DP%Rem         ) ! For Rem ne 1 in Bandaru
        call init(SP%MT%advection_base_flow ,F,-1.0_cp                   )
-       call init(SP%MT%mean_pressure_grad  ,T,1.0_cp                    )
+       call init(SP%MT%mean_pressure_grad  ,F,1.0_cp                    )
+       call init(SP%MT%JCrossB             ,F,SP%DP%N*SP%DP%Rem         ) ! For Rem ne 1 in Bandaru (look at J definition in Bandaru)
        call init(SP%MT%JCrossB             ,F,SP%DP%N                   )
-       call init(SP%MT%JCrossB             ,T,SP%DP%N*SP%DP%Rem         ) ! For Rem ne 1 in Bandaru (look at J definition in Bandaru)
        call init(SP%MT%Q2D_JCrossB         ,F,-1.0_cp/SP%DP%tau         )
        call init(SP%MT%Buoyancy            ,F,SP%DP%Gr/SP%DP%Re**2.0_cp )
        call init(SP%MT%Gravity             ,F,1.0_cp/SP%DP%Fr**2.0_cp   )
 
-       ! Sources to add to induction equation. NOTE: scale is not set if add=false
+       ! Terms computed in induction module... NOTE: scale is not set if add=false
        call init(SP%IT%B_applied       ,T, 1.0_cp           ) ! B0 = scale*B0
        call init(SP%IT%current         ,T, 1.0_cp/SP%DP%Rem ) ! J = scale curl(B)
-       call init(SP%IT%advection       ,F, 1.0_cp           )
-       call init(SP%IT%advection       ,T, 1.0_cp/SP%DP%Rem ) ! For Rem ne 1 in Bandaru
+       call init(SP%IT%advection       ,F, 1.0_cp/SP%DP%Rem ) ! For Rem ne 1 in Bandaru
+       call init(SP%IT%advection       ,T, 1.0_cp           )
        call init(SP%IT%diffusion       ,T, -SP%VS%B%MFP%beta) ! since LHS and J includes scale
        call init(SP%IT%diffusion_linear,F, -SP%VS%B%MFP%beta) ! since LHS and J includes scale
-       call init(SP%IT%unsteady_B0     ,F, -1.0_cp          ) ! since RHS
+       call init(SP%IT%unsteady_B0     ,T, -1.0_cp          ) ! since RHS
 
        ! Sources to add to energy equation. NOTE: scale is not set if add=false
        call init(SP%ET%advection          , F,-1.0_cp           )
@@ -352,6 +347,7 @@
        call init(SP%ET%volumetric_heating , F,1.0_cp            )
 
        if (SP%couple_time_steps) call couple_time_step(SP%VS,SP%coupled)
+       call export(SP%DP,str(DT%dimensionless_params),'dimensionless_params')
        ! call export_import_SS(SP%VS)
        call sanity_check(SP)
      end subroutine
