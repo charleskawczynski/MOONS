@@ -32,7 +32,7 @@
          if (SP%IT%advection%add) then
            call add_curl_U_cross_B(F,ind%m,mom%U_E,ind%U_E,ind%B0,ind%B,&
            ind%curlUCrossB,ind%MD_fluid,SP%IT%advection%scale,&
-           SP%finite_Rem,ind%temp_F2,ind%temp_E_TF,ind%temp_E)
+           SP%SCP%finite_Rem,ind%temp_F2,ind%temp_E_TF,ind%temp_E)
          endif
          if (SP%IT%diffusion_linear%add) then
            call add_curl_J(L,ind%m,ind%J,ind%sigmaInv_edge,SP%IT%diffusion%scale,ind%temp_F2,ind%temp_E)

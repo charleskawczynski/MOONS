@@ -10,6 +10,7 @@
        use mesh_mod
        use mesh_domain_mod
        use mesh_generate_mod
+       use generate_mesh_generic_mod
        use VF_mod
        use string_mod
        use path_mod
@@ -18,14 +19,18 @@
        use export_analytic_mod
        use mirror_props_mod
        use vorticity_streamfunction_mod
+       use operator_interchangability_test_mod
        use Poisson_test_mod
        use Taylor_Green_Vortex_test_mod
+       use temporal_convergence_test_mod
        use export_mesh_aux_mod
        use restart_file_mod
 
        use iter_solver_params_mod
        use time_marching_params_mod
        use sim_params_mod
+       use sim_params_aux_mod
+       use sim_params_extend_mod
        use export_raw_processed_symmetry_mod
        use export_raw_processed_mod
        use import_raw_mod
@@ -36,6 +41,7 @@
        use induction_mod
        use MHDSolver_mod
        use MOONS_mod
+       use MOONS_config_mod
 
        implicit none
 
@@ -46,7 +52,6 @@
        interface config;       module procedure config_MOONS;       end interface
        interface solve;        module procedure solve_MOONS;        end interface
        interface post_process; module procedure post_process_MOONS; end interface
-       interface run_test;     module procedure run_test_MOONS;     end interface
 
        contains
 
@@ -61,7 +66,6 @@
          call config(M)
          call solve(M)
          call post_process(M)
-         call run_test(M)
          call delete(M)
          write(*,*) ' ******************** COMPUTATIONS COMPLETE ********************'
          write(*,*) ' ******************** COMPUTATIONS COMPLETE ********************'
@@ -80,55 +84,35 @@
        subroutine post_process_MOONS(M)
          implicit none
          type(MOONS),intent(inout) :: M
-         if (M%SP%FCL%post_process) then
-           write(*,*) ' *********************** POST PROCESSING ***********************'
-           write(*,*) ' *********************** POST PROCESSING ***********************'
-           write(*,*) ' *********************** POST PROCESSING ***********************'
-
-           if (M%SP%VS%U%SS%initialize.and.M%SP%EL%export_vort_SF) then
-             write(*,*) ' COMPUTING VORTICITY-STREAMFUNCTION:'
-             call export_vorticity_streamfunction_wrapper(M%mom%U,M%mom%m,M%DT,M%SP)
-           endif
-
-           if (M%SP%VS%U%SS%initialize.and.M%SP%VS%B%SS%initialize) then
-             write(*,*) '       KINETIC ENERGY BUDGET - STARTED'
-             call compute_export_E_K_Budget(M%mom,M%SP,M%ind%B,M%ind%B0,M%ind%J,M%ind%MD_fluid,M%DT)
-             write(*,*) '       KINETIC ENERGY BUDGET - COMPLETE'
-
-             write(*,*) '       MAGNETIC ENERGY BUDGET - STARTED'
-             call compute_export_E_M_budget(M%ind,M%SP,M%mom%U,M%DT)
-             write(*,*) '       MAGNETIC ENERGY BUDGET - COMPLETE'
-           endif
-
-           if (M%SP%VS%U%SS%initialize.and.M%SP%EL%export_analytic) then
-             write(*,*) ' EXPORTING SHERCLIFF-HUNT ANALYTIC SOLUTION'
-             call export_SH(M%mom%m,M%mom%U%x,M%SP%DP%Ha,0.0_cp,-1.0_cp,1,M%DT)
-           endif
-
-           if (M%SP%VS%U%SS%initialize.and.M%SP%VS%B%SS%initialize) then
-             write(*,*) ' EXPORTING AXIAL FLOW RATE'
-             call export_numerical_flow_rate(M%mom%m,M%mom%U%x,M%SP%DP%Re,M%DT,M%mom%temp_F1%x)
-           endif
-
-           write(*,*) ' ****************** POST PROCESSING COMPLETE *******************'
-           write(*,*) ' ****************** POST PROCESSING COMPLETE *******************'
-           write(*,*) ' ****************** POST PROCESSING COMPLETE *******************'
+         write(*,*) ' *********************** POST PROCESSING ***********************'
+         write(*,*) ' *********************** POST PROCESSING ***********************'
+         write(*,*) ' *********************** POST PROCESSING ***********************'
+         if (M%SP%FCL%Poisson_test) then
+           call Poisson_test(M%mom%U,M%mom%p,M%mom%m,M%DT)
          endif
-       end subroutine
-
-       subroutine run_test_MOONS(MOONS)
-         implicit none
-         type(MOONS),intent(inout) :: MOONS
-         if (SP%FCL%Poisson_test.and.SP%VS%U%SS%initialize) then
-           call Poisson_test(mom%U,mom%p,mom%m,DT)
+         if (M%SP%FCL%export_vorticity_streamfunction) then
+           call export_vorticity_streamfunction(M%mom%U,M%mom%m,M%DT,M%SP)
          endif
-         if (SP%FCL%Taylor_Green_Vortex_test.and.SP%VS%U%SS%initialize) then
-           call Taylor_Green_Vortex_test(mom%U,mom%p,mom%m,DT,SP)
+         if (M%SP%FCL%compute_export_E_K_Budget) then
+           call compute_export_E_K_Budget(M%mom,M%SP,M%ind%B,M%ind%B0,M%ind%J,M%ind%MD_fluid,M%DT)
          endif
-
-         M%matrix_visualization = .false.
-         if (M%matrix_visualization) then
-           call export_matrix_visualization(M%DT)
+         if (M%SP%FCL%compute_export_E_M_budget) then
+           call compute_export_E_M_budget(M%ind,M%SP,M%mom%U,M%DT)
+         endif
+         if (M%SP%FCL%export_Shercliff_Hunt_analytic_sol) then
+           call export_Shercliff_Hunt_analytic_sol(M%mom%m,M%mom%U%x,M%SP%DP%Ha,0.0_cp,-1.0_cp,1,M%DT)
+         endif
+         if (M%SP%FCL%export_numerical_flow_rate) then
+           call export_numerical_flow_rate(M%mom%m,M%mom%U%x,M%SP%DP%Re,M%DT,M%mom%temp_F1%x)
+         endif
+         if (M%SP%FCL%Taylor_Green_Vortex_test) then
+           call Taylor_Green_Vortex_test(M%mom%U,M%mom%p,M%mom%m,M%DT,M%SP)
+         endif
+         if (M%SP%FCL%temporal_convergence_test) then
+           call temporal_convergence_test(M%mom%U,M%mom%p,M%mom%m,M%DT,M%SP)
+         endif
+         if (M%SP%FCL%operator_interchangability_test) then
+           call operator_interchangability_test(M%mom%U,M%mom%p,M%mom%m,M%DT,M%SP)
          endif
        end subroutine
 

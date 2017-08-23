@@ -14,7 +14,7 @@
        private
        public :: export_Shercliff
        public :: export_Hunt
-       public :: export_SH
+       public :: export_Shercliff_Hunt_analytic_sol
        public :: export_numerical_flow_rate
 
        contains
@@ -30,7 +30,7 @@
          real(cp) :: mu
          integer :: i
          mu = 1.0_cp
-         if (m%s.gt.1) stop 'Error: attempting export_SH with m%s>1 in export_analytic.f90'
+         if (m%s.gt.1) stop 'Error: attempting export_Shercliff with m%s>1 in export_analytic.f90'
          call init_Face(temp,m,dir)
          select case (dir)
          case (1); do i=1,m%B(1)%g%c(dir)%sn
@@ -42,7 +42,7 @@
          case (3); do i=1,m%B(1)%g%c(dir)%sn
          temp%BF(1)%GF%f(:,:,i) = Shercliff_profile(m%B(1)%g%c(1),m%B(1)%g%c(2),m%B(1)%g%c(1)%sc,m%B(1)%g%c(2)%sc,Ha,mu,dpdh)
          enddo
-         case default; stop 'Error: dir must = 1,2,3 in export_SH in export_analytic.f90'
+         case default; stop 'Error: dir must = 1,2,3 in export_Shercliff in export_analytic.f90'
          end select
          call export_raw(m,temp,str(DT%U%field),'Shercliff_analytic',0)
          call export_raw(m,u_numerical,str(DT%U%field),'Shercliff_numerical',0)
@@ -63,7 +63,7 @@
          real(cp) :: mu
          integer :: i
          mu = 1.0_cp
-         if (m%s.gt.1) stop 'Error: attempting export_SH with m%s>1 in export_analytic.f90'
+         if (m%s.gt.1) stop 'Error: attempting export_Hunt with m%s>1 in export_analytic.f90'
          call init_Face(temp,m,dir)
          select case (dir)
          case (1); do i=1,m%B(1)%g%c(dir)%sn
@@ -75,7 +75,7 @@
          case (3); do i=1,m%B(1)%g%c(dir)%sn
          temp%BF(1)%GF%f(:,:,i) = Hunt_profile(m%B(1)%g%c(1),m%B(1)%g%c(2),m%B(1)%g%c(1)%sc,m%B(1)%g%c(2)%sc,Ha,mu,dpdh)
          enddo
-         case default; stop 'Error: dir must = 1,2,3 in export_SH in export_analytic.f90'
+         case default; stop 'Error: dir must = 1,2,3 in export_Hunt in export_analytic.f90'
          end select
          call export_raw(m,temp,str(DT%U%field),'Hunt_analytic',0)
          call export_raw(m,u_numerical,str(DT%U%field),'Hunt_numerical',0)
@@ -84,7 +84,7 @@
          call delete(temp)
        end subroutine
 
-       subroutine export_SH(m,u_numerical,Ha,d_B,dpdh,dir,DT)
+       subroutine export_Shercliff_Hunt_analytic_sol(m,u_numerical,Ha,d_B,dpdh,dir,DT)
          implicit none
          type(mesh),intent(in) :: m
          type(SF),intent(in) :: u_numerical
@@ -95,7 +95,7 @@
          real(cp) :: mu
          integer :: i
          mu = 1.0_cp
-         if (m%s.gt.1) stop 'Error: attempting export_SH with m%s>1 in export_analytic.f90'
+         if (m%s.gt.1) stop 'Error: attempting export_Shercliff_Hunt_analytic_sol with m%s>1 in export_analytic.f90'
          call init_Face(temp,m,dir)
          select case (dir)
          case (1); do i=1,m%B(1)%g%c(dir)%sn
@@ -107,7 +107,7 @@
          case (3); do i=1,m%B(1)%g%c(dir)%sn
          temp%BF(1)%GF%f(:,:,i) = SH_profile(m%B(1)%g%c(1),m%B(1)%g%c(2),m%B(1)%g%c(1)%sc,m%B(1)%g%c(2)%sc,d_B,Ha,mu,dpdh)
          enddo
-         case default; stop 'Error: dir must = 1,2,3 in export_SH in export_analytic.f90'
+         case default; stop 'Error: dir must = 1,2,3 in export_Shercliff_Hunt_analytic_sol in export_analytic.f90'
          end select
          call export_raw(m,temp,str(DT%U%field),'SH_analytic',0)
          call export_raw(m,u_numerical,str(DT%U%field),'SH_numerical',0)
@@ -116,13 +116,12 @@
          call delete(temp)
        end subroutine
 
-       subroutine export_numerical_flow_rate(m,u_numerical,Re,DT,u_temp)
+       subroutine export_numerical_flow_rate(m,u_numerical,Re,DT)
          implicit none
          type(SF),intent(in) :: u_numerical
          real(cp),intent(in) :: Re
          type(mesh),intent(in) :: m
          type(dir_tree),intent(in) :: DT
-         type(SF),intent(inout) :: u_temp
          real(cp) :: Q
          integer :: un
          un = new_and_open(str(DT%LDC),'numerical_flow_rate')

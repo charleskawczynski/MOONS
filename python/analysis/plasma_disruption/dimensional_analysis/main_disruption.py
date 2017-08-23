@@ -28,11 +28,11 @@ LiPb = mp.mat_props(); LiPb.Lead_Lithium(T)
 liq_lead = mp.mat_props(); liq_lead.liquid_lead(T)
 MP = mp.mat_props(); MP = MP.Lead_lithium_Sergey()
 
-print '***************** CHOSEN MATERIAL PROPERTY *****************'
+print('***************** CHOSEN MATERIAL PROPERTY *****************')
 mat = MP
 mat.print_MP()
 
-print '\n***************** KNOWN SCALES *****************'
+print('\n***************** KNOWN SCALES *****************')
 L_c = 0.1
 
 # tau = 10.0*pow(-3) # shutdown [estimated, p. 4] http://iopscience.iop.org/article/10.1088/0029-5515/45/9/003/pdf
@@ -47,17 +47,17 @@ tau = 1.0*pow(-3)   # disruption [range,p.1064] https://journals.aps.org/rmp/pdf
 B0_P = 1 # [T]
 
 B_c = B0_P
-print 'L_c            = '+str(L_c)
-print 'tau            = '+str(tau)
-print 'B0_P           = '+str(B0_P)
-print 'B_c            = '+str(B_c)
-print '\n***************** ESTIMATED SCALES *****************'
+print('L_c            = '+str(L_c))
+print('tau            = '+str(tau))
+print('B0_P           = '+str(B0_P))
+print('B_c            = '+str(B_c))
+print('\n***************** ESTIMATED SCALES *****************')
 U_c = velocity(mat,B_c,L_c,tau)
 t_c = L_c/U_c
-print 'U_c            = '+str(U_c)
-print 't_c            = '+str(t_c)
-print '\n***************** ESTIMATED DIMENSIONLESS PARAMETERS *****************'
+print('U_c            = '+str(U_c))
+print('t_c            = '+str(t_c))
+print('\n***************** ESTIMATED DIMENSIONLESS PARAMETERS *****************')
 Rem = magnetic_Reynolds(mat,U_c,L_c)
-print 'Rem            = '+str(Rem)
+print('Rem            = '+str(Rem))
 
 IO.delete_pyc_files()

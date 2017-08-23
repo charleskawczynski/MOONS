@@ -254,7 +254,7 @@
          type(momentum),intent(in) :: mom
          type(sim_params),intent(in) :: SP
          integer,intent(in) :: un
-         if (SP%export_heavy) then
+         if (SP%FCL%export_heavy) then
            write(un,*) '**************************************************************'
            write(un,*) '************************** MOMENTUM **************************'
            write(un,*) '**************************************************************'
@@ -371,7 +371,7 @@
          call compute_TKE(temp,mom%U_CC,mom%m,scale)
          call export(mom%probe_KE,TMP,temp)
 
-         if (SP%compute_surface_power) then
+         if (SP%FCL%compute_surface_power) then
          call surface_power(temp,mom%U,mom%m,mom%temp_F1,mom%temp_F2,mom%temp_CC_VF,mom%TF_CC)
          temp = scale*temp/SP%DP%Re
          call export(mom%probe_Q,TMP,temp)
@@ -509,8 +509,10 @@
          type(dir_tree),intent(in) :: DT
          type(mesh_domain),intent(in) :: MD_fluid
          type(VF),intent(in) :: B,B0,J
+         write(*,*) '       KINETIC ENERGY BUDGET - STARTED'
          call E_K_Budget_wrapper(DT,mom%U,mom%Unm1,&
          B,B0,J,mom%p,mom%m,SP%VS%U%TMP,SP%DP,SP%MP,MD_fluid)
+         write(*,*) '       KINETIC ENERGY BUDGET - COMPLETE'
        end subroutine
 
        end module

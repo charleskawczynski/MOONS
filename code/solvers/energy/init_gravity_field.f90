@@ -23,7 +23,7 @@
          if (SP%VS%T%SS%restart) then
            call restart_gravity(gravity,m,dir)
          else
-           call uniform_gravity_field(gravity,SP%uniform_gravity_dir)
+           call uniform_gravity_field(gravity,SP%SCP%uniform_gravity_dir)
          endif
        end subroutine
 

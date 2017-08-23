@@ -141,6 +141,7 @@
       ! http://homepages.wmich.edu/~korista/README-fortran.html
 
       subroutine make_dir(d1,d2,d3,d4)
+        implicit none
         character(len=*),intent(in) :: d1
         character(len=*),intent(in),optional :: d2,d3,d4
         type(string) :: s
@@ -166,6 +167,7 @@
       end subroutine
 
       subroutine remove_dir(d)
+        implicit none
         character(len=*),intent(in) :: d
         call system('rm -r /' // d )
         write(*,*) 'Directory ' // d // ' removed.'

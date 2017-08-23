@@ -9,7 +9,8 @@
        public :: assign_B0_vs_t
        public :: assign_dB0_dt_vs_t
        integer,parameter :: n_data_points = 58
-       integer :: i_start = 7 ! B_poloidal does not drop until about t(7)
+       ! integer :: i_start = 7 ! B_poloidal does not drop until about t(7)
+       integer :: i_start = 8 ! B_poloidal does not drop until about t(7)
 
        contains
 

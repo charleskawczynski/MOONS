@@ -1,6 +1,6 @@
 # **************** RUN CONFIGURATION *******************
-# RELEASE = 'DEBUG'
-RELEASE = 'OPTIMIZE'
+RELEASE = 'DEBUG'
+# RELEASE = 'OPTIMIZE'
 # RELEASE = 'PROFILE'
 USE_OPEN_MP = 'TRUE'
 PARALLELIZE_3D_OPS = 'TRUE'
@@ -43,7 +43,7 @@ endif
 SRC_DIR = ..$(PS)code
 
 ifeq ($(CLUSTER),'PC_CK')
-	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS2
+	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS7
 endif
 
 ifeq ($(CLUSTER),'Workstation_CK')
@@ -89,6 +89,7 @@ $(info OS_USED = $(OS_USED))
 FCFLAGS = -J"$(MOD_DIR)" -fimplicit-none -Wuninitialized -cpp
 # FCFLAGS += -std=legacy
 FCFLAGS += -std=gnu
+# FCFLAGS += -E -dM
 # FCFLAGS += -std=f95
 # FCFLAGS += -std=f2003
 # FCFLAGS += -std=2008
@@ -337,6 +338,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)sparse$(PS)array.f90\
 	$(SRC_DIR)$(PS)sparse$(PS)sparse.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)export_logicals.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)sim_config_params.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)dimensionless_params.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)dimensionless_params_extend.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)geometry_props.f90\
@@ -457,6 +459,8 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)sim_params$(PS)mirror_props.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)flow_control_logicals.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)sim_params.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_aux.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_extend.f90\
 	$(SRC_DIR)$(PS)user$(PS)restart_file.f90\
 	$(SRC_DIR)$(PS)user$(PS)kill_switch.f90\
 	$(SRC_DIR)$(PS)user$(PS)export_now.f90\
@@ -578,12 +582,15 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)solvers$(PS)MHDSolver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)Poisson_test.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)Taylor_Green_Vortex_test.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)temporal_convergence_test.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)operator_interchangability_test.f90\
 	$(SRC_DIR)$(PS)user$(PS)export_mesh_aux.f90\
 	$(SRC_DIR)$(PS)matrix_visualization$(PS)matrix_visualization.f90\
 	$(SRC_DIR)$(PS)user$(PS)MOONS.f90
 
 SRCS_F += $(TARGET_DIR)$(PS)parametricStudy.f90
 
+export
 
 # **************** DO NOT EDIT BELOW HERE *********************
 # **************** DO NOT EDIT BELOW HERE *********************
@@ -591,9 +598,9 @@ SRCS_F += $(TARGET_DIR)$(PS)parametricStudy.f90
 
 OBJS_F = $(patsubst %.f90,$(OBJ_DIR)$(PS)%.o,$(notdir $(SRCS_F)))
 
-$(warning ************************************)
-$(warning ********** BUILDING MOONS **********)
-$(warning ************************************)
+$(info ************************************)
+$(info ********** BUILDING MOONS **********)
+$(info ************************************)
 
 all: $(TARGET)
 

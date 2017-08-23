@@ -22,7 +22,6 @@
        private
 
        public :: export_vorticity_streamfunction
-       public :: export_vorticity_streamfunction_wrapper
 
        contains
 
@@ -38,7 +37,7 @@
          call solve(PCG,psi,omega,m,compute_norms)
        end subroutine
 
-       subroutine export_vorticity_streamfunction_wrapper(U,m,DT,SP)
+       subroutine export_vorticity_streamfunction(U,m,DT,SP)
          implicit none
          type(VF),intent(in) :: U
          type(mesh),intent(in) :: m
@@ -46,16 +45,17 @@
          type(sim_params),intent(in) :: SP
          type(VF) :: U_temp
          type(mesh) :: m_temp
+         write(*,*) ' COMPUTING VORTICITY-STREAMFUNCTION:'
          if (SP%EL%export_symmetric) then
          call mirror_field(m_temp,U_temp,m,U,SP%MP)
-         call export_vorticity_streamfunction(U_temp,m_temp,DT,SP)
+         call export_vorticity_streamfunction_wrapper(U_temp,m_temp,DT,SP)
          call delete(U_temp)
          call delete(m_temp)
-         else; call export_vorticity_streamfunction(U,m,DT,SP)
+         else; call export_vorticity_streamfunction_wrapper(U,m,DT,SP)
          endif
        end subroutine
 
-       subroutine export_vorticity_streamfunction(U,m,DT,SP)
+       subroutine export_vorticity_streamfunction_wrapper(U,m,DT,SP)
          implicit none
          type(VF),intent(in) :: U
          type(mesh),intent(in) :: m

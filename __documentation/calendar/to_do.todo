@@ -14,37 +14,18 @@ Big picture items:
   ☐ Preparing for dissertation presentation
   ☐ Take advantage of dentist
 Medium picture items:
-  ✔ Perform high Shercliff/high Hartmann cases and summarize results @done (17-06-06 10:05)
-  ☐ Re-run unsteady Bandaru cases and consider recording statistics
   ☐ Implement RK3 to some effect
   ☐ Update resume - ask Jayshri
-  ☐ Magnetic BCs using Biosavart law? - no time
   ☐ Organize code into appropriately named folders
   ☐ Scan books, organize dropbox/git
-  ✔ Formalize MHD fractional step method (Perot) @done (17-06-02 08:34)
 Small picture items:
  ☐ Get parking form (signed) from Lance - Fall
- ✔ Grade Abdou's class - Spring @done (17-06-02 15:48)
- ☐ Look back at intermediate BCs in light of Perot paper - Kim approach necessary?
- ☐ Modify source all terms to be 2nd order accurate (BC is taken into account in Au_BC)
 
 Week-by-week (starting Mondays):
 
 weeks remaining
      |
      v
-  ☐ 33) 06/05/2017 - finish getting plots/table in paper:
-  ✔ 32) 06/12/2017 - Work on paper @done (17-06-26 08:56)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SPRING QUARTER ENDS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SUMMER QUARTER BEGINS
-  ✔ 31) 06/19/2017 - Work on paper @done (17-06-26 08:56)
-  ☐ 30) 06/26/2017 - Finish first draft of paper, give to Sergey for first iteration
-  ☐ 29) 07/03/2017 - Perform 2nd iterations with Sergey, restart unsteady Bandaru cases
-  ☐ 28) 07/10/2017 - 
-  ☐ 27) 07/17/2017 - 
-  ☐ 26) 07/24/2017 - VACATION MOST OF WEEK - scan books/organize other days?
-  ☐ 25) 07/31/2017 - 
-  ☐ 24) 08/07/2017 - VACATION MOST OF WEEK
   ☐ 23) 08/14/2017 - 
   ☐ 22) 08/21/2017 - DEADLINE FOR FULL BC PAPER
   ☐ 21) 08/28/2017 - 
@@ -75,3 +56,17 @@ weeks remaining
   ☐ 2 ) 01/15/2018 - DEADLINE FOR PLASMA DISRUPTION PAPER
   ☐ 1 ) 01/22/2018 - 
   ☐ 0 ) 01/29/2018 - Ph.inally D.one
+
+
+＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿
+Archive:
+ ✔ Re-run unsteady Bandaru cases and consider recording statistics @done (17-08-17 15:53) @project(Medium picture items)
+ ✔ Modify source all terms to be 2nd order accurate (BC is taken into account in Au_BC) @done (17-08-17 15:53) @project(Small picture items)
+ ✔ Look back at intermediate BCs in light of Perot paper - Kim approach necessary? @done (17-08-17 15:53) @project(Small picture items)
+ ✔ 32) 06/12/2017 - Work on paper @done (17-06-26 08:56) @project(Week-by-week (starting Mondays))
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SPRING QUARTER ENDS
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ SUMMER QUARTER BEGINS
+ ✔ 31) 06/19/2017 - Work on paper @done (17-06-26 08:56) @project(Week-by-week (starting Mondays))
+ ✔ Perform high Shercliff/high Hartmann cases and summarize results @done (17-06-06 10:05) @project(Medium picture items)
+ ✔ Grade Abdou's class - Spring @done (17-06-02 15:48) @project(Small picture items)
+ ✔ Formalize MHD fractional step method (Perot) @done (17-06-02 08:34) @project(Medium picture items)

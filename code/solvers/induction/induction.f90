@@ -332,11 +332,11 @@
          type(induction),intent(in) :: ind
          type(sim_params),intent(in) :: SP
          integer,intent(in) :: un
-         if (SP%export_heavy) then
+         if (SP%FCL%export_heavy) then
            write(un,*) '**************************************************************'
            write(un,*) '************************** MAGNETIC **************************'
            write(un,*) '**************************************************************'
-           write(un,*) 'Rem,finite_Rem,include_vacuum = ',SP%DP%Rem,SP%finite_Rem,SP%include_vacuum
+           write(un,*) 'Rem,finite_Rem,include_vacuum = ',SP%DP%Rem,SP%SCP%finite_Rem,SP%SCP%include_vacuum
            write(un,*) 't,dt = ',SP%VS%B%TMP%t,SP%VS%B%TMP%dt
            write(un,*) 'solveBMethod,N_ind,N_cleanB = ',SP%VS%B%SS%solve_method,&
            SP%VS%B%ISP%iter_max,SP%VS%phi%ISP%iter_max
@@ -586,7 +586,7 @@
            EF%unsteady_0D%export_now)
          case default; stop 'Error: bad solveBMethod input solve_induction in induction.f90'
          end select
-         if (SP%embed_B_interior) call embedFace(ind%B,ind%B_interior,ind%MD_sigma)
+         if (SP%SCP%embed_B_interior) call embedFace(ind%B,ind%B_interior,ind%MD_sigma)
          enddo
          ! ********************* POST SOLUTION COMPUTATIONS *********************
          call compute_J_ind(ind,SP)
@@ -617,8 +617,10 @@
          type(sim_params),intent(in) :: SP
          type(VF),intent(in) :: U
          type(dir_tree),intent(in) :: DT
+         write(*,*) '       MAGNETIC ENERGY BUDGET - STARTED'
          call E_M_Budget_wrapper(DT,U,ind%B,ind%Bnm1,ind%B0,ind%B0,ind%J,ind%m,&
          ind%MD_fluid,ind%MD_sigma,SP%DP,SP%VS%B%TMP,SP%MP)
+         write(*,*) '       MAGNETIC ENERGY BUDGET - COMPLETE'
        end subroutine
 
        end module

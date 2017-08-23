@@ -212,7 +212,7 @@
          type(energy),intent(in) :: nrg
          type(sim_params),intent(in) :: SP
          integer,intent(in) :: un
-         if (SP%export_heavy) then
+         if (SP%FCL%export_heavy) then
            write(un,*) '**************************************************************'
            write(un,*) '*************************** ENERGY ***************************'
            write(un,*) '**************************************************************'

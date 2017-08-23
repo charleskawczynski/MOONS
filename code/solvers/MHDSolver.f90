@@ -57,21 +57,21 @@
          call init(EN,str(DT%export_now),'EN'); call export(EN)
          call init(RM,str(DT%refine_mesh),'RM'); call export(RM)
          call init(EF,SP%EF); call export(SP%EF)
-         call init(ES,SP%export_safe_period)
+         call init(ES,SP%SCP%export_safe_period)
          call init(sc,str(DT%wall_clock),'WALL_CLOCK_TIME_INFO')
 
          call export_ISP(SP%VS)
          call export_TMP(SP%VS)
          call export(coupled)
 
-         if (SP%export_heavy) write(*,*) 'Working directory = ',str(DT%tar)
+         if (SP%FCL%export_heavy) write(*,*) 'Working directory = ',str(DT%tar)
 
          write(*,*) '***************************************************************'
          write(*,*) '****************** ENTERING MAIN LOOP *************************'
          write(*,*) '***************************************************************'
          do while ((.not.KS%terminate_loop).and.(coupled%t.lt.coupled%t_final-coupled%dt*0.5_cp))
            call tic(sc)
-           if (SP%print_every_MHD_step) write(*,*) 'coupled%n_step = ',coupled%n_step
+           if (SP%FCL%print_every_MHD_step) write(*,*) 'coupled%n_step = ',coupled%n_step
            ! if (EF%info%export_now) call print(SP)
 
            do i_RK=1,coupled%RKP%n_stages
@@ -128,7 +128,7 @@
            call import_exit_criteria(SP%VS)
            call import_TMP_dt(SP%VS)
            call import_dt(coupled)
-           if (SP%couple_time_steps) call couple_time_step(SP%VS,coupled)
+           if (SP%SCP%couple_time_steps) call couple_time_step(SP%VS,coupled)
 
            ! call print(coupled%RKP,'coupled')
            call update(ES,sc%t_passed)
@@ -147,13 +147,13 @@
              ! would be better to update outside the solvers,
              ! since it should be updated for all solver variables.
              ! call oldest_modified_file(DT%restart,DT%restart1,DT%restart2,'p.dat')
-             if (SP%export_heavy) call print(sc,coupled)
-             if (.not.SP%export_heavy) then
+             if (SP%FCL%export_heavy) call print(sc,coupled)
+             if (.not.SP%FCL%export_heavy) then
                write(*,*) ''
                call print_light(sc,coupled)
              endif
              call export(sc,coupled%t)
-             if (SP%export_heavy) write(*,*) 'Working directory = ',str(DT%tar)
+             if (SP%FCL%export_heavy) write(*,*) 'Working directory = ',str(DT%tar)
              call import(KS)
            endif
            ! call import(EF)
@@ -169,13 +169,17 @@
          call export(coupled)
 
          ! **************** EXPORT ONE FINAL TIME ***********************
+         if (SP%FCL%export_final_tec) then
          if (SP%VS%T%SS%initialize) call export_tec(nrg,SP,DT)
          if (SP%VS%U%SS%initialize) call export_tec(mom,SP,DT)
          if (SP%VS%B%SS%initialize) call export_tec(ind,SP,DT)
+         endif
 
+         if (SP%FCL%export_final_restart) then
          if (SP%VS%T%SS%initialize) call export(nrg,SP,DT)
          if (SP%VS%U%SS%initialize) call export(mom,SP,DT)
          if (SP%VS%B%SS%initialize) call export(ind,SP,DT)
+         endif
 
          call delete(EF)
          call delete(sc)

@@ -10,6 +10,7 @@
        use mesh_mod
        use mesh_domain_mod
        use mesh_generate_mod
+       use generate_mesh_generic_mod
        use VF_mod
        use string_mod
        use path_mod
@@ -18,14 +19,18 @@
        use export_analytic_mod
        use mirror_props_mod
        use vorticity_streamfunction_mod
+       use operator_interchangability_test_mod
        use Poisson_test_mod
        use Taylor_Green_Vortex_test_mod
+       use temporal_convergence_test_mod
        use export_mesh_aux_mod
        use restart_file_mod
 
        use iter_solver_params_mod
        use time_marching_params_mod
        use sim_params_mod
+       use sim_params_aux_mod
+       use sim_params_extend_mod
        use export_raw_processed_symmetry_mod
        use export_raw_processed_mod
        use import_raw_mod
@@ -41,7 +46,6 @@
 
        private
        public :: config
-       interface config;   module procedure config_MOONS;   end interface
        interface config;   module procedure config_MOONS;   end interface
 
        contains
@@ -83,6 +87,7 @@
 
          call export(M%SP,str(M%DT%params),'sim_params_raw_exported')
          call display(M%SP,str(M%DT%params),'sim_params_initial')
+         call display_compiler_info(str(DT%params),'compiler_info')
          call export(M%SP%coupled)
          call export_TMP(M%SP%VS)
 
@@ -90,7 +95,7 @@
          call export_version(str(M%DT%LDC))
 
          ! ************************************************************** Initialize mesh + domains
-         if (M%SP%restart_meshes) then
+         if (M%SP%FCL%restart_meshes) then
            call import(M%mom%m,str(M%DT%mesh_restart),'m_mom')
            call import(M%ind%m,str(M%DT%mesh_restart),'m_ind')
            call import(M%ind%MD_sigma,str(M%DT%mesh_restart),'MD_sigma')

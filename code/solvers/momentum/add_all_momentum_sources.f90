@@ -27,7 +27,7 @@
 
          if (SP%MT%mean_pressure_grad%add) then
            call compute_add_MPG(mom%U,TMP,&
-           SP%MT%mean_pressure_grad%scale,SP%mpg_dir)
+           SP%MT%mean_pressure_grad%scale,SP%SCP%mpg_dir)
          endif
 
          call assign(Fnm1,F)
@@ -61,7 +61,7 @@
          if (SP%MT%JCrossB%add) then
            call compute_add_JCrossB(F,mom%temp_F1,ind%B,ind%B0,ind%J,ind%m,&
                                    ind%MD_fluid,SP%MT%JCrossB%scale,&
-                                   SP%finite_Rem,ind%temp_CC,&
+                                   SP%SCP%finite_Rem,ind%temp_CC,&
                                    ind%temp_F1,ind%temp_F1_TF,&
                                    ind%temp_F2_TF)
          endif

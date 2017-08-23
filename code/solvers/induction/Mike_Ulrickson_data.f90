@@ -12,7 +12,8 @@
 
      integer,parameter :: n_points = 58
      real(cp),parameter :: micro_seconds_to_seconds = 10.0_cp**(-6.0_cp)
-     real(cp) :: t_c = 0.00790207929237_cp
+     ! real(cp) :: t_c = 0.00790207929237_cp
+     real(cp) :: t_c = 0.0047_cp
 
      contains
 
