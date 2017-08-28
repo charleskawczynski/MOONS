@@ -57,7 +57,8 @@ def full_path(f): return os.path.abspath(f)
 
 abstract_interfaces_path = os.getcwd()+PS+'handwritten_code'+PS+'abstract_interfaces'+PS
 MOONS_dir = up_dir(dir_name(full_path(__file__)),1)+PS
-makefile_dir = MOONS_dir+'makefiles'
+makefile_dir = MOONS_dir+'makefiles'+PS
+makefile_file = makefile_dir+'generated.make'
 this_file = full_path(__file__)
 app_folder = dir_name(this_file)+PS
 code_folder = up_dir(app_folder,1)+PS+'code'+PS
@@ -72,7 +73,8 @@ d.set_bin_dir(app_folder+'bin'+PS)
 d.set_interface_dir(interface_folder)
 d.set_target_dir(generated_code_folder)
 d.set_GOOFPY_dir(generator_folder)
-d.set_makefile_dir(generator_folder)
+d.set_makefile_dir(makefile_dir)
+d.set_makefile_file(makefile_file)
 # d.set_main(main)
 # d.set_bin_dir(bin_dir)
 # d.set_base_dir(base_dir)
@@ -105,37 +107,37 @@ F = False
 g.set_default_real('0.0_cp')
 
 # --------------- Small data structures
-g = dir_tree.add_modules(g,T,F,priv,real)
 g = stitches.add_modules(g,T,F,priv,real)
+# g = dir_tree.add_modules(g,T,F,priv,real)
 
-g = probe.add_modules(g,T,F,priv,real)
-g = mesh_params.add_modules(g,T,F,priv,real)
-g = grid.add_modules(g,T,F,priv,real)
-g = var_set.add_modules(g,T,F,priv,real)
-g = stop_clock.add_modules(g,T,F,priv,real)
-g = sim_params.add_modules(g,T,F,priv,real)
+# g = probe.add_modules(g,T,F,priv,real)
+# g = mesh_params.add_modules(g,T,F,priv,real)
+# g = grid.add_modules(g,T,F,priv,real)
+# g = var_set.add_modules(g,T,F,priv,real)
+# g = stop_clock.add_modules(g,T,F,priv,real)
+# g = sim_params.add_modules(g,T,F,priv,real)
 
 # --------------- Medium data structures
-g = grid_field.add_modules(g,T,F,priv,real) # small
-g = data_location.add_modules(g,T,F,priv,real) # small
-g = sub_domain.add_modules(g,T,F,priv,real)
-g = physical_domain.add_modules(g,T,F,priv,real)
-g = apply_face_BC_op.add_modules(g,T,F,priv,real,abstract_interfaces_path) # Contains interfaces
-g = procedure_array.add_modules(g,T,F,priv,real)
-g = boundary_conditions.add_modules(g,T,F,priv,real)
+# g = grid_field.add_modules(g,T,F,priv,real) # small
+# g = data_location.add_modules(g,T,F,priv,real) # small
+# g = sub_domain.add_modules(g,T,F,priv,real)
+# g = physical_domain.add_modules(g,T,F,priv,real)
+# g = apply_face_BC_op.add_modules(g,T,F,priv,real,abstract_interfaces_path) # Contains interfaces
+# g = procedure_array.add_modules(g,T,F,priv,real)
+# g = boundary_conditions.add_modules(g,T,F,priv,real)
 
 # --------------- Large data structures
-g = block.add_modules(g,T,F,priv,real)
-g = block_field.add_modules(g,T,F,priv,real)
-g = mesh.add_modules(g,T,F,priv,real)
-g = fields.add_modules(g,T,F,priv,real)
-g = mesh_domain.add_modules(g,T,F,priv,real)
-g = time_statistics.add_modules(g,T,F,priv,real)
+# g = block.add_modules(g,T,F,priv,real)
+# g = block_field.add_modules(g,T,F,priv,real)
+# g = mesh.add_modules(g,T,F,priv,real)
+# g = fields.add_modules(g,T,F,priv,real)
+# g = mesh_domain.add_modules(g,T,F,priv,real)
+# g = time_statistics.add_modules(g,T,F,priv,real)
 
 # --------------- Very large data structures
-g = PCG.add_modules(g,T,F,priv,real,abstract_interfaces_path) # Contains interfaces
-g = FFT_solver.add_modules(g,T,F,priv,real)
-g = governing_equations.add_modules(g,T,F,priv,real)
-g = MOONS.add_modules(g,T,F,priv,real)
+# g = PCG.add_modules(g,T,F,priv,real,abstract_interfaces_path) # Contains interfaces
+# g = FFT_solver.add_modules(g,T,F,priv,real)
+# g = governing_equations.add_modules(g,T,F,priv,real)
+# g = MOONS.add_modules(g,T,F,priv,real)
 
 g.generate_code()

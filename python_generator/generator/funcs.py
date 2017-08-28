@@ -53,7 +53,6 @@ def make_path(new_path):
 
 def delete_entire_tree_safe(d):
     if os.path.exists(d):
-        # print('attempting to delete '+d)
         shutil.rmtree(d)
 
 def make_dummy_main(file_name,class_list,base_spaces):
@@ -102,16 +101,16 @@ def make_dot_bat(target_root,source_dir,generated_path,class_list,base_dir,base_
     write_list_to_file(target_root+'run.bat',L)
     return
 
-def make_makefile(makefile_dir,target_root,source_dir,generated_path,class_list,base_dir,base_files,PS):
+def make_makefile(makefile_file,target_root,source_dir,generated_path,class_list,base_dir,base_files,PS):
     L = []
-    L = L + ['$(SRC_DIR_GENERATED)']
+    L = L + ['$(SRC_DIR_GENERATED)$(PS)']
     prefix = ''.join(L)
     file_list = [generated_path+x+'.f90' for x in class_list]
     module_names = get_list_of_module_names(file_list)
     sorted_module_list = sort_files_by_dependency(file_list,module_names)
     sorted_file_list = get_file_list_from_module_names(file_list,sorted_module_list)
     L = []
-    L = [base_dir+x+' ' for x in base_files]
+    # L = [base_dir+x+' ' for x in base_files]
     # L = ['..'+PS+'source'+PS+base_dir+x+' ' for x in base_files]
     L_start = L + sorted_file_list
 
@@ -128,7 +127,7 @@ def make_makefile(makefile_dir,target_root,source_dir,generated_path,class_list,
     L = ['$(PS)'.join(x.split("$(PS)")[0:-1]) if "$(PS)" in x else x for x in L]
     L = list(set(L))
     L.sort()
-    L = ['VPATH ='] + L
+    L = ['VPATH +='] + L
     L = [x+'\\\n' for x in L]
     L = L+['\n']
     L_VPATH = L
@@ -141,7 +140,7 @@ def make_makefile(makefile_dir,target_root,source_dir,generated_path,class_list,
     L = [x.replace('/','$(PS)')+' ' for x in L]
     L = [prefix + x for x in L]
     L = ['\t'+x for x in L]
-    L = ['SRCS_F =\\'] + L
+    L = ['SRCS_F +=\\'] + L
     L = [x.replace(' ','') for x in L]
     L = [x+'\\' if x.endswith('.f90') else x for x in L]
     L = [x+'\n' for x in L]
@@ -149,7 +148,7 @@ def make_makefile(makefile_dir,target_root,source_dir,generated_path,class_list,
 
     L = [''.join(L_VPATH+L_FILES)]
 
-    write_list_to_file(makefile_dir+'makefile.make',L)
+    write_list_to_file(makefile_file,L)
     return
 
 def get_list_of_files_in_dir(path,ext):

@@ -86,6 +86,6 @@ class generator:
 		base_spaces = self.module[key].base_spaces
 
 		func.make_dot_bat(self.d.target_root,self.d.GOOFPY_dir,self.d.target_dir,module_list_temp,self.d.base_dir,self.base_files,self.d.PS)
-		func.make_makefile(self.d.makefile_dir,self.d.target_root,self.d.GOOFPY_dir,self.d.target_dir,module_list_temp,self.d.base_dir,self.base_files,'$(PS)')
+		func.make_makefile(self.d.makefile_file,self.d.target_root,self.d.GOOFPY_dir,self.d.target_dir,module_list_temp,self.d.base_dir,self.base_files,'$(PS)')
 		func.make_dummy_main(self.d.target_dir+'main_dummy.f90',self.module_list,base_spaces)
 		print('Number of lines generated (Total): ' + str(N_tot))
