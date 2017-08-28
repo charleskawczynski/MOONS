@@ -65,7 +65,7 @@ print('Ha             = '+str(Ha))
 print('Rem            = '+str(Rem))
 
 print('\n************ DIMENSIONLESS PARAMETERS FROM MOONS OUTPUT ************')
-U_sim = 0.05
+U_sim = 0.07
 # U_sim = np.sqrt(0.5)
 B_sim = 0.005
 # B_sim = np.sqrt(0.1)

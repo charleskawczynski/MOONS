@@ -88,7 +88,7 @@
        SP%uniform_B0_dir             = 3 ! Uniform applied field direction
        SP%mpg_dir                    = 1 ! Uniform applied field direction
        SP%couple_time_steps          = T ! Ensures all dt are equal to coupled%dt
-       SP%finite_Rem                 = F ! Ensures all dt are equal to coupled%dt
+       SP%SCP%finite_Rem                 = F ! Ensures all dt are equal to coupled%dt
        SP%include_vacuum             = F ! Ensures all dt are equal to coupled%dt
        SP%embed_B_interior           = F ! Solve for exterior B using interior B
        SP%compute_surface_power      = T ! Compute surface power for LDC
@@ -175,7 +175,7 @@
        if (SP%MP%mirror) SP%DP%KE_scale = SP%DP%KE_scale*2.0_cp
        if (SP%MP%mirror) SP%DP%ME_scale = SP%DP%ME_scale*2.0_cp
        if (SP%MP%mirror) SP%DP%JE_scale = SP%DP%JE_scale*2.0_cp
-       if (.not.SP%finite_Rem) SP%DP%Rem = 1.0_cp
+       if (.not.SP%SCP%finite_Rem) SP%DP%Rem = 1.0_cp
 
        ! call init(export_field,export_ever)
        call init(SP%VS%T%unsteady_field  ,F)
@@ -265,7 +265,7 @@
        call assign_coeff_implicit(SP%VS) ! LHS diffusion coefficient, (alpha,coeff_natural) must be defined first
 
        ! The following is needed only if curl-curl(B) is used, opposed to J in solver.
-       ! if (SP%finite_Rem) SP%VS%B%MFP%coeff_explicit = SP%VS%B%MFP%coeff_explicit/SP%DP%Rem
+       ! if (SP%SCP%finite_Rem) SP%VS%B%MFP%coeff_explicit = SP%VS%B%MFP%coeff_explicit/SP%DP%Rem
 
        ! Sources to add to momentum equation. NOTE: scale is not set if add=false
        call init(SP%MT%pressure_grad       ,F,-1.0_cp                   )

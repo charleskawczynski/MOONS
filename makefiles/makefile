@@ -1,6 +1,6 @@
 # **************** RUN CONFIGURATION *******************
-RELEASE = 'DEBUG'
-# RELEASE = 'OPTIMIZE'
+# RELEASE = 'DEBUG'
+RELEASE = 'OPTIMIZE'
 # RELEASE = 'PROFILE'
 USE_OPEN_MP = 'TRUE'
 PARALLELIZE_3D_OPS = 'TRUE'
@@ -40,21 +40,17 @@ ifeq ($(CLUSTER),$(filter $(CLUSTER),'Hoffman2'))
 endif
 
 # ************* DIRECTORY SETTINGS ******************
-SRC_DIR = ..$(PS)code
+SRC_DIR = ..$(PS)code$(PS)handwritten
+# SRC_DIR_GENERATED = ..$(PS)code$(PS)generated_code
+SRC_DIR_GENERATED = ..$(PS)code$(PS)generated
+SRC_DIR_PRE_GENERATED = ..$(PS)code$(PS)pre_generated
 
 ifeq ($(CLUSTER),'PC_CK')
-	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS7
+	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS2
 endif
 
 ifeq ($(CLUSTER),'Workstation_CK')
-	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)MOONS5
 	TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)BC_full$(PS)Shatrov_inspired$(PS)M4
-	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)NME_new_fast$(PS)mesh_refinement_study$(PS)coarse
-	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)NME_new_fast$(PS)mesh_refinement_study$(PS)moderate
-	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)NME_new_fast$(PS)mesh_refinement_study$(PS)fine
-	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)NME_new_fast$(PS)sigma_study$(PS)sig1em2
-	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)NME_new_fast$(PS)sigma_study$(PS)sig1em3
-	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)NME_new_fast$(PS)sigma_study$(PS)sig1em4
 endif
 
 ifeq ($(CLUSTER),'Hoffman2')
@@ -601,6 +597,9 @@ OBJS_F = $(patsubst %.f90,$(OBJ_DIR)$(PS)%.o,$(notdir $(SRCS_F)))
 $(info ************************************)
 $(info ********** BUILDING MOONS **********)
 $(info ************************************)
+$(info $(OBJ_DIR))
+$(info $(SRC_DIR))
+$(info $(SRC_DIR_GENERATED))
 
 all: $(TARGET)
 

@@ -58,40 +58,41 @@
        SP%FCL%Poisson_test                       = F
        SP%FCL%Taylor_Green_Vortex_test           = F
        SP%FCL%temporal_convergence_test          = F
-       SP%FCL%export_numerical_flow_rate         = F
-       SP%FCL%export_Shercliff_Hunt_analytic_sol = F
        SP%FCL%operator_interchangability_test    = F
-       SP%FCL%export_vorticity_streamfunction    = T
        SP%FCL%compute_export_E_K_Budget          = F
        SP%FCL%compute_export_E_M_budget          = F
+       SP%FCL%restart_meshes                     = F
+
+       SP%FCL%export_numerical_flow_rate         = F
+       SP%FCL%export_Shercliff_Hunt_analytic_sol = F
+       SP%FCL%export_vorticity_streamfunction    = F
+       SP%FCL%export_heavy                       = T
        SP%FCL%export_final_tec                   = T
        SP%FCL%export_final_restart               = T
+       SP%FCL%print_every_MHD_step               = F
+       SP%FCL%compute_surface_power              = T
 
-       SP%EL%export_analytic         = F ! Export analytic solutions (MOONS.f90)
-       SP%EL%export_meshes           = T ! Export all meshes before starting simulation
-       SP%EL%export_vort_SF          = T ! Export vorticity-stream-function after simulation
-       SP%EL%export_mat_props        = T ! Export material properties before starting simulation
-       SP%EL%export_ICs              = F ! Export Post-Processed ICs before starting simulation
-       SP%EL%export_cell_volume      = F ! Export cell volumes for each mesh
-       SP%EL%export_planar           = F ! Export 2D data when N_cell = 1 along given direction
-       SP%EL%export_symmetric        = F !
-       SP%EL%export_mesh_block       = F ! Export mesh blocks to FECs
-       SP%EL%export_soln_only        = F ! Export processed solution only
+       SP%EL%export_analytic         = F
+       SP%EL%export_meshes           = T
+       SP%EL%export_vort_SF          = F
+       SP%EL%export_mat_props        = T
+       SP%EL%export_ICs              = F
+       SP%EL%export_cell_volume      = F
+       SP%EL%export_planar           = F
+       SP%EL%export_symmetric        = F
+       SP%EL%export_mesh_block       = F
+       SP%EL%export_soln_only        = F
 
-       SP%export_safe_period         = 1.0_cp*seconds_per_day ! CPU wall clock time to export regularly
-       SP%restart_meshes             = F ! restart sim (requires no code changes)
-       SP%export_heavy               = T ! Export lots of sim info
-       SP%uniform_gravity_dir        = 1 ! Uniform gravity field direction
-       SP%uniform_B0_dir             = 3 ! Uniform applied field direction
-       SP%mpg_dir                    = 1 ! Uniform applied field direction
-       SP%couple_time_steps          = T ! Ensures all dt are equal to coupled%dt
-       SP%finite_Rem                 = T ! Ensures all dt are equal to coupled%dt
-       SP%include_vacuum             = F ! Ensures all dt are equal to coupled%dt
-       SP%embed_B_interior           = F ! Solve for exterior B using interior B
-       SP%compute_surface_power      = T ! Compute surface power for LDC
+       SP%SCP%export_safe_period         = 1.0_cp*seconds_per_day
+       SP%SCP%uniform_gravity_dir        = 1
+       SP%SCP%uniform_B0_dir             = 3
+       SP%SCP%mpg_dir                    = 1
+       SP%SCP%couple_time_steps          = T
+       SP%SCP%finite_Rem                 = F
+       SP%SCP%include_vacuum             = F
+       SP%SCP%embed_B_interior           = F
 
        SP%matrix_based               = F ! Solve induction equation
-       SP%print_every_MHD_step       = F ! Print nstep every time stop (for debugging)
 
        ! call init(MP,mirror,mirror_face)
        call init(SP%MP,F,6) ! Must be defined before KE_scale,ME_scale,JE_scale
@@ -134,11 +135,11 @@
 
        call delete(SP%DP)
        call init(SP%DP,str(DT%dimensionless_params),'dimensionless_params')
-       SP%DP%Re                      = 12.0_cp*pow(6)
-       SP%DP%Ha                      = 26.0_cp*pow(2)
-       SP%DP%Rem                     = 2.0_cp
+       SP%DP%Re                      = 11769054.26_cp
+       SP%DP%Ha                      = 2645.75_cp
+       SP%DP%Rem                     = 1.1_cp
        ! SP%DP%N                       = 5.0_cp*pow(0)
-       SP%DP%Q                       = 8.0_cp*pow(-1)
+       ! SP%DP%Q                       = 8.0_cp*pow(-1)
        ! SP%DP%Ha                      = 5.0_cp*pow(2)
        ! SP%DP%Ha                      = 10.0_cp*pow(3)
        ! SP%DP%Ha                      = 15.0_cp*pow(3)
@@ -171,7 +172,7 @@
        if (SP%MP%mirror) SP%DP%KE_scale = SP%DP%KE_scale*2.0_cp
        if (SP%MP%mirror) SP%DP%ME_scale = SP%DP%ME_scale*2.0_cp
        if (SP%MP%mirror) SP%DP%JE_scale = SP%DP%JE_scale*2.0_cp
-       if (.not.SP%finite_Rem) SP%DP%Rem = 1.0_cp
+       if (.not.SP%SCP%finite_Rem) SP%DP%Rem = 1.0_cp
 
        ! call init(export_field,export_ever)
        call init(SP%VS%T%unsteady_field  ,F)
@@ -261,7 +262,7 @@
        call assign_coeff_implicit(SP%VS) ! LHS diffusion coefficient, (alpha,coeff_natural) must be defined first
 
        ! The following is needed only if curl-curl(B) is used, opposed to J in solver.
-       ! if (SP%finite_Rem) SP%VS%B%MFP%coeff_explicit = SP%VS%B%MFP%coeff_explicit/SP%DP%Rem
+       ! if (SP%SCP%finite_Rem) SP%VS%B%MFP%coeff_explicit = SP%VS%B%MFP%coeff_explicit/SP%DP%Rem
 
        ! Sources to add to momentum equation. NOTE: scale is not set if add=false
        call init(SP%MT%pressure_grad       ,F,-1.0_cp                   )
