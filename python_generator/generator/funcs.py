@@ -53,8 +53,8 @@ def make_path(new_path):
 
 def delete_entire_tree_safe(d):
     if os.path.exists(d):
-        print('attempting to delete '+d)
-        # shutil.rmtree(d)
+        # print('attempting to delete '+d)
+        shutil.rmtree(d)
 
 def make_dummy_main(file_name,class_list,base_spaces):
     L =  ['program main']
