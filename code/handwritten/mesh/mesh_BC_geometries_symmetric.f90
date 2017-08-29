@@ -6,7 +6,7 @@
        use coordinate_stretch_parameters_mod
        use dir_tree_mod
        use string_mod
-       use path_mod
+       use path_extend_mod
        use grid_mod
        use mesh_domain_mod
        use mesh_mod

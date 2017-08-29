@@ -4,7 +4,7 @@
        use mesh_benchmark_geometries_mod
        use dir_tree_mod
        use string_mod
-       use path_mod
+       use path_extend_mod
        use mesh_domain_mod
        use sim_params_mod
        implicit none

@@ -8,7 +8,8 @@
        use export_raw_processed_mod
        use dir_tree_mod
        use string_mod
-       use path_mod
+       use path_extend_mod
+       use path_extend_mod
        implicit none
 
        private

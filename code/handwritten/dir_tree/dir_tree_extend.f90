@@ -1,7 +1,10 @@
-      module dir_tree_mod
+      module dir_tree_extend_mod
+      use dir_tree_mod
       use string_mod
       use path_mod
+      use path_extend_mod
       use dir_group_mod
+      use dir_group_extend_mod
       implicit none
 
       private
@@ -10,26 +13,6 @@
       public :: make_dir_tree
 
       interface init;     module procedure init_DT;     end interface
-      interface delete;   module procedure delete_DT;   end interface
-
-      type dir_tree
-        type(string) :: PS
-        ! type(string) :: sim_prefix
-        ! type(string) :: sim_suffix
-        type(string) :: tar     ! absolute target directory (.exe location)
-
-        type(path) :: tar_p,out_dir,LDC
-        type(path) :: mat,meshes,BEM,wall_clock
-        type(path) :: matrix_visualization
-        type(path) :: params,ISP,TMP,EF,export_now,refine_mesh
-        type(path) :: dimensionless_params
-        type(path) :: e_budget,e_budget_N,e_budget_C
-        type(path) :: restart_sim,restart1,restart2,restart
-        type(path) :: mesh_restart
-
-        type(path) :: unknowns
-        type(dir_group) :: U,B,J,T,p,phi,rho,test
-      end type
 
       contains
 
@@ -127,44 +110,6 @@
         call make_dir_group(DT%phi)
         call make_dir_group(DT%rho)
         call make_dir_group(DT%test)
-      end subroutine
-
-      subroutine delete_DT(DT)
-        implicit none
-        type(dir_tree),intent(inout) :: DT
-        call delete(DT%tar)
-        call delete(DT%PS)
-        call delete(DT%out_dir)
-
-        call delete(DT%params)
-        call delete(DT%wall_clock)
-        call delete(DT%ISP)
-        call delete(DT%TMP)
-        call delete(DT%EF)
-        call delete(DT%export_now)
-        call delete(DT%refine_mesh)
-        call delete(DT%mat)
-        call delete(DT%meshes)
-        call delete(DT%matrix_visualization)
-        call delete(DT%dimensionless_params)
-        call delete(DT%mesh_restart)
-        call delete(DT%e_budget)
-        call delete(DT%e_budget_C)
-        call delete(DT%e_budget_N)
-        call delete(DT%BEM)
-        call delete(DT%restart)
-        call delete(DT%restart1)
-        call delete(DT%restart2)
-
-        call delete(DT%unknowns)
-        call delete(DT%T)
-        call delete(DT%U)
-        call delete(DT%B)
-        call delete(DT%J)
-        call delete(DT%p)
-        call delete(DT%phi)
-        call delete(DT%rho)
-        call delete(DT%test)
       end subroutine
 
       subroutine draw_DT()

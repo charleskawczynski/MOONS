@@ -4,7 +4,7 @@
        use iter_solver_params_mod
        use time_marching_params_mod
        use string_mod
-       use path_mod
+       use path_extend_mod
        use dir_tree_mod
        implicit none
 

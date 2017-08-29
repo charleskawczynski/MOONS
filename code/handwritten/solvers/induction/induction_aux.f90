@@ -15,6 +15,7 @@
        use ops_interp_mod
        use ops_discrete_mod
        use probe_mod
+       use probe_extend_mod
        use ops_norms_mod
        use dimensionless_params_mod
        use data_location_mod

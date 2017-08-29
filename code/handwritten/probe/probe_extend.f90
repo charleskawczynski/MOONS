@@ -1,4 +1,5 @@
-       module probe_mod
+       module probe_extend_mod
+       use probe_mod
        ! Implementation:
        !       type(probe) :: p
        !       call init(p,dir,name,restart)
@@ -21,28 +22,9 @@
        public :: init,delete,export,import
        public :: get_data
 
-       type probe
-         private
-         type(string) :: dir,name        ! directory and name
-         real(cp) :: d = 0.0_cp          ! data
-         real(cp) :: d_data_dt = 0.0_cp  ! change in data over time (Euler)
-         real(cp) :: d_amax = 0.0_cp     ! max(d) over time
-         real(cp) :: t = 0.0_cp          ! time
-         integer :: un = 0               ! file unit
-         integer :: cols = 0             ! columns of data
-         integer(li) :: n_step = 0       ! time step
-         logical :: restart = .false.    ! restart probe (append existing)
-         logical :: simple = .false.     ! simple probe (only data)
-       end type
-
        interface init;     module procedure init_probe;               end interface
-       interface delete;   module procedure delete_probe;             end interface
        interface delete;   module procedure delete_probe_many;        end interface
-       interface export;   module procedure export_probe;             end interface
-       interface export;   module procedure export_probe_wrapper;     end interface
        interface export;   module procedure export_probe_wrapper_dim; end interface
-       interface import;   module procedure import_probe;             end interface
-       interface import;   module procedure import_probe_wrapper;     end interface
        interface import;   module procedure import_probe_wrapper_dim; end interface
 
        interface export;   module procedure export_probe_data;        end interface
@@ -90,23 +72,6 @@
          endif
        end subroutine
 
-       subroutine delete_probe(p)
-         implicit none
-         type(probe),intent(inout) :: p
-         call delete(p%dir)
-         call delete(p%name)
-         close(p%un)
-         p%n_step = 0
-         p%d_amax = 0.0_cp
-         p%d = 0.0_cp
-         p%d_data_dt = 0.0_cp
-         p%t = 0.0_cp
-         p%un = 0
-         p%cols = 0
-         p%restart = .false.
-         p%simple = .false.
-       end subroutine
-
        subroutine delete_probe_many(p)
          implicit none
          type(probe),dimension(:),intent(inout) :: p
@@ -114,50 +79,6 @@
          if (size(p).gt.0) then
            do i=1,size(p); call delete(p(i)); enddo
          endif
-       end subroutine
-
-       subroutine export_probe(p,un)
-         implicit none
-         type(probe),intent(in) :: p
-         integer,intent(in) :: un
-         call export(p%dir,un)
-         call export(p%name,un)
-         write(un,*) p%d
-         write(un,*) p%d_data_dt
-         write(un,*) p%d_amax
-         write(un,*) p%t
-         write(un,*) p%un
-         write(un,*) p%cols
-         write(un,*) p%n_step
-         write(un,*) p%restart
-         write(un,*) p%simple
-       end subroutine
-
-       subroutine import_probe(p,un)
-         implicit none
-         type(probe),intent(inout) :: p
-         integer,intent(in) :: un
-         call import(p%dir,un)
-         call import(p%name,un)
-         read(un,*) p%d
-         read(un,*) p%d_data_dt
-         read(un,*) p%d_amax
-         read(un,*) p%t
-         read(un,*) p%un
-         read(un,*) p%cols
-         read(un,*) p%n_step
-         read(un,*) p%restart
-         read(un,*) p%simple
-       end subroutine
-
-       subroutine export_probe_wrapper(p,dir,name)
-         implicit none
-         type(probe),intent(in) :: p
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = new_and_open(dir,name)
-         call export(p,un)
-         call close_and_message(un,dir,name)
        end subroutine
 
        subroutine export_probe_wrapper_dim(p,dir,name)
@@ -168,16 +89,6 @@
          if (size(p).gt.0) then
            do i=1,size(p); call export(p(i),dir,name); enddo
          endif
-       end subroutine
-
-       subroutine import_probe_wrapper(p,dir,name)
-         implicit none
-         type(probe),intent(inout) :: p
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = open_to_read(dir,name)
-         call import(p,un)
-         call close_and_message(un,dir,name)
        end subroutine
 
        subroutine import_probe_wrapper_dim(p,dir,name)

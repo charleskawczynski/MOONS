@@ -4,14 +4,14 @@
        use VF_mod
        use IO_tools_mod
        use string_mod
-       use path_mod
+       use path_extend_mod
        use dir_tree_mod
        use stop_clock_mod
        use export_frequency_mod
        use export_now_mod
        use refine_mesh_mod
        use kill_switch_mod
-       use probe_mod
+       use probe_extend_mod
 
        use time_marching_params_mod
        use energy_mod

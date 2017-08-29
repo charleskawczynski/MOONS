@@ -1,3 +1,6 @@
+       ! ***************************************************
+       ! ******* THIS CODE IS GENERATED. DO NOT EDIT *******
+       ! ***************************************************
        module segment_mod
        use current_precision_mod
        use IO_tools_mod
@@ -8,14 +11,15 @@
        public :: segment
        public :: init,delete,display,print,export,import
 
-       interface init;   module procedure init_segment;          end interface
-       interface delete; module procedure delete_segment;        end interface
-       interface display;module procedure display_segment;       end interface
-       interface print;  module procedure print_segment;         end interface
-       interface export; module procedure export_segment;        end interface
-       interface import; module procedure import_segment;        end interface
-       interface export; module procedure export_wrapper_segment;end interface
-       interface import; module procedure import_wrapper_segment;end interface
+       interface init;   module procedure init_segment;           end interface
+       interface delete; module procedure delete_segment;         end interface
+       interface display;module procedure display_segment;        end interface
+       interface display;module procedure display_wrapper_segment;end interface
+       interface print;  module procedure print_segment;          end interface
+       interface export; module procedure export_segment;         end interface
+       interface import; module procedure import_segment;         end interface
+       interface export; module procedure export_wrapper_segment; end interface
+       interface import; module procedure import_wrapper_segment; end interface
 
        type segment
          integer :: n_cells = 0
@@ -106,6 +110,16 @@
          read(un,*); read(un,*) this%tau
          read(un,*); read(un,*) this%yc
          read(un,*); read(un,*) this%dir
+       end subroutine
+
+       subroutine display_wrapper_segment(this,dir,name)
+         implicit none
+         type(segment),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call display(this,un)
+         close(un)
        end subroutine
 
        subroutine export_wrapper_segment(this,dir,name)

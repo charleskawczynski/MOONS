@@ -1,6 +1,13 @@
        program main
        use stitch_mod
        use stitch_face_mod
+       use path_mod
+       use dir_group_mod
+       use dir_tree_mod
+       use probe_mod
+       use mesh_quality_params_mod
+       use segment_mod
+       use mesh_params_mod
        implicit none
        write(*,*) "success!"
        end program

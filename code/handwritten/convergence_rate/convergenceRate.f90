@@ -15,7 +15,7 @@
 
        use MOONS_mod
        use dir_tree_mod
-       use path_mod
+       use path_extend_mod
        use string_mod
 
        implicit none

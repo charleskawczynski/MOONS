@@ -1,21 +1,25 @@
+       ! ***************************************************
+       ! ******* THIS CODE IS GENERATED. DO NOT EDIT *******
+       ! ***************************************************
        module mesh_params_mod
        use IO_tools_mod
-       use segment_mod
        use mesh_quality_params_mod
+       use segment_mod
        implicit none
 
        private
        public :: mesh_params
        public :: init,delete,display,print,export,import
 
-       interface init;   module procedure init_mesh_params;          end interface
-       interface delete; module procedure delete_mesh_params;        end interface
-       interface display;module procedure display_mesh_params;       end interface
-       interface print;  module procedure print_mesh_params;         end interface
-       interface export; module procedure export_mesh_params;        end interface
-       interface import; module procedure import_mesh_params;        end interface
-       interface export; module procedure export_wrapper_mesh_params;end interface
-       interface import; module procedure import_wrapper_mesh_params;end interface
+       interface init;   module procedure init_mesh_params;           end interface
+       interface delete; module procedure delete_mesh_params;         end interface
+       interface display;module procedure display_mesh_params;        end interface
+       interface display;module procedure display_wrapper_mesh_params;end interface
+       interface print;  module procedure print_mesh_params;          end interface
+       interface export; module procedure export_mesh_params;         end interface
+       interface import; module procedure import_mesh_params;         end interface
+       interface export; module procedure export_wrapper_mesh_params; end interface
+       interface import; module procedure import_wrapper_mesh_params; end interface
 
        type mesh_params
          type(mesh_quality_params) :: mqp
@@ -93,6 +97,7 @@
          integer :: i_s_ext
          integer :: s_s_base
          integer :: s_s_ext
+         write(un,*) ' -------------------- mesh_params'
          call display(this%mqp,un)
          if (allocated(this%s_base)) then
            s_s_base = size(this%s_base)
@@ -139,8 +144,8 @@
              call export(this%s_ext(i_s_ext),un)
            enddo
          endif
-         write(un,*) this%n_base
-         write(un,*) this%n_ext
+         write(un,*) 'n_base  = ';write(un,*) this%n_base
+         write(un,*) 'n_ext   = ';write(un,*) this%n_ext
        end subroutine
 
        subroutine import_mesh_params(this,un)
@@ -165,8 +170,18 @@
              call import(this%s_ext(i_s_ext),un)
            enddo
          endif
-         read(un,*) this%n_base
-         read(un,*) this%n_ext
+         read(un,*); read(un,*) this%n_base
+         read(un,*); read(un,*) this%n_ext
+       end subroutine
+
+       subroutine display_wrapper_mesh_params(this,dir,name)
+         implicit none
+         type(mesh_params),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call display(this,un)
+         close(un)
        end subroutine
 
        subroutine export_wrapper_mesh_params(this,dir,name)

@@ -6,6 +6,7 @@
        use string_mod
        use datatype_conversion_mod
        use mesh_mod
+       use probe_extend_mod
        use probe_mod
        use ops_norms_mod
        use SF_mod

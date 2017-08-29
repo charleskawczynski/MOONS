@@ -1,26 +1,21 @@
-      module path_mod
+      module path_extend_mod
+      use path_mod
       use string_mod
       implicit none
 
       private
       public :: path
-      public :: init,make,str,rel,full,delete
+      public :: init,make,str,rel,full
       public :: oldest_modified_file,latest_modified_file
       public :: make_dir,remove_dir
 
       interface init;          module procedure init_P;            end interface
       interface init;          module procedure init_ext_rel_str;  end interface
       interface init;          module procedure init_ext_rel_path; end interface
-      interface init;          module procedure init_copy_P;       end interface
       interface make;          module procedure make_P;            end interface
       interface rel;           module procedure rel_P;             end interface
       interface str;           module procedure str_P;             end interface
       interface full;          module procedure full_P;            end interface
-      interface delete;        module procedure delete_P;          end interface
-
-      type path
-        type(string) :: a,r ! a (Absolute), r (Relative)
-      end type
 
       contains
 
@@ -30,14 +25,6 @@
         character(len=*),intent(in) :: root,rel,PS
         call init(P%a,root)
         call init(P%r,rel//PS)
-      end subroutine
-
-      subroutine init_copy_P(P_out,P_in)
-        implicit none
-        type(path),intent(inout) :: P_out
-        type(path),intent(in) :: P_in
-        call init(P_out%a,P_in%a)
-        call init(P_out%r,P_in%r)
       end subroutine
 
       subroutine init_ext_rel_str(P,ext,PS)
@@ -84,13 +71,6 @@
         character(len=len(P%a)) :: s
         s = str(P%a)
       end function
-
-      subroutine delete_P(P)
-        implicit none
-        type(path),intent(inout) :: P
-        call delete(P%a)
-        call delete(P%r)
-      end subroutine
 
       subroutine oldest_modified_file(p,p1,p2,file_name)
         ! Using buff(10) = "last modification time"

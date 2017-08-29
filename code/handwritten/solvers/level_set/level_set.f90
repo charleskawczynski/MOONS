@@ -11,7 +11,8 @@
        use mesh_domain_mod
        use dir_tree_mod
        use string_mod
-       use path_mod
+       use path_extend_mod
+       use path_extend_mod
        use export_frequency_mod
        use export_now_mod
        use matrix_free_params_mod
@@ -33,6 +34,7 @@
        use boundary_conditions_mod
        use apply_BCs_mod
 
+       use probe_extend_mod
        use probe_mod
        use ops_norms_mod
 

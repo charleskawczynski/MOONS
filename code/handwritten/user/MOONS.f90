@@ -13,8 +13,9 @@
        use generate_mesh_generic_mod
        use VF_mod
        use string_mod
-       use path_mod
+       use path_extend_mod
        use dir_tree_mod
+       use dir_tree_extend_mod
        use var_set_mod
        use export_analytic_mod
        use mirror_props_mod

@@ -1,27 +1,15 @@
-      module dir_group_mod
+      module dir_group_extend_mod
+      use dir_group_mod
       use string_mod
       use path_mod
+      use path_extend_mod
       implicit none
 
       private
-      public :: dir_group
-      public :: init,delete
+      public :: init
       public :: make_dir_group
 
       interface init;     module procedure init_DG;     end interface
-      interface delete;   module procedure delete_DG;   end interface
-
-      type dir_group
-        type(path) :: base
-        type(path) :: field
-        type(path) :: restart
-        type(path) :: debug
-        type(path) :: energy
-        type(path) :: residual
-        type(path) :: unsteady
-        type(path) :: stats
-        type(path) :: BCs
-      end type
 
       contains
 
@@ -56,20 +44,6 @@
         call make_dir(str(DG%unsteady))
         call make_dir(str(DG%stats))
         call make_dir(str(DG%BCs))
-      end subroutine
-
-      subroutine delete_DG(DG)
-        implicit none
-        type(dir_group),intent(inout) :: DG
-        call delete(DG%base)
-        call delete(DG%field)
-        call delete(DG%restart)
-        call delete(DG%debug)
-        call delete(DG%energy)
-        call delete(DG%residual)
-        call delete(DG%unsteady)
-        call delete(DG%stats)
-        call delete(DG%BCs)
       end subroutine
 
       end module

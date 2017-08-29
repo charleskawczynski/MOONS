@@ -9,7 +9,8 @@
        use IO_import_mod
        use dir_tree_mod
        use string_mod
-       use path_mod
+       use path_extend_mod
+       use path_extend_mod
        use export_raw_processed_mod
        use export_raw_processed_symmetry_mod
        use import_raw_mod
@@ -39,6 +40,7 @@
        use time_marching_params_mod
 
        use probe_mod
+       use probe_extend_mod
        use ops_norms_mod
        use var_set_mod
        use mirror_props_mod

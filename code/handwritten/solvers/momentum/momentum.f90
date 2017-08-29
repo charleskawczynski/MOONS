@@ -12,7 +12,8 @@
        use TF_mod
        use mesh_domain_mod
        use string_mod
-       use path_mod
+       use path_extend_mod
+       use path_extend_mod
        use dir_tree_mod
        use RK_Params_mod
 
@@ -57,6 +58,7 @@
        use time_marching_params_mod
 
        use probe_mod
+       use probe_extend_mod
        use ops_norms_mod
 
        use PCG_mod

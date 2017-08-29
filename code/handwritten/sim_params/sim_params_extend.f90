@@ -5,11 +5,13 @@
      use var_mod
      use var_set_mod
      use string_mod
-     use path_mod
-     use segment_extend_mod
+     use path_extend_mod
+     use segment_mod
      use dimensionless_params_extend_mod
+     use mesh_params_mod
      use mesh_params_extend_mod
-     use mesh_quality_params_mod
+     use segment_extend_mod
+     use mesh_quality_params_extend_mod
      use export_planes_mod
      use export_lines_mod
      use sim_params_mod
@@ -55,15 +57,15 @@
 
        SP%FCL%stop_after_mesh_export             = F
        SP%FCL%stop_before_solve                  = F
-       SP%FCL%skip_solver_loop                   = T
+       SP%FCL%skip_solver_loop                   = F
        SP%FCL%post_process                       = F
        SP%FCL%Poisson_test                       = F
        SP%FCL%Taylor_Green_Vortex_test           = F
-       SP%FCL%temporal_convergence_test          = T
+       SP%FCL%temporal_convergence_test          = F
        SP%FCL%operator_interchangability_test    = F
        SP%FCL%compute_export_E_K_Budget          = F
        SP%FCL%compute_export_E_M_budget          = F
-       SP%FCL%restart_meshes                     = T
+       SP%FCL%restart_meshes                     = F
 
        SP%FCL%export_numerical_flow_rate         = F
        SP%FCL%export_Shercliff_Hunt_analytic_sol = F
@@ -200,11 +202,11 @@
 
        ! call init(SS        ,initialize,solve,restart,prescribe_BCs,solve_method)
        call init(SP%VS%T%SS  ,F         ,F    ,F      ,F            ,0)
-       call init(SP%VS%U%SS  ,T         ,T    ,T      ,T            ,6)
-       call init(SP%VS%P%SS  ,T         ,T    ,T      ,F            ,0)
-       call init(SP%VS%B%SS  ,T         ,T    ,T      ,T            ,6)
-       call init(SP%VS%B0%SS ,T         ,T    ,T      ,F            ,0)
-       call init(SP%VS%phi%SS,T         ,T    ,T      ,F            ,0)
+       call init(SP%VS%U%SS  ,T         ,T    ,F      ,T            ,6)
+       call init(SP%VS%P%SS  ,T         ,T    ,F      ,F            ,0)
+       call init(SP%VS%B%SS  ,T         ,T    ,F      ,T            ,6)
+       call init(SP%VS%B0%SS ,T         ,T    ,F      ,F            ,0)
+       call init(SP%VS%phi%SS,T         ,T    ,F      ,F            ,0)
        call init(SP%VS%rho%SS,F         ,F    ,F      ,F            ,0)
        !     solve_method = 1 = Euler_time_no_diff_Euler_sources_no_correction
        !     solve_method = 2 = Euler_time_no_diff_AB2_sources_no_correction

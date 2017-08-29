@@ -10,8 +10,9 @@ VPATH +=\
 	$(SRC_DIR)$(PS)clock\
 	$(SRC_DIR)$(PS)convergence_rate\
 	$(SRC_DIR)$(PS)coordinates\
-	$(SRC_DIR)$(PS)directory\
+	$(SRC_DIR)$(PS)dir_tree\
 	$(SRC_DIR)$(PS)domain\
+	$(SRC_DIR)$(PS)mesh_params\
 	$(SRC_DIR)$(PS)fields\
 	$(SRC_DIR)$(PS)fields$(PS)default\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF\
@@ -40,8 +41,8 @@ VPATH +=\
 	$(SRC_DIR)$(PS)mesh\
 	$(SRC_DIR)$(PS)norms\
 	$(SRC_DIR)$(PS)ops\
-	$(SRC_DIR)$(PS)probes\
 	$(SRC_DIR)$(PS)procedure_array\
+	$(SRC_DIR)$(PS)probe\
 	$(SRC_DIR)$(PS)sim_params\
 	$(SRC_DIR)$(PS)solvers\
 	$(SRC_DIR)$(PS)solvers$(PS)energy\
@@ -85,19 +86,17 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)sim_params$(PS)dimensionless_params.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)dimensionless_params_extend.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)geometry_props.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)mesh_quality_params.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)segment.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)segment_extend.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)mesh_params.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)mesh_params_extend.f90\
+	$(SRC_DIR)$(PS)mesh_params$(PS)mesh_quality_params_extend.f90\
+	$(SRC_DIR)$(PS)mesh_params$(PS)segment_extend.f90\
+	$(SRC_DIR)$(PS)mesh_params$(PS)mesh_params_extend.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)iter_solver_params.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)solver_settings.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)RK_Params.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)time_marching_params.f90\
 	$(SRC_DIR)$(PS)table$(PS)table.f90\
-	$(SRC_DIR)$(PS)directory$(PS)path.f90\
-	$(SRC_DIR)$(PS)directory$(PS)dir_group.f90\
-	$(SRC_DIR)$(PS)directory$(PS)dir_tree.f90\
+	$(SRC_DIR)$(PS)dir_tree$(PS)path_extend.f90\
+	$(SRC_DIR)$(PS)dir_tree$(PS)dir_group_extend.f90\
+	$(SRC_DIR)$(PS)dir_tree$(PS)dir_tree_extend.f90\
 	$(SRC_DIR)$(PS)coordinates$(PS)derivative_stencils.f90\
 	$(SRC_DIR)$(PS)coordinates$(PS)interpolation_stencils.f90\
 	$(SRC_DIR)$(PS)coordinates$(PS)coordinates.f90\
@@ -249,7 +248,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)ops$(PS)ops_aux.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_advect.f90\
-	$(SRC_DIR)$(PS)probes$(PS)probe.f90\
+	$(SRC_DIR)$(PS)probe$(PS)probe_extend.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)BC_funcs.f90\
 	$(SRC_DIR)$(PS)time_statistics$(PS)time_statistics.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_operators.f90\

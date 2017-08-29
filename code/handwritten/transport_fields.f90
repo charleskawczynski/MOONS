@@ -11,7 +11,7 @@
        use IO_VF_mod
        use dir_tree_mod
        use string_mod
-       use path_mod
+       use path_extend_mod
        use export_raw_processed_mod
        use export_raw_processed_symmetry_mod
        use export_frequency_mod
@@ -32,7 +32,7 @@
        use iter_solver_params_mod
        use time_marching_params_mod
 
-       use probe_mod
+       use probe_extend_mod
        use ops_norms_mod
 
        use mesh_domain_mod

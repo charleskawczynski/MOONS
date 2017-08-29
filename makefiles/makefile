@@ -45,7 +45,7 @@ SRC_DIR_GENERATED = ..$(PS)code$(PS)generated_code
 SRC_DIR_PRE_GENERATED = ..$(PS)code$(PS)pre_generated
 
 ifeq ($(CLUSTER),'PC_CK')
-	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS2
+	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS9
 endif
 
 ifeq ($(CLUSTER),'Workstation_CK')

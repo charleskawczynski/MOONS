@@ -276,7 +276,6 @@ class fortran_module:
         c.append(self.spaces[2] + self.implicitNone)
         c.append(self.spaces[2] + 'type(' + self.name + '),intent(in) :: this' )
         c.append(self.spaces[2] + 'integer,intent(in) :: un' )
-        c.append(self.spaces[2] + "write(un,*) ' -------------------- " +self.name+ "'" )
         for key in self.arg_objects:
             L = self.arg_objects[key].get_list_of_local_iterators()
             if L: c.append(L)
@@ -288,6 +287,7 @@ class fortran_module:
         for key,s in zip(self.prop,sp_n):
             self.prop[key].set_display_spaces(s)
 
+        c.append(self.spaces[2] + "write(un,*) ' -------------------- " +self.name+ "'" )
         for key in self.prop:
             c.append([self.spaces[2]+x for x in self.prop[key].write_display()])
         c.append(self.end_sub())
