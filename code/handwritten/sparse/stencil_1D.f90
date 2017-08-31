@@ -1,9 +1,11 @@
       module stencil_1D_mod
       use GF_mod
       use grid_mod
+      use grid_extend_mod
       use data_location_mod
       use face_edge_corner_indexing_mod
       use sparse_mod
+      use sparse_extend_mod
       use sparse_field_mod
       use current_precision_mod
       implicit none

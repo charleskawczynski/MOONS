@@ -273,7 +273,7 @@
            call displayPhysicalMinMax(mom%divU,'divU',un)
            write(un,*) 'CFL = ',CFL_number(mom%U_CC,mom%m,SP%VS%U%TMP%dt)
            write(un,*) ''
-           call display(mom%m,un)
+           ! call display(mom%m,un)
          endif
        end subroutine
 

@@ -4,6 +4,7 @@
         use GF_assign_plane_mod
         use GF_multiply_mod
         use grid_mod
+        use grid_extend_mod
         use array_mod
         use data_location_mod
         use current_precision_mod

@@ -9,16 +9,19 @@
        private
        public :: dir_group
        public :: init,delete,display,print,export,import
+       public :: display_short,print_short
 
-       interface init;   module procedure init_dir_group;           end interface
-       interface delete; module procedure delete_dir_group;         end interface
-       interface display;module procedure display_dir_group;        end interface
-       interface display;module procedure display_wrapper_dir_group;end interface
-       interface print;  module procedure print_dir_group;          end interface
-       interface export; module procedure export_dir_group;         end interface
-       interface import; module procedure import_dir_group;         end interface
-       interface export; module procedure export_wrapper_dir_group; end interface
-       interface import; module procedure import_wrapper_dir_group; end interface
+       interface init;         module procedure init_copy_dir_group;      end interface
+       interface delete;       module procedure delete_dir_group;         end interface
+       interface display;      module procedure display_dir_group;        end interface
+       interface display_short;module procedure display_short_dir_group;  end interface
+       interface display;      module procedure display_wrapper_dir_group;end interface
+       interface print;        module procedure print_dir_group;          end interface
+       interface print_short;  module procedure print_short_dir_group;    end interface
+       interface export;       module procedure export_dir_group;         end interface
+       interface import;       module procedure import_dir_group;         end interface
+       interface export;       module procedure export_wrapper_dir_group; end interface
+       interface import;       module procedure import_wrapper_dir_group; end interface
 
        type dir_group
          type(path) :: base
@@ -34,7 +37,7 @@
 
        contains
 
-       subroutine init_dir_group(this,that)
+       subroutine init_copy_dir_group(this,that)
          implicit none
          type(dir_group),intent(inout) :: this
          type(dir_group),intent(in) :: that
@@ -80,10 +83,31 @@
          call display(this%bcs,un)
        end subroutine
 
+       subroutine display_short_dir_group(this,un)
+         implicit none
+         type(dir_group),intent(in) :: this
+         integer,intent(in) :: un
+         call display(this%base,un)
+         call display(this%field,un)
+         call display(this%restart,un)
+         call display(this%debug,un)
+         call display(this%energy,un)
+         call display(this%residual,un)
+         call display(this%unsteady,un)
+         call display(this%stats,un)
+         call display(this%bcs,un)
+       end subroutine
+
        subroutine print_dir_group(this)
          implicit none
          type(dir_group),intent(in) :: this
          call display(this,6)
+       end subroutine
+
+       subroutine print_short_dir_group(this)
+         implicit none
+         type(dir_group),intent(in) :: this
+         call display_short(this,6)
        end subroutine
 
        subroutine export_dir_group(this,un)

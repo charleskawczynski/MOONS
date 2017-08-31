@@ -1,7 +1,9 @@
        module grid_connect_mod
        use current_precision_mod
        use array_mod
+       use array_extend_mod
        use coordinates_mod
+       use coordinates_extend_mod
        use grid_mod
        use mesh_quality_params_mod
        use coordinate_distribution_funcs_mod

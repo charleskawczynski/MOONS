@@ -3,8 +3,10 @@
        use current_precision_mod
        use IO_tools_mod
        use grid_mod
+       use grid_extend_mod
        use block_mod
        use coordinates_mod
+       use coordinates_extend_mod
        use face_edge_corner_indexing_mod
        use stitch_mod
        use GF_mod
@@ -102,7 +104,10 @@
          call delete(m)
          if (m_in%s.lt.1) stop 'Error: mesh allocated but size<1 in init_mesh_copy in mesh.f90'
          m%s = m_in%s
-         allocate(m%B(m_in%s)); do i=1,m_in%s; call init(m%B(i),m_in%B(i)); enddo
+         allocate(m%B(m_in%s))
+         do i=1,m_in%s
+          call init(m%B(i),m_in%B(i))
+         enddo
          call init(m%MP,m_in%MP)
          m%defined = m_in%defined
        end subroutine

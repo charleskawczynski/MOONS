@@ -349,7 +349,7 @@
            call displayPhysicalMinMax(ind%divB,'divB',un)
            call displayPhysicalMinMax(ind%divJ,'divJ',un)
            write(un,*) ''
-           call display(ind%m,un)
+           ! call display(ind%m,un)
          endif
        end subroutine
 

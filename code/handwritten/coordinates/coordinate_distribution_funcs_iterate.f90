@@ -1,6 +1,7 @@
        module coordinate_distribution_funcs_iterate_mod
        use current_precision_mod
        use array_mod
+       use array_extend_mod
        use mesh_quality_params_mod
        use coordinate_distribution_funcs_mod
        implicit none

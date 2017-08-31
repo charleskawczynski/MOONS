@@ -79,8 +79,8 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)IO$(PS)datatype_conversion.f90\
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Zone.f90\
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Header.f90\
-	$(SRC_DIR)$(PS)sparse$(PS)array.f90\
-	$(SRC_DIR)$(PS)sparse$(PS)sparse.f90\
+	$(SRC_DIR)$(PS)grid$(PS)array_extend.f90\
+	$(SRC_DIR)$(PS)grid$(PS)sparse_extend.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)export_logicals.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)sim_config_params.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)dimensionless_params.f90\
@@ -99,15 +99,15 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)dir_tree$(PS)dir_tree_extend.f90\
 	$(SRC_DIR)$(PS)coordinates$(PS)derivative_stencils.f90\
 	$(SRC_DIR)$(PS)coordinates$(PS)interpolation_stencils.f90\
-	$(SRC_DIR)$(PS)coordinates$(PS)coordinates.f90\
+	$(SRC_DIR)$(PS)coordinates$(PS)coordinates_extend.f90\
 	$(SRC_DIR)$(PS)domain$(PS)overlap.f90\
-	$(SRC_DIR)$(PS)grid$(PS)grid.f90\
+	$(SRC_DIR)$(PS)grid$(PS)grid_extend.f90\
 	$(SRC_DIR)$(PS)coordinates$(PS)coordinate_stretch_parameters.f90\
 	$(SRC_DIR)$(PS)coordinates$(PS)coordinate_distribution_funcs.f90\
 	$(SRC_DIR)$(PS)coordinates$(PS)coordinate_distribution_funcs_iterate.f90\
 	$(SRC_DIR)$(PS)coordinates$(PS)coordinate_stretch_param_match.f90\
 	$(SRC_DIR)$(PS)grid$(PS)grid_init.f90\
-	$(SRC_DIR)$(PS)grid$(PS)grid_extend.f90\
+	$(SRC_DIR)$(PS)grid$(PS)grid_continue.f90\
 	$(SRC_DIR)$(PS)grid$(PS)grid_connect.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_base.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D$(PS)GF_assign.f90\

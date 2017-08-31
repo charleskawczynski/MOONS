@@ -10,16 +10,19 @@
        private
        public :: segment
        public :: init,delete,display,print,export,import
+       public :: display_short,print_short
 
-       interface init;   module procedure init_segment;           end interface
-       interface delete; module procedure delete_segment;         end interface
-       interface display;module procedure display_segment;        end interface
-       interface display;module procedure display_wrapper_segment;end interface
-       interface print;  module procedure print_segment;          end interface
-       interface export; module procedure export_segment;         end interface
-       interface import; module procedure import_segment;         end interface
-       interface export; module procedure export_wrapper_segment; end interface
-       interface import; module procedure import_wrapper_segment; end interface
+       interface init;         module procedure init_copy_segment;      end interface
+       interface delete;       module procedure delete_segment;         end interface
+       interface display;      module procedure display_segment;        end interface
+       interface display_short;module procedure display_short_segment;  end interface
+       interface display;      module procedure display_wrapper_segment;end interface
+       interface print;        module procedure print_segment;          end interface
+       interface print_short;  module procedure print_short_segment;    end interface
+       interface export;       module procedure export_segment;         end interface
+       interface import;       module procedure import_segment;         end interface
+       interface export;       module procedure export_wrapper_segment; end interface
+       interface import;       module procedure import_wrapper_segment; end interface
 
        type segment
          integer :: n_cells = 0
@@ -34,7 +37,7 @@
 
        contains
 
-       subroutine init_segment(this,that)
+       subroutine init_copy_segment(this,that)
          implicit none
          type(segment),intent(inout) :: this
          type(segment),intent(in) :: that
@@ -77,10 +80,30 @@
          write(un,*) 'dir          = ',this%dir
        end subroutine
 
+       subroutine display_short_segment(this,un)
+         implicit none
+         type(segment),intent(in) :: this
+         integer,intent(in) :: un
+         write(un,*) 'n_cells      = ',this%n_cells
+         call display(this%distribution,un)
+         write(un,*) 'hmax         = ',this%hmax
+         write(un,*) 'hmin         = ',this%hmin
+         write(un,*) 'l            = ',this%l
+         write(un,*) 'tau          = ',this%tau
+         write(un,*) 'yc           = ',this%yc
+         write(un,*) 'dir          = ',this%dir
+       end subroutine
+
        subroutine print_segment(this)
          implicit none
          type(segment),intent(in) :: this
          call display(this,6)
+       end subroutine
+
+       subroutine print_short_segment(this)
+         implicit none
+         type(segment),intent(in) :: this
+         call display_short(this,6)
        end subroutine
 
        subroutine export_segment(this,un)

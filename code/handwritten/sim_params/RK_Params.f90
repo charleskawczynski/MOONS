@@ -1,6 +1,7 @@
        module RK_Params_mod
        ! Pre-processor directives: (_DEBUG_RK_PARAMS_)
        use array_mod
+       use array_extend_mod
        use current_precision_mod
        implicit none
 

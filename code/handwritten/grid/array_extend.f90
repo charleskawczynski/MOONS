@@ -1,9 +1,10 @@
-      module array_mod
+      module array_extend_mod
+      use array_mod
       use current_precision_mod
       implicit none
       private
       public :: array
-      public :: init,delete,display,print,export,import
+      public :: init
 
       public :: assign,add,multiply
       public :: insert
@@ -14,21 +15,10 @@
 
       public :: insist_allocated
 
-      type array
-        integer :: N = 0
-        real(cp),dimension(:),allocatable :: f
-      end type
-
       interface init;               module procedure init_array_size;            end interface
       interface init;               module procedure init_array_value;           end interface
       interface init;               module procedure init_array;                 end interface
       interface init;               module procedure init_array_defferred;       end interface
-      interface init;               module procedure init_array_copy;            end interface
-      interface delete;             module procedure delete_array;               end interface
-      interface display;            module procedure display_array;              end interface
-      interface print;              module procedure print_array;                end interface
-      interface export;             module procedure export_array;               end interface
-      interface import;             module procedure import_array;               end interface
 
       interface assign;             module procedure assign_array;               end interface
       interface assign;             module procedure assign_array_cp;            end interface
@@ -107,72 +97,6 @@
         type(array),intent(inout) :: A
         real(cp),dimension(:),intent(in) :: f
         call init(A,f,size(f))
-      end subroutine
-
-      subroutine init_array_copy(A,A_in)
-        implicit none
-        type(array),intent(inout) :: A
-        type(array),intent(in) :: A_in
-#ifdef _DEBUG_ARRAY_
-        ! call insist_allocated(A_in,'init_array_copy')
-
-#endif
-        call delete(A)
-        if (A_in%N.gt.0) then
-          A%N = A_in%N
-          allocate(A%f(A%N))
-          A%f = A_in%f
-        endif
-      end subroutine
-
-      subroutine delete_array(A)
-        implicit none
-        type(array),intent(inout) :: A
-        if (allocated(A%f)) deallocate(A%f)
-        A%N = 0
-      end subroutine
-
-      subroutine display_array(A,un)
-        implicit none
-        type(array),intent(in) :: A
-        integer,intent(in) :: un
-        integer :: i
-#ifdef _DEBUG_ARRAY_
-        call insist_allocated(A,'display_array')
-#endif
-        write(un,*) 'A%N = ',A%N
-        write(un,*) 'f = '
-        do i=1,A%N; write(un,*) A%f(i); enddo
-      end subroutine
-
-      subroutine print_array(A)
-        implicit none
-        type(array),intent(in) :: A
-        call display(A,6)
-      end subroutine
-
-      subroutine export_array(A,un)
-        implicit none
-        type(array),intent(in) :: A
-        integer,intent(in) :: un
-        integer :: i
-#ifdef _DEBUG_ARRAY_
-        call insist_allocated(A,'export_array')
-#endif
-        write(un,*) 'A%N = '; write(un,*) A%N
-        write(un,*) 'f = '
-        do i=1,A%N; write(un,*) A%f(i); enddo
-      end subroutine
-
-      subroutine import_array(A,un)
-        implicit none
-        type(array),intent(inout) :: A
-        integer,intent(in) :: un
-        integer :: i,N
-        read(un,*); read(un,*) N
-        read(un,*);
-        call init(A,N)
-        do i=1,A%N; read(un,*) A%f(i); enddo
       end subroutine
 
       ! ***************************************************************

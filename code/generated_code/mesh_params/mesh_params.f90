@@ -10,16 +10,19 @@
        private
        public :: mesh_params
        public :: init,delete,display,print,export,import
+       public :: display_short,print_short
 
-       interface init;   module procedure init_mesh_params;           end interface
-       interface delete; module procedure delete_mesh_params;         end interface
-       interface display;module procedure display_mesh_params;        end interface
-       interface display;module procedure display_wrapper_mesh_params;end interface
-       interface print;  module procedure print_mesh_params;          end interface
-       interface export; module procedure export_mesh_params;         end interface
-       interface import; module procedure import_mesh_params;         end interface
-       interface export; module procedure export_wrapper_mesh_params; end interface
-       interface import; module procedure import_wrapper_mesh_params; end interface
+       interface init;         module procedure init_copy_mesh_params;      end interface
+       interface delete;       module procedure delete_mesh_params;         end interface
+       interface display;      module procedure display_mesh_params;        end interface
+       interface display_short;module procedure display_short_mesh_params;  end interface
+       interface display;      module procedure display_wrapper_mesh_params;end interface
+       interface print;        module procedure print_mesh_params;          end interface
+       interface print_short;  module procedure print_short_mesh_params;    end interface
+       interface export;       module procedure export_mesh_params;         end interface
+       interface import;       module procedure import_mesh_params;         end interface
+       interface export;       module procedure export_wrapper_mesh_params; end interface
+       interface import;       module procedure import_wrapper_mesh_params; end interface
 
        type mesh_params
          type(mesh_quality_params) :: mqp
@@ -31,7 +34,7 @@
 
        contains
 
-       subroutine init_mesh_params(this,that)
+       subroutine init_copy_mesh_params(this,that)
          implicit none
          type(mesh_params),intent(inout) :: this
          type(mesh_params),intent(in) :: that
@@ -115,10 +118,41 @@
          write(un,*) 'n_ext  = ',this%n_ext
        end subroutine
 
+       subroutine display_short_mesh_params(this,un)
+         implicit none
+         type(mesh_params),intent(in) :: this
+         integer,intent(in) :: un
+         integer :: i_s_base
+         integer :: i_s_ext
+         integer :: s_s_base
+         integer :: s_s_ext
+         call display(this%mqp,un)
+         if (allocated(this%s_base)) then
+           s_s_base = size(this%s_base)
+           do i_s_base=1,s_s_base
+             call display(this%s_base(i_s_base),un)
+           enddo
+         endif
+         if (allocated(this%s_ext)) then
+           s_s_ext = size(this%s_ext)
+           do i_s_ext=1,s_s_ext
+             call display(this%s_ext(i_s_ext),un)
+           enddo
+         endif
+         write(un,*) 'n_base = ',this%n_base
+         write(un,*) 'n_ext  = ',this%n_ext
+       end subroutine
+
        subroutine print_mesh_params(this)
          implicit none
          type(mesh_params),intent(in) :: this
          call display(this,6)
+       end subroutine
+
+       subroutine print_short_mesh_params(this)
+         implicit none
+         type(mesh_params),intent(in) :: this
+         call display_short(this,6)
        end subroutine
 
        subroutine export_mesh_params(this,un)

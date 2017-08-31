@@ -1,8 +1,10 @@
        module block_mod
        use current_precision_mod
        use grid_mod
+       use grid_extend_mod
        use GF_mod
        use sparse_mod
+       use sparse_extend_mod
        use face_edge_corner_indexing_mod
        use stencil_1D_mod
        use stencil_3D_mod
@@ -162,17 +164,13 @@
          do i=1,3; call init(B%curl_curlX(i),B_in%curl_curlX(i)); enddo
          do i=1,3; call init(B%curl_curlY(i),B_in%curl_curlY(i)); enddo
          do i=1,3; call init(B%curl_curlZ(i),B_in%curl_curlZ(i)); enddo
-
          ! call inisist_allocated(B_in,'init_block_copy')
          i=6; allocate(B%f(i));  do i=1,6;  call init(B%f(i),B_in%f(i));   enddo
          i=6; allocate(B%fb(i)); do i=1,6;  call init(B%fb(i),B_in%fb(i)); enddo
-
          i=12; allocate(B%e(i)); do i=1,12; call init(B%e(i),B_in%e(i)); enddo
          i=12; allocate(B%eb(i));do i=1,12; call init(B%eb(i),B_in%eb(i)); enddo
-
          i=8; allocate(B%c(i));  do i=1,8;  call init(B%c(i),B_in%c(i)); enddo
          i=8; allocate(B%cb(i)); do i=1,8;  call init(B%cb(i),B_in%cb(i)); enddo
-
          allocate(B%vol(8))
          do i=1,8;
           call init(B%vol(i),B_in%vol(i))

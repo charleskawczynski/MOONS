@@ -104,7 +104,9 @@ class fortran_module:
         # c.append(self.write_selected_kinds())
         c.append(['private'])
         c.append(['public :: '+self.name.lower()])
-        c.append(['public :: init,delete,display,print,export,import']+[''])
+        # c.append(['public :: init,delete,display,print,export,import']+[''])
+        c.append(['public :: init,delete,display,print,export,import'])
+        c.append(['public :: display_short,print_short']+[''])
         c.append(self.write_interfaces()+[''])
         c.append(self.class_definition())
         c.append(['end type']+[''])
@@ -157,15 +159,17 @@ class fortran_module:
     def write_interfaces(self):
         alias = []
         sub_name = []
-        alias = alias+['init'];    sub_name = sub_name+['init'];
-        alias = alias+['delete'];  sub_name = sub_name+['delete'];
-        alias = alias+['display']; sub_name = sub_name+['display'];
-        alias = alias+['display'];  sub_name = sub_name+['display_wrapper'];
-        alias = alias+['print'];   sub_name = sub_name+['print'];
-        alias = alias+['export'];  sub_name = sub_name+['export'];
-        alias = alias+['import'];  sub_name = sub_name+['import'];
-        alias = alias+['export'];  sub_name = sub_name+['export_wrapper'];
-        alias = alias+['import'];  sub_name = sub_name+['import_wrapper'];
+        alias = alias+['init'];          sub_name = sub_name+['init_copy'];
+        alias = alias+['delete'];        sub_name = sub_name+['delete'];
+        alias = alias+['display'];       sub_name = sub_name+['display'];
+        alias = alias+['display_short']; sub_name = sub_name+['display_short'];
+        alias = alias+['display'];       sub_name = sub_name+['display_wrapper'];
+        alias = alias+['print'];         sub_name = sub_name+['print'];
+        alias = alias+['print_short'];   sub_name = sub_name+['print_short'];
+        alias = alias+['export'];        sub_name = sub_name+['export'];
+        alias = alias+['import'];        sub_name = sub_name+['import'];
+        alias = alias+['export'];        sub_name = sub_name+['export_wrapper'];
+        alias = alias+['import'];        sub_name = sub_name+['import_wrapper'];
 
         # alias = alias+['init'];    sub_name = sub_name+['init_many_alloc'];
         # alias = alias+['delete'];  sub_name = sub_name+['delete_many_alloc'];
@@ -200,7 +204,9 @@ class fortran_module:
         c.append(self.init_copy()+[''])
         c.append(self.init_delete()+[''])
         c.append(self.display_module()+[''])
+        c.append(self.display_short_module()+[''])
         c.append(self.print_module()+[''])
+        c.append(self.print_short_module()+[''])
         c.append(self.export_module()+[''])
         c.append(self.import_module()+[''])
         c.append(self.display_wrapper_module()+[''])
@@ -236,7 +242,7 @@ class fortran_module:
         return c
 
     def init_copy(self):
-        sig = 'init_' + self.name.lower()
+        sig = 'init_copy_' + self.name.lower()
         c = [self.full_sub_signature(sig,'this,that')]
         c.append(self.spaces[2] + self.implicitNone )
         c.append(self.spaces[2] + 'type(' + self.name + '),intent(inout) :: this' )
@@ -293,11 +299,43 @@ class fortran_module:
         c.append(self.end_sub())
         return c
 
+    def display_short_module(self):
+        c = [self.full_sub_signature('display_short_' + self.name.lower(),'this,un')]
+        self.set_arg_objects()
+        self.set_arg_list()
+        c.append(self.spaces[2] + self.implicitNone)
+        c.append(self.spaces[2] + 'type(' + self.name + '),intent(in) :: this' )
+        c.append(self.spaces[2] + 'integer,intent(in) :: un' )
+        for key in self.arg_objects:
+            L = self.arg_objects[key].get_list_of_local_iterators()
+            if L: c.append(L)
+        for key in self.arg_objects:
+            L = self.arg_objects[key].get_list_of_local_shape()
+            if L and not self.arg_objects[key].object_type=='primitive': c.append(L)
+        st_n = [len(self.prop[key].name) for key in self.prop]
+        sp_n = [self.spaces[max(st_n)-x] for x in st_n]
+        for key,s in zip(self.prop,sp_n):
+            self.prop[key].set_display_spaces(s)
+
+        # c.append(self.spaces[2] + "write(un,*) ' -------------------- " +self.name+ "'" )
+        for key in self.prop:
+            c.append([self.spaces[2]+x for x in self.prop[key].write_display_short()])
+        c.append(self.end_sub())
+        return c
+
     def print_module(self):
         c = [self.full_sub_signature('print_' + self.name.lower(),'this')]
         c.append(self.spaces[2] + self.implicitNone)
         c.append(self.spaces[2] + 'type(' + self.name + '),intent(in) :: this' )
         c.append(self.spaces[2] + "call display(this,6)")
+        c.append(self.end_sub() )
+        return c
+
+    def print_short_module(self):
+        c = [self.full_sub_signature('print_short_' + self.name.lower(),'this')]
+        c.append(self.spaces[2] + self.implicitNone)
+        c.append(self.spaces[2] + 'type(' + self.name + '),intent(in) :: this' )
+        c.append(self.spaces[2] + "call display_short(this,6)")
         c.append(self.end_sub() )
         return c
 

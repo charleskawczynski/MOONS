@@ -1,5 +1,8 @@
 \documentclass[11pt]{article}
+% \documentclass[11pt,landscape]{article}
 \input{../includes.tex}
+
+\input{\rootdir/includes/margins/narrow_margins_portrait.tex} % For local use
 
 \begin{document}
 \doublespacing
@@ -60,6 +63,10 @@ K = H, \qquad
 F = \sqrt{\frac{A}{D}}, \qquad \\
 \end{aligned} \end{equation}
 So we have
+\begin{equation}\begin{aligned}
+\PD_t X + FC = -G+ H \DEL^2 X + DF \PD_z X\\
+\end{aligned} \end{equation}
+
 \begin{equation}\begin{aligned}
 X'' - E B_x'' + FB_x''   = - A B_x' + F(C - D X' + D E B_x') \\
 X'' = - A B_x' + FC - FD X' + F^2 D B_x' \\

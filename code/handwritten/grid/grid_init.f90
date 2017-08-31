@@ -1,8 +1,11 @@
        module grid_init_mod
        use current_precision_mod
        use grid_mod
+       use grid_extend_mod
        use array_mod
+       use array_extend_mod
        use coordinates_mod
+       use coordinates_extend_mod
        use mesh_quality_params_mod
        use coordinate_distribution_funcs_mod
        use coordinate_distribution_funcs_iterate_mod

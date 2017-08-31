@@ -9,16 +9,19 @@
        private
        public :: path
        public :: init,delete,display,print,export,import
+       public :: display_short,print_short
 
-       interface init;   module procedure init_path;           end interface
-       interface delete; module procedure delete_path;         end interface
-       interface display;module procedure display_path;        end interface
-       interface display;module procedure display_wrapper_path;end interface
-       interface print;  module procedure print_path;          end interface
-       interface export; module procedure export_path;         end interface
-       interface import; module procedure import_path;         end interface
-       interface export; module procedure export_wrapper_path; end interface
-       interface import; module procedure import_wrapper_path; end interface
+       interface init;         module procedure init_copy_path;      end interface
+       interface delete;       module procedure delete_path;         end interface
+       interface display;      module procedure display_path;        end interface
+       interface display_short;module procedure display_short_path;  end interface
+       interface display;      module procedure display_wrapper_path;end interface
+       interface print;        module procedure print_path;          end interface
+       interface print_short;  module procedure print_short_path;    end interface
+       interface export;       module procedure export_path;         end interface
+       interface import;       module procedure import_path;         end interface
+       interface export;       module procedure export_wrapper_path; end interface
+       interface import;       module procedure import_wrapper_path; end interface
 
        type path
          type(string) :: a
@@ -27,7 +30,7 @@
 
        contains
 
-       subroutine init_path(this,that)
+       subroutine init_copy_path(this,that)
          implicit none
          type(path),intent(inout) :: this
          type(path),intent(in) :: that
@@ -52,10 +55,24 @@
          call display(this%r,un)
        end subroutine
 
+       subroutine display_short_path(this,un)
+         implicit none
+         type(path),intent(in) :: this
+         integer,intent(in) :: un
+         call display(this%a,un)
+         call display(this%r,un)
+       end subroutine
+
        subroutine print_path(this)
          implicit none
          type(path),intent(in) :: this
          call display(this,6)
+       end subroutine
+
+       subroutine print_short_path(this)
+         implicit none
+         type(path),intent(in) :: this
+         call display_short(this,6)
        end subroutine
 
        subroutine export_path(this,un)

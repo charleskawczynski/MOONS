@@ -1,7 +1,9 @@
       module derivative_stencils_mod
       use current_precision_mod
       use array_mod
+      use array_extend_mod
       use sparse_mod
+      use sparse_extend_mod
       implicit none
 
       private

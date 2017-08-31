@@ -11,16 +11,19 @@
        private
        public :: dir_tree
        public :: init,delete,display,print,export,import
+       public :: display_short,print_short
 
-       interface init;   module procedure init_dir_tree;           end interface
-       interface delete; module procedure delete_dir_tree;         end interface
-       interface display;module procedure display_dir_tree;        end interface
-       interface display;module procedure display_wrapper_dir_tree;end interface
-       interface print;  module procedure print_dir_tree;          end interface
-       interface export; module procedure export_dir_tree;         end interface
-       interface import; module procedure import_dir_tree;         end interface
-       interface export; module procedure export_wrapper_dir_tree; end interface
-       interface import; module procedure import_wrapper_dir_tree; end interface
+       interface init;         module procedure init_copy_dir_tree;      end interface
+       interface delete;       module procedure delete_dir_tree;         end interface
+       interface display;      module procedure display_dir_tree;        end interface
+       interface display_short;module procedure display_short_dir_tree;  end interface
+       interface display;      module procedure display_wrapper_dir_tree;end interface
+       interface print;        module procedure print_dir_tree;          end interface
+       interface print_short;  module procedure print_short_dir_tree;    end interface
+       interface export;       module procedure export_dir_tree;         end interface
+       interface import;       module procedure import_dir_tree;         end interface
+       interface export;       module procedure export_wrapper_dir_tree; end interface
+       interface import;       module procedure import_wrapper_dir_tree; end interface
 
        type dir_tree
          type(path) :: tar_p
@@ -61,7 +64,7 @@
 
        contains
 
-       subroutine init_dir_tree(this,that)
+       subroutine init_copy_dir_tree(this,that)
          implicit none
          type(dir_tree),intent(inout) :: this
          type(dir_tree),intent(in) :: that
@@ -182,10 +185,56 @@
          call display(this%test,un)
        end subroutine
 
+       subroutine display_short_dir_tree(this,un)
+         implicit none
+         type(dir_tree),intent(in) :: this
+         integer,intent(in) :: un
+         call display(this%tar_p,un)
+         call display(this%out_dir,un)
+         call display(this%ldc,un)
+         call display(this%mat,un)
+         call display(this%meshes,un)
+         call display(this%bem,un)
+         call display(this%wall_clock,un)
+         call display(this%matrix_visualization,un)
+         call display(this%dimensionless_params,un)
+         call display(this%params,un)
+         call display(this%isp,un)
+         call display(this%tmp,un)
+         call display(this%ef,un)
+         call display(this%export_now,un)
+         call display(this%refine_mesh,un)
+         call display(this%e_budget,un)
+         call display(this%e_budget_n,un)
+         call display(this%e_budget_c,un)
+         call display(this%restart_sim,un)
+         call display(this%restart1,un)
+         call display(this%restart2,un)
+         call display(this%restart,un)
+         call display(this%mesh_restart,un)
+         call display(this%unknowns,un)
+         call display(this%ps,un)
+         call display(this%tar,un)
+         call display(this%u,un)
+         call display(this%b,un)
+         call display(this%j,un)
+         call display(this%t,un)
+         call display(this%p,un)
+         call display(this%phi,un)
+         call display(this%rho,un)
+         call display(this%test,un)
+       end subroutine
+
        subroutine print_dir_tree(this)
          implicit none
          type(dir_tree),intent(in) :: this
          call display(this,6)
+       end subroutine
+
+       subroutine print_short_dir_tree(this)
+         implicit none
+         type(dir_tree),intent(in) :: this
+         call display_short(this,6)
        end subroutine
 
        subroutine export_dir_tree(this,un)

@@ -3,7 +3,9 @@
       use string_mod
       use GF_base_mod
       use grid_mod
+      use grid_extend_mod
       use array_mod
+      use array_extend_mod
       use datatype_conversion_mod
       use current_precision_mod
       use face_edge_corner_indexing_mod

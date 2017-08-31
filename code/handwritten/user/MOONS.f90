@@ -115,17 +115,29 @@
            ! call mesh_generate(m_mom,m_ind,MD_sigma,SP) ! original mesh
            call generate_mesh_generic(m_mom,SP%MP_mom,SP%DP,'momentum in MOONS.f90')
            call generate_mesh_generic(m_sigma,SP%MP_sigma,SP%DP,'sigma in MOONS.f90')
+         write(*,*) 'GH 1'
            call generate_mesh_generic(m_ind,SP%MP_ind,SP%DP,'induction in MOONS.f90')
+           call export_mesh(m_mom,str(DT%meshes),'m_mom',1)
+           call export_mesh(m_ind,str(DT%meshes),'m_ind',1)
+         write(*,*) 'GH 2'
            call init(MD_sigma,m_sigma,m_ind)
+         write(*,*) 'GH 3'
            call delete(m_sigma)
            ! call init(m_ind_interior,MD_sigma%m_R2)
+         write(*,*) 'GH 4'
 
+         write(*,*) 'GH 5'
            if (SP%VS%U%SS%initialize) then; call init_props(m_mom); call patch(m_mom); endif
            if (SP%VS%B%SS%initialize) then; call init_props(m_ind); call patch(m_ind); endif
+           write(*,*) 'GH 6'
            if (SP%VS%U%SS%initialize) then; call init_apply_BC_order(m_mom,SP%GP%apply_BC_order); endif
+           write(*,*) 'GH 7'
            if (SP%VS%B%SS%initialize) then; call init_apply_BC_order(m_ind,SP%GP%apply_BC_order); endif
+           write(*,*) 'GH 8'
 
+           write(*,*) 'GH 9'
            if (SP%VS%U%SS%initialize.and.SP%VS%B%SS%initialize) then
+         write(*,*) 'GH 10'
              call init(MD_fluid,m_mom,m_ind) ! Domain,interior,exterior
              call init_props(MD_fluid%m_R1); call patch(MD_fluid%m_R1)
              call init_props(MD_fluid%m_R2); call patch(MD_fluid%m_R2)

@@ -90,11 +90,15 @@ class fortran_property:
   def write_init_copy(self):
     L = []
     if       self.object_type=='primitive' and     self.allocatable and     self.dimension>1 and     self.rank>1:
+      L = L + ['if (allocated(that%'+self.name+')) then']
       L = L + ['this%'+self.name+' = that%' + self.name]
+      L = L + ['endif']
     elif     self.object_type=='primitive' and not self.allocatable and     self.dimension>1 and     self.rank>1:
       L = L + ['this%'+self.name+' = that%' + self.name]
     elif     self.object_type=='primitive' and     self.allocatable and     self.dimension>1 and not self.rank>1:
+      L = L + ['if (allocated(that%'+self.name+')) then']
       L = L + ['this%'+self.name+' = that%' + self.name]
+      L = L + ['endif']
     elif     self.object_type=='primitive' and not self.allocatable and     self.dimension>1 and not self.rank>1:
       L = L + ['this%'+self.name+' = that%' + self.name]
     elif     self.object_type=='primitive' and not self.allocatable and not self.dimension>1 and not self.rank>1:
@@ -146,13 +150,17 @@ class fortran_property:
   def write_delete(self):
     L = []
     if       self.object_type=='primitive' and     self.allocatable and     self.dimension>1 and     self.rank>1:
-      L = L + ['this%'+self.name+' = ' + self.default_value]
+      # L = L + ['this%'+self.name+' = ' + self.default_value] # Not really necessary
+      L = L + ['if (allocated(this%'+self.name+')) then']
       L = L + ['deallocate(this%'+self.name+')']
+      L = L + ['endif']
     elif     self.object_type=='primitive' and not self.allocatable and     self.dimension>1 and     self.rank>1:
       L = L + ['this%'+self.name+' = ' + self.default_value]
     elif     self.object_type=='primitive' and     self.allocatable and     self.dimension>1 and not self.rank>1:
-      L = L + ['this%'+self.name+' = ' + self.default_value]
+      # L = L + ['this%'+self.name+' = ' + self.default_value] # Not really necessary
+      L = L + ['if (allocated(this%'+self.name+')) then']
       L = L + ['deallocate(this%'+self.name+')']
+      L = L + ['endif']
     elif     self.object_type=='primitive' and not self.allocatable and     self.dimension>1 and not self.rank>1:
       L = L + ['this%'+self.name+' = ' + self.default_value]
     elif     self.object_type=='primitive' and not self.allocatable and not self.dimension>1 and not self.rank>1:
@@ -328,6 +336,57 @@ class fortran_property:
       L = L + ["write(un,*) '" +self.name+ self.display_spaces+ " = ',this%" + self.name]
     elif     self.object_type=='primitive' and not self.allocatable and not self.dimension>1 and not self.rank>1:
       L = L + ["write(un,*) '" +self.name+ self.display_spaces+ " = ',this%" + self.name]
+    elif     self.object_type=='object'    and     self.allocatable and     self.dimension>1 and     self.rank>1:
+        L = L + ['if (allocated(this%'+self.name+')) then']
+        L = L + [self.int_rank_shape_this]
+        L = L + ['do '+self.do_loop_iter+'=1,'+self.do_loop_iter_max]
+        L = L + ['call display' +  '(this%' + self.name+'('+self.do_loop_iter+'),un)']
+        L = L + ['enddo']
+        L = L + ['endif']
+    elif     self.object_type=='object'    and not self.allocatable and     self.dimension>1 and     self.rank>1:
+        L = L + [self.int_rank_shape_this]
+        L = L + ['do '+self.do_loop_iter+'=1,'+self.do_loop_iter_max]
+        L = L + ['call display' +  '(this%' + self.name+'('+self.do_loop_iter+'),un)']
+        L = L + ['enddo']
+    elif     self.object_type=='object'    and     self.allocatable and     self.dimension>1 and not self.rank>1:
+        L = L + ['if (allocated(this%'+self.name+')) then']
+        L = L + [self.int_rank_shape_this]
+        L = L + ['do '+self.do_loop_iter+'=1,'+self.do_loop_iter_max]
+        L = L + ['call display' +  '(this%' + self.name+'('+self.do_loop_iter+'),un)']
+        L = L + ['enddo']
+        L = L + ['endif']
+    elif     self.object_type=='object'    and not self.allocatable and     self.dimension>1 and not self.rank>1:
+        L = L + [self.int_rank_shape_this]
+        L = L + ['do '+self.do_loop_iter+'=1,'+self.do_loop_iter_max]
+        L = L + ['call display' +  '(this%' + self.name+'('+self.do_loop_iter+'),un)']
+        L = L + ['enddo']
+    elif     self.object_type=='object'    and not self.allocatable and not self.dimension>1 and not self.rank>1:
+        L = L + ['call display' +  '(this%' + self.name + ',un)']
+    elif     self.object_type=='procedure' and     self.allocatable and     self.dimension>1 and     self.rank>1: pass
+    elif     self.object_type=='procedure' and not self.allocatable and     self.dimension>1 and     self.rank>1: pass
+    elif     self.object_type=='procedure' and     self.allocatable and     self.dimension>1 and not self.rank>1: pass
+    elif     self.object_type=='procedure' and not self.allocatable and     self.dimension>1 and not self.rank>1: pass
+    elif     self.object_type=='procedure' and not self.allocatable and not self.dimension>1 and not self.rank>1: pass
+    else: raise NameError('Case not caught!')
+
+    return indent_lines(L)
+
+  def write_display_short(self):
+    L = []
+
+    if       self.object_type=='primitive' and     self.allocatable and     self.dimension>1 and     self.rank>1:
+      pass
+      # L = L + ["write(un,*) '" +self.name+ self.display_spaces+ " = ',this%" + self.name]
+    elif     self.object_type=='primitive' and not self.allocatable and     self.dimension>1 and     self.rank>1:
+      L = L + ["write(un,*) '" +self.name+ self.display_spaces+ " = ',this%" + self.name]
+    elif     self.object_type=='primitive' and     self.allocatable and     self.dimension>1 and not self.rank>1:
+      pass
+      # L = L + ["write(un,*) '" +self.name+ self.display_spaces+ " = ',this%" + self.name]
+    elif     self.object_type=='primitive' and not self.allocatable and     self.dimension>1 and not self.rank>1:
+      L = L + ["write(un,*) '" +self.name+ self.display_spaces+ " = ',this%" + self.name]
+    elif     self.object_type=='primitive' and not self.allocatable and not self.dimension>1 and not self.rank>1:
+      L = L + ["write(un,*) '" +self.name+ self.display_spaces+ " = ',this%" + self.name]
+
     elif     self.object_type=='object'    and     self.allocatable and     self.dimension>1 and     self.rank>1:
         L = L + ['if (allocated(this%'+self.name+')) then']
         L = L + [self.int_rank_shape_this]

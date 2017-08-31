@@ -10,16 +10,19 @@
        private
        public :: probe
        public :: init,delete,display,print,export,import
+       public :: display_short,print_short
 
-       interface init;   module procedure init_probe;           end interface
-       interface delete; module procedure delete_probe;         end interface
-       interface display;module procedure display_probe;        end interface
-       interface display;module procedure display_wrapper_probe;end interface
-       interface print;  module procedure print_probe;          end interface
-       interface export; module procedure export_probe;         end interface
-       interface import; module procedure import_probe;         end interface
-       interface export; module procedure export_wrapper_probe; end interface
-       interface import; module procedure import_wrapper_probe; end interface
+       interface init;         module procedure init_copy_probe;      end interface
+       interface delete;       module procedure delete_probe;         end interface
+       interface display;      module procedure display_probe;        end interface
+       interface display_short;module procedure display_short_probe;  end interface
+       interface display;      module procedure display_wrapper_probe;end interface
+       interface print;        module procedure print_probe;          end interface
+       interface print_short;  module procedure print_short_probe;    end interface
+       interface export;       module procedure export_probe;         end interface
+       interface import;       module procedure import_probe;         end interface
+       interface export;       module procedure export_wrapper_probe; end interface
+       interface import;       module procedure import_wrapper_probe; end interface
 
        type probe
          type(string) :: dir
@@ -37,7 +40,7 @@
 
        contains
 
-       subroutine init_probe(this,that)
+       subroutine init_copy_probe(this,that)
          implicit none
          type(probe),intent(inout) :: this
          type(probe),intent(in) :: that
@@ -89,10 +92,33 @@
          write(un,*) 'simple    = ',this%simple
        end subroutine
 
+       subroutine display_short_probe(this,un)
+         implicit none
+         type(probe),intent(in) :: this
+         integer,intent(in) :: un
+         call display(this%dir,un)
+         call display(this%name,un)
+         write(un,*) 'd         = ',this%d
+         write(un,*) 'd_data_dt = ',this%d_data_dt
+         write(un,*) 'd_amax    = ',this%d_amax
+         write(un,*) 't         = ',this%t
+         write(un,*) 'un        = ',this%un
+         write(un,*) 'cols      = ',this%cols
+         write(un,*) 'n_step    = ',this%n_step
+         write(un,*) 'restart   = ',this%restart
+         write(un,*) 'simple    = ',this%simple
+       end subroutine
+
        subroutine print_probe(this)
          implicit none
          type(probe),intent(in) :: this
          call display(this,6)
+       end subroutine
+
+       subroutine print_short_probe(this)
+         implicit none
+         type(probe),intent(in) :: this
+         call display_short(this,6)
        end subroutine
 
        subroutine export_probe(this,un)

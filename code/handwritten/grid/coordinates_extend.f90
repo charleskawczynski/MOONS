@@ -1,7 +1,9 @@
-      module coordinates_mod
+      module coordinates_extend_mod
       ! Pre-processor directives: (_DEBUG_COORDINATES_)
+      use coordinates_mod
       use current_precision_mod
       use array_mod
+      use array_extend_mod
       use sparse_mod
       use derivative_stencils_mod
       use interpolation_stencils_mod
@@ -10,7 +12,7 @@
 
       private
       public :: coordinates
-      public :: init,delete,display,print,export,import ! Essentials
+      public :: init
 
       ! For stitching multi-domains, only
       ! after coordinates has been defined
@@ -35,45 +37,8 @@
       public :: checkCoordinates
 #endif
 
-      type coordinates
-        real(cp) :: hmin = 0.0_cp                   ! Min value of domain
-        real(cp) :: hmax = 0.0_cp                   ! Max value of domain
-        real(cp) :: amin = 0.0_cp                   ! absolute Min value of domain (includes ghost)
-        real(cp) :: amax = 0.0_cp                   ! absolute Max value of domain (includes ghost)
-        real(cp) :: maxRange = 0.0_cp               ! Maximum range
-        real(cp) :: dhMin = 0.0_cp                  ! hn(end),hc(end)
-        real(cp) :: dhMax = 0.0_cp                  ! hn(end),hc(end)
-        real(cp) :: dhc_e = 0.0_cp                  ! hn(end),hc(end)
-        real(cp) :: dhn_e = 0.0_cp                  ! hn(end),hc(end)
-        real(cp) :: hc_e = 0.0_cp                   ! hn(end),hc(end)
-        real(cp) :: hn_e = 0.0_cp                   ! hn(end),hc(end)
-        integer :: N = 0                            ! Number of cells
-        logical :: defined = .false.
-        integer :: i_midplane = 0                   ! index of midplane,(n must exist at midplay)
-
-        ! Requires global information (modified after initialization)
-        logical :: stencils_defined = .false.
-        logical,dimension(2) :: stencils_modified = .false.
-
-        ! Core:
-        type(sparse) :: stagCC2N,stagN2CC           ! Derivative coefficients
-        type(sparse),dimension(2) :: colCC,colN     ! Derivative coefficients
-        type(sparse),dimension(2) :: colCC_centered ! Derivative coefficients
-        type(sparse) :: theta                       ! Interpolation coefficients
-        type(array) :: hn,hc                        ! Cell coordinates
-        type(array) :: dhn,dhc                      ! Cell coordinates spacing
-        integer :: sn = 0                           ! size of hn
-        integer :: sc = 0                           ! size of hc
-      end type
-
       interface init;              module procedure init_c;                 end interface
-      interface init;              module procedure init_copy_c;            end interface
       interface init;              module procedure init_array_c;           end interface
-      interface delete;            module procedure delete_c;               end interface
-      interface display;           module procedure display_c;              end interface
-      interface print;             module procedure print_c;                end interface
-      interface export;            module procedure export_c;               end interface
-      interface import;            module procedure import_c;               end interface
 
       interface restrict;          module procedure restrict_c;             end interface
       interface restrict;          module procedure restrict_reset_c;       end interface
@@ -206,110 +171,6 @@
         c%stencils_modified = .false.
         c%defined = .true.
       end subroutine
-
-      subroutine init_copy_c(c,d)
-        implicit none
-        type(coordinates),intent(inout) :: c
-        type(coordinates),intent(in) :: d
-        integer :: i
-        call delete(c)
-        if (.not.d%defined) then
-          stop 'Error: trying to copy undefined coordinate in init_copy_c in coordinates.f90'
-        endif
-
-        call insist_allocated(d%theta,'init_copy_c coordinates')
-        call init(c%hn,d%hn)
-        call init(c%hc,d%hc)
-        call init(c%dhn,d%dhn)
-        call init(c%dhc,d%dhc)
-        call init(c%theta,d%theta)
-        call init(c%stagCC2N,d%stagCC2N)
-        call init(c%stagN2CC,d%stagN2CC)
-        do i=1,2; call init(c%colCC(i),d%colCC(i)); enddo
-        do i=1,2; call init(c%colCC_centered(i),d%colCC_centered(i)); enddo
-        do i=1,2; call init(c%colN(i),d%colN(i)); enddo
-
-        c%hc_e = d%hc_e
-        c%hn_e = d%hn_e
-        c%dhc_e = d%dhc_e
-        c%dhn_e = d%dhn_e
-        c%sn = d%sn
-        c%sc = d%sc
-        c%defined = d%defined
-        c%stencils_defined = d%stencils_defined
-        c%stencils_modified = d%stencils_modified
-        c%i_midplane = d%i_midplane
-        call init_props(c)
-      end subroutine
-
-      subroutine delete_c(c)
-        implicit none
-        type(coordinates),intent(inout) :: c
-        integer :: i
-        call delete(c%hn)
-        call delete(c%hc)
-        call delete(c%dhn)
-        call delete(c%dhc)
-        call delete(c%theta)
-        call delete(c%stagCC2N)
-        call delete(c%stagN2CC)
-        do i=1,2; call delete(c%colCC_centered(i)); enddo
-        do i=1,2; call delete(c%colN(i)); enddo
-        do i=1,2; call delete(c%colCC(i)); enddo
-        c%dhc_e = 0.0_cp
-        c%dhn_e = 0.0_cp
-        c%hc_e = 0.0_cp
-        c%hn_e = 0.0_cp
-        c%defined = .false.
-        c%i_midplane = 0
-        c%stencils_defined = .false.
-      end subroutine
-
-      subroutine display_c(c,un)
-        implicit none
-        type(coordinates),intent(in) :: c
-        integer,intent(in) :: un
-        write(un,*) ' ---------------- coordinates'
-        write(un,*) 'sc,sn = ',c%sc,c%sn
-        write(un,*) 'hmin,hmax = ',c%hmin,c%hmax
-        write(un,*) 'amin,amax = ',c%amin,c%amax
-        write(un,*) 'hn = ',c%hn%f
-        ! write(*,*) 'stagCC2N: '; call print(c%stagCC2N); write(*,*) 'stagN2CC:';call print(c%stagN2CC)
-        ! write(*,*) 'colCC(1): '; call print(c%colCC(1)); write(*,*) 'colN(1):';call print(c%colN(1))
-        ! write(*,*) 'colCC(2): '; call print(c%colCC(2)); write(*,*) 'colN(2):';call print(c%colN(2))
-        ! write(*,*) 'D_CC2N: '; call print(c%D_CC2N); write(*,*) 'U_CC2N:';call print(c%U_CC2N)
-        ! write(*,*) 'D_N2CC: '; call print(c%D_N2CC); write(*,*) 'U_N2CC:';call print(c%U_N2CC)
-      end subroutine
-
-      subroutine print_c(c)
-        implicit none
-        type(coordinates),intent(in) :: c
-        call display(c,6)
-      end subroutine
-
-      subroutine export_c(c,un)
-        implicit none
-        type(coordinates),intent(in) :: c
-        integer,intent(in) :: un
-        write(un,*) ' ---------------- coordinates'
-        call export(c%hn,un)
-      end subroutine
-
-      subroutine import_c(c,un)
-        implicit none
-        type(coordinates),intent(inout) :: c
-        integer,intent(in) :: un
-        type(array) :: hn
-        call delete(c)
-        read(un,*)
-        call import(hn,un)
-        call init(c,hn%f,hn%N)
-        call delete(hn)
-      end subroutine
-
-      ! **********************************************************
-      ! **********************************************************
-      ! **********************************************************
 
       subroutine init_props_c(c)
         implicit none

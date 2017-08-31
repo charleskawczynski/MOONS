@@ -9,16 +9,19 @@
        private
        public :: mesh_quality_params
        public :: init,delete,display,print,export,import
+       public :: display_short,print_short
 
-       interface init;   module procedure init_mesh_quality_params;           end interface
-       interface delete; module procedure delete_mesh_quality_params;         end interface
-       interface display;module procedure display_mesh_quality_params;        end interface
-       interface display;module procedure display_wrapper_mesh_quality_params;end interface
-       interface print;  module procedure print_mesh_quality_params;          end interface
-       interface export; module procedure export_mesh_quality_params;         end interface
-       interface import; module procedure import_mesh_quality_params;         end interface
-       interface export; module procedure export_wrapper_mesh_quality_params; end interface
-       interface import; module procedure import_wrapper_mesh_quality_params; end interface
+       interface init;         module procedure init_copy_mesh_quality_params;      end interface
+       interface delete;       module procedure delete_mesh_quality_params;         end interface
+       interface display;      module procedure display_mesh_quality_params;        end interface
+       interface display_short;module procedure display_short_mesh_quality_params;  end interface
+       interface display;      module procedure display_wrapper_mesh_quality_params;end interface
+       interface print;        module procedure print_mesh_quality_params;          end interface
+       interface print_short;  module procedure print_short_mesh_quality_params;    end interface
+       interface export;       module procedure export_mesh_quality_params;         end interface
+       interface import;       module procedure import_mesh_quality_params;         end interface
+       interface export;       module procedure export_wrapper_mesh_quality_params; end interface
+       interface import;       module procedure import_wrapper_mesh_quality_params; end interface
 
        type mesh_quality_params
          real(cp) :: max_mesh_stretch_ratio = 0.0_cp
@@ -29,7 +32,7 @@
 
        contains
 
-       subroutine init_mesh_quality_params(this,that)
+       subroutine init_copy_mesh_quality_params(this,that)
          implicit none
          type(mesh_quality_params),intent(inout) :: this
          type(mesh_quality_params),intent(in) :: that
@@ -60,10 +63,26 @@
          write(un,*) 'auto_find_n            = ',this%auto_find_n
        end subroutine
 
+       subroutine display_short_mesh_quality_params(this,un)
+         implicit none
+         type(mesh_quality_params),intent(in) :: this
+         integer,intent(in) :: un
+         write(un,*) 'max_mesh_stretch_ratio = ',this%max_mesh_stretch_ratio
+         write(un,*) 'n_max_points_add       = ',this%n_max_points_add
+         write(un,*) 'n_iter                 = ',this%n_iter
+         write(un,*) 'auto_find_n            = ',this%auto_find_n
+       end subroutine
+
        subroutine print_mesh_quality_params(this)
          implicit none
          type(mesh_quality_params),intent(in) :: this
          call display(this,6)
+       end subroutine
+
+       subroutine print_short_mesh_quality_params(this)
+         implicit none
+         type(mesh_quality_params),intent(in) :: this
+         call display_short(this,6)
        end subroutine
 
        subroutine export_mesh_quality_params(this,un)

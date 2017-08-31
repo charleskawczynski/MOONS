@@ -1,7 +1,9 @@
       module GF_base_mod
         use current_precision_mod
         use grid_mod
+        use grid_extend_mod
         use array_mod
+        use array_extend_mod
         use face_edge_corner_indexing_mod
         use IO_tools_mod
         use data_location_mod

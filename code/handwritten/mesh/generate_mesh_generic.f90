@@ -2,7 +2,7 @@
        use current_precision_mod
        use mesh_params_mod
        use grid_init_mod
-       use grid_extend_mod
+       use grid_continue_mod
        use grid_connect_mod
        use coordinate_stretch_parameters_mod
        use dimensionless_params_mod

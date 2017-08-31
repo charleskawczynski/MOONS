@@ -8,6 +8,10 @@
        use mesh_quality_params_mod
        use segment_mod
        use mesh_params_mod
+       use array_mod
+       use sparse_mod
+       use coordinates_mod
+       use grid_mod
        implicit none
        write(*,*) "success!"
        end program

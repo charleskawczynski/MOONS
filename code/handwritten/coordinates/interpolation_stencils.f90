@@ -1,6 +1,7 @@
       module interpolation_stencils_mod
       use current_precision_mod
       use sparse_mod
+      use sparse_extend_mod
       implicit none
 
       private

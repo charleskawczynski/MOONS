@@ -16,9 +16,7 @@
        use is_nan_mod
 
        implicit none
-
        private
-       public :: probe
        public :: init,delete,export,import
        public :: get_data
 
