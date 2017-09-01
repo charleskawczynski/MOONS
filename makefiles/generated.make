@@ -1,6 +1,7 @@
 VPATH +=\
 	$(SRC_DIR_GENERATED)$(PS)dir_tree\
 	$(SRC_DIR_GENERATED)$(PS)grid\
+	$(SRC_DIR_GENERATED)$(PS)grid_field\
 	$(SRC_DIR_GENERATED)$(PS)mesh_params\
 	$(SRC_DIR_GENERATED)$(PS)probe\
 	$(SRC_DIR_GENERATED)$(PS)sim_params\
@@ -52,3 +53,4 @@ SRCS_F+=\
 	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)sim_config_params.f90\
 	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)dimensionless_params.f90\
 	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)sim_params.f90\
+	$(SRC_DIR_GENERATED)$(PS)grid_field$(PS)grid_field.f90\

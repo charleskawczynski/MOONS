@@ -1,7 +1,8 @@
        module GF_interp_mod
        ! Compiler flags: (_DEBUG_INTERP_,_PARALLELIZE_INTERP_)
        use current_precision_mod
-       use GF_base_mod
+       use grid_field_mod
+       use grid_field_extend_mod
        use GF_extrap_mod
        use grid_mod
        implicit none

@@ -1,5 +1,5 @@
       module GF_square_mod
-        use GF_base_mod
+        use grid_field_mod
         use current_precision_mod
         implicit none
         private

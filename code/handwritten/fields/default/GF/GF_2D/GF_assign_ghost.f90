@@ -1,6 +1,6 @@
       module GF_assign_ghost_mod
         use current_precision_mod
-        use GF_base_mod
+        use grid_field_mod
         use GF_assign_plane_mod
         implicit none
 

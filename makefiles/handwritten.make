@@ -34,6 +34,7 @@ VPATH +=\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)TF\
 	$(SRC_DIR)$(PS)globals\
 	$(SRC_DIR)$(PS)grid\
+	$(SRC_DIR)$(PS)grid_field\
 	$(SRC_DIR)$(PS)IO\
 	$(SRC_DIR)$(PS)lib\
 	$(SRC_DIR)$(PS)material_props\
@@ -126,7 +127,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)sim_params$(PS)export_frequency_extend.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_aux.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_extend.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_base.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)grid_field_extend.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D$(PS)GF_assign.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D$(PS)GF_add.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D$(PS)GF_subtract.f90\

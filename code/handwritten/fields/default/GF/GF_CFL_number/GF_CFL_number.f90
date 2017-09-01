@@ -1,5 +1,5 @@
       module GF_CFL_number_mod
-        use GF_base_mod
+        use grid_field_mod
         use GF_aux_mod
         use grid_mod
         use current_precision_mod

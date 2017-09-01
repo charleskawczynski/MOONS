@@ -1,6 +1,7 @@
        module GF_norms_mod
        use current_precision_mod
-       use GF_base_mod
+       use grid_field_mod
+       use grid_field_extend_mod
        use GF_aux_mod
        use grid_mod
        implicit none

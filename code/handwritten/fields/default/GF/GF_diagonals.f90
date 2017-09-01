@@ -2,7 +2,7 @@
       use current_precision_mod
       use data_location_mod
       use grid_mod
-      use GF_base_mod
+      use grid_field_mod
       use GF_assign_mod
       implicit none
 

@@ -1,7 +1,7 @@
        module GF_embed_extract_mod
        ! Pre-processor directives: (_PARALLELIZE_EMBED_EXTRACT_)
        use overlap_mod
-       use GF_base_mod
+       use grid_field_mod
        implicit none
        private
        public :: EM

@@ -1,7 +1,7 @@
       module GF_symmetry_error_mod
         use current_precision_mod
         use even_odd_mod
-        use GF_base_mod
+        use grid_field_mod
         use GF_add_mod
         use GF_aux_mod
         use GF_multiply_mod

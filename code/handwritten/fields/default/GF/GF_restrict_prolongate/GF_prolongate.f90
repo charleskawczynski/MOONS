@@ -2,8 +2,9 @@
        ! Compiler flags:(_PARALLELIZE_PROLONGATE_)
        use current_precision_mod
        use grid_mod
+       use grid_field_extend_mod
        use face_edge_corner_indexing_mod
-       use GF_base_mod
+       use grid_field_mod
        use GF_extrap_mod
        use GF_assign_mod
        implicit none

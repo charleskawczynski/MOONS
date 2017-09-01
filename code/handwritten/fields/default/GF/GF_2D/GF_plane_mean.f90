@@ -1,6 +1,6 @@
       module GF_plane_mean_mod
         use current_precision_mod
-        use GF_base_mod
+        use grid_field_mod
         use GF_plane_sum_mod
         use grid_mod
         implicit none

@@ -1,7 +1,8 @@
       module GF_mod
         use current_precision_mod
         use grid_mod
-        use GF_base_mod
+        use grid_field_mod
+        use grid_field_extend_mod
         use GF_assign_mod
         use GF_add_mod
         use GF_add_product_mod
@@ -37,7 +38,6 @@
         implicit none
         private
 
-        ! GF_base_mod
         public :: grid_field
         public :: init,delete,display,print,export,import ! Essentials
         public :: print_info

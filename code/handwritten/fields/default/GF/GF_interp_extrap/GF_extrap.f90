@@ -1,7 +1,8 @@
        module GF_extrap_mod
        ! Compiler flags: (_DEBUG_EXTRAP_)
        use current_precision_mod
-       use GF_base_mod
+       use grid_field_mod
+       use grid_field_extend_mod
        use face_edge_corner_indexing_mod
        use grid_mod
        implicit none

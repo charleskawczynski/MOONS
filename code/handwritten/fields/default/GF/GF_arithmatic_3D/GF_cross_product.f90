@@ -1,6 +1,6 @@
       module GF_cross_product_mod
         ! Compiler flags: (_PARALLELIZE_CROSS_PRODUCT_GF_)
-        use GF_base_mod
+        use grid_field_mod
         use GF_assign_mod
         implicit none
         private

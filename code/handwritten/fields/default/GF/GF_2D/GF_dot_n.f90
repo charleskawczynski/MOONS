@@ -1,5 +1,6 @@
       module GF_mean_along_dir_mod
-        use GF_base_mod
+        use grid_field_mod
+        use grid_field_extend_mod
         use grid_mod
         use GF_assign_plane_mod
         use GF_plane_mean_mod

@@ -42,6 +42,7 @@
        use sim_config_params_mod
        use dimensionless_params_mod
        use sim_params_mod
+       use grid_field_mod
        implicit none
        write(*,*) "success!"
        end program

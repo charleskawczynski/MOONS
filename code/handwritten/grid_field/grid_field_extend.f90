@@ -1,4 +1,5 @@
-      module GF_base_mod
+      module grid_field_extend_mod
+        use grid_field_mod
         use current_precision_mod
         use grid_mod
         use grid_extend_mod
@@ -11,7 +12,7 @@
         private
 
         public :: grid_field
-        public :: init,delete,display,print,export,import ! Essentials
+        public :: init,display,export ! Essentials
 
         public :: init_CC
         public :: init_Face
@@ -25,22 +26,10 @@
         public :: insist_shape_staggered
         public :: insist_allocated
 
-        type grid_field
-          integer :: s_1D                            ! size
-          integer,dimension(3) :: s                  ! Dimension
-          real(cp),dimension(:,:,:),allocatable :: f ! field
-        end type
-
         interface init;                     module procedure init_DL_GF;                   end interface
         interface init;                     module procedure init_shape_GF;                end interface
         interface init;                     module procedure init_shape_GF_2;              end interface
-        interface init;                     module procedure init_GF_copy;                 end interface
-        interface delete;                   module procedure delete_GF;                    end interface
-        interface display;                  module procedure display_GF;                   end interface
         interface display;                  module procedure display_pad_GF;               end interface
-        interface print;                    module procedure print_GF;                     end interface
-        interface export;                   module procedure export_GF;                    end interface
-        interface import;                   module procedure import_GF;                    end interface
 
         interface export;                   module procedure export_wrapper_GF_DL;         end interface
         interface export;                   module procedure export_wrapper_GF;            end interface
@@ -137,40 +126,6 @@
           call init_shape_GF(a,g%c(1)%sn,g%c(2)%sn,g%c(3)%sn)
         end subroutine
 
-        subroutine init_GF_copy(f1,f2)
-          implicit none
-          type(grid_field),intent(inout) :: f1
-          type(grid_field),intent(in) :: f2
-          integer,dimension(3) :: s
-          ! call insist_allocated_GF(f2,'init_GF_copy')
-          call delete(f1)
-          s = shape(f2%f)
-          allocate(f1%f(s(1),s(2),s(3)))
-          f1%s = shape(f1%f)
-          f1%s_1D = f2%s_1D
-        end subroutine
-
-        subroutine delete_GF(a)
-          implicit none
-          type(grid_field),intent(inout) :: a
-          if (allocated(a%f)) deallocate(a%f)
-          a%s = 0
-          a%s_1D = 0
-        end subroutine
-
-        subroutine display_GF(a,un)
-          implicit none
-          type(grid_field),intent(in) :: a
-          integer,intent(in) :: un
-          integer :: i,j,k
-          if (allocated(a%f)) then
-            write(*,*) 'shape(f) = ',a%s
-            do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1)
-              write(un,'(A4,I1,A,I1,A,I1,A4,1F15.6)') 'f(',i,',',j,',',k,') = ',a%f(i,j,k)
-            enddo; enddo; enddo
-          endif
-        end subroutine
-
         subroutine display_pad_GF(a,p,un)
           implicit none
           type(grid_field),intent(in) :: a
@@ -182,12 +137,6 @@
               write(un,*) 'f(',i,',',j,',',k,') = ',a%f(i,j,k)
             enddo; enddo; enddo
           endif
-        end subroutine
-
-        subroutine print_GF(a)
-          implicit none
-          type(grid_field),intent(in) :: a
-          call display(a,6)
         end subroutine
 
         subroutine print_physical_GF(a)
@@ -208,39 +157,6 @@
           implicit none
           type(grid_field),intent(in) :: a
           call display_info(a,6)
-        end subroutine
-
-        subroutine export_GF(a,un)
-          implicit none
-          type(grid_field),intent(in) :: a
-          integer,intent(in) :: un
-          integer :: i,j,k
-          if (allocated(a%f)) then
-          write(un,*) 'shape(f) = '
-          write(un,*) a%s
-          write(un,*) 'size(f) = '
-          write(un,*) a%s_1D
-          do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1)
-            write(un,*) a%f(i,j,k)
-          enddo; enddo; enddo
-          else; stop 'Error: trying to export unallocated GF in export_GF in GF.f90'
-          endif
-        end subroutine
-
-        subroutine import_GF(a,un)
-          implicit none
-          type(grid_field),intent(inout) :: a
-          integer,intent(in) :: un
-          integer :: i,j,k
-          call delete(a)
-          read(un,*)
-          read(un,*) a%s
-          read(un,*)
-          read(un,*) a%s_1D
-          allocate(a%f(a%s(1),a%s(2),a%s(3)))
-          do k=1,a%s(3); do j=1,a%s(2); do i=1,a%s(1)
-            read(un,*) a%f(i,j,k)
-          enddo; enddo; enddo
         end subroutine
 
         ! *******************************************************************************

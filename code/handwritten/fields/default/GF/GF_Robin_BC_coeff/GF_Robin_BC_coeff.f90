@@ -1,5 +1,5 @@
       module GF_Robin_BC_coeff_mod
-        use GF_base_mod
+        use grid_field_mod
         use grid_mod
         use face_edge_corner_indexing_mod
         use current_precision_mod

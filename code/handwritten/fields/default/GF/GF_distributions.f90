@@ -1,5 +1,5 @@
       module GF_distributions_mod
-        use GF_base_mod
+        use grid_field_mod
         use GF_assign_mod
         use GF_assign_plane_mod
         use GF_multiply_mod

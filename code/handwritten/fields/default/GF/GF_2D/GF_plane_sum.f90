@@ -1,7 +1,7 @@
       module GF_plane_sum_mod
         ! Compiler flags: (_PARALLELIZE_GF_PLANE_SUM_)
         use current_precision_mod
-        use GF_base_mod
+        use grid_field_mod
         use grid_mod
         implicit none
 

@@ -1,6 +1,6 @@
       module GF_multiply_wall_mod
         use current_precision_mod
-        use GF_base_mod
+        use grid_field_mod
         use GF_multiply_plane_mod
         implicit none
 

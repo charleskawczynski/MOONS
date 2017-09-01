@@ -1,5 +1,6 @@
       module GF_aux_mod
-        use GF_base_mod
+        use grid_field_mod
+        use grid_field_extend_mod
         use GF_assign_mod
         use GF_subtract_mod
         use grid_mod

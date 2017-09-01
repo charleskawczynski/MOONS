@@ -1,5 +1,5 @@
       module GF_curl_curl_mod
-        use GF_base_mod
+        use grid_field_mod
         use GF_aux_mod
         use grid_mod
         use data_location_mod
