@@ -7,7 +7,7 @@
        implicit none
 
        private
-       public :: init,export,import
+       public :: init
        public :: display_exit_loop
        public :: print_exit_loop
        public :: import_exit_criteria
@@ -21,8 +21,6 @@
        public :: boost,reset
 
        interface init;                 module procedure init_ISP;                 end interface
-       interface export;               module procedure export_ISP_wrapper_DN;    end interface
-       interface import;               module procedure import_ISP_wrapper_DN;    end interface
        interface import_exit_criteria; module procedure import_exit_criteria_ISP; end interface
        interface display_exit_loop;    module procedure display_exit_loop_ISP;    end interface
        interface print_exit_loop;      module procedure print_exit_loop_ISP;      end interface
@@ -63,23 +61,6 @@
          ISP%exit_loop = .false.
          call init(ISP%dir,dir)
          call init(ISP%name,name)
-       end subroutine
-
-       subroutine export_ISP_wrapper_DN(ISP)
-         implicit none
-         type(iter_solver_params),intent(in) :: ISP
-         call export(ISP,str(ISP%dir),str(ISP%name))
-       end subroutine
-
-       subroutine import_ISP_wrapper_DN(ISP)
-         implicit none
-         type(iter_solver_params),intent(inout) :: ISP
-         type(string) :: dir,name
-         call init(dir,ISP%dir)
-         call init(name,ISP%name)
-         call import(ISP,str(dir),str(name))
-         call delete(dir)
-         call delete(name)
        end subroutine
 
        subroutine import_exit_criteria_ISP(ISP)

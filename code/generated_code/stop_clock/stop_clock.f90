@@ -25,6 +25,8 @@
        interface import;       module procedure import_stop_clock;         end interface
        interface export;       module procedure export_wrapper_stop_clock; end interface
        interface import;       module procedure import_wrapper_stop_clock; end interface
+       interface export;       module procedure export_DN_stop_clock;      end interface
+       interface import;       module procedure import_DN_stop_clock;      end interface
 
        type stop_clock
          type(string) :: dir
@@ -218,8 +220,28 @@
          type(stop_clock),intent(inout) :: this
          character(len=*),intent(in) :: dir,name
          integer :: un
-         un = new_and_open(dir,name)
+         un = open_to_read(dir,name)
          call import(this,un)
+         close(un)
+       end subroutine
+
+       subroutine export_DN_stop_clock(this)
+         implicit none
+         type(stop_clock),intent(in) :: this
+         call export(this,str(this%dir),str(this%name))
+       end subroutine
+
+       subroutine import_DN_stop_clock(this)
+         implicit none
+         type(stop_clock),intent(inout) :: this
+         type(string) :: dir,name
+         integer :: un
+         call init(dir,this%dir)
+         call init(name,this%name)
+         un = open_to_read(str(dir),str(name))
+         call import(this,un)
+         call delete(dir)
+         call delete(name)
          close(un)
        end subroutine
 

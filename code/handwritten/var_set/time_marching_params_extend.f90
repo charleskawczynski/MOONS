@@ -8,7 +8,7 @@
        implicit none
 
        private
-       public :: init,export,import
+       public :: init
        public :: iterate_step
        public :: import_dt
        public :: iterate_RK
@@ -18,8 +18,6 @@
        public :: update_dt
 
        interface init;              module procedure init_TMP;                end interface
-       interface export;            module procedure export_TMP_wrapper_DN;   end interface
-       interface import;            module procedure import_TMP_wrapper_DN;   end interface
        interface import_dt;         module procedure import_dt_TMP_wrapper;   end interface
        interface iterate_step;      module procedure iterate_step_TMP;        end interface
        interface iterate_RK;        module procedure iterate_RK_TMP;          end interface
@@ -55,23 +53,6 @@
          TMP%t_final = TMP%dt*real(TMP%n_step_stop,cp)
          call init(TMP%dir,dir)
          call init(TMP%name,name)
-       end subroutine
-
-       subroutine export_TMP_wrapper_DN(TMP)
-         implicit none
-         type(time_marching_params),intent(in) :: TMP
-         call export(TMP,str(TMP%dir),str(TMP%name))
-       end subroutine
-
-       subroutine import_TMP_wrapper_DN(TMP)
-         implicit none
-         type(time_marching_params),intent(inout) :: TMP
-         type(string) :: dir,name
-         call init(dir,TMP%dir)
-         call init(name,TMP%name)
-         call import(TMP,str(dir),str(name))
-         call delete(dir)
-         call delete(name)
        end subroutine
 
        subroutine import_dt_TMP_wrapper(TMP)

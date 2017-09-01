@@ -80,19 +80,26 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)IO$(PS)datatype_conversion.f90\
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Zone.f90\
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Header.f90\
-	$(SRC_DIR)$(PS)grid$(PS)array_extend.f90\
-	$(SRC_DIR)$(PS)grid$(PS)sparse_extend.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)export_logicals.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)sim_config_params.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)dimensionless_params.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)dimensionless_params_extend.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)geometry_props.f90\
-	$(SRC_DIR)$(PS)mesh_params$(PS)mesh_quality_params_extend.f90\
-	$(SRC_DIR)$(PS)mesh_params$(PS)segment_extend.f90\
-	$(SRC_DIR)$(PS)mesh_params$(PS)mesh_params_extend.f90\
 	$(SRC_DIR)$(PS)dir_tree$(PS)path_extend.f90\
 	$(SRC_DIR)$(PS)dir_tree$(PS)dir_group_extend.f90\
 	$(SRC_DIR)$(PS)dir_tree$(PS)dir_tree_extend.f90\
+	$(SRC_DIR)$(PS)probe$(PS)probe_extend.f90\
+	$(SRC_DIR)$(PS)mesh_params$(PS)mesh_quality_params_extend.f90\
+	$(SRC_DIR)$(PS)mesh_params$(PS)segment_extend.f90\
+	$(SRC_DIR)$(PS)mesh_params$(PS)mesh_params_extend.f90\
+	$(SRC_DIR)$(PS)grid$(PS)array_extend.f90\
+	$(SRC_DIR)$(PS)grid$(PS)sparse_extend.f90\
+	$(SRC_DIR)$(PS)coordinates$(PS)derivative_stencils.f90\
+	$(SRC_DIR)$(PS)coordinates$(PS)interpolation_stencils.f90\
+	$(SRC_DIR)$(PS)coordinates$(PS)coordinates_extend.f90\
+	$(SRC_DIR)$(PS)coordinates$(PS)coordinate_stretch_parameters.f90\
+	$(SRC_DIR)$(PS)coordinates$(PS)coordinate_distribution_funcs.f90\
+	$(SRC_DIR)$(PS)coordinates$(PS)coordinate_distribution_funcs_iterate.f90\
+	$(SRC_DIR)$(PS)coordinates$(PS)coordinate_stretch_param_match.f90\
+	$(SRC_DIR)$(PS)grid$(PS)grid_extend.f90\
+	$(SRC_DIR)$(PS)grid$(PS)grid_init.f90\
+	$(SRC_DIR)$(PS)grid$(PS)grid_continue.f90\
+	$(SRC_DIR)$(PS)grid$(PS)grid_connect.f90\
 	$(SRC_DIR)$(PS)var_set$(PS)RK_params_extend.f90\
 	$(SRC_DIR)$(PS)var_set$(PS)solver_settings_extend.f90\
 	$(SRC_DIR)$(PS)var_set$(PS)matrix_free_params_extend.f90\
@@ -106,18 +113,19 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)var_set$(PS)var_extend.f90\
 	$(SRC_DIR)$(PS)var_set$(PS)var_set_extend.f90\
 	$(SRC_DIR)$(PS)table$(PS)table.f90\
-	$(SRC_DIR)$(PS)coordinates$(PS)derivative_stencils.f90\
-	$(SRC_DIR)$(PS)coordinates$(PS)interpolation_stencils.f90\
-	$(SRC_DIR)$(PS)coordinates$(PS)coordinates_extend.f90\
 	$(SRC_DIR)$(PS)domain$(PS)overlap.f90\
-	$(SRC_DIR)$(PS)grid$(PS)grid_extend.f90\
-	$(SRC_DIR)$(PS)coordinates$(PS)coordinate_stretch_parameters.f90\
-	$(SRC_DIR)$(PS)coordinates$(PS)coordinate_distribution_funcs.f90\
-	$(SRC_DIR)$(PS)coordinates$(PS)coordinate_distribution_funcs_iterate.f90\
-	$(SRC_DIR)$(PS)coordinates$(PS)coordinate_stretch_param_match.f90\
-	$(SRC_DIR)$(PS)grid$(PS)grid_init.f90\
-	$(SRC_DIR)$(PS)grid$(PS)grid_continue.f90\
-	$(SRC_DIR)$(PS)grid$(PS)grid_connect.f90\
+	$(SRC_DIR)$(PS)stop_clock$(PS)unit_conversion_extend.f90\
+	$(SRC_DIR)$(PS)stop_clock$(PS)clock_extend.f90\
+	$(SRC_DIR)$(PS)stop_clock$(PS)stop_clock_extend.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)stats_period_extend.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)time_statistics_params_extend.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)dimensionless_params_extend.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)mirror_props_extend.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)equation_term_extend.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)export_frequency_params_extend.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)export_frequency_extend.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_aux.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_extend.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_base.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D$(PS)GF_assign.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D$(PS)GF_add.f90\
@@ -190,19 +198,6 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)boundary_conditions.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)BF$(PS)BF.f90\
 	$(SRC_DIR)$(PS)block$(PS)mesh_block.f90\
-	$(SRC_DIR)$(PS)time_statistics$(PS)stats_period.f90\
-	$(SRC_DIR)$(PS)time_statistics$(PS)time_statistics_params.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)equation_term.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)energy_terms.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)momentum_terms.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)induction_terms.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)export_frequency_params.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)export_frequency.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)mirror_props.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)flow_control_logicals.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)sim_params.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_aux.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_extend.f90\
 	$(SRC_DIR)$(PS)user$(PS)restart_file.f90\
 	$(SRC_DIR)$(PS)user$(PS)kill_switch.f90\
 	$(SRC_DIR)$(PS)user$(PS)export_now.f90\
@@ -227,9 +222,6 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)IO$(PS)IO_import.f90\
 	$(SRC_DIR)$(PS)IO$(PS)import_raw.f90\
 	$(SRC_DIR)$(PS)version$(PS)version.f90\
-	$(SRC_DIR)$(PS)stop_clock$(PS)unit_conversion_extend.f90\
-	$(SRC_DIR)$(PS)stop_clock$(PS)clock_extend.f90\
-	$(SRC_DIR)$(PS)stop_clock$(PS)stop_clock_extend.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_norms.f90\
 	$(SRC_DIR)$(PS)norms$(PS)norms.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_fft.f90\
@@ -249,7 +241,6 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)ops$(PS)ops_aux.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_advect.f90\
-	$(SRC_DIR)$(PS)probe$(PS)probe_extend.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)BC_funcs.f90\
 	$(SRC_DIR)$(PS)time_statistics$(PS)time_statistics.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_operators.f90\

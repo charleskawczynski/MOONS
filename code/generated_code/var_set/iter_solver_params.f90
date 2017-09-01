@@ -23,6 +23,8 @@
        interface import;       module procedure import_iter_solver_params;         end interface
        interface export;       module procedure export_wrapper_iter_solver_params; end interface
        interface import;       module procedure import_wrapper_iter_solver_params; end interface
+       interface export;       module procedure export_DN_iter_solver_params;      end interface
+       interface import;       module procedure import_DN_iter_solver_params;      end interface
 
        type iter_solver_params
          integer :: un = 0
@@ -188,8 +190,28 @@
          type(iter_solver_params),intent(inout) :: this
          character(len=*),intent(in) :: dir,name
          integer :: un
-         un = new_and_open(dir,name)
+         un = open_to_read(dir,name)
          call import(this,un)
+         close(un)
+       end subroutine
+
+       subroutine export_DN_iter_solver_params(this)
+         implicit none
+         type(iter_solver_params),intent(in) :: this
+         call export(this,str(this%dir),str(this%name))
+       end subroutine
+
+       subroutine import_DN_iter_solver_params(this)
+         implicit none
+         type(iter_solver_params),intent(inout) :: this
+         type(string) :: dir,name
+         integer :: un
+         call init(dir,this%dir)
+         call init(name,this%name)
+         un = open_to_read(str(dir),str(name))
+         call import(this,un)
+         call delete(dir)
+         call delete(name)
          close(un)
        end subroutine
 

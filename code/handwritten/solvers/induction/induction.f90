@@ -44,6 +44,7 @@
        use ops_norms_mod
        use var_set_mod
        use mirror_props_mod
+       use mirror_props_extend_mod
 
        use mesh_domain_mod
        use grid_mod

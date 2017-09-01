@@ -128,7 +128,7 @@
          type(array),intent(inout) :: this
          character(len=*),intent(in) :: dir,name
          integer :: un
-         un = new_and_open(dir,name)
+         un = open_to_read(dir,name)
          call import(this,un)
          close(un)
        end subroutine

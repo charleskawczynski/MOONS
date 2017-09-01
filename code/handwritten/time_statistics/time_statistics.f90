@@ -13,7 +13,9 @@
        use VF_mod
        use TF_mod
        use stats_period_mod
+       use stats_period_extend_mod
        use time_statistics_params_mod
+       use time_statistics_params_extend_mod
        use export_raw_processed_mod
 
        implicit none

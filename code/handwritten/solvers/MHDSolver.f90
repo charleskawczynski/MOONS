@@ -11,6 +11,7 @@
        use stop_clock_mod
        use stop_clock_extend_mod
        use export_frequency_mod
+       use export_frequency_extend_mod
        use export_now_mod
        use export_safe_mod
        use refine_mesh_mod

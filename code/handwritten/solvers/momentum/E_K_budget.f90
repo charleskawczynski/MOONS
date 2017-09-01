@@ -16,7 +16,7 @@
        use ops_mirror_field_mod
        use time_marching_params_mod
        use dimensionless_params_mod
-       use mirror_props_mod
+       use mirror_props_extend_mod
        implicit none
 
        private

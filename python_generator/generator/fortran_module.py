@@ -91,8 +91,21 @@ class fortran_module:
     def contruct_fortran_module(self,class_list,abstract_interfaces,base_modules):
         c = []
         for key in self.prop:
-            self.prop[key].set_do_loop_iter()
-            self.prop[key].set_spaces(self.spaces)
+          self.prop[key].set_do_loop_iter()
+          self.prop[key].set_spaces(self.spaces)
+
+        self.has_dir = []
+        self.has_name = []
+        for key in self.prop:
+          L = ['dir' in self.prop[key].name.lower()]
+          L = L + ['string' in self.prop[key].class_.lower()]
+          self.has_dir = self.has_dir + [all(L)]
+        for key in self.prop:
+          L = ['name' in self.prop[key].name.lower()]
+          L = L + ['string' in self.prop[key].class_.lower()]
+          self.has_name = self.has_name + [all(L)]
+
+        self.has_dir_name = any(self.has_dir) and any(self.has_name)
 
         self.class_list = class_list
         c.append('! ***************************************************')
@@ -170,6 +183,9 @@ class fortran_module:
         alias = alias+['import'];        sub_name = sub_name+['import'];
         alias = alias+['export'];        sub_name = sub_name+['export_wrapper'];
         alias = alias+['import'];        sub_name = sub_name+['import_wrapper'];
+        if self.has_dir_name:
+          alias = alias+['export'];        sub_name = sub_name+['export_DN'];
+          alias = alias+['import'];        sub_name = sub_name+['import_DN'];
 
         # alias = alias+['init'];    sub_name = sub_name+['init_many_alloc'];
         # alias = alias+['delete'];  sub_name = sub_name+['delete_many_alloc'];
@@ -212,6 +228,9 @@ class fortran_module:
         c.append(self.display_wrapper_module()+[''])
         c.append(self.export_wrapper_module()+[''])
         c.append(self.import_wrapper_module()+[''])
+        if self.has_dir_name:
+          c.append(self.export_DN()+[''])
+          c.append(self.import_DN()+[''])
 
         # c.append(self.init_copy_many_alloc()+[''])
         # c.append(self.init_delete_many_alloc()+[''])
@@ -405,8 +424,36 @@ class fortran_module:
         L=L+[self.spaces[2]+'type('+self.name+'),intent(inout) :: this']
         L=L+[self.spaces[2]+'character(len=*),intent(in) :: dir,name']
         L=L+[self.spaces[2]+'integer :: un']
-        L=L+[self.spaces[2]+'un = new_and_open(dir,name)']
+        L=L+[self.spaces[2]+'un = open_to_read(dir,name)']
         L=L+[self.spaces[2]+'call import(this,un)']
+        L=L+[self.spaces[2]+'close(un)']
+        L=L+[self.end_sub()]
+        return L
+
+    def export_DN(self):
+        L = []
+        sig = 'export_DN_' + self.name
+        L = [self.full_sub_signature(sig,'this')]
+        L=L+[self.spaces[2]+self.implicitNone]
+        L=L+[self.spaces[2]+'type('+self.name+'),intent(in) :: this']
+        L=L+[self.spaces[2]+'call export(this,str(this%dir),str(this%name))']
+        L=L+[self.end_sub()]
+        return L
+
+    def import_DN(self):
+        L = []
+        sig = 'import_DN_' + self.name
+        L = [self.full_sub_signature(sig,'this')]
+        L=L+[self.spaces[2]+self.implicitNone]
+        L=L+[self.spaces[2]+'type('+self.name+'),intent(inout) :: this']
+        L=L+[self.spaces[2]+'type(string) :: dir,name']
+        L=L+[self.spaces[2]+'integer :: un']
+        L=L+[self.spaces[2]+'call init(dir,this%dir)']
+        L=L+[self.spaces[2]+'call init(name,this%name)']
+        L=L+[self.spaces[2]+'un = open_to_read(str(dir),str(name))']
+        L=L+[self.spaces[2]+'call import(this,un)']
+        L=L+[self.spaces[2]+'call delete(dir)']
+        L=L+[self.spaces[2]+'call delete(name)']
         L=L+[self.spaces[2]+'close(un)']
         L=L+[self.end_sub()]
         return L

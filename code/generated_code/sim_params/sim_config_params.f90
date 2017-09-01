@@ -9,16 +9,19 @@
        private
        public :: sim_config_params
        public :: init,delete,display,print,export,import
+       public :: display_short,print_short
 
-       interface init;   module procedure init_sim_config_params;           end interface
-       interface delete; module procedure delete_sim_config_params;         end interface
-       interface display;module procedure display_sim_config_params;        end interface
-       interface display;module procedure display_wrapper_sim_config_params;end interface
-       interface print;  module procedure print_sim_config_params;          end interface
-       interface export; module procedure export_sim_config_params;         end interface
-       interface import; module procedure import_sim_config_params;         end interface
-       interface export; module procedure export_wrapper_sim_config_params; end interface
-       interface import; module procedure import_wrapper_sim_config_params; end interface
+       interface init;         module procedure init_copy_sim_config_params;      end interface
+       interface delete;       module procedure delete_sim_config_params;         end interface
+       interface display;      module procedure display_sim_config_params;        end interface
+       interface display_short;module procedure display_short_sim_config_params;  end interface
+       interface display;      module procedure display_wrapper_sim_config_params;end interface
+       interface print;        module procedure print_sim_config_params;          end interface
+       interface print_short;  module procedure print_short_sim_config_params;    end interface
+       interface export;       module procedure export_sim_config_params;         end interface
+       interface import;       module procedure import_sim_config_params;         end interface
+       interface export;       module procedure export_wrapper_sim_config_params; end interface
+       interface import;       module procedure import_wrapper_sim_config_params; end interface
 
        type sim_config_params
          real(cp) :: export_safe_period = 0.0_cp
@@ -33,7 +36,7 @@
 
        contains
 
-       subroutine init_sim_config_params(this,that)
+       subroutine init_copy_sim_config_params(this,that)
          implicit none
          type(sim_config_params),intent(inout) :: this
          type(sim_config_params),intent(in) :: that
@@ -76,20 +79,30 @@
          write(un,*) 'uniform_gravity_dir = ',this%uniform_gravity_dir
        end subroutine
 
-       subroutine display_wrapper_sim_config_params(this,dir,name)
+       subroutine display_short_sim_config_params(this,un)
          implicit none
          type(sim_config_params),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = new_and_open(dir,name)
-         call display(this,un)
-         close(un)
+         integer,intent(in) :: un
+         write(un,*) 'export_safe_period  = ',this%export_safe_period
+         write(un,*) 'embed_b_interior    = ',this%embed_b_interior
+         write(un,*) 'couple_time_steps   = ',this%couple_time_steps
+         write(un,*) 'finite_rem          = ',this%finite_rem
+         write(un,*) 'include_vacuum      = ',this%include_vacuum
+         write(un,*) 'mpg_dir             = ',this%mpg_dir
+         write(un,*) 'uniform_b0_dir      = ',this%uniform_b0_dir
+         write(un,*) 'uniform_gravity_dir = ',this%uniform_gravity_dir
        end subroutine
 
        subroutine print_sim_config_params(this)
          implicit none
          type(sim_config_params),intent(in) :: this
          call display(this,6)
+       end subroutine
+
+       subroutine print_short_sim_config_params(this)
+         implicit none
+         type(sim_config_params),intent(in) :: this
+         call display_short(this,6)
        end subroutine
 
        subroutine export_sim_config_params(this,un)
@@ -121,6 +134,16 @@
          read(un,*); read(un,*) this%uniform_gravity_dir
        end subroutine
 
+       subroutine display_wrapper_sim_config_params(this,dir,name)
+         implicit none
+         type(sim_config_params),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call display(this,un)
+         close(un)
+       end subroutine
+
        subroutine export_wrapper_sim_config_params(this,dir,name)
          implicit none
          type(sim_config_params),intent(in) :: this
@@ -136,7 +159,7 @@
          type(sim_config_params),intent(inout) :: this
          character(len=*),intent(in) :: dir,name
          integer :: un
-         un = new_and_open(dir,name)
+         un = open_to_read(dir,name)
          call import(this,un)
          close(un)
        end subroutine

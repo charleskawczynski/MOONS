@@ -3,6 +3,7 @@ VPATH +=\
 	$(SRC_DIR_GENERATED)$(PS)grid\
 	$(SRC_DIR_GENERATED)$(PS)mesh_params\
 	$(SRC_DIR_GENERATED)$(PS)probe\
+	$(SRC_DIR_GENERATED)$(PS)sim_params\
 	$(SRC_DIR_GENERATED)$(PS)stitches\
 	$(SRC_DIR_GENERATED)$(PS)stop_clock\
 	$(SRC_DIR_GENERATED)$(PS)var_set\
@@ -36,3 +37,18 @@ SRCS_F+=\
 	$(SRC_DIR_GENERATED)$(PS)stop_clock$(PS)unit_conversion.f90\
 	$(SRC_DIR_GENERATED)$(PS)stop_clock$(PS)clock.f90\
 	$(SRC_DIR_GENERATED)$(PS)stop_clock$(PS)stop_clock.f90\
+	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)stats_period.f90\
+	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)time_statistics_params.f90\
+	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)mirror_props.f90\
+	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)export_logicals.f90\
+	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)geometry_props.f90\
+	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)equation_term.f90\
+	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)energy_terms.f90\
+	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)momentum_terms.f90\
+	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)induction_terms.f90\
+	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)export_frequency_params.f90\
+	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)export_frequency.f90\
+	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)flow_control_logicals.f90\
+	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)sim_config_params.f90\
+	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)dimensionless_params.f90\
+	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)sim_params.f90\

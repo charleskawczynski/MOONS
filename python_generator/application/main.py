@@ -115,7 +115,7 @@ g = mesh_params.add_modules(g,T,F,priv,real)
 g = grid.add_modules(g,T,F,priv,real)
 g = var_set.add_modules(g,T,F,priv,real)
 g = stop_clock.add_modules(g,T,F,priv,real)
-# g = sim_params.add_modules(g,T,F,priv,real)
+g = sim_params.add_modules(g,T,F,priv,real)
 
 # --------------- Medium data structures
 # g = grid_field.add_modules(g,T,F,priv,real) # small
