@@ -1,25 +1,10 @@
-       module unit_conversion_mod
+       module unit_conversion_extend_mod
+       use unit_conversion_mod
        use current_precision_mod
        implicit none
 
        private
-       public :: unit_conversion,init
-
-       type unit_conversion
-         real(cp) :: days_per_year
-         real(cp) :: seconds_per_second
-
-         real(cp) :: seconds_per_minute
-         real(cp) :: seconds_per_hour
-         real(cp) :: seconds_per_day
-         real(cp) :: seconds_per_year
-
-         real(cp) :: minute_per_seconds
-         real(cp) :: hour_per_seconds
-         real(cp) :: day_per_seconds
-         real(cp) :: year_per_seconds
-       end type
-
+       public :: init
        interface init;   module procedure init_uc;       end interface
 
        contains

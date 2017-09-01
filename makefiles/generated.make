@@ -4,6 +4,7 @@ VPATH +=\
 	$(SRC_DIR_GENERATED)$(PS)mesh_params\
 	$(SRC_DIR_GENERATED)$(PS)probe\
 	$(SRC_DIR_GENERATED)$(PS)stitches\
+	$(SRC_DIR_GENERATED)$(PS)stop_clock\
 	$(SRC_DIR_GENERATED)$(PS)var_set\
 
 SRCS_F+=\
@@ -32,3 +33,6 @@ SRCS_F+=\
 	$(SRC_DIR_GENERATED)$(PS)var_set$(PS)export_field.f90\
 	$(SRC_DIR_GENERATED)$(PS)var_set$(PS)var.f90\
 	$(SRC_DIR_GENERATED)$(PS)var_set$(PS)var_set.f90\
+	$(SRC_DIR_GENERATED)$(PS)stop_clock$(PS)unit_conversion.f90\
+	$(SRC_DIR_GENERATED)$(PS)stop_clock$(PS)clock.f90\
+	$(SRC_DIR_GENERATED)$(PS)stop_clock$(PS)stop_clock.f90\

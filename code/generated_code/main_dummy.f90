@@ -24,6 +24,9 @@
        use export_field_mod
        use var_mod
        use var_set_mod
+       use unit_conversion_mod
+       use clock_mod
+       use stop_clock_mod
        implicit none
        write(*,*) "success!"
        end program

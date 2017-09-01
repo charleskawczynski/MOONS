@@ -1,29 +1,15 @@
-       module clock_mod
+       module clock_extend_mod
+       use clock_mod
        use current_precision_mod
        implicit none
 
        private
-       public :: clock
-       public :: init,delete
+       public :: init
        public :: tic,toc
 
        interface init;         module procedure init_clock;          end interface
        interface tic;          module procedure tic_clock;           end interface
        interface toc;          module procedure toc_clock;           end interface
-       interface delete;       module procedure delete_clock;        end interface
-
-       type clock
-         real(cp) :: t_elapsed_computational
-         real(cp),private :: t_start_computational
-         real(cp),private :: t_stop_computational
-
-         real(cp) :: t_elapsed
-         real(cp),private :: t_start
-         real(cp),private :: t_stop
-         integer(li),private :: i_start
-         integer(li),private :: i_stop
-         integer(li),private :: count_rate
-       end type
 
        contains
 
@@ -51,21 +37,6 @@
 
          call cpu_time(c%t_stop_computational)
          c%t_elapsed_computational = (c%t_stop_computational - c%t_start_computational)
-       end subroutine
-
-       subroutine delete_clock(c)
-         implicit none
-         type(clock),intent(inout) :: c
-         c%t_start = 0.0_cp
-         c%t_stop = 0.0_cp
-         c%t_elapsed = 0.0_cp
-         c%count_rate = 10
-         c%i_start = 0
-         c%i_stop = 0
-
-         c%t_start_computational = 0.0_cp
-         c%t_stop_computational = 0.0_cp
-         c%t_elapsed_computational = 0.0_cp
        end subroutine
 
        end module

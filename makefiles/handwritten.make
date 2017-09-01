@@ -7,7 +7,7 @@ VPATH +=\
 	$(SRC_DIR)$(PS)BCs$(PS)base\
 	$(SRC_DIR)$(PS)BCs$(PS)direct\
 	$(SRC_DIR)$(PS)BCs$(PS)implicit\
-	$(SRC_DIR)$(PS)clock\
+	$(SRC_DIR)$(PS)stop_clock\
 	$(SRC_DIR)$(PS)convergence_rate\
 	$(SRC_DIR)$(PS)coordinates\
 	$(SRC_DIR)$(PS)dir_tree\
@@ -227,9 +227,9 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)IO$(PS)IO_import.f90\
 	$(SRC_DIR)$(PS)IO$(PS)import_raw.f90\
 	$(SRC_DIR)$(PS)version$(PS)version.f90\
-	$(SRC_DIR)$(PS)clock$(PS)unit_conversion.f90\
-	$(SRC_DIR)$(PS)clock$(PS)clock.f90\
-	$(SRC_DIR)$(PS)clock$(PS)stop_clock.f90\
+	$(SRC_DIR)$(PS)stop_clock$(PS)unit_conversion_extend.f90\
+	$(SRC_DIR)$(PS)stop_clock$(PS)clock_extend.f90\
+	$(SRC_DIR)$(PS)stop_clock$(PS)stop_clock_extend.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_norms.f90\
 	$(SRC_DIR)$(PS)norms$(PS)norms.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_fft.f90\

@@ -1,4 +1,5 @@
-       module stop_clock_mod
+       module stop_clock_extend_mod
+       use stop_clock_mod
        ! Fixes/improvements:
        ! - include output time to file (similar to myError)
        ! - make set/get functions to make components accessable to myEfficiency
@@ -9,41 +10,21 @@
        use current_precision_mod
        use IO_tools_mod
        use clock_mod
+       use clock_extend_mod
        use string_mod
        use time_marching_params_mod
        use unit_conversion_mod
+       use unit_conversion_extend_mod
        implicit none
 
        private
-       public :: stop_clock
-       public :: init,delete,export,print
+       public :: init
+       public :: export,export_light,print_light
        public :: tic,toc
-       public :: print_light
-
-       type stop_clock
-        ! Known Quantities
-        type(unit_conversion) :: uc
-        type(clock) :: c
-        type(string) :: dir,name
-        real(cp) :: seconds_per_step
-        real(cp) :: sim_time_per_sec
-        real(cp) :: t_passed
-        ! Estimated Quantities
-        real(cp) :: estimated_total
-        real(cp) :: estimated_remaining
-        real(cp) :: percentage_complete_RB
-        real(cp) :: percentage_complete_SB
-        real(cp) :: t_elapsed
-
-        logical :: frozen_elapsed = .false. ! For when elapsed is returned negative
-        integer :: un_plot
-       end type
 
        interface init;         module procedure init_sc;         end interface
-       interface delete;       module procedure delete_sc;       end interface
        interface tic;          module procedure tic_sc;          end interface
        interface toc;          module procedure toc_sc;          end interface
-       interface print;        module procedure print_sc;        end interface
        interface print_light;  module procedure print_light_sc;  end interface
        interface export;       module procedure export_sc;       end interface
        interface export_light; module procedure export_light_sc; end interface
@@ -78,25 +59,6 @@
         flush(sc%un_plot)
         call delete(vars)
         call init(sc%uc)
-      end subroutine
-
-      subroutine delete_sc(sc)
-        implicit none
-        type(stop_clock),intent(inout) :: sc
-        call init(sc%c)
-        sc%seconds_per_step = 0.0_cp
-        sc%sim_time_per_sec = 0.0_cp
-        sc%t_passed = 0.0_cp
-        sc%frozen_elapsed = .false.
-
-        sc%estimated_total = 0.0_cp
-        sc%estimated_remaining = 0.0_cp
-        sc%percentage_complete_RB = 0.0_cp
-        sc%percentage_complete_SB = 0.0_cp
-
-        close(sc%un_plot)
-        call delete(sc%dir)
-        call delete(sc%name)
       end subroutine
 
       subroutine tic_sc(sc)

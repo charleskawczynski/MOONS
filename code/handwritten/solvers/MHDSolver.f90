@@ -9,6 +9,7 @@
        use path_extend_mod
        use dir_tree_mod
        use stop_clock_mod
+       use stop_clock_extend_mod
        use export_frequency_mod
        use export_now_mod
        use export_safe_mod
@@ -149,7 +150,7 @@
              ! would be better to update outside the solvers,
              ! since it should be updated for all solver variables.
              ! call oldest_modified_file(DT%restart,DT%restart1,DT%restart2,'p.dat')
-             if (SP%FCL%export_heavy) call print(sc,coupled)
+             if (SP%FCL%export_heavy) call print_light(sc,coupled)
              if (.not.SP%FCL%export_heavy) then
                write(*,*) ''
                call print_light(sc,coupled)
@@ -160,7 +161,7 @@
            endif
            ! call import(EF)
          enddo
-         call print(sc,coupled)
+         call print_light(sc,coupled)
          call export(sc,coupled)
 
          ! ***************************************************************
