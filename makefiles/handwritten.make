@@ -13,21 +13,21 @@ VPATH +=\
 	$(SRC_DIR)$(PS)dir_tree\
 	$(SRC_DIR)$(PS)domain\
 	$(SRC_DIR)$(PS)mesh_params\
+	$(SRC_DIR)$(PS)grid_field\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_arithmatic_3D\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_matmult_3D\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_global\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_export_import\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_embed_extract\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_restrict_prolongate\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_interp_extrap\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_symmetry\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_CFL_number\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_Fourier_number\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_Robin_BC_coeff\
 	$(SRC_DIR)$(PS)fields\
 	$(SRC_DIR)$(PS)fields$(PS)default\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_matmult_3D\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_global\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_export_import\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_embed_extract\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_restrict_prolongate\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_interp_extrap\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_symmetry\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_CFL_number\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_Fourier_number\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_Robin_BC_coeff\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)BF\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)SF\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)VF\
@@ -128,47 +128,47 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_aux.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_extend.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)grid_field_extend.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D$(PS)GF_assign.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D$(PS)GF_add.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D$(PS)GF_subtract.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D$(PS)GF_multiply.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D$(PS)GF_divide.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D$(PS)GF_add_product.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D$(PS)GF_product_add.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D$(PS)GF_square.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D$(PS)GF_square_root.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D$(PS)GF_cross_product.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_assign_plane.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_assign_plane_ave.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_add_plane.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_assign_ghost.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_assign_wall.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_multiply_plane.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_multiply_wall.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_assign_ghost_periodic.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_interp_extrap$(PS)GF_extrap.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_interp_extrap$(PS)GF_interp.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_restrict_prolongate$(PS)GF_restrict.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_restrict_prolongate$(PS)GF_prolongate.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_aux.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_export_import$(PS)GF_export.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_export_import$(PS)GF_import.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_embed_extract$(PS)GF_embed_extract.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_distributions.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_CFL_number$(PS)GF_CFL_number.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_Fourier_number$(PS)GF_Fourier_number.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_Robin_BC_coeff$(PS)GF_Robin_BC_coeff.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_diagonals.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_plane_sum.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_plane_mean.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_mean_along_dir.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_symmetry$(PS)GF_symmetry_error.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_symmetry$(PS)GF_mirror_about_plane.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_norms_weights.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_norms.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_matmult_3D$(PS)GF_laplacian.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_matmult_3D$(PS)GF_curl_curl.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_arithmatic_3D$(PS)GF_assign.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_arithmatic_3D$(PS)GF_add.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_arithmatic_3D$(PS)GF_subtract.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_arithmatic_3D$(PS)GF_multiply.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_arithmatic_3D$(PS)GF_divide.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_arithmatic_3D$(PS)GF_add_product.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_arithmatic_3D$(PS)GF_product_add.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_arithmatic_3D$(PS)GF_square.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_arithmatic_3D$(PS)GF_square_root.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_arithmatic_3D$(PS)GF_cross_product.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_assign_plane.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_assign_plane_ave.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_add_plane.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_assign_ghost.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_assign_wall.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_multiply_plane.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_multiply_wall.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_assign_ghost_periodic.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_interp_extrap$(PS)GF_extrap.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_interp_extrap$(PS)GF_interp.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_restrict_prolongate$(PS)GF_restrict.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_restrict_prolongate$(PS)GF_prolongate.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_aux.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_export_import$(PS)GF_export.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_export_import$(PS)GF_import.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_embed_extract$(PS)GF_embed_extract.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_distributions.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_CFL_number$(PS)GF_CFL_number.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_Fourier_number$(PS)GF_Fourier_number.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_Robin_BC_coeff$(PS)GF_Robin_BC_coeff.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_diagonals.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_plane_sum.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_plane_mean.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_mean_along_dir.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_symmetry$(PS)GF_symmetry_error.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_symmetry$(PS)GF_mirror_about_plane.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_norms_weights.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_norms.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_matmult_3D$(PS)GF_laplacian.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_matmult_3D$(PS)GF_curl_curl.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF.f90\
 	$(SRC_DIR)$(PS)sparse$(PS)sparse_field.f90\
 	$(SRC_DIR)$(PS)sparse$(PS)sparse_mult.f90\
 	$(SRC_DIR)$(PS)sparse$(PS)stencil_1D.f90\
