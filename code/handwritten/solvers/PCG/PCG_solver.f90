@@ -18,6 +18,7 @@
       use IO_export_mod
 
       use iter_solver_params_mod
+      use iter_solver_params_extend_mod
       use matrix_free_params_mod
       use matrix_free_operators_mod
       implicit none

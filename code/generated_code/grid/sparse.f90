@@ -24,9 +24,9 @@
        interface import;       module procedure import_wrapper_sparse; end interface
 
        type sparse
-         type(array) :: l
-         type(array) :: d
-         type(array) :: u
+         type(array) :: L
+         type(array) :: D
+         type(array) :: U
          logical :: staggered = .false.
        end type
 
@@ -37,18 +37,18 @@
          type(sparse),intent(inout) :: this
          type(sparse),intent(in) :: that
          call delete(this)
-         call init(this%l,that%l)
-         call init(this%d,that%d)
-         call init(this%u,that%u)
+         call init(this%L,that%L)
+         call init(this%D,that%D)
+         call init(this%U,that%U)
          this%staggered = that%staggered
        end subroutine
 
        subroutine delete_sparse(this)
          implicit none
          type(sparse),intent(inout) :: this
-         call delete(this%l)
-         call delete(this%d)
-         call delete(this%u)
+         call delete(this%L)
+         call delete(this%D)
+         call delete(this%U)
          this%staggered = .false.
        end subroutine
 
@@ -57,9 +57,9 @@
          type(sparse),intent(in) :: this
          integer,intent(in) :: un
          write(un,*) ' -------------------- sparse'
-         call display(this%l,un)
-         call display(this%d,un)
-         call display(this%u,un)
+         call display(this%L,un)
+         call display(this%D,un)
+         call display(this%U,un)
          write(un,*) 'staggered = ',this%staggered
        end subroutine
 
@@ -67,9 +67,9 @@
          implicit none
          type(sparse),intent(in) :: this
          integer,intent(in) :: un
-         call display(this%l,un)
-         call display(this%d,un)
-         call display(this%u,un)
+         call display(this%L,un)
+         call display(this%D,un)
+         call display(this%U,un)
          write(un,*) 'staggered = ',this%staggered
        end subroutine
 
@@ -89,9 +89,9 @@
          implicit none
          type(sparse),intent(in) :: this
          integer,intent(in) :: un
-         call export(this%l,un)
-         call export(this%d,un)
-         call export(this%u,un)
+         call export(this%L,un)
+         call export(this%D,un)
+         call export(this%U,un)
          write(un,*) 'staggered  = ';write(un,*) this%staggered
        end subroutine
 
@@ -100,9 +100,9 @@
          type(sparse),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         call import(this%l,un)
-         call import(this%d,un)
-         call import(this%u,un)
+         call import(this%L,un)
+         call import(this%D,un)
+         call import(this%U,un)
          read(un,*); read(un,*) this%staggered
        end subroutine
 

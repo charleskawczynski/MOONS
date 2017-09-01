@@ -1,17 +1,18 @@
-       module var_set_mod
-       use current_precision_mod
+       module var_set_extend_mod
+       use var_set_mod
        use var_mod
+       use var_extend_mod
        use iter_solver_params_mod
+       use iter_solver_params_extend_mod
        use time_marching_params_mod
+       use time_marching_params_extend_mod
        use string_mod
        use path_extend_mod
        use dir_tree_mod
+       use current_precision_mod
        implicit none
 
        private
-       public :: var_set
-       public :: init,delete,export,import,display,print
-
        public :: print_info
        public :: export_import_SS
        public :: couple_time_step
@@ -28,17 +29,6 @@
        public :: export_ISP
        public :: import_ISP
        public :: import_exit_criteria
-
-       type var_set
-         type(var) :: T,U,p,B,B0,phi,rho
-       end type
-
-       interface init;                  module procedure init_copy_VS;             end interface
-       interface delete;                module procedure delete_VS;                end interface
-       interface export;                module procedure export_VS;                end interface
-       interface import;                module procedure import_VS;                end interface
-       interface display;               module procedure display_VS;               end interface
-       interface print;                 module procedure print_VS;                 end interface
 
        interface export_import_SS;      module procedure export_import_SS_VS;      end interface
        interface print_info;            module procedure print_info_VS;            end interface
@@ -57,83 +47,6 @@
        interface import_TMP_dt;         module procedure import_TMP_dt_VS;         end interface
 
        contains
-
-       ! **********************************************************
-       ! ********************* ESSENTIALS *************************
-       ! **********************************************************
-
-       subroutine init_copy_VS(VS,VS_in)
-         implicit none
-         type(var_set),intent(inout) :: VS
-         type(var_set),intent(in) :: VS_in
-         call init(VS%T,VS_in%T)
-         call init(VS%U,VS_in%U)
-         call init(VS%P,VS_in%P)
-         call init(VS%B,VS_in%B)
-         call init(VS%B0,VS_in%B0)
-         call init(VS%phi,VS_in%phi)
-         call init(VS%rho,VS_in%rho)
-       end subroutine
-
-       subroutine delete_VS(VS)
-         implicit none
-         type(var_set),intent(inout) :: VS
-         call delete(VS%T)
-         call delete(VS%U)
-         call delete(VS%P)
-         call delete(VS%B)
-         call delete(VS%B0)
-         call delete(VS%phi)
-         call delete(VS%rho)
-       end subroutine
-
-       subroutine export_VS(VS,un)
-         implicit none
-         type(var_set),intent(in) :: VS
-         integer,intent(in) :: un
-         write(un,*) ' ---------------- VAR T   ---------------- '; call export(VS%T,un)
-         write(un,*) ' ---------------- VAR U   ---------------- '; call export(VS%U,un)
-         write(un,*) ' ---------------- VAR P   ---------------- '; call export(VS%P,un)
-         write(un,*) ' ---------------- VAR B   ---------------- '; call export(VS%B,un)
-         write(un,*) ' ---------------- VAR B0  ---------------- '; call export(VS%B0,un)
-         write(un,*) ' ---------------- VAR phi ---------------- '; call export(VS%phi,un)
-         write(un,*) ' ---------------- VAR rho ---------------- '; call export(VS%rho,un)
-         write(un,*) ' ----------------------------------------- '
-       end subroutine
-
-       subroutine import_VS(VS,un)
-         implicit none
-         type(var_set),intent(inout) :: VS
-         integer,intent(in) :: un
-         read(un,*); call import(VS%T,un)
-         read(un,*); call import(VS%U,un)
-         read(un,*); call import(VS%P,un)
-         read(un,*); call import(VS%B,un)
-         read(un,*); call import(VS%B0,un)
-         read(un,*); call import(VS%phi,un)
-         read(un,*); call import(VS%rho,un)
-         read(un,*);
-       end subroutine
-
-       subroutine display_VS(VS,un)
-         implicit none
-         type(var_set),intent(in) :: VS
-         integer,intent(in) :: un
-         write(un,*) ' ---------------- VAR T   ---------------- '; call display(VS%T,un)
-         write(un,*) ' ---------------- VAR U   ---------------- '; call display(VS%U,un)
-         write(un,*) ' ---------------- VAR P   ---------------- '; call display(VS%P,un)
-         write(un,*) ' ---------------- VAR B   ---------------- '; call display(VS%B,un)
-         write(un,*) ' ---------------- VAR B0  ---------------- '; call display(VS%B0,un)
-         write(un,*) ' ---------------- VAR phi ---------------- '; call display(VS%phi,un)
-         write(un,*) ' ---------------- VAR rho ---------------- '; call display(VS%rho,un)
-         write(un,*) ' ----------------------------------------- '
-       end subroutine
-
-       subroutine print_VS(VS)
-         implicit none
-         type(var_set),intent(inout) :: VS
-         call display(VS,6)
-       end subroutine
 
        subroutine export_import_SS_VS(VS)
          implicit none

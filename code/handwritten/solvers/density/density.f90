@@ -25,6 +25,7 @@
 
        use iter_solver_params_mod
        use time_marching_params_mod
+       use time_marching_params_extend_mod
 
        use ops_embedExtract_mod
        use norms_mod

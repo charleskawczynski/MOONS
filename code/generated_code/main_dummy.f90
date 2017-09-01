@@ -12,6 +12,18 @@
        use sparse_mod
        use coordinates_mod
        use grid_mod
+       use RK_params_mod
+       use solver_settings_mod
+       use matrix_free_params_mod
+       use time_marching_params_mod
+       use iter_solver_params_mod
+       use export_line_mod
+       use export_lines_mod
+       use export_plane_mod
+       use export_planes_mod
+       use export_field_mod
+       use var_mod
+       use var_set_mod
        implicit none
        write(*,*) "success!"
        end program

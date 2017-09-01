@@ -4,6 +4,7 @@ VPATH +=\
 	$(SRC_DIR_GENERATED)$(PS)mesh_params\
 	$(SRC_DIR_GENERATED)$(PS)probe\
 	$(SRC_DIR_GENERATED)$(PS)stitches\
+	$(SRC_DIR_GENERATED)$(PS)var_set\
 
 SRCS_F+=\
 	$(SRC_DIR_GENERATED)$(PS)stitches$(PS)stitch.f90\
@@ -19,3 +20,15 @@ SRCS_F+=\
 	$(SRC_DIR_GENERATED)$(PS)grid$(PS)sparse.f90\
 	$(SRC_DIR_GENERATED)$(PS)grid$(PS)coordinates.f90\
 	$(SRC_DIR_GENERATED)$(PS)grid$(PS)grid.f90\
+	$(SRC_DIR_GENERATED)$(PS)var_set$(PS)RK_params.f90\
+	$(SRC_DIR_GENERATED)$(PS)var_set$(PS)solver_settings.f90\
+	$(SRC_DIR_GENERATED)$(PS)var_set$(PS)matrix_free_params.f90\
+	$(SRC_DIR_GENERATED)$(PS)var_set$(PS)time_marching_params.f90\
+	$(SRC_DIR_GENERATED)$(PS)var_set$(PS)iter_solver_params.f90\
+	$(SRC_DIR_GENERATED)$(PS)var_set$(PS)export_line.f90\
+	$(SRC_DIR_GENERATED)$(PS)var_set$(PS)export_lines.f90\
+	$(SRC_DIR_GENERATED)$(PS)var_set$(PS)export_plane.f90\
+	$(SRC_DIR_GENERATED)$(PS)var_set$(PS)export_planes.f90\
+	$(SRC_DIR_GENERATED)$(PS)var_set$(PS)export_field.f90\
+	$(SRC_DIR_GENERATED)$(PS)var_set$(PS)var.f90\
+	$(SRC_DIR_GENERATED)$(PS)var_set$(PS)var_set.f90\

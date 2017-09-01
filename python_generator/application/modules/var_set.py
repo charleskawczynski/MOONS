@@ -8,7 +8,7 @@ import fortran_property as FP
 
 def add_modules(g,T,F,priv,real):
 
-	m_name = 'RK_Params'
+	m_name = 'RK_params'
 	g.add_module(m_name)
 	g.module[m_name].set_folder_name(__name__.split('.')[1])
 	g.module[m_name].set_used_modules(['IO_tools_mod'])
@@ -99,7 +99,7 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].set_used_modules(['IO_tools_mod'])
 	g.module[m_name].add_prop('export_ever','logical',priv)
 	g.module[m_name].add_prop('dir','integer',priv)
-	g.module[m_name].add_prop('plane','integer',priv,F,1,2)
+	g.module[m_name].add_prop('plane','integer',priv,F)
 	g.module[m_name].add_prop('suffix','character(len=1)',priv)
 
 	m_name = 'export_planes'

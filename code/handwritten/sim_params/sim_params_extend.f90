@@ -3,7 +3,9 @@
      use constants_mod
      use dir_tree_mod
      use var_mod
+     use var_extend_mod
      use var_set_mod
+     use var_set_extend_mod
      use string_mod
      use path_extend_mod
      use segment_mod
@@ -12,8 +14,14 @@
      use mesh_params_extend_mod
      use segment_extend_mod
      use mesh_quality_params_extend_mod
+     use solver_settings_extend_mod
+     use time_marching_params_extend_mod
+     use iter_solver_params_extend_mod
      use export_planes_mod
+     use export_field_extend_mod
+     use export_planes_extend_mod
      use export_lines_mod
+     use export_lines_extend_mod
      use sim_params_mod
      use sim_params_aux_mod
      implicit none

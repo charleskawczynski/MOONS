@@ -25,9 +25,9 @@
 
        type mesh_quality_params
          real(cp) :: max_mesh_stretch_ratio = 0.0_cp
-         integer :: n_max_points_add = 0
-         integer :: n_iter = 0
-         logical :: auto_find_n = .false.
+         integer :: N_max_points_add = 0
+         integer :: N_iter = 0
+         logical :: auto_find_N = .false.
        end type
 
        contains
@@ -38,18 +38,18 @@
          type(mesh_quality_params),intent(in) :: that
          call delete(this)
          this%max_mesh_stretch_ratio = that%max_mesh_stretch_ratio
-         this%n_max_points_add = that%n_max_points_add
-         this%n_iter = that%n_iter
-         this%auto_find_n = that%auto_find_n
+         this%N_max_points_add = that%N_max_points_add
+         this%N_iter = that%N_iter
+         this%auto_find_N = that%auto_find_N
        end subroutine
 
        subroutine delete_mesh_quality_params(this)
          implicit none
          type(mesh_quality_params),intent(inout) :: this
          this%max_mesh_stretch_ratio = 0.0_cp
-         this%n_max_points_add = 0
-         this%n_iter = 0
-         this%auto_find_n = .false.
+         this%N_max_points_add = 0
+         this%N_iter = 0
+         this%auto_find_N = .false.
        end subroutine
 
        subroutine display_mesh_quality_params(this,un)
@@ -58,9 +58,9 @@
          integer,intent(in) :: un
          write(un,*) ' -------------------- mesh_quality_params'
          write(un,*) 'max_mesh_stretch_ratio = ',this%max_mesh_stretch_ratio
-         write(un,*) 'n_max_points_add       = ',this%n_max_points_add
-         write(un,*) 'n_iter                 = ',this%n_iter
-         write(un,*) 'auto_find_n            = ',this%auto_find_n
+         write(un,*) 'N_max_points_add       = ',this%N_max_points_add
+         write(un,*) 'N_iter                 = ',this%N_iter
+         write(un,*) 'auto_find_N            = ',this%auto_find_N
        end subroutine
 
        subroutine display_short_mesh_quality_params(this,un)
@@ -68,9 +68,9 @@
          type(mesh_quality_params),intent(in) :: this
          integer,intent(in) :: un
          write(un,*) 'max_mesh_stretch_ratio = ',this%max_mesh_stretch_ratio
-         write(un,*) 'n_max_points_add       = ',this%n_max_points_add
-         write(un,*) 'n_iter                 = ',this%n_iter
-         write(un,*) 'auto_find_n            = ',this%auto_find_n
+         write(un,*) 'N_max_points_add       = ',this%N_max_points_add
+         write(un,*) 'N_iter                 = ',this%N_iter
+         write(un,*) 'auto_find_N            = ',this%auto_find_N
        end subroutine
 
        subroutine print_mesh_quality_params(this)
@@ -90,9 +90,9 @@
          type(mesh_quality_params),intent(in) :: this
          integer,intent(in) :: un
          write(un,*) 'max_mesh_stretch_ratio  = ';write(un,*) this%max_mesh_stretch_ratio
-         write(un,*) 'n_max_points_add        = ';write(un,*) this%n_max_points_add
-         write(un,*) 'n_iter                  = ';write(un,*) this%n_iter
-         write(un,*) 'auto_find_n             = ';write(un,*) this%auto_find_n
+         write(un,*) 'N_max_points_add        = ';write(un,*) this%N_max_points_add
+         write(un,*) 'N_iter                  = ';write(un,*) this%N_iter
+         write(un,*) 'auto_find_N             = ';write(un,*) this%auto_find_N
        end subroutine
 
        subroutine import_mesh_quality_params(this,un)
@@ -101,9 +101,9 @@
          integer,intent(in) :: un
          call delete(this)
          read(un,*); read(un,*) this%max_mesh_stretch_ratio
-         read(un,*); read(un,*) this%n_max_points_add
-         read(un,*); read(un,*) this%n_iter
-         read(un,*); read(un,*) this%auto_find_n
+         read(un,*); read(un,*) this%N_max_points_add
+         read(un,*); read(un,*) this%N_iter
+         read(un,*); read(un,*) this%auto_find_N
        end subroutine
 
        subroutine display_wrapper_mesh_quality_params(this,dir,name)

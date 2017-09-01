@@ -32,7 +32,7 @@
          type(path) :: residual
          type(path) :: unsteady
          type(path) :: stats
-         type(path) :: bcs
+         type(path) :: BCs
        end type
 
        contains
@@ -50,7 +50,7 @@
          call init(this%residual,that%residual)
          call init(this%unsteady,that%unsteady)
          call init(this%stats,that%stats)
-         call init(this%bcs,that%bcs)
+         call init(this%BCs,that%BCs)
        end subroutine
 
        subroutine delete_dir_group(this)
@@ -64,7 +64,7 @@
          call delete(this%residual)
          call delete(this%unsteady)
          call delete(this%stats)
-         call delete(this%bcs)
+         call delete(this%BCs)
        end subroutine
 
        subroutine display_dir_group(this,un)
@@ -80,7 +80,7 @@
          call display(this%residual,un)
          call display(this%unsteady,un)
          call display(this%stats,un)
-         call display(this%bcs,un)
+         call display(this%BCs,un)
        end subroutine
 
        subroutine display_short_dir_group(this,un)
@@ -95,7 +95,7 @@
          call display(this%residual,un)
          call display(this%unsteady,un)
          call display(this%stats,un)
-         call display(this%bcs,un)
+         call display(this%BCs,un)
        end subroutine
 
        subroutine print_dir_group(this)
@@ -122,7 +122,7 @@
          call export(this%residual,un)
          call export(this%unsteady,un)
          call export(this%stats,un)
-         call export(this%bcs,un)
+         call export(this%BCs,un)
        end subroutine
 
        subroutine import_dir_group(this,un)
@@ -138,7 +138,7 @@
          call import(this%residual,un)
          call import(this%unsteady,un)
          call import(this%stats,un)
-         call import(this%bcs,un)
+         call import(this%BCs,un)
        end subroutine
 
        subroutine display_wrapper_dir_group(this,dir,name)

@@ -25,11 +25,11 @@
        interface import;       module procedure import_wrapper_mesh_params; end interface
 
        type mesh_params
-         type(mesh_quality_params) :: mqp
+         type(mesh_quality_params) :: MQP
          type(segment),dimension(:),allocatable :: s_base
          type(segment),dimension(:),allocatable :: s_ext
-         integer :: n_base = 0
-         integer :: n_ext = 0
+         integer :: N_base = 0
+         integer :: N_ext = 0
        end type
 
        contains
@@ -43,7 +43,7 @@
          integer :: s_s_base
          integer :: s_s_ext
          call delete(this)
-         call init(this%mqp,that%mqp)
+         call init(this%MQP,that%MQP)
          if (allocated(that%s_base)) then
            s_s_base = size(that%s_base)
            if (s_s_base.gt.0) then
@@ -62,8 +62,8 @@
              enddo
            endif
          endif
-         this%n_base = that%n_base
-         this%n_ext = that%n_ext
+         this%N_base = that%N_base
+         this%N_ext = that%N_ext
        end subroutine
 
        subroutine delete_mesh_params(this)
@@ -73,7 +73,7 @@
          integer :: i_s_ext
          integer :: s_s_base
          integer :: s_s_ext
-         call delete(this%mqp)
+         call delete(this%MQP)
          if (allocated(this%s_base)) then
            s_s_base = size(this%s_base)
            do i_s_base=1,s_s_base
@@ -88,8 +88,8 @@
            enddo
            deallocate(this%s_ext)
          endif
-         this%n_base = 0
-         this%n_ext = 0
+         this%N_base = 0
+         this%N_ext = 0
        end subroutine
 
        subroutine display_mesh_params(this,un)
@@ -101,7 +101,7 @@
          integer :: s_s_base
          integer :: s_s_ext
          write(un,*) ' -------------------- mesh_params'
-         call display(this%mqp,un)
+         call display(this%MQP,un)
          if (allocated(this%s_base)) then
            s_s_base = size(this%s_base)
            do i_s_base=1,s_s_base
@@ -114,8 +114,8 @@
              call display(this%s_ext(i_s_ext),un)
            enddo
          endif
-         write(un,*) 'n_base = ',this%n_base
-         write(un,*) 'n_ext  = ',this%n_ext
+         write(un,*) 'N_base = ',this%N_base
+         write(un,*) 'N_ext  = ',this%N_ext
        end subroutine
 
        subroutine display_short_mesh_params(this,un)
@@ -126,7 +126,7 @@
          integer :: i_s_ext
          integer :: s_s_base
          integer :: s_s_ext
-         call display(this%mqp,un)
+         call display(this%MQP,un)
          if (allocated(this%s_base)) then
            s_s_base = size(this%s_base)
            do i_s_base=1,s_s_base
@@ -139,8 +139,8 @@
              call display(this%s_ext(i_s_ext),un)
            enddo
          endif
-         write(un,*) 'n_base = ',this%n_base
-         write(un,*) 'n_ext  = ',this%n_ext
+         write(un,*) 'N_base = ',this%N_base
+         write(un,*) 'N_ext  = ',this%N_ext
        end subroutine
 
        subroutine print_mesh_params(this)
@@ -163,7 +163,7 @@
          integer :: i_s_ext
          integer :: s_s_base
          integer :: s_s_ext
-         call export(this%mqp,un)
+         call export(this%MQP,un)
          if (allocated(this%s_base)) then
            s_s_base = size(this%s_base)
            write(un,*) s_s_base
@@ -178,8 +178,8 @@
              call export(this%s_ext(i_s_ext),un)
            enddo
          endif
-         write(un,*) 'n_base  = ';write(un,*) this%n_base
-         write(un,*) 'n_ext   = ';write(un,*) this%n_ext
+         write(un,*) 'N_base  = ';write(un,*) this%N_base
+         write(un,*) 'N_ext   = ';write(un,*) this%N_ext
        end subroutine
 
        subroutine import_mesh_params(this,un)
@@ -191,7 +191,7 @@
          integer :: s_s_base
          integer :: s_s_ext
          call delete(this)
-         call import(this%mqp,un)
+         call import(this%MQP,un)
          if (allocated(this%s_base)) then
            read(un,*) s_s_base
            do i_s_base=1,s_s_base
@@ -204,8 +204,8 @@
              call import(this%s_ext(i_s_ext),un)
            enddo
          endif
-         read(un,*); read(un,*) this%n_base
-         read(un,*); read(un,*) this%n_ext
+         read(un,*); read(un,*) this%N_base
+         read(un,*); read(un,*) this%N_ext
        end subroutine
 
        subroutine display_wrapper_mesh_params(this,dir,name)

@@ -1,33 +1,17 @@
-       module RK_Params_mod
+       module RK_params_extend_mod
        ! Pre-processor directives: (_DEBUG_RK_PARAMS_)
+       use RK_Params_mod
        use array_mod
        use array_extend_mod
        use current_precision_mod
        implicit none
 
        private
-       public :: RK_Params
-       public :: init,delete,export,import,display,print
+       public :: init,print
        public :: assign_stage
        public :: update_time
 
-       type RK_Params
-         logical :: RK_active = .false.
-         integer :: n_stages = 0
-         integer :: n = 0
-         type(array) :: gamma
-         type(array) :: zeta
-         type(array) :: alpha
-         type(array) :: beta
-       end type
-
        interface init;               module procedure init_RKP;               end interface
-       interface init;               module procedure init_copy_RKP;          end interface
-       interface delete;             module procedure delete_RKP;             end interface
-       interface export;             module procedure export_RKP;             end interface
-       interface import;             module procedure import_RKP;             end interface
-       interface display;            module procedure display_RKP;            end interface
-       interface print;              module procedure print_RKP;              end interface
        interface print;              module procedure print_RKP_location;     end interface
        interface assign_stage;       module procedure assign_stage_RKP;       end interface
        interface update_time;        module procedure update_time_RKP;        end interface
@@ -74,88 +58,6 @@
          RKP%beta%f = RKP%alpha%f
          else; stop 'Error: bad input to init_RKP in RK_Params.f90'
          endif
-       end subroutine
-
-       subroutine init_copy_RKP(RKP,RKP_in)
-         implicit none
-         type(RK_Params),intent(inout) :: RKP
-         type(RK_Params),intent(in) :: RKP_in
-         call delete(RKP)
-         RKP%RK_active = RKP_in%RK_active
-         RKP%n = RKP_in%n
-         RKP%n_stages = RKP_in%n_stages
-         call init(RKP%gamma,RKP_in%gamma)
-         call init(RKP%zeta,RKP_in%zeta)
-         call init(RKP%alpha,RKP_in%alpha)
-         call init(RKP%beta,RKP_in%beta)
-       end subroutine
-
-       subroutine delete_RKP(RKP)
-         implicit none
-         type(RK_Params),intent(inout) :: RKP
-         call delete(RKP%gamma)
-         call delete(RKP%zeta)
-         call delete(RKP%alpha)
-         call delete(RKP%beta)
-         RKP%RK_active = .false.
-         RKP%n = 0
-         RKP%n_stages = 0
-       end subroutine
-
-       subroutine export_RKP(RKP,un)
-         implicit none
-         type(RK_Params),intent(in) :: RKP
-         integer,intent(in) :: un
-#ifdef _DEBUG_RK_PARAMS_
-         call insist_allocated(RKP)
-#endif
-         write(un,*) ' ------------- RK_Params ------------- '
-         write(un,*) 'n_stages      = '; write(un,*) RKP%n_stages
-         write(un,*) 'n             = '; write(un,*) RKP%n
-         write(un,*) 'RK_active     = '; write(un,*) RKP%RK_active
-         call export(RKP%gamma,un)
-         call export(RKP%zeta,un)
-         call export(RKP%alpha,un)
-         call export(RKP%beta,un)
-         write(un,*) ' ------------------------------------------------ '
-       end subroutine
-
-       subroutine import_RKP(RKP,un)
-         implicit none
-         type(RK_Params),intent(inout) :: RKP
-         integer,intent(in) :: un
-         call delete(RKP)
-         read(un,*);
-         read(un,*); read(un,*) RKP%n_stages
-         read(un,*); read(un,*) RKP%n
-         read(un,*); read(un,*) RKP%RK_active
-         call import(RKP%gamma,un)
-         call import(RKP%zeta,un)
-         call import(RKP%alpha,un)
-         call import(RKP%beta,un)
-         read(un,*);
-       end subroutine
-
-       subroutine display_RKP(RKP,un)
-         implicit none
-         type(RK_Params),intent(in) :: RKP
-         integer,intent(in) :: un
-#ifdef _DEBUG_RK_PARAMS_
-         call insist_allocated(RKP)
-#endif
-         write(un,*) 'RK_active = ',RKP%RK_active
-         write(un,*) 'n = ',RKP%n
-         write(un,*) 'n_stages = ',RKP%n_stages
-         call display(RKP%gamma,un)
-         call display(RKP%zeta,un)
-         call display(RKP%alpha,un)
-         call display(RKP%beta,un)
-       end subroutine
-
-       subroutine print_RKP(RKP)
-         implicit none
-         type(RK_Params),intent(in) :: RKP
-         call display(RKP,6)
        end subroutine
 
        subroutine print_RKP_location(RKP,message)

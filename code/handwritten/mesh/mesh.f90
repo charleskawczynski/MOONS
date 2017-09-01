@@ -45,8 +45,8 @@
        interface init;                module procedure init_grid;               end interface
        interface init;                module procedure init_mesh_copy;          end interface
        interface delete;              module procedure delete_mesh;             end interface
-       interface display;             module procedure display_mesh;            end interface
-       interface print;               module procedure print_mesh;              end interface
+       interface display;             module procedure display_mesh_info;       end interface
+       interface print;               module procedure print_mesh_info;         end interface
        interface export;              module procedure export_mesh;             end interface
        interface export;              module procedure export_wrapper;          end interface
        interface import;              module procedure import_mesh;             end interface
@@ -112,7 +112,7 @@
          m%defined = m_in%defined
        end subroutine
 
-       subroutine display_mesh(m,un)
+       subroutine display_mesh_info(m,un)
          implicit none
          type(mesh), intent(in) :: m
          integer,intent(in) :: un
@@ -148,7 +148,7 @@
          endif
        end subroutine
 
-       subroutine print_mesh(m)
+       subroutine print_mesh_info(m)
          implicit none
          type(mesh), intent(in) :: m
          call display(m,6)

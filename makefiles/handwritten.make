@@ -44,6 +44,7 @@ VPATH +=\
 	$(SRC_DIR)$(PS)procedure_array\
 	$(SRC_DIR)$(PS)probe\
 	$(SRC_DIR)$(PS)sim_params\
+	$(SRC_DIR)$(PS)var_set\
 	$(SRC_DIR)$(PS)solvers\
 	$(SRC_DIR)$(PS)solvers$(PS)energy\
 	$(SRC_DIR)$(PS)solvers$(PS)density\
@@ -89,14 +90,22 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)mesh_params$(PS)mesh_quality_params_extend.f90\
 	$(SRC_DIR)$(PS)mesh_params$(PS)segment_extend.f90\
 	$(SRC_DIR)$(PS)mesh_params$(PS)mesh_params_extend.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)iter_solver_params.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)solver_settings.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)RK_Params.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)time_marching_params.f90\
-	$(SRC_DIR)$(PS)table$(PS)table.f90\
 	$(SRC_DIR)$(PS)dir_tree$(PS)path_extend.f90\
 	$(SRC_DIR)$(PS)dir_tree$(PS)dir_group_extend.f90\
 	$(SRC_DIR)$(PS)dir_tree$(PS)dir_tree_extend.f90\
+	$(SRC_DIR)$(PS)var_set$(PS)RK_params_extend.f90\
+	$(SRC_DIR)$(PS)var_set$(PS)solver_settings_extend.f90\
+	$(SRC_DIR)$(PS)var_set$(PS)matrix_free_params_extend.f90\
+	$(SRC_DIR)$(PS)var_set$(PS)time_marching_params_extend.f90\
+	$(SRC_DIR)$(PS)var_set$(PS)iter_solver_params_extend.f90\
+	$(SRC_DIR)$(PS)var_set$(PS)export_line_extend.f90\
+	$(SRC_DIR)$(PS)var_set$(PS)export_lines_extend.f90\
+	$(SRC_DIR)$(PS)var_set$(PS)export_plane_extend.f90\
+	$(SRC_DIR)$(PS)var_set$(PS)export_planes_extend.f90\
+	$(SRC_DIR)$(PS)var_set$(PS)export_field_extend.f90\
+	$(SRC_DIR)$(PS)var_set$(PS)var_extend.f90\
+	$(SRC_DIR)$(PS)var_set$(PS)var_set_extend.f90\
+	$(SRC_DIR)$(PS)table$(PS)table.f90\
 	$(SRC_DIR)$(PS)coordinates$(PS)derivative_stencils.f90\
 	$(SRC_DIR)$(PS)coordinates$(PS)interpolation_stencils.f90\
 	$(SRC_DIR)$(PS)coordinates$(PS)coordinates_extend.f90\
@@ -187,14 +196,6 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)sim_params$(PS)energy_terms.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)momentum_terms.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)induction_terms.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)matrix_free_params.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)export_line.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)export_lines.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)export_plane.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)export_planes.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)export_field.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)var.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)var_set.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)export_frequency_params.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)export_frequency.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)mirror_props.f90\

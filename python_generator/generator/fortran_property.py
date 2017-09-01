@@ -62,13 +62,13 @@ class fortran_property:
 
   def set_spaces(self,spaces): self.spaces = spaces;
 
-  def set_name(self,name): self.name = name.lower();
+  def set_name(self,name): self.name = name;
   def get_name(self): return self.name;
   def set_default_value(self,default_value): self.default_value = default_value;
   def get_default_value(self): return self.default_value;
-  def set_class(self,class_): self.class_ = class_.lower();
+  def set_class(self,class_): self.class_ = class_;
   def get_class(self): return self.class_;
-  def set_privacy(self,privacy): self.privacy = privacy.lower();
+  def set_privacy(self,privacy): self.privacy = privacy;
   def get_privacy(self): return self.privacy;
   def set_object_type(self,object_type): self.object_type = object_type;
   def get_object_type(self): return self.object_type;
@@ -445,9 +445,12 @@ class fortran_property:
     return
 
   def init_remaining(self,name,class_,privacy,allocatable = False,rank = 1,dimension = 1,procedure = False):
-    self.name = name.lower()
-    self.class_ = class_.lower()
-    self.privacy = privacy.lower()
+    self.name = name
+    self.class_ = class_
+    self.privacy = privacy
+    # self.name = name.lower()
+    # self.class_ = class_.lower()
+    # self.privacy = privacy.lower()
 
     self.dimension = dimension
     self.procedure = procedure
@@ -488,7 +491,7 @@ class fortran_property:
     if allocatable and dimension>1: self.dimension_s = self.rank_deffered
     else: self.dimension_s = str(dimension)
 
-    if self.object_type=='primitive' and 'character' in class_.lower():
+    if self.object_type=='primitive' and 'character' in class_:
       if dimension>1 and allocatable:
         self.sig = '(len='+str(dimension)+')'+',dimension('+self.rank_deffered+'),allocatable'
         self.assign_default_value = ''

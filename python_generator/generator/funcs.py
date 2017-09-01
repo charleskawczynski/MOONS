@@ -119,6 +119,7 @@ def make_makefile(makefile_file,target_root,source_dir,generated_path,class_list
     L = [x.replace(source_dir,'')+' ' for x in L]
     L = [x.replace(target_root,'')+' ' for x in L]
     L = [x.replace(generated_path,'')+' ' for x in L]
+    # L = [x.lower() for x in L]
     L = [x.replace('/','$(PS)')+' ' for x in L]
     L = [prefix + x for x in L]
     L = ['\t'+x for x in L]
@@ -137,6 +138,7 @@ def make_makefile(makefile_file,target_root,source_dir,generated_path,class_list
     L = [x.replace(source_dir,'')+' ' for x in L]
     L = [x.replace(target_root,'')+' ' for x in L]
     L = [x.replace(generated_path,'')+' ' for x in L]
+    # L = [x.lower() for x in L]
     L = [x.replace('/','$(PS)')+' ' for x in L]
     L = [prefix + x for x in L]
     L = ['\t'+x for x in L]
@@ -161,7 +163,7 @@ def get_list_of_module_names(file_list):
 
 def get_module_name(f):
     L = read_file_to_list(f,'get_module_name')
-    L = [x.lower() for x in L]
+    # L = [x.lower() for x in L]
     L = [x.lstrip() for x in L]
     L = [x.rstrip() for x in L]
     L = [x for x in L if not x.startswith('!')]
@@ -185,7 +187,7 @@ def get_main_program(path,FL):
     program_files = []
     for f in FL:
         L = read_file_to_list(path + f + fext,'get_main_program')
-        L = [x.lower() for x in L]
+        # L = [x.lower() for x in L]
         L = [x.lstrip() for x in L]
         L = [x.rstrip() for x in L]
         L = [x for x in L if not x.startswith('!')]
@@ -199,7 +201,7 @@ def sort_files_by_dependency(file_list,module_names):
     SL = []
     for fn,mn in zip(file_list,module_names):
         L = read_file_to_list(fn,'sort_files_by_dependency')
-        L = [x.lower() for x in L]
+        # L = [x.lower() for x in L]
         L = [x for x in L if not x.startswith('c')]
         L = [x.lstrip() for x in L]
         L = [x.rstrip() for x in L]

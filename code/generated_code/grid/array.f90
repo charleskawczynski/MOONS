@@ -25,7 +25,7 @@
 
        type array
          real(cp),dimension(:),allocatable :: f
-         integer :: n = 0
+         integer :: N = 0
        end type
 
        contains
@@ -38,7 +38,7 @@
          if (allocated(that%f)) then
            this%f = that%f
          endif
-         this%n = that%n
+         this%N = that%N
        end subroutine
 
        subroutine delete_array(this)
@@ -47,7 +47,7 @@
          if (allocated(this%f)) then
            deallocate(this%f)
          endif
-         this%n = 0
+         this%N = 0
        end subroutine
 
        subroutine display_array(this,un)
@@ -56,14 +56,14 @@
          integer,intent(in) :: un
          write(un,*) ' -------------------- array'
          write(un,*) 'f = ',this%f
-         write(un,*) 'n = ',this%n
+         write(un,*) 'N = ',this%N
        end subroutine
 
        subroutine display_short_array(this,un)
          implicit none
          type(array),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'n = ',this%n
+         write(un,*) 'N = ',this%N
        end subroutine
 
        subroutine print_array(this)
@@ -88,7 +88,7 @@
            write(un,*) s_f
            write(un,*) 'f  = ';write(un,*) this%f
          endif
-         write(un,*) 'n  = ';write(un,*) this%n
+         write(un,*) 'N  = ';write(un,*) this%N
        end subroutine
 
        subroutine import_array(this,un)
@@ -100,7 +100,7 @@
          read(un,*) s_f
          allocate(this%f(s_f))
          read(un,*); read(un,*) this%f
-         read(un,*); read(un,*) this%n
+         read(un,*); read(un,*) this%N
        end subroutine
 
        subroutine display_wrapper_array(this,dir,name)

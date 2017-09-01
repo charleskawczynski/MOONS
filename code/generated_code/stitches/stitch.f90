@@ -23,8 +23,8 @@
        interface import;       module procedure import_wrapper_stitch; end interface
 
        type stitch
-         logical :: l = .false.
-         integer :: id = 0
+         logical :: L = .false.
+         integer :: ID = 0
        end type
 
        contains
@@ -34,15 +34,15 @@
          type(stitch),intent(inout) :: this
          type(stitch),intent(in) :: that
          call delete(this)
-         this%l = that%l
-         this%id = that%id
+         this%L = that%L
+         this%ID = that%ID
        end subroutine
 
        subroutine delete_stitch(this)
          implicit none
          type(stitch),intent(inout) :: this
-         this%l = .false.
-         this%id = 0
+         this%L = .false.
+         this%ID = 0
        end subroutine
 
        subroutine display_stitch(this,un)
@@ -50,16 +50,16 @@
          type(stitch),intent(in) :: this
          integer,intent(in) :: un
          write(un,*) ' -------------------- stitch'
-         write(un,*) 'l  = ',this%l
-         write(un,*) 'id = ',this%id
+         write(un,*) 'L  = ',this%L
+         write(un,*) 'ID = ',this%ID
        end subroutine
 
        subroutine display_short_stitch(this,un)
          implicit none
          type(stitch),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'l  = ',this%l
-         write(un,*) 'id = ',this%id
+         write(un,*) 'L  = ',this%L
+         write(un,*) 'ID = ',this%ID
        end subroutine
 
        subroutine print_stitch(this)
@@ -78,8 +78,8 @@
          implicit none
          type(stitch),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'l   = ';write(un,*) this%l
-         write(un,*) 'id  = ';write(un,*) this%id
+         write(un,*) 'L   = ';write(un,*) this%L
+         write(un,*) 'ID  = ';write(un,*) this%ID
        end subroutine
 
        subroutine import_stitch(this,un)
@@ -87,8 +87,8 @@
          type(stitch),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%l
-         read(un,*); read(un,*) this%id
+         read(un,*); read(un,*) this%L
+         read(un,*); read(un,*) this%ID
        end subroutine
 
        subroutine display_wrapper_stitch(this,dir,name)
