@@ -1,9 +1,11 @@
        module physical_sub_domain_mod
        use current_precision_mod
        use overlap_mod
+       use overlap_extend_mod
        use grid_mod
        use face_edge_corner_indexing_mod
        use sub_domain_mod
+       use sub_domain_extend_mod
        use data_location_mod
        use coordinates_mod
 

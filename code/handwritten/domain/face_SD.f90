@@ -1,9 +1,11 @@
        module face_SD_mod
        use current_precision_mod
        use overlap_mod
+       use overlap_extend_mod
        use grid_mod
        use datatype_conversion_mod
        use sub_domain_mod
+       use sub_domain_extend_mod
        use face_edge_corner_indexing_mod
        use data_location_mod
        use coordinates_mod

@@ -45,6 +45,7 @@ VPATH +=\
 	$(SRC_DIR)$(PS)procedure_array\
 	$(SRC_DIR)$(PS)probe\
 	$(SRC_DIR)$(PS)sim_params\
+	$(SRC_DIR)$(PS)sub_domain\
 	$(SRC_DIR)$(PS)var_set\
 	$(SRC_DIR)$(PS)solvers\
 	$(SRC_DIR)$(PS)solvers$(PS)energy\
@@ -114,7 +115,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)var_set$(PS)var_extend.f90\
 	$(SRC_DIR)$(PS)var_set$(PS)var_set_extend.f90\
 	$(SRC_DIR)$(PS)table$(PS)table.f90\
-	$(SRC_DIR)$(PS)domain$(PS)overlap.f90\
+	$(SRC_DIR)$(PS)sub_domain$(PS)overlap_extend.f90\
 	$(SRC_DIR)$(PS)stop_clock$(PS)unit_conversion_extend.f90\
 	$(SRC_DIR)$(PS)stop_clock$(PS)clock_extend.f90\
 	$(SRC_DIR)$(PS)stop_clock$(PS)stop_clock_extend.f90\
@@ -175,7 +176,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)sparse$(PS)stencil_3D.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)bctype.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)BC_logicals.f90\
-	$(SRC_DIR)$(PS)domain$(PS)sub_domain.f90\
+	$(SRC_DIR)$(PS)sub_domain$(PS)sub_domain_extend.f90\
 	$(SRC_DIR)$(PS)domain$(PS)physical_sub_domain.f90\
 	$(SRC_DIR)$(PS)domain$(PS)face_SD.f90\
 	$(SRC_DIR)$(PS)domain$(PS)edge_SD.f90\

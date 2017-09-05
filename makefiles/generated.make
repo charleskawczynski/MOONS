@@ -7,6 +7,7 @@ VPATH +=\
 	$(SRC_DIR_GENERATED)$(PS)sim_params\
 	$(SRC_DIR_GENERATED)$(PS)stitches\
 	$(SRC_DIR_GENERATED)$(PS)stop_clock\
+	$(SRC_DIR_GENERATED)$(PS)sub_domain\
 	$(SRC_DIR_GENERATED)$(PS)var_set\
 
 SRCS_F+=\
@@ -54,3 +55,5 @@ SRCS_F+=\
 	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)dimensionless_params.f90\
 	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)sim_params.f90\
 	$(SRC_DIR_GENERATED)$(PS)grid_field$(PS)grid_field.f90\
+	$(SRC_DIR_GENERATED)$(PS)sub_domain$(PS)overlap.f90\
+	$(SRC_DIR_GENERATED)$(PS)sub_domain$(PS)sub_domain.f90\

@@ -1,6 +1,8 @@
-       module sub_domain_mod
+       module sub_domain_extend_mod
+       use sub_domain_mod
        use current_precision_mod
        use overlap_mod
+       use overlap_extend_mod
        use grid_mod
        use data_location_mod
        use face_edge_corner_indexing_mod
@@ -9,8 +11,7 @@
        implicit none
 
        private
-       public :: sub_domain
-       public :: init,delete,display,print,export,import ! Essentials
+       public :: init,display,print ! Essentials
 
        ! public::init               ! call init(SD,g_R1,g_R2,tol,p)
        public :: define_C           ! call define_C(OL_inout,g1,g2,dir,p)
@@ -21,23 +22,10 @@
        public :: init_mixed
 
        interface init;            module procedure init_sub_domain;              end interface
-       interface init;            module procedure init_copy_sub_domain;         end interface
-       interface delete;          module procedure delete_sub_domain;            end interface
        interface display;         module procedure display_sub_domain;           end interface
        interface print;           module procedure print_sub_domain;             end interface
-       interface export;          module procedure export_sub_domain;            end interface
-       interface import;          module procedure import_sub_domain;            end interface
 
        interface init_mixed;      module procedure init_mixed_sub_domain;        end interface
-
-       type sub_domain
-         type(overlap),dimension(3) :: C ! cell center
-         type(overlap),dimension(3) :: N ! node
-         type(overlap),dimension(3) :: M ! mixed
-         logical :: defined = .false.
-         integer :: g_R1_id = 0
-         integer :: g_R2_id = 0
-       end type
 
        contains
 
@@ -64,31 +52,6 @@
          endif
        end subroutine
 
-       subroutine init_copy_sub_domain(SD,SD_in)
-         implicit none
-         type(sub_domain),intent(inout) :: SD
-         type(sub_domain),intent(in) :: SD_in
-         integer :: i
-         do i=1,3; call init(SD%C(i),SD_in%C(i)); enddo
-         do i=1,3; call init(SD%N(i),SD_in%N(i)); enddo
-         do i=1,3; call init(SD%M(i),SD_in%M(i)); enddo
-         SD%defined = SD_in%defined
-         SD%g_R1_id = SD_in%g_R1_id
-         SD%g_R2_id = SD_in%g_R2_id
-       end subroutine
-
-       subroutine delete_sub_domain(SD)
-         implicit none
-         type(sub_domain),intent(inout) :: SD
-         integer :: i
-         do i=1,3; call delete(SD%C(i)); enddo
-         do i=1,3; call delete(SD%N(i)); enddo
-         do i=1,3; call delete(SD%M(i)); enddo
-         SD%defined = .false.
-         SD%g_R1_id = 0
-         SD%g_R2_id = 0
-       end subroutine
-
        subroutine display_sub_domain(SD,name,u)
          implicit none
          type(sub_domain),intent(in) :: SD
@@ -111,36 +74,6 @@
          type(sub_domain),intent(in) :: SD
          character(len=*),intent(in) :: name
          call display(SD,name,6)
-       end subroutine
-
-       subroutine export_sub_domain(SD,u)
-         implicit none
-         type(sub_domain),intent(in) :: SD
-         integer,intent(in) :: u
-         integer :: i
-         write(u,*) ' ********** sub_domain ************ '
-         write(u,*) 'defined = '; write(u,*) SD%defined
-         write(u,*) 'g_R1_id = '; write(u,*) SD%g_R1_id
-         write(u,*) 'g_R2_id = '; write(u,*) SD%g_R2_id
-         do i=1,3; call export(SD%C(i),u); enddo
-         do i=1,3; call export(SD%N(i),u); enddo
-         do i=1,3; call export(SD%M(i),u); enddo
-         write(u,*) ' ********************************* '
-       end subroutine
-
-       subroutine import_sub_domain(SD,u)
-         implicit none
-         type(sub_domain),intent(inout) :: SD
-         integer,intent(in) :: u
-         integer :: i
-         read(u,*)
-         read(u,*); read(u,*) SD%defined
-         read(u,*); read(u,*) SD%g_R1_id
-         read(u,*); read(u,*) SD%g_R2_id
-         do i=1,3; call import(SD%C(i),u); enddo
-         do i=1,3; call import(SD%N(i),u); enddo
-         do i=1,3; call import(SD%M(i),u); enddo
-         read(u,*)
        end subroutine
 
        ! **********************************************************
