@@ -149,6 +149,7 @@ def make_makefile(makefile_file,target_root,source_dir,generated_path,class_list
     L_FILES = L
 
     L = [''.join(L_VPATH+L_FILES)]
+    # L[-1] = L[-1][:-1]
 
     write_list_to_file(makefile_file,L)
     return

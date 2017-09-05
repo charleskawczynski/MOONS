@@ -178,8 +178,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)BC_logicals.f90\
 	$(SRC_DIR)$(PS)sub_domain$(PS)sub_domain_extend.f90\
 	$(SRC_DIR)$(PS)domain$(PS)physical_sub_domain.f90\
-	$(SRC_DIR)$(PS)domain$(PS)face_SD.f90\
-	$(SRC_DIR)$(PS)domain$(PS)edge_SD.f90\
+	$(SRC_DIR)$(PS)sub_domain$(PS)face_SD_extend.f90\
 	$(SRC_DIR)$(PS)block$(PS)block_curl_curl_stencil.f90\
 	$(SRC_DIR)$(PS)block$(PS)block_Laplacian_stencil.f90\
 	$(SRC_DIR)$(PS)block$(PS)block.f90\

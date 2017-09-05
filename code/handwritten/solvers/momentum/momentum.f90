@@ -27,7 +27,6 @@
        use init_P_Field_mod
        use matrix_free_params_mod
        use matrix_free_operators_mod
-       use face_SD_mod
        use datatype_conversion_mod
        use time_statistics_mod
 

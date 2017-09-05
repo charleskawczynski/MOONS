@@ -3,6 +3,7 @@
        use apply_BCs_faces_raw_implicit_mod
        use GF_mod
        use face_SD_mod
+       use face_SD_extend_mod
 
        implicit none
        private

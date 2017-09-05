@@ -57,3 +57,5 @@ SRCS_F+=\
 	$(SRC_DIR_GENERATED)$(PS)grid_field$(PS)grid_field.f90\
 	$(SRC_DIR_GENERATED)$(PS)sub_domain$(PS)overlap.f90\
 	$(SRC_DIR_GENERATED)$(PS)sub_domain$(PS)sub_domain.f90\
+	$(SRC_DIR_GENERATED)$(PS)sub_domain$(PS)index_2D.f90\
+	$(SRC_DIR_GENERATED)$(PS)sub_domain$(PS)face_SD.f90\

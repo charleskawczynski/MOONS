@@ -41,6 +41,7 @@
        use grid_mod
        use block_mod
        use face_SD_mod
+       use face_SD_extend_mod
        use GF_mod
        use bctype_mod
        use BC_logicals_mod

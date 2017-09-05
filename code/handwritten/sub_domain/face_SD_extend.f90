@@ -1,5 +1,7 @@
-       module face_SD_mod
+       module face_SD_extend_mod
+       use face_SD_mod
        use current_precision_mod
+       use index_2D_mod
        use overlap_mod
        use overlap_extend_mod
        use grid_mod
@@ -14,36 +16,17 @@
 
        private
        public :: face_SD
-       public :: init,delete,display,print,export,import ! Essentials
+       public :: init,display,print ! Essentials
 
        public :: init_mixed
        public :: init_Robin_coeff
 
        interface init;             module procedure init_face_SD;        end interface
-       interface init;             module procedure init_copy_face_SD;   end interface
-       interface delete;           module procedure delete_face_SD;      end interface
        interface display;          module procedure display_face_SD;     end interface
        interface print;            module procedure print_face_SD;       end interface
-       interface export;           module procedure export_face_SD;      end interface
-       interface import;           module procedure import_face_SD;      end interface
 
        interface init_mixed;       module procedure init_mixed_face_SD;  end interface
        interface init_Robin_coeff; module procedure init_Robin_coeff_SD; end interface
-
-       type index_2D
-         integer,dimension(2) :: i = 0
-       end type
-
-       type face_SD
-         type(sub_domain),dimension(6) :: G
-         type(sub_domain),dimension(6) :: G_periodic_N
-         type(sub_domain),dimension(6) :: B ! B%C is non-sense here
-         type(sub_domain),dimension(6) :: I
-         type(sub_domain),dimension(6) :: I_OPP
-         type(sub_domain),dimension(6) :: I_OPP_periodic_N
-         type(index_2D),dimension(6) :: i_2D
-         real(cp),dimension(6) :: dh,nhat,c_w,Robin_coeff = 0.0_cp
-       end type
 
        contains
 
@@ -106,41 +89,6 @@
          call delete(temp)
        end subroutine
 
-       subroutine init_copy_face_SD(FSD,FSD_in)
-         implicit none
-         type(face_SD),intent(inout) :: FSD
-         type(face_SD),intent(in) :: FSD_in
-         integer :: i
-         do i=1,6; call init(FSD%G(i),FSD_in%G(i)); enddo
-         do i=1,6; call init(FSD%B(i),FSD_in%B(i)); enddo
-         do i=1,6; call init(FSD%I(i),FSD_in%I(i)); enddo
-         do i=1,6; call init(FSD%G_periodic_N(i),FSD_in%G_periodic_N(i)); enddo
-         do i=1,6; call init(FSD%I_OPP(i),FSD_in%I_OPP(i)); enddo
-         do i=1,6; call init(FSD%I_OPP_periodic_N(i),FSD_in%I_OPP_periodic_N(i)); enddo
-         do i=1,6; FSD%i_2D(i)%i = FSD_in%i_2D(i)%i; enddo
-         FSD%dh = FSD_in%dh
-         FSD%nhat = FSD_in%nhat
-         FSD%Robin_coeff = FSD_in%Robin_coeff
-         FSD%c_w = FSD_in%c_w
-       end subroutine
-
-       subroutine delete_face_SD(FSD)
-         implicit none
-         type(face_SD),intent(inout) :: FSD
-         integer :: i
-         do i=1,6; call delete(FSD%G(i)); enddo
-         do i=1,6; call delete(FSD%B(i)); enddo
-         do i=1,6; call delete(FSD%I(i)); enddo
-         do i=1,6; call delete(FSD%G_periodic_N(i)); enddo
-         do i=1,6; call delete(FSD%I_OPP(i)); enddo
-         do i=1,6; call delete(FSD%I_OPP_periodic_N(i)); enddo
-         do i=1,6; FSD%i_2D(i)%i = 0; enddo
-         FSD%dh = 0.0_cp
-         FSD%nhat = 0.0_cp
-         FSD%Robin_coeff = 0.0_cp
-         FSD%c_w = 0.0_cp
-       end subroutine
-
        subroutine display_face_SD(FSD,name,u)
          implicit none
          type(face_SD),intent(in) :: FSD
@@ -167,46 +115,6 @@
          type(face_SD),intent(in) :: FSD
          character(len=*),intent(in) :: name
          call display(FSD,name,6)
-       end subroutine
-
-       subroutine export_face_SD(FSD,u)
-         implicit none
-         type(face_SD),intent(in) :: FSD
-         integer,intent(in) :: u
-         integer :: i
-         write(u,*) ' ********** face_SD ************ '
-         do i=1,6; call export(FSD%G(i),u); enddo
-         do i=1,6; call export(FSD%B(i),u); enddo
-         do i=1,6; call export(FSD%I(i),u); enddo
-         do i=1,6; call export(FSD%G_periodic_N(i),u); enddo
-         do i=1,6; call export(FSD%I_OPP(i),u); enddo
-         do i=1,6; call export(FSD%I_OPP_periodic_N(i),u); enddo
-         write(u,*) 'dh = ';      write(u,*) FSD%dh
-         write(u,*) 'nhat = ';    write(u,*) FSD%nhat
-         write(u,*) 'Robin_coeff = ';    write(u,*) FSD%Robin_coeff
-         write(u,*) 'c_w = ';    write(u,*) FSD%c_w
-         do i=1,6; write(u,*) 'i_2D = '; write(u,*) FSD%i_2D(i)%i; enddo
-         write(u,*) ' ********************************* '
-       end subroutine
-
-       subroutine import_face_SD(FSD,u)
-         implicit none
-         type(face_SD),intent(inout) :: FSD
-         integer,intent(in) :: u
-         integer :: i
-         read(u,*);
-         do i=1,6; call import(FSD%G(i),u); enddo
-         do i=1,6; call import(FSD%B(i),u); enddo
-         do i=1,6; call import(FSD%I(i),u); enddo
-         do i=1,6; call import(FSD%G_periodic_N(i),u); enddo
-         do i=1,6; call import(FSD%I_OPP(i),u); enddo
-         do i=1,6; call import(FSD%I_OPP_periodic_N(i),u); enddo
-         read(u,*); write(u,*) FSD%dh
-         read(u,*); write(u,*) FSD%nhat
-         read(u,*); write(u,*) FSD%Robin_coeff
-         read(u,*); write(u,*) FSD%c_w
-         do i=1,6; read(u,*); read(u,*) FSD%i_2D(i)%i; enddo
-         read(u,*);
        end subroutine
 
        subroutine init_mixed_face_SD(FSD,DL)
