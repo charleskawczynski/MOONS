@@ -69,7 +69,7 @@
        SP%FCL%Poisson_test                       = F
        SP%FCL%Taylor_Green_Vortex_test           = F
        SP%FCL%temporal_convergence_test          = F
-       SP%FCL%operator_interchangability_test    = F
+       SP%FCL%operator_commute_test    = F
        SP%FCL%compute_export_E_K_Budget          = F
        SP%FCL%compute_export_E_M_budget          = F
        SP%FCL%restart_meshes                     = F

@@ -19,7 +19,6 @@
        use refine_mesh_mod
        use assign_B0_vs_t_mod
 
-       use mesh_stencils_mod
        use init_BBCs_mod
        use init_phiBCs_mod
        use init_Bfield_mod

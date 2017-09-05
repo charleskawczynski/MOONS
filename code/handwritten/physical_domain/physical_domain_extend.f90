@@ -1,16 +1,17 @@
-       module physical_domain_mod
+       module physical_domain_extend_mod
+       use physical_domain_mod
        use current_precision_mod
        use IO_tools_mod
        use datatype_conversion_mod
        use physical_sub_domain_mod
+       use physical_sub_domain_extend_mod
        use data_location_mod
        use grid_mod
        use mesh_mod
        implicit none
 
        private
-       public :: physical_domain
-       public :: init,delete,display,print,export,import ! Essentials
+       public :: init,display,print
 
        public :: add,init_mixed
 
@@ -19,15 +20,7 @@
 
        interface init;             module procedure init_PD_mesh;            end interface
        interface init;             module procedure init_PD_grid;            end interface
-       interface init;             module procedure init_PD_copy;            end interface
-       interface delete;           module procedure delete_PD;               end interface
-       interface display;          module procedure display_PD;              end interface
-       interface display;          module procedure display_PD_wrapper;      end interface
        interface print;            module procedure print_PD;                end interface
-       interface export;           module procedure export_PD;               end interface
-       interface import;           module procedure import_PD;               end interface
-       interface export;           module procedure export_PD_wrapper;       end interface
-       interface import;           module procedure import_PD_wrapper;       end interface
 
        interface add;              module procedure add_physical_sub_domain; end interface
        interface add;              module procedure add_PD_grid;             end interface
@@ -36,12 +29,6 @@
 
        interface pick_extrema_bot; module procedure pick_extrema_bot_PD;     end interface
        interface pick_extrema_top; module procedure pick_extrema_top_PD;     end interface
-
-       type physical_domain
-         integer :: s ! Number of physical_sub_domains
-         type(physical_sub_domain),dimension(:),allocatable :: sd
-         logical :: defined = .false.
-       end type
 
        contains
 
@@ -91,33 +78,6 @@
          endif
        end subroutine
 
-       subroutine init_PD_copy(D_out,D_in)
-         implicit none
-         type(physical_domain),intent(inout) :: D_out
-         type(physical_domain),intent(in) :: D_in
-         integer :: i
-         if (allocated(D_in%sd)) then
-           call delete(D_out)
-           D_out%s = D_in%s
-           allocate(D_out%sd(D_out%s))
-           do i=1,D_in%s; call init(D_out%sd(i),D_in%sd(i)); enddo
-         else; stop 'Error: trying to copy un-initialized physical_sub_domain in physical_domain.f90'
-         endif
-         D_out%defined = D_in%defined
-       end subroutine
-
-       subroutine delete_PD(D)
-         implicit none
-         type(physical_domain),intent(inout) :: D
-         integer :: i
-         if (allocated(D%sd)) then
-           do i=1,D%s; call delete(D%sd(i)); enddo
-           deallocate(D%sd)
-         endif
-         D%s = 0
-         D%defined = .false.
-       end subroutine
-
        subroutine print_PD(D,name)
          implicit none
          type(physical_domain),intent(in) :: D
@@ -125,70 +85,6 @@
          integer :: i
          write(*,*) 'N-physical_sub_domains = ',D%s
          do i=1,D%s; call print(D%sd(i),name//'_'//int2str(i)); enddo
-       end subroutine
-
-       subroutine display_PD(D,un)
-         implicit none
-         type(physical_domain),intent(inout) :: D
-         integer,intent(in) :: un
-         integer :: i
-         do i=1,D%s; call display(D%sd(i),'SD_'//int2str(i),un); enddo
-       end subroutine
-
-       subroutine display_PD_wrapper(D,dir,name)
-         implicit none
-         type(physical_domain),intent(inout) :: D
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = new_and_open(dir,name)
-         call display(D,un)
-         call close_and_message(un,dir,name)
-       end subroutine
-
-       subroutine export_PD(D,un)
-         implicit none
-         type(physical_domain),intent(in) :: D
-         integer,intent(in) :: un
-         integer :: i
-         write(un,*) 'D%defined'
-         write(un,*) D%defined
-         write(un,*) 'D%s'
-         write(un,*) D%s
-         do i=1,D%s; call export(D%sd(i),un); enddo
-       end subroutine
-
-       subroutine export_PD_wrapper(D,dir,name)
-         implicit none
-         type(physical_domain),intent(in) :: D
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = new_and_open(dir,name)
-         call export(D,un)
-         call close_and_message(un,dir,name)
-       end subroutine
-
-       subroutine import_PD(D,un)
-         implicit none
-         type(physical_domain),intent(inout) :: D
-         integer,intent(in) :: un
-         integer :: i
-         call delete(D)
-         read(un,*)
-         read(un,*) D%defined
-         read(un,*)
-         read(un,*) D%s
-         allocate(D%sd(D%s))
-         do i=1,D%s; call import(D%sd(i),un); enddo
-       end subroutine
-
-       subroutine import_PD_wrapper(D,dir,name)
-         implicit none
-         type(physical_domain),intent(inout) :: D
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = open_to_read(dir,name)
-         call import(D,un)
-         call close_and_message(un,dir,name)
        end subroutine
 
        ! **********************************************************

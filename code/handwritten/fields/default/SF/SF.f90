@@ -85,9 +85,6 @@
         public :: restrict
         public :: prolongate
 
-        public :: laplacian_matrix_based
-        public :: curl_curl_matrix_based
-
         ! Monitoring
         public :: print_BCs
         public :: export_BCs
@@ -169,10 +166,6 @@
         interface cosine_waves;             module procedure cosine_waves_SF;              end interface
         interface random_noise;             module procedure random_noise_SF;              end interface
         interface random_noise;             module procedure random_noise_SF_dir;          end interface
-
-        interface laplacian_matrix_based;   module procedure laplacian_matrix_based_SF_SF; end interface
-        interface laplacian_matrix_based;   module procedure laplacian_matrix_based_VF_SF; end interface
-        interface curl_curl_matrix_based;   module procedure curl_curl_matrix_based_SF;    end interface
 
         interface assign_BCs;               module procedure assign_BCs_SF;                end interface
         interface assign_BC_vals;           module procedure assign_BC_vals_SF;            end interface
@@ -702,37 +695,6 @@
           integer,intent(in) :: dir
           integer :: i
           do i=1,u%s; call random_noise(u%BF(i),dir); enddo
-        end subroutine
-
-        subroutine laplacian_matrix_based_SF_SF(lapU,U,m)
-          implicit none
-          type(SF),intent(inout) :: lapU
-          type(SF),intent(in) :: U
-          type(mesh),intent(in) :: m
-          integer :: i
-          do i=1,m%s; call laplacian_matrix_based(lapU%BF(i),U%BF(i),m%B(i)); enddo
-        end subroutine
-
-        subroutine laplacian_matrix_based_VF_SF(lapX,lapY,lapZ,X,Y,Z,m)
-          implicit none
-          type(SF),intent(inout) :: lapX,lapY,lapZ
-          type(SF),intent(in) :: X,Y,Z
-          type(mesh),intent(in) :: m
-          integer :: i
-          do i=1,m%s; call laplacian_matrix_based(lapX%BF(i),lapY%BF(i),lapZ%BF(i),&
-                                                  X%BF(i),Y%BF(i),Z%BF(i),&
-                                                  m%B(i)); enddo
-        end subroutine
-
-        subroutine curl_curl_matrix_based_SF(CX,CY,CZ,X,Y,Z,m)
-          implicit none
-          type(SF),intent(inout) :: CX,CY,CZ
-          type(SF),intent(in) :: X,Y,Z
-          type(mesh),intent(in) :: m
-          integer :: i
-          do i=1,m%s; call curl_curl_matrix_based(CX%BF(i),CY%BF(i),CZ%BF(i),&
-                                                  X%BF(i),Y%BF(i),Z%BF(i),&
-                                                  m%B(i)); enddo
         end subroutine
 
         subroutine assign_BC_vals_SF(A,B)

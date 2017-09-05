@@ -17,7 +17,6 @@
        use dir_tree_mod
        use RK_Params_mod
 
-       use mesh_stencils_mod
        use time_marching_methods_mod
        use momentum_aux_mod
        use init_P_BCs_mod
@@ -105,7 +104,6 @@
 
        interface export_tec;           module procedure export_tec_momentum;        end interface
        interface solve;                module procedure solve_momentum;             end interface
-       interface init_matrix_based_ops;module procedure init_matrix_based_ops_mom;  end interface
 
        interface export_unsteady;       module procedure export_unsteady_mom;        end interface
        interface export_unsteady_0D;    module procedure export_unsteady_0D_mom;      end interface
@@ -180,11 +178,6 @@
          if (SP%VS%U%SS%prescribed_BCs) call set_prescribed_BCs(mom%Ustar)
          call init_Ustar_field(mom%Ustar,mom%U)
          write(*,*) '     Intermediate field initialized'
-
-         write(*,*) '     about to assemble Laplacian matrices'
-         if (SP%matrix_based) call init_matrix_based_ops(mom,SP)
-
-         write(*,*) '     Interpolated fields initialized'
 
          call init(mom%probe_divU,str(DT%U%residual),'probe_divU',SP%VS%U%SS%restart,.true.,SP%VS%U%TMP)
          call init(mom%probe_KE,str(DT%U%energy),'KE',SP%VS%U%SS%restart,.false.,SP%VS%U%TMP)
@@ -417,22 +410,6 @@
          type(dir_tree),intent(in) :: DT
          call export_processed(mom%m,mom%U,str(DT%U%unsteady),'U',1,TMP,SP%VS%U%unsteady_field)
          call export_processed(mom%m,mom%p,str(DT%P%unsteady),'p',1,TMP,SP%VS%P%unsteady_field)
-       end subroutine
-
-       subroutine init_matrix_based_ops_mom(mom,SP)
-         implicit none
-         type(momentum),intent(inout) :: mom
-         type(sim_params),intent(in) :: SP
-         real(cp),dimension(2) :: diffusion_treatment
-         call init_Laplacian_SF(mom%m) ! Must come before PPE solver init
-         call init_Laplacian_VF(mom%m) ! for lap(U) in momentum
-         ! diffusion_treatment = (/-SP%VS%U%TMP%dt/SP%DP%Re,1.0_cp/) ! diffusion explicit
-         ! diffusion_treatment = (/SP%VS%U%TMP%dt/SP%DP%Re,1.0_cp/)    ! diffusion explicit
-         diffusion_treatment = (/SP%VS%U%TMP%dt/SP%DP%Re,1.0_cp/)    ! diffusion explicit
-         ! diffusion_treatment = (/1.0_cp,0.0_cp/)             ! no treatment (requires multiplication by dt/Re)
-         ! call modify_Laplacian_VF(mom%m,diffusion_treatment(1),diffusion_treatment(2))
-         call multiply_Laplacian_VF(mom%m,diffusion_treatment(1))
-         call add_Laplacian_VF(mom%m,diffusion_treatment(2))
        end subroutine
 
        ! ******************* SOLVER ****************************

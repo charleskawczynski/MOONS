@@ -47,6 +47,8 @@
        use sub_domain_mod
        use index_2D_mod
        use face_SD_mod
+       use physical_sub_domain_mod
+       use physical_domain_mod
        implicit none
        write(*,*) "success!"
        end program

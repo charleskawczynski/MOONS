@@ -3,6 +3,7 @@ VPATH +=\
 	$(SRC_DIR_GENERATED)$(PS)grid\
 	$(SRC_DIR_GENERATED)$(PS)grid_field\
 	$(SRC_DIR_GENERATED)$(PS)mesh_params\
+	$(SRC_DIR_GENERATED)$(PS)physical_domain\
 	$(SRC_DIR_GENERATED)$(PS)probe\
 	$(SRC_DIR_GENERATED)$(PS)sim_params\
 	$(SRC_DIR_GENERATED)$(PS)stitches\
@@ -59,3 +60,5 @@ SRCS_F+=\
 	$(SRC_DIR_GENERATED)$(PS)sub_domain$(PS)sub_domain.f90\
 	$(SRC_DIR_GENERATED)$(PS)sub_domain$(PS)index_2D.f90\
 	$(SRC_DIR_GENERATED)$(PS)sub_domain$(PS)face_SD.f90\
+	$(SRC_DIR_GENERATED)$(PS)physical_domain$(PS)physical_sub_domain.f90\
+	$(SRC_DIR_GENERATED)$(PS)physical_domain$(PS)physical_domain.f90\

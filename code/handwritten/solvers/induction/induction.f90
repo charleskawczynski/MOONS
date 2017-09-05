@@ -22,7 +22,6 @@
        use datatype_conversion_mod
        use RK_Params_mod
 
-       use mesh_stencils_mod
        use init_B_BCs_mod
        use init_Bstar_field_mod
        use init_phi_BCs_mod
@@ -123,7 +122,6 @@
        interface export_tec;           module procedure export_tec_induction;          end interface
 
        interface set_sigma_inv;        module procedure set_sigma_inv_ind;             end interface
-       interface init_matrix_based_ops;module procedure init_matrix_based_ops_ind;     end interface
 
        interface export_unsteady;      module procedure export_unsteady_ind;           end interface
        interface export_unsteady_0D;   module procedure export_unsteady_0D_ind;        end interface
@@ -257,7 +255,6 @@
          call close_and_message(temp_unit,str(DT%params),'info_ind')
 
          write(*,*) '     About to assemble curl-curl matrix'
-         if (SP%matrix_based) call init_matrix_based_ops(ind,SP)
 
          call init_Edge(sigmaInv_edge_TF%x,m,0.0_cp) ! x-component used in matrix_free_operators.f90
          call assign(sigmaInv_edge_TF%x,ind%sigmaInv_edge)
@@ -534,20 +531,6 @@
          type(induction),intent(inout) :: ind
          type(sim_params),intent(in) :: SP
          call set_sigma_inv_VF(ind%sigmaInv_edge,ind%m,ind%MD_sigma,SP%DP)
-       end subroutine
-
-       subroutine init_matrix_based_ops_ind(ind,SP)
-         implicit none
-         type(induction),intent(inout) :: ind
-         type(sim_params),intent(in) :: SP
-         real(cp),dimension(2) :: diffusion_treatment
-         ! diffusion_treatment = (/1.0_cp,0.0_cp/) ! No treatment to curl-curl operator
-         diffusion_treatment = (/-SP%VS%B%MFP%coeff_implicit,1.0_cp/)    ! likely broken
-         ! diffusion_treatment = (/SP%VS%B%MFP%coeff_implicit,1.0_cp/)    ! likely broken
-         call init_curl_curl(ind%m,ind%sigmaInv_edge)
-         call init_Laplacian_SF(ind%m)
-         call multiply_curl_curl(ind%m,diffusion_treatment(1))
-         call add_curl_curl(ind%m,diffusion_treatment(2))
        end subroutine
 
        subroutine solve_induction(ind,SP,F,Fnm1,L,TMP,EF)

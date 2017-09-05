@@ -19,7 +19,7 @@
        use export_analytic_mod
        use mirror_props_mod
        use vorticity_streamfunction_mod
-       use operator_interchangability_test_mod
+       use operator_commute_test_mod
        use Poisson_test_mod
        use Taylor_Green_Vortex_test_mod
        use temporal_convergence_test_mod
@@ -217,8 +217,8 @@
          if (SP%FCL%temporal_convergence_test) then
            call temporal_convergence_test(mom%U,mom%p,mom%m,DT,SP)
          endif
-         if (SP%FCL%operator_interchangability_test) then
-           call operator_interchangability_test(mom%U,mom%p,mom%m,DT)
+         if (SP%FCL%operator_commute_test) then
+           call operator_commute_test(mom%U,mom%p,mom%m,DT)
          endif
 
          write(*,*) ' ******************** COMPUTATIONS COMPLETE ********************'

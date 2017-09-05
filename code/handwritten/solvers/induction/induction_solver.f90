@@ -35,31 +35,10 @@
 
        ! Explicit time marching methods (CT methods)
        public :: CT_Finite_Rem_perfect_vacuum
-       public :: CT_Low_Rem_matrix_based
        public :: CT_Finite_Rem_interior_solved
        public :: JAC_interior_solved
 
        contains
-
-       subroutine CT_Low_Rem_matrix_based(B,B0,U_E,m,N_multistep,dt,temp_F1,temp_F2,temp_E,temp_E_TF)
-         implicit none
-         type(VF),intent(inout) :: B,temp_E,temp_F1,temp_F2
-         type(VF),intent(in) :: B0
-         type(TF),intent(inout) :: temp_E_TF
-         type(TF),intent(in) :: U_E
-         type(mesh),intent(in) :: m
-         real(cp),intent(in) :: dt
-         integer,intent(in) :: N_multistep
-         integer :: i
-         do i=1,N_multistep
-           call advect_B(temp_F1,U_E,B0,m,temp_E_TF,temp_E)
-           call curl_curl_B_matrix_based(temp_F2,B,m) ! A = -(I + curl(curl))
-           call multiply(temp_F2,-dt)
-           call multiply(temp_F1,dt)
-           call add(B,temp_F1,temp_F2)
-           call apply_BCs(B)
-         enddo
-       end subroutine
 
        subroutine CT_Finite_Rem_interior_solved(PCG_cleanB,B,B0,Bstar,J,B_interior,U_E,curlE,&
          phi,m,MD_sigma,TMP,Rem,compute_norms,SF_CC,temp_F1,temp_F2,curlUCrossB,temp_E,temp_E_TF)

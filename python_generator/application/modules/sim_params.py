@@ -156,7 +156,7 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('export_vorticity_streamfunction','logical',priv)
 	g.module[m_name].add_prop('compute_export_E_K_Budget','logical',priv)
 	g.module[m_name].add_prop('compute_export_E_M_budget','logical',priv)
-	g.module[m_name].add_prop('operator_interchangability_test','logical',priv)
+	g.module[m_name].add_prop('operator_commute_test','logical',priv)
 	g.module[m_name].add_prop('export_final_tec','logical',priv)
 	g.module[m_name].add_prop('export_final_restart','logical',priv)
 	g.module[m_name].add_prop('restart_meshes','logical',priv)

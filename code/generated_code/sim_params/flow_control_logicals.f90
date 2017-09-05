@@ -35,7 +35,7 @@
          logical :: export_vorticity_streamfunction = .false.
          logical :: compute_export_E_K_Budget = .false.
          logical :: compute_export_E_M_budget = .false.
-         logical :: operator_interchangability_test = .false.
+         logical :: operator_commute_test = .false.
          logical :: export_final_tec = .false.
          logical :: export_final_restart = .false.
          logical :: restart_meshes = .false.
@@ -63,7 +63,7 @@
          this%export_vorticity_streamfunction = that%export_vorticity_streamfunction
          this%compute_export_E_K_Budget = that%compute_export_E_K_Budget
          this%compute_export_E_M_budget = that%compute_export_E_M_budget
-         this%operator_interchangability_test = that%operator_interchangability_test
+         this%operator_commute_test = that%operator_commute_test
          this%export_final_tec = that%export_final_tec
          this%export_final_restart = that%export_final_restart
          this%restart_meshes = that%restart_meshes
@@ -87,7 +87,7 @@
          this%export_vorticity_streamfunction = .false.
          this%compute_export_E_K_Budget = .false.
          this%compute_export_E_M_budget = .false.
-         this%operator_interchangability_test = .false.
+         this%operator_commute_test = .false.
          this%export_final_tec = .false.
          this%export_final_restart = .false.
          this%restart_meshes = .false.
@@ -113,7 +113,7 @@
          write(un,*) 'export_vorticity_streamfunction    = ',this%export_vorticity_streamfunction
          write(un,*) 'compute_export_E_K_Budget          = ',this%compute_export_E_K_Budget
          write(un,*) 'compute_export_E_M_budget          = ',this%compute_export_E_M_budget
-         write(un,*) 'operator_interchangability_test    = ',this%operator_interchangability_test
+         write(un,*) 'operator_commute_test              = ',this%operator_commute_test
          write(un,*) 'export_final_tec                   = ',this%export_final_tec
          write(un,*) 'export_final_restart               = ',this%export_final_restart
          write(un,*) 'restart_meshes                     = ',this%restart_meshes
@@ -138,7 +138,7 @@
          write(un,*) 'export_vorticity_streamfunction    = ',this%export_vorticity_streamfunction
          write(un,*) 'compute_export_E_K_Budget          = ',this%compute_export_E_K_Budget
          write(un,*) 'compute_export_E_M_budget          = ',this%compute_export_E_M_budget
-         write(un,*) 'operator_interchangability_test    = ',this%operator_interchangability_test
+         write(un,*) 'operator_commute_test              = ',this%operator_commute_test
          write(un,*) 'export_final_tec                   = ',this%export_final_tec
          write(un,*) 'export_final_restart               = ',this%export_final_restart
          write(un,*) 'restart_meshes                     = ',this%restart_meshes
@@ -175,7 +175,7 @@
          write(un,*) 'export_vorticity_streamfunction     = ';write(un,*) this%export_vorticity_streamfunction
          write(un,*) 'compute_export_E_K_Budget           = ';write(un,*) this%compute_export_E_K_Budget
          write(un,*) 'compute_export_E_M_budget           = ';write(un,*) this%compute_export_E_M_budget
-         write(un,*) 'operator_interchangability_test     = ';write(un,*) this%operator_interchangability_test
+         write(un,*) 'operator_commute_test               = ';write(un,*) this%operator_commute_test
          write(un,*) 'export_final_tec                    = ';write(un,*) this%export_final_tec
          write(un,*) 'export_final_restart                = ';write(un,*) this%export_final_restart
          write(un,*) 'restart_meshes                      = ';write(un,*) this%restart_meshes
@@ -201,7 +201,7 @@
          read(un,*); read(un,*) this%export_vorticity_streamfunction
          read(un,*); read(un,*) this%compute_export_E_K_Budget
          read(un,*); read(un,*) this%compute_export_E_M_budget
-         read(un,*); read(un,*) this%operator_interchangability_test
+         read(un,*); read(un,*) this%operator_commute_test
          read(un,*); read(un,*) this%export_final_tec
          read(un,*); read(un,*) this%export_final_restart
          read(un,*); read(un,*) this%restart_meshes

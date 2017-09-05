@@ -6,13 +6,9 @@
        use sparse_mod
        use sparse_extend_mod
        use face_edge_corner_indexing_mod
-       use stencil_1D_mod
-       use stencil_3D_mod
        use data_location_mod
        use IO_tools_mod
        use GF_diagonals_mod
-       use block_Laplacian_stencil_mod
-       use block_curl_curl_stencil_mod
        implicit none
 
        private
@@ -26,10 +22,6 @@
        public :: restrict
        public :: prolongate
 
-       public :: init_curl_curl
-       public :: init_Laplacian_VF
-       public :: init_Laplacian_SF
-
        public :: mirror_about_hmin
        public :: mirror_about_hmax
 
@@ -40,12 +32,6 @@
          type(grid),dimension(:),allocatable :: c,cb      ! Corners (boundary,ghost,interior)
          type(grid_field),dimension(:),allocatable :: vol ! index must match volume_ID in data_location
          integer,dimension(6) :: apply_BC_order = (/1,2,3,4,5,6/)
-
-         type(stencil_3D),dimension(3) :: curl_curlX   ! X component data
-         type(stencil_3D),dimension(3) :: curl_curlY   ! Y component data
-         type(stencil_3D),dimension(3) :: curl_curlZ   ! Z component data
-         type(stencil_3D),dimension(3) :: lap_VF
-         type(stencil_3D) :: lap_SF
        end type
 
        interface init;               module procedure init_block;               end interface
@@ -66,15 +52,6 @@
 
        interface mirror_about_hmin;  module procedure mirror_about_hmin_b;      end interface
        interface mirror_about_hmax;  module procedure mirror_about_hmax_b;      end interface
-
-       interface init_curl_curl;     module procedure init_curl_curl_SB;        end interface
-       interface init_curl_curl;     module procedure init_curl_curl_SB_VP;     end interface
-
-       interface init_Laplacian_VF;  module procedure init_Laplacian_VF_SB;     end interface
-       interface init_Laplacian_VF;  module procedure init_Laplacian_VF_SB_VP;  end interface
-
-       interface init_Laplacian_SF;  module procedure init_Laplacian_SF_SB;     end interface
-       interface init_Laplacian_SF;  module procedure init_Laplacian_SF_SB_VP;  end interface
 
        interface init_vol;           module procedure init_vol_block;           end interface
 
@@ -159,11 +136,6 @@
          integer :: i
          call delete(B)
          call init(B%g,B_in%g)
-         call init(B%lap_SF,B_in%lap_SF)
-         do i=1,3; call init(B%lap_VF(i),B_in%lap_VF(i)); enddo
-         do i=1,3; call init(B%curl_curlX(i),B_in%curl_curlX(i)); enddo
-         do i=1,3; call init(B%curl_curlY(i),B_in%curl_curlY(i)); enddo
-         do i=1,3; call init(B%curl_curlZ(i),B_in%curl_curlZ(i)); enddo
          ! call inisist_allocated(B_in,'init_block_copy')
          i=6; allocate(B%f(i));  do i=1,6;  call init(B%f(i),B_in%f(i));   enddo
          i=6; allocate(B%fb(i)); do i=1,6;  call init(B%fb(i),B_in%fb(i)); enddo
@@ -189,11 +161,6 @@
            deallocate(B%vol)
          endif
          B%apply_BC_order = (/1,2,3,4,5,6/)
-         call delete(B%lap_SF)
-         do i=1,3; call delete(B%lap_VF(i)); enddo
-         do i=1,3; call delete(B%curl_curlX(i)); enddo
-         do i=1,3; call delete(B%curl_curlY(i)); enddo
-         do i=1,3; call delete(B%curl_curlZ(i)); enddo
          call delete_FEC_block(B)
        end subroutine
 
@@ -300,71 +267,6 @@
          un = open_to_read(dir,name)
          call import(B,un)
          call close_and_message(un,dir,name)
-       end subroutine
-
-       ! **********************************************************
-       ! ********************* LAPLACIAN **************************
-       ! **********************************************************
-
-       subroutine init_Laplacian_SF_SB(B)
-         implicit none
-         type(block),intent(inout) :: B
-#ifdef _MATRIX_FREE_
-          stop 'Error: matrix free pre-processor defined in init_Laplacian_SF_SB in block.f90'
-#endif
-         call init_Laplacian(B%lap_SF,B%g)
-       end subroutine
-
-       subroutine init_Laplacian_SF_SB_VP(B,sig)
-         implicit none
-         type(block),intent(inout) :: B
-         type(grid_field),dimension(3),intent(in) :: sig
-#ifdef _MATRIX_FREE_
-          stop 'Error: matrix free pre-processor defined in init_Laplacian_SF_SB_VP in block.f90'
-#endif
-         call init_Laplacian(B%lap_SF,B%g,sig)
-       end subroutine
-
-       subroutine init_Laplacian_VF_SB(B)
-         implicit none
-         type(block),intent(inout) :: B
-#ifdef _MATRIX_FREE_
-          stop 'Error: matrix free pre-processor defined in init_Laplacian_VF_SB in block.f90'
-#endif
-         call init_Laplacian(B%lap_VF,B%g)
-       end subroutine
-
-       subroutine init_Laplacian_VF_SB_VP(B,sig)
-         implicit none
-         type(block),intent(inout) :: B
-         type(grid_field),dimension(3),intent(in) :: sig
-         call init_Laplacian(B%lap_VF,B%g,sig)
-#ifdef _MATRIX_FREE_
-          stop 'Error: matrix free pre-processor defined in init_Laplacian_VF_SB_VP in block.f90'
-#endif
-       end subroutine
-
-       ! **********************************************************
-       ! ********************* CURL-CURL **************************
-       ! **********************************************************
-
-       subroutine init_curl_curl_SB(B)
-         implicit none
-         type(block),intent(inout) :: B
-#ifdef _MATRIX_FREE_
-          stop 'Error: matrix free pre-processor defined in init_curl_curl_SB in block.f90'
-#endif
-         call init_curl_curl(B%curl_curlX,B%curl_curlY,B%curl_curlZ,B%g)
-       end subroutine
-
-       subroutine init_curl_curl_SB_VP(B,sig)
-         implicit none
-         type(block),intent(inout) :: B
-         type(grid_field),dimension(3),intent(in) :: sig
-#ifdef _MATRIX_FREE_
-          stop 'Error: matrix free pre-processor defined in init_curl_curl_SB_VP in block.f90'
-#endif
-         call init_curl_curl(B%curl_curlX,B%curl_curlY,B%curl_curlZ,B%g,sig)
        end subroutine
 
        ! **********************************************************

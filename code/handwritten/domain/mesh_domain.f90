@@ -1,7 +1,9 @@
        module mesh_domain_mod
        use IO_tools_mod
        use physical_domain_mod
+       use physical_domain_extend_mod
        use physical_sub_domain_mod
+       use physical_sub_domain_extend_mod
        use block_field_mod
        use mesh_mod
        implicit none

@@ -99,9 +99,6 @@
         public :: sum
         public :: assignX,assignY,assignZ
 
-        public :: laplacian_matrix_based
-        public :: curl_curl_matrix_based
-
         public :: is_collocated
         public :: get_DL
         public :: is_CC
@@ -196,9 +193,6 @@
         interface restrict;                 module procedure restrict_dir_VF;               end interface
         interface prolongate;               module procedure prolongate_VF;                 end interface
         interface prolongate;               module procedure prolongate_dir_VF;             end interface
-
-        interface curl_curl_matrix_based;   module procedure curl_curl_matrix_based_VF;     end interface
-        interface Laplacian_matrix_based;   module procedure Laplacian_matrix_based_VF;     end interface
 
         interface is_collocated;            module procedure is_collocated_VF_DL;           end interface
         interface insist_collocated;        module procedure insist_collocated_VF;          end interface
@@ -537,22 +531,6 @@
           implicit none
           type(VF),intent(inout) :: u
           call random_noise(u%x); call random_noise(u%y); call random_noise(u%z)
-        end subroutine
-
-        subroutine laplacian_matrix_based_VF(lapU,U,m)
-          implicit none
-          type(VF),intent(inout) :: lapU
-          type(VF),intent(in) :: U
-          type(mesh),intent(in) :: m
-          call laplacian_matrix_based(lapU%x,lapU%y,lapU%z,U%x,U%y,U%z,m)
-        end subroutine
-
-        subroutine curl_curl_matrix_based_VF(curl_curlU,U,m)
-          implicit none
-          type(VF),intent(inout) :: curl_curlU
-          type(VF),intent(in) :: U
-          type(mesh),intent(in) :: m
-          call curl_curl_matrix_based(curl_curlU%x,curl_curlU%y,curl_curlU%z,U%x,U%y,U%z,m)
         end subroutine
 
         subroutine multiply_volume_VF(u,m)

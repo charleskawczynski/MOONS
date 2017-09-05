@@ -89,9 +89,6 @@
         public :: restrict
         public :: prolongate
 
-        public :: laplacian_matrix_based
-        public :: curl_curl_matrix_based
-
         type block_field
           type(grid_field) :: GF ! bulk
           type(boundary_conditions) :: BCs
@@ -197,10 +194,6 @@
        interface restrict;                    module procedure restrict_reset_BF;               end interface
        interface prolongate;                  module procedure prolongate_BF;                   end interface
        interface prolongate;                  module procedure prolongate_reset_BF;             end interface
-
-       interface laplacian_matrix_based;      module procedure laplacian_matrix_based_VF_BF;    end interface
-       interface laplacian_matrix_based;      module procedure laplacian_matrix_based_SF_BF;    end interface
-       interface curl_curl_matrix_based;      module procedure curl_curl_matrix_based_BF;       end interface
 
        contains
 
@@ -1344,55 +1337,6 @@
            call prolongate(u%BCs,B,dir)
            call init_BC_props(u,c_w,Robin_coeff)
          endif
-       end subroutine
-
-       subroutine laplacian_matrix_based_VF_BF(lapX,lapY,lapZ,X,Y,Z,B)
-         implicit none
-         type(block_field),intent(inout) :: lapX,lapY,lapZ
-         type(block_field),intent(in) :: X,Y,Z
-         type(block),intent(in) :: B
-         call laplacian(lapX%GF,X%GF,B%lap_VF(1)%S(1:3)%SF%L,B%lap_VF(1)%D_3D,B%lap_VF(1)%S(1:3)%SF%U)
-         call laplacian(lapY%GF,Y%GF,B%lap_VF(2)%S(1:3)%SF%L,B%lap_VF(2)%D_3D,B%lap_VF(2)%S(1:3)%SF%U)
-         call laplacian(lapZ%GF,Z%GF,B%lap_VF(3)%S(1:3)%SF%L,B%lap_VF(3)%D_3D,B%lap_VF(3)%S(1:3)%SF%U)
-       end subroutine
-
-       subroutine laplacian_matrix_based_SF_BF(lap,U,B)
-         implicit none
-         type(block_field),intent(inout) :: lap
-         type(block_field),intent(in) :: U
-         type(block),intent(in) :: B
-         call laplacian(lap%GF,U%GF,B%lap_SF%S(1:3)%SF%L,B%lap_SF%D_3D,B%lap_SF%S(1:3)%SF%U)
-       end subroutine
-
-       subroutine curl_curl_matrix_based_BF(CX,CY,CZ,X,Y,Z,B)
-         implicit none
-         type(block_field),intent(inout) :: CX,CY,CZ
-         type(block_field),intent(in) :: X,Y,Z
-         type(block),intent(in) :: B
-         call curl_curl_x(CX%GF,X%GF,Y%GF,Z%GF,&
-         B%curl_curlX(1)%D_3D,&
-         B%curl_curlX(1)%S(1:3)%SF%L,&
-         B%curl_curlX(1)%S(1:3)%SF%U,&
-         B%curl_curlY(1)%D1_D2,B%curl_curlZ(1)%D1_D2,&
-         B%curl_curlY(1)%D1_U2,B%curl_curlZ(1)%D1_U2,&
-         B%curl_curlY(1)%U1_D2,B%curl_curlZ(1)%U1_D2,&
-         B%curl_curlY(1)%U1_U2,B%curl_curlZ(1)%U1_U2)
-         call curl_curl_y(CY%GF,X%GF,Y%GF,Z%GF,&
-         B%curl_curlY(2)%D_3D,&
-         B%curl_curlY(2)%S(1:3)%SF%L,&
-         B%curl_curlY(2)%S(1:3)%SF%U,&
-         B%curl_curlX(2)%D1_D2,B%curl_curlZ(2)%D1_D2,&
-         B%curl_curlX(2)%D1_U2,B%curl_curlZ(2)%D1_U2,&
-         B%curl_curlX(2)%U1_D2,B%curl_curlZ(2)%U1_D2,&
-         B%curl_curlX(2)%U1_U2,B%curl_curlZ(2)%U1_U2)
-         call curl_curl_z(CZ%GF,X%GF,Y%GF,Z%GF,&
-         B%curl_curlZ(3)%D_3D,&
-         B%curl_curlZ(3)%S(1:3)%SF%L,&
-         B%curl_curlZ(3)%S(1:3)%SF%U,&
-         B%curl_curlX(3)%D1_D2,B%curl_curlY(3)%D1_D2,&
-         B%curl_curlX(3)%D1_U2,B%curl_curlY(3)%D1_U2,&
-         B%curl_curlX(3)%U1_D2,B%curl_curlY(3)%U1_D2,&
-         B%curl_curlX(3)%U1_U2,B%curl_curlY(3)%U1_U2)
        end subroutine
 
       end module

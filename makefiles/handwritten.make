@@ -42,6 +42,7 @@ VPATH +=\
 	$(SRC_DIR)$(PS)mesh\
 	$(SRC_DIR)$(PS)norms\
 	$(SRC_DIR)$(PS)ops\
+	$(SRC_DIR)$(PS)physical_domain\
 	$(SRC_DIR)$(PS)procedure_array\
 	$(SRC_DIR)$(PS)probe\
 	$(SRC_DIR)$(PS)sim_params\
@@ -75,7 +76,6 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)material_props$(PS)material_props.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)face_edge_corner_indexing.f90\
 	$(SRC_DIR)$(PS)math$(PS)simple_int_tensor.f90\
-	$(SRC_DIR)$(PS)fields$(PS)data_location.f90\
 	$(SRC_DIR)$(PS)math$(PS)is_nan.f90\
 	$(SRC_DIR)$(PS)math$(PS)even_odd.f90\
 	$(SRC_DIR)$(PS)IO$(PS)fmt.f90\
@@ -172,19 +172,14 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF.f90\
 	$(SRC_DIR)$(PS)sparse$(PS)sparse_field.f90\
 	$(SRC_DIR)$(PS)sparse$(PS)sparse_mult.f90\
-	$(SRC_DIR)$(PS)sparse$(PS)stencil_1D.f90\
-	$(SRC_DIR)$(PS)sparse$(PS)stencil_3D.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)bctype.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)BC_logicals.f90\
 	$(SRC_DIR)$(PS)sub_domain$(PS)sub_domain_extend.f90\
-	$(SRC_DIR)$(PS)domain$(PS)physical_sub_domain.f90\
+	$(SRC_DIR)$(PS)physical_domain$(PS)physical_sub_domain_extend.f90\
 	$(SRC_DIR)$(PS)sub_domain$(PS)face_SD_extend.f90\
-	$(SRC_DIR)$(PS)block$(PS)block_curl_curl_stencil.f90\
-	$(SRC_DIR)$(PS)block$(PS)block_Laplacian_stencil.f90\
 	$(SRC_DIR)$(PS)block$(PS)block.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_props.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh.f90\
-	$(SRC_DIR)$(PS)domain$(PS)physical_domain.f90\
+	$(SRC_DIR)$(PS)physical_domain$(PS)physical_domain_extend.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)direct$(PS)apply_BCs_faces_raw.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)direct$(PS)apply_BCs_edges_raw.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)direct$(PS)apply_BCs_faces_bridge.f90\
@@ -215,7 +210,6 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)VF$(PS)VF.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)TF$(PS)TF.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)index_mapping.f90\
-	$(SRC_DIR)$(PS)mesh$(PS)mesh_stencils.f90\
 	$(SRC_DIR)$(PS)IO$(PS)base_export.f90\
 	$(SRC_DIR)$(PS)IO$(PS)base_import.f90\
 	$(SRC_DIR)$(PS)IO$(PS)construct_suffix.f90\
@@ -245,7 +239,6 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)BCs$(PS)BC_funcs.f90\
 	$(SRC_DIR)$(PS)time_statistics$(PS)time_statistics.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_operators.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)matrix_based_operators.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)preconditioners$(PS)diagonals.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)preconditioners$(PS)preconditioners.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)AB2.f90\
@@ -317,7 +310,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)solvers$(PS)Poisson_test.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)Taylor_Green_Vortex_test.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)temporal_convergence_test.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)operator_interchangability_test.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)operator_commute_test.f90\
 	$(SRC_DIR)$(PS)user$(PS)export_mesh_aux.f90\
 	$(SRC_DIR)$(PS)matrix_visualization$(PS)matrix_visualization.f90\
 	$(SRC_DIR)$(PS)user$(PS)MOONS.f90

@@ -19,7 +19,7 @@
        use export_analytic_mod
        use mirror_props_mod
        use vorticity_streamfunction_mod
-       use operator_interchangability_test_mod
+       use operator_commute_test_mod
        use Poisson_test_mod
        use Taylor_Green_Vortex_test_mod
        use temporal_convergence_test_mod

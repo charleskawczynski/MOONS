@@ -1,4 +1,4 @@
-       module operator_interchangability_test_mod
+       module operator_commute_test_mod
        use current_precision_mod
        use constants_mod
        use mesh_mod
@@ -27,11 +27,11 @@
        implicit none
        private
 
-       public :: operator_interchangability_test
+       public :: operator_commute_test
 
        contains
 
-       subroutine operator_interchangability_test(U,p,m,DT)
+       subroutine operator_commute_test(U,p,m,DT)
          ! This performs the test to ensure that
          ! G(L(X)) = L(G(X))
          ! where G,L are the gradient and linear (laplacian/curl-curl) operators
