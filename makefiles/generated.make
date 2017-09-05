@@ -1,4 +1,5 @@
 VPATH +=\
+	$(SRC_DIR_GENERATED)$(PS)apply_face_BC_op\
 	$(SRC_DIR_GENERATED)$(PS)dir_tree\
 	$(SRC_DIR_GENERATED)$(PS)grid\
 	$(SRC_DIR_GENERATED)$(PS)grid_field\
@@ -62,3 +63,5 @@ SRCS_F+=\
 	$(SRC_DIR_GENERATED)$(PS)sub_domain$(PS)face_SD.f90\
 	$(SRC_DIR_GENERATED)$(PS)physical_domain$(PS)physical_sub_domain.f90\
 	$(SRC_DIR_GENERATED)$(PS)physical_domain$(PS)physical_domain.f90\
+	$(SRC_DIR_GENERATED)$(PS)apply_face_BC_op$(PS)apply_face_BC_op.f90\
+	$(SRC_DIR_GENERATED)$(PS)apply_face_BC_op$(PS)plane_op.f90\

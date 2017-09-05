@@ -1,6 +1,7 @@
 # **************** INCLUDE PATHS ********************
 VPATH +=\
 	$(TARGET_DIR)\
+	$(SRC_DIR)$(PS)apply_face_BC_op\
 	$(SRC_DIR)$(PS)block\
 	$(SRC_DIR)$(PS)BCs\
 	$(SRC_DIR)$(PS)BCs$(PS)apply\
@@ -37,7 +38,6 @@ VPATH +=\
 	$(SRC_DIR)$(PS)grid_field\
 	$(SRC_DIR)$(PS)IO\
 	$(SRC_DIR)$(PS)lib\
-	$(SRC_DIR)$(PS)material_props\
 	$(SRC_DIR)$(PS)math\
 	$(SRC_DIR)$(PS)mesh\
 	$(SRC_DIR)$(PS)norms\
@@ -73,7 +73,6 @@ VPATH +=\
 
 SRCS_F +=\
 	$(SRC_DIR)$(PS)globals$(PS)constants.f90\
-	$(SRC_DIR)$(PS)material_props$(PS)material_props.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)face_edge_corner_indexing.f90\
 	$(SRC_DIR)$(PS)math$(PS)simple_int_tensor.f90\
 	$(SRC_DIR)$(PS)math$(PS)is_nan.f90\

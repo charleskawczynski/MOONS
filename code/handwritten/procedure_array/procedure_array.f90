@@ -2,6 +2,7 @@
        use IO_tools_mod
        use single_procedure_mod
        use apply_BCs_faces_bridge_mod
+       use apply_face_BC_op_mod
 
        implicit none
        private
@@ -9,6 +10,7 @@
        public :: init,delete,display,print,export,import
 
        public :: add,remove,check_unique,sort
+       public :: add_PA
 
        type procedure_array
          integer :: N

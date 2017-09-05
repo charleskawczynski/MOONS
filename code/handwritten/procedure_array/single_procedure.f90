@@ -2,6 +2,7 @@
        use IO_tools_mod
        use GF_mod
        use apply_BCs_faces_bridge_mod
+       use apply_face_BC_op_mod
 
        implicit none
        private

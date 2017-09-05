@@ -49,6 +49,7 @@
        use table_mod
        use boundary_mod
        use procedure_array_mod
+       use apply_face_BC_op_mod
        use apply_BCs_faces_bridge_mod
        use apply_BCs_faces_bridge_implicit_mod
        implicit none
@@ -487,43 +488,43 @@
          call remove(BC%PA_face_implicit_BCs,face)
          if (CC_along(BC%DL,dir)) then
            if (is_prescribed(BC%face%SB(face)%bct)) then
-             if (is_Dirichlet(BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Dirichlet_C,face)
-             if (is_Neumann(  BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Neumann_C  ,face)
-             if (is_Periodic( BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Periodic_C_prescribed ,face)
-             if (is_Robin(    BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Robin_C  ,face)
-             if (is_Dirichlet(BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Dirichlet_C_implicit,face)
-             if (is_Neumann(  BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Neumann_C_implicit  ,face)
-             if (is_Periodic( BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Periodic_C_implicit ,face)
-             if (is_Robin(    BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Robin_C_implicit,face)
+             if (is_Dirichlet(BC%face%SB(face)%bct)) call add_PA(BC%PA_face_BCs,Dirichlet_C,face)
+             if (is_Neumann(  BC%face%SB(face)%bct)) call add_PA(BC%PA_face_BCs,Neumann_C  ,face)
+             if (is_Periodic( BC%face%SB(face)%bct)) call add_PA(BC%PA_face_BCs,Periodic_C_prescribed ,face)
+             if (is_Robin(    BC%face%SB(face)%bct)) call add_PA(BC%PA_face_BCs,Robin_C  ,face)
+             if (is_Dirichlet(BC%face%SB(face)%bct)) call add_PA(BC%PA_face_implicit_BCs,Dirichlet_C_implicit,face)
+             if (is_Neumann(  BC%face%SB(face)%bct)) call add_PA(BC%PA_face_implicit_BCs,Neumann_C_implicit  ,face)
+             if (is_Periodic( BC%face%SB(face)%bct)) call add_PA(BC%PA_face_implicit_BCs,Periodic_C_implicit ,face)
+             if (is_Robin(    BC%face%SB(face)%bct)) call add_PA(BC%PA_face_implicit_BCs,Robin_C_implicit,face)
            else
-             if (is_Dirichlet(BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Dirichlet_C,face)
-             if (is_Neumann(  BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Neumann_C  ,face)
-             if (is_Periodic( BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Periodic_C ,face)
-             if (is_Robin(    BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Robin_C ,face)
-             if (is_Dirichlet(BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Dirichlet_C_implicit,face)
-             if (is_Neumann(  BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Neumann_C_implicit  ,face)
-             if (is_Periodic( BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Periodic_C_implicit ,face)
-             if (is_Robin(    BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Robin_C_implicit    ,face)
+             if (is_Dirichlet(BC%face%SB(face)%bct)) call add_PA(BC%PA_face_BCs,Dirichlet_C,face)
+             if (is_Neumann(  BC%face%SB(face)%bct)) call add_PA(BC%PA_face_BCs,Neumann_C  ,face)
+             if (is_Periodic( BC%face%SB(face)%bct)) call add_PA(BC%PA_face_BCs,Periodic_C ,face)
+             if (is_Robin(    BC%face%SB(face)%bct)) call add_PA(BC%PA_face_BCs,Robin_C ,face)
+             if (is_Dirichlet(BC%face%SB(face)%bct)) call add_PA(BC%PA_face_implicit_BCs,Dirichlet_C_implicit,face)
+             if (is_Neumann(  BC%face%SB(face)%bct)) call add_PA(BC%PA_face_implicit_BCs,Neumann_C_implicit  ,face)
+             if (is_Periodic( BC%face%SB(face)%bct)) call add_PA(BC%PA_face_implicit_BCs,Periodic_C_implicit ,face)
+             if (is_Robin(    BC%face%SB(face)%bct)) call add_PA(BC%PA_face_implicit_BCs,Robin_C_implicit    ,face)
            endif
          elseif ( N_along(BC%DL,dir)) then
            if (is_prescribed(BC%face%SB(face)%bct)) then
-             if (is_Dirichlet(BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Dirichlet_N,face)
-             if (is_Neumann(  BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Neumann_N  ,face)
-             if (is_Periodic( BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Periodic_N_prescribed,face)
-             if (is_Robin(    BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Robin_N    ,face)
-             if (is_Dirichlet(BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Dirichlet_N_implicit,face)
-             if (is_Neumann(  BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Neumann_N_implicit  ,face)
-             if (is_Periodic( BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Periodic_N_implicit ,face)
-             if (is_Robin(    BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Robin_N_implicit    ,face)
+             if (is_Dirichlet(BC%face%SB(face)%bct)) call add_PA(BC%PA_face_BCs,Dirichlet_N,face)
+             if (is_Neumann(  BC%face%SB(face)%bct)) call add_PA(BC%PA_face_BCs,Neumann_N  ,face)
+             if (is_Periodic( BC%face%SB(face)%bct)) call add_PA(BC%PA_face_BCs,Periodic_N_prescribed,face)
+             if (is_Robin(    BC%face%SB(face)%bct)) call add_PA(BC%PA_face_BCs,Robin_N    ,face)
+             if (is_Dirichlet(BC%face%SB(face)%bct)) call add_PA(BC%PA_face_implicit_BCs,Dirichlet_N_implicit,face)
+             if (is_Neumann(  BC%face%SB(face)%bct)) call add_PA(BC%PA_face_implicit_BCs,Neumann_N_implicit  ,face)
+             if (is_Periodic( BC%face%SB(face)%bct)) call add_PA(BC%PA_face_implicit_BCs,Periodic_N_implicit ,face)
+             if (is_Robin(    BC%face%SB(face)%bct)) call add_PA(BC%PA_face_implicit_BCs,Robin_N_implicit    ,face)
            else
-             if (is_Dirichlet(BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Dirichlet_N,face)
-             if (is_Neumann(  BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Neumann_N  ,face)
-             if (is_Periodic( BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Periodic_N ,face)
-             if (is_Robin(    BC%face%SB(face)%bct)) call add(BC%PA_face_BCs,Robin_N    ,face)
-             if (is_Dirichlet(BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Dirichlet_N_implicit,face)
-             if (is_Neumann(  BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Neumann_N_implicit  ,face)
-             if (is_Periodic( BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Periodic_N_implicit ,face)
-             if (is_Robin(    BC%face%SB(face)%bct)) call add(BC%PA_face_implicit_BCs,Robin_N_implicit    ,face)
+             if (is_Dirichlet(BC%face%SB(face)%bct)) call add_PA(BC%PA_face_BCs,Dirichlet_N,face)
+             if (is_Neumann(  BC%face%SB(face)%bct)) call add_PA(BC%PA_face_BCs,Neumann_N  ,face)
+             if (is_Periodic( BC%face%SB(face)%bct)) call add_PA(BC%PA_face_BCs,Periodic_N ,face)
+             if (is_Robin(    BC%face%SB(face)%bct)) call add_PA(BC%PA_face_BCs,Robin_N    ,face)
+             if (is_Dirichlet(BC%face%SB(face)%bct)) call add_PA(BC%PA_face_implicit_BCs,Dirichlet_N_implicit,face)
+             if (is_Neumann(  BC%face%SB(face)%bct)) call add_PA(BC%PA_face_implicit_BCs,Neumann_N_implicit  ,face)
+             if (is_Periodic( BC%face%SB(face)%bct)) call add_PA(BC%PA_face_implicit_BCs,Periodic_N_implicit ,face)
+             if (is_Robin(    BC%face%SB(face)%bct)) call add_PA(BC%PA_face_implicit_BCs,Robin_N_implicit    ,face)
            endif
            else; stop 'Error: bad DL in init_PA_face_BC in boundary_conditions.f90'
          endif

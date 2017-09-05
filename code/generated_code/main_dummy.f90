@@ -49,6 +49,8 @@
        use face_SD_mod
        use physical_sub_domain_mod
        use physical_domain_mod
+       use apply_face_BC_op_mod
+       use plane_op_mod
        implicit none
        write(*,*) "success!"
        end program
