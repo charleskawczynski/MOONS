@@ -184,10 +184,10 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)BCs$(PS)direct$(PS)apply_BCs_faces_bridge.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)implicit$(PS)apply_BCs_faces_raw_implicit.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)implicit$(PS)apply_BCs_faces_bridge_implicit.f90\
-	$(SRC_DIR)$(PS)procedure_array$(PS)single_procedure.f90\
-	$(SRC_DIR)$(PS)procedure_array$(PS)procedure_array.f90\
-	$(SRC_DIR)$(PS)procedure_array$(PS)single_procedure_plane_op.f90\
-	$(SRC_DIR)$(PS)procedure_array$(PS)procedure_array_plane_op.f90\
+	$(SRC_DIR)$(PS)procedure_array$(PS)single_procedure_extend.f90\
+	$(SRC_DIR)$(PS)procedure_array$(PS)procedure_array_extend.f90\
+	$(SRC_DIR)$(PS)procedure_array$(PS)single_procedure_plane_op_extend.f90\
+	$(SRC_DIR)$(PS)procedure_array$(PS)procedure_array_plane_op_extend.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)single_boundary.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)boundary.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)boundary_conditions.f90\

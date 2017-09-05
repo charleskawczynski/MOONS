@@ -51,6 +51,7 @@
        use physical_domain_mod
        use apply_face_BC_op_mod
        use plane_op_mod
+       use single_procedure_mod
        implicit none
        write(*,*) "success!"
        end program

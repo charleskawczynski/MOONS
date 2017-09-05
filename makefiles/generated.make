@@ -6,6 +6,7 @@ VPATH +=\
 	$(SRC_DIR_GENERATED)$(PS)mesh_params\
 	$(SRC_DIR_GENERATED)$(PS)physical_domain\
 	$(SRC_DIR_GENERATED)$(PS)probe\
+	$(SRC_DIR_GENERATED)$(PS)procedure_array\
 	$(SRC_DIR_GENERATED)$(PS)sim_params\
 	$(SRC_DIR_GENERATED)$(PS)stitches\
 	$(SRC_DIR_GENERATED)$(PS)stop_clock\
@@ -65,3 +66,4 @@ SRCS_F+=\
 	$(SRC_DIR_GENERATED)$(PS)physical_domain$(PS)physical_domain.f90\
 	$(SRC_DIR_GENERATED)$(PS)apply_face_BC_op$(PS)apply_face_BC_op.f90\
 	$(SRC_DIR_GENERATED)$(PS)apply_face_BC_op$(PS)plane_op.f90\
+	$(SRC_DIR_GENERATED)$(PS)procedure_array$(PS)single_procedure.f90\
