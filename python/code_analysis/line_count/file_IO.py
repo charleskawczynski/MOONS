@@ -57,11 +57,17 @@ def directory_tree(root,new_path,PS):
 		new_path = root+''.join(l)
 		make_path(new_path)
 
-def file_len(fname):
+def file_len_old(fname):
 	with open(fname) as f:
 		for i, l in enumerate(f):
 			pass
 	return i + 1
+
+def file_len(file_name):
+	with open(file_name,encoding='utf8') as f: # Accounts for encoded characters
+		text = f.read().splitlines() # list of lines
+	lines = len(text) # length of the list = number of lines
+	return lines
 
 def highest_matching_directory(f1,f2,PS):
 	p1 = f1.split(PS); p1 = filter(None,p1)

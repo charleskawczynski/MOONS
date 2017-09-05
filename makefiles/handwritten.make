@@ -90,13 +90,13 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)mesh_params$(PS)mesh_params_extend.f90\
 	$(SRC_DIR)$(PS)grid$(PS)array_extend.f90\
 	$(SRC_DIR)$(PS)grid$(PS)sparse_extend.f90\
-	$(SRC_DIR)$(PS)coordinates$(PS)derivative_stencils.f90\
-	$(SRC_DIR)$(PS)coordinates$(PS)interpolation_stencils.f90\
-	$(SRC_DIR)$(PS)coordinates$(PS)coordinates_extend.f90\
-	$(SRC_DIR)$(PS)coordinates$(PS)coordinate_stretch_parameters.f90\
-	$(SRC_DIR)$(PS)coordinates$(PS)coordinate_distribution_funcs.f90\
-	$(SRC_DIR)$(PS)coordinates$(PS)coordinate_distribution_funcs_iterate.f90\
-	$(SRC_DIR)$(PS)coordinates$(PS)coordinate_stretch_param_match.f90\
+	$(SRC_DIR)$(PS)grid$(PS)derivative_stencils.f90\
+	$(SRC_DIR)$(PS)grid$(PS)interpolation_stencils.f90\
+	$(SRC_DIR)$(PS)grid$(PS)coordinates_extend.f90\
+	$(SRC_DIR)$(PS)grid$(PS)coordinate_stretch_parameters.f90\
+	$(SRC_DIR)$(PS)grid$(PS)coordinate_distribution_funcs.f90\
+	$(SRC_DIR)$(PS)grid$(PS)coordinate_distribution_funcs_iterate.f90\
+	$(SRC_DIR)$(PS)grid$(PS)coordinate_stretch_param_match.f90\
 	$(SRC_DIR)$(PS)grid$(PS)grid_extend.f90\
 	$(SRC_DIR)$(PS)grid$(PS)grid_init.f90\
 	$(SRC_DIR)$(PS)grid$(PS)grid_continue.f90\

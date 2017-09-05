@@ -8,7 +8,7 @@ clear()
 
 PS = '\\'
 up = '..'+PS
-generated = True
+generated = False
 
 make_dir = '.'+PS+up+up+up+'makefiles'+PS
 if generated:

@@ -120,7 +120,7 @@ g = sim_params.add_modules(g,T,F,priv,real)
 # --------------- Medium data structures
 g = grid_field.add_modules(g,T,F,priv,real) # small
 # g = data_location.add_modules(g,T,F,priv,real) # Handwritten since fully private
-g = sub_domain.add_modules(g,T,F,priv,real)
+# g = sub_domain.add_modules(g,T,F,priv,real)
 # g = physical_domain.add_modules(g,T,F,priv,real)
 # g = apply_face_BC_op.add_modules(g,T,F,priv,real,abstract_interfaces_path) # Contains interfaces
 # g = procedure_array.add_modules(g,T,F,priv,real)
