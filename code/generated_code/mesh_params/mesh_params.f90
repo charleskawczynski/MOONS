@@ -12,17 +12,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_mesh_params;      end interface
-       interface delete;       module procedure delete_mesh_params;         end interface
-       interface display;      module procedure display_mesh_params;        end interface
-       interface display_short;module procedure display_short_mesh_params;  end interface
-       interface display;      module procedure display_wrapper_mesh_params;end interface
-       interface print;        module procedure print_mesh_params;          end interface
-       interface print_short;  module procedure print_short_mesh_params;    end interface
-       interface export;       module procedure export_mesh_params;         end interface
-       interface import;       module procedure import_mesh_params;         end interface
-       interface export;       module procedure export_wrapper_mesh_params; end interface
-       interface import;       module procedure import_wrapper_mesh_params; end interface
+       interface init;         module procedure init_copy_me;    end interface
+       interface delete;       module procedure delete_me;       end interface
+       interface display;      module procedure display_me;      end interface
+       interface display_short;module procedure display_short_me;end interface
+       interface display;      module procedure display_wrap_me; end interface
+       interface print;        module procedure print_me;        end interface
+       interface print_short;  module procedure print_short_me;  end interface
+       interface export;       module procedure export_me;       end interface
+       interface import;       module procedure import_me;       end interface
+       interface export;       module procedure export_wrap_me;  end interface
+       interface import;       module procedure import_wrap_me;  end interface
 
        type mesh_params
          type(mesh_quality_params) :: MQP
@@ -34,7 +34,7 @@
 
        contains
 
-       subroutine init_copy_mesh_params(this,that)
+       subroutine init_copy_me(this,that)
          implicit none
          type(mesh_params),intent(inout) :: this
          type(mesh_params),intent(in) :: that
@@ -66,7 +66,7 @@
          this%N_ext = that%N_ext
        end subroutine
 
-       subroutine delete_mesh_params(this)
+       subroutine delete_me(this)
          implicit none
          type(mesh_params),intent(inout) :: this
          integer :: i_s_base
@@ -92,7 +92,7 @@
          this%N_ext = 0
        end subroutine
 
-       subroutine display_mesh_params(this,un)
+       subroutine display_me(this,un)
          implicit none
          type(mesh_params),intent(in) :: this
          integer,intent(in) :: un
@@ -118,7 +118,7 @@
          write(un,*) 'N_ext  = ',this%N_ext
        end subroutine
 
-       subroutine display_short_mesh_params(this,un)
+       subroutine display_short_me(this,un)
          implicit none
          type(mesh_params),intent(in) :: this
          integer,intent(in) :: un
@@ -143,19 +143,19 @@
          write(un,*) 'N_ext  = ',this%N_ext
        end subroutine
 
-       subroutine print_mesh_params(this)
+       subroutine print_me(this)
          implicit none
          type(mesh_params),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_mesh_params(this)
+       subroutine print_short_me(this)
          implicit none
          type(mesh_params),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_mesh_params(this,un)
+       subroutine export_me(this,un)
          implicit none
          type(mesh_params),intent(in) :: this
          integer,intent(in) :: un
@@ -182,7 +182,7 @@
          write(un,*) 'N_ext   = ';write(un,*) this%N_ext
        end subroutine
 
-       subroutine import_mesh_params(this,un)
+       subroutine import_me(this,un)
          implicit none
          type(mesh_params),intent(inout) :: this
          integer,intent(in) :: un
@@ -208,7 +208,7 @@
          read(un,*); read(un,*) this%N_ext
        end subroutine
 
-       subroutine display_wrapper_mesh_params(this,dir,name)
+       subroutine display_wrap_me(this,dir,name)
          implicit none
          type(mesh_params),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -218,7 +218,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrapper_mesh_params(this,dir,name)
+       subroutine export_wrap_me(this,dir,name)
          implicit none
          type(mesh_params),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -228,7 +228,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrapper_mesh_params(this,dir,name)
+       subroutine import_wrap_me(this,dir,name)
          implicit none
          type(mesh_params),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

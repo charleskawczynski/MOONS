@@ -1,9 +1,11 @@
-       module boundary_mod
+       module boundary_extend_mod
+       use boundary_mod
        use current_precision_mod
        use face_edge_corner_indexing_mod
        use data_location_mod
        use grid_mod
        use single_boundary_mod
+       use single_boundary_extend_mod
        use block_mod
        use string_mod
        use GF_mod
@@ -15,7 +17,7 @@
 
        private
        public :: boundary
-       public :: init,delete,display,print,export,import ! Essentials
+       public :: init ! Essentials
 
        ! Setters for type
        public :: init_Dirichlet
@@ -34,28 +36,11 @@
        public :: prolongate
        public :: restrict
 
-       type boundary
-         integer :: n = 0
-         type(single_boundary),dimension(:),allocatable :: SB ! boundary grid fields and types
-         type(string) :: name                                 ! Face,edge,corner
-         type(BC_logicals) :: BCL                             ! logicals
-       end type
-
        interface init;                module procedure init_GFs_boundary_DL;      end interface
-       interface init;                module procedure init_boundary_copy;        end interface
 
        interface init;                module procedure init_vals_all_S;           end interface
        interface init;                module procedure init_vals_ID_GF;           end interface
        interface init;                module procedure init_val_ID_S;             end interface
-
-       interface delete;              module procedure delete_boundary;           end interface
-       interface display;             module procedure display_boundary;          end interface
-       interface print;               module procedure print_boundary;            end interface
-       interface export;              module procedure export_boundary;           end interface
-       interface import;              module procedure import_boundary;           end interface
-
-       interface export;              module procedure export_boundary_wrapper;   end interface
-       interface import;              module procedure import_boundary_wrapper;   end interface
 
        interface init_Dirichlet;      module procedure init_Dirichlet_all;        end interface
        interface init_Dirichlet;      module procedure init_Dirichlet_ID;         end interface
@@ -111,36 +96,6 @@
          call define_logicals(B)
        end subroutine
 
-       subroutine init_boundary_copy(B,B_in)
-         implicit none
-         type(boundary),intent(inout) :: B
-         type(boundary),intent(in) :: B_in
-         integer :: i
-#ifdef _DEBUG_boundary_
-         call insist_allocated(B_in,'init_boundary_copy')
-#endif
-
-         call delete(B)
-         B%n = B_in%n
-         call init(B%name,B_in%name)
-         call init(B%BCL,B_in%BCL)
-         allocate(B%SB(B_in%n))
-         do i=1,B_in%n;  call init(B%SB(i),B_in%SB(i)); enddo
-       end subroutine
-
-       subroutine delete_boundary(B)
-         implicit none
-         type(boundary),intent(inout) :: B
-         integer :: i
-         if (allocated(B%SB)) then
-           do i=1,size(B%SB); call delete(B%SB(i)); enddo
-           deallocate(B%SB)
-         endif
-         call delete(B%BCL)
-         call delete(B%name)
-         B%n = 0
-       end subroutine
-
        subroutine init_vals_all_S(B,val)
          implicit none
          type(boundary),intent(inout) :: B
@@ -169,73 +124,6 @@
          call assign(B%SB(ID)%b,val)
          B%BCL%vals_defined = .true.
          call define_logicals(B)
-       end subroutine
-
-       subroutine display_boundary(B,un)
-         implicit none
-         type(boundary),intent(in) :: B
-         integer,intent(in) :: un
-         integer :: i,col_width,precision
-         if (B%BCL%defined) then
-           precision = 4; col_width = 10
-           call export_table('ID         :',(/(i,i=1,B%n)/),col_width,un)
-           call export_table('Type       :',(/(get_bctype(B%SB(i)%bct),i=1,B%n)/),col_width,un)
-           call export_table('meanVal    :',(/(get_mean_value(B%SB(i)%bct),i=1,B%n)/),col_width,precision,un)
-           call export_table('prescribed :',(/(is_prescribed(B%SB(i)%bct),i=1,B%n)/),col_width,un)
-         endif
-       end subroutine
-
-       subroutine print_boundary(B)
-         implicit none
-         type(boundary),intent(in) :: B
-         call display(B,6)
-       end subroutine
-
-       subroutine export_boundary(B,un)
-         implicit none
-         type(boundary),intent(in) :: B
-         integer,intent(in) :: un
-         integer :: i
-         call insist_allocated(B,'export_boundary')
-         write(un,*) 'defined'
-         write(un,*) B%BCL%defined
-         if (B%BCL%defined) then
-           do i=1,B%n;  call export(B%SB(i),un);   enddo
-           call export(B%BCL,un)
-         endif
-       end subroutine
-
-       subroutine import_boundary(B,un)
-         implicit none
-         type(boundary),intent(inout) :: B
-         integer,intent(in) :: un
-         integer :: i
-         read(un,*)
-         read(un,*) B%BCL%defined
-         if (B%BCL%defined) then
-           do i=1,B%n; call import(B%SB(i),un); enddo
-           call import(B%BCL,un)
-         endif
-       end subroutine
-
-       subroutine export_boundary_wrapper(B,dir,name)
-         implicit none
-         type(boundary),intent(in) :: B
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = new_and_open(dir,name)
-         call export(B,un)
-         call close_and_message(un,dir,name)
-       end subroutine
-
-       subroutine import_boundary_wrapper(B,dir,name)
-         implicit none
-         type(boundary),intent(inout) :: B
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = open_to_read(dir,name)
-         call import(B,un)
-         call close_and_message(un,dir,name)
        end subroutine
 
        ! *******************************************************************************

@@ -1,5 +1,6 @@
 VPATH +=\
 	$(SRC_DIR_GENERATED)$(PS)apply_face_BC_op\
+	$(SRC_DIR_GENERATED)$(PS)boundary_conditions\
 	$(SRC_DIR_GENERATED)$(PS)dir_tree\
 	$(SRC_DIR_GENERATED)$(PS)grid\
 	$(SRC_DIR_GENERATED)$(PS)grid_field\
@@ -70,3 +71,6 @@ SRCS_F+=\
 	$(SRC_DIR_GENERATED)$(PS)procedure_array$(PS)single_procedure_plane_op.f90\
 	$(SRC_DIR_GENERATED)$(PS)procedure_array$(PS)procedure_array.f90\
 	$(SRC_DIR_GENERATED)$(PS)procedure_array$(PS)procedure_array_plane_op.f90\
+	$(SRC_DIR_GENERATED)$(PS)boundary_conditions$(PS)BC_logicals.f90\
+	$(SRC_DIR_GENERATED)$(PS)boundary_conditions$(PS)single_boundary.f90\
+	$(SRC_DIR_GENERATED)$(PS)boundary_conditions$(PS)boundary.f90\

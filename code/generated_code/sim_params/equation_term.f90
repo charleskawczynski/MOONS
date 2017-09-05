@@ -11,17 +11,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_equation_term;      end interface
-       interface delete;       module procedure delete_equation_term;         end interface
-       interface display;      module procedure display_equation_term;        end interface
-       interface display_short;module procedure display_short_equation_term;  end interface
-       interface display;      module procedure display_wrapper_equation_term;end interface
-       interface print;        module procedure print_equation_term;          end interface
-       interface print_short;  module procedure print_short_equation_term;    end interface
-       interface export;       module procedure export_equation_term;         end interface
-       interface import;       module procedure import_equation_term;         end interface
-       interface export;       module procedure export_wrapper_equation_term; end interface
-       interface import;       module procedure import_wrapper_equation_term; end interface
+       interface init;         module procedure init_copy_eq;    end interface
+       interface delete;       module procedure delete_eq;       end interface
+       interface display;      module procedure display_eq;      end interface
+       interface display_short;module procedure display_short_eq;end interface
+       interface display;      module procedure display_wrap_eq; end interface
+       interface print;        module procedure print_eq;        end interface
+       interface print_short;  module procedure print_short_eq;  end interface
+       interface export;       module procedure export_eq;       end interface
+       interface import;       module procedure import_eq;       end interface
+       interface export;       module procedure export_wrap_eq;  end interface
+       interface import;       module procedure import_wrap_eq;  end interface
 
        type equation_term
          logical :: add = .false.
@@ -30,7 +30,7 @@
 
        contains
 
-       subroutine init_copy_equation_term(this,that)
+       subroutine init_copy_eq(this,that)
          implicit none
          type(equation_term),intent(inout) :: this
          type(equation_term),intent(in) :: that
@@ -39,14 +39,14 @@
          this%scale = that%scale
        end subroutine
 
-       subroutine delete_equation_term(this)
+       subroutine delete_eq(this)
          implicit none
          type(equation_term),intent(inout) :: this
          this%add = .false.
          this%scale = 0.0_cp
        end subroutine
 
-       subroutine display_equation_term(this,un)
+       subroutine display_eq(this,un)
          implicit none
          type(equation_term),intent(in) :: this
          integer,intent(in) :: un
@@ -55,7 +55,7 @@
          write(un,*) 'scale = ',this%scale
        end subroutine
 
-       subroutine display_short_equation_term(this,un)
+       subroutine display_short_eq(this,un)
          implicit none
          type(equation_term),intent(in) :: this
          integer,intent(in) :: un
@@ -63,19 +63,19 @@
          write(un,*) 'scale = ',this%scale
        end subroutine
 
-       subroutine print_equation_term(this)
+       subroutine print_eq(this)
          implicit none
          type(equation_term),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_equation_term(this)
+       subroutine print_short_eq(this)
          implicit none
          type(equation_term),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_equation_term(this,un)
+       subroutine export_eq(this,un)
          implicit none
          type(equation_term),intent(in) :: this
          integer,intent(in) :: un
@@ -83,7 +83,7 @@
          write(un,*) 'scale  = ';write(un,*) this%scale
        end subroutine
 
-       subroutine import_equation_term(this,un)
+       subroutine import_eq(this,un)
          implicit none
          type(equation_term),intent(inout) :: this
          integer,intent(in) :: un
@@ -92,7 +92,7 @@
          read(un,*); read(un,*) this%scale
        end subroutine
 
-       subroutine display_wrapper_equation_term(this,dir,name)
+       subroutine display_wrap_eq(this,dir,name)
          implicit none
          type(equation_term),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -102,7 +102,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrapper_equation_term(this,dir,name)
+       subroutine export_wrap_eq(this,dir,name)
          implicit none
          type(equation_term),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -112,7 +112,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrapper_equation_term(this,dir,name)
+       subroutine import_wrap_eq(this,dir,name)
          implicit none
          type(equation_term),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

@@ -11,17 +11,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_var_set;      end interface
-       interface delete;       module procedure delete_var_set;         end interface
-       interface display;      module procedure display_var_set;        end interface
-       interface display_short;module procedure display_short_var_set;  end interface
-       interface display;      module procedure display_wrapper_var_set;end interface
-       interface print;        module procedure print_var_set;          end interface
-       interface print_short;  module procedure print_short_var_set;    end interface
-       interface export;       module procedure export_var_set;         end interface
-       interface import;       module procedure import_var_set;         end interface
-       interface export;       module procedure export_wrapper_var_set; end interface
-       interface import;       module procedure import_wrapper_var_set; end interface
+       interface init;         module procedure init_copy_va;    end interface
+       interface delete;       module procedure delete_va;       end interface
+       interface display;      module procedure display_va;      end interface
+       interface display_short;module procedure display_short_va;end interface
+       interface display;      module procedure display_wrap_va; end interface
+       interface print;        module procedure print_va;        end interface
+       interface print_short;  module procedure print_short_va;  end interface
+       interface export;       module procedure export_va;       end interface
+       interface import;       module procedure import_va;       end interface
+       interface export;       module procedure export_wrap_va;  end interface
+       interface import;       module procedure import_wrap_va;  end interface
 
        type var_set
          type(var) :: T
@@ -35,7 +35,7 @@
 
        contains
 
-       subroutine init_copy_var_set(this,that)
+       subroutine init_copy_va(this,that)
          implicit none
          type(var_set),intent(inout) :: this
          type(var_set),intent(in) :: that
@@ -49,7 +49,7 @@
          call init(this%rho,that%rho)
        end subroutine
 
-       subroutine delete_var_set(this)
+       subroutine delete_va(this)
          implicit none
          type(var_set),intent(inout) :: this
          call delete(this%T)
@@ -61,7 +61,7 @@
          call delete(this%rho)
        end subroutine
 
-       subroutine display_var_set(this,un)
+       subroutine display_va(this,un)
          implicit none
          type(var_set),intent(in) :: this
          integer,intent(in) :: un
@@ -75,7 +75,7 @@
          call display(this%rho,un)
        end subroutine
 
-       subroutine display_short_var_set(this,un)
+       subroutine display_short_va(this,un)
          implicit none
          type(var_set),intent(in) :: this
          integer,intent(in) :: un
@@ -88,19 +88,19 @@
          call display(this%rho,un)
        end subroutine
 
-       subroutine print_var_set(this)
+       subroutine print_va(this)
          implicit none
          type(var_set),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_var_set(this)
+       subroutine print_short_va(this)
          implicit none
          type(var_set),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_var_set(this,un)
+       subroutine export_va(this,un)
          implicit none
          type(var_set),intent(in) :: this
          integer,intent(in) :: un
@@ -113,7 +113,7 @@
          call export(this%rho,un)
        end subroutine
 
-       subroutine import_var_set(this,un)
+       subroutine import_va(this,un)
          implicit none
          type(var_set),intent(inout) :: this
          integer,intent(in) :: un
@@ -127,7 +127,7 @@
          call import(this%rho,un)
        end subroutine
 
-       subroutine display_wrapper_var_set(this,dir,name)
+       subroutine display_wrap_va(this,dir,name)
          implicit none
          type(var_set),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -137,7 +137,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrapper_var_set(this,dir,name)
+       subroutine export_wrap_va(this,dir,name)
          implicit none
          type(var_set),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -147,7 +147,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrapper_var_set(this,dir,name)
+       subroutine import_wrap_va(this,dir,name)
          implicit none
          type(var_set),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

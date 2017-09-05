@@ -13,19 +13,19 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_time_marching_params;      end interface
-       interface delete;       module procedure delete_time_marching_params;         end interface
-       interface display;      module procedure display_time_marching_params;        end interface
-       interface display_short;module procedure display_short_time_marching_params;  end interface
-       interface display;      module procedure display_wrapper_time_marching_params;end interface
-       interface print;        module procedure print_time_marching_params;          end interface
-       interface print_short;  module procedure print_short_time_marching_params;    end interface
-       interface export;       module procedure export_time_marching_params;         end interface
-       interface import;       module procedure import_time_marching_params;         end interface
-       interface export;       module procedure export_wrapper_time_marching_params; end interface
-       interface import;       module procedure import_wrapper_time_marching_params; end interface
-       interface export;       module procedure export_DN_time_marching_params;      end interface
-       interface import;       module procedure import_DN_time_marching_params;      end interface
+       interface init;         module procedure init_copy_ti;    end interface
+       interface delete;       module procedure delete_ti;       end interface
+       interface display;      module procedure display_ti;      end interface
+       interface display_short;module procedure display_short_ti;end interface
+       interface display;      module procedure display_wrap_ti; end interface
+       interface print;        module procedure print_ti;        end interface
+       interface print_short;  module procedure print_short_ti;  end interface
+       interface export;       module procedure export_ti;       end interface
+       interface import;       module procedure import_ti;       end interface
+       interface export;       module procedure export_wrap_ti;  end interface
+       interface import;       module procedure import_wrap_ti;  end interface
+       interface export;       module procedure export_DN_ti;    end interface
+       interface import;       module procedure import_DN_ti;    end interface
 
        type time_marching_params
          type(RK_Params) :: RKP
@@ -44,7 +44,7 @@
 
        contains
 
-       subroutine init_copy_time_marching_params(this,that)
+       subroutine init_copy_ti(this,that)
          implicit none
          type(time_marching_params),intent(inout) :: this
          type(time_marching_params),intent(in) :: that
@@ -63,7 +63,7 @@
          call init(this%name,that%name)
        end subroutine
 
-       subroutine delete_time_marching_params(this)
+       subroutine delete_ti(this)
          implicit none
          type(time_marching_params),intent(inout) :: this
          call delete(this%RKP)
@@ -80,7 +80,7 @@
          call delete(this%name)
        end subroutine
 
-       subroutine display_time_marching_params(this,un)
+       subroutine display_ti(this,un)
          implicit none
          type(time_marching_params),intent(in) :: this
          integer,intent(in) :: un
@@ -99,7 +99,7 @@
          call display(this%name,un)
        end subroutine
 
-       subroutine display_short_time_marching_params(this,un)
+       subroutine display_short_ti(this,un)
          implicit none
          type(time_marching_params),intent(in) :: this
          integer,intent(in) :: un
@@ -117,19 +117,19 @@
          call display(this%name,un)
        end subroutine
 
-       subroutine print_time_marching_params(this)
+       subroutine print_ti(this)
          implicit none
          type(time_marching_params),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_time_marching_params(this)
+       subroutine print_short_ti(this)
          implicit none
          type(time_marching_params),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_time_marching_params(this,un)
+       subroutine export_ti(this,un)
          implicit none
          type(time_marching_params),intent(in) :: this
          integer,intent(in) :: un
@@ -147,7 +147,7 @@
          call export(this%name,un)
        end subroutine
 
-       subroutine import_time_marching_params(this,un)
+       subroutine import_ti(this,un)
          implicit none
          type(time_marching_params),intent(inout) :: this
          integer,intent(in) :: un
@@ -166,7 +166,7 @@
          call import(this%name,un)
        end subroutine
 
-       subroutine display_wrapper_time_marching_params(this,dir,name)
+       subroutine display_wrap_ti(this,dir,name)
          implicit none
          type(time_marching_params),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -176,7 +176,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrapper_time_marching_params(this,dir,name)
+       subroutine export_wrap_ti(this,dir,name)
          implicit none
          type(time_marching_params),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -186,7 +186,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrapper_time_marching_params(this,dir,name)
+       subroutine import_wrap_ti(this,dir,name)
          implicit none
          type(time_marching_params),intent(inout) :: this
          character(len=*),intent(in) :: dir,name
@@ -196,13 +196,13 @@
          close(un)
        end subroutine
 
-       subroutine export_DN_time_marching_params(this)
+       subroutine export_DN_ti(this)
          implicit none
          type(time_marching_params),intent(in) :: this
          call export(this,str(this%dir),str(this%name))
        end subroutine
 
-       subroutine import_DN_time_marching_params(this)
+       subroutine import_DN_ti(this)
          implicit none
          type(time_marching_params),intent(inout) :: this
          type(string) :: dir,name

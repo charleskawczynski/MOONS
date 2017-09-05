@@ -11,17 +11,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_array;      end interface
-       interface delete;       module procedure delete_array;         end interface
-       interface display;      module procedure display_array;        end interface
-       interface display_short;module procedure display_short_array;  end interface
-       interface display;      module procedure display_wrapper_array;end interface
-       interface print;        module procedure print_array;          end interface
-       interface print_short;  module procedure print_short_array;    end interface
-       interface export;       module procedure export_array;         end interface
-       interface import;       module procedure import_array;         end interface
-       interface export;       module procedure export_wrapper_array; end interface
-       interface import;       module procedure import_wrapper_array; end interface
+       interface init;         module procedure init_copy_ar;    end interface
+       interface delete;       module procedure delete_ar;       end interface
+       interface display;      module procedure display_ar;      end interface
+       interface display_short;module procedure display_short_ar;end interface
+       interface display;      module procedure display_wrap_ar; end interface
+       interface print;        module procedure print_ar;        end interface
+       interface print_short;  module procedure print_short_ar;  end interface
+       interface export;       module procedure export_ar;       end interface
+       interface import;       module procedure import_ar;       end interface
+       interface export;       module procedure export_wrap_ar;  end interface
+       interface import;       module procedure import_wrap_ar;  end interface
 
        type array
          real(cp),dimension(:),allocatable :: f
@@ -30,7 +30,7 @@
 
        contains
 
-       subroutine init_copy_array(this,that)
+       subroutine init_copy_ar(this,that)
          implicit none
          type(array),intent(inout) :: this
          type(array),intent(in) :: that
@@ -41,7 +41,7 @@
          this%N = that%N
        end subroutine
 
-       subroutine delete_array(this)
+       subroutine delete_ar(this)
          implicit none
          type(array),intent(inout) :: this
          if (allocated(this%f)) then
@@ -50,7 +50,7 @@
          this%N = 0
        end subroutine
 
-       subroutine display_array(this,un)
+       subroutine display_ar(this,un)
          implicit none
          type(array),intent(in) :: this
          integer,intent(in) :: un
@@ -59,26 +59,26 @@
          write(un,*) 'N = ',this%N
        end subroutine
 
-       subroutine display_short_array(this,un)
+       subroutine display_short_ar(this,un)
          implicit none
          type(array),intent(in) :: this
          integer,intent(in) :: un
          write(un,*) 'N = ',this%N
        end subroutine
 
-       subroutine print_array(this)
+       subroutine print_ar(this)
          implicit none
          type(array),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_array(this)
+       subroutine print_short_ar(this)
          implicit none
          type(array),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_array(this,un)
+       subroutine export_ar(this,un)
          implicit none
          type(array),intent(in) :: this
          integer,intent(in) :: un
@@ -91,7 +91,7 @@
          write(un,*) 'N  = ';write(un,*) this%N
        end subroutine
 
-       subroutine import_array(this,un)
+       subroutine import_ar(this,un)
          implicit none
          type(array),intent(inout) :: this
          integer,intent(in) :: un
@@ -103,7 +103,7 @@
          read(un,*); read(un,*) this%N
        end subroutine
 
-       subroutine display_wrapper_array(this,dir,name)
+       subroutine display_wrap_ar(this,dir,name)
          implicit none
          type(array),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -113,7 +113,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrapper_array(this,dir,name)
+       subroutine export_wrap_ar(this,dir,name)
          implicit none
          type(array),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -123,7 +123,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrapper_array(this,dir,name)
+       subroutine import_wrap_ar(this,dir,name)
          implicit none
          type(array),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

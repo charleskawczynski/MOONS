@@ -11,17 +11,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_clock;      end interface
-       interface delete;       module procedure delete_clock;         end interface
-       interface display;      module procedure display_clock;        end interface
-       interface display_short;module procedure display_short_clock;  end interface
-       interface display;      module procedure display_wrapper_clock;end interface
-       interface print;        module procedure print_clock;          end interface
-       interface print_short;  module procedure print_short_clock;    end interface
-       interface export;       module procedure export_clock;         end interface
-       interface import;       module procedure import_clock;         end interface
-       interface export;       module procedure export_wrapper_clock; end interface
-       interface import;       module procedure import_wrapper_clock; end interface
+       interface init;         module procedure init_copy_cl;    end interface
+       interface delete;       module procedure delete_cl;       end interface
+       interface display;      module procedure display_cl;      end interface
+       interface display_short;module procedure display_short_cl;end interface
+       interface display;      module procedure display_wrap_cl; end interface
+       interface print;        module procedure print_cl;        end interface
+       interface print_short;  module procedure print_short_cl;  end interface
+       interface export;       module procedure export_cl;       end interface
+       interface import;       module procedure import_cl;       end interface
+       interface export;       module procedure export_wrap_cl;  end interface
+       interface import;       module procedure import_wrap_cl;  end interface
 
        type clock
          real(cp) :: t_elapsed = 0.0_cp
@@ -37,7 +37,7 @@
 
        contains
 
-       subroutine init_copy_clock(this,that)
+       subroutine init_copy_cl(this,that)
          implicit none
          type(clock),intent(inout) :: this
          type(clock),intent(in) :: that
@@ -53,7 +53,7 @@
          this%count_rate = that%count_rate
        end subroutine
 
-       subroutine delete_clock(this)
+       subroutine delete_cl(this)
          implicit none
          type(clock),intent(inout) :: this
          this%t_elapsed = 0.0_cp
@@ -67,7 +67,7 @@
          this%count_rate = 0
        end subroutine
 
-       subroutine display_clock(this,un)
+       subroutine display_cl(this,un)
          implicit none
          type(clock),intent(in) :: this
          integer,intent(in) :: un
@@ -83,7 +83,7 @@
          write(un,*) 'count_rate              = ',this%count_rate
        end subroutine
 
-       subroutine display_short_clock(this,un)
+       subroutine display_short_cl(this,un)
          implicit none
          type(clock),intent(in) :: this
          integer,intent(in) :: un
@@ -98,19 +98,19 @@
          write(un,*) 'count_rate              = ',this%count_rate
        end subroutine
 
-       subroutine print_clock(this)
+       subroutine print_cl(this)
          implicit none
          type(clock),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_clock(this)
+       subroutine print_short_cl(this)
          implicit none
          type(clock),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_clock(this,un)
+       subroutine export_cl(this,un)
          implicit none
          type(clock),intent(in) :: this
          integer,intent(in) :: un
@@ -125,7 +125,7 @@
          write(un,*) 'count_rate               = ';write(un,*) this%count_rate
        end subroutine
 
-       subroutine import_clock(this,un)
+       subroutine import_cl(this,un)
          implicit none
          type(clock),intent(inout) :: this
          integer,intent(in) :: un
@@ -141,7 +141,7 @@
          read(un,*); read(un,*) this%count_rate
        end subroutine
 
-       subroutine display_wrapper_clock(this,dir,name)
+       subroutine display_wrap_cl(this,dir,name)
          implicit none
          type(clock),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -151,7 +151,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrapper_clock(this,dir,name)
+       subroutine export_wrap_cl(this,dir,name)
          implicit none
          type(clock),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -161,7 +161,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrapper_clock(this,dir,name)
+       subroutine import_wrap_cl(this,dir,name)
          implicit none
          type(clock),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

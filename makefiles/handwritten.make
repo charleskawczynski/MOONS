@@ -3,6 +3,7 @@ VPATH +=\
 	$(TARGET_DIR)\
 	$(SRC_DIR)$(PS)apply_face_BC_op\
 	$(SRC_DIR)$(PS)block\
+	$(SRC_DIR)$(PS)boundary_conditions\
 	$(SRC_DIR)$(PS)BCs\
 	$(SRC_DIR)$(PS)BCs$(PS)apply\
 	$(SRC_DIR)$(PS)BCs$(PS)base\
@@ -16,13 +17,12 @@ VPATH +=\
 	$(SRC_DIR)$(PS)mesh_params\
 	$(SRC_DIR)$(PS)grid_field\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D\
-	$(SRC_DIR)$(PS)grid_field$(PS)GF_arithmatic_3D\
-	$(SRC_DIR)$(PS)grid_field$(PS)GF_matmult_3D\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_global\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_export_import\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_embed_extract\
-	$(SRC_DIR)$(PS)grid_field$(PS)GF_restrict_prolongate\
-	$(SRC_DIR)$(PS)grid_field$(PS)GF_interp_extrap\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_MG\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_interp\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_symmetry\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_CFL_number\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_Fourier_number\
@@ -66,7 +66,7 @@ VPATH +=\
 	$(SRC_DIR)$(PS)table\
 	$(SRC_DIR)$(PS)time_statistics\
 	$(SRC_DIR)$(PS)user\
-	$(SRC_DIR)$(PS)matrix_visualization\
+	$(SRC_DIR)$(PS)matrix_vis\
 	$(SRC_DIR)$(PS)version
 
 # **************** SOURCE FILES *********************
@@ -128,16 +128,16 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_aux.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_extend.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)grid_field_extend.f90\
-	$(SRC_DIR)$(PS)grid_field$(PS)GF_arithmatic_3D$(PS)GF_assign.f90\
-	$(SRC_DIR)$(PS)grid_field$(PS)GF_arithmatic_3D$(PS)GF_add.f90\
-	$(SRC_DIR)$(PS)grid_field$(PS)GF_arithmatic_3D$(PS)GF_subtract.f90\
-	$(SRC_DIR)$(PS)grid_field$(PS)GF_arithmatic_3D$(PS)GF_multiply.f90\
-	$(SRC_DIR)$(PS)grid_field$(PS)GF_arithmatic_3D$(PS)GF_divide.f90\
-	$(SRC_DIR)$(PS)grid_field$(PS)GF_arithmatic_3D$(PS)GF_add_product.f90\
-	$(SRC_DIR)$(PS)grid_field$(PS)GF_arithmatic_3D$(PS)GF_product_add.f90\
-	$(SRC_DIR)$(PS)grid_field$(PS)GF_arithmatic_3D$(PS)GF_square.f90\
-	$(SRC_DIR)$(PS)grid_field$(PS)GF_arithmatic_3D$(PS)GF_square_root.f90\
-	$(SRC_DIR)$(PS)grid_field$(PS)GF_arithmatic_3D$(PS)GF_cross_product.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D$(PS)GF_assign.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D$(PS)GF_add.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D$(PS)GF_subtract.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D$(PS)GF_multiply.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D$(PS)GF_divide.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D$(PS)GF_add_product.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D$(PS)GF_product_add.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D$(PS)GF_square.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D$(PS)GF_square_root.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D$(PS)GF_cross_product.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_assign_plane.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_assign_plane_ave.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_add_plane.f90\
@@ -146,10 +146,10 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_multiply_plane.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_multiply_wall.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_assign_ghost_periodic.f90\
-	$(SRC_DIR)$(PS)grid_field$(PS)GF_interp_extrap$(PS)GF_extrap.f90\
-	$(SRC_DIR)$(PS)grid_field$(PS)GF_interp_extrap$(PS)GF_interp.f90\
-	$(SRC_DIR)$(PS)grid_field$(PS)GF_restrict_prolongate$(PS)GF_restrict.f90\
-	$(SRC_DIR)$(PS)grid_field$(PS)GF_restrict_prolongate$(PS)GF_prolongate.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_interp$(PS)GF_extrap.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_interp$(PS)GF_interp.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_MG$(PS)GF_restrict.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_MG$(PS)GF_prolongate.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_aux.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_export_import$(PS)GF_export.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_export_import$(PS)GF_import.f90\
@@ -167,7 +167,6 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_norms_weights.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_norms.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)BC_logicals.f90\
 	$(SRC_DIR)$(PS)sub_domain$(PS)sub_domain_extend.f90\
 	$(SRC_DIR)$(PS)physical_domain$(PS)physical_sub_domain_extend.f90\
 	$(SRC_DIR)$(PS)sub_domain$(PS)face_SD_extend.f90\
@@ -184,8 +183,8 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)procedure_array$(PS)procedure_array_extend.f90\
 	$(SRC_DIR)$(PS)procedure_array$(PS)single_procedure_plane_op_extend.f90\
 	$(SRC_DIR)$(PS)procedure_array$(PS)procedure_array_plane_op_extend.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)single_boundary.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)boundary.f90\
+	$(SRC_DIR)$(PS)boundary_conditions$(PS)single_boundary_extend.f90\
+	$(SRC_DIR)$(PS)boundary_conditions$(PS)boundary_extend.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)boundary_conditions.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)BF$(PS)BF.f90\
 	$(SRC_DIR)$(PS)block$(PS)mesh_block.f90\
@@ -195,11 +194,6 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)user$(PS)export_safe.f90\
 	$(SRC_DIR)$(PS)user$(PS)refine_mesh.f90\
 	$(SRC_DIR)$(PS)domain$(PS)mesh_domain.f90\
-	$(SRC_DIR)$(PS)mesh$(PS)mesh_PD_geometries.f90\
-	$(SRC_DIR)$(PS)mesh$(PS)mesh_BC_geometries.f90\
-	$(SRC_DIR)$(PS)mesh$(PS)mesh_complex_BC_geometries.f90\
-	$(SRC_DIR)$(PS)mesh$(PS)mesh_benchmark_geometries.f90\
-	$(SRC_DIR)$(PS)mesh$(PS)mesh_generate.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)generate_mesh_generic.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)SF$(PS)SF.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)VF$(PS)VF.f90\
@@ -307,7 +301,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)solvers$(PS)temporal_convergence_test.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)operator_commute_test.f90\
 	$(SRC_DIR)$(PS)user$(PS)export_mesh_aux.f90\
-	$(SRC_DIR)$(PS)matrix_visualization$(PS)matrix_visualization.f90\
+	$(SRC_DIR)$(PS)matrix_vis$(PS)matrix_vis.f90\
 	$(SRC_DIR)$(PS)user$(PS)MOONS.f90
 
 SRCS_F += $(TARGET_DIR)$(PS)parametricStudy.f90

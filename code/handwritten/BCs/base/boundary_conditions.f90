@@ -48,6 +48,7 @@
        use IO_tools_mod
        use table_mod
        use boundary_mod
+       use boundary_extend_mod
        use procedure_array_mod
        use procedure_array_extend_mod
        use apply_face_BC_op_mod

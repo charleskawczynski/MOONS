@@ -10,7 +10,6 @@
        use constants_mod
        use mesh_PD_geometries_mod
        use mesh_BC_geometries_mod
-       use mesh_complex_BC_geometries_mod
        use mesh_quality_params_mod
        use dimensionless_params_mod
        implicit none
@@ -47,19 +46,18 @@
          case (15); call MHD_3D_LDC_BC_symmetric_fine_top(m_mom,m_ind,MQP,MD_sigma,DP,tw,include_vacuum)
          case (16); call MHD_3D_NSC_PD(            m_mom,m_ind,MQP,MD_sigma,DP)
          case (17); call MHD_3D_LDC_Salah(         m_mom,m_ind,MQP,MD_sigma,DP)
-         case (18); call MHD_3D_LDC_BC_symmetric_fine_top_new(m_mom,m_ind,MQP,MD_sigma,DP,tw,include_vacuum)
-         case (19); call user_defined(             m_mom,m_ind,MQP,MD_sigma,DP)
-         case (20); call Hydro_3D_LDC_Leriche(     m_mom,m_ind,MQP,DP)
-         case (21); call MHD_3D_2_channel_PD(      m_mom,m_ind,MQP,MD_sigma,DP)
-         case (22); call MHD_3D_LDC_Shatrov(       m_mom,m_ind,MQP,MD_sigma,DP)
-         case (23); call MHD_3D_Duct_Kinet(        m_mom,m_ind,MQP,MD_sigma,DP)
-         case (24); call MHD_2D_Duct_Hunt(         m_mom,m_ind,MQP,MD_sigma,DP)
-         case (25); call MHD_2D_Duct_Hunt_Walls(   m_mom,m_ind,MQP,MD_sigma,DP)
-         case (26); call MHD_3D_Bandaru(           m_mom,m_ind,MQP,MD_sigma,DP)
-         case (27); call MHD_3D_LDC_BC_fine_top(   m_mom,m_ind,MQP,MD_sigma,DP,tw,include_vacuum)
-         case (28); call MHD_2D_Shercliff(         m_mom,m_ind,MQP,MD_sigma,DP)
-         case (29); call MHD_2D_Hunt(              m_mom,m_ind,MQP,MD_sigma,DP)
-         case (30); call Hydro_2D_Taylor_Green_Vortex_z(m_mom,m_ind,MQP,DP)
+         case (18); call user_defined(             m_mom,m_ind,MQP,MD_sigma,DP)
+         case (19); call Hydro_3D_LDC_Leriche(     m_mom,m_ind,MQP,DP)
+         case (20); call MHD_3D_2_channel_PD(      m_mom,m_ind,MQP,MD_sigma,DP)
+         case (21); call MHD_3D_LDC_Shatrov(       m_mom,m_ind,MQP,MD_sigma,DP)
+         case (22); call MHD_3D_Duct_Kinet(        m_mom,m_ind,MQP,MD_sigma,DP)
+         case (23); call MHD_2D_Duct_Hunt(         m_mom,m_ind,MQP,MD_sigma,DP)
+         case (24); call MHD_2D_Duct_Hunt_Walls(   m_mom,m_ind,MQP,MD_sigma,DP)
+         case (25); call MHD_3D_Bandaru(           m_mom,m_ind,MQP,MD_sigma,DP)
+         case (26); call MHD_3D_LDC_BC_fine_top(   m_mom,m_ind,MQP,MD_sigma,DP,tw,include_vacuum)
+         case (27); call MHD_2D_Shercliff(         m_mom,m_ind,MQP,MD_sigma,DP)
+         case (28); call MHD_2D_Hunt(              m_mom,m_ind,MQP,MD_sigma,DP)
+         case (29); call Hydro_2D_Taylor_Green_Vortex_z(m_mom,m_ind,MQP,DP)
          case default; stop 'Error: bad BMC_geometry in mesh_benchmark_geometries.f90'
          end select
        end subroutine

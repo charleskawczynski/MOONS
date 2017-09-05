@@ -10,17 +10,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_overlap;      end interface
-       interface delete;       module procedure delete_overlap;         end interface
-       interface display;      module procedure display_overlap;        end interface
-       interface display_short;module procedure display_short_overlap;  end interface
-       interface display;      module procedure display_wrapper_overlap;end interface
-       interface print;        module procedure print_overlap;          end interface
-       interface print_short;  module procedure print_short_overlap;    end interface
-       interface export;       module procedure export_overlap;         end interface
-       interface import;       module procedure import_overlap;         end interface
-       interface export;       module procedure export_wrapper_overlap; end interface
-       interface import;       module procedure import_wrapper_overlap; end interface
+       interface init;         module procedure init_copy_ov;    end interface
+       interface delete;       module procedure delete_ov;       end interface
+       interface display;      module procedure display_ov;      end interface
+       interface display_short;module procedure display_short_ov;end interface
+       interface display;      module procedure display_wrap_ov; end interface
+       interface print;        module procedure print_ov;        end interface
+       interface print_short;  module procedure print_short_ov;  end interface
+       interface export;       module procedure export_ov;       end interface
+       interface import;       module procedure import_ov;       end interface
+       interface export;       module procedure export_wrap_ov;  end interface
+       interface import;       module procedure import_wrap_ov;  end interface
 
        type overlap
          integer,dimension(2) :: i1 = 0
@@ -31,7 +31,7 @@
 
        contains
 
-       subroutine init_copy_overlap(this,that)
+       subroutine init_copy_ov(this,that)
          implicit none
          type(overlap),intent(inout) :: this
          type(overlap),intent(in) :: that
@@ -42,7 +42,7 @@
          this%success = that%success
        end subroutine
 
-       subroutine delete_overlap(this)
+       subroutine delete_ov(this)
          implicit none
          type(overlap),intent(inout) :: this
          this%i1 = 0
@@ -51,7 +51,7 @@
          this%success = .false.
        end subroutine
 
-       subroutine display_overlap(this,un)
+       subroutine display_ov(this,un)
          implicit none
          type(overlap),intent(in) :: this
          integer,intent(in) :: un
@@ -62,7 +62,7 @@
          write(un,*) 'success = ',this%success
        end subroutine
 
-       subroutine display_short_overlap(this,un)
+       subroutine display_short_ov(this,un)
          implicit none
          type(overlap),intent(in) :: this
          integer,intent(in) :: un
@@ -72,19 +72,19 @@
          write(un,*) 'success = ',this%success
        end subroutine
 
-       subroutine print_overlap(this)
+       subroutine print_ov(this)
          implicit none
          type(overlap),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_overlap(this)
+       subroutine print_short_ov(this)
          implicit none
          type(overlap),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_overlap(this,un)
+       subroutine export_ov(this,un)
          implicit none
          type(overlap),intent(in) :: this
          integer,intent(in) :: un
@@ -94,7 +94,7 @@
          write(un,*) 'success  = ';write(un,*) this%success
        end subroutine
 
-       subroutine import_overlap(this,un)
+       subroutine import_ov(this,un)
          implicit none
          type(overlap),intent(inout) :: this
          integer,intent(in) :: un
@@ -105,7 +105,7 @@
          read(un,*); read(un,*) this%success
        end subroutine
 
-       subroutine display_wrapper_overlap(this,dir,name)
+       subroutine display_wrap_ov(this,dir,name)
          implicit none
          type(overlap),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -115,7 +115,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrapper_overlap(this,dir,name)
+       subroutine export_wrap_ov(this,dir,name)
          implicit none
          type(overlap),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -125,7 +125,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrapper_overlap(this,dir,name)
+       subroutine import_wrap_ov(this,dir,name)
          implicit none
          type(overlap),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

@@ -11,17 +11,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_mirror_props;      end interface
-       interface delete;       module procedure delete_mirror_props;         end interface
-       interface display;      module procedure display_mirror_props;        end interface
-       interface display_short;module procedure display_short_mirror_props;  end interface
-       interface display;      module procedure display_wrapper_mirror_props;end interface
-       interface print;        module procedure print_mirror_props;          end interface
-       interface print_short;  module procedure print_short_mirror_props;    end interface
-       interface export;       module procedure export_mirror_props;         end interface
-       interface import;       module procedure import_mirror_props;         end interface
-       interface export;       module procedure export_wrapper_mirror_props; end interface
-       interface import;       module procedure import_wrapper_mirror_props; end interface
+       interface init;         module procedure init_copy_mi;    end interface
+       interface delete;       module procedure delete_mi;       end interface
+       interface display;      module procedure display_mi;      end interface
+       interface display_short;module procedure display_short_mi;end interface
+       interface display;      module procedure display_wrap_mi; end interface
+       interface print;        module procedure print_mi;        end interface
+       interface print_short;  module procedure print_short_mi;  end interface
+       interface export;       module procedure export_mi;       end interface
+       interface import;       module procedure import_mi;       end interface
+       interface export;       module procedure export_wrap_mi;  end interface
+       interface import;       module procedure import_wrap_mi;  end interface
 
        type mirror_props
          logical :: mirror = .false.
@@ -32,7 +32,7 @@
 
        contains
 
-       subroutine init_copy_mirror_props(this,that)
+       subroutine init_copy_mi(this,that)
          implicit none
          type(mirror_props),intent(inout) :: this
          type(mirror_props),intent(in) :: that
@@ -43,7 +43,7 @@
          this%mirror_sign_a = that%mirror_sign_a
        end subroutine
 
-       subroutine delete_mirror_props(this)
+       subroutine delete_mi(this)
          implicit none
          type(mirror_props),intent(inout) :: this
          this%mirror = .false.
@@ -52,7 +52,7 @@
          this%mirror_sign_a = 0.0_cp
        end subroutine
 
-       subroutine display_mirror_props(this,un)
+       subroutine display_mi(this,un)
          implicit none
          type(mirror_props),intent(in) :: this
          integer,intent(in) :: un
@@ -63,7 +63,7 @@
          write(un,*) 'mirror_sign_a = ',this%mirror_sign_a
        end subroutine
 
-       subroutine display_short_mirror_props(this,un)
+       subroutine display_short_mi(this,un)
          implicit none
          type(mirror_props),intent(in) :: this
          integer,intent(in) :: un
@@ -73,19 +73,19 @@
          write(un,*) 'mirror_sign_a = ',this%mirror_sign_a
        end subroutine
 
-       subroutine print_mirror_props(this)
+       subroutine print_mi(this)
          implicit none
          type(mirror_props),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_mirror_props(this)
+       subroutine print_short_mi(this)
          implicit none
          type(mirror_props),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_mirror_props(this,un)
+       subroutine export_mi(this,un)
          implicit none
          type(mirror_props),intent(in) :: this
          integer,intent(in) :: un
@@ -95,7 +95,7 @@
          write(un,*) 'mirror_sign_a  = ';write(un,*) this%mirror_sign_a
        end subroutine
 
-       subroutine import_mirror_props(this,un)
+       subroutine import_mi(this,un)
          implicit none
          type(mirror_props),intent(inout) :: this
          integer,intent(in) :: un
@@ -106,7 +106,7 @@
          read(un,*); read(un,*) this%mirror_sign_a
        end subroutine
 
-       subroutine display_wrapper_mirror_props(this,dir,name)
+       subroutine display_wrap_mi(this,dir,name)
          implicit none
          type(mirror_props),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -116,7 +116,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrapper_mirror_props(this,dir,name)
+       subroutine export_wrap_mi(this,dir,name)
          implicit none
          type(mirror_props),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -126,7 +126,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrapper_mirror_props(this,dir,name)
+       subroutine import_wrap_mi(this,dir,name)
          implicit none
          type(mirror_props),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

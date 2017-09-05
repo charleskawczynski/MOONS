@@ -10,17 +10,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_export_logicals;      end interface
-       interface delete;       module procedure delete_export_logicals;         end interface
-       interface display;      module procedure display_export_logicals;        end interface
-       interface display_short;module procedure display_short_export_logicals;  end interface
-       interface display;      module procedure display_wrapper_export_logicals;end interface
-       interface print;        module procedure print_export_logicals;          end interface
-       interface print_short;  module procedure print_short_export_logicals;    end interface
-       interface export;       module procedure export_export_logicals;         end interface
-       interface import;       module procedure import_export_logicals;         end interface
-       interface export;       module procedure export_wrapper_export_logicals; end interface
-       interface import;       module procedure import_wrapper_export_logicals; end interface
+       interface init;         module procedure init_copy_ex;    end interface
+       interface delete;       module procedure delete_ex;       end interface
+       interface display;      module procedure display_ex;      end interface
+       interface display_short;module procedure display_short_ex;end interface
+       interface display;      module procedure display_wrap_ex; end interface
+       interface print;        module procedure print_ex;        end interface
+       interface print_short;  module procedure print_short_ex;  end interface
+       interface export;       module procedure export_ex;       end interface
+       interface import;       module procedure import_ex;       end interface
+       interface export;       module procedure export_wrap_ex;  end interface
+       interface import;       module procedure import_wrap_ex;  end interface
 
        type export_logicals
          logical :: export_analytic = .false.
@@ -38,7 +38,7 @@
 
        contains
 
-       subroutine init_copy_export_logicals(this,that)
+       subroutine init_copy_ex(this,that)
          implicit none
          type(export_logicals),intent(inout) :: this
          type(export_logicals),intent(in) :: that
@@ -56,7 +56,7 @@
          this%defined = that%defined
        end subroutine
 
-       subroutine delete_export_logicals(this)
+       subroutine delete_ex(this)
          implicit none
          type(export_logicals),intent(inout) :: this
          this%export_analytic = .false.
@@ -72,7 +72,7 @@
          this%defined = .false.
        end subroutine
 
-       subroutine display_export_logicals(this,un)
+       subroutine display_ex(this,un)
          implicit none
          type(export_logicals),intent(in) :: this
          integer,intent(in) :: un
@@ -90,7 +90,7 @@
          write(un,*) 'defined            = ',this%defined
        end subroutine
 
-       subroutine display_short_export_logicals(this,un)
+       subroutine display_short_ex(this,un)
          implicit none
          type(export_logicals),intent(in) :: this
          integer,intent(in) :: un
@@ -107,19 +107,19 @@
          write(un,*) 'defined            = ',this%defined
        end subroutine
 
-       subroutine print_export_logicals(this)
+       subroutine print_ex(this)
          implicit none
          type(export_logicals),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_export_logicals(this)
+       subroutine print_short_ex(this)
          implicit none
          type(export_logicals),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_export_logicals(this,un)
+       subroutine export_ex(this,un)
          implicit none
          type(export_logicals),intent(in) :: this
          integer,intent(in) :: un
@@ -136,7 +136,7 @@
          write(un,*) 'defined             = ';write(un,*) this%defined
        end subroutine
 
-       subroutine import_export_logicals(this,un)
+       subroutine import_ex(this,un)
          implicit none
          type(export_logicals),intent(inout) :: this
          integer,intent(in) :: un
@@ -154,7 +154,7 @@
          read(un,*); read(un,*) this%defined
        end subroutine
 
-       subroutine display_wrapper_export_logicals(this,dir,name)
+       subroutine display_wrap_ex(this,dir,name)
          implicit none
          type(export_logicals),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -164,7 +164,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrapper_export_logicals(this,dir,name)
+       subroutine export_wrap_ex(this,dir,name)
          implicit none
          type(export_logicals),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -174,7 +174,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrapper_export_logicals(this,dir,name)
+       subroutine import_wrap_ex(this,dir,name)
          implicit none
          type(export_logicals),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

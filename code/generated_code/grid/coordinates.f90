@@ -13,17 +13,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_coordinates;      end interface
-       interface delete;       module procedure delete_coordinates;         end interface
-       interface display;      module procedure display_coordinates;        end interface
-       interface display_short;module procedure display_short_coordinates;  end interface
-       interface display;      module procedure display_wrapper_coordinates;end interface
-       interface print;        module procedure print_coordinates;          end interface
-       interface print_short;  module procedure print_short_coordinates;    end interface
-       interface export;       module procedure export_coordinates;         end interface
-       interface import;       module procedure import_coordinates;         end interface
-       interface export;       module procedure export_wrapper_coordinates; end interface
-       interface import;       module procedure import_wrapper_coordinates; end interface
+       interface init;         module procedure init_copy_co;    end interface
+       interface delete;       module procedure delete_co;       end interface
+       interface display;      module procedure display_co;      end interface
+       interface display_short;module procedure display_short_co;end interface
+       interface display;      module procedure display_wrap_co; end interface
+       interface print;        module procedure print_co;        end interface
+       interface print_short;  module procedure print_short_co;  end interface
+       interface export;       module procedure export_co;       end interface
+       interface import;       module procedure import_co;       end interface
+       interface export;       module procedure export_wrap_co;  end interface
+       interface import;       module procedure import_wrap_co;  end interface
 
        type coordinates
          real(cp) :: hmin = 0.0_cp
@@ -58,7 +58,7 @@
 
        contains
 
-       subroutine init_copy_coordinates(this,that)
+       subroutine init_copy_co(this,that)
          implicit none
          type(coordinates),intent(inout) :: this
          type(coordinates),intent(in) :: that
@@ -108,7 +108,7 @@
          call init(this%dhc,that%dhc)
        end subroutine
 
-       subroutine delete_coordinates(this)
+       subroutine delete_co(this)
          implicit none
          type(coordinates),intent(inout) :: this
          integer :: i_colCC
@@ -156,7 +156,7 @@
          call delete(this%dhc)
        end subroutine
 
-       subroutine display_coordinates(this,un)
+       subroutine display_co(this,un)
          implicit none
          type(coordinates),intent(in) :: this
          integer,intent(in) :: un
@@ -206,7 +206,7 @@
          call display(this%dhc,un)
        end subroutine
 
-       subroutine display_short_coordinates(this,un)
+       subroutine display_short_co(this,un)
          implicit none
          type(coordinates),intent(in) :: this
          integer,intent(in) :: un
@@ -255,19 +255,19 @@
          call display(this%dhc,un)
        end subroutine
 
-       subroutine print_coordinates(this)
+       subroutine print_co(this)
          implicit none
          type(coordinates),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_coordinates(this)
+       subroutine print_short_co(this)
          implicit none
          type(coordinates),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_coordinates(this,un)
+       subroutine export_co(this,un)
          implicit none
          type(coordinates),intent(in) :: this
          integer,intent(in) :: un
@@ -319,7 +319,7 @@
          call export(this%dhc,un)
        end subroutine
 
-       subroutine import_coordinates(this,un)
+       subroutine import_co(this,un)
          implicit none
          type(coordinates),intent(inout) :: this
          integer,intent(in) :: un
@@ -369,7 +369,7 @@
          call import(this%dhc,un)
        end subroutine
 
-       subroutine display_wrapper_coordinates(this,dir,name)
+       subroutine display_wrap_co(this,dir,name)
          implicit none
          type(coordinates),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -379,7 +379,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrapper_coordinates(this,dir,name)
+       subroutine export_wrap_co(this,dir,name)
          implicit none
          type(coordinates),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -389,7 +389,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrapper_coordinates(this,dir,name)
+       subroutine import_wrap_co(this,dir,name)
          implicit none
          type(coordinates),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

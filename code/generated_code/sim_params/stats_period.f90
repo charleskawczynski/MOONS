@@ -11,17 +11,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_stats_period;      end interface
-       interface delete;       module procedure delete_stats_period;         end interface
-       interface display;      module procedure display_stats_period;        end interface
-       interface display_short;module procedure display_short_stats_period;  end interface
-       interface display;      module procedure display_wrapper_stats_period;end interface
-       interface print;        module procedure print_stats_period;          end interface
-       interface print_short;  module procedure print_short_stats_period;    end interface
-       interface export;       module procedure export_stats_period;         end interface
-       interface import;       module procedure import_stats_period;         end interface
-       interface export;       module procedure export_wrapper_stats_period; end interface
-       interface import;       module procedure import_wrapper_stats_period; end interface
+       interface init;         module procedure init_copy_st;    end interface
+       interface delete;       module procedure delete_st;       end interface
+       interface display;      module procedure display_st;      end interface
+       interface display_short;module procedure display_short_st;end interface
+       interface display;      module procedure display_wrap_st; end interface
+       interface print;        module procedure print_st;        end interface
+       interface print_short;  module procedure print_short_st;  end interface
+       interface export;       module procedure export_st;       end interface
+       interface import;       module procedure import_st;       end interface
+       interface export;       module procedure export_wrap_st;  end interface
+       interface import;       module procedure import_wrap_st;  end interface
 
        type stats_period
          real(cp) :: t_start = 0.0_cp
@@ -38,7 +38,7 @@
 
        contains
 
-       subroutine init_copy_stats_period(this,that)
+       subroutine init_copy_st(this,that)
          implicit none
          type(stats_period),intent(inout) :: this
          type(stats_period),intent(in) :: that
@@ -55,7 +55,7 @@
          this%exported_stats = that%exported_stats
        end subroutine
 
-       subroutine delete_stats_period(this)
+       subroutine delete_st(this)
          implicit none
          type(stats_period),intent(inout) :: this
          this%t_start = 0.0_cp
@@ -70,7 +70,7 @@
          this%exported_stats = .false.
        end subroutine
 
-       subroutine display_stats_period(this,un)
+       subroutine display_st(this,un)
          implicit none
          type(stats_period),intent(in) :: this
          integer,intent(in) :: un
@@ -87,7 +87,7 @@
          write(un,*) 'exported_stats         = ',this%exported_stats
        end subroutine
 
-       subroutine display_short_stats_period(this,un)
+       subroutine display_short_st(this,un)
          implicit none
          type(stats_period),intent(in) :: this
          integer,intent(in) :: un
@@ -103,19 +103,19 @@
          write(un,*) 'exported_stats         = ',this%exported_stats
        end subroutine
 
-       subroutine print_stats_period(this)
+       subroutine print_st(this)
          implicit none
          type(stats_period),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_stats_period(this)
+       subroutine print_short_st(this)
          implicit none
          type(stats_period),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_stats_period(this,un)
+       subroutine export_st(this,un)
          implicit none
          type(stats_period),intent(in) :: this
          integer,intent(in) :: un
@@ -131,7 +131,7 @@
          write(un,*) 'exported_stats          = ';write(un,*) this%exported_stats
        end subroutine
 
-       subroutine import_stats_period(this,un)
+       subroutine import_st(this,un)
          implicit none
          type(stats_period),intent(inout) :: this
          integer,intent(in) :: un
@@ -148,7 +148,7 @@
          read(un,*); read(un,*) this%exported_stats
        end subroutine
 
-       subroutine display_wrapper_stats_period(this,dir,name)
+       subroutine display_wrap_st(this,dir,name)
          implicit none
          type(stats_period),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -158,7 +158,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrapper_stats_period(this,dir,name)
+       subroutine export_wrap_st(this,dir,name)
          implicit none
          type(stats_period),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -168,7 +168,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrapper_stats_period(this,dir,name)
+       subroutine import_wrap_st(this,dir,name)
          implicit none
          type(stats_period),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

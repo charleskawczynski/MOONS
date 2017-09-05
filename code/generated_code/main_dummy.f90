@@ -55,6 +55,9 @@
        use single_procedure_plane_op_mod
        use procedure_array_mod
        use procedure_array_plane_op_mod
+       use BC_logicals_mod
+       use single_boundary_mod
+       use boundary_mod
        implicit none
        write(*,*) "success!"
        end program

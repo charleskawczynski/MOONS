@@ -11,17 +11,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_unit_conversion;      end interface
-       interface delete;       module procedure delete_unit_conversion;         end interface
-       interface display;      module procedure display_unit_conversion;        end interface
-       interface display_short;module procedure display_short_unit_conversion;  end interface
-       interface display;      module procedure display_wrapper_unit_conversion;end interface
-       interface print;        module procedure print_unit_conversion;          end interface
-       interface print_short;  module procedure print_short_unit_conversion;    end interface
-       interface export;       module procedure export_unit_conversion;         end interface
-       interface import;       module procedure import_unit_conversion;         end interface
-       interface export;       module procedure export_wrapper_unit_conversion; end interface
-       interface import;       module procedure import_wrapper_unit_conversion; end interface
+       interface init;         module procedure init_copy_un;    end interface
+       interface delete;       module procedure delete_un;       end interface
+       interface display;      module procedure display_un;      end interface
+       interface display_short;module procedure display_short_un;end interface
+       interface display;      module procedure display_wrap_un; end interface
+       interface print;        module procedure print_un;        end interface
+       interface print_short;  module procedure print_short_un;  end interface
+       interface export;       module procedure export_un;       end interface
+       interface import;       module procedure import_un;       end interface
+       interface export;       module procedure export_wrap_un;  end interface
+       interface import;       module procedure import_wrap_un;  end interface
 
        type unit_conversion
          real(cp) :: days_per_year = 0.0_cp
@@ -38,7 +38,7 @@
 
        contains
 
-       subroutine init_copy_unit_conversion(this,that)
+       subroutine init_copy_un(this,that)
          implicit none
          type(unit_conversion),intent(inout) :: this
          type(unit_conversion),intent(in) :: that
@@ -55,7 +55,7 @@
          this%year_per_seconds = that%year_per_seconds
        end subroutine
 
-       subroutine delete_unit_conversion(this)
+       subroutine delete_un(this)
          implicit none
          type(unit_conversion),intent(inout) :: this
          this%days_per_year = 0.0_cp
@@ -70,7 +70,7 @@
          this%year_per_seconds = 0.0_cp
        end subroutine
 
-       subroutine display_unit_conversion(this,un)
+       subroutine display_un(this,un)
          implicit none
          type(unit_conversion),intent(in) :: this
          integer,intent(in) :: un
@@ -87,7 +87,7 @@
          write(un,*) 'year_per_seconds   = ',this%year_per_seconds
        end subroutine
 
-       subroutine display_short_unit_conversion(this,un)
+       subroutine display_short_un(this,un)
          implicit none
          type(unit_conversion),intent(in) :: this
          integer,intent(in) :: un
@@ -103,19 +103,19 @@
          write(un,*) 'year_per_seconds   = ',this%year_per_seconds
        end subroutine
 
-       subroutine print_unit_conversion(this)
+       subroutine print_un(this)
          implicit none
          type(unit_conversion),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_unit_conversion(this)
+       subroutine print_short_un(this)
          implicit none
          type(unit_conversion),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_unit_conversion(this,un)
+       subroutine export_un(this,un)
          implicit none
          type(unit_conversion),intent(in) :: this
          integer,intent(in) :: un
@@ -131,7 +131,7 @@
          write(un,*) 'year_per_seconds    = ';write(un,*) this%year_per_seconds
        end subroutine
 
-       subroutine import_unit_conversion(this,un)
+       subroutine import_un(this,un)
          implicit none
          type(unit_conversion),intent(inout) :: this
          integer,intent(in) :: un
@@ -148,7 +148,7 @@
          read(un,*); read(un,*) this%year_per_seconds
        end subroutine
 
-       subroutine display_wrapper_unit_conversion(this,dir,name)
+       subroutine display_wrap_un(this,dir,name)
          implicit none
          type(unit_conversion),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -158,7 +158,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrapper_unit_conversion(this,dir,name)
+       subroutine export_wrap_un(this,dir,name)
          implicit none
          type(unit_conversion),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -168,7 +168,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrapper_unit_conversion(this,dir,name)
+       subroutine import_wrap_un(this,dir,name)
          implicit none
          type(unit_conversion),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

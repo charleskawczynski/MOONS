@@ -12,17 +12,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_grid;      end interface
-       interface delete;       module procedure delete_grid;         end interface
-       interface display;      module procedure display_grid;        end interface
-       interface display_short;module procedure display_short_grid;  end interface
-       interface display;      module procedure display_wrapper_grid;end interface
-       interface print;        module procedure print_grid;          end interface
-       interface print_short;  module procedure print_short_grid;    end interface
-       interface export;       module procedure export_grid;         end interface
-       interface import;       module procedure import_grid;         end interface
-       interface export;       module procedure export_wrapper_grid; end interface
-       interface import;       module procedure import_wrapper_grid; end interface
+       interface init;         module procedure init_copy_gr;    end interface
+       interface delete;       module procedure delete_gr;       end interface
+       interface display;      module procedure display_gr;      end interface
+       interface display_short;module procedure display_short_gr;end interface
+       interface display;      module procedure display_wrap_gr; end interface
+       interface print;        module procedure print_gr;        end interface
+       interface print_short;  module procedure print_short_gr;  end interface
+       interface export;       module procedure export_gr;       end interface
+       interface import;       module procedure import_gr;       end interface
+       interface export;       module procedure export_wrap_gr;  end interface
+       interface import;       module procedure import_wrap_gr;  end interface
 
        type grid
          type(coordinates),dimension(3) :: c
@@ -32,7 +32,7 @@
 
        contains
 
-       subroutine init_copy_grid(this,that)
+       subroutine init_copy_gr(this,that)
          implicit none
          type(grid),intent(inout) :: this
          type(grid),intent(in) :: that
@@ -47,7 +47,7 @@
          this%defined = that%defined
        end subroutine
 
-       subroutine delete_grid(this)
+       subroutine delete_gr(this)
          implicit none
          type(grid),intent(inout) :: this
          integer :: i_c
@@ -60,7 +60,7 @@
          this%defined = .false.
        end subroutine
 
-       subroutine display_grid(this,un)
+       subroutine display_gr(this,un)
          implicit none
          type(grid),intent(in) :: this
          integer,intent(in) :: un
@@ -75,7 +75,7 @@
          write(un,*) 'defined = ',this%defined
        end subroutine
 
-       subroutine display_short_grid(this,un)
+       subroutine display_short_gr(this,un)
          implicit none
          type(grid),intent(in) :: this
          integer,intent(in) :: un
@@ -89,19 +89,19 @@
          write(un,*) 'defined = ',this%defined
        end subroutine
 
-       subroutine print_grid(this)
+       subroutine print_gr(this)
          implicit none
          type(grid),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_grid(this)
+       subroutine print_short_gr(this)
          implicit none
          type(grid),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_grid(this,un)
+       subroutine export_gr(this,un)
          implicit none
          type(grid),intent(in) :: this
          integer,intent(in) :: un
@@ -116,7 +116,7 @@
          write(un,*) 'defined  = ';write(un,*) this%defined
        end subroutine
 
-       subroutine import_grid(this,un)
+       subroutine import_gr(this,un)
          implicit none
          type(grid),intent(inout) :: this
          integer,intent(in) :: un
@@ -131,7 +131,7 @@
          read(un,*); read(un,*) this%defined
        end subroutine
 
-       subroutine display_wrapper_grid(this,dir,name)
+       subroutine display_wrap_gr(this,dir,name)
          implicit none
          type(grid),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -141,7 +141,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrapper_grid(this,dir,name)
+       subroutine export_wrap_gr(this,dir,name)
          implicit none
          type(grid),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -151,7 +151,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrapper_grid(this,dir,name)
+       subroutine import_wrap_gr(this,dir,name)
          implicit none
          type(grid),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

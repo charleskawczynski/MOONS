@@ -84,6 +84,7 @@ $(info OS_USED = $(OS_USED))
 FCFLAGS = -J"$(MOD_DIR)" -fimplicit-none -Wuninitialized -cpp
 # FCFLAGS += -std=legacy
 FCFLAGS += -std=gnu
+# FCFLAGS += -v
 # FCFLAGS += -E -dM
 # FCFLAGS += -std=f95
 # FCFLAGS += -std=f2003
@@ -94,7 +95,7 @@ FCFLAGS += -std=gnu
 FCFLAGS += -D_DOUBLE_PRECISION_
 # FCFLAGS += -D_QUAD_PRECISION_
 
-FCFLAGS += -D_MATRIX_FREE_
+# FCFLAGS += -D_MATRIX_FREE_
 # FCFLAGS += -D_OPTIMIZE_IO_TOOLS_
 
 # FFT_poisson.f90:
@@ -166,9 +167,7 @@ FC_DEBUG += -D_DEBUG_BOUNDARY_CONDITIONS_
 FC_DEBUG += -D_DEBUG_APPLY_BCS_
 FC_DEBUG += -D_DEBUG_IO_TOOLS_
 FC_DEBUG += -D_DEBUG_GF_NORMS_
-FC_DEBUG += -D_DEBUG_RK_PARAMS_
-FC_DEBUG += -D_DEBUG_STENCIL_1D_
-FC_DEBUG += -D_DEBUG_STENCIL_3D_
+# FC_DEBUG += -D_DEBUG_RK_PARAMS_
 
 # **************** OPTIMIZE/PARALLELIZE *********************
 ifeq ($(USE_OPEN_MP),'TRUE')

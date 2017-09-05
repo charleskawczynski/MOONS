@@ -10,17 +10,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_stitch_face;      end interface
-       interface delete;       module procedure delete_stitch_face;         end interface
-       interface display;      module procedure display_stitch_face;        end interface
-       interface display_short;module procedure display_short_stitch_face;  end interface
-       interface display;      module procedure display_wrapper_stitch_face;end interface
-       interface print;        module procedure print_stitch_face;          end interface
-       interface print_short;  module procedure print_short_stitch_face;    end interface
-       interface export;       module procedure export_stitch_face;         end interface
-       interface import;       module procedure import_stitch_face;         end interface
-       interface export;       module procedure export_wrapper_stitch_face; end interface
-       interface import;       module procedure import_wrapper_stitch_face; end interface
+       interface init;         module procedure init_copy_st;    end interface
+       interface delete;       module procedure delete_st;       end interface
+       interface display;      module procedure display_st;      end interface
+       interface display_short;module procedure display_short_st;end interface
+       interface display;      module procedure display_wrap_st; end interface
+       interface print;        module procedure print_st;        end interface
+       interface print_short;  module procedure print_short_st;  end interface
+       interface export;       module procedure export_st;       end interface
+       interface import;       module procedure import_st;       end interface
+       interface export;       module procedure export_wrap_st;  end interface
+       interface import;       module procedure import_wrap_st;  end interface
 
        type stitch_face
          logical,dimension(3) :: hmin = .false.
@@ -31,7 +31,7 @@
 
        contains
 
-       subroutine init_copy_stitch_face(this,that)
+       subroutine init_copy_st(this,that)
          implicit none
          type(stitch_face),intent(inout) :: this
          type(stitch_face),intent(in) :: that
@@ -42,7 +42,7 @@
          this%hmax_id = that%hmax_id
        end subroutine
 
-       subroutine delete_stitch_face(this)
+       subroutine delete_st(this)
          implicit none
          type(stitch_face),intent(inout) :: this
          this%hmin = .false.
@@ -51,7 +51,7 @@
          this%hmax_id = 0
        end subroutine
 
-       subroutine display_stitch_face(this,un)
+       subroutine display_st(this,un)
          implicit none
          type(stitch_face),intent(in) :: this
          integer,intent(in) :: un
@@ -62,7 +62,7 @@
          write(un,*) 'hmax_id = ',this%hmax_id
        end subroutine
 
-       subroutine display_short_stitch_face(this,un)
+       subroutine display_short_st(this,un)
          implicit none
          type(stitch_face),intent(in) :: this
          integer,intent(in) :: un
@@ -72,19 +72,19 @@
          write(un,*) 'hmax_id = ',this%hmax_id
        end subroutine
 
-       subroutine print_stitch_face(this)
+       subroutine print_st(this)
          implicit none
          type(stitch_face),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_stitch_face(this)
+       subroutine print_short_st(this)
          implicit none
          type(stitch_face),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_stitch_face(this,un)
+       subroutine export_st(this,un)
          implicit none
          type(stitch_face),intent(in) :: this
          integer,intent(in) :: un
@@ -94,7 +94,7 @@
          write(un,*) 'hmax_id  = ';write(un,*) this%hmax_id
        end subroutine
 
-       subroutine import_stitch_face(this,un)
+       subroutine import_st(this,un)
          implicit none
          type(stitch_face),intent(inout) :: this
          integer,intent(in) :: un
@@ -105,7 +105,7 @@
          read(un,*); read(un,*) this%hmax_id
        end subroutine
 
-       subroutine display_wrapper_stitch_face(this,dir,name)
+       subroutine display_wrap_st(this,dir,name)
          implicit none
          type(stitch_face),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -115,7 +115,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrapper_stitch_face(this,dir,name)
+       subroutine export_wrap_st(this,dir,name)
          implicit none
          type(stitch_face),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -125,7 +125,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrapper_stitch_face(this,dir,name)
+       subroutine import_wrap_st(this,dir,name)
          implicit none
          type(stitch_face),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

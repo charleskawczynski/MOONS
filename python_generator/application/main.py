@@ -124,7 +124,7 @@ g = sub_domain.add_modules(g,T,F,priv,real)
 g = physical_domain.add_modules(g,T,F,priv,real)
 g = apply_face_BC_op.add_modules(g,T,F,priv,real,abstract_interfaces_path) # Contains interfaces
 g = procedure_array.add_modules(g,T,F,priv,real)
-# g = boundary_conditions.add_modules(g,T,F,priv,real)
+g = boundary_conditions.add_modules(g,T,F,priv,real)
 
 # --------------- Large data structures
 # g = block.add_modules(g,T,F,priv,real)

@@ -11,17 +11,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_induction_terms;      end interface
-       interface delete;       module procedure delete_induction_terms;         end interface
-       interface display;      module procedure display_induction_terms;        end interface
-       interface display_short;module procedure display_short_induction_terms;  end interface
-       interface display;      module procedure display_wrapper_induction_terms;end interface
-       interface print;        module procedure print_induction_terms;          end interface
-       interface print_short;  module procedure print_short_induction_terms;    end interface
-       interface export;       module procedure export_induction_terms;         end interface
-       interface import;       module procedure import_induction_terms;         end interface
-       interface export;       module procedure export_wrapper_induction_terms; end interface
-       interface import;       module procedure import_wrapper_induction_terms; end interface
+       interface init;         module procedure init_copy_in;    end interface
+       interface delete;       module procedure delete_in;       end interface
+       interface display;      module procedure display_in;      end interface
+       interface display_short;module procedure display_short_in;end interface
+       interface display;      module procedure display_wrap_in; end interface
+       interface print;        module procedure print_in;        end interface
+       interface print_short;  module procedure print_short_in;  end interface
+       interface export;       module procedure export_in;       end interface
+       interface import;       module procedure import_in;       end interface
+       interface export;       module procedure export_wrap_in;  end interface
+       interface import;       module procedure import_wrap_in;  end interface
 
        type induction_terms
          type(equation_term) :: advection
@@ -34,7 +34,7 @@
 
        contains
 
-       subroutine init_copy_induction_terms(this,that)
+       subroutine init_copy_in(this,that)
          implicit none
          type(induction_terms),intent(inout) :: this
          type(induction_terms),intent(in) :: that
@@ -47,7 +47,7 @@
          call init(this%B_applied,that%B_applied)
        end subroutine
 
-       subroutine delete_induction_terms(this)
+       subroutine delete_in(this)
          implicit none
          type(induction_terms),intent(inout) :: this
          call delete(this%advection)
@@ -58,7 +58,7 @@
          call delete(this%B_applied)
        end subroutine
 
-       subroutine display_induction_terms(this,un)
+       subroutine display_in(this,un)
          implicit none
          type(induction_terms),intent(in) :: this
          integer,intent(in) :: un
@@ -71,7 +71,7 @@
          call display(this%B_applied,un)
        end subroutine
 
-       subroutine display_short_induction_terms(this,un)
+       subroutine display_short_in(this,un)
          implicit none
          type(induction_terms),intent(in) :: this
          integer,intent(in) :: un
@@ -83,19 +83,19 @@
          call display(this%B_applied,un)
        end subroutine
 
-       subroutine print_induction_terms(this)
+       subroutine print_in(this)
          implicit none
          type(induction_terms),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_induction_terms(this)
+       subroutine print_short_in(this)
          implicit none
          type(induction_terms),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_induction_terms(this,un)
+       subroutine export_in(this,un)
          implicit none
          type(induction_terms),intent(in) :: this
          integer,intent(in) :: un
@@ -107,7 +107,7 @@
          call export(this%B_applied,un)
        end subroutine
 
-       subroutine import_induction_terms(this,un)
+       subroutine import_in(this,un)
          implicit none
          type(induction_terms),intent(inout) :: this
          integer,intent(in) :: un
@@ -120,7 +120,7 @@
          call import(this%B_applied,un)
        end subroutine
 
-       subroutine display_wrapper_induction_terms(this,dir,name)
+       subroutine display_wrap_in(this,dir,name)
          implicit none
          type(induction_terms),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -130,7 +130,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrapper_induction_terms(this,dir,name)
+       subroutine export_wrap_in(this,dir,name)
          implicit none
          type(induction_terms),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -140,7 +140,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrapper_induction_terms(this,dir,name)
+       subroutine import_wrap_in(this,dir,name)
          implicit none
          type(induction_terms),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

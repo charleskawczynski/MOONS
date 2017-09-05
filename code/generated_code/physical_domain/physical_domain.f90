@@ -11,17 +11,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_physical_domain;      end interface
-       interface delete;       module procedure delete_physical_domain;         end interface
-       interface display;      module procedure display_physical_domain;        end interface
-       interface display_short;module procedure display_short_physical_domain;  end interface
-       interface display;      module procedure display_wrapper_physical_domain;end interface
-       interface print;        module procedure print_physical_domain;          end interface
-       interface print_short;  module procedure print_short_physical_domain;    end interface
-       interface export;       module procedure export_physical_domain;         end interface
-       interface import;       module procedure import_physical_domain;         end interface
-       interface export;       module procedure export_wrapper_physical_domain; end interface
-       interface import;       module procedure import_wrapper_physical_domain; end interface
+       interface init;         module procedure init_copy_ph;    end interface
+       interface delete;       module procedure delete_ph;       end interface
+       interface display;      module procedure display_ph;      end interface
+       interface display_short;module procedure display_short_ph;end interface
+       interface display;      module procedure display_wrap_ph; end interface
+       interface print;        module procedure print_ph;        end interface
+       interface print_short;  module procedure print_short_ph;  end interface
+       interface export;       module procedure export_ph;       end interface
+       interface import;       module procedure import_ph;       end interface
+       interface export;       module procedure export_wrap_ph;  end interface
+       interface import;       module procedure import_wrap_ph;  end interface
 
        type physical_domain
          integer :: s = 0
@@ -31,7 +31,7 @@
 
        contains
 
-       subroutine init_copy_physical_domain(this,that)
+       subroutine init_copy_ph(this,that)
          implicit none
          type(physical_domain),intent(inout) :: this
          type(physical_domain),intent(in) :: that
@@ -51,7 +51,7 @@
          this%defined = that%defined
        end subroutine
 
-       subroutine delete_physical_domain(this)
+       subroutine delete_ph(this)
          implicit none
          type(physical_domain),intent(inout) :: this
          integer :: i_sd
@@ -67,7 +67,7 @@
          this%defined = .false.
        end subroutine
 
-       subroutine display_physical_domain(this,un)
+       subroutine display_ph(this,un)
          implicit none
          type(physical_domain),intent(in) :: this
          integer,intent(in) :: un
@@ -84,7 +84,7 @@
          write(un,*) 'defined = ',this%defined
        end subroutine
 
-       subroutine display_short_physical_domain(this,un)
+       subroutine display_short_ph(this,un)
          implicit none
          type(physical_domain),intent(in) :: this
          integer,intent(in) :: un
@@ -100,19 +100,19 @@
          write(un,*) 'defined = ',this%defined
        end subroutine
 
-       subroutine print_physical_domain(this)
+       subroutine print_ph(this)
          implicit none
          type(physical_domain),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_physical_domain(this)
+       subroutine print_short_ph(this)
          implicit none
          type(physical_domain),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_physical_domain(this,un)
+       subroutine export_ph(this,un)
          implicit none
          type(physical_domain),intent(in) :: this
          integer,intent(in) :: un
@@ -129,7 +129,7 @@
          write(un,*) 'defined  = ';write(un,*) this%defined
        end subroutine
 
-       subroutine import_physical_domain(this,un)
+       subroutine import_ph(this,un)
          implicit none
          type(physical_domain),intent(inout) :: this
          integer,intent(in) :: un
@@ -146,7 +146,7 @@
          read(un,*); read(un,*) this%defined
        end subroutine
 
-       subroutine display_wrapper_physical_domain(this,dir,name)
+       subroutine display_wrap_ph(this,dir,name)
          implicit none
          type(physical_domain),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -156,7 +156,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrapper_physical_domain(this,dir,name)
+       subroutine export_wrap_ph(this,dir,name)
          implicit none
          type(physical_domain),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -166,7 +166,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrapper_physical_domain(this,dir,name)
+       subroutine import_wrap_ph(this,dir,name)
          implicit none
          type(physical_domain),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

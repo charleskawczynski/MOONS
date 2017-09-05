@@ -1,13 +1,14 @@
        ! ***************************************************
        ! ******* THIS CODE IS GENERATED. DO NOT EDIT *******
        ! ***************************************************
-       module single_procedure_mod
+       module single_boundary_mod
        use IO_tools_mod
-       use apply_face_BC_op_mod
+       use bctype_mod
+       use grid_field_mod
        implicit none
 
        private
-       public :: single_procedure
+       public :: single_boundary
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
@@ -23,81 +24,92 @@
        interface export;       module procedure export_wrap_si;  end interface
        interface import;       module procedure import_wrap_si;  end interface
 
-       type single_procedure
-         procedure(apply_face_BC_op),pointer,nopass :: P
-         logical :: defined = .false.
-         integer :: ID = 0
+       type single_boundary
+         type(bctype) :: bct
+         type(grid_field) :: b
+         type(grid_field) :: b_modified
+         type(grid_field) :: b_total
        end type
 
        contains
 
        subroutine init_copy_si(this,that)
          implicit none
-         type(single_procedure),intent(inout) :: this
-         type(single_procedure),intent(in) :: that
+         type(single_boundary),intent(inout) :: this
+         type(single_boundary),intent(in) :: that
          call delete(this)
-         this%P => that%P
-         this%defined = that%defined
-         this%ID = that%ID
+         call init(this%bct,that%bct)
+         call init(this%b,that%b)
+         call init(this%b_modified,that%b_modified)
+         call init(this%b_total,that%b_total)
        end subroutine
 
        subroutine delete_si(this)
          implicit none
-         type(single_procedure),intent(inout) :: this
-         nullify(this%P)
-         this%defined = .false.
-         this%ID = 0
+         type(single_boundary),intent(inout) :: this
+         call delete(this%bct)
+         call delete(this%b)
+         call delete(this%b_modified)
+         call delete(this%b_total)
        end subroutine
 
        subroutine display_si(this,un)
          implicit none
-         type(single_procedure),intent(in) :: this
+         type(single_boundary),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- single_procedure'
-         write(un,*) 'defined = ',this%defined
-         write(un,*) 'ID      = ',this%ID
+         write(un,*) ' -------------------- single_boundary'
+         call display(this%bct,un)
+         call display(this%b,un)
+         call display(this%b_modified,un)
+         call display(this%b_total,un)
        end subroutine
 
        subroutine display_short_si(this,un)
          implicit none
-         type(single_procedure),intent(in) :: this
+         type(single_boundary),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'defined = ',this%defined
-         write(un,*) 'ID      = ',this%ID
+         call display(this%bct,un)
+         call display(this%b,un)
+         call display(this%b_modified,un)
+         call display(this%b_total,un)
        end subroutine
 
        subroutine print_si(this)
          implicit none
-         type(single_procedure),intent(in) :: this
+         type(single_boundary),intent(in) :: this
          call display(this,6)
        end subroutine
 
        subroutine print_short_si(this)
          implicit none
-         type(single_procedure),intent(in) :: this
+         type(single_boundary),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
        subroutine export_si(this,un)
          implicit none
-         type(single_procedure),intent(in) :: this
+         type(single_boundary),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'defined  = ';write(un,*) this%defined
-         write(un,*) 'ID       = ';write(un,*) this%ID
+         call export(this%bct,un)
+         call export(this%b,un)
+         call export(this%b_modified,un)
+         call export(this%b_total,un)
        end subroutine
 
        subroutine import_si(this,un)
          implicit none
-         type(single_procedure),intent(inout) :: this
+         type(single_boundary),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%defined
-         read(un,*); read(un,*) this%ID
+         call import(this%bct,un)
+         call import(this%b,un)
+         call import(this%b_modified,un)
+         call import(this%b_total,un)
        end subroutine
 
        subroutine display_wrap_si(this,dir,name)
          implicit none
-         type(single_procedure),intent(in) :: this
+         type(single_boundary),intent(in) :: this
          character(len=*),intent(in) :: dir,name
          integer :: un
          un = new_and_open(dir,name)
@@ -107,7 +119,7 @@
 
        subroutine export_wrap_si(this,dir,name)
          implicit none
-         type(single_procedure),intent(in) :: this
+         type(single_boundary),intent(in) :: this
          character(len=*),intent(in) :: dir,name
          integer :: un
          un = new_and_open(dir,name)
@@ -117,7 +129,7 @@
 
        subroutine import_wrap_si(this,dir,name)
          implicit none
-         type(single_procedure),intent(inout) :: this
+         type(single_boundary),intent(inout) :: this
          character(len=*),intent(in) :: dir,name
          integer :: un
          un = open_to_read(dir,name)

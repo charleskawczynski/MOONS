@@ -11,17 +11,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_RK_params;      end interface
-       interface delete;       module procedure delete_RK_params;         end interface
-       interface display;      module procedure display_RK_params;        end interface
-       interface display_short;module procedure display_short_RK_params;  end interface
-       interface display;      module procedure display_wrapper_RK_params;end interface
-       interface print;        module procedure print_RK_params;          end interface
-       interface print_short;  module procedure print_short_RK_params;    end interface
-       interface export;       module procedure export_RK_params;         end interface
-       interface import;       module procedure import_RK_params;         end interface
-       interface export;       module procedure export_wrapper_RK_params; end interface
-       interface import;       module procedure import_wrapper_RK_params; end interface
+       interface init;         module procedure init_copy_RK;    end interface
+       interface delete;       module procedure delete_RK;       end interface
+       interface display;      module procedure display_RK;      end interface
+       interface display_short;module procedure display_short_RK;end interface
+       interface display;      module procedure display_wrap_RK; end interface
+       interface print;        module procedure print_RK;        end interface
+       interface print_short;  module procedure print_short_RK;  end interface
+       interface export;       module procedure export_RK;       end interface
+       interface import;       module procedure import_RK;       end interface
+       interface export;       module procedure export_wrap_RK;  end interface
+       interface import;       module procedure import_wrap_RK;  end interface
 
        type RK_params
          integer :: n_stages = 0
@@ -35,7 +35,7 @@
 
        contains
 
-       subroutine init_copy_RK_params(this,that)
+       subroutine init_copy_RK(this,that)
          implicit none
          type(RK_params),intent(inout) :: this
          type(RK_params),intent(in) :: that
@@ -49,7 +49,7 @@
          call init(this%beta,that%beta)
        end subroutine
 
-       subroutine delete_RK_params(this)
+       subroutine delete_RK(this)
          implicit none
          type(RK_params),intent(inout) :: this
          this%n_stages = 0
@@ -61,7 +61,7 @@
          call delete(this%beta)
        end subroutine
 
-       subroutine display_RK_params(this,un)
+       subroutine display_RK(this,un)
          implicit none
          type(RK_params),intent(in) :: this
          integer,intent(in) :: un
@@ -75,7 +75,7 @@
          call display(this%beta,un)
        end subroutine
 
-       subroutine display_short_RK_params(this,un)
+       subroutine display_short_RK(this,un)
          implicit none
          type(RK_params),intent(in) :: this
          integer,intent(in) :: un
@@ -88,19 +88,19 @@
          call display(this%beta,un)
        end subroutine
 
-       subroutine print_RK_params(this)
+       subroutine print_RK(this)
          implicit none
          type(RK_params),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_RK_params(this)
+       subroutine print_short_RK(this)
          implicit none
          type(RK_params),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_RK_params(this,un)
+       subroutine export_RK(this,un)
          implicit none
          type(RK_params),intent(in) :: this
          integer,intent(in) :: un
@@ -113,7 +113,7 @@
          call export(this%beta,un)
        end subroutine
 
-       subroutine import_RK_params(this,un)
+       subroutine import_RK(this,un)
          implicit none
          type(RK_params),intent(inout) :: this
          integer,intent(in) :: un
@@ -127,7 +127,7 @@
          call import(this%beta,un)
        end subroutine
 
-       subroutine display_wrapper_RK_params(this,dir,name)
+       subroutine display_wrap_RK(this,dir,name)
          implicit none
          type(RK_params),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -137,7 +137,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrapper_RK_params(this,dir,name)
+       subroutine export_wrap_RK(this,dir,name)
          implicit none
          type(RK_params),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -147,7 +147,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrapper_RK_params(this,dir,name)
+       subroutine import_wrap_RK(this,dir,name)
          implicit none
          type(RK_params),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

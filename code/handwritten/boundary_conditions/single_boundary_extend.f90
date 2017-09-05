@@ -1,4 +1,5 @@
-       module single_boundary_mod
+       module single_boundary_extend_mod
+       use single_boundary_mod
        use current_precision_mod
        use face_edge_corner_indexing_mod
        use data_location_mod
@@ -16,22 +17,7 @@
        public :: prolongate
        public :: restrict
 
-       type single_boundary
-         type(grid_field) :: b
-         type(grid_field) :: b_modified
-         type(grid_field) :: b_total
-         type(bctype) :: bct
-       end type
-
        interface init;        module procedure init_GFs_SB_DL;  end interface
-       interface init;        module procedure init_SB_copy;    end interface
-
-       interface delete;      module procedure delete_SB;       end interface
-       interface display;     module procedure display_SB;      end interface
-       interface print;       module procedure print_SB;        end interface
-       interface export;      module procedure export_SB;       end interface
-       interface import;      module procedure import_SB;       end interface
-
        interface prolongate;  module procedure prolongate_B;    end interface
        interface restrict;    module procedure restrict_B;      end interface
 
@@ -68,68 +54,6 @@
          call assign(SB%b,0.0_cp)
          call assign(SB%b_modified,0.0_cp)
          call assign(SB%b_total,0.0_cp)
-       end subroutine
-
-       subroutine init_SB_copy(SB,SB_in)
-         implicit none
-         type(single_boundary),intent(inout) :: SB
-         type(single_boundary),intent(in) :: SB_in
-         call delete(SB)
-         call init(SB%b,SB_in%b)
-         call assign(SB%b,SB_in%b)
-
-         call init(SB%b_modified,SB_in%b_modified)
-         call assign(SB%b_modified,SB_in%b_modified)
-
-         call init(SB%b_total,SB_in%b_total)
-         call assign(SB%b_total,SB_in%b_total)
-
-         call init(SB%bct,SB_in%bct)
-       end subroutine
-
-       subroutine delete_SB(SB)
-         implicit none
-         type(single_boundary),intent(inout) :: SB
-         call delete(SB%b)
-         call delete(SB%b_modified)
-         call delete(SB%b_total)
-         call delete(SB%bct)
-       end subroutine
-
-       subroutine display_SB(SB,un)
-         implicit none
-         type(single_boundary),intent(in) :: SB
-         integer,intent(in) :: un
-         write(un,*) 'amax(b         ) = ',amax(SB%b)
-         write(un,*) 'amax(b_modified) = ',amax(SB%b_modified)
-         write(un,*) 'amax(b_total   ) = ',amax(SB%b_total)
-         call display(SB%bct,un)
-       end subroutine
-
-       subroutine print_SB(SB)
-         implicit none
-         type(single_boundary),intent(in) :: SB
-         call display(SB,6)
-       end subroutine
-
-       subroutine export_SB(SB,un)
-         implicit none
-         type(single_boundary),intent(in) :: SB
-         integer,intent(in) :: un
-         call export(SB%b,un)
-         call export(SB%b_modified,un)
-         call export(SB%b_total,un)
-         call export(SB%bct,un)
-       end subroutine
-
-       subroutine import_SB(SB,un)
-         implicit none
-         type(single_boundary),intent(inout) :: SB
-         integer,intent(in) :: un
-         call import(SB%b,un)
-         call import(SB%b_modified,un)
-         call import(SB%b_total,un)
-         call import(SB%bct,un)
        end subroutine
 
        subroutine restrict_B(SB,g,DL,dir,x,y,z)
