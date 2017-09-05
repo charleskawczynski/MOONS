@@ -52,6 +52,9 @@
        use apply_face_BC_op_mod
        use plane_op_mod
        use single_procedure_mod
+       use single_procedure_plane_op_mod
+       use procedure_array_mod
+       use procedure_array_plane_op_mod
        implicit none
        write(*,*) "success!"
        end program

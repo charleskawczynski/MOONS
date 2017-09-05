@@ -67,3 +67,6 @@ SRCS_F+=\
 	$(SRC_DIR_GENERATED)$(PS)apply_face_BC_op$(PS)apply_face_BC_op.f90\
 	$(SRC_DIR_GENERATED)$(PS)apply_face_BC_op$(PS)plane_op.f90\
 	$(SRC_DIR_GENERATED)$(PS)procedure_array$(PS)single_procedure.f90\
+	$(SRC_DIR_GENERATED)$(PS)procedure_array$(PS)single_procedure_plane_op.f90\
+	$(SRC_DIR_GENERATED)$(PS)procedure_array$(PS)procedure_array.f90\
+	$(SRC_DIR_GENERATED)$(PS)procedure_array$(PS)procedure_array_plane_op.f90\

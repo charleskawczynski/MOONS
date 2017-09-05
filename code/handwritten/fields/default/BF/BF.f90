@@ -8,10 +8,11 @@
         use block_mod
         use data_location_mod
         use procedure_array_mod
+        use procedure_array_extend_mod
         use procedure_array_plane_op_mod
+        use procedure_array_plane_op_extend_mod
         use face_edge_corner_indexing_mod
         use boundary_conditions_mod
-        use GF_curl_curl_mod
         implicit none
         private
 

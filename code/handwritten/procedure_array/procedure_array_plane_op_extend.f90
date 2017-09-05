@@ -1,31 +1,16 @@
-       module procedure_array_plane_op_mod
+       module procedure_array_plane_op_extend_mod
+       use procedure_array_plane_op_mod
        use IO_tools_mod
        use single_procedure_plane_op_mod
+       use single_procedure_plane_op_extend_mod
        use GF_assign_ghost_mod
 
        implicit none
        private
-       public :: procedure_array_plane_op
-       public :: init,delete,display,print,export,import
-
+       public :: init
        public :: add,remove,check_unique,sort
 
-       type procedure_array_plane_op
-         integer :: N
-         type(single_procedure_plane_op),dimension(:),allocatable :: SP
-         logical :: defined = .false.
-       end type
-
        interface init;             module procedure init_PA;             end interface
-       interface init;             module procedure init_copy_PA;        end interface
-       interface delete;           module procedure delete_PA;           end interface
-       interface display;          module procedure display_PA;          end interface
-       interface print;            module procedure print_PA;            end interface
-       interface export;           module procedure export_PA;           end interface
-       interface import;           module procedure import_PA;           end interface
-       interface export;           module procedure export_PA_wrapper;   end interface
-       interface import;           module procedure import_PA_wrapper;   end interface
-
        interface add;              module procedure add_PA;              end interface
        interface add;              module procedure add_PA_SP;           end interface
        interface remove;           module procedure remove_PA;           end interface
@@ -43,93 +28,6 @@
          allocate(PA%SP(N))
          PA%N = N
          PA%defined = .false.
-       end subroutine
-
-       subroutine init_copy_PA(PA,PA_in)
-         implicit none
-         type(procedure_array_plane_op),intent(inout) :: PA
-         type(procedure_array_plane_op),intent(in) :: PA_in
-         integer :: i
-         call delete(PA)
-         if (PA_in%N.gt.0) then
-           call init(PA,PA_in%N)
-           do i=1,PA%N
-            call init(PA%SP(i),PA_in%SP(i))
-           enddo
-           PA%defined = PA_in%defined
-           PA%N = PA_in%N
-         else
-          call delete(PA)
-         endif
-       end subroutine
-
-       subroutine delete_PA(PA)
-         implicit none
-         type(procedure_array_plane_op),intent(inout) :: PA
-         integer :: i
-         if (allocated(PA%SP)) then
-           do i=1,size(PA%SP); call delete(PA%SP(i)); enddo
-           deallocate(PA%SP)
-         endif
-         PA%N = 0
-         PA%defined = .false.
-       end subroutine
-
-       subroutine display_PA(PA,un)
-         implicit none
-         type(procedure_array_plane_op),intent(in) :: PA
-         integer,intent(in) :: un
-         integer :: i
-         write(un,*) ' ***************** PROCEDURE ARRAY ***************** '
-         write(un,*) 'PA%N = ',PA%N
-         do i=1,PA%N; call display(PA%SP(i),un); enddo
-         write(un,*) ' *************************************************** '
-       end subroutine
-
-       subroutine print_PA(PA)
-         implicit none
-         type(procedure_array_plane_op),intent(in) :: PA
-         call display(PA,6)
-       end subroutine
-
-       subroutine export_PA(PA,un)
-         implicit none
-         type(procedure_array_plane_op),intent(in) :: PA
-         integer,intent(in) :: un
-         integer :: i
-         write(un,*) 'PA%N = '
-         write(un,*) PA%N
-         do i=1,PA%N; call export(PA%SP(i),un); enddo
-       end subroutine
-
-       subroutine import_PA(PA,un)
-         implicit none
-         type(procedure_array_plane_op),intent(inout) :: PA
-         integer,intent(in) :: un
-         integer :: i
-         read(un,*)
-         read(un,*) PA%N
-         do i=1,PA%N; call import(PA%SP(i),un); enddo
-       end subroutine
-
-       subroutine export_PA_wrapper(PA,dir,name)
-         implicit none
-         type(procedure_array_plane_op),intent(in) :: PA
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = new_and_open(dir,name)
-         call export(PA,un)
-         call close_and_message(un,dir,name)
-       end subroutine
-
-       subroutine import_PA_wrapper(PA,dir,name)
-         implicit none
-         type(procedure_array_plane_op),intent(inout) :: PA
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = open_to_read(dir,name)
-         call import(PA,un)
-         call close_and_message(un,dir,name)
        end subroutine
 
        ! *****************************************************************

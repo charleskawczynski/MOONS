@@ -49,6 +49,7 @@
        use table_mod
        use boundary_mod
        use procedure_array_mod
+       use procedure_array_extend_mod
        use apply_face_BC_op_mod
        use apply_BCs_faces_bridge_mod
        use apply_BCs_faces_bridge_implicit_mod

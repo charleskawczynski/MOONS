@@ -166,11 +166,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_symmetry$(PS)GF_mirror_about_plane.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_norms_weights.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_norms.f90\
-	$(SRC_DIR)$(PS)grid_field$(PS)GF_matmult_3D$(PS)GF_laplacian.f90\
-	$(SRC_DIR)$(PS)grid_field$(PS)GF_matmult_3D$(PS)GF_curl_curl.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF.f90\
-	$(SRC_DIR)$(PS)sparse$(PS)sparse_field.f90\
-	$(SRC_DIR)$(PS)sparse$(PS)sparse_mult.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)BC_logicals.f90\
 	$(SRC_DIR)$(PS)sub_domain$(PS)sub_domain_extend.f90\
 	$(SRC_DIR)$(PS)physical_domain$(PS)physical_sub_domain_extend.f90\
