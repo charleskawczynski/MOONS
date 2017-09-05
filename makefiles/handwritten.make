@@ -185,7 +185,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)procedure_array$(PS)procedure_array_plane_op_extend.f90\
 	$(SRC_DIR)$(PS)boundary_conditions$(PS)single_boundary_extend.f90\
 	$(SRC_DIR)$(PS)boundary_conditions$(PS)boundary_extend.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)boundary_conditions.f90\
+	$(SRC_DIR)$(PS)boundary_conditions$(PS)boundary_conditions_extend.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)BF$(PS)BF.f90\
 	$(SRC_DIR)$(PS)block$(PS)mesh_block.f90\
 	$(SRC_DIR)$(PS)user$(PS)restart_file.f90\

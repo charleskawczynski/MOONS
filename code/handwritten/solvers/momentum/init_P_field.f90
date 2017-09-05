@@ -6,7 +6,7 @@
        use SF_mod
        use VF_mod
        use GF_mod
-       use boundary_conditions_mod
+       use boundary_conditions_extend_mod
        use ops_discrete_mod
        use sim_params_mod
        implicit none

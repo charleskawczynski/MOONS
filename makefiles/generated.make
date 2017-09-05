@@ -74,3 +74,4 @@ SRCS_F+=\
 	$(SRC_DIR_GENERATED)$(PS)boundary_conditions$(PS)BC_logicals.f90\
 	$(SRC_DIR_GENERATED)$(PS)boundary_conditions$(PS)single_boundary.f90\
 	$(SRC_DIR_GENERATED)$(PS)boundary_conditions$(PS)boundary.f90\
+	$(SRC_DIR_GENERATED)$(PS)boundary_conditions$(PS)boundary_conditions.f90\

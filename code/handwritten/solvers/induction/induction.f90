@@ -53,7 +53,7 @@
        use ops_aux_mod
        use ops_interp_mod
        use ops_discrete_mod
-       use boundary_conditions_mod
+       use boundary_conditions_extend_mod
        use apply_BCs_mod
        use ops_advect_mod
        use time_marching_methods_mod

@@ -3,7 +3,7 @@
        use BC_funcs_mod
        use grid_mod
        use mesh_mod
-       use boundary_conditions_mod
+       use boundary_conditions_extend_mod
        use SF_mod
        use sim_params_mod
        implicit none

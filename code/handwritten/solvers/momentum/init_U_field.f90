@@ -10,7 +10,7 @@
        use SF_mod
        use VF_mod
        use TF_mod
-       use boundary_conditions_mod
+       use boundary_conditions_extend_mod
        use ops_aux_mod
        use ops_discrete_mod
        use export_raw_processed_mod

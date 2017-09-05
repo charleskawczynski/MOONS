@@ -1,4 +1,5 @@
-       module boundary_conditions_mod
+       module boundary_conditions_extend_mod
+       use boundary_conditions_mod
        ! Making BCs is a 3 step process:
        !
        !       1) Set the block
@@ -57,8 +58,7 @@
        implicit none
 
        private
-       public :: boundary_conditions
-       public :: init,delete,display,print,export,import ! Essentials
+       public :: init ! Essentials
 
        ! Setters for type
        public :: init_Dirichlet
@@ -86,44 +86,11 @@
        public :: restrict
        public :: prolongate
 
-       type boundary_conditions
-         ! GLOBAL LOGICALS (check here to see if BCs are defined)
-         type(BC_logicals) :: BCL
-         ! DATA LOCATION
-         type(data_location) :: DL                       ! data location (C,N,F,E)
-         ! FACES
-         type(boundary) :: face                          ! BC values and type
-         type(procedure_array) :: PA_face_BCs            ! procedure array for face BCs
-         type(procedure_array) :: PA_face_implicit_BCs   ! procedure array for face BCs
-         type(face_SD) :: f_BCs                          ! stores indexes for slicing
-         ! EDGES
-         type(boundary) :: edge                          ! BC values and type
-         type(procedure_array) :: PA_edges_BCs           ! procedure array for face BCs
-         type(procedure_array) :: PA_edges_implicit_BCs  ! procedure array for face BCs
-         ! type(edge_SD) :: e_BCs                        ! Not yet developed
-         ! CORNERS
-         type(boundary) :: corner                        ! BC values and type
-         type(procedure_array) :: PA_corners_BCs         ! procedure array for face BCs
-         type(procedure_array) :: PA_corners_implicit_BCs! procedure array for face BCs
-         ! type(corner_SD) :: c_BCs                      ! Not yet developed
-         integer,dimension(6) :: apply_BC_order = (/1,2,3,4,5,6/)
-       end type
-
        interface init;               module procedure init_GFs_BCs_DL;         end interface
-       interface init;               module procedure init_BCs_copy;           end interface
 
        interface init;               module procedure init_vals_all_S;         end interface
        interface init;               module procedure init_vals_face_GF;       end interface
        interface init;               module procedure init_val_face_S;         end interface
-
-       interface delete;             module procedure delete_BCs;              end interface
-       interface display;            module procedure display_BCs;             end interface
-       interface print;              module procedure print_BCs;               end interface
-       interface export;             module procedure export_BCs;              end interface
-       interface import;             module procedure import_BCs;              end interface
-
-       interface export;             module procedure export_BCs_wrapper;      end interface
-       interface import;             module procedure import_BCs_wrapper;      end interface
 
        interface defined;            module procedure defined_BCs;             end interface
        interface init_Dirichlet;     module procedure init_Dirichlet_all;      end interface
@@ -184,53 +151,6 @@
          call define_logicals(BC)
        end subroutine
 
-       subroutine init_BCs_copy(BC,BC_in)
-         implicit none
-         type(boundary_conditions),intent(inout) :: BC
-         type(boundary_conditions),intent(in) :: BC_in
-#ifdef _DEBUG_BOUNDARY_CONDITIONS_
-         call insist_allocated(BC_in,'init_BCs_copy')
-#endif
-         call delete(BC)
-         call init(BC%BCL,BC_in%BCL)
-         call init(BC%DL,BC_in%DL)
-         BC%apply_BC_order = BC_in%apply_BC_order
-
-         call init(BC%face,BC_in%face)
-         call init(BC%PA_face_BCs,BC_in%PA_face_BCs)
-         call init(BC%PA_face_implicit_BCs,BC_in%PA_face_implicit_BCs)
-         call init(BC%f_BCs,BC_in%f_BCs)
-
-         ! call init(BC%edge,BC_in%edge)
-         ! call init(BC%PA_edges_BCs,BC_in%PA_edges_BCs)
-         ! call init(BC%PA_edges_implicit_BCs,BC_in%PA_edges_implicit_BCs)
-         ! call init(BC%e_BCs,BC_in%e_BCs)
-         ! call init(BC%corner,BC_in%corner)
-         ! call init(BC%PA_corners_BCs,BC_in%PA_corners_BCs)
-         ! call init(BC%PA_corners_implicit_BCs,BC_in%PA_corners_implicit_BCs)
-         ! call init(BC%c_BCs,BC_in%c_BCs)
-       end subroutine
-
-       subroutine delete_BCs(BC)
-         implicit none
-         type(boundary_conditions),intent(inout) :: BC
-         call delete(BC%DL)
-         call delete(BC%BCL)
-         call delete(BC%face)
-         call delete(BC%PA_face_BCs)
-         call delete(BC%PA_face_implicit_BCs)
-         call delete(BC%f_BCs)
-         call delete(BC%edge)
-         call delete(BC%PA_edges_BCs)
-         call delete(BC%PA_edges_implicit_BCs)
-         call delete(BC%corner)
-         call delete(BC%PA_corners_BCs)
-         call delete(BC%PA_corners_implicit_BCs)
-         BC%apply_BC_order = (/1,2,3,4,5,6/)
-         ! call delete(BC%e_BCs)
-         ! call delete(BC%c_BCs)
-       end subroutine
-
        subroutine init_vals_all_S(BC,val)
          implicit none
          type(boundary_conditions),intent(inout) :: BC
@@ -266,75 +186,6 @@
          call assign(BC%face%SB(face)%b_modified,0.0_cp)
          BC%BCL%vals_defined = .true.
          call define_logicals(BC)
-       end subroutine
-
-       subroutine display_BCs(BC,un)
-         implicit none
-         type(boundary_conditions),intent(in) :: BC
-         integer,intent(in) :: un
-         if (BC%BCL%defined) then
-           call display(BC%face,un)
-           ! call display(BC%edge)
-           ! call display(BC%corner)
-         endif
-       end subroutine
-
-       subroutine print_BCs(BC)
-         implicit none
-         type(boundary_conditions),intent(in) :: BC
-         call display(BC,6)
-       end subroutine
-
-       subroutine export_BCs(BC,un)
-         implicit none
-         type(boundary_conditions),intent(in) :: BC
-         integer,intent(in) :: un
-         write(un,*) 'defined'
-         write(un,*) BC%BCL%defined
-         if (BC%BCL%defined) then
-           call export(BC%face,un)
-           ! call export(BC%edge,un)
-           ! call export(BC%corner,un)
-           call export(BC%PA_face_BCs,un)
-           call export(BC%PA_face_implicit_BCs,un)
-           call export(BC%BCL,un)
-         endif
-       end subroutine
-
-       subroutine import_BCs(BC,un)
-         implicit none
-         type(boundary_conditions),intent(inout) :: BC
-         integer,intent(in) :: un
-         read(un,*)
-         read(un,*) BC%BCL%defined
-         if (BC%BCL%defined) then
-           call import(BC%face,un)
-           ! call export(BC%edge,un)
-           ! call export(BC%corner,un)
-           call import(BC%PA_face_BCs,un)
-           call import(BC%PA_face_implicit_BCs,un)
-           call import(BC%BCL,un)
-         endif
-       end subroutine
-
-       subroutine export_BCs_wrapper(BC,dir,name)
-         implicit none
-         type(boundary_conditions),intent(in) :: BC
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = new_and_open(dir,name)
-         call export(BC,un)
-         call close_and_message(un,dir,name)
-       end subroutine
-
-       subroutine import_BCs_wrapper(BC,dir,name)
-         implicit none
-         type(boundary_conditions),intent(inout) :: BC
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = open_to_read(dir,name)
-         call import(BC,un)
-         call close_and_message(un,dir,name)
        end subroutine
 
        ! *******************************************************************************

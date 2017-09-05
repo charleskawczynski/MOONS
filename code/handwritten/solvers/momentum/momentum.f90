@@ -2,7 +2,7 @@
        use current_precision_mod
 
        use sim_params_mod
-       use boundary_conditions_mod
+       use boundary_conditions_extend_mod
        use block_mod
        use BC_funcs_mod
        use mesh_block_mod

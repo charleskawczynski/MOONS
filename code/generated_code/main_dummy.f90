@@ -58,6 +58,7 @@
        use BC_logicals_mod
        use single_boundary_mod
        use boundary_mod
+       use boundary_conditions_mod
        implicit none
        write(*,*) "success!"
        end program

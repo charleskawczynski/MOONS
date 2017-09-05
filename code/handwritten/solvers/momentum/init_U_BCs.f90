@@ -4,7 +4,7 @@
        use grid_mod
        use block_mod
        use mesh_mod
-       use boundary_conditions_mod
+       use boundary_conditions_extend_mod
        use GF_mod
        use block_field_mod
        use SF_mod

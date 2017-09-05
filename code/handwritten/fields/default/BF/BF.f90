@@ -13,6 +13,7 @@
         use procedure_array_plane_op_extend_mod
         use face_edge_corner_indexing_mod
         use boundary_conditions_mod
+        use boundary_conditions_extend_mod
         implicit none
         private
 

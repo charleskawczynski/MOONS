@@ -2,7 +2,6 @@
        use current_precision_mod
        use grid_mod
        use mesh_mod
-       use boundary_conditions_mod
        use BC_funcs_mod
        use SF_mod
        use sim_params_mod
