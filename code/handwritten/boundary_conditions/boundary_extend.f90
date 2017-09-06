@@ -6,6 +6,7 @@
        use grid_mod
        use single_boundary_mod
        use single_boundary_extend_mod
+       use block_extend_mod
        use block_mod
        use string_mod
        use GF_mod

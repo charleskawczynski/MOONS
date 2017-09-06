@@ -2,6 +2,7 @@
        ! This module is used to export the block to visualize
        ! each grid on the block (all FECs).
        use mesh_mod
+       use block_extend_mod
        use block_mod
        use IO_tools_mod
        implicit none

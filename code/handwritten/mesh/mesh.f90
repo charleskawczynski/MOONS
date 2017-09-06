@@ -4,7 +4,7 @@
        use IO_tools_mod
        use grid_mod
        use grid_extend_mod
-       use block_mod
+       use block_extend_mod
        use coordinates_mod
        use coordinates_extend_mod
        use face_edge_corner_indexing_mod

@@ -1,7 +1,7 @@
        module mesh_stencils_mod
        use current_precision_mod
        use mesh_mod
-       use block_mod
+       use block_extend_mod
        use SF_mod
        use VF_mod
        use stencil_3D_mod

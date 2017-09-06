@@ -12,7 +12,7 @@ def add_modules(g,T,F,priv,real):
 	g.add_module(m_name)
 	g.module[m_name].set_folder_name(__name__.split('.')[1])
 	g.module[m_name].set_used_modules(['IO_tools_mod'])
-	g.module[m_name].add_prop('g','grid',priv,F,1,3)
+	g.module[m_name].add_prop('g','grid',priv,F)
 	g.module[m_name].add_prop('f','grid',priv,T,1,3)
 	g.module[m_name].add_prop('e','grid',priv,T,1,3)
 	g.module[m_name].add_prop('c','grid',priv,T,1,3)

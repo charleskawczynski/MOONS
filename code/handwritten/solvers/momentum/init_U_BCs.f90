@@ -2,7 +2,7 @@
        use current_precision_mod
        use BC_funcs_mod
        use grid_mod
-       use block_mod
+       use block_extend_mod
        use mesh_mod
        use boundary_conditions_extend_mod
        use GF_mod

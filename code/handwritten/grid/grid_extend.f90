@@ -33,6 +33,7 @@
        public :: get_coordinates_dual_dh
 
        public :: get_face_GI
+       public :: get_face_GI_grid
        public :: get_edge_GI
        public :: get_corner_GI
        public :: get_face_b

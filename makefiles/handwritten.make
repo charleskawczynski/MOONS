@@ -170,7 +170,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)sub_domain$(PS)sub_domain_extend.f90\
 	$(SRC_DIR)$(PS)physical_domain$(PS)physical_sub_domain_extend.f90\
 	$(SRC_DIR)$(PS)sub_domain$(PS)face_SD_extend.f90\
-	$(SRC_DIR)$(PS)block$(PS)block.f90\
+	$(SRC_DIR)$(PS)block$(PS)block_extend.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_props.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh.f90\
 	$(SRC_DIR)$(PS)physical_domain$(PS)physical_domain_extend.f90\

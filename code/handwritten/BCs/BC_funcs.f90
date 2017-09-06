@@ -1,7 +1,7 @@
        module BC_funcs_mod
        use current_precision_mod
        use mesh_mod
-       use block_mod
+       use block_extend_mod
        use boundary_conditions_mod
        use boundary_conditions_extend_mod
        use SF_mod

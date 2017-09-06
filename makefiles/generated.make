@@ -1,5 +1,6 @@
 VPATH +=\
 	$(SRC_DIR_GENERATED)$(PS)apply_face_BC_op\
+	$(SRC_DIR_GENERATED)$(PS)block\
 	$(SRC_DIR_GENERATED)$(PS)boundary_conditions\
 	$(SRC_DIR_GENERATED)$(PS)dir_tree\
 	$(SRC_DIR_GENERATED)$(PS)grid\
@@ -75,3 +76,4 @@ SRCS_F+=\
 	$(SRC_DIR_GENERATED)$(PS)boundary_conditions$(PS)single_boundary.f90\
 	$(SRC_DIR_GENERATED)$(PS)boundary_conditions$(PS)boundary.f90\
 	$(SRC_DIR_GENERATED)$(PS)boundary_conditions$(PS)boundary_conditions.f90\
+	$(SRC_DIR_GENERATED)$(PS)block$(PS)block.f90\

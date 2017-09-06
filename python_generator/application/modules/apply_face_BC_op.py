@@ -9,12 +9,6 @@ import fortran_property as FP
 
 def add_modules(g,T,F,priv,real,abstract_interfaces_path):
 
-	# m_name = 'apply_face_BC_op'
-	# g.add_module(m_name)
-	# g.module[m_name].set_folder_name(__name__.split('.')[1])
-	# g.module[m_name].set_used_modules([''])
-	# g.module[m_name].add_raw_lines_from_file(abstract_interfaces_path+'apply_face_BC_op.f90')
-
 	m_name = 'apply_face_BC_op'
 	g.add_module(m_name)
 	g.module[m_name].set_folder_name(__name__.split('.')[1])

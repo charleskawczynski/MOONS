@@ -3,7 +3,7 @@
        use face_edge_corner_indexing_mod
        use data_location_mod
        use grid_mod
-       use block_mod
+       use block_extend_mod
        use string_mod
        use GF_mod
        use bctype_mod

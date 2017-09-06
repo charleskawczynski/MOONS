@@ -59,6 +59,7 @@
        use single_boundary_mod
        use boundary_mod
        use boundary_conditions_mod
+       use block_mod
        implicit none
        write(*,*) "success!"
        end program

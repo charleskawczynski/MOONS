@@ -5,7 +5,7 @@
         use bctype_mod
         use data_location_mod
         use GF_mod
-        use block_mod
+        use block_extend_mod
         use data_location_mod
         use procedure_array_mod
         use procedure_array_extend_mod
