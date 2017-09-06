@@ -80,7 +80,7 @@
        SP%FCL%export_heavy                       = T
        SP%FCL%export_final_tec                   = T
        SP%FCL%export_final_restart               = T
-       SP%FCL%print_every_MHD_step               = F
+       SP%FCL%print_every_MHD_step               = T
        SP%FCL%compute_surface_power              = T
 
        SP%EL%export_analytic         = F

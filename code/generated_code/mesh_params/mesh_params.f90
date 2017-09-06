@@ -100,7 +100,6 @@
          integer :: i_s_ext
          integer :: s_s_base
          integer :: s_s_ext
-         write(un,*) ' -------------------- mesh_params'
          call display(this%MQP,un)
          if (allocated(this%s_base)) then
            s_s_base = size(this%s_base)
@@ -114,8 +113,6 @@
              call display(this%s_ext(i_s_ext),un)
            enddo
          endif
-         write(un,*) 'N_base = ',this%N_base
-         write(un,*) 'N_ext  = ',this%N_ext
        end subroutine
 
        subroutine display_short_me(this,un)

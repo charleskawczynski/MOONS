@@ -53,8 +53,6 @@
          implicit none
          type(time_statistics_params),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- time_statistics_params'
-         write(un,*) 'collect  = ',this%collect
          call display(this%O1_stats,un)
          call display(this%O2_stats,un)
        end subroutine

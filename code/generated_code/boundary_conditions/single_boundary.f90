@@ -57,7 +57,6 @@
          implicit none
          type(single_boundary),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- single_boundary'
          call display(this%bct,un)
          call display(this%b,un)
          call display(this%b_modified,un)

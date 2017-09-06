@@ -77,9 +77,6 @@
          implicit none
          type(var),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- var'
-         write(un,*) 'IC              = ',this%IC
-         write(un,*) 'BC              = ',this%BC
          call display(this%SS,un)
          call display(this%MFP,un)
          call display(this%TMP,un)

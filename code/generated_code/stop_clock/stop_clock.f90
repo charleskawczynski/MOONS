@@ -97,23 +97,10 @@
          implicit none
          type(stop_clock),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- stop_clock'
          call display(this%dir,un)
          call display(this%name,un)
          call display(this%c,un)
          call display(this%uc,un)
-         write(un,*) 'percentage_complete_RB = ',this%percentage_complete_RB
-         write(un,*) 'percentage_complete_SB = ',this%percentage_complete_SB
-         write(un,*) 'seconds_per_step       = ',this%seconds_per_step
-         write(un,*) 'sim_time_per_sec       = ',this%sim_time_per_sec
-         write(un,*) 't_passed               = ',this%t_passed
-         write(un,*) 'estimated_total        = ',this%estimated_total
-         write(un,*) 'estimated_remaining    = ',this%estimated_remaining
-         write(un,*) 'percentage_complete    = ',this%percentage_complete
-         write(un,*) 'percentage_complete_wc = ',this%percentage_complete_wc
-         write(un,*) 't_elapsed              = ',this%t_elapsed
-         write(un,*) 'frozen_elapsed         = ',this%frozen_elapsed
-         write(un,*) 'un_plot                = ',this%un_plot
        end subroutine
 
        subroutine display_short_st(this,un)

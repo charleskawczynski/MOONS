@@ -55,11 +55,6 @@
          implicit none
          type(stitch_face),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- stitch_face'
-         write(un,*) 'hmin    = ',this%hmin
-         write(un,*) 'hmax    = ',this%hmax
-         write(un,*) 'hmin_id = ',this%hmin_id
-         write(un,*) 'hmax_id = ',this%hmax_id
        end subroutine
 
        subroutine display_short_st(this,un)

@@ -77,7 +77,6 @@
          implicit none
          type(momentum_terms),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- momentum_terms'
          call display(this%pressure_grad,un)
          call display(this%advection_divergence,un)
          call display(this%advection_convection,un)

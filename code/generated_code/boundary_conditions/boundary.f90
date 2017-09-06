@@ -78,8 +78,6 @@
          integer,intent(in) :: un
          integer :: i_SB
          integer :: s_SB
-         write(un,*) ' -------------------- boundary'
-         write(un,*) 'n    = ',this%n
          if (allocated(this%SB)) then
            s_SB = size(this%SB)
            do i_SB=1,s_SB

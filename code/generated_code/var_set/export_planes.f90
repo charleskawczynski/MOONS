@@ -70,14 +70,12 @@
          integer,intent(in) :: un
          integer :: i_EP
          integer :: s_EP
-         write(un,*) ' -------------------- export_planes'
          if (allocated(this%EP)) then
            s_EP = size(this%EP)
            do i_EP=1,s_EP
              call display(this%EP(i_EP),un)
            enddo
          endif
-         write(un,*) 'N  = ',this%N
        end subroutine
 
        subroutine display_short_ex(this,un)

@@ -53,10 +53,8 @@
          implicit none
          type(physical_sub_domain),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- physical_sub_domain'
          call display(this%total,un)
          call display(this%physical,un)
-         write(un,*) 'defined  = ',this%defined
        end subroutine
 
        subroutine display_short_ph(this,un)

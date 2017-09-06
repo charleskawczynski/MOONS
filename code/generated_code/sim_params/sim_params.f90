@@ -112,7 +112,6 @@
          implicit none
          type(sim_params),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- sim_params'
          call display(this%VS,un)
          call display(this%MP_mom,un)
          call display(this%MQP,un)
@@ -130,7 +129,6 @@
          call display(this%FCL,un)
          call display(this%TSP,un)
          call display(this%SCP,un)
-         write(un,*) 'matrix_based = ',this%matrix_based
        end subroutine
 
        subroutine display_short_si(this,un)

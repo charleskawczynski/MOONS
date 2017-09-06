@@ -71,7 +71,6 @@
          implicit none
          type(dir_group),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- dir_group'
          call display(this%base,un)
          call display(this%field,un)
          call display(this%restart,un)

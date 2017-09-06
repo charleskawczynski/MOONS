@@ -66,13 +66,10 @@
          integer,intent(in) :: un
          integer :: i_c
          integer :: s_c
-         write(un,*) ' -------------------- grid'
          s_c = size(this%c)
          do i_c=1,s_c
            call display(this%c(i_c),un)
          enddo
-         write(un,*) 'volume  = ',this%volume
-         write(un,*) 'defined = ',this%defined
        end subroutine
 
        subroutine display_short_gr(this,un)

@@ -26,8 +26,8 @@
 
        type mesh_props
          type(simple_int_tensor),dimension(3) :: int_tensor
-         logical,dimension(:),allocatable :: plane
-         integer,dimension(:),allocatable :: N_cells
+         logical,dimension(3) :: plane = .false.
+         integer,dimension(3) :: N_cells = 0
          logical :: plane_any = .false.
          integer :: N_cells_tot = 0
          real(cp) :: volume = 0.0_cp
@@ -52,12 +52,8 @@
          do i_int_tensor=1,s_int_tensor
            call init(this%int_tensor(i_int_tensor),that%int_tensor(i_int_tensor))
          enddo
-         if (allocated(that%plane)) then
-           this%plane = that%plane
-         endif
-         if (allocated(that%N_cells)) then
-           this%N_cells = that%N_cells
-         endif
+         this%plane = that%plane
+         this%N_cells = that%N_cells
          this%plane_any = that%plane_any
          this%N_cells_tot = that%N_cells_tot
          this%volume = that%volume
@@ -78,12 +74,8 @@
          do i_int_tensor=1,s_int_tensor
            call delete(this%int_tensor(i_int_tensor))
          enddo
-         if (allocated(this%plane)) then
-           deallocate(this%plane)
-         endif
-         if (allocated(this%N_cells)) then
-           deallocate(this%N_cells)
-         endif
+         this%plane = .false.
+         this%N_cells = 0
          this%plane_any = .false.
          this%N_cells_tot = 0
          this%volume = 0.0_cp
@@ -101,22 +93,10 @@
          integer,intent(in) :: un
          integer :: i_int_tensor
          integer :: s_int_tensor
-         write(un,*) ' -------------------- mesh_props'
          s_int_tensor = size(this%int_tensor)
          do i_int_tensor=1,s_int_tensor
            call display(this%int_tensor(i_int_tensor),un)
          enddo
-         write(un,*) 'plane       = ',this%plane
-         write(un,*) 'N_cells     = ',this%N_cells
-         write(un,*) 'plane_any   = ',this%plane_any
-         write(un,*) 'N_cells_tot = ',this%N_cells_tot
-         write(un,*) 'volume      = ',this%volume
-         write(un,*) 'hmax        = ',this%hmax
-         write(un,*) 'hmin        = ',this%hmin
-         write(un,*) 'dhmax       = ',this%dhmax
-         write(un,*) 'dhmin       = ',this%dhmin
-         write(un,*) 'dhmax_max   = ',this%dhmax_max
-         write(un,*) 'dhmin_min   = ',this%dhmin_min
        end subroutine
 
        subroutine display_short_me(this,un)
@@ -129,6 +109,8 @@
          do i_int_tensor=1,s_int_tensor
            call display(this%int_tensor(i_int_tensor),un)
          enddo
+         write(un,*) 'plane       = ',this%plane
+         write(un,*) 'N_cells     = ',this%N_cells
          write(un,*) 'plane_any   = ',this%plane_any
          write(un,*) 'N_cells_tot = ',this%N_cells_tot
          write(un,*) 'volume      = ',this%volume
@@ -158,23 +140,13 @@
          integer,intent(in) :: un
          integer :: i_int_tensor
          integer :: s_int_tensor
-         integer :: s_plane
-         integer :: s_N_cells
          s_int_tensor = size(this%int_tensor)
          write(un,*) s_int_tensor
          do i_int_tensor=1,s_int_tensor
            call export(this%int_tensor(i_int_tensor),un)
          enddo
-         if (allocated(this%plane)) then
-           s_plane = size(this%plane)
-           write(un,*) s_plane
-           write(un,*) 'plane        = ';write(un,*) this%plane
-         endif
-         if (allocated(this%N_cells)) then
-           s_N_cells = size(this%N_cells)
-           write(un,*) s_N_cells
-           write(un,*) 'N_cells      = ';write(un,*) this%N_cells
-         endif
+         write(un,*) 'plane        = ';write(un,*) this%plane
+         write(un,*) 'N_cells      = ';write(un,*) this%N_cells
          write(un,*) 'plane_any    = ';write(un,*) this%plane_any
          write(un,*) 'N_cells_tot  = ';write(un,*) this%N_cells_tot
          write(un,*) 'volume       = ';write(un,*) this%volume
@@ -192,18 +164,12 @@
          integer,intent(in) :: un
          integer :: i_int_tensor
          integer :: s_int_tensor
-         integer :: s_plane
-         integer :: s_N_cells
          call delete(this)
          read(un,*) s_int_tensor
          do i_int_tensor=1,s_int_tensor
            call import(this%int_tensor(i_int_tensor),un)
          enddo
-         read(un,*) s_plane
-         allocate(this%plane(s_plane))
          read(un,*); read(un,*) this%plane
-         read(un,*) s_N_cells
-         allocate(this%N_cells(s_N_cells))
          read(un,*); read(un,*) this%N_cells
          read(un,*); read(un,*) this%plane_any
          read(un,*); read(un,*) this%N_cells_tot

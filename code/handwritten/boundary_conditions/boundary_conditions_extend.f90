@@ -42,6 +42,7 @@
        use grid_mod
        use block_extend_mod
        use block_mod
+       use string_mod
        use face_SD_mod
        use face_SD_extend_mod
        use GF_mod
@@ -157,8 +158,8 @@
          type(boundary_conditions),intent(inout) :: BC
          real(cp),intent(in) :: val
          call init(BC%face,val)
-         call init(BC%edge,val)
-         call init(BC%corner,val)
+         ! call init(BC%edge,val)
+         ! call init(BC%corner,val)
          call define_logicals(BC)
          BC%BCL%vals_defined = .true.
        end subroutine
@@ -414,40 +415,40 @@
          logical,dimension(3) :: L
          BC%BCL%defined = BC%BCL%GFs_defined.and.BC%BCL%BCT_defined.and.BC%BCL%vals_defined
 
-         L(1) = BC%face%BCL%all_Dirichlet
-         L(2) = BC%edge%BCL%all_Dirichlet
-         L(3) = BC%corner%BCL%all_Dirichlet
-         BC%BCL%all_Dirichlet = all(L)
+         L(1) = get_all_Dirichlet(BC%face)
+         ! L(2) = get_all_Dirichlet(BC%edge)
+         ! L(3) = get_all_Dirichlet(BC%corner)
+         BC%BCL%all_Dirichlet = L(1) ! all()
 
-         L(1) = BC%face%BCL%all_Robin
-         L(2) = BC%edge%BCL%all_Robin
-         L(3) = BC%corner%BCL%all_Robin
-         BC%BCL%all_Robin = all(L)
+         L(1) = get_all_Robin(BC%face)
+         ! L(2) = get_all_Robin(BC%edge)
+         ! L(3) = get_all_Robin(BC%corner)
+         BC%BCL%all_Robin = L(1) ! all()
 
-         L(1) = BC%face%BCL%all_Neumann
-         L(2) = BC%edge%BCL%all_Neumann
-         L(3) = BC%corner%BCL%all_Neumann
-         BC%BCL%all_Neumann = all(L)
+         L(1) = get_all_Neumann(BC%face)
+         ! L(2) = get_all_Neumann(BC%edge)
+         ! L(3) = get_all_Neumann(BC%corner)
+         BC%BCL%all_Neumann = L(1) ! all()
 
-         L(1) = BC%face%BCL%any_Dirichlet
-         L(2) = BC%edge%BCL%any_Dirichlet
-         L(3) = BC%corner%BCL%any_Dirichlet
-         BC%BCL%any_Dirichlet = any(L)
+         L(1) = get_any_Dirichlet(BC%face)
+         ! L(2) = get_any_Dirichlet(BC%edge)
+         ! L(3) = get_any_Dirichlet(BC%corner)
+         BC%BCL%any_Dirichlet = L(1) ! any()
 
-         L(1) = BC%face%BCL%any_Robin
-         L(2) = BC%edge%BCL%any_Robin
-         L(3) = BC%corner%BCL%any_Robin
-         BC%BCL%any_Robin = any(L)
+         L(1) = get_any_Robin(BC%face)
+         ! L(2) = get_any_Robin(BC%edge)
+         ! L(3) = get_any_Robin(BC%corner)
+         BC%BCL%any_Robin = L(1) ! any()
 
-         L(1) = BC%face%BCL%any_Neumann
-         L(2) = BC%edge%BCL%any_Neumann
-         L(3) = BC%corner%BCL%any_Neumann
-         BC%BCL%any_Neumann = any(L)
+         L(1) = get_any_Neumann(BC%face)
+         ! L(2) = get_any_Neumann(BC%edge)
+         ! L(3) = get_any_Neumann(BC%corner)
+         BC%BCL%any_Neumann = L(1) ! any()
 
-         L(1) = BC%face%BCL%any_Prescribed
-         L(2) = BC%edge%BCL%any_Prescribed
-         L(3) = BC%corner%BCL%any_Prescribed
-         BC%BCL%any_Prescribed = any(L)
+         L(1) = get_any_Prescribed(BC%face)
+         ! L(2) = get_any_Prescribed(BC%edge)
+         ! L(3) = get_any_Prescribed(BC%corner)
+         BC%BCL%any_Prescribed = L(1) ! any()
        end subroutine
 
        function get_all_Dirichlet_BCs(BC) result(L)

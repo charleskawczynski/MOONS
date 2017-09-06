@@ -98,7 +98,6 @@
          integer :: s_C
          integer :: s_N
          integer :: s_M
-         write(un,*) ' -------------------- sub_domain'
          s_C = size(this%C)
          do i_C=1,s_C
            call display(this%C(i_C),un)
@@ -111,9 +110,6 @@
          do i_M=1,s_M
            call display(this%M(i_M),un)
          enddo
-         write(un,*) 'defined = ',this%defined
-         write(un,*) 'g_R1_id = ',this%g_R1_id
-         write(un,*) 'g_R2_id = ',this%g_R2_id
        end subroutine
 
        subroutine display_short_su(this,un)

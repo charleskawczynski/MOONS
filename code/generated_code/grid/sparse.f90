@@ -56,11 +56,9 @@
          implicit none
          type(sparse),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- sparse'
          call display(this%L,un)
          call display(this%D,un)
          call display(this%U,un)
-         write(un,*) 'staggered = ',this%staggered
        end subroutine
 
        subroutine display_short_sp(this,un)

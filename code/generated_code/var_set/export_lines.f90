@@ -70,14 +70,12 @@
          integer,intent(in) :: un
          integer :: i_EL
          integer :: s_EL
-         write(un,*) ' -------------------- export_lines'
          if (allocated(this%EL)) then
            s_EL = size(this%EL)
            do i_EL=1,s_EL
              call display(this%EL(i_EL),un)
            enddo
          endif
-         write(un,*) 'N  = ',this%N
        end subroutine
 
        subroutine display_short_ex(this,un)

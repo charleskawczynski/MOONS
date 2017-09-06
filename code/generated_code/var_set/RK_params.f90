@@ -65,10 +65,6 @@
          implicit none
          type(RK_params),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- RK_params'
-         write(un,*) 'n_stages  = ',this%n_stages
-         write(un,*) 'n         = ',this%n
-         write(un,*) 'RK_active = ',this%RK_active
          call display(this%gamma,un)
          call display(this%zeta,un)
          call display(this%alpha,un)

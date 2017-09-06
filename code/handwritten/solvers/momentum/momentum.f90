@@ -156,8 +156,9 @@
          call init_P_BCs(mom%p,m,SP)
          call update_BC_vals(mom%p)
          write(*,*) '     BCs initialized'
-         if (SP%VS%U%SS%solve) call export_BCs(mom%U,str(DT%U%BCs),'U')
          if (SP%VS%U%SS%solve) call export_BCs(mom%p,str(DT%p%BCs),'p')
+         if (SP%VS%U%SS%solve) call export_BCs(mom%U,str(DT%U%BCs),'U')
+         write(*,*) '     BCs exported'
          ! if (SP%VS%U%SS%solve) call print_BCs(mom%U,'U')
          ! if (SP%VS%U%SS%solve) call print_BCs(mom%p,'p')
 
@@ -186,6 +187,7 @@
          endif
          write(*,*) '     momentum probes initialized'
          call init(mom%TS,mom%m,mom%U,SP%TSP,SP%VS%U%TMP,str(DT%U%stats),'U')
+         write(*,*) '     momentum time statistics initialized'
 
          ! Initialize interior solvers
          call init(mom%PCG_U,mom_diffusion,mom_diffusion_explicit,prec_mom_VF,mom%m,&

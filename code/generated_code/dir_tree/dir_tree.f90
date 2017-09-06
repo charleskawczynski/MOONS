@@ -148,7 +148,6 @@
          implicit none
          type(dir_tree),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- dir_tree'
          call display(this%tar_p,un)
          call display(this%out_dir,un)
          call display(this%LDC,un)

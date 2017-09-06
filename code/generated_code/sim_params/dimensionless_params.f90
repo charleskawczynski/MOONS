@@ -116,28 +116,6 @@
          implicit none
          type(dimensionless_params),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- dimensionless_params'
-         write(un,*) 'Re                   = ',this%Re
-         write(un,*) 'Al                   = ',this%Al
-         write(un,*) 'N                    = ',this%N
-         write(un,*) 'Ha                   = ',this%Ha
-         write(un,*) 'tau                  = ',this%tau
-         write(un,*) 'Gr                   = ',this%Gr
-         write(un,*) 'Fr                   = ',this%Fr
-         write(un,*) 'Pr                   = ',this%Pr
-         write(un,*) 'Pe                   = ',this%Pe
-         write(un,*) 'Ec                   = ',this%Ec
-         write(un,*) 'Rem                  = ',this%Rem
-         write(un,*) 'c_w                  = ',this%c_w
-         write(un,*) 'Robin_coeff          = ',this%Robin_coeff
-         write(un,*) 'Q                    = ',this%Q
-         write(un,*) 'sig_local_over_sig_f = ',this%sig_local_over_sig_f
-         write(un,*) 'KE_scale             = ',this%KE_scale
-         write(un,*) 'ME_scale             = ',this%ME_scale
-         write(un,*) 'JE_scale             = ',this%JE_scale
-         write(un,*) 'L_eta                = ',this%L_eta
-         write(un,*) 'U_eta                = ',this%U_eta
-         write(un,*) 't_eta                = ',this%t_eta
          call display(this%dir,un)
          call display(this%name,un)
        end subroutine

@@ -65,7 +65,6 @@
          implicit none
          type(var_set),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- var_set'
          call display(this%T,un)
          call display(this%U,un)
          call display(this%p,un)

@@ -18,6 +18,7 @@
       public :: init,delete,display,print,export,import ! Essentials
 
       public :: write_formatted
+      public :: string_allocated
       public :: get_str,str ! str does not require length
       public :: len,match,match_index
       public :: compress,append,prepend
@@ -35,6 +36,7 @@
       interface import;               module procedure import_string;                  end interface
 
       interface write_formatted;      module procedure write_formatted_string;         end interface
+      interface string_allocated;     module procedure string_allocated_string;        end interface
 
       interface append;               module procedure app_string_char;                end interface
       interface append;               module procedure app_string_string;              end interface
@@ -93,12 +95,15 @@
         type(string),intent(inout) :: a
         type(string),intent(in) :: b
         integer :: i
-        call insist_allocated(b,'init_copy')
-        call init(a,b%n)
-        do i=1,b%n
-        call init_copy_char(a%s(i),b%s(i))
-        enddo
-        a%n = b%n
+        call delete(a)
+        ! call insist_allocated(b,'init_copy')
+        if ((b%n.gt.0).and.(string_allocated(b))) then
+          call init(a,b%n)
+          do i=1,b%n
+          call init_copy_char(a%s(i),b%s(i))
+          enddo
+          a%n = b%n
+        endif
       end subroutine
 
       subroutine delete_string(st)
@@ -379,7 +384,7 @@
         a%c = b%c
       end subroutine
 
-      function string_allocated(st) result(L)
+      function string_allocated_string(st) result(L)
         implicit none
         type(string),intent(in) :: st
         logical :: L

@@ -69,15 +69,7 @@
          implicit none
          type(segment),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- segment'
-         write(un,*) 'N_cells      = ',this%N_cells
          call display(this%distribution,un)
-         write(un,*) 'hmax         = ',this%hmax
-         write(un,*) 'hmin         = ',this%hmin
-         write(un,*) 'L            = ',this%L
-         write(un,*) 'tau          = ',this%tau
-         write(un,*) 'yc           = ',this%yc
-         write(un,*) 'dir          = ',this%dir
        end subroutine
 
        subroutine display_short_se(this,un)

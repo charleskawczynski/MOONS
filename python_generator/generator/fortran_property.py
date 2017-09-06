@@ -327,15 +327,20 @@ class fortran_property:
     L = []
 
     if       self.object_type=='primitive' and     self.allocatable and     self.dimension>1 and     self.rank>1:
-      L = L + ["write(un,*) '" +self.name+ self.display_spaces+ " = ',this%" + self.name]
+      pass # temporary
+      # L = L + ["write(un,*) '" +self.name+ self.display_spaces+ " = ',this%" + self.name]
     elif     self.object_type=='primitive' and not self.allocatable and     self.dimension>1 and     self.rank>1:
-      L = L + ["write(un,*) '" +self.name+ self.display_spaces+ " = ',this%" + self.name]
+      pass # temporary
+      # L = L + ["write(un,*) '" +self.name+ self.display_spaces+ " = ',this%" + self.name]
     elif     self.object_type=='primitive' and     self.allocatable and     self.dimension>1 and not self.rank>1:
-      L = L + ["write(un,*) '" +self.name+ self.display_spaces+ " = ',this%" + self.name]
+      pass
+      # L = L + ["write(un,*) '" +self.name+ self.display_spaces+ " = ',this%" + self.name]
     elif     self.object_type=='primitive' and not self.allocatable and     self.dimension>1 and not self.rank>1:
-      L = L + ["write(un,*) '" +self.name+ self.display_spaces+ " = ',this%" + self.name]
+      pass # temporary
+      # L = L + ["write(un,*) '" +self.name+ self.display_spaces+ " = ',this%" + self.name]
     elif     self.object_type=='primitive' and not self.allocatable and not self.dimension>1 and not self.rank>1:
-      L = L + ["write(un,*) '" +self.name+ self.display_spaces+ " = ',this%" + self.name]
+      pass # temporary
+      # L = L + ["write(un,*) '" +self.name+ self.display_spaces+ " = ',this%" + self.name]
     elif     self.object_type=='object'    and     self.allocatable and     self.dimension>1 and     self.rank>1:
         L = L + ['if (allocated(this%'+self.name+')) then']
         L = L + [self.int_rank_shape_this]

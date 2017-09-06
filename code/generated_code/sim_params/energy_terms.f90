@@ -65,7 +65,6 @@
          implicit none
          type(energy_terms),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- energy_terms'
          call display(this%advection,un)
          call display(this%diffusion,un)
          call display(this%diffusion_linear,un)

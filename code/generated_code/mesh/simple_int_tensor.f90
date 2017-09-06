@@ -46,8 +46,6 @@
          implicit none
          type(simple_int_tensor),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- simple_int_tensor'
-         write(un,*) 'eye = ',this%eye
        end subroutine
 
        subroutine display_short_si(this,un)

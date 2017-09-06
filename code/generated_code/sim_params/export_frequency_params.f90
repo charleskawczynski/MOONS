@@ -61,13 +61,6 @@
          implicit none
          type(export_frequency_params),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- export_frequency_params'
-         write(un,*) 'export_ever       = ',this%export_ever
-         write(un,*) 'export_first_step = ',this%export_first_step
-         write(un,*) 'export_now        = ',this%export_now
-         write(un,*) 'frequency_coeff   = ',this%frequency_coeff
-         write(un,*) 'frequency_base    = ',this%frequency_base
-         write(un,*) 'frequency_exp     = ',this%frequency_exp
        end subroutine
 
        subroutine display_short_ex(this,un)

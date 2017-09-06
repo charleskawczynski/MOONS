@@ -53,9 +53,6 @@
          implicit none
          type(single_procedure),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- single_procedure'
-         write(un,*) 'defined = ',this%defined
-         write(un,*) 'ID      = ',this%ID
        end subroutine
 
        subroutine display_short_si(this,un)

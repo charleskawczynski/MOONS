@@ -77,12 +77,9 @@
          implicit none
          type(block_field),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- block_field'
          call display(this%GF,un)
          call display(this%BCs,un)
          call display(this%DL,un)
-         write(un,*) 'many_cell_N_periodic           = ',this%many_cell_N_periodic
-         write(un,*) 'many_cell                      = ',this%many_cell
          call display(this%PA_assign_ghost_XPeriodic,un)
          call display(this%PA_assign_ghost_N_XPeriodic,un)
          call display(this%PA_assign_wall_Dirichlet,un)

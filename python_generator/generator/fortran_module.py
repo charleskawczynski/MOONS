@@ -315,7 +315,8 @@ class fortran_module:
         for key,s in zip(self.prop,sp_n):
             self.prop[key].set_display_spaces(s)
 
-        c.append(self.spaces[2] + "write(un,*) ' -------------------- " +self.name+ "'" )
+        # pass # temporary
+        # c.append(self.spaces[2] + "write(un,*) ' -------------------- " +self.name+ "'" )
         for key in self.prop:
             c.append([self.spaces[2]+x for x in self.prop[key].write_display()])
         c.append(self.end_sub())

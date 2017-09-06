@@ -35,12 +35,6 @@
          type(procedure_array) :: PA_face_BCs
          type(procedure_array) :: PA_face_implicit_BCs
          type(face_SD) :: f_BCs
-         type(boundary) :: edge
-         type(procedure_array) :: PA_edges_BCs
-         type(procedure_array) :: PA_edges_implicit_BCs
-         type(boundary) :: corner
-         type(procedure_array) :: PA_corners_BCs
-         type(procedure_array) :: PA_corners_implicit_BCs
        end type
 
        contains
@@ -57,12 +51,6 @@
          call init(this%PA_face_BCs,that%PA_face_BCs)
          call init(this%PA_face_implicit_BCs,that%PA_face_implicit_BCs)
          call init(this%f_BCs,that%f_BCs)
-         call init(this%edge,that%edge)
-         call init(this%PA_edges_BCs,that%PA_edges_BCs)
-         call init(this%PA_edges_implicit_BCs,that%PA_edges_implicit_BCs)
-         call init(this%corner,that%corner)
-         call init(this%PA_corners_BCs,that%PA_corners_BCs)
-         call init(this%PA_corners_implicit_BCs,that%PA_corners_implicit_BCs)
        end subroutine
 
        subroutine delete_bo(this)
@@ -75,51 +63,31 @@
          call delete(this%PA_face_BCs)
          call delete(this%PA_face_implicit_BCs)
          call delete(this%f_BCs)
-         call delete(this%edge)
-         call delete(this%PA_edges_BCs)
-         call delete(this%PA_edges_implicit_BCs)
-         call delete(this%corner)
-         call delete(this%PA_corners_BCs)
-         call delete(this%PA_corners_implicit_BCs)
        end subroutine
 
        subroutine display_bo(this,un)
          implicit none
          type(boundary_conditions),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- boundary_conditions'
-         write(un,*) 'apply_BC_order          = ',this%apply_BC_order
          call display(this%BCL,un)
          call display(this%DL,un)
          call display(this%face,un)
          call display(this%PA_face_BCs,un)
          call display(this%PA_face_implicit_BCs,un)
          call display(this%f_BCs,un)
-         call display(this%edge,un)
-         call display(this%PA_edges_BCs,un)
-         call display(this%PA_edges_implicit_BCs,un)
-         call display(this%corner,un)
-         call display(this%PA_corners_BCs,un)
-         call display(this%PA_corners_implicit_BCs,un)
        end subroutine
 
        subroutine display_short_bo(this,un)
          implicit none
          type(boundary_conditions),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'apply_BC_order          = ',this%apply_BC_order
+         write(un,*) 'apply_BC_order       = ',this%apply_BC_order
          call display(this%BCL,un)
          call display(this%DL,un)
          call display(this%face,un)
          call display(this%PA_face_BCs,un)
          call display(this%PA_face_implicit_BCs,un)
          call display(this%f_BCs,un)
-         call display(this%edge,un)
-         call display(this%PA_edges_BCs,un)
-         call display(this%PA_edges_implicit_BCs,un)
-         call display(this%corner,un)
-         call display(this%PA_corners_BCs,un)
-         call display(this%PA_corners_implicit_BCs,un)
        end subroutine
 
        subroutine print_bo(this)
@@ -138,19 +106,13 @@
          implicit none
          type(boundary_conditions),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'apply_BC_order           = ';write(un,*) this%apply_BC_order
+         write(un,*) 'apply_BC_order        = ';write(un,*) this%apply_BC_order
          call export(this%BCL,un)
          call export(this%DL,un)
          call export(this%face,un)
          call export(this%PA_face_BCs,un)
          call export(this%PA_face_implicit_BCs,un)
          call export(this%f_BCs,un)
-         call export(this%edge,un)
-         call export(this%PA_edges_BCs,un)
-         call export(this%PA_edges_implicit_BCs,un)
-         call export(this%corner,un)
-         call export(this%PA_corners_BCs,un)
-         call export(this%PA_corners_implicit_BCs,un)
        end subroutine
 
        subroutine import_bo(this,un)
@@ -165,12 +127,6 @@
          call import(this%PA_face_BCs,un)
          call import(this%PA_face_implicit_BCs,un)
          call import(this%f_BCs,un)
-         call import(this%edge,un)
-         call import(this%PA_edges_BCs,un)
-         call import(this%PA_edges_implicit_BCs,un)
-         call import(this%corner,un)
-         call import(this%PA_corners_BCs,un)
-         call import(this%PA_corners_implicit_BCs,un)
        end subroutine
 
        subroutine display_wrap_bo(this,dir,name)

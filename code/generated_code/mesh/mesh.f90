@@ -77,7 +77,6 @@
          integer,intent(in) :: un
          integer :: i_B
          integer :: s_B
-         write(un,*) ' -------------------- mesh'
          if (allocated(this%B)) then
            s_B = size(this%B)
            do i_B=1,s_B
@@ -85,8 +84,6 @@
            enddo
          endif
          call display(this%MP,un)
-         write(un,*) 'defined = ',this%defined
-         write(un,*) 's       = ',this%s
        end subroutine
 
        subroutine display_short_me(this,un)

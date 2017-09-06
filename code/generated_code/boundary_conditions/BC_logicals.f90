@@ -88,22 +88,6 @@
          implicit none
          type(BC_logicals),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- BC_logicals'
-         write(un,*) 'defined           = ',this%defined
-         write(un,*) 'GFs_defined       = ',this%GFs_defined
-         write(un,*) 'BCT_defined       = ',this%BCT_defined
-         write(un,*) 'vals_defined      = ',this%vals_defined
-         write(un,*) 'all_Dirichlet     = ',this%all_Dirichlet
-         write(un,*) 'all_Neumann       = ',this%all_Neumann
-         write(un,*) 'all_Robin         = ',this%all_Robin
-         write(un,*) 'all_symmetric     = ',this%all_symmetric
-         write(un,*) 'all_antisymmetric = ',this%all_antisymmetric
-         write(un,*) 'any_Dirichlet     = ',this%any_Dirichlet
-         write(un,*) 'any_Neumann       = ',this%any_Neumann
-         write(un,*) 'any_Robin         = ',this%any_Robin
-         write(un,*) 'any_symmetric     = ',this%any_symmetric
-         write(un,*) 'any_antisymmetric = ',this%any_antisymmetric
-         write(un,*) 'any_prescribed    = ',this%any_prescribed
        end subroutine
 
        subroutine display_short_BC(this,un)

@@ -212,7 +212,6 @@
          integer :: s_eb
          integer :: s_cb
          integer :: s_vol
-         write(un,*) ' -------------------- block'
          call display(this%g,un)
          if (allocated(this%f)) then
            s_f = size(this%f)
@@ -256,7 +255,6 @@
              call display(this%vol(i_vol),un)
            enddo
          endif
-         write(un,*) 'apply_BC_order = ',this%apply_BC_order
        end subroutine
 
        subroutine display_short_bl(this,un)

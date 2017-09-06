@@ -50,7 +50,6 @@
          implicit none
          type(path),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- path'
          call display(this%a,un)
          call display(this%r,un)
        end subroutine

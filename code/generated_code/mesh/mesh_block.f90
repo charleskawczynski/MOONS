@@ -51,7 +51,6 @@
          implicit none
          type(mesh_block),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- mesh_block'
          call display(this%m,un)
          call display(this%B,un)
        end subroutine

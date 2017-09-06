@@ -55,11 +55,6 @@
          implicit none
          type(export_line),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- export_line'
-         write(un,*) 'export_ever = ',this%export_ever
-         write(un,*) 'dir         = ',this%dir
-         write(un,*) 'line        = ',this%line
-         write(un,*) 'suffix      = ',this%suffix
        end subroutine
 
        subroutine display_short_ex(this,un)

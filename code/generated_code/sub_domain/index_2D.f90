@@ -46,8 +46,6 @@
          implicit none
          type(index_2D),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- index_2D'
-         write(un,*) 'i = ',this%i
        end subroutine
 
        subroutine display_short_in(this,un)

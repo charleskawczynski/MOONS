@@ -74,7 +74,6 @@
          implicit none
          type(export_frequency),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- export_frequency'
          call display(this%info,un)
          call display(this%unsteady_0D,un)
          call display(this%unsteady_1D,un)

@@ -80,18 +80,8 @@
          implicit none
          type(probe),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- probe'
          call display(this%dir,un)
          call display(this%name,un)
-         write(un,*) 'd         = ',this%d
-         write(un,*) 'd_data_dt = ',this%d_data_dt
-         write(un,*) 'd_amax    = ',this%d_amax
-         write(un,*) 't         = ',this%t
-         write(un,*) 'un        = ',this%un
-         write(un,*) 'cols      = ',this%cols
-         write(un,*) 'n_step    = ',this%n_step
-         write(un,*) 'restart   = ',this%restart
-         write(un,*) 'simple    = ',this%simple
        end subroutine
 
        subroutine display_short_pr(this,un)

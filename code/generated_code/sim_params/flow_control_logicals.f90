@@ -100,26 +100,6 @@
          implicit none
          type(flow_control_logicals),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- flow_control_logicals'
-         write(un,*) 'post_process                       = ',this%post_process
-         write(un,*) 'skip_solver_loop                   = ',this%skip_solver_loop
-         write(un,*) 'stop_before_solve                  = ',this%stop_before_solve
-         write(un,*) 'stop_after_mesh_export             = ',this%stop_after_mesh_export
-         write(un,*) 'Poisson_test                       = ',this%Poisson_test
-         write(un,*) 'Taylor_Green_Vortex_test           = ',this%Taylor_Green_Vortex_test
-         write(un,*) 'temporal_convergence_test          = ',this%temporal_convergence_test
-         write(un,*) 'export_numerical_flow_rate         = ',this%export_numerical_flow_rate
-         write(un,*) 'export_Shercliff_Hunt_analytic_sol = ',this%export_Shercliff_Hunt_analytic_sol
-         write(un,*) 'export_vorticity_streamfunction    = ',this%export_vorticity_streamfunction
-         write(un,*) 'compute_export_E_K_Budget          = ',this%compute_export_E_K_Budget
-         write(un,*) 'compute_export_E_M_budget          = ',this%compute_export_E_M_budget
-         write(un,*) 'operator_commute_test              = ',this%operator_commute_test
-         write(un,*) 'export_final_tec                   = ',this%export_final_tec
-         write(un,*) 'export_final_restart               = ',this%export_final_restart
-         write(un,*) 'restart_meshes                     = ',this%restart_meshes
-         write(un,*) 'export_heavy                       = ',this%export_heavy
-         write(un,*) 'print_every_MHD_step               = ',this%print_every_MHD_step
-         write(un,*) 'compute_surface_power              = ',this%compute_surface_power
        end subroutine
 
        subroutine display_short_fl(this,un)

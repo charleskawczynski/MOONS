@@ -55,11 +55,6 @@
          implicit none
          type(overlap),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- overlap'
-         write(un,*) 'i1      = ',this%i1
-         write(un,*) 'i2      = ',this%i2
-         write(un,*) 'iR      = ',this%iR
-         write(un,*) 'success = ',this%success
        end subroutine
 
        subroutine display_short_ov(this,un)

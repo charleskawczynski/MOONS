@@ -56,11 +56,6 @@
          implicit none
          type(geometry_props),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) ' -------------------- geometry_props'
-         write(un,*) 'geometry       = ',this%geometry
-         write(un,*) 'tw             = ',this%tw
-         write(un,*) 'periodic_dir   = ',this%periodic_dir
-         write(un,*) 'apply_BC_order = ',this%apply_BC_order
        end subroutine
 
        subroutine display_short_ge(this,un)

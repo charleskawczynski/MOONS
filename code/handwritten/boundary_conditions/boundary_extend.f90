@@ -32,6 +32,10 @@
        public :: get_all_Neumann
        public :: get_all_Dirichlet
        public :: get_all_Robin
+       public :: get_any_Neumann
+       public :: get_any_Dirichlet
+       public :: get_any_Robin
+
        public :: get_any_prescribed
 
        public :: prolongate
@@ -64,6 +68,9 @@
        interface get_all_Neumann;     module procedure get_all_Neumann_B;         end interface
        interface get_all_Dirichlet;   module procedure get_all_Dirichlet_B;       end interface
        interface get_all_Robin;       module procedure get_all_Robin_B;           end interface
+       interface get_any_Neumann;     module procedure get_any_Neumann_B;         end interface
+       interface get_any_Dirichlet;   module procedure get_any_Dirichlet_B;       end interface
+       interface get_any_Robin;       module procedure get_any_Robin_B;           end interface
        interface get_any_prescribed;  module procedure get_any_prescribed_B;      end interface
 
        interface prolongate;          module procedure prolongate_B;              end interface
@@ -284,6 +291,27 @@
          type(boundary),intent(inout) :: B
          logical :: L
          L = B%BCL%all_Robin
+       end function
+
+       function get_any_Neumann_B(B) result(L)
+         implicit none
+         type(boundary),intent(inout) :: B
+         logical :: L
+         L = B%BCL%any_Neumann
+       end function
+
+       function get_any_Dirichlet_B(B) result(L)
+         implicit none
+         type(boundary),intent(inout) :: B
+         logical :: L
+         L = B%BCL%any_Dirichlet
+       end function
+
+       function get_any_Robin_B(B) result(L)
+         implicit none
+         type(boundary),intent(inout) :: B
+         logical :: L
+         L = B%BCL%any_Robin
        end function
 
        function get_any_prescribed_B(B) result(L)

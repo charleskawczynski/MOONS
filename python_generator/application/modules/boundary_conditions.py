@@ -75,11 +75,11 @@ def add_modules(g,T,F,priv,real):
 
 	# g.module[m_name].add_prop('e_BCs','edge_SD',priv) # Not yet developed
 	# g.module[m_name].add_prop('c_BCs','corner_SD',priv) # Not yet developed
-	g.module[m_name].add_prop('edge','boundary',priv)
-	g.module[m_name].add_prop('PA_edges_BCs','procedure_array',priv)
-	g.module[m_name].add_prop('PA_edges_implicit_BCs','procedure_array',priv)
-	g.module[m_name].add_prop('corner','boundary',priv)
-	g.module[m_name].add_prop('PA_corners_BCs','procedure_array',priv)
-	g.module[m_name].add_prop('PA_corners_implicit_BCs','procedure_array',priv)
+	# g.module[m_name].add_prop('edge','boundary',priv)
+	# g.module[m_name].add_prop('PA_edges_BCs','procedure_array',priv)
+	# g.module[m_name].add_prop('PA_edges_implicit_BCs','procedure_array',priv)
+	# g.module[m_name].add_prop('corner','boundary',priv)
+	# g.module[m_name].add_prop('PA_corners_BCs','procedure_array',priv)
+	# g.module[m_name].add_prop('PA_corners_implicit_BCs','procedure_array',priv)
 
 	return g
