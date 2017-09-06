@@ -8,7 +8,7 @@
        ! use apply_BCs_edges_bridge_implicit_mod
        ! use apply_BCs_corners_bridge_implicit_mod
        use face_edge_corner_indexing_mod
-       use SF_mod
+       use SF_extend_mod
        use VF_mod
 
        implicit none

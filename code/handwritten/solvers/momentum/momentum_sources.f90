@@ -1,6 +1,6 @@
        module momentum_sources_mod
        use current_precision_mod
-       use SF_mod
+       use SF_extend_mod
        use VF_mod
        use export_raw_processed_mod
        use TF_mod

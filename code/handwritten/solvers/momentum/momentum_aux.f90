@@ -1,7 +1,7 @@
        module momentum_aux_mod
        use current_precision_mod
        use mesh_extend_mod
-       use SF_mod
+       use SF_extend_mod
        use VF_mod
        use ops_aux_mod
        use ops_interp_mod

@@ -1,4 +1,5 @@
-      module SF_mod
+      module SF_extend_mod
+      use SF_mod
         use current_precision_mod
         use IO_tools_mod
         use array_mod
@@ -104,28 +105,8 @@
         public :: assign_ghost_ymin_ymax
         public :: assign_ghost_zmin_zmax
 
-        type SF
-          integer :: s = 0 ! Number of subdomains in domain decomposition
-          type(block_field),dimension(:),allocatable :: BF
-          logical :: all_neumann = .false. ! If necessary to subtract mean
-
-          integer :: numEl = 0
-          integer :: numPhysEl = 0 ! Number of physical elements, number of physical elements
-          real(cp) :: vol = 0.0_cp
-
-          type(data_location) :: DL
-        end type
-
-        interface init;                     module procedure init_SF_copy;                 end interface
         interface init;                     module procedure init_DL_SF;                   end interface
         interface init;                     module procedure init_SF_copy_mesh;            end interface
-        interface delete;                   module procedure delete_SF;                    end interface
-        interface display;                  module procedure display_SF;                   end interface
-        interface print;                    module procedure print_SF;                     end interface
-        interface export;                   module procedure export_SF;                    end interface
-        interface import;                   module procedure import_SF;                    end interface
-        interface export;                   module procedure export_wrapper_SF;            end interface
-        interface import;                   module procedure import_wrapper_SF;            end interface
 
         interface init_CC;                  module procedure init_SF_CC;                   end interface
         interface init_Node;                module procedure init_SF_Node;                 end interface
@@ -295,22 +276,6 @@
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-        subroutine init_SF_copy(f,f_in)
-          implicit none
-          type(SF),intent(inout) :: f
-          type(SF),intent(in) :: f_in
-          integer :: i
-          call delete(f)
-          allocate(f%BF(f_in%s));
-          f%s = f_in%s
-          call init(f%DL,f_in%DL)
-          do i=1,f%s; call init(f%BF(i),f_in%BF(i)); enddo
-          f%numEl = f_in%numEl
-          f%numPhysEl = f_in%numPhysEl
-          f%vol = f_in%vol
-          f%all_neumann = f_in%all_Neumann
-        end subroutine
-
         subroutine init_DL_SF(f,m,DL)
           implicit none
           type(SF),intent(inout) :: f
@@ -339,86 +304,6 @@
           call init(f,temp)
           call delete(temp)
         end subroutine
-
-        subroutine delete_SF(f)
-          implicit none
-          type(SF),intent(inout) :: f
-          integer :: i
-          if (allocated(f%BF)) then
-            do i=1,f%s; call delete(f%BF(i)); enddo
-            deallocate(f%BF)
-          endif
-          call delete(f%DL)
-          f%s = 0
-          f%numEl = 0
-          f%numPhysEl = 0
-        end subroutine
-
-        subroutine display_SF(f,un)
-          implicit none
-          type(SF),intent(in) :: f
-          integer,intent(in) :: un
-          integer :: i
-          call display(f%DL,un)
-          do i=1,f%s; call display(f%BF(i),un); enddo
-        end subroutine
-
-        subroutine print_SF(f)
-          implicit none
-          type(SF),intent(in) :: f
-          call display(f,6)
-        end subroutine
-
-        subroutine export_SF(f,un)
-          implicit none
-          type(SF),intent(in) :: f
-          integer,intent(in) :: un
-          integer :: i
-          write(un,*) 'f%s'
-          write(un,*) f%s
-          write(un,*) f%all_neumann
-          write(un,*) f%numEl,f%numPhysEl
-          write(un,*) f%vol
-          do i=1,f%s; call export(f%BF(i),un); enddo
-          call export(f%DL,un)
-        end subroutine
-
-        subroutine import_SF(f,un)
-          implicit none
-          type(SF),intent(inout) :: f
-          integer,intent(in) :: un
-          integer :: i
-          call delete(f)
-          read(un,*)
-          read(un,*) f%s
-          read(un,*) f%all_neumann
-          read(un,*) f%numEl,f%numPhysEl
-          read(un,*) f%vol
-          allocate(f%BF(f%s))
-          do i=1,f%s; call import(f%BF(i),un); enddo
-          call import(f%DL,un)
-        end subroutine
-
-        subroutine export_wrapper_SF(f,dir,name)
-          implicit none
-          type(SF),intent(in) :: f
-          character(len=*),intent(in) :: dir,name
-          integer :: un
-          un = new_and_open(dir,name)
-          call export(f,un)
-          call close_and_message(un,dir,name)
-        end subroutine
-
-        subroutine import_wrapper_SF(f,dir,name)
-          implicit none
-          type(SF),intent(inout) :: f
-          character(len=*),intent(in) :: dir,name
-          integer :: un
-          un = new_and_open(dir,name)
-          call import(f,un)
-          call close_and_message(un,dir,name)
-        end subroutine
-
 
        ! **********************************************************
        ! **********************************************************

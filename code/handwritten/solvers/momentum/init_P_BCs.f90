@@ -4,7 +4,7 @@
        use grid_mod
        use mesh_extend_mod
        use boundary_conditions_extend_mod
-       use SF_mod
+       use SF_extend_mod
        use sim_params_mod
        implicit none
 

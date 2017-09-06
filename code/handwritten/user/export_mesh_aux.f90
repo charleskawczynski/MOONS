@@ -7,7 +7,7 @@
        use mesh_extend_mod
        use mesh_domain_mod
        use mesh_block_extend_mod
-       use SF_mod
+       use SF_extend_mod
        use VF_mod
        use string_mod
        use path_extend_mod

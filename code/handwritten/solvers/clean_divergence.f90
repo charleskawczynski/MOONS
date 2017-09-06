@@ -19,7 +19,7 @@
        use current_precision_mod
        use mesh_extend_mod
        use string_mod
-       use SF_mod
+       use SF_extend_mod
        use VF_mod
        use ops_discrete_mod
        use apply_BCs_mod

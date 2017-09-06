@@ -19,7 +19,7 @@
       use mesh_extend_mod
       use apply_BCs_mod
       use norms_mod
-      use SF_mod
+      use SF_extend_mod
       use ops_discrete_mod
       use ops_aux_mod
       use ops_dct_mod

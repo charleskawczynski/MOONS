@@ -193,7 +193,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)user$(PS)refine_mesh.f90\
 	$(SRC_DIR)$(PS)domain$(PS)mesh_domain.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)generate_mesh_generic.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)SF$(PS)SF.f90\
+	$(SRC_DIR)$(PS)fields$(PS)SF_extend.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)VF$(PS)VF.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)TF$(PS)TF.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)index_mapping.f90\
@@ -248,7 +248,6 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)solvers$(PS)time_marching_methods_SF.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)density$(PS)init_rho_BCs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)density$(PS)init_rho_field.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)density$(PS)density_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)energy_sources.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_T_BCs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_gravity_field.f90\

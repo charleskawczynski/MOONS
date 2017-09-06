@@ -65,6 +65,7 @@
        use mesh_props_mod
        use mesh_mod
        use mesh_block_mod
+       use SF_mod
        implicit none
        write(*,*) "success!"
        end program

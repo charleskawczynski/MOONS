@@ -34,7 +34,7 @@
        use ops_del_mod
        use mesh_extend_mod
        use data_location_mod
-       use SF_mod
+       use SF_extend_mod
        use VF_mod
        use TF_mod
        use ops_interp_mod

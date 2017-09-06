@@ -9,7 +9,7 @@
       use export_raw_processed_mod
       use iter_solver_params_mod
       use is_nan_mod
-      use SF_mod
+      use SF_extend_mod
       use VF_mod
       use TF_mod
       use PCG_aux_mod

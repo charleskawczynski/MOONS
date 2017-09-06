@@ -1,6 +1,6 @@
        module init_T_field_mod
        use current_precision_mod
-       use SF_mod
+       use SF_extend_mod
        use IO_import_mod
        use mesh_extend_mod
        use sim_params_mod

@@ -1,5 +1,5 @@
        module check_BCs_mod
-       use SF_mod
+       use SF_extend_mod
        use VF_mod
        implicit none
 

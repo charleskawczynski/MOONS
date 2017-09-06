@@ -3,7 +3,7 @@
        use grid_mod
        use mesh_extend_mod
        use BC_funcs_mod
-       use SF_mod
+       use SF_extend_mod
        use sim_params_mod
        implicit none
 

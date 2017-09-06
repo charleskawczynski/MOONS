@@ -130,7 +130,7 @@ g = boundary_conditions.add_modules(g,T,F,priv,real)
 g = block.add_modules(g,T,F,priv,real)
 g = block_field.add_modules(g,T,F,priv,real)
 g = mesh.add_modules(g,T,F,priv,real)
-# g = fields.add_modules(g,T,F,priv,real)
+g = fields.add_modules(g,T,F,priv,real)
 # g = mesh_domain.add_modules(g,T,F,priv,real)
 # g = time_statistics.add_modules(g,T,F,priv,real)
 

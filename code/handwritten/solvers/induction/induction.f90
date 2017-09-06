@@ -2,7 +2,7 @@
        use current_precision_mod
        use sim_params_mod
        use IO_tools_mod
-       use SF_mod
+       use SF_extend_mod
        use VF_mod
        use TF_mod
        use IO_export_mod

@@ -14,7 +14,7 @@
        use mesh_extend_mod
        use ops_norms_mod
        use GF_mod
-       use SF_mod
+       use SF_extend_mod
        use VF_mod
        implicit none
 

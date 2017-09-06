@@ -4,7 +4,7 @@
        use mesh_extend_mod
        use mesh_domain_mod
        use ops_embedExtract_mod
-       use SF_mod
+       use SF_extend_mod
        implicit none
 
        private

@@ -1,6 +1,6 @@
        module energy_aux_mod
        use current_precision_mod
-       use SF_mod
+       use SF_extend_mod
        use VF_mod
 
        use ops_embedExtract_mod
