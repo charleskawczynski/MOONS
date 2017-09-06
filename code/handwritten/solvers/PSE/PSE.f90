@@ -1,7 +1,7 @@
       module PSE_mod
       use current_precision_mod
       use IO_export_mod
-      use mesh_mod
+      use mesh_extend_mod
       use apply_BCs_mod
       use norms_mod
       use ops_discrete_mod

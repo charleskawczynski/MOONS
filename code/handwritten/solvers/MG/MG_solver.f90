@@ -10,7 +10,7 @@
       ! Smoother      = Jacobi method
       ! Direct solver = Conjugate Gradient Method
 
-      use mesh_mod
+      use mesh_extend_mod
       use SF_mod
       use boundary_conditions_mod
       use apply_BCs_mod

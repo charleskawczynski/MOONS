@@ -1,6 +1,6 @@
        module matrix_visualization_mod
        use current_precision_mod
-       use mesh_mod
+       use mesh_extend_mod
        use grid_mod
        use grid_init_mod
        use mesh_quality_params_extend_mod

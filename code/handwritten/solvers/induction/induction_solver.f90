@@ -3,7 +3,7 @@
        ! "Tóth, G. The divergence Constraint in Shock-Capturing
        ! MHD Codes. J. Comput. Phys. 161, 605–652 (2000)."
        use current_precision_mod
-       use mesh_mod
+       use mesh_extend_mod
        use SF_mod
        use VF_mod
        use TF_mod

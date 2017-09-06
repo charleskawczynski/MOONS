@@ -6,7 +6,7 @@
        use coordinate_stretch_parameters_mod
        use grid_mod
        use mesh_domain_mod
-       use mesh_mod
+       use mesh_extend_mod
        use constants_mod
        use mesh_PD_geometries_mod
        use mesh_BC_geometries_mod

@@ -74,7 +74,6 @@ VPATH +=\
 SRCS_F +=\
 	$(SRC_DIR)$(PS)globals$(PS)constants.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)face_edge_corner_indexing.f90\
-	$(SRC_DIR)$(PS)math$(PS)simple_int_tensor.f90\
 	$(SRC_DIR)$(PS)math$(PS)is_nan.f90\
 	$(SRC_DIR)$(PS)math$(PS)even_odd.f90\
 	$(SRC_DIR)$(PS)IO$(PS)fmt.f90\
@@ -171,8 +170,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)physical_domain$(PS)physical_sub_domain_extend.f90\
 	$(SRC_DIR)$(PS)sub_domain$(PS)face_SD_extend.f90\
 	$(SRC_DIR)$(PS)block$(PS)block_extend.f90\
-	$(SRC_DIR)$(PS)mesh$(PS)mesh_props.f90\
-	$(SRC_DIR)$(PS)mesh$(PS)mesh.f90\
+	$(SRC_DIR)$(PS)mesh$(PS)mesh_extend.f90\
 	$(SRC_DIR)$(PS)physical_domain$(PS)physical_domain_extend.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)direct$(PS)apply_BCs_faces_raw.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)direct$(PS)apply_BCs_edges_raw.f90\

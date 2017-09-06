@@ -8,7 +8,7 @@
       use overlap_mod
       use data_location_mod
       use face_edge_corner_indexing_mod
-      use mesh_mod
+      use mesh_extend_mod
       use GF_embed_extract_mod
       use mesh_domain_mod
       use GF_mod

@@ -5,7 +5,7 @@
        use apply_stitches_corners_mod
        use SF_mod
        use VF_mod
-       use mesh_mod
+       use mesh_extend_mod
        implicit none
 
        private

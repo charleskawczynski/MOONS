@@ -15,7 +15,7 @@
 
         use current_precision_mod
         use data_location_mod
-        use mesh_mod
+        use mesh_extend_mod
         use mesh_domain_mod
         use SF_mod
         implicit none

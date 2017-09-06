@@ -16,7 +16,7 @@
       !
       ! Flags: (_PARALLELIZE_FFT_)
       use current_precision_mod
-      use mesh_mod
+      use mesh_extend_mod
       use apply_BCs_mod
       use norms_mod
       use SF_mod

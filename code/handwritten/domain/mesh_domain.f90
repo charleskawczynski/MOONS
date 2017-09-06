@@ -6,7 +6,7 @@
        use physical_sub_domain_extend_mod
        use block_field_mod
        use block_field_extend_mod
-       use mesh_mod
+       use mesh_extend_mod
        implicit none
 
        private

@@ -1,4 +1,5 @@
-       module mesh_mod
+       module mesh_extend_mod
+       use mesh_mod
       ! Pre-processor directives: (_DEBUG_MESH_)
        use current_precision_mod
        use IO_tools_mod
@@ -12,12 +13,14 @@
        use face_edge_corner_indexing_mod
        use stitch_mod
        use GF_mod
+       ! use simple_int_tensor_extend_mod
        use mesh_props_mod
        implicit none
 
        private
        public :: mesh
        public :: init,delete,display,print,export,import
+       public :: display_info,print_info
 
        public :: add
        public :: patch
@@ -37,22 +40,9 @@
       public :: checkmesh
 #endif
 
-       type mesh
-         integer :: s       ! Number of blocks
-         type(block),dimension(:),allocatable :: B
-         type(mesh_props) :: MP
-         logical :: defined = .false.
-       end type
-
        interface init;                module procedure init_grid;               end interface
-       interface init;                module procedure init_mesh_copy;          end interface
-       interface delete;              module procedure delete_mesh;             end interface
-       interface display;             module procedure display_mesh_info;       end interface
-       interface print;               module procedure print_mesh_info;         end interface
-       interface export;              module procedure export_mesh;             end interface
-       interface export;              module procedure export_wrapper;          end interface
-       interface import;              module procedure import_mesh;             end interface
-       interface import;              module procedure import_wrapper;          end interface
+       interface display_info;        module procedure display_mesh_info;       end interface
+       interface print_info;          module procedure print_mesh_info;         end interface
 
        interface add;                 module procedure addGrid;                 end interface
        interface init_props;          module procedure init_props_mesh;         end interface
@@ -83,35 +73,6 @@
          call init_props(m)
          call insist_allocated_mesh(m,'init_grid')
          m%defined = .true.
-       end subroutine
-
-       subroutine delete_mesh(m)
-         implicit none
-         type(mesh),intent(inout) :: m
-         integer :: i
-         if (allocated(m%B)) then
-           do i=1,m%s; call delete(m%B(i)%g) ;enddo; deallocate(m%B)
-         endif
-         m%s = 0
-         call delete(m%MP)
-         m%defined = .false.
-       end subroutine
-
-       subroutine init_mesh_copy(m,m_in)
-         implicit none
-         type(mesh),intent(inout) :: m
-         type(mesh),intent(in) :: m_in
-         integer :: i
-         call insist_allocated_mesh(m_in,'init_mesh_copy')
-         call delete(m)
-         if (m_in%s.lt.1) stop 'Error: mesh allocated but size<1 in init_mesh_copy in mesh.f90'
-         m%s = m_in%s
-         allocate(m%B(m_in%s))
-         do i=1,m_in%s
-          call init(m%B(i),m_in%B(i))
-         enddo
-         call init(m%MP,m_in%MP)
-         m%defined = m_in%defined
        end subroutine
 
        subroutine display_mesh_info(m,un)
@@ -154,50 +115,6 @@
          implicit none
          type(mesh), intent(in) :: m
          call display(m,6)
-       end subroutine
-
-       subroutine export_mesh(m,un)
-         implicit none
-         type(mesh), intent(in) :: m
-         integer,intent(in) :: un
-         integer :: i
-         write(un,*) 'N_grids'
-         write(un,*) m%s
-         do i = 1,m%s; call export(m%B(i),un); enddo
-         call export(m%MP,un)
-       end subroutine
-
-       subroutine import_mesh(m,un)
-         implicit none
-         type(mesh), intent(inout) :: m
-         integer,intent(in) :: un
-         integer :: i
-         call delete(m)
-         read(un,*)
-         read(un,*) m%s
-         allocate(m%B(m%s))
-         do i=1,m%s; call import(m%B(i),un); enddo
-         call import(m%MP,un)
-       end subroutine
-
-       subroutine export_wrapper(m,dir,name)
-         implicit none
-         type(mesh), intent(in) :: m
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = new_and_open(dir,name)
-         call export(m,un)
-         call close_and_message(un,dir,name)
-       end subroutine
-
-       subroutine import_wrapper(m,dir,name)
-         implicit none
-         type(mesh), intent(inout) :: m
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = open_to_read(dir,name)
-         call import(m,un)
-         call close_and_message(un,dir,name)
        end subroutine
 
        ! **************************************************************
@@ -286,7 +203,10 @@
          m%MP%plane(2) = all((/(m%B(i)%g%c(2)%N.eq.1,i=1,m%s)/))
          m%MP%plane(3) = all((/(m%B(i)%g%c(3)%N.eq.1,i=1,m%s)/))
          m%MP%plane_any = any(m%MP%plane)
-         do i=1,3; call init(m%MP%int_tensor(i),i); enddo
+         do i=1,3
+          ! call init(m%MP%int_tensor(i),i)
+          m%MP%int_tensor(i)%eye = eye_given_dir(i)
+         enddo
        end subroutine
 
        subroutine init_apply_BC_order_mesh(m,apply_BC_order)

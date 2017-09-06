@@ -1,6 +1,6 @@
        module mesh_generate_mod
        use current_precision_mod
-       use mesh_mod
+       use mesh_extend_mod
        use mesh_benchmark_geometries_mod
        use dir_tree_mod
        use string_mod

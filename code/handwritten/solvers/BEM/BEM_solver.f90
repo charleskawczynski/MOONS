@@ -12,7 +12,7 @@
        use ops_embedExtract_mod
        use domain_mod
        use GS_Poisson_mod
-       use mesh_mod
+       use mesh_extend_mod
        use ops_del_mod
        use ops_aux_mod
        use ops_interp_mod

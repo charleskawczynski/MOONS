@@ -6,6 +6,7 @@ VPATH +=\
 	$(SRC_DIR_GENERATED)$(PS)dir_tree\
 	$(SRC_DIR_GENERATED)$(PS)grid\
 	$(SRC_DIR_GENERATED)$(PS)grid_field\
+	$(SRC_DIR_GENERATED)$(PS)mesh\
 	$(SRC_DIR_GENERATED)$(PS)mesh_params\
 	$(SRC_DIR_GENERATED)$(PS)physical_domain\
 	$(SRC_DIR_GENERATED)$(PS)probe\
@@ -79,3 +80,6 @@ SRCS_F+=\
 	$(SRC_DIR_GENERATED)$(PS)boundary_conditions$(PS)boundary_conditions.f90\
 	$(SRC_DIR_GENERATED)$(PS)block$(PS)block.f90\
 	$(SRC_DIR_GENERATED)$(PS)block_field$(PS)block_field.f90\
+	$(SRC_DIR_GENERATED)$(PS)mesh$(PS)simple_int_tensor.f90\
+	$(SRC_DIR_GENERATED)$(PS)mesh$(PS)mesh_props.f90\
+	$(SRC_DIR_GENERATED)$(PS)mesh$(PS)mesh.f90\

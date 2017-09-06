@@ -1,7 +1,7 @@
        module induction_sources_mod
        use current_precision_mod
        use sim_params_mod
-       use mesh_mod
+       use mesh_extend_mod
        use VF_mod
        use TF_mod
        use mesh_domain_mod

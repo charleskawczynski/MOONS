@@ -16,7 +16,7 @@
       !
       ! Flags: (_PARALLELIZE_GS_,_EXPORT_GS_SF_CONVERGENCE_)
       use current_precision_mod
-      use mesh_mod
+      use mesh_extend_mod
       use apply_BCs_mod
       use boundary_conditions_mod
       use norms_mod

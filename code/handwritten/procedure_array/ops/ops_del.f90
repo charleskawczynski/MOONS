@@ -30,7 +30,7 @@
       use grid_mod
       use face_edge_corner_indexing_mod
       use data_location_mod
-      use mesh_mod
+      use mesh_extend_mod
       use GF_mod
       use SF_mod
       use sparse_mod

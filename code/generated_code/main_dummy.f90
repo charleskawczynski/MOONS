@@ -61,6 +61,9 @@
        use boundary_conditions_mod
        use block_mod
        use block_field_mod
+       use simple_int_tensor_mod
+       use mesh_props_mod
+       use mesh_mod
        implicit none
        write(*,*) "success!"
        end program

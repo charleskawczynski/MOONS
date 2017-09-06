@@ -1,7 +1,7 @@
       module PSE_solver_mod
       ! Compiler flags: (_EXPORT_PSE_CONVERGENCE_)
       use current_precision_mod
-      use mesh_mod
+      use mesh_extend_mod
       use SF_mod
       use VF_mod
       use TF_mod

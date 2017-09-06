@@ -1,7 +1,7 @@
       module index_mapping_mod
       use current_precision_mod
       use IO_tools_mod
-      use mesh_mod
+      use mesh_extend_mod
       use SF_mod
       use VF_mod
       implicit none

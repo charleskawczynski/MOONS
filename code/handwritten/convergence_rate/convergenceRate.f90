@@ -8,7 +8,7 @@
        use ops_aux_mod
 
        use grid_mod
-       use mesh_mod
+       use mesh_extend_mod
        use norms_mod
        use VF_mod
        use richardsonExtrapolation_mod

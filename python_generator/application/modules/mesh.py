@@ -38,12 +38,13 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('B','block',priv,True,1,3)
 	g.module[m_name].add_prop('MP','mesh_props',priv)
 	g.module[m_name].add_prop('defined','logical',priv)
+	g.module[m_name].add_prop('s','integer',priv)
 
-	m_name = 'mesh_block'
-	g.add_module(m_name)
-	g.module[m_name].set_folder_name(__name__.split('.')[1])
-	g.module[m_name].set_used_modules(['IO_tools_mod'])
-	g.module[m_name].add_prop('m','mesh',priv)
-	g.module[m_name].add_prop('B','block',priv)
+	# m_name = 'mesh_block'
+	# g.add_module(m_name)
+	# g.module[m_name].set_folder_name(__name__.split('.')[1])
+	# g.module[m_name].set_used_modules(['IO_tools_mod'])
+	# g.module[m_name].add_prop('m','mesh',priv)
+	# g.module[m_name].add_prop('B','block',priv)
 
 	return g

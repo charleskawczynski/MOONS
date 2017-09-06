@@ -1,6 +1,6 @@
        module ops_mirror_field_mod
        use current_precision_mod
-       use mesh_mod
+       use mesh_extend_mod
        use face_edge_corner_indexing_mod
        use mirror_props_mod
        use SF_mod

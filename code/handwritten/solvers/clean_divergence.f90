@@ -17,7 +17,7 @@
        ! We prefer this over trapezoidal method as this
        ! method requires the simplest interface.
        use current_precision_mod
-       use mesh_mod
+       use mesh_extend_mod
        use string_mod
        use SF_mod
        use VF_mod

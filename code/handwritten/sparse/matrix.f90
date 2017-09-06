@@ -2,7 +2,7 @@
       use current_precision_mod
       use IO_tools_mod
       use IO_export_mod
-      use mesh_mod
+      use mesh_extend_mod
       use ops_discrete_mod
       use ops_aux_mod
       use apply_BCs_mod

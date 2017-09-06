@@ -8,7 +8,7 @@
        use dimensionless_params_mod
        use string_mod
        use grid_mod
-       use mesh_mod
+       use mesh_extend_mod
        use mesh_quality_params_mod
        implicit none
 

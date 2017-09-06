@@ -5,7 +5,7 @@
 
        use ops_embedExtract_mod
        use mesh_domain_mod
-       use mesh_mod
+       use mesh_extend_mod
        use ops_aux_mod
        use ops_interp_mod
        use ops_discrete_mod

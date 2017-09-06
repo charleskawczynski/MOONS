@@ -1,7 +1,7 @@
        module ops_BEM_mod
        use current_precision_mod
        use ops_del_mod
-       use mesh_mod
+       use mesh_extend_mod
        use mesh_domain_mod
        use ops_embedExtract_mod
        use VF_mod

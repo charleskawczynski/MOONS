@@ -5,7 +5,7 @@
       !      IMPLICIT DERIVATIVES. SEE DOCUMENTATION.
       !
       use current_precision_mod
-      use mesh_mod
+      use mesh_extend_mod
       use data_location_mod
       use SF_mod
       use VF_mod

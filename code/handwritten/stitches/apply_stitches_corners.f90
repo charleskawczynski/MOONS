@@ -3,7 +3,7 @@
        use GF_mod
        use SF_mod
        use VF_mod
-       use mesh_mod
+       use mesh_extend_mod
        implicit none
 
        private

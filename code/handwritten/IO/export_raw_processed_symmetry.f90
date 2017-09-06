@@ -1,6 +1,6 @@
        module export_raw_processed_symmetry_mod
        use current_precision_mod
-       use mesh_mod
+       use mesh_extend_mod
        use export_raw_processed_mod
        use face_edge_corner_indexing_mod
        use string_mod

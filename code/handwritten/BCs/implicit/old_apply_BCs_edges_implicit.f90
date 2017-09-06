@@ -83,7 +83,7 @@
        use boundary_conditions_mod
        use block_field_mod
        use grid_mod
-       use mesh_mod
+       use mesh_extend_mod
        use face_edge_corner_indexing_mod
        implicit none
 

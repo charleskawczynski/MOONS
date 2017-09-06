@@ -1,13 +1,15 @@
        module physical_domain_extend_mod
        use physical_domain_mod
        use current_precision_mod
+       use mesh_mod
+       use mesh_extend_mod
        use IO_tools_mod
        use datatype_conversion_mod
        use physical_sub_domain_mod
        use physical_sub_domain_extend_mod
        use data_location_mod
        use grid_mod
-       use mesh_mod
+       use mesh_extend_mod
        implicit none
 
        private

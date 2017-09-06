@@ -1,6 +1,6 @@
       module PCG_solver_mod
       use current_precision_mod
-      use mesh_mod
+      use mesh_extend_mod
       use apply_BCs_mod
       use norms_mod
       use ops_discrete_mod
@@ -28,6 +28,7 @@
       interface solve_PCG;      module procedure solve_PCG_SF;   end interface
       interface solve_PCG;      module procedure solve_PCG_VF;   end interface
 
+      interface print_info;  module procedure print_info_PCG; end interface
       interface compute_export_norms;  module procedure compute_export_norms_SF; end interface
       interface compute_export_norms;  module procedure compute_export_norms_VF; end interface
 
@@ -244,7 +245,7 @@
         endif
       end subroutine
 
-      subroutine print_info(name,ISP,res_norm,res_norm0)
+      subroutine print_info_PCG(name,ISP,res_norm,res_norm0)
         implicit none
         type(iter_solver_params),intent(in) :: ISP
         type(norms),intent(in) :: res_norm,res_norm0

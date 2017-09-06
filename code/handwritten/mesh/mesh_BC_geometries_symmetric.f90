@@ -9,7 +9,7 @@
        use path_extend_mod
        use grid_mod
        use mesh_domain_mod
-       use mesh_mod
+       use mesh_extend_mod
        implicit none
 
        private

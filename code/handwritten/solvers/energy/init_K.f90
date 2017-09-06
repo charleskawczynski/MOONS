@@ -1,6 +1,6 @@
        module init_K_mod
        use current_precision_mod
-       use mesh_mod
+       use mesh_extend_mod
        use ops_embedExtract_mod
        use mesh_domain_mod
        use SF_mod
