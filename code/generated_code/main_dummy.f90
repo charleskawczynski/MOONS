@@ -64,6 +64,7 @@
        use simple_int_tensor_mod
        use mesh_props_mod
        use mesh_mod
+       use mesh_block_mod
        implicit none
        write(*,*) "success!"
        end program

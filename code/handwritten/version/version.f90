@@ -28,21 +28,17 @@
          integer,intent(in) :: u
          integer :: today(3), now(3)
          ! character(len=5) :: fmt
-         write(u,*) '-------------------------------------'
-         write(u,*) ' University of California Los Angeles'
-         write(u,*) '              (UCLA)                 '
-         write(u,*) ' Magnetohydrodynamic Object-Oriented '
-         write(u,*) '    Numerical Solver (MOONS)         '
-         write(u,*) '-------------------------------------'
-         write(u,*) 'Charliekawczynski@gmail.com          '
-         write(u,*) '-------------------------------------'
-         write(u,*) 'MOONS is a finite difference code that'
-         write(u,*) 'solves Navier-Stokes and Maxwells'
+         write(u,*) '---------------------------------------'
+         write(u,*) ' Magnetohydrodynamic Object-Oriented   '
+         write(u,*) '    Numerical Solver (MOONS)           '
+         write(u,*) '---------------------------------------'
+         write(u,*) 'MOONS is a finite difference code that '
+         write(u,*) 'solves Navier-Stokes and Maxwells      '
          write(u,*) 'equations in a 3D rectangular geometry.'
          write(u,*) ''
          write(u,*) 'For documentation, navigate to'
          write(u,*) '/MOONS/__documentation/MOONS.pdf'
-         write(u,*) '-------------------------------------'
+         write(u,*) '---------------------------------------'
 
          ! Source: http://infohost.nmt.edu/tcc/help/lang/fortran/date.html
 

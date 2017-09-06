@@ -185,7 +185,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)boundary_conditions$(PS)boundary_extend.f90\
 	$(SRC_DIR)$(PS)boundary_conditions$(PS)boundary_conditions_extend.f90\
 	$(SRC_DIR)$(PS)block_field$(PS)block_field_extend.f90\
-	$(SRC_DIR)$(PS)block$(PS)mesh_block.f90\
+	$(SRC_DIR)$(PS)mesh$(PS)mesh_block_extend.f90\
 	$(SRC_DIR)$(PS)user$(PS)restart_file.f90\
 	$(SRC_DIR)$(PS)user$(PS)kill_switch.f90\
 	$(SRC_DIR)$(PS)user$(PS)export_now.f90\
@@ -249,7 +249,6 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)solvers$(PS)density$(PS)init_rho_BCs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)density$(PS)init_rho_field.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)density$(PS)density_solver.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)density$(PS)density.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)energy_sources.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_T_BCs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_gravity_field.f90\

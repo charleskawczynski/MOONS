@@ -14,7 +14,8 @@ make_dir = '.'+PS+up+up+up+'makefiles'+PS
 if generated:
 	make_file_name = ['generated.make']
 else:
-	make_file_name = ['pre_generated','handwritten.make']
+	make_file_name = ['pre_generated','generated.make','handwritten.make']
+	# make_file_name = ['pre_generated','handwritten.make']
 
 code_dir = '.'+PS+up+up+up+'code'+PS
 code_dir_generated = code_dir+'generated_code'
@@ -41,6 +42,7 @@ print('')
 
 f = IO.get_file_contents(make_files[0])
 fs = [IO.get_file_contents(x) for x in make_files]
+f = ''.join(fs)
 compiled_files = filter(None, f.split('\n'))
 compiled_files = [x for x in compiled_files if x.endswith('.f90\\') or x.endswith('.f90') and '$(SRC_DIR)' in x]
 compiled_files = [x[:-1] if x.endswith('\\') else x for x in compiled_files]

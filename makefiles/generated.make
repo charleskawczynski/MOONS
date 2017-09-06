@@ -83,3 +83,4 @@ SRCS_F+=\
 	$(SRC_DIR_GENERATED)$(PS)mesh$(PS)simple_int_tensor.f90\
 	$(SRC_DIR_GENERATED)$(PS)mesh$(PS)mesh_props.f90\
 	$(SRC_DIR_GENERATED)$(PS)mesh$(PS)mesh.f90\
+	$(SRC_DIR_GENERATED)$(PS)mesh$(PS)mesh_block.f90\
