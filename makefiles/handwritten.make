@@ -3,6 +3,7 @@ VPATH +=\
 	$(TARGET_DIR)\
 	$(SRC_DIR)$(PS)apply_face_BC_op\
 	$(SRC_DIR)$(PS)block\
+	$(SRC_DIR)$(PS)block_field\
 	$(SRC_DIR)$(PS)boundary_conditions\
 	$(SRC_DIR)$(PS)BCs\
 	$(SRC_DIR)$(PS)BCs$(PS)apply\
@@ -29,7 +30,6 @@ VPATH +=\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_Robin_BC_coeff\
 	$(SRC_DIR)$(PS)fields\
 	$(SRC_DIR)$(PS)fields$(PS)default\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)BF\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)SF\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)VF\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)TF\
@@ -186,7 +186,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)boundary_conditions$(PS)single_boundary_extend.f90\
 	$(SRC_DIR)$(PS)boundary_conditions$(PS)boundary_extend.f90\
 	$(SRC_DIR)$(PS)boundary_conditions$(PS)boundary_conditions_extend.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)BF$(PS)BF.f90\
+	$(SRC_DIR)$(PS)block_field$(PS)block_field_extend.f90\
 	$(SRC_DIR)$(PS)block$(PS)mesh_block.f90\
 	$(SRC_DIR)$(PS)user$(PS)restart_file.f90\
 	$(SRC_DIR)$(PS)user$(PS)kill_switch.f90\

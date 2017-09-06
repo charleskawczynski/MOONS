@@ -8,6 +8,7 @@
         use boundary_conditions_extend_mod
         use GF_mod
         use block_field_mod
+        use block_field_extend_mod
         implicit none
         private
 

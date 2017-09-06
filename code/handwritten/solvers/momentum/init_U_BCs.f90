@@ -1,12 +1,15 @@
        module init_U_BCs_mod
        use current_precision_mod
        use BC_funcs_mod
+       use block_mod
+       use block_extend_mod
        use grid_mod
        use block_extend_mod
        use mesh_mod
        use boundary_conditions_extend_mod
        use GF_mod
        use block_field_mod
+       use block_field_extend_mod
        use SF_mod
        use VF_mod
        use profile_funcs_mod

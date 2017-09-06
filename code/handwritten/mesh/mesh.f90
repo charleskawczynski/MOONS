@@ -3,6 +3,8 @@
        use current_precision_mod
        use IO_tools_mod
        use grid_mod
+       use block_mod
+       use block_extend_mod
        use grid_extend_mod
        use block_extend_mod
        use coordinates_mod

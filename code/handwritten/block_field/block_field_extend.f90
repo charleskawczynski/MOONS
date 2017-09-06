@@ -1,7 +1,10 @@
-      module block_field_mod
+      module block_field_extend_mod
+        use block_field_mod
         ! Compiler flags: (_PARALLELIZE_BF_PLANE_)
         use current_precision_mod
         use grid_mod
+        use block_mod
+        use block_extend_mod
         use bctype_mod
         use data_location_mod
         use GF_mod
@@ -16,9 +19,6 @@
         use boundary_conditions_extend_mod
         implicit none
         private
-
-        public :: block_field
-        public :: init,delete,display,print,export,import ! Essentials
 
         public :: init_CC
         public :: init_Face
@@ -91,30 +91,10 @@
         public :: restrict
         public :: prolongate
 
-        type block_field
-          type(grid_field) :: GF ! bulk
-          type(boundary_conditions) :: BCs
-          type(data_location) :: DL
-          logical,dimension(3) :: many_cell_N_periodic = .false.
-          logical,dimension(3) :: many_cell = .false.
-          ! type(stitches) :: st
-          type(procedure_array_plane_op) :: PA_assign_ghost_XPeriodic
-          type(procedure_array_plane_op) :: PA_assign_ghost_N_XPeriodic
-          type(procedure_array_plane_op) :: PA_assign_wall_Dirichlet
-          type(procedure_array_plane_op) :: PA_assign_wall_Periodic_single
-          type(procedure_array_plane_op) :: PA_multiply_wall_Neumann
-        end type
-
        interface init_CC;                     module procedure init_CC_BF;                      end interface
        interface init_Face;                   module procedure init_Face_BF;                    end interface
        interface init_Edge;                   module procedure init_Edge_BF;                    end interface
        interface init_Node;                   module procedure init_Node_BF;                    end interface
-       interface init;                        module procedure init_copy_BF;                    end interface
-       interface delete;                      module procedure delete_BF;                       end interface
-       interface display;                     module procedure display_BF;                      end interface
-       interface print;                       module procedure print_BF;                        end interface
-       interface export;                      module procedure export_BF;                       end interface
-       interface import;                      module procedure import_BF;                       end interface
 
        interface init_BCs;                    module procedure init_BC_val;                     end interface
        interface init_BCs;                    module procedure init_BC_block_DL;                end interface
@@ -398,72 +378,6 @@
                                        call add(BF%PA_multiply_wall_Neumann,multiply_wall_zmax,6)
            endif
          endif
-       end subroutine
-
-       subroutine init_copy_BF(BF,BF_in)
-         implicit none
-         type(block_field),intent(inout) :: BF
-         type(block_field),intent(in) :: BF_in
-         call init(BF%GF,BF_in%GF)
-         BF%many_cell_N_periodic = BF_in%many_cell_N_periodic
-         BF%many_cell = BF_in%many_cell
-         call init(BF%DL,BF_in%DL)
-         if (BF_in%BCs%BCL%defined) call init(BF%BCs,BF_in%BCs)
-         call init(BF%PA_assign_ghost_XPeriodic,BF_in%PA_assign_ghost_XPeriodic)
-         call init(BF%PA_assign_ghost_N_XPeriodic,BF_in%PA_assign_ghost_N_XPeriodic)
-         call init(BF%PA_assign_wall_Dirichlet,BF_in%PA_assign_wall_Dirichlet)
-         call init(BF%PA_assign_wall_Periodic_single,BF_in%PA_assign_wall_Periodic_single)
-         call init(BF%PA_multiply_wall_Neumann,BF_in%PA_multiply_wall_Neumann)
-       end subroutine
-
-       subroutine delete_BF(BF)
-         implicit none
-         type(block_field),intent(inout) :: BF
-         BF%many_cell_N_periodic = .false.
-         BF%many_cell = .false.
-         call delete(BF%GF)
-         call delete(BF%DL)
-         call delete(BF%BCs)
-         call delete(BF%PA_assign_ghost_XPeriodic)
-         call delete(BF%PA_assign_ghost_N_XPeriodic)
-         call delete(BF%PA_assign_wall_Dirichlet)
-         call delete(BF%PA_assign_wall_Periodic_single)
-         call delete(BF%PA_multiply_wall_Neumann)
-       end subroutine
-
-       subroutine display_BF(BF,un)
-         implicit none
-         type(block_field),intent(in) :: BF
-         integer,intent(in) :: un
-         call display(BF%GF,un)
-         call display(BF%DL,un)
-         call display(BF%BCs,un)
-       end subroutine
-
-       subroutine print_BF(BF)
-         implicit none
-         type(block_field),intent(in) :: BF
-         call print(BF%GF)
-         call print(BF%DL)
-         call print(BF%BCs)
-       end subroutine
-
-       subroutine export_BF(BF,un)
-         implicit none
-         type(block_field),intent(in) :: BF
-         integer,intent(in) :: un
-         call export(BF%GF,un)
-         call export(BF%DL,un)
-         call export(BF%BCs,un)
-       end subroutine
-
-       subroutine import_BF(BF,un)
-         implicit none
-         type(block_field),intent(inout) :: BF
-         integer,intent(in) :: un
-         call import(BF%GF,un)
-         call import(BF%DL,un)
-         call import(BF%BCs,un)
        end subroutine
 
        subroutine init_BC_val(BF,val)

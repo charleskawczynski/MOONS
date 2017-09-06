@@ -60,6 +60,7 @@
        use boundary_mod
        use boundary_conditions_mod
        use block_mod
+       use block_field_mod
        implicit none
        write(*,*) "success!"
        end program
