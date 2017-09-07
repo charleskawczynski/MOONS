@@ -4,7 +4,7 @@
        use mesh_extend_mod
        use VF_extend_mod
        use TF_extend_mod
-       use mesh_domain_mod
+       use mesh_domain_extend_mod
        use IO_tools_mod
        use induction_aux_mod
        use ops_advect_mod

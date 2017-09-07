@@ -9,7 +9,7 @@
        use SF_extend_mod
        use VF_extend_mod
        use TF_extend_mod
-       use mesh_domain_mod
+       use mesh_domain_extend_mod
        use string_mod
        use path_extend_mod
        use path_extend_mod

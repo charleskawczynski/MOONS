@@ -1,4 +1,4 @@
-       module update_intermediate_field_BCs_mod ! Most modern copy
+       module update_intermediate_field_BCs_mod
        use current_precision_mod
        use mesh_extend_mod
        use ops_del_mod

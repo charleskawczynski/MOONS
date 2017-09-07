@@ -24,8 +24,7 @@
        use induction_aux_mod
        use export_raw_processed_mod
        use clean_divergence_mod
-       use update_intermediate_field_BCs_mod
-       use mesh_domain_mod
+       use mesh_domain_extend_mod
        use ops_embedExtract_mod
        use time_marching_params_mod
 
@@ -94,7 +93,6 @@
          do i=1,N_multistep
            call solve(JAC,B,RHS,m,N_induction,.true.)
            call clean_div(PCG_cleanB,B,Bstar,phi,1.0_cp/dt,m,temp_F1,SF_CC,compute_norms)
-           call update_intermediate_field_BCs(Bstar,phi,dt,m,temp_F1,temp_E,SF_CC)
          enddo
        end subroutine
 

@@ -45,7 +45,7 @@
        use mirror_props_mod
        use mirror_props_extend_mod
 
-       use mesh_domain_mod
+       use mesh_domain_extend_mod
        use grid_mod
        use mesh_extend_mod
        use norms_mod

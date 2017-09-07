@@ -21,7 +21,6 @@
        use RK_Params_mod
        use clean_divergence_mod
        use time_marching_params_mod
-       use update_intermediate_field_BCs_mod
 
        implicit none
        private

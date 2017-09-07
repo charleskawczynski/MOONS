@@ -22,7 +22,6 @@
        use ops_mirror_field_mod
        use sim_params_mod
        use BC_funcs_mod
-       use update_intermediate_field_BCs_mod
 
        implicit none
        private

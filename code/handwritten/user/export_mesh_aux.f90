@@ -5,7 +5,7 @@
        use IO_export_mod
 
        use mesh_extend_mod
-       use mesh_domain_mod
+       use mesh_domain_extend_mod
        use mesh_block_extend_mod
        use SF_extend_mod
        use VF_extend_mod

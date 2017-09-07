@@ -5,7 +5,7 @@
         use array_mod
         use data_location_mod
         use mesh_extend_mod
-        use mesh_domain_mod
+        use mesh_domain_extend_mod
         use boundary_conditions_extend_mod
         use GF_mod
         use block_field_mod

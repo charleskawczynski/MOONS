@@ -1,7 +1,7 @@
        module ops_norms_mod
        use current_precision_mod
        use mesh_extend_mod
-       use mesh_domain_mod
+       use mesh_domain_extend_mod
        use data_location_mod
        use GF_norms_mod
        use GF_norms_weights_mod

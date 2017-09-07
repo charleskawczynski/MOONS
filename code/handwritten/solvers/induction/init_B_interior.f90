@@ -1,7 +1,7 @@
        module init_B_interior_mod
        use current_precision_mod
        use mesh_extend_mod
-       use mesh_domain_mod
+       use mesh_domain_extend_mod
        use VF_extend_mod
        use IO_import_mod
        implicit none

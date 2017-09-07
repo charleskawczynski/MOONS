@@ -1,7 +1,7 @@
       module Jacobi_mod
       use current_precision_mod
       use mesh_extend_mod
-      use mesh_domain_mod
+      use mesh_domain_extend_mod
       use norms_mod
       use ops_discrete_mod
       use ops_aux_mod

@@ -16,6 +16,7 @@ VPATH +=\
 	$(SRC_DIR)$(PS)dir_tree\
 	$(SRC_DIR)$(PS)domain\
 	$(SRC_DIR)$(PS)mesh_params\
+	$(SRC_DIR)$(PS)mesh_domain\
 	$(SRC_DIR)$(PS)grid_field\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D\
@@ -48,7 +49,6 @@ VPATH +=\
 	$(SRC_DIR)$(PS)var_set\
 	$(SRC_DIR)$(PS)solvers\
 	$(SRC_DIR)$(PS)solvers$(PS)energy\
-	$(SRC_DIR)$(PS)solvers$(PS)density\
 	$(SRC_DIR)$(PS)solvers$(PS)FFT\
 	$(SRC_DIR)$(PS)solvers$(PS)GS\
 	$(SRC_DIR)$(PS)solvers$(PS)induction\
@@ -189,7 +189,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)user$(PS)export_now.f90\
 	$(SRC_DIR)$(PS)user$(PS)export_safe.f90\
 	$(SRC_DIR)$(PS)user$(PS)refine_mesh.f90\
-	$(SRC_DIR)$(PS)domain$(PS)mesh_domain.f90\
+	$(SRC_DIR)$(PS)mesh_domain$(PS)mesh_domain_extend.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)generate_mesh_generic.f90\
 	$(SRC_DIR)$(PS)fields$(PS)SF_extend.f90\
 	$(SRC_DIR)$(PS)fields$(PS)VF_extend.f90\
@@ -227,7 +227,6 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)solvers$(PS)preconditioners$(PS)diagonals.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)preconditioners$(PS)preconditioners.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)AB2.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)update_intermediate_field_BCs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)compute_energy.f90\
 	$(SRC_DIR)$(PS)sparse$(PS)matrix.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)FFT$(PS)FFT_poisson.f90\
@@ -244,7 +243,6 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)solvers$(PS)clean_divergence.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)time_marching_methods.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)time_marching_methods_SF.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)density$(PS)init_rho_BCs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)energy_sources.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_T_BCs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_gravity_field.f90\

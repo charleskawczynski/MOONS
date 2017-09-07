@@ -8,7 +8,7 @@
 
        use version_mod
        use mesh_extend_mod
-       use mesh_domain_mod
+       use mesh_domain_extend_mod
        use generate_mesh_generic_mod
        use VF_extend_mod
        use string_mod

@@ -25,7 +25,6 @@
        use apply_BCs_mod
        use PCG_mod
        use GS_Poisson_mod
-       use update_intermediate_field_BCs_mod
 
        implicit none
        private
