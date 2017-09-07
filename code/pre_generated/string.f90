@@ -131,8 +131,12 @@
         implicit none
         type(string),intent(in) :: st
         integer,intent(in) :: un
-        call insist_allocated(st,'export_string')
-        write(un,*) str(st)
+        ! call insist_allocated(st,'export_string')
+        if (string_allocated(st)) then
+          write(un,*) str(st)
+        else
+          write(un,*) 'string not allocated'
+        endif
       end subroutine
 
       subroutine import_string(s,un)

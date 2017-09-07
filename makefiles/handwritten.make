@@ -193,7 +193,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)mesh$(PS)generate_mesh_generic.f90\
 	$(SRC_DIR)$(PS)fields$(PS)SF_extend.f90\
 	$(SRC_DIR)$(PS)fields$(PS)VF_extend.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)TF$(PS)TF.f90\
+	$(SRC_DIR)$(PS)fields$(PS)TF_extend.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)index_mapping.f90\
 	$(SRC_DIR)$(PS)IO$(PS)base_export.f90\
 	$(SRC_DIR)$(PS)IO$(PS)base_import.f90\

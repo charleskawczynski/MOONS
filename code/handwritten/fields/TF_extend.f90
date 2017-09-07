@@ -1,4 +1,5 @@
-      module TF_mod
+      module TF_extend_mod
+      use TF_mod
       ! Tensor fields are a bit difficult to think about.. So here's
       ! a short description as to how they are constructed, used.
       !
@@ -86,12 +87,7 @@
         ! public :: sum
         ! public :: assignX,assignY,assignZ
 
-        type TF
-          type(VF) :: x,y,z ! Staggered VF_1 = (xx,xy,xz)
-        end type
-
         interface init;                module procedure init_TF_copy_VF;           end interface
-        interface init;                module procedure init_TF_copy_TF;           end interface
         interface init;                module procedure init_TF_copy_TF_mesh;      end interface
 
         interface init_CC;             module procedure init_CC_TF;                end interface
@@ -119,13 +115,6 @@
         interface assign_Neumann_BCs;  module procedure assign_Neumann_BCs_faces_TF;        end interface
         interface assign_Neumann_BCs_wall_normal;  module procedure assign_Neumann_BCs_wall_normal_TF;  end interface
         interface multiply_Neumann_BCs;module procedure multiply_Neumann_BCs_faces_TF; end interface
-
-        interface delete;              module procedure delete_TF;                 end interface
-        interface export;              module procedure export_TF;                 end interface
-        interface import;              module procedure import_TF;                 end interface
-        interface export;              module procedure export_TF_wrapper;         end interface
-        interface import;              module procedure import_TF_wrapper;         end interface
-        interface print;               module procedure print_TF;                  end interface
 
         interface assign;              module procedure assign_TF_S;               end interface
         interface assign;              module procedure assign_TF_VF;              end interface
@@ -541,13 +530,6 @@
 
       ! ------------------- ALLOCATE / DEALLOCATE --------------------
 
-        subroutine init_TF_copy_TF(f1,f2)
-          implicit none
-          type(TF),intent(inout) :: f1
-          type(TF),intent(in) :: f2
-          call init(f1%x,f2%x); call init(f1%y,f2%y); call init(f1%z,f2%z)
-        end subroutine
-
         subroutine init_TF_copy_TF_mesh(f1,f2,m)
           implicit none
           type(TF),intent(inout) :: f1
@@ -746,56 +728,6 @@
           call multiply_Neumann_BCs(A%x,scale)
           call multiply_Neumann_BCs(A%y,scale)
           call multiply_Neumann_BCs(A%z,scale)
-        end subroutine
-
-        subroutine delete_TF(f)
-          implicit none
-          type(TF),intent(inout) :: f
-          call delete(f%x); call delete(f%y); call delete(f%z)
-        end subroutine
-
-        subroutine print_TF(f)
-          implicit none
-          type(TF),intent(in) :: f
-          call print(f%x); call print(f%y); call print(f%z)
-        end subroutine
-
-        subroutine export_TF(f,un)
-          implicit none
-          type(TF),intent(in) :: f
-          integer,intent(in) :: un
-          call export(f%x,un)
-          call export(f%y,un)
-          call export(f%z,un)
-        end subroutine
-
-        subroutine import_TF(f,un)
-          implicit none
-          type(TF),intent(inout) :: f
-          integer,intent(in) :: un
-          call import(f%x,un)
-          call import(f%y,un)
-          call import(f%z,un)
-        end subroutine
-
-        subroutine export_TF_wrapper(f,dir,name)
-          implicit none
-          type(TF),intent(in) :: f
-          character(len=*),intent(in) :: dir,name
-          integer :: un
-          un = new_and_open(dir,name)
-          call export(f,un)
-          close(un)
-        end subroutine
-
-        subroutine import_TF_wrapper(f,dir,name)
-          implicit none
-          type(TF),intent(inout) :: f
-          character(len=*),intent(in) :: dir,name
-          integer :: un
-          un = open_to_read(dir,name)
-          call import(f,un)
-          close(un)
         end subroutine
 
       end module
