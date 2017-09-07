@@ -1,7 +1,7 @@
        module add_all_induction_sources_mod
        use current_precision_mod
        use sim_params_mod
-       use VF_mod
+       use VF_extend_mod
        use IO_tools_mod
        use time_marching_params_mod
 

@@ -5,7 +5,7 @@
        use boundary_conditions_mod
        use boundary_conditions_extend_mod
        use SF_extend_mod
-       use VF_mod
+       use VF_extend_mod
        implicit none
 
        private

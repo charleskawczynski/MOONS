@@ -4,7 +4,7 @@
       use string_mod
       use data_location_mod
       use SF_extend_mod
-      use VF_mod
+      use VF_extend_mod
       use base_export_mod
       use IO_tools_mod
       use time_marching_params_mod

@@ -28,7 +28,7 @@
       use ops_discrete_mod
       use ops_aux_mod
       use SF_extend_mod
-      use VF_mod
+      use VF_extend_mod
       use constants_mod
 
 #ifdef _EXPORT_SOR_CONVERGENCE_

@@ -13,7 +13,7 @@
       use mesh_domain_mod
       use GF_mod
       use SF_extend_mod
-      use VF_mod
+      use VF_extend_mod
 
       implicit none
 

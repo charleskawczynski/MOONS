@@ -1,4 +1,5 @@
-      module VF_mod
+      module VF_extend_mod
+        use VF_mod
 
         ! Rules:
         ! a = a + b => call add(a,b)
@@ -107,21 +108,9 @@
         public :: is_Edge
         public :: insist_collocated
 
-        type VF
-          type(SF) :: x,y,z ! components
-        end type
-
-        interface init;                     module procedure init_VF_copy_VF;               end interface
         interface init;                     module procedure init_VF_copy_SF;               end interface
         interface init;                     module procedure init_DL_VF;                    end interface
         interface init;                     module procedure init_VF_copy_VF_mesh;          end interface
-        interface delete;                   module procedure delete_VF;                     end interface
-        interface display;                  module procedure display_VF;                    end interface
-        interface print;                    module procedure print_VF;                      end interface
-        interface export;                   module procedure export_VF;                     end interface
-        interface import;                   module procedure import_VF;                     end interface
-        interface export;                   module procedure export_VF_wrapper;             end interface
-        interface import;                   module procedure import_VF_wrapper;             end interface
 
         interface init_CC;                  module procedure init_CC_VF;                    end interface
         interface init_Face;                module procedure init_Face_VF;                  end interface
@@ -279,13 +268,6 @@
         ! ********************* ESSENTIALS *************************
         ! **********************************************************
 
-        subroutine init_VF_copy_VF(f1,f2)
-          implicit none
-          type(VF),intent(inout) :: f1
-          type(VF),intent(in) :: f2
-          call init(f1%x,f2%x); call init(f1%y,f2%y); call init(f1%z,f2%z)
-        end subroutine
-
         subroutine init_VF_copy_VF_mesh(f1,f2,m)
           implicit none
           type(VF),intent(inout) :: f1
@@ -309,53 +291,6 @@
           call init(f%x,m,DL(1))
           call init(f%y,m,DL(2))
           call init(f%z,m,DL(3))
-        end subroutine
-
-        subroutine delete_VF(f)
-          implicit none
-          type(VF),intent(inout) :: f
-          call delete(f%x); call delete(f%y); call delete(f%z)
-        end subroutine
-
-        subroutine display_VF(f,un)
-          implicit none
-          type(VF),intent(in) :: f
-          integer,intent(in) :: un
-          call display(f%x,un); call display(f%y,un); call display(f%z,un)
-        end subroutine
-
-        subroutine print_VF(f)
-          implicit none
-          type(VF),intent(in) :: f
-          call display(f,6)
-        end subroutine
-
-        subroutine export_VF(f,un)
-          implicit none
-          type(VF),intent(in) :: f
-          integer,intent(in) :: un
-          call export(f%x,un); call export(f%y,un); call export(f%z,un)
-        end subroutine
-
-        subroutine import_VF(f,un)
-          implicit none
-          type(VF),intent(inout) :: f
-          integer,intent(in) :: un
-          call import(f%x,un); call import(f%y,un); call import(f%z,un)
-        end subroutine
-
-        subroutine export_VF_wrapper(f,dir,name)
-          implicit none
-          type(VF),intent(in) :: f
-          character(len=*),intent(in) :: dir,name
-          call export(f%x,dir,name//'_x'); call export(f%y,dir,name//'_y'); call export(f%z,dir,name//'_z')
-        end subroutine
-
-        subroutine import_VF_wrapper(f,dir,name)
-          implicit none
-          type(VF),intent(inout) :: f
-          character(len=*),intent(in) :: dir,name
-          call import(f%x,dir,name//'_x'); call import(f%y,dir,name//'_y'); call import(f%z,dir,name//'_z')
         end subroutine
 
         ! **********************************************************

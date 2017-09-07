@@ -6,7 +6,7 @@
        use string_mod
        use string_aux_mod
        use SF_extend_mod
-       use VF_mod
+       use VF_extend_mod
        use datatype_conversion_mod
        use IO_export_mod
        use ops_mirror_field_mod

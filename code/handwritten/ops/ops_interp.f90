@@ -39,7 +39,7 @@
        use data_location_mod
        use apply_BCs_mod
        use SF_extend_mod
-       use VF_mod
+       use VF_extend_mod
        use TF_mod
        implicit none
 

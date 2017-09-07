@@ -1,7 +1,7 @@
        module export_analytic_mod
        use current_precision_mod
        use SF_extend_mod
-       use VF_mod
+       use VF_extend_mod
        use IO_tools_mod
        use mesh_extend_mod
        use profile_funcs_mod

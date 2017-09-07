@@ -20,13 +20,13 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('vol',real,priv)
 	g.module[m_name].add_prop('DL','data_location',priv)
 
-	# m_name = 'VF'
-	# g.add_module(m_name)
-	# g.module[m_name].set_folder_name(__name__.split('.')[1])
-	# g.module[m_name].set_used_modules(['IO_tools_mod'])
-	# g.module[m_name].add_prop('x','SF',priv)
-	# g.module[m_name].add_prop('y','SF',priv)
-	# g.module[m_name].add_prop('z','SF',priv)
+	m_name = 'VF'
+	g.add_module(m_name)
+	g.module[m_name].set_folder_name(__name__.split('.')[1])
+	g.module[m_name].set_used_modules(['IO_tools_mod'])
+	g.module[m_name].add_prop('x','SF',priv)
+	g.module[m_name].add_prop('y','SF',priv)
+	g.module[m_name].add_prop('z','SF',priv)
 
 	# m_name = 'TF'
 	# g.add_module(m_name)

@@ -5,7 +5,7 @@
        use dir_tree_mod
        use mesh_extend_mod
        use SF_extend_mod
-       use VF_mod
+       use VF_extend_mod
        use TF_mod
        use IO_tools_mod
        use E_K_budget_terms_mod

@@ -11,7 +11,7 @@
        use mesh_domain_mod
        use mesh_generate_mod
        use generate_mesh_generic_mod
-       use VF_mod
+       use VF_extend_mod
        use string_mod
        use path_extend_mod
        use dir_tree_mod

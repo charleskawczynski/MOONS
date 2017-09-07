@@ -10,7 +10,7 @@
       use iter_solver_params_mod
       use is_nan_mod
       use SF_extend_mod
-      use VF_mod
+      use VF_extend_mod
       use TF_mod
       use PCG_aux_mod
       use ops_norms_mod

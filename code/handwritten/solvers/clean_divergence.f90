@@ -20,7 +20,7 @@
        use mesh_extend_mod
        use string_mod
        use SF_extend_mod
-       use VF_mod
+       use VF_extend_mod
        use ops_discrete_mod
        use apply_BCs_mod
        use PCG_mod

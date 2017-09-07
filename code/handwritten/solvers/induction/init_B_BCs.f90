@@ -5,7 +5,7 @@
        use mesh_extend_mod
        use boundary_conditions_extend_mod
        use SF_extend_mod
-       use VF_mod
+       use VF_extend_mod
        use sim_params_mod
        implicit none
 

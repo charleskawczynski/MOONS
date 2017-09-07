@@ -6,7 +6,7 @@
        use IO_import_mod
        use export_raw_processed_mod
        use SF_extend_mod
-       use VF_mod
+       use VF_extend_mod
        use mesh_extend_mod
        use mesh_domain_mod
        use dir_tree_mod

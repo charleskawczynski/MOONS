@@ -271,6 +271,20 @@ class fortran_property:
 
     return indent_lines(L)
 
+  def write_export_wrap_specialized(self):
+    L = []
+    if     self.object_type=='object'    and not self.allocatable and not self.dimension>1 and not self.rank>1:
+      L = L + ["call export(this%" + self.name + ",dir,name//'_" + self.name + "')"]
+    else: raise NameError('Case not caught!')
+    return indent_lines(L)
+
+  def write_import_wrap_specialized(self):
+    L = []
+    if     self.object_type=='object'    and not self.allocatable and not self.dimension>1 and not self.rank>1:
+      L = L + ["call import(this%" + self.name + ",dir,name//'_" + self.name + "')"]
+    else: raise NameError('Case not caught!')
+    return indent_lines(L)
+
   def write_import(self):
     L = []
     p = "read(un,*); "

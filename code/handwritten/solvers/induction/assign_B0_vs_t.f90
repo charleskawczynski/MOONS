@@ -2,7 +2,7 @@
        use current_precision_mod
        use time_marching_params_mod
        use Mike_Ulrickson_data_mod
-       use VF_mod
+       use VF_extend_mod
        implicit none
 
        private

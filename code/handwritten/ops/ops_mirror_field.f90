@@ -4,7 +4,7 @@
        use face_edge_corner_indexing_mod
        use mirror_props_mod
        use SF_extend_mod
-       use VF_mod
+       use VF_extend_mod
 
        implicit none
        private

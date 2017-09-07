@@ -24,7 +24,7 @@
       use ops_discrete_mod
       use ops_aux_mod
       use SF_extend_mod
-      use VF_mod
+      use VF_extend_mod
       use TF_mod
       use IO_tools_mod
       use preconditioners_mod

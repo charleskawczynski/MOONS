@@ -1,6 +1,6 @@
        module init_gravity_field_mod
        use current_precision_mod
-       use VF_mod
+       use VF_extend_mod
        use IO_import_mod
        use mesh_extend_mod
        use sim_params_mod

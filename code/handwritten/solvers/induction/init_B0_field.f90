@@ -3,7 +3,7 @@
        use grid_mod
        use GF_mod
        use mesh_extend_mod
-       use VF_mod
+       use VF_extend_mod
        use IO_import_mod
        use sim_params_mod
        implicit none

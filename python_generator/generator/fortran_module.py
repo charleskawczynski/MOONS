@@ -414,6 +414,17 @@ class fortran_module:
         return L
 
     def export_wrap_module(self):
+        name_list = []
+        for key in self.prop:
+          name_list = name_list+[self.prop[key].name]
+        special_arg_list = ['x','y','z']
+        if all([x in special_arg_list for x in name_list]):
+          L = self.export_wrap_module_specialized()
+        else:
+          L = self.export_wrap_module_standard()
+        return L
+
+    def export_wrap_module_standard(self):
         sig = 'export_wrap_' + self.int_name
         L = [self.full_sub_signature(sig,'this,dir,name')]
         L=L+[self.spaces[2]+self.implicitNone]
@@ -425,6 +436,17 @@ class fortran_module:
         L=L+[self.spaces[2]+'close(un)']
         L=L+[self.end_sub()]
         return L
+
+    def export_wrap_module_specialized(self):
+        sig = 'export_wrap_' + self.int_name
+        c = [self.full_sub_signature(sig,'this,dir,name')]
+        c=c+[self.spaces[2]+self.implicitNone]
+        c=c+[self.spaces[2]+'type('+self.name+'),intent(in) :: this']
+        c=c+[self.spaces[2]+'character(len=*),intent(in) :: dir,name']
+        for key in self.prop:
+            c.append([self.spaces[2]+x for x in self.prop[key].write_export_wrap_specialized()])
+        c.append(self.end_sub())
+        return c
 
     def import_wrap_module(self):
         sig = 'import_wrap_' + self.int_name

@@ -30,8 +30,6 @@ VPATH +=\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_Robin_BC_coeff\
 	$(SRC_DIR)$(PS)fields\
 	$(SRC_DIR)$(PS)fields$(PS)default\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)SF\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)VF\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)TF\
 	$(SRC_DIR)$(PS)globals\
 	$(SRC_DIR)$(PS)grid\
@@ -194,7 +192,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)domain$(PS)mesh_domain.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)generate_mesh_generic.f90\
 	$(SRC_DIR)$(PS)fields$(PS)SF_extend.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)VF$(PS)VF.f90\
+	$(SRC_DIR)$(PS)fields$(PS)VF_extend.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)TF$(PS)TF.f90\
 	$(SRC_DIR)$(PS)fields$(PS)default$(PS)index_mapping.f90\
 	$(SRC_DIR)$(PS)IO$(PS)base_export.f90\
@@ -247,7 +245,6 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)solvers$(PS)time_marching_methods.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)time_marching_methods_SF.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)density$(PS)init_rho_BCs.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)density$(PS)init_rho_field.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)energy_sources.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_T_BCs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_gravity_field.f90\

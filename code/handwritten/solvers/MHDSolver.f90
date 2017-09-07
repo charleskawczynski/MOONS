@@ -3,7 +3,7 @@
        use sim_params_mod
        use var_set_mod
        use var_set_extend_mod
-       use VF_mod
+       use VF_extend_mod
        use IO_tools_mod
        use string_mod
        use path_extend_mod

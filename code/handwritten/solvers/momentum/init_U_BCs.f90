@@ -11,7 +11,7 @@
        use block_field_mod
        use block_field_extend_mod
        use SF_extend_mod
-       use VF_mod
+       use VF_extend_mod
        use profile_funcs_mod
        use face_edge_corner_indexing_mod
        use sim_params_mod

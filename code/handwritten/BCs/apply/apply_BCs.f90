@@ -9,7 +9,7 @@
        ! use apply_BCs_corners_bridge_mod
        use face_edge_corner_indexing_mod
        use SF_extend_mod
-       use VF_mod
+       use VF_extend_mod
 
        implicit none
 

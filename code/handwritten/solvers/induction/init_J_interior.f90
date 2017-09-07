@@ -2,7 +2,7 @@
        use current_precision_mod
        use mesh_extend_mod
        use mesh_domain_mod
-       use VF_mod
+       use VF_extend_mod
        use IO_import_mod
        implicit none
 

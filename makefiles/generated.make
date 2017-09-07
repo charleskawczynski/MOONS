@@ -86,3 +86,4 @@ SRCS_F+=\
 	$(SRC_DIR_GENERATED)$(PS)mesh$(PS)mesh.f90\
 	$(SRC_DIR_GENERATED)$(PS)mesh$(PS)mesh_block.f90\
 	$(SRC_DIR_GENERATED)$(PS)fields$(PS)SF.f90\
+	$(SRC_DIR_GENERATED)$(PS)fields$(PS)VF.f90\
