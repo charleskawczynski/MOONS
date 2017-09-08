@@ -1,4 +1,5 @@
 VPATH +=\
+	$(SRC_DIR_GENERATED)$(PS)MOONS\
 	$(SRC_DIR_GENERATED)$(PS)PCG\
 	$(SRC_DIR_GENERATED)$(PS)apply_face_BC_op\
 	$(SRC_DIR_GENERATED)$(PS)block\
@@ -103,3 +104,9 @@ SRCS_F+=\
 	$(SRC_DIR_GENERATED)$(PS)governing_equations$(PS)momentum.f90\
 	$(SRC_DIR_GENERATED)$(PS)governing_equations$(PS)induction.f90\
 	$(SRC_DIR_GENERATED)$(PS)governing_equations$(PS)energy.f90\
+	$(SRC_DIR_GENERATED)$(PS)MOONS$(PS)kill_switch.f90\
+	$(SRC_DIR_GENERATED)$(PS)MOONS$(PS)step.f90\
+	$(SRC_DIR_GENERATED)$(PS)MOONS$(PS)export_now.f90\
+	$(SRC_DIR_GENERATED)$(PS)MOONS$(PS)refine_mesh.f90\
+	$(SRC_DIR_GENERATED)$(PS)MOONS$(PS)export_safe.f90\
+	$(SRC_DIR_GENERATED)$(PS)MOONS$(PS)restart_file.f90\

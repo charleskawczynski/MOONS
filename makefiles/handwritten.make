@@ -40,6 +40,7 @@ VPATH +=\
 	$(SRC_DIR)$(PS)lib\
 	$(SRC_DIR)$(PS)math\
 	$(SRC_DIR)$(PS)mesh\
+	$(SRC_DIR)$(PS)MOONS\
 	$(SRC_DIR)$(PS)norms\
 	$(SRC_DIR)$(PS)ops\
 	$(SRC_DIR)$(PS)PCG\
@@ -66,7 +67,6 @@ VPATH +=\
 	$(SRC_DIR)$(PS)stencils\
 	$(SRC_DIR)$(PS)table\
 	$(SRC_DIR)$(PS)time_statistics\
-	$(SRC_DIR)$(PS)user\
 	$(SRC_DIR)$(PS)matrix_vis\
 	$(SRC_DIR)$(PS)version
 
@@ -185,11 +185,11 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)boundary_conditions$(PS)boundary_conditions_extend.f90\
 	$(SRC_DIR)$(PS)block_field$(PS)block_field_extend.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_block_extend.f90\
-	$(SRC_DIR)$(PS)user$(PS)restart_file.f90\
-	$(SRC_DIR)$(PS)user$(PS)kill_switch.f90\
-	$(SRC_DIR)$(PS)user$(PS)export_now.f90\
-	$(SRC_DIR)$(PS)user$(PS)export_safe.f90\
-	$(SRC_DIR)$(PS)user$(PS)refine_mesh.f90\
+	$(SRC_DIR)$(PS)MOONS$(PS)kill_switch_extend.f90\
+	$(SRC_DIR)$(PS)MOONS$(PS)step_extend.f90\
+	$(SRC_DIR)$(PS)MOONS$(PS)export_now_extend.f90\
+	$(SRC_DIR)$(PS)MOONS$(PS)export_safe_extend.f90\
+	$(SRC_DIR)$(PS)MOONS$(PS)refine_mesh_extend.f90\
 	$(SRC_DIR)$(PS)mesh_domain$(PS)mesh_domain_extend.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)generate_mesh_generic.f90\
 	$(SRC_DIR)$(PS)fields$(PS)SF_extend.f90\
@@ -290,8 +290,8 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)solvers$(PS)Taylor_Green_Vortex_test.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)temporal_convergence_test.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)operator_commute_test.f90\
-	$(SRC_DIR)$(PS)user$(PS)export_mesh_aux.f90\
+	$(SRC_DIR)$(PS)MOONS$(PS)export_mesh_aux.f90\
 	$(SRC_DIR)$(PS)matrix_vis$(PS)matrix_vis.f90\
-	$(SRC_DIR)$(PS)user$(PS)MOONS.f90
+	$(SRC_DIR)$(PS)MOONS$(PS)MOONS_extend.f90
 
 SRCS_F += $(TARGET_DIR)$(PS)parametricStudy.f90

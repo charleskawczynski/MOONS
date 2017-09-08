@@ -59,7 +59,8 @@ compiled_files = [x.replace('	$(SRC_DIR)',code_dir_handwritten) for x in compile
 # if generated:
 # else:
 compiled_files = [x.replace('$(PS)',PS) for x in compiled_files]
-# print('\n'.join(compiled_files))
+compiled_files = [x for x in compiled_files if not x.replace('\t','').startswith('#')]
+print('\n'.join(compiled_files))
 
 n_lines_total = 0
 # print('------------------------------------------- start file line count')

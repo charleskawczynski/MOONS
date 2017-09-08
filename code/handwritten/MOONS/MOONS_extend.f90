@@ -85,7 +85,7 @@
          endif
 
          fresh_restart_file = .true.
-         call init(RF)
+         call delete(RF)
          if (fresh_restart_file) call export(RF,'','restart_file') ! Use default, compiled SP + fields
          call import(RF,'','restart_file')
 

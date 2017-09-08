@@ -18,7 +18,6 @@
        use export_processed_FPL_mod
        use export_frequency_mod
        use export_now_mod
-       use refine_mesh_mod
        use assign_B0_vs_t_mod
        use datatype_conversion_mod
        use RK_Params_mod
