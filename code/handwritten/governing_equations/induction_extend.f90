@@ -1,4 +1,5 @@
-       module induction_mod
+       module induction_extend_mod
+       use induction_mod
        use current_precision_mod
        use sim_params_mod
        use IO_tools_mod
@@ -73,46 +74,7 @@
        public :: solve,export_tec,compute_export_E_M_budget
        public :: export_unsteady
 
-       type induction
-         ! --- Tensor fields ---
-         type(TF) :: U_E,temp_E_TF                    ! Edge data
-         type(TF) :: temp_F1_TF,temp_F2_TF            ! Face data
-
-         ! --- Vector fields ---
-         type(VF) :: F,Fnm1,L                           ! Face data
-         type(VF) :: J,temp_E                         ! Edge data
-         type(VF) :: B,Bnm1,B0,B_interior,temp_F1,temp_F2  ! Face data
-         type(VF) :: Bstar                            ! Intermediate magnetic field
-         type(VF) :: dB0dt
-         type(VF) :: temp_CC_VF                       ! CC data
-         type(VF) :: sigmaInv_edge
-         type(VF) :: J_interior
-         type(VF) :: curlUCrossB
-         type(VF) :: CC_VF_fluid,CC_VF_sigma
-
-         ! --- Scalar fields ---
-         type(SF) :: sigmaInv_CC
-         type(SF) :: divB,divJ,phi,temp_CC         ! CC data
-
-         ! --- Solvers ---
-         type(PCG_solver_VF) :: PCG_B
-         type(PCG_solver_SF) :: PCG_cleanB
-
-         ! Subscripts:
-         ! Magnetic field:
-         type(probe),dimension(3) :: ME,ME_fluid,ME_conductor ! 1 = total, 2 = applied, 3 induced
-         type(probe) :: JE,JE_fluid
-         type(probe) :: probe_divB,probe_divJ
-         type(probe),dimension(3) :: probe_dB0dt,probe_B0
-
-         type(mesh) :: m
-         type(mesh_domain) :: MD_fluid,MD_sigma ! Latter for vacuum case
-
-         logical :: suppress_warning
-       end type
-
        interface init;                 module procedure init_induction;                end interface
-       interface delete;               module procedure delete_induction;              end interface
        interface display;              module procedure display_induction;             end interface
        interface print;                module procedure print_induction;               end interface
        interface export;               module procedure export_induction;              end interface
@@ -271,60 +233,6 @@
 
          write(*,*) '     Finished'
          if (SP%VS%B%SS%restart) call import(ind,SP,DT)
-       end subroutine
-
-       subroutine delete_induction(ind)
-         implicit none
-         type(induction),intent(inout) :: ind
-         call delete(ind%temp_E_TF)
-         call delete(ind%temp_F1_TF)
-         call delete(ind%temp_F2_TF)
-         call delete(ind%U_E)
-
-         call delete(ind%F)
-         call delete(ind%Fnm1)
-         call delete(ind%L)
-         call delete(ind%B)
-         call delete(ind%Bnm1)
-         call delete(ind%Bstar)
-         call delete(ind%B_interior)
-         call delete(ind%B0)
-         call delete(ind%dB0dt)
-         call delete(ind%J)
-         call delete(ind%J_interior)
-         call delete(ind%curlUCrossB)
-         call delete(ind%CC_VF_fluid)
-         call delete(ind%CC_VF_sigma)
-         call delete(ind%temp_CC_VF)
-         call delete(ind%temp_E)
-         call delete(ind%temp_F1)
-         call delete(ind%temp_F2)
-         call delete(ind%sigmaInv_edge)
-
-         call delete(ind%divB)
-         call delete(ind%divJ)
-         call delete(ind%phi)
-         call delete(ind%temp_CC)
-
-         call delete(ind%m)
-         call delete(ind%MD_fluid)
-         call delete(ind%MD_sigma)
-
-         call delete(ind%probe_divB)
-         call delete(ind%probe_divJ)
-         call delete(ind%probe_dB0dt)
-         call delete(ind%probe_B0)
-
-         call delete(ind%ME)
-         call delete(ind%ME_fluid)
-         call delete(ind%ME_conductor)
-         call delete(ind%JE)
-         call delete(ind%JE_fluid)
-
-         call delete(ind%PCG_cleanB)
-         call delete(ind%PCG_B)
-
-         write(*,*) 'Induction object deleted'
        end subroutine
 
        subroutine display_induction(ind,SP,un)

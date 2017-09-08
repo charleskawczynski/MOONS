@@ -281,7 +281,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_Sigma.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_sources.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_solver.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction.f90\
+	$(SRC_DIR)$(PS)governing_equations$(PS)induction_extend.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)add_all_energy_sources.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)add_all_momentum_sources.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)add_all_induction_sources.f90\

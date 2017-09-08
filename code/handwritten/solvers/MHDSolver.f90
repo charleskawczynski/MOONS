@@ -28,9 +28,8 @@
        use add_all_induction_sources_mod
        use induction_aux_mod
        use energy_mod
-       use momentum_mod
        use momentum_extend_mod
-       use induction_mod
+       use induction_extend_mod
        use momentum_sources_mod
        implicit none
 
