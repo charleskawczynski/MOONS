@@ -21,7 +21,6 @@
        use export_now_mod
        use refine_mesh_mod
 
-       use PCG_mod
        use PCG_solver_mod
        use matrix_free_params_mod
        use matrix_free_operators_mod

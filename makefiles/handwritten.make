@@ -236,8 +236,8 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)solvers$(PS)GS$(PS)GS_poisson.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)SOR$(PS)SOR.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG_aux.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG_solver_algorithm.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG_solver.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)clean_divergence.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)time_marching_methods.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)time_marching_methods_SF.f90\

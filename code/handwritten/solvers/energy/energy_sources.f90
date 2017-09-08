@@ -9,7 +9,6 @@
        use ops_interp_mod
        use ops_discrete_mod
        use apply_BCs_mod
-       use PCG_mod
        use PCG_solver_mod
 
        implicit none
