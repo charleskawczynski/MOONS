@@ -203,7 +203,6 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)IO$(PS)import_raw.f90\
 	$(SRC_DIR)$(PS)version$(PS)version.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_norms.f90\
-	$(SRC_DIR)$(PS)PCG$(PS)norms_extend.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_fft.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_dct.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_idct.f90\
@@ -229,6 +228,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)solvers$(PS)AB2.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)compute_energy.f90\
 	$(SRC_DIR)$(PS)sparse$(PS)matrix.f90\
+	$(SRC_DIR)$(PS)PCG$(PS)norms_extend.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)FFT$(PS)FFT_poisson.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)Jacobi$(PS)Jacobi_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)Jacobi$(PS)Jacobi.f90\
@@ -237,7 +237,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)solvers$(PS)SOR$(PS)SOR.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG_aux.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG_solver_algorithm.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG_solver.f90\
+	$(SRC_DIR)$(PS)PCG$(PS)PCG_solver_extend.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)clean_divergence.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)time_marching_methods.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)time_marching_methods_SF.f90\

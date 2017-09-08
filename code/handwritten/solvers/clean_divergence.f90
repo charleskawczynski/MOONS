@@ -23,7 +23,7 @@
        use VF_extend_mod
        use ops_discrete_mod
        use apply_BCs_mod
-       use PCG_solver_mod
+       use PCG_solver_extend_mod
        use GS_Poisson_mod
 
        implicit none

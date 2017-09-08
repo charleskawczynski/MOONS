@@ -26,7 +26,9 @@ endif
 
 ifeq ($(OS_USED),'OS_WINDOWS')
 	RM = del
-	PS = $(strip \\)
+	PS = $(strip /)
+	# BEWARE: The double back-slash has caused an issue with compilation on windows gcc 4.9.2
+	# PS = $(strip \\)
 else
 	PS = $(strip /)
 	RM = rm
@@ -81,7 +83,10 @@ $(info PS_clean = $(PS_clean))
 $(info OS_USED = $(OS_USED))
 
 # ****************** DEFAULT FLAGS ******************
-FCFLAGS = -J"$(MOD_DIR)" -fimplicit-none -Wuninitialized -cpp
+FCFLAGS = -J"$(MOD_DIR)"
+FCFLAGS += -fimplicit-none
+FCFLAGS += -Wuninitialized
+FCFLAGS += -cpp
 # FCFLAGS += -std=legacy
 FCFLAGS += -std=gnu
 # FCFLAGS += -v
@@ -150,6 +155,8 @@ endif
 # These flags are for rigorous mesh / stencil checking
 # FC_DEBUG += -D_DEBUG_COORDINATES_
 # FC_DEBUG += -D_DEBUG_COORDINATE_STRETCH_PARAM_MATCH_
+# FC_DEBUG += -D_DEBUG_RK_PARAMS_
+
 FC_DEBUG += -D_DEBUG_IO_EXPORT_
 FC_DEBUG += -D_DEBUG_EMBEDEXTRACT_
 FC_DEBUG += -D_DEBUG_DATA_LOCATION_
@@ -167,7 +174,6 @@ FC_DEBUG += -D_DEBUG_BOUNDARY_CONDITIONS_
 FC_DEBUG += -D_DEBUG_APPLY_BCS_
 FC_DEBUG += -D_DEBUG_IO_TOOLS_
 FC_DEBUG += -D_DEBUG_GF_NORMS_
-# FC_DEBUG += -D_DEBUG_RK_PARAMS_
 
 # **************** OPTIMIZE/PARALLELIZE *********************
 ifeq ($(USE_OPEN_MP),'TRUE')

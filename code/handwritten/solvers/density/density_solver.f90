@@ -14,7 +14,7 @@
        use ops_advect_mod
        use ops_norms_mod
        use apply_BCs_mod
-       use PCG_solver_mod
+       use PCG_solver_extend_mod
        use matrix_free_operators_mod
 
        implicit none

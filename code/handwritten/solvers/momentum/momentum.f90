@@ -58,7 +58,7 @@
        use probe_extend_mod
        use ops_norms_mod
 
-       use PCG_solver_mod
+       use PCG_solver_extend_mod
        use preconditioners_mod
        use E_K_Budget_mod
 

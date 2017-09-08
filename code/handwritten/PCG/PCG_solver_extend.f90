@@ -1,4 +1,5 @@
-      module PCG_solver_mod
+      module PCG_solver_extend_mod
+      use PCG_solver_mod
       use current_precision_mod
       use string_mod
       use IO_export_mod
@@ -26,7 +27,6 @@
       public :: PCG_solver_SF
       public :: PCG_solver_VF
       public :: init,delete,export,import
-      ! public :: init,delete,display,print,export,import
       public :: solve
       public :: prolongate
       public :: update_MFP
@@ -44,45 +44,6 @@
 
       interface update_MFP; module procedure update_MFP_PCG_SF; end interface
       interface update_MFP; module procedure update_MFP_PCG_VF; end interface
-
-      interface delete;     module procedure delete_PCG_SF;     end interface
-      interface delete;     module procedure delete_PCG_VF;     end interface
-
-      interface export;     module procedure export_PCG_SF;     end interface
-      interface export;     module procedure export_PCG_VF;     end interface
-      interface import;     module procedure import_PCG_SF;     end interface
-      interface import;     module procedure import_PCG_VF;     end interface
-
-      interface export;     module procedure export_PCG_SF_wrapper;     end interface
-      interface export;     module procedure export_PCG_VF_wrapper;     end interface
-      interface import;     module procedure import_PCG_SF_wrapper;     end interface
-      interface import;     module procedure import_PCG_VF_wrapper;     end interface
-
-      type PCG_solver_SF
-        type(matrix_free_params) :: MFP
-        type(TF) :: tempk,k
-        type(SF) :: r,p,tempx,Ax,x_BC,vol,z,Minv
-        type(norms) :: norm
-        integer :: un,un_convergence
-        type(iter_solver_params) :: ISP
-        type(string) :: dir,name
-        procedure(preconditioner_SF),pointer,nopass :: prec
-        procedure(op_SF),pointer,nopass :: operator
-        procedure(op_SF_explicit),pointer,nopass :: operator_explicit
-      end type
-
-      type PCG_solver_VF
-        type(matrix_free_params) :: MFP
-        type(TF) :: tempk,k
-        type(VF) :: r,p,tempx,Ax,x_BC,vol,z,Minv
-        type(norms) :: norm
-        integer :: un,un_convergence
-        type(iter_solver_params) :: ISP
-        type(string) :: dir,name
-        procedure(preconditioner_VF),pointer,nopass :: prec
-        procedure(op_VF),pointer,nopass :: operator
-        procedure(op_VF_explicit),pointer,nopass :: operator_explicit
-      end type
 
       contains
 
@@ -241,178 +202,6 @@
         x,PCG%x_BC,b,PCG%vol,PCG%k,m,PCG%MFP,PCG%ISP,PCG%norm,compute_norms,PCG%un,&
         PCG%un_convergence,PCG%tempx,PCG%tempk,PCG%Ax,PCG%r,PCG%p,&
         PCG%z,PCG%Minv)
-      end subroutine
-
-      subroutine delete_PCG_SF(PCG)
-        implicit none
-        type(PCG_solver_SF),intent(inout) :: PCG
-        call delete(PCG%r)
-        call delete(PCG%p)
-        call delete(PCG%tempx)
-        call delete(PCG%Ax)
-        call delete(PCG%x_BC)
-        call delete(PCG%vol)
-        call delete(PCG%k)
-        call delete(PCG%tempk)
-        call delete(PCG%z)
-        call delete(PCG%Minv)
-        call delete(PCG%MFP)
-        close(PCG%un)
-        close(PCG%un_convergence)
-        call delete(PCG%dir)
-        call delete(PCG%name)
-      end subroutine
-
-      subroutine delete_PCG_VF(PCG)
-        implicit none
-        type(PCG_solver_VF),intent(inout) :: PCG
-        call delete(PCG%r)
-        call delete(PCG%p)
-        call delete(PCG%tempx)
-        call delete(PCG%Ax)
-        call delete(PCG%x_BC)
-        call delete(PCG%vol)
-        call delete(PCG%k)
-        call delete(PCG%tempk)
-        call delete(PCG%z)
-        call delete(PCG%Minv)
-        call delete(PCG%MFP)
-        close(PCG%un)
-        close(PCG%un_convergence)
-        call delete(PCG%dir)
-        call delete(PCG%name)
-      end subroutine
-
-      subroutine export_PCG_SF(PCG,un)
-        implicit none
-        type(PCG_solver_SF),intent(in) :: PCG
-        integer,intent(in) :: un
-        write(un,*) PCG%un
-        write(un,*) PCG%un_convergence
-        call export(PCG%ISP,un)
-        call export(PCG%dir,un)
-        call export(PCG%name,un)
-        call export(PCG%norm,un)
-        call export(PCG%r,un)
-        call export(PCG%p,un)
-        call export(PCG%tempx,un)
-        call export(PCG%Ax,un)
-        call export(PCG%x_BC,un)
-        call export(PCG%vol,un)
-        call export(PCG%z,un)
-        call export(PCG%Minv,un)
-        call export(PCG%k,un)
-        call export(PCG%tempk,un)
-        call export(PCG%MFP,un)
-      end subroutine
-
-      subroutine export_PCG_VF(PCG,un)
-        implicit none
-        type(PCG_solver_VF),intent(in) :: PCG
-        integer,intent(in) :: un
-        write(un,*) PCG%un
-        write(un,*) PCG%un_convergence
-        call export(PCG%ISP,un)
-        call export(PCG%dir,un)
-        call export(PCG%name,un)
-        call export(PCG%norm,un)
-        call export(PCG%r,un)
-        call export(PCG%p,un)
-        call export(PCG%tempx,un)
-        call export(PCG%Ax,un)
-        call export(PCG%x_BC,un)
-        call export(PCG%vol,un)
-        call export(PCG%z,un)
-        call export(PCG%Minv,un)
-        call export(PCG%k,un)
-        call export(PCG%tempk,un)
-        call export(PCG%MFP,un)
-      end subroutine
-
-      subroutine import_PCG_SF(PCG,un)
-        implicit none
-        type(PCG_solver_SF),intent(inout) :: PCG
-        integer,intent(in) :: un
-        read(un,*) PCG%un
-        read(un,*) PCG%un_convergence
-        call import(PCG%ISP,un)
-        call import(PCG%dir,un)
-        call import(PCG%name,un)
-        call import(PCG%norm,un)
-        call import(PCG%r,un)
-        call import(PCG%p,un)
-        call import(PCG%tempx,un)
-        call import(PCG%Ax,un)
-        call import(PCG%x_BC,un)
-        call import(PCG%vol,un)
-        call import(PCG%z,un)
-        call import(PCG%Minv,un)
-        call import(PCG%k,un)
-        call import(PCG%tempk,un)
-        call import(PCG%MFP,un)
-      end subroutine
-
-      subroutine import_PCG_VF(PCG,un)
-        implicit none
-        type(PCG_solver_VF),intent(inout) :: PCG
-        integer,intent(in) :: un
-        read(un,*) PCG%un
-        read(un,*) PCG%un_convergence
-        call import(PCG%ISP,un)
-        call import(PCG%dir,un)
-        call import(PCG%name,un)
-        call import(PCG%norm,un)
-        call import(PCG%r,un)
-        call import(PCG%p,un)
-        call import(PCG%tempx,un)
-        call import(PCG%Ax,un)
-        call import(PCG%x_BC,un)
-        call import(PCG%vol,un)
-        call import(PCG%z,un)
-        call import(PCG%Minv,un)
-        call import(PCG%k,un)
-        call import(PCG%tempk,un)
-        call import(PCG%MFP,un)
-      end subroutine
-
-      subroutine export_PCG_SF_wrapper(PCG,dir,name)
-        implicit none
-        type(PCG_solver_SF),intent(in) :: PCG
-        character(len=*),intent(in) :: dir,name
-        integer :: un
-        un = new_and_open(dir,name)
-        call export(PCG,un)
-        close(un)
-      end subroutine
-
-      subroutine export_PCG_VF_wrapper(PCG,dir,name)
-        implicit none
-        type(PCG_solver_VF),intent(in) :: PCG
-        character(len=*),intent(in) :: dir,name
-        integer :: un
-        un = new_and_open(dir,name)
-        call export(PCG,un)
-        close(un)
-      end subroutine
-
-      subroutine import_PCG_SF_wrapper(PCG,dir,name)
-        implicit none
-        type(PCG_solver_SF),intent(inout) :: PCG
-        character(len=*),intent(in) :: dir,name
-        integer :: un
-        un = open_to_read(dir,name)
-        call import(PCG,un)
-        close(un)
-      end subroutine
-
-      subroutine import_PCG_VF_wrapper(PCG,dir,name)
-        implicit none
-        type(PCG_solver_VF),intent(inout) :: PCG
-        character(len=*),intent(in) :: dir,name
-        integer :: un
-        un = open_to_read(dir,name)
-        call import(PCG,un)
-        close(un)
       end subroutine
 
       subroutine tecHeader(name,un,VF)

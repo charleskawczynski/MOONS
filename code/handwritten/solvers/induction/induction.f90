@@ -59,7 +59,7 @@
        use time_marching_methods_mod
        use induction_solver_mod
        use preconditioners_mod
-       use PCG_solver_mod
+       use PCG_solver_extend_mod
        use matrix_free_params_mod
        use matrix_free_operators_mod
        use induction_aux_mod

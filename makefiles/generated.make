@@ -96,3 +96,4 @@ SRCS_F+=\
 	$(SRC_DIR_GENERATED)$(PS)PCG$(PS)matrix_free_operators_interfaces.f90\
 	$(SRC_DIR_GENERATED)$(PS)PCG$(PS)norms.f90\
 	$(SRC_DIR_GENERATED)$(PS)time_statistics$(PS)time_statistics.f90\
+	$(SRC_DIR_GENERATED)$(PS)PCG$(PS)PCG_solver.f90\

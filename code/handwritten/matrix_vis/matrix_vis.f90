@@ -13,7 +13,7 @@
        use path_extend_mod
        use export_raw_processed_mod
        use ops_discrete_mod
-       use PCG_solver_mod
+       use PCG_solver_extend_mod
        use matrix_free_operators_mod
        use matrix_free_params_mod
        use preconditioners_mod

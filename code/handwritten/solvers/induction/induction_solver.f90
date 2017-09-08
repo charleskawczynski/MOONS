@@ -18,7 +18,7 @@
        use AB2_mod
        use compute_energy_mod
        use matrix_free_params_mod
-       use PCG_solver_mod
+       use PCG_solver_extend_mod
        use Jacobi_mod
        use induction_aux_mod
        use export_raw_processed_mod
