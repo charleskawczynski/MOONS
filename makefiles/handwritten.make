@@ -15,6 +15,7 @@ VPATH +=\
 	$(SRC_DIR)$(PS)coordinates\
 	$(SRC_DIR)$(PS)dir_tree\
 	$(SRC_DIR)$(PS)domain\
+	$(SRC_DIR)$(PS)governing_equations\
 	$(SRC_DIR)$(PS)mesh_params\
 	$(SRC_DIR)$(PS)mesh_domain\
 	$(SRC_DIR)$(PS)grid_field\
@@ -262,7 +263,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)E_K_budget.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum_sources.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum_aux.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum.f90\
+	$(SRC_DIR)$(PS)governing_equations$(PS)momentum_extend.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_aux.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)Mike_Ulrickson_data.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)assign_B0_vs_t.f90\

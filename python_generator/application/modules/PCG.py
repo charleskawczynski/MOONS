@@ -58,6 +58,6 @@ def add_modules(g,T,F,priv,real,abstract_interfaces_path):
 	g.module[m_name].add_prop('operator','op_VF',priv,F,1,1,T)
 	g.module[m_name].add_prop('operator_explicit','op_VF_explicit',priv,F,1,1,T)
 
-	g.set_combined_modules(['PCG_solver_SF','PCG_solver_VF'])
+	# g.set_combined_modules(['PCG_solver_SF','PCG_solver_VF'])
 
 	return g

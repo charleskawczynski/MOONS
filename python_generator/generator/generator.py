@@ -12,7 +12,6 @@ class generator:
 	def __init__(self):
 		self.module = OrderedDict()
 		self.module_list = []
-		self.combined_modules = []
 		self.abstract_interfaces = OrderedDict()
 		self.used_modules = []
 		self.base_files = []
@@ -28,12 +27,15 @@ class generator:
 		return self
 
 	def set_default_real(self,default_real): self.default_real = default_real
-	def set_combined_modules(self,combined_modules): self.combined_modules = self.combined_modules+[combined_modules]
 	def add_base_files(self,base_files): self.base_files = self.base_files+base_files
 	def add_base_modules(self,base_modules): self.base_modules = self.base_modules+base_modules
 
 	def print(self):
 		self.d.print_local()
+	def remove_duplicates_preserve_order(self,seq):
+		seen = set()
+		seen_add = seen.add
+		return [x for x in seq if not (x in seen or seen_add(x))]
 
 	def add_module(self,module_name):
 		self.module_list = self.module_list+[module_name]
@@ -55,15 +57,21 @@ class generator:
 		N_tot = 0
 		PS = self.d.PS
 		print(' ----------------------------- module_list ----------------------------- ')
-		print(','.join(self.module_list))
+		# print(','.join(self.module_list))
+		print('\n'.join(self.module_list))
 		print(' ----------------------------------------------------------------------- ')
 
 		# module_list_temp = [self.module[key].folder_name+PS+self.module[key].name for key in self.module]
-		combined_modules_flat = [item for sublist in self.combined_modules for item in sublist]
 		module_list_temp = []
 		for key in self.module:
-			if not any([key == x for x in combined_modules_flat]):
-				module_list_temp.append(self.module[key].folder_name+PS+self.module[key].name)
+			module_list_temp.append(self.module[key].folder_name+PS+self.module[key].name)
+
+		self.module_list = self.remove_duplicates_preserve_order(self.module_list)
+
+		print(' ----------------------------- module_list post ----------------------------- ')
+		# print(','.join(self.module_list))
+		print('\n'.join(self.module_list))
+		print(' ----------------------------------------------------------------------- ')
 
 		print('----------------------------- overwritten_module_list')
 		print(self.overwritten_module_list)
@@ -88,22 +96,8 @@ class generator:
 		self.base_spaces = self.module[key].base_spaces
 
 		for key in self.module:
-			if not any([key == x for x in combined_modules_flat]):
-				L = self.module[key].contruct_fortran_module(self.module_list,self.abstract_interfaces,self.base_modules)
-				path = self.d.target_dir+self.module[key].folder_name+PS+key+self.d.fext
-				func.write_string_to_file(path,'\n'.join(L))
-				N_tot = N_tot+len(L)
-
-		for CM in self.combined_modules:
-			m = OrderedDict()
-			for key in CM:
-				m[key] = self.module[key].contruct_fortran_module(self.module_list,self.abstract_interfaces,self.base_modules)
-			combined_name = FM.longest_sub_string_match_list(CM)
-			if combined_name.endswith('_'): combined_name = combined_name[:-1]
-			if combined_name.startswith('_'): combined_name = combined_name[1:]
-			L = MM.combine_modules(m,CM,self.base_spaces)
-			path = self.d.target_dir+self.module[key].folder_name+PS+combined_name+self.d.fext
-			module_list_temp.append(self.module[key].folder_name+PS+combined_name)
+			L = self.module[key].contruct_fortran_module(self.module_list,self.abstract_interfaces,self.base_modules)
+			path = self.d.target_dir+self.module[key].folder_name+PS+key+self.d.fext
 			func.write_string_to_file(path,'\n'.join(L))
 			N_tot = N_tot+len(L)
 

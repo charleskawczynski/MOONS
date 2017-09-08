@@ -6,6 +6,7 @@ VPATH +=\
 	$(SRC_DIR_GENERATED)$(PS)boundary_conditions\
 	$(SRC_DIR_GENERATED)$(PS)dir_tree\
 	$(SRC_DIR_GENERATED)$(PS)fields\
+	$(SRC_DIR_GENERATED)$(PS)governing_equations\
 	$(SRC_DIR_GENERATED)$(PS)grid\
 	$(SRC_DIR_GENERATED)$(PS)grid_field\
 	$(SRC_DIR_GENERATED)$(PS)mesh\
@@ -92,8 +93,11 @@ SRCS_F+=\
 	$(SRC_DIR_GENERATED)$(PS)fields$(PS)VF.f90\
 	$(SRC_DIR_GENERATED)$(PS)fields$(PS)TF.f90\
 	$(SRC_DIR_GENERATED)$(PS)mesh_domain$(PS)mesh_domain.f90\
+	$(SRC_DIR_GENERATED)$(PS)time_statistics$(PS)time_statistics_SF.f90\
+	$(SRC_DIR_GENERATED)$(PS)time_statistics$(PS)time_statistics_VF.f90\
 	$(SRC_DIR_GENERATED)$(PS)PCG$(PS)preconditioner_interfaces.f90\
 	$(SRC_DIR_GENERATED)$(PS)PCG$(PS)matrix_free_operators_interfaces.f90\
 	$(SRC_DIR_GENERATED)$(PS)PCG$(PS)norms.f90\
-	$(SRC_DIR_GENERATED)$(PS)time_statistics$(PS)time_statistics.f90\
-	$(SRC_DIR_GENERATED)$(PS)PCG$(PS)PCG_solver.f90\
+	$(SRC_DIR_GENERATED)$(PS)PCG$(PS)PCG_solver_SF.f90\
+	$(SRC_DIR_GENERATED)$(PS)PCG$(PS)PCG_solver_VF.f90\
+	$(SRC_DIR_GENERATED)$(PS)governing_equations$(PS)momentum.f90\

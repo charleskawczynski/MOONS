@@ -1,5 +1,6 @@
        module time_statistics_extend_mod
-       use time_statistics_mod
+       use time_statistics_SF_mod
+       use time_statistics_VF_mod
        use current_precision_mod
        use sim_params_mod
        use ops_interp_mod

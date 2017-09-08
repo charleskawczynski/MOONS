@@ -1,5 +1,6 @@
       module PCG_solver_extend_mod
-      use PCG_solver_mod
+      use PCG_solver_SF_mod
+      use PCG_solver_VF_mod
       use current_precision_mod
       use string_mod
       use IO_export_mod

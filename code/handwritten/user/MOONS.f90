@@ -41,7 +41,7 @@
 
        ! use density_mod
        use energy_mod
-       use momentum_mod
+       use momentum_extend_mod
        use induction_mod
        use MHDSolver_mod
 

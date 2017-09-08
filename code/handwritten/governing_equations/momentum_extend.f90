@@ -1,4 +1,5 @@
-       module momentum_mod
+       module momentum_extend_mod
+       use momentum_mod
        use current_precision_mod
 
        use sim_params_mod
@@ -72,30 +73,7 @@
        public :: solve,export_tec,compute_export_E_K_Budget
        public :: export_unsteady
 
-       type momentum
-         logical :: suppress_warning
-         ! Tensor fields
-         type(TF) :: U_E
-         type(TF) :: TF_CC,TF_CC_edge
-         ! Vector fields
-         type(VF) :: U,Ustar,Unm1
-         type(VF) :: U_CC
-         type(VF) :: F,Fnm1,L
-         type(VF) :: temp_F1,temp_F2,temp_F3
-         type(VF) :: temp_E,temp_CC_VF
-         ! Scalar fields
-         type(SF) :: p,divU,temp_CC
-
-         type(PCG_Solver_SF) :: PCG_P
-         type(PCG_Solver_VF) :: PCG_U
-
-         type(mesh) :: m
-         type(probe) :: probe_KE,probe_KE_2C,probe_divU,probe_Q
-         type(time_statistics_VF) :: TS
-       end type
-
        interface init;                 module procedure init_mom;                   end interface
-       interface delete;               module procedure delete_mom;                 end interface
        interface display;              module procedure display_momentum;           end interface
        interface print;                module procedure print_momentum;             end interface
        interface export;               module procedure export_momentum;            end interface
@@ -210,38 +188,6 @@
          write(*,*) '     Solver settings initialized'
          write(*,*) '     Finished'
          write(*,*) ''
-       end subroutine
-
-       subroutine delete_mom(mom)
-         implicit none
-         type(momentum),intent(inout) :: mom
-         call delete(mom%U)
-         call delete(mom%U_E)
-         call delete(mom%Unm1)
-         call delete(mom%Ustar)
-         call delete(mom%temp_F1)
-         call delete(mom%temp_F2)
-         call delete(mom%F)
-         call delete(mom%Fnm1)
-         call delete(mom%L)
-         call delete(mom%temp_F3)
-         call delete(mom%p)
-         call delete(mom%temp_CC)
-         call delete(mom%temp_CC_VF)
-         call delete(mom%TF_CC)
-         call delete(mom%TF_CC_edge)
-         call delete(mom%divU)
-         call delete(mom%U_CC)
-         call delete(mom%probe_divU)
-         call delete(mom%probe_KE)
-         call delete(mom%probe_KE_2C)
-         call delete(mom%probe_Q)
-         call delete(mom%temp_E)
-         call delete(mom%m)
-         call delete(mom%PCG_P)
-         call delete(mom%PCG_U)
-         call delete(mom%TS)
-         write(*,*) 'Momentum object deleted'
        end subroutine
 
        subroutine display_momentum(mom,SP,un)

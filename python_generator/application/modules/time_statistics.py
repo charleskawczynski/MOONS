@@ -35,6 +35,6 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('L2_stresses','probe',priv)
 	g.module[m_name].add_prop('TSP','time_statistics_params',priv)
 
-	g.set_combined_modules(['time_statistics_SF','time_statistics_VF'])
+	# g.set_combined_modules(['time_statistics_SF','time_statistics_VF'])
 
 	return g

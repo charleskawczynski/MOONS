@@ -142,7 +142,7 @@ class fortran_module:
         c.append('! ******* THIS CODE IS GENERATED. DO NOT EDIT *******')
         c.append('! ***************************************************')
         c.append('module ' + self.get_name() + '_mod')
-        c.append(self.write_used_modules(self.base_modules,self.abstract_interfaces))
+        c.append(self.write_used_modules())
         c.append([self.implicitNone]+[''])
         c.append(['private'])
         c.append(['public :: '+self.name])
@@ -168,7 +168,7 @@ class fortran_module:
         s = l
         return s
 
-    def write_used_modules(self,base_modules,abstract_interfaces):
+    def write_used_modules(self):
         dependent=[]
         types = [self.prop[k].get_class() for k in self.prop]
         self.any_cp = any(['cp' in x for x in types])
@@ -178,9 +178,9 @@ class fortran_module:
             c=['current_precision_mod']+c
         for key in self.prop:
             dependent.append([x for x in self.class_list if self.prop[key].get_class().lower()==x.lower()])
-            dependent.append([x for x in base_modules if self.prop[key].get_class().lower()==x.lower()])
-            for k in abstract_interfaces:
-                dependent.append([k for x in abstract_interfaces[k] if self.prop[key].get_class().lower()==x.lower()])
+            dependent.append([x for x in self.base_modules if self.prop[key].get_class().lower()==x.lower()])
+            for k in self.abstract_interfaces:
+                dependent.append([k for x in self.abstract_interfaces[k] if self.prop[key].get_class().lower()==x.lower()])
         dependent = list(set([item for sublist in dependent for item in sublist if item]))
         dependent.sort()
         c = c+[x+'_mod' for x in dependent]
