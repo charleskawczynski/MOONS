@@ -14,7 +14,7 @@
        use ops_advect_mod
        use ops_norms_mod
        use apply_BCs_mod
-       use norms_mod
+       use norms_extend_mod
        use AB2_mod
        use compute_energy_mod
        use matrix_free_params_mod

@@ -4,7 +4,7 @@
        use SF_extend_mod
        use VF_extend_mod
        use TF_extend_mod
-       use norms_mod
+       use norms_extend_mod
        use string_mod
        use AB2_mod
        use compute_energy_mod

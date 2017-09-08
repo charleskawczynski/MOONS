@@ -39,7 +39,7 @@
        use export_now_mod
        use refine_mesh_mod
 
-       use norms_mod
+       use norms_extend_mod
        use ops_norms_mod
        use ops_del_mod
        use ops_aux_mod

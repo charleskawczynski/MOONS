@@ -48,7 +48,7 @@
        use mesh_domain_extend_mod
        use grid_mod
        use mesh_extend_mod
-       use norms_mod
+       use norms_extend_mod
        use ops_del_mod
        use ops_aux_mod
        use ops_interp_mod

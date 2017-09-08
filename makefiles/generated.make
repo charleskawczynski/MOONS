@@ -94,4 +94,5 @@ SRCS_F+=\
 	$(SRC_DIR_GENERATED)$(PS)mesh_domain$(PS)mesh_domain.f90\
 	$(SRC_DIR_GENERATED)$(PS)PCG$(PS)preconditioner_interfaces.f90\
 	$(SRC_DIR_GENERATED)$(PS)PCG$(PS)matrix_free_operators_interfaces.f90\
+	$(SRC_DIR_GENERATED)$(PS)PCG$(PS)norms.f90\
 	$(SRC_DIR_GENERATED)$(PS)time_statistics$(PS)time_statistics.f90\

@@ -41,6 +41,7 @@ VPATH +=\
 	$(SRC_DIR)$(PS)mesh\
 	$(SRC_DIR)$(PS)norms\
 	$(SRC_DIR)$(PS)ops\
+	$(SRC_DIR)$(PS)PCG\
 	$(SRC_DIR)$(PS)physical_domain\
 	$(SRC_DIR)$(PS)procedure_array\
 	$(SRC_DIR)$(PS)probe\
@@ -202,7 +203,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)IO$(PS)import_raw.f90\
 	$(SRC_DIR)$(PS)version$(PS)version.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_norms.f90\
-	$(SRC_DIR)$(PS)norms$(PS)norms.f90\
+	$(SRC_DIR)$(PS)PCG$(PS)norms_extend.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_fft.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_dct.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_idct.f90\

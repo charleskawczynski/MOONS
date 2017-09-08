@@ -1,16 +1,16 @@
        module time_statistics_mod
-       use VF_mod
-       use string_mod
-       use SF_mod
        use IO_tools_mod
+       use string_mod
+       use VF_mod
+       use time_statistics_params_mod
        use probe_mod
        use TF_mod
-       use time_statistics_params_mod
+       use SF_mod
 
-       public :: display_short,print_short
        public :: time_statistics_SF
        public :: init,delete,display,print,export,import
        public :: time_statistics_VF
+       public :: display_short,print_short
 
        interface init;         module procedure init_copy_time_statistics_SF;    end interface
        interface delete;       module procedure delete_time_statistics_SF;       end interface

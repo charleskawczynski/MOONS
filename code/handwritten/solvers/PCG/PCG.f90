@@ -3,7 +3,7 @@
       use string_mod
       use IO_export_mod
       use mesh_extend_mod
-      use norms_mod
+      use norms_extend_mod
       use data_location_mod
       use ops_discrete_mod
       use ops_aux_mod

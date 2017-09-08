@@ -13,7 +13,7 @@
        use ops_discrete_mod
        use ops_norms_mod
        use ops_embedExtract_mod
-       use norms_mod
+       use norms_extend_mod
 
        implicit none
 

@@ -18,7 +18,7 @@
       use current_precision_mod
       use mesh_extend_mod
       use apply_BCs_mod
-      use norms_mod
+      use norms_extend_mod
       use SF_extend_mod
       use ops_discrete_mod
       use ops_aux_mod
