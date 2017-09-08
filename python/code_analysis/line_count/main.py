@@ -11,11 +11,13 @@ up = '..'+PS
 generated = False
 
 make_dir = '.'+PS+up+up+up+'makefiles'+PS
-if generated:
-	make_file_name = ['generated.make']
-else:
-	make_file_name = ['pre_generated','generated.make','handwritten.make']
-	# make_file_name = ['pre_generated','handwritten.make']
+# make_file_name = ['handwritten.make']
+# make_file_name = ['pre_generated.make']
+# make_file_name = ['pre_generated.make']
+# make_file_name = ['generated.make']
+
+# make_file_name = ['pre_generated.make','handwritten.make']
+make_file_name = ['pre_generated.make','generated.make','handwritten.make']
 
 code_dir = '.'+PS+up+up+up+'code'+PS
 code_dir_generated = code_dir+'generated_code'

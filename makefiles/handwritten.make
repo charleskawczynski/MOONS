@@ -2,6 +2,7 @@
 VPATH +=\
 	$(TARGET_DIR)\
 	$(SRC_DIR)$(PS)apply_face_BC_op\
+	$(SRC_DIR)$(PS)abstract_interfaces\
 	$(SRC_DIR)$(PS)block\
 	$(SRC_DIR)$(PS)block_field\
 	$(SRC_DIR)$(PS)boundary_conditions\
@@ -74,7 +75,6 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)BCs$(PS)face_edge_corner_indexing.f90\
 	$(SRC_DIR)$(PS)math$(PS)is_nan.f90\
 	$(SRC_DIR)$(PS)math$(PS)even_odd.f90\
-	$(SRC_DIR)$(PS)IO$(PS)fmt.f90\
 	$(SRC_DIR)$(PS)IO$(PS)datatype_conversion.f90\
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Zone.f90\
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Header.f90\
@@ -171,7 +171,6 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)mesh$(PS)mesh_extend.f90\
 	$(SRC_DIR)$(PS)physical_domain$(PS)physical_domain_extend.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)direct$(PS)apply_BCs_faces_raw.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)direct$(PS)apply_BCs_edges_raw.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)direct$(PS)apply_BCs_faces_bridge.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)implicit$(PS)apply_BCs_faces_raw_implicit.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)implicit$(PS)apply_BCs_faces_bridge_implicit.f90\
@@ -202,6 +201,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)IO$(PS)IO_import.f90\
 	$(SRC_DIR)$(PS)IO$(PS)import_raw.f90\
 	$(SRC_DIR)$(PS)version$(PS)version.f90\
+	$(SRC_DIR)$(PS)abstract_interfaces$(PS)preconditioner_interfaces.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_norms.f90\
 	$(SRC_DIR)$(PS)norms$(PS)norms.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_fft.f90\

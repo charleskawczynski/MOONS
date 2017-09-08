@@ -11,7 +11,6 @@
        use array_mod
        use IO_tools_mod
        use sim_params_mod
-       use fmt_mod
        use time_marching_params_mod
        use is_nan_mod
 
