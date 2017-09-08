@@ -1,4 +1,5 @@
 VPATH +=\
+	$(SRC_DIR_GENERATED)$(PS)PCG\
 	$(SRC_DIR_GENERATED)$(PS)apply_face_BC_op\
 	$(SRC_DIR_GENERATED)$(PS)block\
 	$(SRC_DIR_GENERATED)$(PS)block_field\
@@ -91,4 +92,6 @@ SRCS_F+=\
 	$(SRC_DIR_GENERATED)$(PS)fields$(PS)VF.f90\
 	$(SRC_DIR_GENERATED)$(PS)fields$(PS)TF.f90\
 	$(SRC_DIR_GENERATED)$(PS)mesh_domain$(PS)mesh_domain.f90\
+	$(SRC_DIR_GENERATED)$(PS)PCG$(PS)preconditioner_interfaces.f90\
+	$(SRC_DIR_GENERATED)$(PS)PCG$(PS)matrix_free_operators_interfaces.f90\
 	$(SRC_DIR_GENERATED)$(PS)time_statistics$(PS)time_statistics.f90\

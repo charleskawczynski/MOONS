@@ -23,6 +23,7 @@ code_dir = '.'+PS+up+up+up+'code'+PS
 code_dir_generated = code_dir+'generated_code'
 code_dir_handwritten = code_dir+'handwritten'
 code_dir_pre_generated = code_dir+'pre_generated'
+exceptions = code_dir_handwritten+PS+'abstract_interfaces'
 # print(code_dir)
 # print(' ----------------------------------------------- ')
 print('make_dir = '+make_dir)
@@ -84,6 +85,7 @@ for path, subdirs, files in os.walk(code_dir):
 
 
 non_compiled_files = list(set(all_files_in_code) - set(compiled_files))
+# non_compiled_files = [x for x in non_compiled_files if not any([y in x for y in exceptions])]
 non_compiled_files.sort()
 
 # print(' ---------------- ALL FILES -------------------- ')

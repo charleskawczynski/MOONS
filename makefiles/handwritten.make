@@ -2,7 +2,6 @@
 VPATH +=\
 	$(TARGET_DIR)\
 	$(SRC_DIR)$(PS)apply_face_BC_op\
-	$(SRC_DIR)$(PS)abstract_interfaces\
 	$(SRC_DIR)$(PS)block\
 	$(SRC_DIR)$(PS)block_field\
 	$(SRC_DIR)$(PS)boundary_conditions\
@@ -49,6 +48,7 @@ VPATH +=\
 	$(SRC_DIR)$(PS)sub_domain\
 	$(SRC_DIR)$(PS)var_set\
 	$(SRC_DIR)$(PS)solvers\
+	$(SRC_DIR)$(PS)solvers$(PS)density\
 	$(SRC_DIR)$(PS)solvers$(PS)energy\
 	$(SRC_DIR)$(PS)solvers$(PS)FFT\
 	$(SRC_DIR)$(PS)solvers$(PS)GS\
@@ -201,7 +201,6 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)IO$(PS)IO_import.f90\
 	$(SRC_DIR)$(PS)IO$(PS)import_raw.f90\
 	$(SRC_DIR)$(PS)version$(PS)version.f90\
-	$(SRC_DIR)$(PS)abstract_interfaces$(PS)preconditioner_interfaces.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_norms.f90\
 	$(SRC_DIR)$(PS)norms$(PS)norms.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_fft.f90\
@@ -235,8 +234,6 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)solvers$(PS)GS$(PS)GS_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)GS$(PS)GS_poisson.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)SOR$(PS)SOR.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)PSE$(PS)PSE_solver.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)PSE$(PS)PSE.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG_aux.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG.f90\

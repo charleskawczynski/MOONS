@@ -17,14 +17,15 @@ def flatten(foo):
     return l
 
 def read_file_to_list(file_name,caller):
+    f = open(file_name,'r+')
     try:
         f = open(file_name,'r+')
         L = f.read().split('\n')
     except:
         L = []
-        # print(' ********* READ ERROR ********* '+caller)
-        # print(' ********* READ ERROR ********* '+caller)
-        # print(' ********* READ ERROR ********* '+caller)
+        print(' ********* READ ERROR ********* '+caller)
+        print(' ********* READ ERROR ********* '+caller)
+        print(' ********* READ ERROR ********* '+caller)
     return L
 
 def read_file_to_string(file_name):

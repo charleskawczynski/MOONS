@@ -55,16 +55,17 @@ def up_dir(d,n): return str(Path(d).parents[n])
 def dir_name(d): return os.path.dirname(d)
 def full_path(f): return os.path.abspath(f)
 
-abstract_interfaces_path = os.getcwd()+PS+'handwritten_code'+PS+'abstract_interfaces'+PS
 MOONS_dir = up_dir(dir_name(full_path(__file__)),1)+PS
 makefile_dir = MOONS_dir+'makefiles'+PS
 makefile_file = makefile_dir+'generated.make'
 this_file = full_path(__file__)
 app_folder = dir_name(this_file)+PS
 code_folder = up_dir(app_folder,1)+PS+'code'+PS
+handwritten_code_folder = code_folder+'handwritten'+PS
 generated_code_folder = code_folder+'generated_code'+PS
 generator_folder = up_dir(app_folder,0)+PS+'generator'+PS
 interface_folder = app_folder+'abstract_interfaces'+PS
+abstract_interfaces_path = handwritten_code_folder+'abstract_interfaces'+PS
 
 d = GD.GOOFPY_directory(PS)
 d.set_main(this_file)
@@ -135,7 +136,7 @@ g = mesh_domain.add_modules(g,T,F,priv,real)
 g = time_statistics.add_modules(g,T,F,priv,real)
 
 # --------------- Very large data structures
-# g = PCG.add_modules(g,T,F,priv,real,abstract_interfaces_path) # Contains interfaces
+g = PCG.add_modules(g,T,F,priv,real,abstract_interfaces_path) # Contains interfaces
 # g = FFT_solver.add_modules(g,T,F,priv,real)
 # g = governing_equations.add_modules(g,T,F,priv,real)
 # g = MOONS.add_modules(g,T,F,priv,real)

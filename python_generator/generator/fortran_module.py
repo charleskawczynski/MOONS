@@ -159,8 +159,10 @@ class fortran_module:
     def post_process(self,c):
         l = func.flatten(c)
         l = [x for x in l if not x==None]
-        if self.raw_lines_used: l = self.raw_lines
-        l = [self.base_spaces+x if not (x=='' or x.startswith('#')) else x for x in l]
+        if self.raw_lines_used:
+          l = self.raw_lines
+        else:
+          l = [self.base_spaces+x if not (x=='' or x.startswith('#')) else x for x in l]
         # l = [self.base_spaces+x for x in l]
         s = [self.breakLine(k,[]) for k in l]
         s = l

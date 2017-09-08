@@ -9,23 +9,24 @@ import fortran_property as FP
 
 def add_modules(g,T,F,priv,real,abstract_interfaces_path):
 
-	m_name = 'preconditioners'
+	# m_name = 'preconditioners'
+	m_name = 'preconditioner_interfaces'
 	g.add_module(m_name)
 	g.module[m_name].set_folder_name(__name__.split('.')[1])
 	g.module[m_name].set_used_modules([''])
-	g.module[m_name].read_raw_lines(abstract_interfaces_path+'preconditioners.f90')
+	g.module[m_name].read_raw_lines(abstract_interfaces_path+'preconditioner_interfaces.f90')
 
-	m_name = 'matrix_free_operators'
+	m_name = 'matrix_free_operators_interfaces'
 	g.add_module(m_name)
 	g.module[m_name].set_folder_name(__name__.split('.')[1])
 	g.module[m_name].set_used_modules([''])
-	g.module[m_name].read_raw_lines(abstract_interfaces_path+'matrix_free_operators.f90')
+	g.module[m_name].read_raw_lines(abstract_interfaces_path+'matrix_free_operators_interfaces.f90')
 
-	m_name = 'norms'
-	g.add_module(m_name)
-	g.module[m_name].set_folder_name(__name__.split('.')[1])
-	g.module[m_name].set_used_modules(['IO_tools_mod'])
-	g.module[m_name].add_prop(['L1','L2','Linf'],real,priv)
+	# m_name = 'norms'
+	# g.add_module(m_name)
+	# g.module[m_name].set_folder_name(__name__.split('.')[1])
+	# g.module[m_name].set_used_modules(['IO_tools_mod'])
+	# g.module[m_name].add_prop(['L1','L2','Linf'],real,priv)
 
 	# m_name = 'PCG_solver_SF'
 	# g.add_module(m_name)
