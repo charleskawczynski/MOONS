@@ -11,17 +11,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_si;    end interface
-       interface delete;       module procedure delete_si;       end interface
-       interface display;      module procedure display_si;      end interface
-       interface display_short;module procedure display_short_si;end interface
-       interface display;      module procedure display_wrap_si; end interface
-       interface print;        module procedure print_si;        end interface
-       interface print_short;  module procedure print_short_si;  end interface
-       interface export;       module procedure export_si;       end interface
-       interface import;       module procedure import_si;       end interface
-       interface export;       module procedure export_wrap_si;  end interface
-       interface import;       module procedure import_wrap_si;  end interface
+       interface init;         module procedure init_copy_sim_config_params;    end interface
+       interface delete;       module procedure delete_sim_config_params;       end interface
+       interface display;      module procedure display_sim_config_params;      end interface
+       interface display_short;module procedure display_short_sim_config_params;end interface
+       interface display;      module procedure display_wrap_sim_config_params; end interface
+       interface print;        module procedure print_sim_config_params;        end interface
+       interface print_short;  module procedure print_short_sim_config_params;  end interface
+       interface export;       module procedure export_sim_config_params;       end interface
+       interface import;       module procedure import_sim_config_params;       end interface
+       interface export;       module procedure export_wrap_sim_config_params;  end interface
+       interface import;       module procedure import_wrap_sim_config_params;  end interface
 
        type sim_config_params
          real(cp) :: export_safe_period = 0.0_cp
@@ -36,7 +36,7 @@
 
        contains
 
-       subroutine init_copy_si(this,that)
+       subroutine init_copy_sim_config_params(this,that)
          implicit none
          type(sim_config_params),intent(inout) :: this
          type(sim_config_params),intent(in) :: that
@@ -51,7 +51,7 @@
          this%uniform_gravity_dir = that%uniform_gravity_dir
        end subroutine
 
-       subroutine delete_si(this)
+       subroutine delete_sim_config_params(this)
          implicit none
          type(sim_config_params),intent(inout) :: this
          this%export_safe_period = 0.0_cp
@@ -64,13 +64,13 @@
          this%uniform_gravity_dir = 0
        end subroutine
 
-       subroutine display_si(this,un)
+       subroutine display_sim_config_params(this,un)
          implicit none
          type(sim_config_params),intent(in) :: this
          integer,intent(in) :: un
        end subroutine
 
-       subroutine display_short_si(this,un)
+       subroutine display_short_sim_config_params(this,un)
          implicit none
          type(sim_config_params),intent(in) :: this
          integer,intent(in) :: un
@@ -84,19 +84,19 @@
          write(un,*) 'uniform_gravity_dir = ',this%uniform_gravity_dir
        end subroutine
 
-       subroutine print_si(this)
+       subroutine print_sim_config_params(this)
          implicit none
          type(sim_config_params),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_si(this)
+       subroutine print_short_sim_config_params(this)
          implicit none
          type(sim_config_params),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_si(this,un)
+       subroutine export_sim_config_params(this,un)
          implicit none
          type(sim_config_params),intent(in) :: this
          integer,intent(in) :: un
@@ -110,7 +110,7 @@
          write(un,*) 'uniform_gravity_dir  = ';write(un,*) this%uniform_gravity_dir
        end subroutine
 
-       subroutine import_si(this,un)
+       subroutine import_sim_config_params(this,un)
          implicit none
          type(sim_config_params),intent(inout) :: this
          integer,intent(in) :: un
@@ -125,7 +125,7 @@
          read(un,*); read(un,*) this%uniform_gravity_dir
        end subroutine
 
-       subroutine display_wrap_si(this,dir,name)
+       subroutine display_wrap_sim_config_params(this,dir,name)
          implicit none
          type(sim_config_params),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -135,7 +135,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrap_si(this,dir,name)
+       subroutine export_wrap_sim_config_params(this,dir,name)
          implicit none
          type(sim_config_params),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -145,7 +145,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrap_si(this,dir,name)
+       subroutine import_wrap_sim_config_params(this,dir,name)
          implicit none
          type(sim_config_params),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

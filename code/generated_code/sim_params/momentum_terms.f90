@@ -11,17 +11,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_mo;    end interface
-       interface delete;       module procedure delete_mo;       end interface
-       interface display;      module procedure display_mo;      end interface
-       interface display_short;module procedure display_short_mo;end interface
-       interface display;      module procedure display_wrap_mo; end interface
-       interface print;        module procedure print_mo;        end interface
-       interface print_short;  module procedure print_short_mo;  end interface
-       interface export;       module procedure export_mo;       end interface
-       interface import;       module procedure import_mo;       end interface
-       interface export;       module procedure export_wrap_mo;  end interface
-       interface import;       module procedure import_wrap_mo;  end interface
+       interface init;         module procedure init_copy_momentum_terms;    end interface
+       interface delete;       module procedure delete_momentum_terms;       end interface
+       interface display;      module procedure display_momentum_terms;      end interface
+       interface display_short;module procedure display_short_momentum_terms;end interface
+       interface display;      module procedure display_wrap_momentum_terms; end interface
+       interface print;        module procedure print_momentum_terms;        end interface
+       interface print_short;  module procedure print_short_momentum_terms;  end interface
+       interface export;       module procedure export_momentum_terms;       end interface
+       interface import;       module procedure import_momentum_terms;       end interface
+       interface export;       module procedure export_wrap_momentum_terms;  end interface
+       interface import;       module procedure import_wrap_momentum_terms;  end interface
 
        type momentum_terms
          type(equation_term) :: pressure_grad
@@ -39,7 +39,7 @@
 
        contains
 
-       subroutine init_copy_mo(this,that)
+       subroutine init_copy_momentum_terms(this,that)
          implicit none
          type(momentum_terms),intent(inout) :: this
          type(momentum_terms),intent(in) :: that
@@ -57,7 +57,7 @@
          call init(this%Gravity,that%Gravity)
        end subroutine
 
-       subroutine delete_mo(this)
+       subroutine delete_momentum_terms(this)
          implicit none
          type(momentum_terms),intent(inout) :: this
          call delete(this%pressure_grad)
@@ -73,7 +73,7 @@
          call delete(this%Gravity)
        end subroutine
 
-       subroutine display_mo(this,un)
+       subroutine display_momentum_terms(this,un)
          implicit none
          type(momentum_terms),intent(in) :: this
          integer,intent(in) :: un
@@ -90,7 +90,7 @@
          call display(this%Gravity,un)
        end subroutine
 
-       subroutine display_short_mo(this,un)
+       subroutine display_short_momentum_terms(this,un)
          implicit none
          type(momentum_terms),intent(in) :: this
          integer,intent(in) :: un
@@ -107,19 +107,19 @@
          call display(this%Gravity,un)
        end subroutine
 
-       subroutine print_mo(this)
+       subroutine print_momentum_terms(this)
          implicit none
          type(momentum_terms),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_mo(this)
+       subroutine print_short_momentum_terms(this)
          implicit none
          type(momentum_terms),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_mo(this,un)
+       subroutine export_momentum_terms(this,un)
          implicit none
          type(momentum_terms),intent(in) :: this
          integer,intent(in) :: un
@@ -136,7 +136,7 @@
          call export(this%Gravity,un)
        end subroutine
 
-       subroutine import_mo(this,un)
+       subroutine import_momentum_terms(this,un)
          implicit none
          type(momentum_terms),intent(inout) :: this
          integer,intent(in) :: un
@@ -154,7 +154,7 @@
          call import(this%Gravity,un)
        end subroutine
 
-       subroutine display_wrap_mo(this,dir,name)
+       subroutine display_wrap_momentum_terms(this,dir,name)
          implicit none
          type(momentum_terms),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -164,7 +164,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrap_mo(this,dir,name)
+       subroutine export_wrap_momentum_terms(this,dir,name)
          implicit none
          type(momentum_terms),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -174,7 +174,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrap_mo(this,dir,name)
+       subroutine import_wrap_momentum_terms(this,dir,name)
          implicit none
          type(momentum_terms),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

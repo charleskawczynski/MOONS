@@ -179,8 +179,8 @@ def get_file_list_from_module_names(file_list,module_names):
             try:
                 if m==get_module_name(f)[0]: file_list_sorted.append(f)
             except:
-                # pass
-                print('Error: potential name-mismatch')
+                pass
+                # print('Error: potential name-mismatch')
     return file_list_sorted
 
 def get_main_program(path,FL):

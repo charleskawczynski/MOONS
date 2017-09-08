@@ -10,17 +10,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_so;    end interface
-       interface delete;       module procedure delete_so;       end interface
-       interface display;      module procedure display_so;      end interface
-       interface display_short;module procedure display_short_so;end interface
-       interface display;      module procedure display_wrap_so; end interface
-       interface print;        module procedure print_so;        end interface
-       interface print_short;  module procedure print_short_so;  end interface
-       interface export;       module procedure export_so;       end interface
-       interface import;       module procedure import_so;       end interface
-       interface export;       module procedure export_wrap_so;  end interface
-       interface import;       module procedure import_wrap_so;  end interface
+       interface init;         module procedure init_copy_solver_settings;    end interface
+       interface delete;       module procedure delete_solver_settings;       end interface
+       interface display;      module procedure display_solver_settings;      end interface
+       interface display_short;module procedure display_short_solver_settings;end interface
+       interface display;      module procedure display_wrap_solver_settings; end interface
+       interface print;        module procedure print_solver_settings;        end interface
+       interface print_short;  module procedure print_short_solver_settings;  end interface
+       interface export;       module procedure export_solver_settings;       end interface
+       interface import;       module procedure import_solver_settings;       end interface
+       interface export;       module procedure export_wrap_solver_settings;  end interface
+       interface import;       module procedure import_wrap_solver_settings;  end interface
 
        type solver_settings
          integer :: solve_method = 0
@@ -32,7 +32,7 @@
 
        contains
 
-       subroutine init_copy_so(this,that)
+       subroutine init_copy_solver_settings(this,that)
          implicit none
          type(solver_settings),intent(inout) :: this
          type(solver_settings),intent(in) :: that
@@ -44,7 +44,7 @@
          this%prescribed_BCs = that%prescribed_BCs
        end subroutine
 
-       subroutine delete_so(this)
+       subroutine delete_solver_settings(this)
          implicit none
          type(solver_settings),intent(inout) :: this
          this%solve_method = 0
@@ -54,13 +54,13 @@
          this%prescribed_BCs = .false.
        end subroutine
 
-       subroutine display_so(this,un)
+       subroutine display_solver_settings(this,un)
          implicit none
          type(solver_settings),intent(in) :: this
          integer,intent(in) :: un
        end subroutine
 
-       subroutine display_short_so(this,un)
+       subroutine display_short_solver_settings(this,un)
          implicit none
          type(solver_settings),intent(in) :: this
          integer,intent(in) :: un
@@ -71,19 +71,19 @@
          write(un,*) 'prescribed_BCs = ',this%prescribed_BCs
        end subroutine
 
-       subroutine print_so(this)
+       subroutine print_solver_settings(this)
          implicit none
          type(solver_settings),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_so(this)
+       subroutine print_short_solver_settings(this)
          implicit none
          type(solver_settings),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_so(this,un)
+       subroutine export_solver_settings(this,un)
          implicit none
          type(solver_settings),intent(in) :: this
          integer,intent(in) :: un
@@ -94,7 +94,7 @@
          write(un,*) 'prescribed_BCs  = ';write(un,*) this%prescribed_BCs
        end subroutine
 
-       subroutine import_so(this,un)
+       subroutine import_solver_settings(this,un)
          implicit none
          type(solver_settings),intent(inout) :: this
          integer,intent(in) :: un
@@ -106,7 +106,7 @@
          read(un,*); read(un,*) this%prescribed_BCs
        end subroutine
 
-       subroutine display_wrap_so(this,dir,name)
+       subroutine display_wrap_solver_settings(this,dir,name)
          implicit none
          type(solver_settings),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -116,7 +116,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrap_so(this,dir,name)
+       subroutine export_wrap_solver_settings(this,dir,name)
          implicit none
          type(solver_settings),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -126,7 +126,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrap_so(this,dir,name)
+       subroutine import_wrap_solver_settings(this,dir,name)
          implicit none
          type(solver_settings),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

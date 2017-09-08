@@ -10,17 +10,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_BC;    end interface
-       interface delete;       module procedure delete_BC;       end interface
-       interface display;      module procedure display_BC;      end interface
-       interface display_short;module procedure display_short_BC;end interface
-       interface display;      module procedure display_wrap_BC; end interface
-       interface print;        module procedure print_BC;        end interface
-       interface print_short;  module procedure print_short_BC;  end interface
-       interface export;       module procedure export_BC;       end interface
-       interface import;       module procedure import_BC;       end interface
-       interface export;       module procedure export_wrap_BC;  end interface
-       interface import;       module procedure import_wrap_BC;  end interface
+       interface init;         module procedure init_copy_BC_logicals;    end interface
+       interface delete;       module procedure delete_BC_logicals;       end interface
+       interface display;      module procedure display_BC_logicals;      end interface
+       interface display_short;module procedure display_short_BC_logicals;end interface
+       interface display;      module procedure display_wrap_BC_logicals; end interface
+       interface print;        module procedure print_BC_logicals;        end interface
+       interface print_short;  module procedure print_short_BC_logicals;  end interface
+       interface export;       module procedure export_BC_logicals;       end interface
+       interface import;       module procedure import_BC_logicals;       end interface
+       interface export;       module procedure export_wrap_BC_logicals;  end interface
+       interface import;       module procedure import_wrap_BC_logicals;  end interface
 
        type BC_logicals
          logical :: defined = .false.
@@ -42,7 +42,7 @@
 
        contains
 
-       subroutine init_copy_BC(this,that)
+       subroutine init_copy_BC_logicals(this,that)
          implicit none
          type(BC_logicals),intent(inout) :: this
          type(BC_logicals),intent(in) :: that
@@ -64,7 +64,7 @@
          this%any_prescribed = that%any_prescribed
        end subroutine
 
-       subroutine delete_BC(this)
+       subroutine delete_BC_logicals(this)
          implicit none
          type(BC_logicals),intent(inout) :: this
          this%defined = .false.
@@ -84,13 +84,13 @@
          this%any_prescribed = .false.
        end subroutine
 
-       subroutine display_BC(this,un)
+       subroutine display_BC_logicals(this,un)
          implicit none
          type(BC_logicals),intent(in) :: this
          integer,intent(in) :: un
        end subroutine
 
-       subroutine display_short_BC(this,un)
+       subroutine display_short_BC_logicals(this,un)
          implicit none
          type(BC_logicals),intent(in) :: this
          integer,intent(in) :: un
@@ -111,19 +111,19 @@
          write(un,*) 'any_prescribed    = ',this%any_prescribed
        end subroutine
 
-       subroutine print_BC(this)
+       subroutine print_BC_logicals(this)
          implicit none
          type(BC_logicals),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_BC(this)
+       subroutine print_short_BC_logicals(this)
          implicit none
          type(BC_logicals),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_BC(this,un)
+       subroutine export_BC_logicals(this,un)
          implicit none
          type(BC_logicals),intent(in) :: this
          integer,intent(in) :: un
@@ -144,7 +144,7 @@
          write(un,*) 'any_prescribed     = ';write(un,*) this%any_prescribed
        end subroutine
 
-       subroutine import_BC(this,un)
+       subroutine import_BC_logicals(this,un)
          implicit none
          type(BC_logicals),intent(inout) :: this
          integer,intent(in) :: un
@@ -166,7 +166,7 @@
          read(un,*); read(un,*) this%any_prescribed
        end subroutine
 
-       subroutine display_wrap_BC(this,dir,name)
+       subroutine display_wrap_BC_logicals(this,dir,name)
          implicit none
          type(BC_logicals),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -176,7 +176,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrap_BC(this,dir,name)
+       subroutine export_wrap_BC_logicals(this,dir,name)
          implicit none
          type(BC_logicals),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -186,7 +186,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrap_BC(this,dir,name)
+       subroutine import_wrap_BC_logicals(this,dir,name)
          implicit none
          type(BC_logicals),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

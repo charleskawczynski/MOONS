@@ -14,19 +14,19 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_st;    end interface
-       interface delete;       module procedure delete_st;       end interface
-       interface display;      module procedure display_st;      end interface
-       interface display_short;module procedure display_short_st;end interface
-       interface display;      module procedure display_wrap_st; end interface
-       interface print;        module procedure print_st;        end interface
-       interface print_short;  module procedure print_short_st;  end interface
-       interface export;       module procedure export_st;       end interface
-       interface import;       module procedure import_st;       end interface
-       interface export;       module procedure export_wrap_st;  end interface
-       interface import;       module procedure import_wrap_st;  end interface
-       interface export;       module procedure export_DN_st;    end interface
-       interface import;       module procedure import_DN_st;    end interface
+       interface init;         module procedure init_copy_stop_clock;    end interface
+       interface delete;       module procedure delete_stop_clock;       end interface
+       interface display;      module procedure display_stop_clock;      end interface
+       interface display_short;module procedure display_short_stop_clock;end interface
+       interface display;      module procedure display_wrap_stop_clock; end interface
+       interface print;        module procedure print_stop_clock;        end interface
+       interface print_short;  module procedure print_short_stop_clock;  end interface
+       interface export;       module procedure export_stop_clock;       end interface
+       interface import;       module procedure import_stop_clock;       end interface
+       interface export;       module procedure export_wrap_stop_clock;  end interface
+       interface import;       module procedure import_wrap_stop_clock;  end interface
+       interface export;       module procedure export_DN_stop_clock;    end interface
+       interface import;       module procedure import_DN_stop_clock;    end interface
 
        type stop_clock
          type(string) :: dir
@@ -49,7 +49,7 @@
 
        contains
 
-       subroutine init_copy_st(this,that)
+       subroutine init_copy_stop_clock(this,that)
          implicit none
          type(stop_clock),intent(inout) :: this
          type(stop_clock),intent(in) :: that
@@ -72,7 +72,7 @@
          this%un_plot = that%un_plot
        end subroutine
 
-       subroutine delete_st(this)
+       subroutine delete_stop_clock(this)
          implicit none
          type(stop_clock),intent(inout) :: this
          call delete(this%dir)
@@ -93,7 +93,7 @@
          this%un_plot = 0
        end subroutine
 
-       subroutine display_st(this,un)
+       subroutine display_stop_clock(this,un)
          implicit none
          type(stop_clock),intent(in) :: this
          integer,intent(in) :: un
@@ -103,7 +103,7 @@
          call display(this%uc,un)
        end subroutine
 
-       subroutine display_short_st(this,un)
+       subroutine display_short_stop_clock(this,un)
          implicit none
          type(stop_clock),intent(in) :: this
          integer,intent(in) :: un
@@ -125,19 +125,19 @@
          write(un,*) 'un_plot                = ',this%un_plot
        end subroutine
 
-       subroutine print_st(this)
+       subroutine print_stop_clock(this)
          implicit none
          type(stop_clock),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_st(this)
+       subroutine print_short_stop_clock(this)
          implicit none
          type(stop_clock),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_st(this,un)
+       subroutine export_stop_clock(this,un)
          implicit none
          type(stop_clock),intent(in) :: this
          integer,intent(in) :: un
@@ -159,7 +159,7 @@
          write(un,*) 'un_plot                 = ';write(un,*) this%un_plot
        end subroutine
 
-       subroutine import_st(this,un)
+       subroutine import_stop_clock(this,un)
          implicit none
          type(stop_clock),intent(inout) :: this
          integer,intent(in) :: un
@@ -182,7 +182,7 @@
          read(un,*); read(un,*) this%un_plot
        end subroutine
 
-       subroutine display_wrap_st(this,dir,name)
+       subroutine display_wrap_stop_clock(this,dir,name)
          implicit none
          type(stop_clock),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -192,7 +192,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrap_st(this,dir,name)
+       subroutine export_wrap_stop_clock(this,dir,name)
          implicit none
          type(stop_clock),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -202,7 +202,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrap_st(this,dir,name)
+       subroutine import_wrap_stop_clock(this,dir,name)
          implicit none
          type(stop_clock),intent(inout) :: this
          character(len=*),intent(in) :: dir,name
@@ -212,13 +212,13 @@
          close(un)
        end subroutine
 
-       subroutine export_DN_st(this)
+       subroutine export_DN_stop_clock(this)
          implicit none
          type(stop_clock),intent(in) :: this
          call export(this,str(this%dir),str(this%name))
        end subroutine
 
-       subroutine import_DN_st(this)
+       subroutine import_DN_stop_clock(this)
          implicit none
          type(stop_clock),intent(inout) :: this
          type(string) :: dir,name

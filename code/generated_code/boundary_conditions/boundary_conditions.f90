@@ -15,17 +15,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_bo;    end interface
-       interface delete;       module procedure delete_bo;       end interface
-       interface display;      module procedure display_bo;      end interface
-       interface display_short;module procedure display_short_bo;end interface
-       interface display;      module procedure display_wrap_bo; end interface
-       interface print;        module procedure print_bo;        end interface
-       interface print_short;  module procedure print_short_bo;  end interface
-       interface export;       module procedure export_bo;       end interface
-       interface import;       module procedure import_bo;       end interface
-       interface export;       module procedure export_wrap_bo;  end interface
-       interface import;       module procedure import_wrap_bo;  end interface
+       interface init;         module procedure init_copy_boundary_conditions;    end interface
+       interface delete;       module procedure delete_boundary_conditions;       end interface
+       interface display;      module procedure display_boundary_conditions;      end interface
+       interface display_short;module procedure display_short_boundary_conditions;end interface
+       interface display;      module procedure display_wrap_boundary_conditions; end interface
+       interface print;        module procedure print_boundary_conditions;        end interface
+       interface print_short;  module procedure print_short_boundary_conditions;  end interface
+       interface export;       module procedure export_boundary_conditions;       end interface
+       interface import;       module procedure import_boundary_conditions;       end interface
+       interface export;       module procedure export_wrap_boundary_conditions;  end interface
+       interface import;       module procedure import_wrap_boundary_conditions;  end interface
 
        type boundary_conditions
          integer,dimension(6) :: apply_BC_order = 0
@@ -39,7 +39,7 @@
 
        contains
 
-       subroutine init_copy_bo(this,that)
+       subroutine init_copy_boundary_conditions(this,that)
          implicit none
          type(boundary_conditions),intent(inout) :: this
          type(boundary_conditions),intent(in) :: that
@@ -53,7 +53,7 @@
          call init(this%f_BCs,that%f_BCs)
        end subroutine
 
-       subroutine delete_bo(this)
+       subroutine delete_boundary_conditions(this)
          implicit none
          type(boundary_conditions),intent(inout) :: this
          this%apply_BC_order = 0
@@ -65,7 +65,7 @@
          call delete(this%f_BCs)
        end subroutine
 
-       subroutine display_bo(this,un)
+       subroutine display_boundary_conditions(this,un)
          implicit none
          type(boundary_conditions),intent(in) :: this
          integer,intent(in) :: un
@@ -77,7 +77,7 @@
          call display(this%f_BCs,un)
        end subroutine
 
-       subroutine display_short_bo(this,un)
+       subroutine display_short_boundary_conditions(this,un)
          implicit none
          type(boundary_conditions),intent(in) :: this
          integer,intent(in) :: un
@@ -90,19 +90,19 @@
          call display(this%f_BCs,un)
        end subroutine
 
-       subroutine print_bo(this)
+       subroutine print_boundary_conditions(this)
          implicit none
          type(boundary_conditions),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_bo(this)
+       subroutine print_short_boundary_conditions(this)
          implicit none
          type(boundary_conditions),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_bo(this,un)
+       subroutine export_boundary_conditions(this,un)
          implicit none
          type(boundary_conditions),intent(in) :: this
          integer,intent(in) :: un
@@ -115,7 +115,7 @@
          call export(this%f_BCs,un)
        end subroutine
 
-       subroutine import_bo(this,un)
+       subroutine import_boundary_conditions(this,un)
          implicit none
          type(boundary_conditions),intent(inout) :: this
          integer,intent(in) :: un
@@ -129,7 +129,7 @@
          call import(this%f_BCs,un)
        end subroutine
 
-       subroutine display_wrap_bo(this,dir,name)
+       subroutine display_wrap_boundary_conditions(this,dir,name)
          implicit none
          type(boundary_conditions),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -139,7 +139,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrap_bo(this,dir,name)
+       subroutine export_wrap_boundary_conditions(this,dir,name)
          implicit none
          type(boundary_conditions),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -149,7 +149,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrap_bo(this,dir,name)
+       subroutine import_wrap_boundary_conditions(this,dir,name)
          implicit none
          type(boundary_conditions),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

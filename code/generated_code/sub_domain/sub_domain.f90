@@ -11,17 +11,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_su;    end interface
-       interface delete;       module procedure delete_su;       end interface
-       interface display;      module procedure display_su;      end interface
-       interface display_short;module procedure display_short_su;end interface
-       interface display;      module procedure display_wrap_su; end interface
-       interface print;        module procedure print_su;        end interface
-       interface print_short;  module procedure print_short_su;  end interface
-       interface export;       module procedure export_su;       end interface
-       interface import;       module procedure import_su;       end interface
-       interface export;       module procedure export_wrap_su;  end interface
-       interface import;       module procedure import_wrap_su;  end interface
+       interface init;         module procedure init_copy_sub_domain;    end interface
+       interface delete;       module procedure delete_sub_domain;       end interface
+       interface display;      module procedure display_sub_domain;      end interface
+       interface display_short;module procedure display_short_sub_domain;end interface
+       interface display;      module procedure display_wrap_sub_domain; end interface
+       interface print;        module procedure print_sub_domain;        end interface
+       interface print_short;  module procedure print_short_sub_domain;  end interface
+       interface export;       module procedure export_sub_domain;       end interface
+       interface import;       module procedure import_sub_domain;       end interface
+       interface export;       module procedure export_wrap_sub_domain;  end interface
+       interface import;       module procedure import_wrap_sub_domain;  end interface
 
        type sub_domain
          type(overlap),dimension(3) :: C
@@ -34,7 +34,7 @@
 
        contains
 
-       subroutine init_copy_su(this,that)
+       subroutine init_copy_sub_domain(this,that)
          implicit none
          type(sub_domain),intent(inout) :: this
          type(sub_domain),intent(in) :: that
@@ -62,7 +62,7 @@
          this%g_R2_id = that%g_R2_id
        end subroutine
 
-       subroutine delete_su(this)
+       subroutine delete_sub_domain(this)
          implicit none
          type(sub_domain),intent(inout) :: this
          integer :: i_C
@@ -88,7 +88,7 @@
          this%g_R2_id = 0
        end subroutine
 
-       subroutine display_su(this,un)
+       subroutine display_sub_domain(this,un)
          implicit none
          type(sub_domain),intent(in) :: this
          integer,intent(in) :: un
@@ -112,7 +112,7 @@
          enddo
        end subroutine
 
-       subroutine display_short_su(this,un)
+       subroutine display_short_sub_domain(this,un)
          implicit none
          type(sub_domain),intent(in) :: this
          integer,intent(in) :: un
@@ -139,19 +139,19 @@
          write(un,*) 'g_R2_id = ',this%g_R2_id
        end subroutine
 
-       subroutine print_su(this)
+       subroutine print_sub_domain(this)
          implicit none
          type(sub_domain),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_su(this)
+       subroutine print_short_sub_domain(this)
          implicit none
          type(sub_domain),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_su(this,un)
+       subroutine export_sub_domain(this,un)
          implicit none
          type(sub_domain),intent(in) :: this
          integer,intent(in) :: un
@@ -181,7 +181,7 @@
          write(un,*) 'g_R2_id  = ';write(un,*) this%g_R2_id
        end subroutine
 
-       subroutine import_su(this,un)
+       subroutine import_sub_domain(this,un)
          implicit none
          type(sub_domain),intent(inout) :: this
          integer,intent(in) :: un
@@ -209,7 +209,7 @@
          read(un,*); read(un,*) this%g_R2_id
        end subroutine
 
-       subroutine display_wrap_su(this,dir,name)
+       subroutine display_wrap_sub_domain(this,dir,name)
          implicit none
          type(sub_domain),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -219,7 +219,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrap_su(this,dir,name)
+       subroutine export_wrap_sub_domain(this,dir,name)
          implicit none
          type(sub_domain),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -229,7 +229,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrap_su(this,dir,name)
+       subroutine import_wrap_sub_domain(this,dir,name)
          implicit none
          type(sub_domain),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

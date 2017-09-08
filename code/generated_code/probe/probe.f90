@@ -12,19 +12,19 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_pr;    end interface
-       interface delete;       module procedure delete_pr;       end interface
-       interface display;      module procedure display_pr;      end interface
-       interface display_short;module procedure display_short_pr;end interface
-       interface display;      module procedure display_wrap_pr; end interface
-       interface print;        module procedure print_pr;        end interface
-       interface print_short;  module procedure print_short_pr;  end interface
-       interface export;       module procedure export_pr;       end interface
-       interface import;       module procedure import_pr;       end interface
-       interface export;       module procedure export_wrap_pr;  end interface
-       interface import;       module procedure import_wrap_pr;  end interface
-       interface export;       module procedure export_DN_pr;    end interface
-       interface import;       module procedure import_DN_pr;    end interface
+       interface init;         module procedure init_copy_probe;    end interface
+       interface delete;       module procedure delete_probe;       end interface
+       interface display;      module procedure display_probe;      end interface
+       interface display_short;module procedure display_short_probe;end interface
+       interface display;      module procedure display_wrap_probe; end interface
+       interface print;        module procedure print_probe;        end interface
+       interface print_short;  module procedure print_short_probe;  end interface
+       interface export;       module procedure export_probe;       end interface
+       interface import;       module procedure import_probe;       end interface
+       interface export;       module procedure export_wrap_probe;  end interface
+       interface import;       module procedure import_wrap_probe;  end interface
+       interface export;       module procedure export_DN_probe;    end interface
+       interface import;       module procedure import_DN_probe;    end interface
 
        type probe
          type(string) :: dir
@@ -42,7 +42,7 @@
 
        contains
 
-       subroutine init_copy_pr(this,that)
+       subroutine init_copy_probe(this,that)
          implicit none
          type(probe),intent(inout) :: this
          type(probe),intent(in) :: that
@@ -60,7 +60,7 @@
          this%simple = that%simple
        end subroutine
 
-       subroutine delete_pr(this)
+       subroutine delete_probe(this)
          implicit none
          type(probe),intent(inout) :: this
          call delete(this%dir)
@@ -76,7 +76,7 @@
          this%simple = .false.
        end subroutine
 
-       subroutine display_pr(this,un)
+       subroutine display_probe(this,un)
          implicit none
          type(probe),intent(in) :: this
          integer,intent(in) :: un
@@ -84,7 +84,7 @@
          call display(this%name,un)
        end subroutine
 
-       subroutine display_short_pr(this,un)
+       subroutine display_short_probe(this,un)
          implicit none
          type(probe),intent(in) :: this
          integer,intent(in) :: un
@@ -101,19 +101,19 @@
          write(un,*) 'simple    = ',this%simple
        end subroutine
 
-       subroutine print_pr(this)
+       subroutine print_probe(this)
          implicit none
          type(probe),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_pr(this)
+       subroutine print_short_probe(this)
          implicit none
          type(probe),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_pr(this,un)
+       subroutine export_probe(this,un)
          implicit none
          type(probe),intent(in) :: this
          integer,intent(in) :: un
@@ -130,7 +130,7 @@
          write(un,*) 'simple     = ';write(un,*) this%simple
        end subroutine
 
-       subroutine import_pr(this,un)
+       subroutine import_probe(this,un)
          implicit none
          type(probe),intent(inout) :: this
          integer,intent(in) :: un
@@ -148,7 +148,7 @@
          read(un,*); read(un,*) this%simple
        end subroutine
 
-       subroutine display_wrap_pr(this,dir,name)
+       subroutine display_wrap_probe(this,dir,name)
          implicit none
          type(probe),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -158,7 +158,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrap_pr(this,dir,name)
+       subroutine export_wrap_probe(this,dir,name)
          implicit none
          type(probe),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -168,7 +168,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrap_pr(this,dir,name)
+       subroutine import_wrap_probe(this,dir,name)
          implicit none
          type(probe),intent(inout) :: this
          character(len=*),intent(in) :: dir,name
@@ -178,13 +178,13 @@
          close(un)
        end subroutine
 
-       subroutine export_DN_pr(this)
+       subroutine export_DN_probe(this)
          implicit none
          type(probe),intent(in) :: this
          call export(this,str(this%dir),str(this%name))
        end subroutine
 
-       subroutine import_DN_pr(this)
+       subroutine import_DN_probe(this)
          implicit none
          type(probe),intent(inout) :: this
          type(string) :: dir,name

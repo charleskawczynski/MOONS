@@ -10,17 +10,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_fl;    end interface
-       interface delete;       module procedure delete_fl;       end interface
-       interface display;      module procedure display_fl;      end interface
-       interface display_short;module procedure display_short_fl;end interface
-       interface display;      module procedure display_wrap_fl; end interface
-       interface print;        module procedure print_fl;        end interface
-       interface print_short;  module procedure print_short_fl;  end interface
-       interface export;       module procedure export_fl;       end interface
-       interface import;       module procedure import_fl;       end interface
-       interface export;       module procedure export_wrap_fl;  end interface
-       interface import;       module procedure import_wrap_fl;  end interface
+       interface init;         module procedure init_copy_flow_control_logicals;    end interface
+       interface delete;       module procedure delete_flow_control_logicals;       end interface
+       interface display;      module procedure display_flow_control_logicals;      end interface
+       interface display_short;module procedure display_short_flow_control_logicals;end interface
+       interface display;      module procedure display_wrap_flow_control_logicals; end interface
+       interface print;        module procedure print_flow_control_logicals;        end interface
+       interface print_short;  module procedure print_short_flow_control_logicals;  end interface
+       interface export;       module procedure export_flow_control_logicals;       end interface
+       interface import;       module procedure import_flow_control_logicals;       end interface
+       interface export;       module procedure export_wrap_flow_control_logicals;  end interface
+       interface import;       module procedure import_wrap_flow_control_logicals;  end interface
 
        type flow_control_logicals
          logical :: post_process = .false.
@@ -46,7 +46,7 @@
 
        contains
 
-       subroutine init_copy_fl(this,that)
+       subroutine init_copy_flow_control_logicals(this,that)
          implicit none
          type(flow_control_logicals),intent(inout) :: this
          type(flow_control_logicals),intent(in) :: that
@@ -72,7 +72,7 @@
          this%compute_surface_power = that%compute_surface_power
        end subroutine
 
-       subroutine delete_fl(this)
+       subroutine delete_flow_control_logicals(this)
          implicit none
          type(flow_control_logicals),intent(inout) :: this
          this%post_process = .false.
@@ -96,13 +96,13 @@
          this%compute_surface_power = .false.
        end subroutine
 
-       subroutine display_fl(this,un)
+       subroutine display_flow_control_logicals(this,un)
          implicit none
          type(flow_control_logicals),intent(in) :: this
          integer,intent(in) :: un
        end subroutine
 
-       subroutine display_short_fl(this,un)
+       subroutine display_short_flow_control_logicals(this,un)
          implicit none
          type(flow_control_logicals),intent(in) :: this
          integer,intent(in) :: un
@@ -127,19 +127,19 @@
          write(un,*) 'compute_surface_power              = ',this%compute_surface_power
        end subroutine
 
-       subroutine print_fl(this)
+       subroutine print_flow_control_logicals(this)
          implicit none
          type(flow_control_logicals),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_fl(this)
+       subroutine print_short_flow_control_logicals(this)
          implicit none
          type(flow_control_logicals),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_fl(this,un)
+       subroutine export_flow_control_logicals(this,un)
          implicit none
          type(flow_control_logicals),intent(in) :: this
          integer,intent(in) :: un
@@ -164,7 +164,7 @@
          write(un,*) 'compute_surface_power               = ';write(un,*) this%compute_surface_power
        end subroutine
 
-       subroutine import_fl(this,un)
+       subroutine import_flow_control_logicals(this,un)
          implicit none
          type(flow_control_logicals),intent(inout) :: this
          integer,intent(in) :: un
@@ -190,7 +190,7 @@
          read(un,*); read(un,*) this%compute_surface_power
        end subroutine
 
-       subroutine display_wrap_fl(this,dir,name)
+       subroutine display_wrap_flow_control_logicals(this,dir,name)
          implicit none
          type(flow_control_logicals),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -200,7 +200,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrap_fl(this,dir,name)
+       subroutine export_wrap_flow_control_logicals(this,dir,name)
          implicit none
          type(flow_control_logicals),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -210,7 +210,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrap_fl(this,dir,name)
+       subroutine import_wrap_flow_control_logicals(this,dir,name)
          implicit none
          type(flow_control_logicals),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

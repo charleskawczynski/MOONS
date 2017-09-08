@@ -12,19 +12,19 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_it;    end interface
-       interface delete;       module procedure delete_it;       end interface
-       interface display;      module procedure display_it;      end interface
-       interface display_short;module procedure display_short_it;end interface
-       interface display;      module procedure display_wrap_it; end interface
-       interface print;        module procedure print_it;        end interface
-       interface print_short;  module procedure print_short_it;  end interface
-       interface export;       module procedure export_it;       end interface
-       interface import;       module procedure import_it;       end interface
-       interface export;       module procedure export_wrap_it;  end interface
-       interface import;       module procedure import_wrap_it;  end interface
-       interface export;       module procedure export_DN_it;    end interface
-       interface import;       module procedure import_DN_it;    end interface
+       interface init;         module procedure init_copy_iter_solver_params;    end interface
+       interface delete;       module procedure delete_iter_solver_params;       end interface
+       interface display;      module procedure display_iter_solver_params;      end interface
+       interface display_short;module procedure display_short_iter_solver_params;end interface
+       interface display;      module procedure display_wrap_iter_solver_params; end interface
+       interface print;        module procedure print_iter_solver_params;        end interface
+       interface print_short;  module procedure print_short_iter_solver_params;  end interface
+       interface export;       module procedure export_iter_solver_params;       end interface
+       interface import;       module procedure import_iter_solver_params;       end interface
+       interface export;       module procedure export_wrap_iter_solver_params;  end interface
+       interface import;       module procedure import_wrap_iter_solver_params;  end interface
+       interface export;       module procedure export_DN_iter_solver_params;    end interface
+       interface import;       module procedure import_DN_iter_solver_params;    end interface
 
        type iter_solver_params
          integer :: un = 0
@@ -43,7 +43,7 @@
 
        contains
 
-       subroutine init_copy_it(this,that)
+       subroutine init_copy_iter_solver_params(this,that)
          implicit none
          type(iter_solver_params),intent(inout) :: this
          type(iter_solver_params),intent(in) :: that
@@ -62,7 +62,7 @@
          this%exit_loop = that%exit_loop
        end subroutine
 
-       subroutine delete_it(this)
+       subroutine delete_iter_solver_params(this)
          implicit none
          type(iter_solver_params),intent(inout) :: this
          this%un = 0
@@ -79,7 +79,7 @@
          this%exit_loop = .false.
        end subroutine
 
-       subroutine display_it(this,un)
+       subroutine display_iter_solver_params(this,un)
          implicit none
          type(iter_solver_params),intent(in) :: this
          integer,intent(in) :: un
@@ -87,7 +87,7 @@
          call display(this%name,un)
        end subroutine
 
-       subroutine display_short_it(this,un)
+       subroutine display_short_iter_solver_params(this,un)
          implicit none
          type(iter_solver_params),intent(in) :: this
          integer,intent(in) :: un
@@ -105,19 +105,19 @@
          write(un,*) 'exit_loop          = ',this%exit_loop
        end subroutine
 
-       subroutine print_it(this)
+       subroutine print_iter_solver_params(this)
          implicit none
          type(iter_solver_params),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_it(this)
+       subroutine print_short_iter_solver_params(this)
          implicit none
          type(iter_solver_params),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_it(this,un)
+       subroutine export_iter_solver_params(this,un)
          implicit none
          type(iter_solver_params),intent(in) :: this
          integer,intent(in) :: un
@@ -135,7 +135,7 @@
          write(un,*) 'exit_loop           = ';write(un,*) this%exit_loop
        end subroutine
 
-       subroutine import_it(this,un)
+       subroutine import_iter_solver_params(this,un)
          implicit none
          type(iter_solver_params),intent(inout) :: this
          integer,intent(in) :: un
@@ -154,7 +154,7 @@
          read(un,*); read(un,*) this%exit_loop
        end subroutine
 
-       subroutine display_wrap_it(this,dir,name)
+       subroutine display_wrap_iter_solver_params(this,dir,name)
          implicit none
          type(iter_solver_params),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -164,7 +164,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrap_it(this,dir,name)
+       subroutine export_wrap_iter_solver_params(this,dir,name)
          implicit none
          type(iter_solver_params),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -174,7 +174,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrap_it(this,dir,name)
+       subroutine import_wrap_iter_solver_params(this,dir,name)
          implicit none
          type(iter_solver_params),intent(inout) :: this
          character(len=*),intent(in) :: dir,name
@@ -184,13 +184,13 @@
          close(un)
        end subroutine
 
-       subroutine export_DN_it(this)
+       subroutine export_DN_iter_solver_params(this)
          implicit none
          type(iter_solver_params),intent(in) :: this
          call export(this,str(this%dir),str(this%name))
        end subroutine
 
-       subroutine import_DN_it(this)
+       subroutine import_DN_iter_solver_params(this)
          implicit none
          type(iter_solver_params),intent(inout) :: this
          type(string) :: dir,name

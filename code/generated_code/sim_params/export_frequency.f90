@@ -12,19 +12,19 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_ex;    end interface
-       interface delete;       module procedure delete_ex;       end interface
-       interface display;      module procedure display_ex;      end interface
-       interface display_short;module procedure display_short_ex;end interface
-       interface display;      module procedure display_wrap_ex; end interface
-       interface print;        module procedure print_ex;        end interface
-       interface print_short;  module procedure print_short_ex;  end interface
-       interface export;       module procedure export_ex;       end interface
-       interface import;       module procedure import_ex;       end interface
-       interface export;       module procedure export_wrap_ex;  end interface
-       interface import;       module procedure import_wrap_ex;  end interface
-       interface export;       module procedure export_DN_ex;    end interface
-       interface import;       module procedure import_DN_ex;    end interface
+       interface init;         module procedure init_copy_export_frequency;    end interface
+       interface delete;       module procedure delete_export_frequency;       end interface
+       interface display;      module procedure display_export_frequency;      end interface
+       interface display_short;module procedure display_short_export_frequency;end interface
+       interface display;      module procedure display_wrap_export_frequency; end interface
+       interface print;        module procedure print_export_frequency;        end interface
+       interface print_short;  module procedure print_short_export_frequency;  end interface
+       interface export;       module procedure export_export_frequency;       end interface
+       interface import;       module procedure import_export_frequency;       end interface
+       interface export;       module procedure export_wrap_export_frequency;  end interface
+       interface import;       module procedure import_wrap_export_frequency;  end interface
+       interface export;       module procedure export_DN_export_frequency;    end interface
+       interface import;       module procedure import_DN_export_frequency;    end interface
 
        type export_frequency
          type(export_frequency_params) :: info
@@ -40,7 +40,7 @@
 
        contains
 
-       subroutine init_copy_ex(this,that)
+       subroutine init_copy_export_frequency(this,that)
          implicit none
          type(export_frequency),intent(inout) :: this
          type(export_frequency),intent(in) :: that
@@ -56,7 +56,7 @@
          call init(this%name,that%name)
        end subroutine
 
-       subroutine delete_ex(this)
+       subroutine delete_export_frequency(this)
          implicit none
          type(export_frequency),intent(inout) :: this
          call delete(this%info)
@@ -70,7 +70,7 @@
          call delete(this%name)
        end subroutine
 
-       subroutine display_ex(this,un)
+       subroutine display_export_frequency(this,un)
          implicit none
          type(export_frequency),intent(in) :: this
          integer,intent(in) :: un
@@ -85,7 +85,7 @@
          call display(this%name,un)
        end subroutine
 
-       subroutine display_short_ex(this,un)
+       subroutine display_short_export_frequency(this,un)
          implicit none
          type(export_frequency),intent(in) :: this
          integer,intent(in) :: un
@@ -100,19 +100,19 @@
          call display(this%name,un)
        end subroutine
 
-       subroutine print_ex(this)
+       subroutine print_export_frequency(this)
          implicit none
          type(export_frequency),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_ex(this)
+       subroutine print_short_export_frequency(this)
          implicit none
          type(export_frequency),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_ex(this,un)
+       subroutine export_export_frequency(this,un)
          implicit none
          type(export_frequency),intent(in) :: this
          integer,intent(in) :: un
@@ -127,7 +127,7 @@
          call export(this%name,un)
        end subroutine
 
-       subroutine import_ex(this,un)
+       subroutine import_export_frequency(this,un)
          implicit none
          type(export_frequency),intent(inout) :: this
          integer,intent(in) :: un
@@ -143,7 +143,7 @@
          call import(this%name,un)
        end subroutine
 
-       subroutine display_wrap_ex(this,dir,name)
+       subroutine display_wrap_export_frequency(this,dir,name)
          implicit none
          type(export_frequency),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -153,7 +153,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrap_ex(this,dir,name)
+       subroutine export_wrap_export_frequency(this,dir,name)
          implicit none
          type(export_frequency),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -163,7 +163,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrap_ex(this,dir,name)
+       subroutine import_wrap_export_frequency(this,dir,name)
          implicit none
          type(export_frequency),intent(inout) :: this
          character(len=*),intent(in) :: dir,name
@@ -173,13 +173,13 @@
          close(un)
        end subroutine
 
-       subroutine export_DN_ex(this)
+       subroutine export_DN_export_frequency(this)
          implicit none
          type(export_frequency),intent(in) :: this
          call export(this,str(this%dir),str(this%name))
        end subroutine
 
-       subroutine import_DN_ex(this)
+       subroutine import_DN_export_frequency(this)
          implicit none
          type(export_frequency),intent(inout) :: this
          type(string) :: dir,name

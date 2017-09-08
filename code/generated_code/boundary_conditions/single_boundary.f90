@@ -12,17 +12,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_si;    end interface
-       interface delete;       module procedure delete_si;       end interface
-       interface display;      module procedure display_si;      end interface
-       interface display_short;module procedure display_short_si;end interface
-       interface display;      module procedure display_wrap_si; end interface
-       interface print;        module procedure print_si;        end interface
-       interface print_short;  module procedure print_short_si;  end interface
-       interface export;       module procedure export_si;       end interface
-       interface import;       module procedure import_si;       end interface
-       interface export;       module procedure export_wrap_si;  end interface
-       interface import;       module procedure import_wrap_si;  end interface
+       interface init;         module procedure init_copy_single_boundary;    end interface
+       interface delete;       module procedure delete_single_boundary;       end interface
+       interface display;      module procedure display_single_boundary;      end interface
+       interface display_short;module procedure display_short_single_boundary;end interface
+       interface display;      module procedure display_wrap_single_boundary; end interface
+       interface print;        module procedure print_single_boundary;        end interface
+       interface print_short;  module procedure print_short_single_boundary;  end interface
+       interface export;       module procedure export_single_boundary;       end interface
+       interface import;       module procedure import_single_boundary;       end interface
+       interface export;       module procedure export_wrap_single_boundary;  end interface
+       interface import;       module procedure import_wrap_single_boundary;  end interface
 
        type single_boundary
          type(bctype) :: bct
@@ -33,7 +33,7 @@
 
        contains
 
-       subroutine init_copy_si(this,that)
+       subroutine init_copy_single_boundary(this,that)
          implicit none
          type(single_boundary),intent(inout) :: this
          type(single_boundary),intent(in) :: that
@@ -44,7 +44,7 @@
          call init(this%b_total,that%b_total)
        end subroutine
 
-       subroutine delete_si(this)
+       subroutine delete_single_boundary(this)
          implicit none
          type(single_boundary),intent(inout) :: this
          call delete(this%bct)
@@ -53,7 +53,7 @@
          call delete(this%b_total)
        end subroutine
 
-       subroutine display_si(this,un)
+       subroutine display_single_boundary(this,un)
          implicit none
          type(single_boundary),intent(in) :: this
          integer,intent(in) :: un
@@ -63,7 +63,7 @@
          call display(this%b_total,un)
        end subroutine
 
-       subroutine display_short_si(this,un)
+       subroutine display_short_single_boundary(this,un)
          implicit none
          type(single_boundary),intent(in) :: this
          integer,intent(in) :: un
@@ -73,19 +73,19 @@
          call display(this%b_total,un)
        end subroutine
 
-       subroutine print_si(this)
+       subroutine print_single_boundary(this)
          implicit none
          type(single_boundary),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_si(this)
+       subroutine print_short_single_boundary(this)
          implicit none
          type(single_boundary),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_si(this,un)
+       subroutine export_single_boundary(this,un)
          implicit none
          type(single_boundary),intent(in) :: this
          integer,intent(in) :: un
@@ -95,7 +95,7 @@
          call export(this%b_total,un)
        end subroutine
 
-       subroutine import_si(this,un)
+       subroutine import_single_boundary(this,un)
          implicit none
          type(single_boundary),intent(inout) :: this
          integer,intent(in) :: un
@@ -106,7 +106,7 @@
          call import(this%b_total,un)
        end subroutine
 
-       subroutine display_wrap_si(this,dir,name)
+       subroutine display_wrap_single_boundary(this,dir,name)
          implicit none
          type(single_boundary),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -116,7 +116,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrap_si(this,dir,name)
+       subroutine export_wrap_single_boundary(this,dir,name)
          implicit none
          type(single_boundary),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -126,7 +126,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrap_si(this,dir,name)
+       subroutine import_wrap_single_boundary(this,dir,name)
          implicit none
          type(single_boundary),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

@@ -4,6 +4,7 @@ from collections import OrderedDict
 import collections
 import GOOFPY_directory as GD
 import fortran_module as FM
+import module_merging as MM
 import funcs as func
 import inspect
 
@@ -11,6 +12,7 @@ class generator:
 	def __init__(self):
 		self.module = OrderedDict()
 		self.module_list = []
+		self.combined_modules = []
 		self.abstract_interfaces = OrderedDict()
 		self.used_modules = []
 		self.base_files = []
@@ -26,6 +28,7 @@ class generator:
 		return self
 
 	def set_default_real(self,default_real): self.default_real = default_real
+	def set_combined_modules(self,combined_modules): self.combined_modules = self.combined_modules+[combined_modules]
 	def add_base_files(self,base_files): self.base_files = self.base_files+base_files
 	def add_base_modules(self,base_modules): self.base_modules = self.base_modules+base_modules
 
@@ -54,7 +57,13 @@ class generator:
 		print(' ----------------------------- module_list ----------------------------- ')
 		print(','.join(self.module_list))
 		print(' ----------------------------------------------------------------------- ')
-		module_list_temp = [self.module[key].folder_name+PS+self.module[key].name for key in self.module]
+		# module_list_temp = [self.module[key].folder_name+PS+self.module[key].name for key in self.module]
+
+		combined_modules_flat = [item for sublist in self.combined_modules for item in sublist]
+		module_list_temp = []
+		for key in self.module:
+			if not any([key in x for x in combined_modules_flat]):
+				module_list_temp.append(self.module[key].folder_name+PS+self.module[key].name)
 
 		print('----------------------------- overwritten_module_list')
 		print(self.overwritten_module_list)
@@ -76,16 +85,29 @@ class generator:
 		for key in self.module:
 			func.make_path(self.d.target_dir + self.module[key].folder_name + PS)
 
+		self.base_spaces = self.module[key].base_spaces
+
 		for key in self.module:
-			lofl = self.module[key].contruct_fortran_module(self.module_list,self.abstract_interfaces,self.base_modules)
-			L = lofl
-			path = self.d.target_dir + self.module[key].folder_name + PS + key+self.d.fext
+			if not any([key in x for x in combined_modules_flat]):
+				L = self.module[key].contruct_fortran_module(self.module_list,self.abstract_interfaces,self.base_modules)
+				path = self.d.target_dir+self.module[key].folder_name+PS+key+self.d.fext
+				func.write_string_to_file(path,'\n'.join(L))
+				N_tot = N_tot+len(L)
+
+		for CM in self.combined_modules:
+			m = OrderedDict()
+			for key in CM:
+				m[key] = self.module[key].contruct_fortran_module(self.module_list,self.abstract_interfaces,self.base_modules)
+			combined_name = FM.longest_sub_string_match_list(CM)
+			if combined_name.endswith('_'): combined_name = combined_name[:-1]
+			if combined_name.startswith('_'): combined_name = combined_name[1:]
+			L = MM.combine_modules(m,CM,self.base_spaces)
+			path = self.d.target_dir+self.module[key].folder_name+PS+combined_name+self.d.fext
+			module_list_temp.append(self.module[key].folder_name+PS+combined_name)
 			func.write_string_to_file(path,'\n'.join(L))
 			N_tot = N_tot+len(L)
-		N_tot = N_tot
-		base_spaces = self.module[key].base_spaces
 
-		func.make_dot_bat(self.d.target_root,self.d.GOOFPY_dir,self.d.target_dir,module_list_temp,self.d.base_dir,self.base_files,self.d.PS)
+		# func.make_dot_bat(self.d.target_root,self.d.GOOFPY_dir,self.d.target_dir,module_list_temp,self.d.base_dir,self.base_files,self.d.PS)
 		func.make_makefile(self.d.makefile_file,self.d.target_root,self.d.GOOFPY_dir,self.d.target_dir,module_list_temp,self.d.base_dir,self.base_files,'$(PS)')
-		func.make_dummy_main(self.d.target_dir+'main_dummy.f90',self.module_list,base_spaces)
+		# func.make_dummy_main(self.d.target_dir+'main_dummy.f90',self.module_list,self.base_spaces)
 		print('Number of lines generated (Total): ' + str(N_tot))

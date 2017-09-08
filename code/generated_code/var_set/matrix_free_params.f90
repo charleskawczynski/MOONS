@@ -11,17 +11,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_ma;    end interface
-       interface delete;       module procedure delete_ma;       end interface
-       interface display;      module procedure display_ma;      end interface
-       interface display_short;module procedure display_short_ma;end interface
-       interface display;      module procedure display_wrap_ma; end interface
-       interface print;        module procedure print_ma;        end interface
-       interface print_short;  module procedure print_short_ma;  end interface
-       interface export;       module procedure export_ma;       end interface
-       interface import;       module procedure import_ma;       end interface
-       interface export;       module procedure export_wrap_ma;  end interface
-       interface import;       module procedure import_wrap_ma;  end interface
+       interface init;         module procedure init_copy_matrix_free_params;    end interface
+       interface delete;       module procedure delete_matrix_free_params;       end interface
+       interface display;      module procedure display_matrix_free_params;      end interface
+       interface display_short;module procedure display_short_matrix_free_params;end interface
+       interface display;      module procedure display_wrap_matrix_free_params; end interface
+       interface print;        module procedure print_matrix_free_params;        end interface
+       interface print_short;  module procedure print_short_matrix_free_params;  end interface
+       interface export;       module procedure export_matrix_free_params;       end interface
+       interface import;       module procedure import_matrix_free_params;       end interface
+       interface export;       module procedure export_wrap_matrix_free_params;  end interface
+       interface import;       module procedure import_wrap_matrix_free_params;  end interface
 
        type matrix_free_params
          logical :: suppress_warning = .false.
@@ -35,7 +35,7 @@
 
        contains
 
-       subroutine init_copy_ma(this,that)
+       subroutine init_copy_matrix_free_params(this,that)
          implicit none
          type(matrix_free_params),intent(inout) :: this
          type(matrix_free_params),intent(in) :: that
@@ -49,7 +49,7 @@
          this%coeff_implicit_time_split = that%coeff_implicit_time_split
        end subroutine
 
-       subroutine delete_ma(this)
+       subroutine delete_matrix_free_params(this)
          implicit none
          type(matrix_free_params),intent(inout) :: this
          this%suppress_warning = .false.
@@ -61,13 +61,13 @@
          this%coeff_implicit_time_split = 0.0_cp
        end subroutine
 
-       subroutine display_ma(this,un)
+       subroutine display_matrix_free_params(this,un)
          implicit none
          type(matrix_free_params),intent(in) :: this
          integer,intent(in) :: un
        end subroutine
 
-       subroutine display_short_ma(this,un)
+       subroutine display_short_matrix_free_params(this,un)
          implicit none
          type(matrix_free_params),intent(in) :: this
          integer,intent(in) :: un
@@ -80,19 +80,19 @@
          write(un,*) 'coeff_implicit_time_split = ',this%coeff_implicit_time_split
        end subroutine
 
-       subroutine print_ma(this)
+       subroutine print_matrix_free_params(this)
          implicit none
          type(matrix_free_params),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_ma(this)
+       subroutine print_short_matrix_free_params(this)
          implicit none
          type(matrix_free_params),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_ma(this,un)
+       subroutine export_matrix_free_params(this,un)
          implicit none
          type(matrix_free_params),intent(in) :: this
          integer,intent(in) :: un
@@ -105,7 +105,7 @@
          write(un,*) 'coeff_implicit_time_split  = ';write(un,*) this%coeff_implicit_time_split
        end subroutine
 
-       subroutine import_ma(this,un)
+       subroutine import_matrix_free_params(this,un)
          implicit none
          type(matrix_free_params),intent(inout) :: this
          integer,intent(in) :: un
@@ -119,7 +119,7 @@
          read(un,*); read(un,*) this%coeff_implicit_time_split
        end subroutine
 
-       subroutine display_wrap_ma(this,dir,name)
+       subroutine display_wrap_matrix_free_params(this,dir,name)
          implicit none
          type(matrix_free_params),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -129,7 +129,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrap_ma(this,dir,name)
+       subroutine export_wrap_matrix_free_params(this,dir,name)
          implicit none
          type(matrix_free_params),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -139,7 +139,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrap_ma(this,dir,name)
+       subroutine import_wrap_matrix_free_params(this,dir,name)
          implicit none
          type(matrix_free_params),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

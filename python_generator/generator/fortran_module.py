@@ -3,6 +3,27 @@ import funcs as func
 import fortran_property as FP
 from collections import OrderedDict
 
+def longest_sub_string_match(string1, string2):
+    if string1==string2:
+      answer = string1
+    else:
+      answer = ""
+    len1, len2 = len(string1), len(string2)
+    for i in range(len1):
+        match = ""
+        for j in range(len2):
+            if (i + j < len1 and string1[i + j] == string2[j]):
+                match += string2[j]
+            else:
+                if (len(match) > len(answer)): answer = match
+                match = ""
+    return answer
+
+def longest_sub_string_match_list(L):
+    s = L[0]
+    for x in L[1:]: s = longest_sub_string_match(s,x)
+    return s
+
 def indent_lines(L):
   indent = '  '
   T_up = ('if','do')
@@ -26,11 +47,12 @@ class fortran_module:
         self.maxLineLength = 71
         self.implicitNone = 'implicit none'
         self.base_spaces = ' '*7
+        # self.base_spaces = ''
         self.raw_lines = []
         self.raw_lines_used = False
         self.abstract_interfaces = []
+        self.base_modules = []
         self.any_allocatables = False
-        # self.base_spaces = ''
         self.spaces = ['' for x in range(50)]
         for i in range(len(self.spaces)):
             self.spaces[i] = ' '*i
@@ -89,14 +111,21 @@ class fortran_module:
     ################################################################################*/
 
     def contruct_fortran_module(self,class_list,abstract_interfaces,base_modules):
-        c = []
-        self.int_name = self.name[0:2]
+        self.class_list = class_list
+        self.abstract_interfaces = abstract_interfaces
+        self.base_modules = base_modules
+        self.pre_process()
+        L = self.get_fortran_module()
+        return self.post_process(L)
+
+    def pre_process(self):
+        self.int_name = self.name
+        # self.int_name = self.name[0:2]
+        self.has_dir = []
+        self.has_name = []
         for key in self.prop:
           self.prop[key].set_do_loop_iter()
           self.prop[key].set_spaces(self.spaces)
-
-        self.has_dir = []
-        self.has_name = []
         for key in self.prop:
           L = ['dir' in self.prop[key].name.lower()]
           L = L + ['string' in self.prop[key].class_.lower()]
@@ -105,20 +134,18 @@ class fortran_module:
           L = ['name' in self.prop[key].name.lower()]
           L = L + ['string' in self.prop[key].class_.lower()]
           self.has_name = self.has_name + [all(L)]
-
         self.has_dir_name = any(self.has_dir) and any(self.has_name)
 
-        self.class_list = class_list
+    def get_fortran_module(self):
+        c = []
         c.append('! ***************************************************')
         c.append('! ******* THIS CODE IS GENERATED. DO NOT EDIT *******')
         c.append('! ***************************************************')
         c.append('module ' + self.get_name() + '_mod')
-        c.append(self.write_used_modules(base_modules,abstract_interfaces))
+        c.append(self.write_used_modules(self.base_modules,self.abstract_interfaces))
         c.append([self.implicitNone]+[''])
-        # c.append(self.write_selected_kinds())
         c.append(['private'])
         c.append(['public :: '+self.name])
-        # c.append(['public :: init,delete,display,print,export,import']+[''])
         c.append(['public :: init,delete,display,print,export,import'])
         c.append(['public :: display_short,print_short']+[''])
         c.append(self.write_interfaces()+[''])
@@ -127,8 +154,9 @@ class fortran_module:
         c.append(['contains'])
         c.append(self.write_all_functions())
         c.append('end module')
+        return c
 
-        # # Break lines to maximum number of characters
+    def post_process(self,c):
         l = func.flatten(c)
         l = [x for x in l if not x==None]
         if self.raw_lines_used: l = self.raw_lines
@@ -155,20 +183,6 @@ class fortran_module:
         dependent.sort()
         c = c+[x+'_mod' for x in dependent]
         return ['use '+x if x else None for x in c]
-
-    def write_selected_kinds(self):
-        L = []
-        L = L+['integer,parameter :: li = selected_int_kind(16)']
-        L = L+['#ifdef _QUAD_PRECISION_']
-        L = L+['integer,parameter :: cp = selected_real_kind(32) ! Quad precision']
-        L = L+['#else']
-        L = L+['#ifdef _SINGLE_PRECISION_']
-        L = L+['integer,parameter :: cp = selected_real_kind(8)  ! Single precision']
-        L = L+['#else']
-        L = L+['integer,parameter :: cp = selected_real_kind(14) ! Double precision (default)']
-        L = L+['#endif']
-        L = L+['#endif']
-        return L
 
     def write_interfaces(self):
         alias = []

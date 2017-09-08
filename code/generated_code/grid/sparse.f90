@@ -11,17 +11,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_sp;    end interface
-       interface delete;       module procedure delete_sp;       end interface
-       interface display;      module procedure display_sp;      end interface
-       interface display_short;module procedure display_short_sp;end interface
-       interface display;      module procedure display_wrap_sp; end interface
-       interface print;        module procedure print_sp;        end interface
-       interface print_short;  module procedure print_short_sp;  end interface
-       interface export;       module procedure export_sp;       end interface
-       interface import;       module procedure import_sp;       end interface
-       interface export;       module procedure export_wrap_sp;  end interface
-       interface import;       module procedure import_wrap_sp;  end interface
+       interface init;         module procedure init_copy_sparse;    end interface
+       interface delete;       module procedure delete_sparse;       end interface
+       interface display;      module procedure display_sparse;      end interface
+       interface display_short;module procedure display_short_sparse;end interface
+       interface display;      module procedure display_wrap_sparse; end interface
+       interface print;        module procedure print_sparse;        end interface
+       interface print_short;  module procedure print_short_sparse;  end interface
+       interface export;       module procedure export_sparse;       end interface
+       interface import;       module procedure import_sparse;       end interface
+       interface export;       module procedure export_wrap_sparse;  end interface
+       interface import;       module procedure import_wrap_sparse;  end interface
 
        type sparse
          type(array) :: L
@@ -32,7 +32,7 @@
 
        contains
 
-       subroutine init_copy_sp(this,that)
+       subroutine init_copy_sparse(this,that)
          implicit none
          type(sparse),intent(inout) :: this
          type(sparse),intent(in) :: that
@@ -43,7 +43,7 @@
          this%staggered = that%staggered
        end subroutine
 
-       subroutine delete_sp(this)
+       subroutine delete_sparse(this)
          implicit none
          type(sparse),intent(inout) :: this
          call delete(this%L)
@@ -52,7 +52,7 @@
          this%staggered = .false.
        end subroutine
 
-       subroutine display_sp(this,un)
+       subroutine display_sparse(this,un)
          implicit none
          type(sparse),intent(in) :: this
          integer,intent(in) :: un
@@ -61,7 +61,7 @@
          call display(this%U,un)
        end subroutine
 
-       subroutine display_short_sp(this,un)
+       subroutine display_short_sparse(this,un)
          implicit none
          type(sparse),intent(in) :: this
          integer,intent(in) :: un
@@ -71,19 +71,19 @@
          write(un,*) 'staggered = ',this%staggered
        end subroutine
 
-       subroutine print_sp(this)
+       subroutine print_sparse(this)
          implicit none
          type(sparse),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_sp(this)
+       subroutine print_short_sparse(this)
          implicit none
          type(sparse),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_sp(this,un)
+       subroutine export_sparse(this,un)
          implicit none
          type(sparse),intent(in) :: this
          integer,intent(in) :: un
@@ -93,7 +93,7 @@
          write(un,*) 'staggered  = ';write(un,*) this%staggered
        end subroutine
 
-       subroutine import_sp(this,un)
+       subroutine import_sparse(this,un)
          implicit none
          type(sparse),intent(inout) :: this
          integer,intent(in) :: un
@@ -104,7 +104,7 @@
          read(un,*); read(un,*) this%staggered
        end subroutine
 
-       subroutine display_wrap_sp(this,dir,name)
+       subroutine display_wrap_sparse(this,dir,name)
          implicit none
          type(sparse),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -114,7 +114,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrap_sp(this,dir,name)
+       subroutine export_wrap_sparse(this,dir,name)
          implicit none
          type(sparse),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -124,7 +124,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrap_sp(this,dir,name)
+       subroutine import_wrap_sparse(this,dir,name)
          implicit none
          type(sparse),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

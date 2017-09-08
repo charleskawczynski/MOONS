@@ -17,17 +17,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_va;    end interface
-       interface delete;       module procedure delete_va;       end interface
-       interface display;      module procedure display_va;      end interface
-       interface display_short;module procedure display_short_va;end interface
-       interface display;      module procedure display_wrap_va; end interface
-       interface print;        module procedure print_va;        end interface
-       interface print_short;  module procedure print_short_va;  end interface
-       interface export;       module procedure export_va;       end interface
-       interface import;       module procedure import_va;       end interface
-       interface export;       module procedure export_wrap_va;  end interface
-       interface import;       module procedure import_wrap_va;  end interface
+       interface init;         module procedure init_copy_var;    end interface
+       interface delete;       module procedure delete_var;       end interface
+       interface display;      module procedure display_var;      end interface
+       interface display_short;module procedure display_short_var;end interface
+       interface display;      module procedure display_wrap_var; end interface
+       interface print;        module procedure print_var;        end interface
+       interface print_short;  module procedure print_short_var;  end interface
+       interface export;       module procedure export_var;       end interface
+       interface import;       module procedure import_var;       end interface
+       interface export;       module procedure export_wrap_var;  end interface
+       interface import;       module procedure import_wrap_var;  end interface
 
        type var
          integer :: IC = 0
@@ -43,7 +43,7 @@
 
        contains
 
-       subroutine init_copy_va(this,that)
+       subroutine init_copy_var(this,that)
          implicit none
          type(var),intent(inout) :: this
          type(var),intent(in) :: that
@@ -59,7 +59,7 @@
          call init(this%unsteady_field,that%unsteady_field)
        end subroutine
 
-       subroutine delete_va(this)
+       subroutine delete_var(this)
          implicit none
          type(var),intent(inout) :: this
          this%IC = 0
@@ -73,7 +73,7 @@
          call delete(this%unsteady_field)
        end subroutine
 
-       subroutine display_va(this,un)
+       subroutine display_var(this,un)
          implicit none
          type(var),intent(in) :: this
          integer,intent(in) :: un
@@ -86,7 +86,7 @@
          call display(this%unsteady_field,un)
        end subroutine
 
-       subroutine display_short_va(this,un)
+       subroutine display_short_var(this,un)
          implicit none
          type(var),intent(in) :: this
          integer,intent(in) :: un
@@ -101,19 +101,19 @@
          call display(this%unsteady_field,un)
        end subroutine
 
-       subroutine print_va(this)
+       subroutine print_var(this)
          implicit none
          type(var),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_va(this)
+       subroutine print_short_var(this)
          implicit none
          type(var),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_va(this,un)
+       subroutine export_var(this,un)
          implicit none
          type(var),intent(in) :: this
          integer,intent(in) :: un
@@ -128,7 +128,7 @@
          call export(this%unsteady_field,un)
        end subroutine
 
-       subroutine import_va(this,un)
+       subroutine import_var(this,un)
          implicit none
          type(var),intent(inout) :: this
          integer,intent(in) :: un
@@ -144,7 +144,7 @@
          call import(this%unsteady_field,un)
        end subroutine
 
-       subroutine display_wrap_va(this,dir,name)
+       subroutine display_wrap_var(this,dir,name)
          implicit none
          type(var),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -154,7 +154,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrap_va(this,dir,name)
+       subroutine export_wrap_var(this,dir,name)
          implicit none
          type(var),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -164,7 +164,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrap_va(this,dir,name)
+       subroutine import_wrap_var(this,dir,name)
          implicit none
          type(var),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

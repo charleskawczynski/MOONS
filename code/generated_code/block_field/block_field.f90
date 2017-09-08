@@ -14,17 +14,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_bl;    end interface
-       interface delete;       module procedure delete_bl;       end interface
-       interface display;      module procedure display_bl;      end interface
-       interface display_short;module procedure display_short_bl;end interface
-       interface display;      module procedure display_wrap_bl; end interface
-       interface print;        module procedure print_bl;        end interface
-       interface print_short;  module procedure print_short_bl;  end interface
-       interface export;       module procedure export_bl;       end interface
-       interface import;       module procedure import_bl;       end interface
-       interface export;       module procedure export_wrap_bl;  end interface
-       interface import;       module procedure import_wrap_bl;  end interface
+       interface init;         module procedure init_copy_block_field;    end interface
+       interface delete;       module procedure delete_block_field;       end interface
+       interface display;      module procedure display_block_field;      end interface
+       interface display_short;module procedure display_short_block_field;end interface
+       interface display;      module procedure display_wrap_block_field; end interface
+       interface print;        module procedure print_block_field;        end interface
+       interface print_short;  module procedure print_short_block_field;  end interface
+       interface export;       module procedure export_block_field;       end interface
+       interface import;       module procedure import_block_field;       end interface
+       interface export;       module procedure export_wrap_block_field;  end interface
+       interface import;       module procedure import_wrap_block_field;  end interface
 
        type block_field
          type(grid_field) :: GF
@@ -41,7 +41,7 @@
 
        contains
 
-       subroutine init_copy_bl(this,that)
+       subroutine init_copy_block_field(this,that)
          implicit none
          type(block_field),intent(inout) :: this
          type(block_field),intent(in) :: that
@@ -58,7 +58,7 @@
          call init(this%PA_multiply_wall_Neumann,that%PA_multiply_wall_Neumann)
        end subroutine
 
-       subroutine delete_bl(this)
+       subroutine delete_block_field(this)
          implicit none
          type(block_field),intent(inout) :: this
          call delete(this%GF)
@@ -73,7 +73,7 @@
          call delete(this%PA_multiply_wall_Neumann)
        end subroutine
 
-       subroutine display_bl(this,un)
+       subroutine display_block_field(this,un)
          implicit none
          type(block_field),intent(in) :: this
          integer,intent(in) :: un
@@ -87,7 +87,7 @@
          call display(this%PA_multiply_wall_Neumann,un)
        end subroutine
 
-       subroutine display_short_bl(this,un)
+       subroutine display_short_block_field(this,un)
          implicit none
          type(block_field),intent(in) :: this
          integer,intent(in) :: un
@@ -103,19 +103,19 @@
          call display(this%PA_multiply_wall_Neumann,un)
        end subroutine
 
-       subroutine print_bl(this)
+       subroutine print_block_field(this)
          implicit none
          type(block_field),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_bl(this)
+       subroutine print_short_block_field(this)
          implicit none
          type(block_field),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_bl(this,un)
+       subroutine export_block_field(this,un)
          implicit none
          type(block_field),intent(in) :: this
          integer,intent(in) :: un
@@ -131,7 +131,7 @@
          call export(this%PA_multiply_wall_Neumann,un)
        end subroutine
 
-       subroutine import_bl(this,un)
+       subroutine import_block_field(this,un)
          implicit none
          type(block_field),intent(inout) :: this
          integer,intent(in) :: un
@@ -148,7 +148,7 @@
          call import(this%PA_multiply_wall_Neumann,un)
        end subroutine
 
-       subroutine display_wrap_bl(this,dir,name)
+       subroutine display_wrap_block_field(this,dir,name)
          implicit none
          type(block_field),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -158,7 +158,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrap_bl(this,dir,name)
+       subroutine export_wrap_block_field(this,dir,name)
          implicit none
          type(block_field),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -168,7 +168,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrap_bl(this,dir,name)
+       subroutine import_wrap_block_field(this,dir,name)
          implicit none
          type(block_field),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

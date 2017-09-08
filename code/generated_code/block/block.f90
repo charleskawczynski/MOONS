@@ -12,17 +12,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_bl;    end interface
-       interface delete;       module procedure delete_bl;       end interface
-       interface display;      module procedure display_bl;      end interface
-       interface display_short;module procedure display_short_bl;end interface
-       interface display;      module procedure display_wrap_bl; end interface
-       interface print;        module procedure print_bl;        end interface
-       interface print_short;  module procedure print_short_bl;  end interface
-       interface export;       module procedure export_bl;       end interface
-       interface import;       module procedure import_bl;       end interface
-       interface export;       module procedure export_wrap_bl;  end interface
-       interface import;       module procedure import_wrap_bl;  end interface
+       interface init;         module procedure init_copy_block;    end interface
+       interface delete;       module procedure delete_block;       end interface
+       interface display;      module procedure display_block;      end interface
+       interface display_short;module procedure display_short_block;end interface
+       interface display;      module procedure display_wrap_block; end interface
+       interface print;        module procedure print_block;        end interface
+       interface print_short;  module procedure print_short_block;  end interface
+       interface export;       module procedure export_block;       end interface
+       interface import;       module procedure import_block;       end interface
+       interface export;       module procedure export_wrap_block;  end interface
+       interface import;       module procedure import_wrap_block;  end interface
 
        type block
          type(grid) :: g
@@ -38,7 +38,7 @@
 
        contains
 
-       subroutine init_copy_bl(this,that)
+       subroutine init_copy_block(this,that)
          implicit none
          type(block),intent(inout) :: this
          type(block),intent(in) :: that
@@ -124,7 +124,7 @@
          this%apply_BC_order = that%apply_BC_order
        end subroutine
 
-       subroutine delete_bl(this)
+       subroutine delete_block(this)
          implicit none
          type(block),intent(inout) :: this
          integer :: i_f
@@ -194,7 +194,7 @@
          this%apply_BC_order = 0
        end subroutine
 
-       subroutine display_bl(this,un)
+       subroutine display_block(this,un)
          implicit none
          type(block),intent(in) :: this
          integer,intent(in) :: un
@@ -257,7 +257,7 @@
          endif
        end subroutine
 
-       subroutine display_short_bl(this,un)
+       subroutine display_short_block(this,un)
          implicit none
          type(block),intent(in) :: this
          integer,intent(in) :: un
@@ -321,19 +321,19 @@
          write(un,*) 'apply_BC_order = ',this%apply_BC_order
        end subroutine
 
-       subroutine print_bl(this)
+       subroutine print_block(this)
          implicit none
          type(block),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_bl(this)
+       subroutine print_short_block(this)
          implicit none
          type(block),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_bl(this,un)
+       subroutine export_block(this,un)
          implicit none
          type(block),intent(in) :: this
          integer,intent(in) :: un
@@ -404,7 +404,7 @@
          write(un,*) 'apply_BC_order  = ';write(un,*) this%apply_BC_order
        end subroutine
 
-       subroutine import_bl(this,un)
+       subroutine import_block(this,un)
          implicit none
          type(block),intent(inout) :: this
          integer,intent(in) :: un
@@ -469,7 +469,7 @@
          read(un,*); read(un,*) this%apply_BC_order
        end subroutine
 
-       subroutine display_wrap_bl(this,dir,name)
+       subroutine display_wrap_block(this,dir,name)
          implicit none
          type(block),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -479,7 +479,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrap_bl(this,dir,name)
+       subroutine export_wrap_block(this,dir,name)
          implicit none
          type(block),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -489,7 +489,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrap_bl(this,dir,name)
+       subroutine import_wrap_block(this,dir,name)
          implicit none
          type(block),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

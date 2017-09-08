@@ -11,17 +11,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_ge;    end interface
-       interface delete;       module procedure delete_ge;       end interface
-       interface display;      module procedure display_ge;      end interface
-       interface display_short;module procedure display_short_ge;end interface
-       interface display;      module procedure display_wrap_ge; end interface
-       interface print;        module procedure print_ge;        end interface
-       interface print_short;  module procedure print_short_ge;  end interface
-       interface export;       module procedure export_ge;       end interface
-       interface import;       module procedure import_ge;       end interface
-       interface export;       module procedure export_wrap_ge;  end interface
-       interface import;       module procedure import_wrap_ge;  end interface
+       interface init;         module procedure init_copy_geometry_props;    end interface
+       interface delete;       module procedure delete_geometry_props;       end interface
+       interface display;      module procedure display_geometry_props;      end interface
+       interface display_short;module procedure display_short_geometry_props;end interface
+       interface display;      module procedure display_wrap_geometry_props; end interface
+       interface print;        module procedure print_geometry_props;        end interface
+       interface print_short;  module procedure print_short_geometry_props;  end interface
+       interface export;       module procedure export_geometry_props;       end interface
+       interface import;       module procedure import_geometry_props;       end interface
+       interface export;       module procedure export_wrap_geometry_props;  end interface
+       interface import;       module procedure import_wrap_geometry_props;  end interface
 
        type geometry_props
          integer :: geometry = 0
@@ -32,7 +32,7 @@
 
        contains
 
-       subroutine init_copy_ge(this,that)
+       subroutine init_copy_geometry_props(this,that)
          implicit none
          type(geometry_props),intent(inout) :: this
          type(geometry_props),intent(in) :: that
@@ -43,7 +43,7 @@
          this%apply_BC_order = that%apply_BC_order
        end subroutine
 
-       subroutine delete_ge(this)
+       subroutine delete_geometry_props(this)
          implicit none
          type(geometry_props),intent(inout) :: this
          this%geometry = 0
@@ -52,13 +52,13 @@
          this%apply_BC_order = 0
        end subroutine
 
-       subroutine display_ge(this,un)
+       subroutine display_geometry_props(this,un)
          implicit none
          type(geometry_props),intent(in) :: this
          integer,intent(in) :: un
        end subroutine
 
-       subroutine display_short_ge(this,un)
+       subroutine display_short_geometry_props(this,un)
          implicit none
          type(geometry_props),intent(in) :: this
          integer,intent(in) :: un
@@ -68,19 +68,19 @@
          write(un,*) 'apply_BC_order = ',this%apply_BC_order
        end subroutine
 
-       subroutine print_ge(this)
+       subroutine print_geometry_props(this)
          implicit none
          type(geometry_props),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_ge(this)
+       subroutine print_short_geometry_props(this)
          implicit none
          type(geometry_props),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_ge(this,un)
+       subroutine export_geometry_props(this,un)
          implicit none
          type(geometry_props),intent(in) :: this
          integer,intent(in) :: un
@@ -90,7 +90,7 @@
          write(un,*) 'apply_BC_order  = ';write(un,*) this%apply_BC_order
        end subroutine
 
-       subroutine import_ge(this,un)
+       subroutine import_geometry_props(this,un)
          implicit none
          type(geometry_props),intent(inout) :: this
          integer,intent(in) :: un
@@ -101,7 +101,7 @@
          read(un,*); read(un,*) this%apply_BC_order
        end subroutine
 
-       subroutine display_wrap_ge(this,dir,name)
+       subroutine display_wrap_geometry_props(this,dir,name)
          implicit none
          type(geometry_props),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -111,7 +111,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrap_ge(this,dir,name)
+       subroutine export_wrap_geometry_props(this,dir,name)
          implicit none
          type(geometry_props),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -121,7 +121,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrap_ge(this,dir,name)
+       subroutine import_wrap_geometry_props(this,dir,name)
          implicit none
          type(geometry_props),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

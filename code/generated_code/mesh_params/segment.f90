@@ -12,17 +12,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_se;    end interface
-       interface delete;       module procedure delete_se;       end interface
-       interface display;      module procedure display_se;      end interface
-       interface display_short;module procedure display_short_se;end interface
-       interface display;      module procedure display_wrap_se; end interface
-       interface print;        module procedure print_se;        end interface
-       interface print_short;  module procedure print_short_se;  end interface
-       interface export;       module procedure export_se;       end interface
-       interface import;       module procedure import_se;       end interface
-       interface export;       module procedure export_wrap_se;  end interface
-       interface import;       module procedure import_wrap_se;  end interface
+       interface init;         module procedure init_copy_segment;    end interface
+       interface delete;       module procedure delete_segment;       end interface
+       interface display;      module procedure display_segment;      end interface
+       interface display_short;module procedure display_short_segment;end interface
+       interface display;      module procedure display_wrap_segment; end interface
+       interface print;        module procedure print_segment;        end interface
+       interface print_short;  module procedure print_short_segment;  end interface
+       interface export;       module procedure export_segment;       end interface
+       interface import;       module procedure import_segment;       end interface
+       interface export;       module procedure export_wrap_segment;  end interface
+       interface import;       module procedure import_wrap_segment;  end interface
 
        type segment
          integer :: N_cells = 0
@@ -37,7 +37,7 @@
 
        contains
 
-       subroutine init_copy_se(this,that)
+       subroutine init_copy_segment(this,that)
          implicit none
          type(segment),intent(inout) :: this
          type(segment),intent(in) :: that
@@ -52,7 +52,7 @@
          this%dir = that%dir
        end subroutine
 
-       subroutine delete_se(this)
+       subroutine delete_segment(this)
          implicit none
          type(segment),intent(inout) :: this
          this%N_cells = 0
@@ -65,14 +65,14 @@
          this%dir = 0
        end subroutine
 
-       subroutine display_se(this,un)
+       subroutine display_segment(this,un)
          implicit none
          type(segment),intent(in) :: this
          integer,intent(in) :: un
          call display(this%distribution,un)
        end subroutine
 
-       subroutine display_short_se(this,un)
+       subroutine display_short_segment(this,un)
          implicit none
          type(segment),intent(in) :: this
          integer,intent(in) :: un
@@ -86,19 +86,19 @@
          write(un,*) 'dir          = ',this%dir
        end subroutine
 
-       subroutine print_se(this)
+       subroutine print_segment(this)
          implicit none
          type(segment),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_se(this)
+       subroutine print_short_segment(this)
          implicit none
          type(segment),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_se(this,un)
+       subroutine export_segment(this,un)
          implicit none
          type(segment),intent(in) :: this
          integer,intent(in) :: un
@@ -112,7 +112,7 @@
          write(un,*) 'dir           = ';write(un,*) this%dir
        end subroutine
 
-       subroutine import_se(this,un)
+       subroutine import_segment(this,un)
          implicit none
          type(segment),intent(inout) :: this
          integer,intent(in) :: un
@@ -127,7 +127,7 @@
          read(un,*); read(un,*) this%dir
        end subroutine
 
-       subroutine display_wrap_se(this,dir,name)
+       subroutine display_wrap_segment(this,dir,name)
          implicit none
          type(segment),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -137,7 +137,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrap_se(this,dir,name)
+       subroutine export_wrap_segment(this,dir,name)
          implicit none
          type(segment),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -147,7 +147,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrap_se(this,dir,name)
+       subroutine import_wrap_segment(this,dir,name)
          implicit none
          type(segment),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

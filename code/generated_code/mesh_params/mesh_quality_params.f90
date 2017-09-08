@@ -11,17 +11,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_me;    end interface
-       interface delete;       module procedure delete_me;       end interface
-       interface display;      module procedure display_me;      end interface
-       interface display_short;module procedure display_short_me;end interface
-       interface display;      module procedure display_wrap_me; end interface
-       interface print;        module procedure print_me;        end interface
-       interface print_short;  module procedure print_short_me;  end interface
-       interface export;       module procedure export_me;       end interface
-       interface import;       module procedure import_me;       end interface
-       interface export;       module procedure export_wrap_me;  end interface
-       interface import;       module procedure import_wrap_me;  end interface
+       interface init;         module procedure init_copy_mesh_quality_params;    end interface
+       interface delete;       module procedure delete_mesh_quality_params;       end interface
+       interface display;      module procedure display_mesh_quality_params;      end interface
+       interface display_short;module procedure display_short_mesh_quality_params;end interface
+       interface display;      module procedure display_wrap_mesh_quality_params; end interface
+       interface print;        module procedure print_mesh_quality_params;        end interface
+       interface print_short;  module procedure print_short_mesh_quality_params;  end interface
+       interface export;       module procedure export_mesh_quality_params;       end interface
+       interface import;       module procedure import_mesh_quality_params;       end interface
+       interface export;       module procedure export_wrap_mesh_quality_params;  end interface
+       interface import;       module procedure import_wrap_mesh_quality_params;  end interface
 
        type mesh_quality_params
          real(cp) :: max_mesh_stretch_ratio = 0.0_cp
@@ -32,7 +32,7 @@
 
        contains
 
-       subroutine init_copy_me(this,that)
+       subroutine init_copy_mesh_quality_params(this,that)
          implicit none
          type(mesh_quality_params),intent(inout) :: this
          type(mesh_quality_params),intent(in) :: that
@@ -43,7 +43,7 @@
          this%auto_find_N = that%auto_find_N
        end subroutine
 
-       subroutine delete_me(this)
+       subroutine delete_mesh_quality_params(this)
          implicit none
          type(mesh_quality_params),intent(inout) :: this
          this%max_mesh_stretch_ratio = 0.0_cp
@@ -52,13 +52,13 @@
          this%auto_find_N = .false.
        end subroutine
 
-       subroutine display_me(this,un)
+       subroutine display_mesh_quality_params(this,un)
          implicit none
          type(mesh_quality_params),intent(in) :: this
          integer,intent(in) :: un
        end subroutine
 
-       subroutine display_short_me(this,un)
+       subroutine display_short_mesh_quality_params(this,un)
          implicit none
          type(mesh_quality_params),intent(in) :: this
          integer,intent(in) :: un
@@ -68,19 +68,19 @@
          write(un,*) 'auto_find_N            = ',this%auto_find_N
        end subroutine
 
-       subroutine print_me(this)
+       subroutine print_mesh_quality_params(this)
          implicit none
          type(mesh_quality_params),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_me(this)
+       subroutine print_short_mesh_quality_params(this)
          implicit none
          type(mesh_quality_params),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_me(this,un)
+       subroutine export_mesh_quality_params(this,un)
          implicit none
          type(mesh_quality_params),intent(in) :: this
          integer,intent(in) :: un
@@ -90,7 +90,7 @@
          write(un,*) 'auto_find_N             = ';write(un,*) this%auto_find_N
        end subroutine
 
-       subroutine import_me(this,un)
+       subroutine import_mesh_quality_params(this,un)
          implicit none
          type(mesh_quality_params),intent(inout) :: this
          integer,intent(in) :: un
@@ -101,7 +101,7 @@
          read(un,*); read(un,*) this%auto_find_N
        end subroutine
 
-       subroutine display_wrap_me(this,dir,name)
+       subroutine display_wrap_mesh_quality_params(this,dir,name)
          implicit none
          type(mesh_quality_params),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -111,7 +111,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrap_me(this,dir,name)
+       subroutine export_wrap_mesh_quality_params(this,dir,name)
          implicit none
          type(mesh_quality_params),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -121,7 +121,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrap_me(this,dir,name)
+       subroutine import_wrap_mesh_quality_params(this,dir,name)
          implicit none
          type(mesh_quality_params),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

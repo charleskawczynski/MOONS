@@ -13,17 +13,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_fa;    end interface
-       interface delete;       module procedure delete_fa;       end interface
-       interface display;      module procedure display_fa;      end interface
-       interface display_short;module procedure display_short_fa;end interface
-       interface display;      module procedure display_wrap_fa; end interface
-       interface print;        module procedure print_fa;        end interface
-       interface print_short;  module procedure print_short_fa;  end interface
-       interface export;       module procedure export_fa;       end interface
-       interface import;       module procedure import_fa;       end interface
-       interface export;       module procedure export_wrap_fa;  end interface
-       interface import;       module procedure import_wrap_fa;  end interface
+       interface init;         module procedure init_copy_face_SD;    end interface
+       interface delete;       module procedure delete_face_SD;       end interface
+       interface display;      module procedure display_face_SD;      end interface
+       interface display_short;module procedure display_short_face_SD;end interface
+       interface display;      module procedure display_wrap_face_SD; end interface
+       interface print;        module procedure print_face_SD;        end interface
+       interface print_short;  module procedure print_short_face_SD;  end interface
+       interface export;       module procedure export_face_SD;       end interface
+       interface import;       module procedure import_face_SD;       end interface
+       interface export;       module procedure export_wrap_face_SD;  end interface
+       interface import;       module procedure import_wrap_face_SD;  end interface
 
        type face_SD
          integer :: s = 0
@@ -42,7 +42,7 @@
 
        contains
 
-       subroutine init_copy_fa(this,that)
+       subroutine init_copy_face_SD(this,that)
          implicit none
          type(face_SD),intent(inout) :: this
          type(face_SD),intent(in) :: that
@@ -96,7 +96,7 @@
          this%Robin_coeff = that%Robin_coeff
        end subroutine
 
-       subroutine delete_fa(this)
+       subroutine delete_face_SD(this)
          implicit none
          type(face_SD),intent(inout) :: this
          integer :: i_G
@@ -148,7 +148,7 @@
          this%Robin_coeff = 0.0_cp
        end subroutine
 
-       subroutine display_fa(this,un)
+       subroutine display_face_SD(this,un)
          implicit none
          type(face_SD),intent(in) :: this
          integer,intent(in) :: un
@@ -196,7 +196,7 @@
          enddo
        end subroutine
 
-       subroutine display_short_fa(this,un)
+       subroutine display_short_face_SD(this,un)
          implicit none
          type(face_SD),intent(in) :: this
          integer,intent(in) :: un
@@ -249,19 +249,19 @@
          write(un,*) 'Robin_coeff      = ',this%Robin_coeff
        end subroutine
 
-       subroutine print_fa(this)
+       subroutine print_face_SD(this)
          implicit none
          type(face_SD),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_fa(this)
+       subroutine print_short_face_SD(this)
          implicit none
          type(face_SD),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_fa(this,un)
+       subroutine export_face_SD(this,un)
          implicit none
          type(face_SD),intent(in) :: this
          integer,intent(in) :: un
@@ -321,7 +321,7 @@
          write(un,*) 'Robin_coeff       = ';write(un,*) this%Robin_coeff
        end subroutine
 
-       subroutine import_fa(this,un)
+       subroutine import_face_SD(this,un)
          implicit none
          type(face_SD),intent(inout) :: this
          integer,intent(in) :: un
@@ -375,7 +375,7 @@
          read(un,*); read(un,*) this%Robin_coeff
        end subroutine
 
-       subroutine display_wrap_fa(this,dir,name)
+       subroutine display_wrap_face_SD(this,dir,name)
          implicit none
          type(face_SD),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -385,7 +385,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrap_fa(this,dir,name)
+       subroutine export_wrap_face_SD(this,dir,name)
          implicit none
          type(face_SD),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -395,7 +395,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrap_fa(this,dir,name)
+       subroutine import_wrap_face_SD(this,dir,name)
          implicit none
          type(face_SD),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

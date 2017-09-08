@@ -10,17 +10,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_si;    end interface
-       interface delete;       module procedure delete_si;       end interface
-       interface display;      module procedure display_si;      end interface
-       interface display_short;module procedure display_short_si;end interface
-       interface display;      module procedure display_wrap_si; end interface
-       interface print;        module procedure print_si;        end interface
-       interface print_short;  module procedure print_short_si;  end interface
-       interface export;       module procedure export_si;       end interface
-       interface import;       module procedure import_si;       end interface
-       interface export;       module procedure export_wrap_si;  end interface
-       interface import;       module procedure import_wrap_si;  end interface
+       interface init;         module procedure init_copy_simple_int_tensor;    end interface
+       interface delete;       module procedure delete_simple_int_tensor;       end interface
+       interface display;      module procedure display_simple_int_tensor;      end interface
+       interface display_short;module procedure display_short_simple_int_tensor;end interface
+       interface display;      module procedure display_wrap_simple_int_tensor; end interface
+       interface print;        module procedure print_simple_int_tensor;        end interface
+       interface print_short;  module procedure print_short_simple_int_tensor;  end interface
+       interface export;       module procedure export_simple_int_tensor;       end interface
+       interface import;       module procedure import_simple_int_tensor;       end interface
+       interface export;       module procedure export_wrap_simple_int_tensor;  end interface
+       interface import;       module procedure import_wrap_simple_int_tensor;  end interface
 
        type simple_int_tensor
          integer,dimension(3) :: eye = 0
@@ -28,7 +28,7 @@
 
        contains
 
-       subroutine init_copy_si(this,that)
+       subroutine init_copy_simple_int_tensor(this,that)
          implicit none
          type(simple_int_tensor),intent(inout) :: this
          type(simple_int_tensor),intent(in) :: that
@@ -36,45 +36,45 @@
          this%eye = that%eye
        end subroutine
 
-       subroutine delete_si(this)
+       subroutine delete_simple_int_tensor(this)
          implicit none
          type(simple_int_tensor),intent(inout) :: this
          this%eye = 0
        end subroutine
 
-       subroutine display_si(this,un)
+       subroutine display_simple_int_tensor(this,un)
          implicit none
          type(simple_int_tensor),intent(in) :: this
          integer,intent(in) :: un
        end subroutine
 
-       subroutine display_short_si(this,un)
+       subroutine display_short_simple_int_tensor(this,un)
          implicit none
          type(simple_int_tensor),intent(in) :: this
          integer,intent(in) :: un
          write(un,*) 'eye = ',this%eye
        end subroutine
 
-       subroutine print_si(this)
+       subroutine print_simple_int_tensor(this)
          implicit none
          type(simple_int_tensor),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_si(this)
+       subroutine print_short_simple_int_tensor(this)
          implicit none
          type(simple_int_tensor),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_si(this,un)
+       subroutine export_simple_int_tensor(this,un)
          implicit none
          type(simple_int_tensor),intent(in) :: this
          integer,intent(in) :: un
          write(un,*) 'eye  = ';write(un,*) this%eye
        end subroutine
 
-       subroutine import_si(this,un)
+       subroutine import_simple_int_tensor(this,un)
          implicit none
          type(simple_int_tensor),intent(inout) :: this
          integer,intent(in) :: un
@@ -82,7 +82,7 @@
          read(un,*); read(un,*) this%eye
        end subroutine
 
-       subroutine display_wrap_si(this,dir,name)
+       subroutine display_wrap_simple_int_tensor(this,dir,name)
          implicit none
          type(simple_int_tensor),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -92,7 +92,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrap_si(this,dir,name)
+       subroutine export_wrap_simple_int_tensor(this,dir,name)
          implicit none
          type(simple_int_tensor),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -102,7 +102,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrap_si(this,dir,name)
+       subroutine import_wrap_simple_int_tensor(this,dir,name)
          implicit none
          type(simple_int_tensor),intent(inout) :: this
          character(len=*),intent(in) :: dir,name

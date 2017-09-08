@@ -12,19 +12,19 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_di;    end interface
-       interface delete;       module procedure delete_di;       end interface
-       interface display;      module procedure display_di;      end interface
-       interface display_short;module procedure display_short_di;end interface
-       interface display;      module procedure display_wrap_di; end interface
-       interface print;        module procedure print_di;        end interface
-       interface print_short;  module procedure print_short_di;  end interface
-       interface export;       module procedure export_di;       end interface
-       interface import;       module procedure import_di;       end interface
-       interface export;       module procedure export_wrap_di;  end interface
-       interface import;       module procedure import_wrap_di;  end interface
-       interface export;       module procedure export_DN_di;    end interface
-       interface import;       module procedure import_DN_di;    end interface
+       interface init;         module procedure init_copy_dimensionless_params;    end interface
+       interface delete;       module procedure delete_dimensionless_params;       end interface
+       interface display;      module procedure display_dimensionless_params;      end interface
+       interface display_short;module procedure display_short_dimensionless_params;end interface
+       interface display;      module procedure display_wrap_dimensionless_params; end interface
+       interface print;        module procedure print_dimensionless_params;        end interface
+       interface print_short;  module procedure print_short_dimensionless_params;  end interface
+       interface export;       module procedure export_dimensionless_params;       end interface
+       interface import;       module procedure import_dimensionless_params;       end interface
+       interface export;       module procedure export_wrap_dimensionless_params;  end interface
+       interface import;       module procedure import_wrap_dimensionless_params;  end interface
+       interface export;       module procedure export_DN_dimensionless_params;    end interface
+       interface import;       module procedure import_DN_dimensionless_params;    end interface
 
        type dimensionless_params
          real(cp) :: Re = 0.0_cp
@@ -54,7 +54,7 @@
 
        contains
 
-       subroutine init_copy_di(this,that)
+       subroutine init_copy_dimensionless_params(this,that)
          implicit none
          type(dimensionless_params),intent(inout) :: this
          type(dimensionless_params),intent(in) :: that
@@ -84,7 +84,7 @@
          call init(this%name,that%name)
        end subroutine
 
-       subroutine delete_di(this)
+       subroutine delete_dimensionless_params(this)
          implicit none
          type(dimensionless_params),intent(inout) :: this
          this%Re = 0.0_cp
@@ -112,7 +112,7 @@
          call delete(this%name)
        end subroutine
 
-       subroutine display_di(this,un)
+       subroutine display_dimensionless_params(this,un)
          implicit none
          type(dimensionless_params),intent(in) :: this
          integer,intent(in) :: un
@@ -120,7 +120,7 @@
          call display(this%name,un)
        end subroutine
 
-       subroutine display_short_di(this,un)
+       subroutine display_short_dimensionless_params(this,un)
          implicit none
          type(dimensionless_params),intent(in) :: this
          integer,intent(in) :: un
@@ -149,19 +149,19 @@
          call display(this%name,un)
        end subroutine
 
-       subroutine print_di(this)
+       subroutine print_dimensionless_params(this)
          implicit none
          type(dimensionless_params),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_di(this)
+       subroutine print_short_dimensionless_params(this)
          implicit none
          type(dimensionless_params),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_di(this,un)
+       subroutine export_dimensionless_params(this,un)
          implicit none
          type(dimensionless_params),intent(in) :: this
          integer,intent(in) :: un
@@ -190,7 +190,7 @@
          call export(this%name,un)
        end subroutine
 
-       subroutine import_di(this,un)
+       subroutine import_dimensionless_params(this,un)
          implicit none
          type(dimensionless_params),intent(inout) :: this
          integer,intent(in) :: un
@@ -220,7 +220,7 @@
          call import(this%name,un)
        end subroutine
 
-       subroutine display_wrap_di(this,dir,name)
+       subroutine display_wrap_dimensionless_params(this,dir,name)
          implicit none
          type(dimensionless_params),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -230,7 +230,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrap_di(this,dir,name)
+       subroutine export_wrap_dimensionless_params(this,dir,name)
          implicit none
          type(dimensionless_params),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -240,7 +240,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrap_di(this,dir,name)
+       subroutine import_wrap_dimensionless_params(this,dir,name)
          implicit none
          type(dimensionless_params),intent(inout) :: this
          character(len=*),intent(in) :: dir,name
@@ -250,13 +250,13 @@
          close(un)
        end subroutine
 
-       subroutine export_DN_di(this)
+       subroutine export_DN_dimensionless_params(this)
          implicit none
          type(dimensionless_params),intent(in) :: this
          call export(this,str(this%dir),str(this%name))
        end subroutine
 
-       subroutine import_DN_di(this)
+       subroutine import_DN_dimensionless_params(this)
          implicit none
          type(dimensionless_params),intent(inout) :: this
          type(string) :: dir,name

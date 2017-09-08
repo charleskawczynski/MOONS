@@ -11,17 +11,17 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_en;    end interface
-       interface delete;       module procedure delete_en;       end interface
-       interface display;      module procedure display_en;      end interface
-       interface display_short;module procedure display_short_en;end interface
-       interface display;      module procedure display_wrap_en; end interface
-       interface print;        module procedure print_en;        end interface
-       interface print_short;  module procedure print_short_en;  end interface
-       interface export;       module procedure export_en;       end interface
-       interface import;       module procedure import_en;       end interface
-       interface export;       module procedure export_wrap_en;  end interface
-       interface import;       module procedure import_wrap_en;  end interface
+       interface init;         module procedure init_copy_energy_terms;    end interface
+       interface delete;       module procedure delete_energy_terms;       end interface
+       interface display;      module procedure display_energy_terms;      end interface
+       interface display_short;module procedure display_short_energy_terms;end interface
+       interface display;      module procedure display_wrap_energy_terms; end interface
+       interface print;        module procedure print_energy_terms;        end interface
+       interface print_short;  module procedure print_short_energy_terms;  end interface
+       interface export;       module procedure export_energy_terms;       end interface
+       interface import;       module procedure import_energy_terms;       end interface
+       interface export;       module procedure export_wrap_energy_terms;  end interface
+       interface import;       module procedure import_wrap_energy_terms;  end interface
 
        type energy_terms
          type(equation_term) :: advection
@@ -35,7 +35,7 @@
 
        contains
 
-       subroutine init_copy_en(this,that)
+       subroutine init_copy_energy_terms(this,that)
          implicit none
          type(energy_terms),intent(inout) :: this
          type(energy_terms),intent(in) :: that
@@ -49,7 +49,7 @@
          call init(this%volumetric_heating,that%volumetric_heating)
        end subroutine
 
-       subroutine delete_en(this)
+       subroutine delete_energy_terms(this)
          implicit none
          type(energy_terms),intent(inout) :: this
          call delete(this%advection)
@@ -61,7 +61,7 @@
          call delete(this%volumetric_heating)
        end subroutine
 
-       subroutine display_en(this,un)
+       subroutine display_energy_terms(this,un)
          implicit none
          type(energy_terms),intent(in) :: this
          integer,intent(in) :: un
@@ -74,7 +74,7 @@
          call display(this%volumetric_heating,un)
        end subroutine
 
-       subroutine display_short_en(this,un)
+       subroutine display_short_energy_terms(this,un)
          implicit none
          type(energy_terms),intent(in) :: this
          integer,intent(in) :: un
@@ -87,19 +87,19 @@
          call display(this%volumetric_heating,un)
        end subroutine
 
-       subroutine print_en(this)
+       subroutine print_energy_terms(this)
          implicit none
          type(energy_terms),intent(in) :: this
          call display(this,6)
        end subroutine
 
-       subroutine print_short_en(this)
+       subroutine print_short_energy_terms(this)
          implicit none
          type(energy_terms),intent(in) :: this
          call display_short(this,6)
        end subroutine
 
-       subroutine export_en(this,un)
+       subroutine export_energy_terms(this,un)
          implicit none
          type(energy_terms),intent(in) :: this
          integer,intent(in) :: un
@@ -112,7 +112,7 @@
          call export(this%volumetric_heating,un)
        end subroutine
 
-       subroutine import_en(this,un)
+       subroutine import_energy_terms(this,un)
          implicit none
          type(energy_terms),intent(inout) :: this
          integer,intent(in) :: un
@@ -126,7 +126,7 @@
          call import(this%volumetric_heating,un)
        end subroutine
 
-       subroutine display_wrap_en(this,dir,name)
+       subroutine display_wrap_energy_terms(this,dir,name)
          implicit none
          type(energy_terms),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -136,7 +136,7 @@
          close(un)
        end subroutine
 
-       subroutine export_wrap_en(this,dir,name)
+       subroutine export_wrap_energy_terms(this,dir,name)
          implicit none
          type(energy_terms),intent(in) :: this
          character(len=*),intent(in) :: dir,name
@@ -146,7 +146,7 @@
          close(un)
        end subroutine
 
-       subroutine import_wrap_en(this,dir,name)
+       subroutine import_wrap_energy_terms(this,dir,name)
          implicit none
          type(energy_terms),intent(inout) :: this
          character(len=*),intent(in) :: dir,name
