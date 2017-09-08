@@ -37,18 +37,18 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop(['ME','ME_fluid','ME_conductor','probe_dB0dt','probe_B0'],'probe',priv,F,1,3)
 	g.module[m_name].add_prop(['MD_fluid','MD_sigma'],'mesh_domain',priv)
 
-	# m_name = 'energy'
-	# g.add_module(m_name)
-	# g.module[m_name].set_folder_name(__name__.split('.')[1])
-	# g.module[m_name].set_used_modules(['IO_tools_mod'])
-	# g.module[m_name].add_prop('suppress_warning','logical',priv)
-	# g.module[m_name].add_prop('m','mesh',priv)
-	# g.module[m_name].add_prop('PCG_T','PCG_Solver_VF',priv)
-	# g.module[m_name].add_prop(['T','Tnm1','temp_CC1','temp_CC2','F','Fnm1','L','divQ','Q_source'],'SF',priv)
-	# g.module[m_name].add_prop(['temp_F','k','U_F','U_CC','gravity','temp_CC1_VF','temp_CC2_VF'],'VF',priv)
-	# g.module[m_name].add_prop(['temp_CC_TF','temp_F_TF'],'TF',priv)
-	# g.module[m_name].add_prop('probe_divQ','probe',priv,F,1,3)
-	# g.module[m_name].add_prop('MD','mesh_domain',priv)
+	m_name = 'energy'
+	g.add_module(m_name)
+	g.module[m_name].set_folder_name(__name__.split('.')[1])
+	g.module[m_name].set_used_modules(['IO_tools_mod'])
+	g.module[m_name].add_prop('suppress_warning','logical',priv)
+	g.module[m_name].add_prop('m','mesh',priv)
+	g.module[m_name].add_prop('PCG_T','PCG_Solver_SF',priv)
+	g.module[m_name].add_prop(['T','Tnm1','temp_CC1','temp_CC2','F','Fnm1','L','divQ','Q_source'],'SF',priv)
+	g.module[m_name].add_prop(['temp_F','k','U_F','U_CC','gravity','temp_CC1_VF','temp_CC2_VF'],'VF',priv)
+	g.module[m_name].add_prop(['temp_CC_TF','temp_F_TF'],'TF',priv)
+	g.module[m_name].add_prop('probe_divQ','probe',priv,F)
+	g.module[m_name].add_prop('MD','mesh_domain',priv)
 
 	# m_name = 'density'
 	# g.add_module(m_name)

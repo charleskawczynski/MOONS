@@ -75,7 +75,7 @@
        end subroutine
 
        subroutine JAC_interior_solved(JAC,PCG_cleanB,B,Bstar,RHS,phi,m,&
-         N_multistep,N_induction,dt,compute_norms,SF_CC,temp_F1,temp_E)
+         N_multistep,N_induction,dt,compute_norms,SF_CC,temp_F1)
          ! Solves: ∇•(∇B) = 0 using Jacobi method + cleaning procedure
          implicit none
          type(Jacobi),intent(inout) :: JAC
@@ -83,7 +83,7 @@
          type(VF),intent(inout) :: B,Bstar
          type(VF),intent(in) :: RHS
          type(SF),intent(inout) :: SF_CC,phi
-         type(VF),intent(inout) :: temp_F1,temp_E
+         type(VF),intent(inout) :: temp_F1
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: dt
          integer,intent(in) :: N_multistep,N_induction

@@ -1,4 +1,5 @@
-       module energy_mod
+       module energy_extend_mod
+       use energy_mod
        use current_precision_mod
        use sim_params_mod
        use IO_tools_mod
@@ -57,34 +58,7 @@
        public :: solve,export_tec
        public :: export_unsteady
 
-       type energy
-         ! --- Vector fields ---
-         type(SF) :: T,Tnm1,temp_CC1,temp_CC2   ! CC data
-         type(SF) :: F,Fnm1,L
-         type(VF) :: temp_F,k              ! Face data
-         type(VF) :: U_F                   ! Face data
-         type(VF) :: U_CC                  ! Face data
-         type(VF) :: gravity               ! CC data
-         type(VF) :: temp_CC1_VF           ! CC data
-         type(VF) :: temp_CC2_VF           ! CC data
-         type(TF) :: temp_CC_TF            ! CC data
-         type(TF) :: temp_F_TF             ! Face data
-         ! --- Scalar fields ---
-         type(SF) :: divQ                  ! CC data
-         type(SF) :: Q_source
-
-         type(probe) :: probe_divQ
-
-         type(mesh) :: m
-         type(mesh_domain) :: MD
-
-         type(PCG_Solver_SF) :: PCG_T
-
-         logical :: suppress_warning
-       end type
-
        interface init;               module procedure init_energy;            end interface
-       interface delete;             module procedure delete_energy;          end interface
        interface display;            module procedure display_energy;         end interface
        interface print;              module procedure print_energy;           end interface
        interface export;             module procedure export_energy;          end interface
@@ -99,10 +73,6 @@
        interface export_tec;         module procedure export_tec_energy;      end interface
 
        contains
-
-       ! **********************************************************
-       ! ********************* ESSENTIALS *************************
-       ! **********************************************************
 
        subroutine init_energy(nrg,m,SP,DT,MD)
          implicit none
@@ -173,39 +143,6 @@
          if (SP%VS%T%SS%restart) call import(nrg,SP,DT)
          write(*,*) '     probes initialized'
          write(*,*) '     Finished'
-       end subroutine
-
-       subroutine delete_energy(nrg)
-         implicit none
-         type(energy),intent(inout) :: nrg
-
-         call delete(nrg%T)
-         call delete(nrg%Tnm1)
-         call delete(nrg%F)
-         call delete(nrg%Fnm1)
-         call delete(nrg%L)
-         call delete(nrg%Q_source)
-         call delete(nrg%temp_F)
-         call delete(nrg%k)
-         call delete(nrg%temp_CC1)
-         call delete(nrg%temp_CC2)
-
-         call delete(nrg%U_F)
-         call delete(nrg%U_CC)
-         call delete(nrg%gravity)
-         call delete(nrg%temp_CC1_VF)
-         call delete(nrg%temp_CC2_VF)
-         call delete(nrg%temp_CC_TF)
-         call delete(nrg%temp_F_TF)
-
-         call delete(nrg%divQ)
-
-         call delete(nrg%Probe_divQ)
-         call delete(nrg%m)
-         call delete(nrg%MD)
-         call delete(nrg%PCG_T)
-
-         write(*,*) 'energy object deleted'
        end subroutine
 
        subroutine display_energy(nrg,SP,un)

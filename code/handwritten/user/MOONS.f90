@@ -40,7 +40,7 @@
        use ops_mirror_field_mod
 
        ! use density_mod
-       use energy_mod
+       use energy_extend_mod
        use momentum_extend_mod
        use induction_extend_mod
        use MHDSolver_mod

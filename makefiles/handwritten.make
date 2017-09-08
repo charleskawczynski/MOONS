@@ -249,7 +249,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_K.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)energy_aux.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)energy_solver.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)energy.f90\
+	$(SRC_DIR)$(PS)governing_equations$(PS)energy_extend.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum_stability.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)vorticity_streamfunction.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)profile_funcs.f90\
