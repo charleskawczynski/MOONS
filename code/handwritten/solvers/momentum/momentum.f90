@@ -26,7 +26,7 @@
        use matrix_free_params_mod
        use matrix_free_operators_mod
        use datatype_conversion_mod
-       use time_statistics_mod
+       use time_statistics_extend_mod
 
        use IO_tools_mod
        use IO_export_mod

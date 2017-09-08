@@ -18,7 +18,7 @@
        use kill_switch_mod
        use probe_extend_mod
        use RK_Params_mod
-       use time_statistics_mod
+       use time_statistics_extend_mod
 
        use ops_embedExtract_mod
        use time_marching_params_mod

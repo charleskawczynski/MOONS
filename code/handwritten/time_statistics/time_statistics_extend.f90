@@ -1,4 +1,5 @@
-       module time_statistics_mod
+       module time_statistics_extend_mod
+       use time_statistics_mod
        use current_precision_mod
        use sim_params_mod
        use ops_interp_mod
@@ -23,45 +24,16 @@
 
        public :: time_statistics_SF
        public :: time_statistics_VF
-
-       ! public :: init,delete,display,print,export,import ! Essentials
-       public :: init,delete
+       public :: init,delete,display,print,export,import ! Essentials
 
        public :: update
 
-       type time_statistics_SF
-         type(string) :: dir,name
-         type(SF) :: U_sum
-         type(SF) :: U_ave
-         type(probe) :: mean_energy
-         type(SF) :: RMS
-         type(time_statistics_params) :: TSP
-       end type
-
-       type time_statistics_VF
-         type(string) :: dir,name
-         type(VF) :: U_sum
-         type(VF) :: U_ave
-         type(probe) :: mean_energy
-         type(VF) :: RMS
-         type(TF) :: stresses
-         type(TF) :: stresses_sum
-         type(probe) :: L2_stresses
-         type(time_statistics_params) :: TSP
-       end type
-
        interface init;     module procedure init_TS_SF;      end interface
        interface init;     module procedure init_TS_VF;      end interface
-       interface delete;   module procedure delete_TS_SF;    end interface
-       interface delete;   module procedure delete_TS_VF;    end interface
        interface update;   module procedure update_TS_SF;    end interface
        interface update;   module procedure update_TS_VF;    end interface
 
        contains
-
-       ! **********************************************************
-       ! ********************* ESSENTIALS *************************
-       ! **********************************************************
 
        subroutine init_TS_SF(TS,m,U,TSP,TMP,dir,name)
          implicit none
@@ -106,33 +78,6 @@
          call assign(TS%RMS,0.0_cp)
          call assign(TS%stresses_sum,0.0_cp)
          call assign(TS%stresses,0.0_cp)
-       end subroutine
-
-       subroutine delete_TS_SF(TS)
-         implicit none
-         type(time_statistics_SF),intent(inout) :: TS
-         call delete(TS%TSP)
-         call delete(TS%mean_energy)
-         call delete(TS%U_sum)
-         call delete(TS%U_ave)
-         call delete(TS%RMS)
-         call delete(TS%dir)
-         call delete(TS%name)
-       end subroutine
-
-       subroutine delete_TS_VF(TS)
-         implicit none
-         type(time_statistics_VF),intent(inout) :: TS
-         call delete(TS%TSP)
-         call delete(TS%mean_energy)
-         call delete(TS%L2_stresses)
-         call delete(TS%U_sum)
-         call delete(TS%U_ave)
-         call delete(TS%RMS)
-         call delete(TS%dir)
-         call delete(TS%name)
-         call delete(TS%stresses_sum)
-         call delete(TS%stresses)
        end subroutine
 
        subroutine update_TS_SF(TS,m,U,TMP,temp)

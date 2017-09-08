@@ -222,7 +222,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_advect.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)BC_funcs.f90\
-	$(SRC_DIR)$(PS)time_statistics$(PS)time_statistics.f90\
+	$(SRC_DIR)$(PS)time_statistics$(PS)time_statistics_extend.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_operators.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)preconditioners$(PS)diagonals.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)preconditioners$(PS)preconditioners.f90\

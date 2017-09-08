@@ -105,10 +105,16 @@ def make_makefile(makefile_file,target_root,source_dir,generated_path,class_list
     L = []
     L = L + ['$(SRC_DIR_GENERATED)$(PS)']
     prefix = ''.join(L)
+    # print('\n'.join(class_list))
     file_list = [generated_path+x+'.f90' for x in class_list]
+    # print('\n'.join(file_list))
     module_names = get_list_of_module_names(file_list)
+    # print('\n'.join(module_names))
     sorted_module_list = sort_files_by_dependency(file_list,module_names)
+    # print('\n'.join(sorted_module_list))
     sorted_file_list = get_file_list_from_module_names(file_list,sorted_module_list)
+    # print('\n'.join(sorted_file_list))
+    # print('\n'.join(sorted_module_list))
     L = []
     # L = [base_dir+x+' ' for x in base_files]
     # L = ['..'+PS+'source'+PS+base_dir+x+' ' for x in base_files]
@@ -159,10 +165,12 @@ def get_list_of_files_in_dir(path,ext):
 
 def get_list_of_module_names(file_list):
     d = OrderedDict()
-    for f in file_list: d[f] = flatten(get_module_name(f))
+    for f in file_list:
+        d[f] = flatten(get_module_name(f))
     return flatten([d[key] for key in d])
 
 def get_module_name(f):
+    # print(f)
     L = read_file_to_list(f,'get_module_name')
     # L = [x.lower() for x in L]
     L = [x.lstrip() for x in L]

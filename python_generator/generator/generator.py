@@ -57,12 +57,12 @@ class generator:
 		print(' ----------------------------- module_list ----------------------------- ')
 		print(','.join(self.module_list))
 		print(' ----------------------------------------------------------------------- ')
-		# module_list_temp = [self.module[key].folder_name+PS+self.module[key].name for key in self.module]
 
+		# module_list_temp = [self.module[key].folder_name+PS+self.module[key].name for key in self.module]
 		combined_modules_flat = [item for sublist in self.combined_modules for item in sublist]
 		module_list_temp = []
 		for key in self.module:
-			if not any([key in x for x in combined_modules_flat]):
+			if not any([key == x for x in combined_modules_flat]):
 				module_list_temp.append(self.module[key].folder_name+PS+self.module[key].name)
 
 		print('----------------------------- overwritten_module_list')
@@ -88,7 +88,7 @@ class generator:
 		self.base_spaces = self.module[key].base_spaces
 
 		for key in self.module:
-			if not any([key in x for x in combined_modules_flat]):
+			if not any([key == x for x in combined_modules_flat]):
 				L = self.module[key].contruct_fortran_module(self.module_list,self.abstract_interfaces,self.base_modules)
 				path = self.d.target_dir+self.module[key].folder_name+PS+key+self.d.fext
 				func.write_string_to_file(path,'\n'.join(L))

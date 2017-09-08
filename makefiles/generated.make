@@ -87,6 +87,8 @@ SRCS_F+=\
 	$(SRC_DIR_GENERATED)$(PS)mesh$(PS)mesh_props.f90\
 	$(SRC_DIR_GENERATED)$(PS)mesh$(PS)mesh.f90\
 	$(SRC_DIR_GENERATED)$(PS)mesh$(PS)mesh_block.f90\
+	$(SRC_DIR_GENERATED)$(PS)fields$(PS)SF.f90\
+	$(SRC_DIR_GENERATED)$(PS)fields$(PS)VF.f90\
 	$(SRC_DIR_GENERATED)$(PS)fields$(PS)TF.f90\
 	$(SRC_DIR_GENERATED)$(PS)mesh_domain$(PS)mesh_domain.f90\
 	$(SRC_DIR_GENERATED)$(PS)time_statistics$(PS)time_statistics.f90\
