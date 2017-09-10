@@ -56,6 +56,7 @@
          call delete(temp_dummy)
          call delete(ISP)
          call delete(MFP)
+         stop 'exported matrix visualization. Done in matrix_vis.f90'
        end subroutine
 
        subroutine matrix_visualization_mesh(m)

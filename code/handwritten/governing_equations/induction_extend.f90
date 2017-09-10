@@ -96,60 +96,54 @@
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-       subroutine init_induction(ind,m,SP,DT,MD_fluid,MD_sigma)
+       subroutine init_induction(ind,SP,DT)
          implicit none
          type(induction),intent(inout) :: ind
-         type(mesh),intent(in) :: m
          type(sim_params),intent(in) :: SP
-         type(mesh_domain),intent(in) :: MD_fluid,MD_sigma
          type(dir_tree),intent(in) :: DT
          type(TF) :: TF_face,sigmaInv_edge_TF
          integer :: temp_unit
          write(*,*) 'Initializing induction:'
 
-         call init(ind%m,m)
-         write(*,*) '     Mesh copied'
-         call init(ind%MD_fluid,MD_fluid)
-         call init(ind%MD_sigma,MD_sigma)
          write(*,*) '     Domains copied'
-         call init_CC(ind%CC_VF_fluid,m,MD_fluid); call assign(ind%CC_VF_fluid,0.0_cp)
-         call init_CC(ind%CC_VF_sigma,m,MD_sigma); call assign(ind%CC_VF_sigma,0.0_cp)
+         call init_CC(ind%CC_VF_fluid,ind%m,ind%MD_fluid); call assign(ind%CC_VF_fluid,0.0_cp)
+         call init_CC(ind%CC_VF_sigma,ind%m,ind%MD_sigma); call assign(ind%CC_VF_sigma,0.0_cp)
          ! --- tensor,vector and scalar fields ---
-         call init_Face(ind%B_interior     ,m,ind%MD_sigma); call assign(ind%B_interior,0.0_cp)
-         call init_Edge(ind%J_interior     ,m,ind%MD_sigma); call assign(ind%J_interior,0.0_cp)
-         call init_Edge(ind%U_E            ,m,0.0_cp)
-         call init_Edge(ind%temp_E_TF      ,m,0.0_cp)
-         call init_Face(ind%temp_F1_TF     ,m,0.0_cp)
-         call init_Face(ind%temp_F2_TF     ,m,0.0_cp)
-         call init_Face(ind%F              ,m,0.0_cp)
-         call init_Face(ind%Fnm1           ,m,0.0_cp)
-         call init_Face(ind%L              ,m,0.0_cp)
-         call init_Face(ind%B              ,m,0.0_cp)
-         call init_Face(ind%Bnm1           ,m,0.0_cp)
-         call init_Face(ind%B0             ,m,0.0_cp)
-         call init_Face(ind%dB0dt          ,m,0.0_cp)
-         call init_CC(ind%temp_CC_VF       ,m,0.0_cp)
-         call init_Edge(ind%J              ,m,0.0_cp)
-         call init_Face(ind%curlUCrossB    ,m,0.0_cp)
-         call init_Edge(ind%temp_E         ,m,0.0_cp)
-         call init_Edge(ind%sigmaInv_edge  ,m,0.0_cp)
-         call init_Face(ind%temp_F1        ,m,0.0_cp)
-         call init_Face(ind%temp_F2        ,m,0.0_cp)
-         call init_CC(ind%phi              ,m,0.0_cp)
-         call init_CC(ind%temp_CC          ,m,0.0_cp)
-         call init_CC(ind%divB             ,m,0.0_cp)
-         call init_Node(ind%divJ           ,m,0.0_cp)
-         call init_CC(ind%sigmaInv_CC      ,m,0.0_cp)
+         call init_Face(ind%B_interior     ,ind%m,ind%MD_sigma); call assign(ind%B_interior,0.0_cp)
+         call init_Edge(ind%J_interior     ,ind%m,ind%MD_sigma); call assign(ind%J_interior,0.0_cp)
+         call init_Edge(ind%U_E            ,ind%m,0.0_cp)
+         call init_Edge(ind%temp_E_TF      ,ind%m,0.0_cp)
+         call init_Face(ind%temp_F1_TF     ,ind%m,0.0_cp)
+         call init_Face(ind%temp_F2_TF     ,ind%m,0.0_cp)
+         call init_Face(ind%F              ,ind%m,0.0_cp)
+         call init_Face(ind%Fnm1           ,ind%m,0.0_cp)
+         call init_Face(ind%L              ,ind%m,0.0_cp)
+         call init_Face(ind%B              ,ind%m,0.0_cp)
+         call init_Face(ind%Bnm1           ,ind%m,0.0_cp)
+         call init_Face(ind%B0             ,ind%m,0.0_cp)
+         call init_Face(ind%dB0dt          ,ind%m,0.0_cp)
+         call init_CC(ind%temp_CC_VF       ,ind%m,0.0_cp)
+         call init_Edge(ind%J              ,ind%m,0.0_cp)
+         call init_Face(ind%curlUCrossB    ,ind%m,0.0_cp)
+         call init_Edge(ind%temp_E         ,ind%m,0.0_cp)
+         call init_Edge(ind%sigmaInv_edge  ,ind%m,0.0_cp)
+         call init_Face(ind%temp_F1        ,ind%m,0.0_cp)
+         call init_Face(ind%temp_F2        ,ind%m,0.0_cp)
+         call init_CC(ind%phi              ,ind%m,0.0_cp)
+         call init_CC(ind%temp_CC          ,ind%m,0.0_cp)
+         call init_CC(ind%divB             ,ind%m,0.0_cp)
+         call init_Node(ind%divJ           ,ind%m,0.0_cp)
+         call init_CC(ind%sigmaInv_CC      ,ind%m,0.0_cp)
 
          write(*,*) '     Fields allocated'
 
          ! --- Initialize Fields ---
-         call init_B_BCs(ind%B,m,SP);     write(*,*) '     B BCs initialized'
+         call init_B_BCs(ind%B,ind%m,SP);     write(*,*) '     B BCs initialized'
          call update_BC_vals(ind%B)
-         call init_phi_BCs(ind%phi,m,SP); write(*,*) '     phi BCs initialized'
+         call init_phi_BCs(ind%phi,ind%m,SP); write(*,*) '     phi BCs initialized'
          call update_BC_vals(ind%phi)
 
-         call init_B0_field(ind%B0,m,SP)
+         call init_B0_field(ind%B0,ind%m,SP)
          call init_B_field(ind%B,SP)
          call init_phi_field(ind%phi,SP)
          call assign(ind%Bnm1,ind%B)
@@ -158,8 +152,8 @@
          call multiply(ind%B0,SP%IT%B_applied%scale)
 
          write(*,*) '     B-field initialized'
-         ! call initB_interior(ind%B_interior,m,ind%MD_sigma,str(DT%B%restart))
-         ! call initJ_interior(ind%J_interior,m,ind%MD_sigma,str(DT%J%restart))
+         ! call initB_interior(ind%B_interior,ind%m,ind%MD_sigma,str(DT%B%restart))
+         ! call initJ_interior(ind%J_interior,ind%m,ind%MD_sigma,str(DT%J%restart))
          call assign_ghost_XPeriodic(ind%B_interior,0.0_cp)
          call apply_BCs(ind%B);                           write(*,*) '     BCs applied'
 
@@ -178,7 +172,7 @@
          ! ******************** MATERIAL PROPERTIES ********************
          call set_sigma_inv(ind,SP)
          write(*,*) '     Materials initialized'
-         if (SP%EL%export_mat_props) call export_raw(m,ind%sigmaInv_edge,str(DT%mat),'sigmaInv',0)
+         if (SP%EL%export_mat_props) call export_raw(ind%m,ind%sigmaInv_edge,str(DT%mat),'sigmaInv',0)
 
          ! *************************************************************
 
@@ -217,14 +211,14 @@
 
          write(*,*) '     About to assemble curl-curl matrix'
 
-         call init_Edge(sigmaInv_edge_TF%x,m,0.0_cp) ! x-component used in matrix_free_operators.f90
+         call init_Edge(sigmaInv_edge_TF%x,ind%m,0.0_cp) ! x-component used in matrix_free_operators.f90
          call assign(sigmaInv_edge_TF%x,ind%sigmaInv_edge)
          call init(ind%PCG_B,ind_diffusion,ind_diffusion_explicit,prec_ind_VF,ind%m,&
          SP%VS%B%ISP,SP%VS%B%MFP,ind%Bstar,ind%B,sigmaInv_edge_TF,str(DT%B%residual),'B',.false.,.false.)
          call delete(sigmaInv_edge_TF)
          write(*,*) '     PCG Solver initialized for B'
 
-         call init_Face(TF_face%x,m,0.0_cp) ! x-component used in matrix_free_operators.f90
+         call init_Face(TF_face%x,ind%m,0.0_cp) ! x-component used in matrix_free_operators.f90
          call init(ind%PCG_cleanB,Lap_uniform_SF,Lap_uniform_SF_explicit,prec_lap_SF,&
          ind%m,SP%VS%phi%ISP,SP%VS%phi%MFP,ind%phi,ind%phi,TF_face,str(DT%phi%residual),'phi',.false.,.false.)
          call delete(TF_face)

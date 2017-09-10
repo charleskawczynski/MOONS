@@ -9,7 +9,7 @@
 
       private
       public :: dir_tree
-      public :: init,delete
+      public :: init,delete,display,export,import
       public :: make_dir_tree
 
       interface init;     module procedure init_DT;     end interface

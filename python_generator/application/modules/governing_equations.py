@@ -28,6 +28,7 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].set_used_modules(['IO_tools_mod'])
 	g.module[m_name].add_prop('suppress_warning','logical',priv)
 	g.module[m_name].add_prop('m','mesh',priv)
+	g.module[m_name].add_prop('m_sigma','mesh',priv)
 	g.module[m_name].add_prop('PCG_B','PCG_Solver_VF',priv)
 	g.module[m_name].add_prop('PCG_cleanB','PCG_Solver_SF',priv)
 	g.module[m_name].add_prop(['U_E','temp_E_TF','temp_F1_TF','temp_F2_TF'],'TF',priv)

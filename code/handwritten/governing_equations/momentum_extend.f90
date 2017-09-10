@@ -93,44 +93,40 @@
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-       subroutine init_mom(mom,m,SP,DT)
+       subroutine init_mom(mom,SP,DT)
          implicit none
          type(momentum),intent(inout) :: mom
-         type(mesh),intent(in) :: m
          type(sim_params),intent(in) :: SP
          type(dir_tree),intent(in) :: DT
          type(TF) :: TF_Face
          integer :: temp_unit
          write(*,*) 'Initializing momentum:'
 
-         call init(mom%m,m)
-         write(*,*) '     mesh copied'
-
-         call init_Edge(mom%U_E       ,m,0.0_cp)
-         call init_Face(mom%U         ,m,0.0_cp)
-         call init_Face(mom%Unm1      ,m,0.0_cp)
-         call init_Face(mom%temp_F1   ,m,0.0_cp)
-         call init_Face(mom%temp_F2   ,m,0.0_cp)
-         call init_Face(mom%F         ,m,0.0_cp)
-         call init_Face(mom%Fnm1      ,m,0.0_cp)
-         call init_Face(mom%L         ,m,0.0_cp)
-         call init_Face(mom%temp_F3   ,m,0.0_cp)
-         call init_Edge(mom%temp_E    ,m,0.0_cp)
-         call init_CC(mom%p           ,m,0.0_cp)
-         call init_CC(mom%divU        ,m,0.0_cp)
-         call init_CC(mom%U_CC        ,m,0.0_cp)
-         call init_CC(mom%temp_CC     ,m,0.0_cp)
-         call init_CC(mom%temp_CC_VF  ,m,0.0_cp)
-         call init_CC(mom%TF_CC       ,m,0.0_cp)
-         call init_CC_Edge(mom%TF_CC_edge,m,0.0_cp)
+         call init_Edge(mom%U_E       ,mom%m,0.0_cp)
+         call init_Face(mom%U         ,mom%m,0.0_cp)
+         call init_Face(mom%Unm1      ,mom%m,0.0_cp)
+         call init_Face(mom%temp_F1   ,mom%m,0.0_cp)
+         call init_Face(mom%temp_F2   ,mom%m,0.0_cp)
+         call init_Face(mom%F         ,mom%m,0.0_cp)
+         call init_Face(mom%Fnm1      ,mom%m,0.0_cp)
+         call init_Face(mom%L         ,mom%m,0.0_cp)
+         call init_Face(mom%temp_F3   ,mom%m,0.0_cp)
+         call init_Edge(mom%temp_E    ,mom%m,0.0_cp)
+         call init_CC(mom%p           ,mom%m,0.0_cp)
+         call init_CC(mom%divU        ,mom%m,0.0_cp)
+         call init_CC(mom%U_CC        ,mom%m,0.0_cp)
+         call init_CC(mom%temp_CC     ,mom%m,0.0_cp)
+         call init_CC(mom%temp_CC_VF  ,mom%m,0.0_cp)
+         call init_CC(mom%TF_CC       ,mom%m,0.0_cp)
+         call init_CC_Edge(mom%TF_CC_edge,mom%m,0.0_cp)
 
          write(*,*) '     Fields allocated'
          ! Initialize U-field, P-field and all BCs
          write(*,*) '     About to define U_BCs'
-         call init_U_BCs(mom%U,m,SP)
+         call init_U_BCs(mom%U,mom%m,SP)
          call update_BC_vals(mom%U)
          write(*,*) '     U_BCs defined'
-         call init_P_BCs(mom%p,m,SP)
+         call init_P_BCs(mom%p,mom%m,SP)
          call update_BC_vals(mom%p)
          write(*,*) '     BCs initialized'
          if (SP%VS%U%SS%solve) call export_BCs(mom%p,str(DT%p%BCs),'p')
@@ -139,8 +135,8 @@
          ! if (SP%VS%U%SS%solve) call print_BCs(mom%U,'U')
          ! if (SP%VS%U%SS%solve) call print_BCs(mom%p,'p')
 
-         call init_U_field(mom%U,m,SP)
-         call init_P_field(mom%p,m,SP)
+         call init_U_field(mom%U,mom%m,SP)
+         call init_P_field(mom%p,mom%m,SP)
          call assign(mom%Unm1,mom%U)
          write(*,*) '     Field initialized'
 
@@ -159,7 +155,7 @@
          call init(mom%probe_divU,str(DT%U%residual),'probe_divU',SP%VS%U%SS%restart,.true.,SP%VS%U%TMP)
          call init(mom%probe_KE,str(DT%U%energy),'KE',SP%VS%U%SS%restart,.false.,SP%VS%U%TMP)
          call init(mom%probe_Q,str(DT%U%energy),'probe_Q',SP%VS%U%SS%restart,.true.,SP%VS%U%TMP)
-         if (m%MP%plane_any) then
+         if (mom%m%MP%plane_any) then
           call init(mom%probe_KE_2C,str(DT%U%energy),'KE_2C',SP%VS%U%SS%restart,.true.,SP%VS%U%TMP)
          endif
          write(*,*) '     momentum probes initialized'
@@ -172,7 +168,7 @@
          write(*,*) '     PCG solver initialized for U'
 
          call delete(TF_Face)
-         call init_Face(TF_Face,m,0.0_cp)
+         call init_Face(TF_Face,mom%m,0.0_cp)
          call init(mom%PCG_P,Lap_uniform_SF,Lap_uniform_SF_explicit,prec_lap_SF,mom%m,&
          SP%VS%P%ISP,SP%VS%P%MFP,mom%p,mom%p,TF_Face,str(DT%p%residual),'p',.false.,.false.)
          call delete(TF_Face)

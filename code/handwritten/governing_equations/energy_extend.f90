@@ -73,41 +73,36 @@
 
        contains
 
-       subroutine init_energy(nrg,m,SP,DT,MD)
+       subroutine init_energy(nrg,SP,DT)
          implicit none
          type(energy),intent(inout) :: nrg
-         type(mesh),intent(in) :: m
-         type(mesh_domain),intent(in) :: MD
          type(sim_params),intent(in) :: SP
          type(dir_tree),intent(in) :: DT
          integer :: temp_unit
          type(SF) :: k_cc
          write(*,*) 'Initializing energy:'
 
-         call init(nrg%m,m)
-         call init(nrg%MD,MD)
+         call init_CC(nrg%T,nrg%m,0.0_cp)
+         call init_CC(nrg%Tnm1,nrg%m,0.0_cp)
+         call init_CC(nrg%F,nrg%m,0.0_cp)
+         call init_CC(nrg%Fnm1,nrg%m,0.0_cp)
+         call init_CC(nrg%L,nrg%m,0.0_cp)
+         call init_CC(nrg%Q_source,nrg%m,0.0_cp)
+         call init_CC(nrg%temp_CC2,nrg%m,0.0_cp)
+         call init_Face(nrg%temp_F,nrg%m,0.0_cp)
 
-         call init_CC(nrg%T,m,0.0_cp)
-         call init_CC(nrg%Tnm1,m,0.0_cp)
-         call init_CC(nrg%F,m,0.0_cp)
-         call init_CC(nrg%Fnm1,m,0.0_cp)
-         call init_CC(nrg%L,m,0.0_cp)
-         call init_CC(nrg%Q_source,m,0.0_cp)
-         call init_CC(nrg%temp_CC2,m,0.0_cp)
-         call init_Face(nrg%temp_F,m,0.0_cp)
-
-         call init_Face(nrg%k,m,0.0_cp)
-         call init_Face(nrg%U_F,m,0.0_cp)
-         call init_CC(nrg%U_CC,m,0.0_cp)
-         call init_CC(nrg%temp_CC1,m,0.0_cp)
-         call init_CC(nrg%gravity,m,0.0_cp)
-         call init_CC(nrg%temp_CC1_VF,m,0.0_cp)
-         call init_CC(nrg%temp_CC2_VF,m,0.0_cp)
-         call init_CC(nrg%temp_CC_TF,m,0.0_cp)
-         call init_Face(nrg%temp_F_TF,m,0.0_cp)
+         call init_Face(nrg%k,nrg%m,0.0_cp)
+         call init_Face(nrg%U_F,nrg%m,0.0_cp)
+         call init_CC(nrg%U_CC,nrg%m,0.0_cp)
+         call init_CC(nrg%temp_CC1,nrg%m,0.0_cp)
+         call init_CC(nrg%gravity,nrg%m,0.0_cp)
+         call init_CC(nrg%temp_CC1_VF,nrg%m,0.0_cp)
+         call init_CC(nrg%temp_CC2_VF,nrg%m,0.0_cp)
+         call init_CC(nrg%temp_CC_TF,nrg%m,0.0_cp)
+         call init_Face(nrg%temp_F_TF,nrg%m,0.0_cp)
 
          ! --- Scalar Fields ---
-         call init_CC(nrg%divQ,m)
+         call init_CC(nrg%divQ,nrg%m)
          write(*,*) '     Fields allocated'
 
          ! --- Initialize Fields ---
@@ -116,17 +111,17 @@
          if (SP%VS%T%SS%solve) call export_BCs(nrg%T,str(DT%T%BCs),'T')
          write(*,*) '     BCs initialized'
 
-         call init_T_field(nrg%T,m,SP,str(DT%T%field))
-         call init_gravity_field(nrg%gravity,m,SP,str(DT%T%field))
+         call init_T_field(nrg%T,nrg%m,SP,str(DT%T%field))
+         call init_gravity_field(nrg%gravity,nrg%m,SP,str(DT%T%field))
          write(*,*) '     T-field initialized'
 
          call apply_BCs(nrg%T)
          call assign(nrg%Tnm1,nrg%T)
          write(*,*) '     BCs applied'
 
-         call init_CC(k_cc,m,0.0_cp)
+         call init_CC(k_cc,nrg%m,0.0_cp)
          call initK(k_cc,nrg%m,nrg%MD)
-         call cellCenter2Face(nrg%k,k_cc,m)
+         call cellCenter2Face(nrg%k,k_cc,nrg%m)
          call delete(k_cc)
          write(*,*) '     Materials initialized'
 

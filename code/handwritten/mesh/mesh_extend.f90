@@ -138,7 +138,8 @@
            call delete(temp)
          else
            allocate(m%B(1))
-           call init(m%B(1),g); m%s = 1
+           call init(m%B(1),g)
+           m%s = 1
          endif
          call init_props(m)
          call insist_allocated_mesh(m,'addGrid')

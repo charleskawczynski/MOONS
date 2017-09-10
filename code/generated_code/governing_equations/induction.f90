@@ -33,6 +33,7 @@
        type induction
          logical :: suppress_warning = .false.
          type(mesh) :: m
+         type(mesh) :: m_sigma
          type(PCG_Solver_VF) :: PCG_B
          type(PCG_Solver_SF) :: PCG_cleanB
          type(TF) :: U_E
@@ -95,6 +96,7 @@
          call delete(this)
          this%suppress_warning = that%suppress_warning
          call init(this%m,that%m)
+         call init(this%m_sigma,that%m_sigma)
          call init(this%PCG_B,that%PCG_B)
          call init(this%PCG_cleanB,that%PCG_cleanB)
          call init(this%U_E,that%U_E)
@@ -168,6 +170,7 @@
          integer :: s_probe_B0
          this%suppress_warning = .false.
          call delete(this%m)
+         call delete(this%m_sigma)
          call delete(this%PCG_B)
          call delete(this%PCG_cleanB)
          call delete(this%U_E)
@@ -241,6 +244,7 @@
          integer :: s_probe_dB0dt
          integer :: s_probe_B0
          call display(this%m,un)
+         call display(this%m_sigma,un)
          call display(this%PCG_B,un)
          call display(this%PCG_cleanB,un)
          call display(this%U_E,un)
@@ -315,6 +319,7 @@
          integer :: s_probe_B0
          write(un,*) 'suppress_warning = ',this%suppress_warning
          call display(this%m,un)
+         call display(this%m_sigma,un)
          call display(this%PCG_B,un)
          call display(this%PCG_cleanB,un)
          call display(this%U_E,un)
@@ -401,6 +406,7 @@
          integer :: s_probe_B0
          write(un,*) 'suppress_warning  = ';write(un,*) this%suppress_warning
          call export(this%m,un)
+         call export(this%m_sigma,un)
          call export(this%PCG_B,un)
          call export(this%PCG_cleanB,un)
          call export(this%U_E,un)
@@ -481,6 +487,7 @@
          call delete(this)
          read(un,*); read(un,*) this%suppress_warning
          call import(this%m,un)
+         call import(this%m_sigma,un)
          call import(this%PCG_B,un)
          call import(this%PCG_cleanB,un)
          call import(this%U_E,un)
