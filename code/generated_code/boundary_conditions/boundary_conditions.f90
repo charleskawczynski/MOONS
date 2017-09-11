@@ -69,6 +69,7 @@
          implicit none
          type(boundary_conditions),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'apply_BC_order       = ',this%apply_BC_order
          call display(this%BCL,un)
          call display(this%DL,un)
          call display(this%face,un)

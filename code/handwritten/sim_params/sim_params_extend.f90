@@ -69,7 +69,7 @@
        SP%FCL%Poisson_test                       = F
        SP%FCL%Taylor_Green_Vortex_test           = F
        SP%FCL%temporal_convergence_test          = F
-       SP%FCL%operator_commute_test    = F
+       SP%FCL%operator_commute_test              = F
        SP%FCL%compute_export_E_K_Budget          = F
        SP%FCL%compute_export_E_M_budget          = F
        SP%FCL%restart_meshes                     = F
@@ -80,7 +80,8 @@
        SP%FCL%export_heavy                       = T
        SP%FCL%export_final_tec                   = T
        SP%FCL%export_final_restart               = T
-       SP%FCL%print_every_MHD_step               = T
+       SP%FCL%print_every_MHD_step               = F
+       SP%FCL%print_mesh_before_solve            = F
        SP%FCL%compute_surface_power              = T
 
        SP%EL%export_analytic         = F
@@ -102,8 +103,6 @@
        SP%SCP%finite_Rem                 = F
        SP%SCP%include_vacuum             = F
        SP%SCP%embed_B_interior           = F
-
-       SP%matrix_based               = F
 
        ! call init(MP,mirror,mirror_face)
        call init(SP%MP,F,6) ! Must be defined before KE_scale,ME_scale,JE_scale
@@ -130,9 +129,10 @@
        ! call init(SP%TSP,T,30.0_cp,60.0_cp)
        call init(SP%TSP,F,700.0_cp,800.0_cp)
 
-       time                          = 1.0_cp
+       time                          = 30.0_cp
        ! dtime                         = 1.0_cp*pow(-2)
-       dtime                         = 1.0_cp*pow(-4)*0.5_cp**(4.0_cp)
+       ! dtime                         = 1.0_cp*pow(-4)*0.5_cp**(4.0_cp)
+       dtime                         = 1.0_cp*pow(-2)
 
        SP%GP%tw                      = 0.05_cp
        SP%GP%geometry                = 7

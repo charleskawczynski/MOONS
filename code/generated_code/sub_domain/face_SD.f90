@@ -166,6 +166,7 @@
          integer :: s_I_OPP
          integer :: s_I_OPP_periodic_N
          integer :: s_i_2D
+         write(un,*) 's                = ',this%s
          s_G = size(this%G)
          do i_G=1,s_G
            call display(this%G(i_G),un)
@@ -194,6 +195,10 @@
          do i_i_2D=1,s_i_2D
            call display(this%i_2D(i_i_2D),un)
          enddo
+         write(un,*) 'dh               = ',this%dh
+         write(un,*) 'nhat             = ',this%nhat
+         write(un,*) 'c_w              = ',this%c_w
+         write(un,*) 'Robin_coeff      = ',this%Robin_coeff
        end subroutine
 
        subroutine display_short_face_SD(this,un)

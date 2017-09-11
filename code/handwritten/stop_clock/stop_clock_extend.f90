@@ -18,8 +18,8 @@
        implicit none
 
        private
-       public :: init
-       public :: export,export_light,print_light
+       public :: init,delete,display,print,export,import
+       public :: export_light,print_light
        public :: tic,toc
 
        interface init;         module procedure init_sc;         end interface
@@ -29,6 +29,7 @@
        interface export;       module procedure export_sc;       end interface
        interface export_light; module procedure export_light_sc; end interface
        interface export;       module procedure export_sc_dir;   end interface
+       interface print;        module procedure print_sc;        end interface
        interface export;       module procedure export_plot_sc;  end interface
 
        contains
@@ -169,6 +170,7 @@
         character(len=1) :: u
         call negative_time_elapsed_reported(sc)
         temp = sc%t_passed; call getTimeWithUnits(temp,u,sc%uc)
+        write(un,*) ''
         write(un,*) 'Wall clock time *completed* (', u,') = ',temp
         write(un,*) 'Time (convective),n_step = ',TMP%t,TMP%n_step
         write(un,*) 'Convective time'

@@ -8,7 +8,6 @@
        use string_mod
        use path_extend_mod
        use dir_tree_mod
-       use stop_clock_mod
        use stop_clock_extend_mod
        use export_frequency_mod
        use export_frequency_extend_mod
@@ -55,7 +54,7 @@
          do while ((.not.M%KS%terminate_loop).and.(M%SP%coupled%t.lt.M%SP%coupled%t_final-M%SP%coupled%dt*0.5_cp))
            call tic(M%SC)
            if (M%SP%FCL%print_every_MHD_step) write(*,*) 'M%SP%coupled%n_step = ',M%SP%coupled%n_step
-           ! if (M%EF%info%export_now) call print(M%SP)
+           ! if (M%SP%EF%info%export_now) call print(M%SP)
 
            do i_RK=1,M%SP%coupled%RKP%n_stages
              call assign_RK_stage(M%SP%VS%T%TMP,i_RK)
@@ -63,7 +62,7 @@
              call assign_RK_stage(M%SP%VS%B%TMP,i_RK)
              call assign_RK_stage(M%SP%coupled,i_RK)
              call update(M%SP%EF,M%SP%coupled%n_step,i_RK.ne.M%SP%coupled%RKP%n_stages)
-             ! if (M%SP%VS%rho%SS%solve)    call solve(dens,M%mom%U,  M%EF,M%EN,M%DT)
+             ! if (M%SP%VS%rho%SS%solve)    call solve(dens,M%mom%U,  M%SP%EF,M%EN,M%DT)
              if (M%SP%VS%T%SS%solve) then
                call embedFace(M%nrg%U_F,M%mom%U,M%nrg%MD)
                call embedCC(M%nrg%U_CC,M%mom%U_CC,M%nrg%MD)
@@ -124,7 +123,8 @@
            if (M%RM%any_next) call export(M%RM)
 
            call toc(M%SC,M%SP%coupled)
-           if (M%EF%info%export_now) then
+           if (M%SP%EF%info%export_now) then
+             if (M%SP%FCL%print_every_MHD_step) write(*,*) 'M%SP%coupled%n_step = ',M%SP%coupled%n_step
              ! oldest_modified_file violates intent, but this
              ! would be better to update outside the solvers,
              ! since it should be updated for all solver variables.
@@ -135,10 +135,9 @@
                call print_light(M%SC,M%SP%coupled)
              endif
              call export(M%SC,M%SP%coupled%t)
-             if (M%SP%FCL%export_heavy) write(*,*) 'Working directory = ',str(M%DT%tar)
              call import(M%KS)
            endif
-           ! call import(M%EF)
+           ! call import(M%SP%EF)
          enddo
          call print_light(M%SC,M%SP%coupled)
          call export(M%SC,M%SP%coupled)
@@ -161,9 +160,9 @@
          if (M%SP%VS%T%SS%initialize) call export(M%nrg,M%SP,M%DT)
          if (M%SP%VS%U%SS%initialize) call export(M%mom,M%SP,M%DT)
          if (M%SP%VS%B%SS%initialize) call export(M%ind,M%SP,M%DT)
+         ! call export(M,str(DT%restart),'MOONS')
          endif
 
-         call delete(M%EF)
          call delete(M%SC)
          call delete(M%EN)
          call delete(M%ES)

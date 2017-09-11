@@ -56,6 +56,10 @@
          implicit none
          type(export_safe),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'export_now        = ',this%export_now
+         write(un,*) 'export_period_sec = ',this%export_period_sec
+         write(un,*) 'mod_period        = ',this%mod_period
+         write(un,*) 'mod_period_last   = ',this%mod_period_last
        end subroutine
 
        subroutine display_short_export_safe(this,un)

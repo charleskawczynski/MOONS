@@ -59,6 +59,7 @@
          call display(this%L,un)
          call display(this%D,un)
          call display(this%U,un)
+         write(un,*) 'staggered = ',this%staggered
        end subroutine
 
        subroutine display_short_sparse(this,un)

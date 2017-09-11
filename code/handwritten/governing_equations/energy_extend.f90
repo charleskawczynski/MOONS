@@ -294,7 +294,7 @@
          if (EF%unsteady_3D%export_now) call export_unsteady_3D(nrg,SP,TMP,DT)
          if (EF%info%export_now) call print(nrg,SP)
          if (EF%final_solution%export_now.or.EN%T%this.or.EN%all%this) then
-           call export(nrg,SP,DT)
+           call export(nrg,str(DT%governing_equations),'nrg')
            call export_tec(nrg,SP,DT)
          endif
        end subroutine

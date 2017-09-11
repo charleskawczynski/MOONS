@@ -115,7 +115,9 @@
          type(data_location),intent(inout) :: DL
          type(data_location),intent(in) :: DL_in
          call delete(DL)
-         ! call insist_defined(DL_in,'init_copy_DL')
+#ifdef _DEBUG_DATA_LOCATION_
+         call insist_defined(DL,'init_copy_DL')
+#endif
          DL%C         = DL_in%C
          DL%N         = DL_in%N
          DL%E         = DL_in%E
@@ -631,6 +633,7 @@
           endif
         end subroutine
 
+#ifdef _DEBUG_DATA_LOCATION_
        subroutine insist_defined(DL,caller)
          implicit none
          type(data_location),intent(in) :: DL
@@ -641,5 +644,6 @@
            stop 'Done'
          endif
        end subroutine
+#endif
 
        end module

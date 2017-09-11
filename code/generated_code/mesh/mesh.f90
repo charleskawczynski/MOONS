@@ -84,6 +84,8 @@
            enddo
          endif
          call display(this%MP,un)
+         write(un,*) 'defined = ',this%defined
+         write(un,*) 's       = ',this%s
        end subroutine
 
        subroutine display_short_mesh(this,un)

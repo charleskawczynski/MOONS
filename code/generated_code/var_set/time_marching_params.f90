@@ -85,6 +85,15 @@
          type(time_marching_params),intent(in) :: this
          integer,intent(in) :: un
          call display(this%RKP,un)
+         write(un,*) 'multistep_iter = ',this%multistep_iter
+         write(un,*) 'un             = ',this%un
+         write(un,*) 'n_step         = ',this%n_step
+         write(un,*) 'n_step_stop    = ',this%n_step_stop
+         write(un,*) 'n_step_start   = ',this%n_step_start
+         write(un,*) 't              = ',this%t
+         write(un,*) 'C_max          = ',this%C_max
+         write(un,*) 't_final        = ',this%t_final
+         write(un,*) 'dt             = ',this%dt
          call display(this%dir,un)
          call display(this%name,un)
        end subroutine

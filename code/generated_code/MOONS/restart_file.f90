@@ -49,6 +49,8 @@
          implicit none
          type(restart_file),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'restart_input_file = ',this%restart_input_file
+         write(un,*) 'restart_fields     = ',this%restart_fields
        end subroutine
 
        subroutine display_short_restart_file(this,un)

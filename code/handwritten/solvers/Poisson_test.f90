@@ -41,7 +41,7 @@
          write(*,*) ' ------------------------- TEST 1 --------------------------- '
          call Poisson_test_CC(p,m,DT)     ! Tests residual drop for CC data
          write(*,*) ' ------------------------- TEST 2 --------------------------- '
-         ! call Poisson_test_Face(U,m,DT)   ! Tests residual drop for Face data
+         call Poisson_test_Face(U,m,DT)   ! Tests residual drop for Face data
          write(*,*) ' ************************************************************ '
          write(*,*) ' ********************** END POISSON TEST ******************** '
          write(*,*) ' ************************************************************ '

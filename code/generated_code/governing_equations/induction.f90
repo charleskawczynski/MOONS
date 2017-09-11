@@ -243,6 +243,7 @@
          integer :: s_ME_conductor
          integer :: s_probe_dB0dt
          integer :: s_probe_B0
+         write(un,*) 'suppress_warning = ',this%suppress_warning
          call display(this%m,un)
          call display(this%m_sigma,un)
          call display(this%PCG_B,un)

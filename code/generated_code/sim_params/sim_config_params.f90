@@ -68,6 +68,14 @@
          implicit none
          type(sim_config_params),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'export_safe_period  = ',this%export_safe_period
+         write(un,*) 'embed_b_interior    = ',this%embed_b_interior
+         write(un,*) 'couple_time_steps   = ',this%couple_time_steps
+         write(un,*) 'finite_rem          = ',this%finite_rem
+         write(un,*) 'include_vacuum      = ',this%include_vacuum
+         write(un,*) 'mpg_dir             = ',this%mpg_dir
+         write(un,*) 'uniform_b0_dir      = ',this%uniform_b0_dir
+         write(un,*) 'uniform_gravity_dir = ',this%uniform_gravity_dir
        end subroutine
 
        subroutine display_short_sim_config_params(this,un)

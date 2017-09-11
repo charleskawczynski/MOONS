@@ -50,6 +50,8 @@
          implicit none
          type(equation_term),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'add   = ',this%add
+         write(un,*) 'scale = ',this%scale
        end subroutine
 
        subroutine display_short_equation_term(this,un)

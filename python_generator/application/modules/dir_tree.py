@@ -57,6 +57,7 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('restart','path',priv)
 	g.module[m_name].add_prop('mesh_restart','path',priv)
 	g.module[m_name].add_prop('unknowns','path',priv)
+	g.module[m_name].add_prop('governing_equations','path',priv)
 
 	g.module[m_name].add_prop('PS','string',priv)
 	g.module[m_name].add_prop('tar','string',priv)

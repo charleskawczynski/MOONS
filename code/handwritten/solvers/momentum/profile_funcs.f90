@@ -45,8 +45,10 @@
            else; stop 'Error: bad size in rotatingCylinder in profile_funcs.f90'
          endif
 
-         hmin = (/cx%hmin,cy%hmin/); x0 = (hmax(1) + hmin(1))/2.0_cp
-         hmax = (/cx%hmax,cy%hmax/); y0 = (hmax(2) + hmin(2))/2.0_cp
+         hmin = (/cx%hmin,cy%hmin/)
+         hmax = (/cx%hmax,cy%hmax/)
+         x0 = (hmax(1) + hmin(1))/2.0_cp
+         y0 = (hmax(2) + hmin(2))/2.0_cp
          do i=1,sx; do j=1,sy
            r = sqrt((x(i)-x0)**2.0_cp + (y(j)-y0)**2.0_cp)
            if (r.lt.r0) then
@@ -279,8 +281,10 @@
          real(cp) :: alpha,height,width,F,A,A1,A2,A3
          real(cp),dimension(2) :: hmin,hmax
          integer :: i,j,n,m,nMax,mMax
-         hmin = (/cx%hmin,cy%hmin/); allocate(hx(sx)); width  = (hmax(1) - hmin(1))/2.0_cp
-         hmax = (/cx%hmax,cy%hmax/); allocate(hy(sy)); height = (hmax(2) - hmin(2))/2.0_cp
+         hmin = (/cx%hmin,cy%hmin/)
+         hmax = (/cx%hmax,cy%hmax/)
+         allocate(hx(sx)); width  = (hmax(1) - hmin(1))/2.0_cp
+         allocate(hy(sy)); height = (hmax(2) - hmin(2))/2.0_cp
 
              if (sx.eq.cx%sn) then; hx = cx%hn%f
          elseif (sx.eq.cx%sc) then; hx = cx%hc%f

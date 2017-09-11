@@ -340,6 +340,7 @@ class fortran_property:
   def write_display(self):
     L = []
     skip_display = False
+    # skip_display = True
 
     if       self.object_type=='primitive' and     self.allocatable and     self.dimension>1 and     self.rank>1:
       if skip_display: pass

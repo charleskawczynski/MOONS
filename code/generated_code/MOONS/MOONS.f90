@@ -5,7 +5,6 @@
        use IO_tools_mod
        use dir_tree_mod
        use energy_mod
-       use export_frequency_mod
        use export_now_mod
        use export_safe_mod
        use induction_mod
@@ -48,7 +47,6 @@
          logical :: fresh_restart_file = .false.
          logical :: matrix_visualization = .false.
          type(restart_file) :: RF
-         type(export_frequency) :: EF
          type(export_now) :: EN
          type(export_safe) :: ES
          type(refine_mesh) :: RM
@@ -73,7 +71,6 @@
          this%fresh_restart_file = that%fresh_restart_file
          this%matrix_visualization = that%matrix_visualization
          call init(this%RF,that%RF)
-         call init(this%EF,that%EF)
          call init(this%EN,that%EN)
          call init(this%ES,that%ES)
          call init(this%RM,that%RM)
@@ -94,7 +91,6 @@
          this%fresh_restart_file = .false.
          this%matrix_visualization = .false.
          call delete(this%RF)
-         call delete(this%EF)
          call delete(this%EN)
          call delete(this%ES)
          call delete(this%RM)
@@ -113,8 +109,9 @@
          call display(this%dir_target,un)
          call display(this%m_temp,un)
          call display(this%sc,un)
+         write(un,*) 'fresh_restart_file   = ',this%fresh_restart_file
+         write(un,*) 'matrix_visualization = ',this%matrix_visualization
          call display(this%RF,un)
-         call display(this%EF,un)
          call display(this%EN,un)
          call display(this%ES,un)
          call display(this%RM,un)
@@ -136,7 +133,6 @@
          write(un,*) 'fresh_restart_file   = ',this%fresh_restart_file
          write(un,*) 'matrix_visualization = ',this%matrix_visualization
          call display(this%RF,un)
-         call display(this%EF,un)
          call display(this%EN,un)
          call display(this%ES,un)
          call display(this%RM,un)
@@ -170,7 +166,6 @@
          write(un,*) 'fresh_restart_file    = ';write(un,*) this%fresh_restart_file
          write(un,*) 'matrix_visualization  = ';write(un,*) this%matrix_visualization
          call export(this%RF,un)
-         call export(this%EF,un)
          call export(this%EN,un)
          call export(this%ES,un)
          call export(this%RM,un)
@@ -193,7 +188,6 @@
          read(un,*); read(un,*) this%fresh_restart_file
          read(un,*); read(un,*) this%matrix_visualization
          call import(this%RF,un)
-         call import(this%EF,un)
          call import(this%EN,un)
          call import(this%ES,un)
          call import(this%RM,un)

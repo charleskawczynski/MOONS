@@ -208,7 +208,6 @@
            do i=1,m%s
              call interp_N2C(f%BF(i)%GF,&
                              g%BF(i)%GF,&
-                             dir,&
                              m%MP%int_tensor(dir)%eye(1),&
                              m%MP%int_tensor(dir)%eye(2),&
                              m%MP%int_tensor(dir)%eye(3))

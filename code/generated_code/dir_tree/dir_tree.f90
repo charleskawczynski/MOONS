@@ -50,6 +50,7 @@
          type(path) :: restart
          type(path) :: mesh_restart
          type(path) :: unknowns
+         type(path) :: governing_equations
          type(string) :: PS
          type(string) :: tar
          type(dir_group) :: U
@@ -93,6 +94,7 @@
          call init(this%restart,that%restart)
          call init(this%mesh_restart,that%mesh_restart)
          call init(this%unknowns,that%unknowns)
+         call init(this%governing_equations,that%governing_equations)
          call init(this%PS,that%PS)
          call init(this%tar,that%tar)
          call init(this%U,that%U)
@@ -132,6 +134,7 @@
          call delete(this%restart)
          call delete(this%mesh_restart)
          call delete(this%unknowns)
+         call delete(this%governing_equations)
          call delete(this%PS)
          call delete(this%tar)
          call delete(this%U)
@@ -172,6 +175,7 @@
          call display(this%restart,un)
          call display(this%mesh_restart,un)
          call display(this%unknowns,un)
+         call display(this%governing_equations,un)
          call display(this%PS,un)
          call display(this%tar,un)
          call display(this%U,un)
@@ -212,6 +216,7 @@
          call display(this%restart,un)
          call display(this%mesh_restart,un)
          call display(this%unknowns,un)
+         call display(this%governing_equations,un)
          call display(this%PS,un)
          call display(this%tar,un)
          call display(this%U,un)
@@ -264,6 +269,7 @@
          call export(this%restart,un)
          call export(this%mesh_restart,un)
          call export(this%unknowns,un)
+         call export(this%governing_equations,un)
          call export(this%PS,un)
          call export(this%tar,un)
          call export(this%U,un)
@@ -305,6 +311,7 @@
          call import(this%restart,un)
          call import(this%mesh_restart,un)
          call import(this%unknowns,un)
+         call import(this%governing_equations,un)
          call import(this%PS,un)
          call import(this%tar,un)
          call import(this%U,un)

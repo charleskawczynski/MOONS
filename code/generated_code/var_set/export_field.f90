@@ -46,6 +46,7 @@
          implicit none
          type(export_field),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'export_ever = ',this%export_ever
        end subroutine
 
        subroutine display_short_export_field(this,un)

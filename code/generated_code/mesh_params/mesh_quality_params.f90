@@ -56,6 +56,10 @@
          implicit none
          type(mesh_quality_params),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'max_mesh_stretch_ratio = ',this%max_mesh_stretch_ratio
+         write(un,*) 'N_max_points_add       = ',this%N_max_points_add
+         write(un,*) 'N_iter                 = ',this%N_iter
+         write(un,*) 'auto_find_N            = ',this%auto_find_N
        end subroutine
 
        subroutine display_short_mesh_quality_params(this,un)

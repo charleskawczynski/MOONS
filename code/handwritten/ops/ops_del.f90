@@ -287,6 +287,7 @@
         endif
       end function
 
+#ifdef _DEBUG_DEL_
       subroutine check_diff_shape(f,dfdh,dir)
         implicit none
         type(grid_field),intent(in) :: f,dfdh
@@ -302,5 +303,6 @@
           stop 'Error: check_diff_shape undetermined in ops_del.f90.'
         endif
       end subroutine
+#endif
 
       end module

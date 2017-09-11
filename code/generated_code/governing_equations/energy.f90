@@ -119,6 +119,7 @@
          implicit none
          type(energy),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'suppress_warning = ',this%suppress_warning
          call display(this%m,un)
          call display(this%PCG_T,un)
          call display(this%T,un)

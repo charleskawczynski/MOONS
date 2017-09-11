@@ -57,6 +57,9 @@
          implicit none
          type(grid_field),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'f    = ',this%f
+         write(un,*) 's    = ',this%s
+         write(un,*) 's_1D = ',this%s_1D
        end subroutine
 
        subroutine display_short_grid_field(this,un)

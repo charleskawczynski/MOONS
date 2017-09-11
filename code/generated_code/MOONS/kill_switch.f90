@@ -58,6 +58,8 @@
          implicit none
          type(kill_switch),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'un             = ',this%un
+         write(un,*) 'terminate_loop = ',this%terminate_loop
          call display(this%dir,un)
          call display(this%name,un)
        end subroutine

@@ -1,5 +1,6 @@
        module GF_interp_mod
        ! Compiler flags: (_DEBUG_INTERP_,_PARALLELIZE_INTERP_)
+       use face_edge_corner_indexing_mod
        use current_precision_mod
        use grid_field_mod
        use grid_field_extend_mod
@@ -46,18 +47,18 @@
            call extrap(N,C,dir)
        end subroutine
 
-       subroutine interp_N2C_GF(C,N,dir,x,y,z)
+       subroutine interp_N2C_GF(C,N,x,y,z)
          !         N  C  N  C  N  C  N  C  N
          !         |--o--|--o--|--o--|--o--|   --> dir
          !            *     *     *     *
          implicit none
          type(grid_field),intent(inout) :: C
          type(grid_field),intent(in) :: N
-         integer,intent(in) :: dir,x,y,z
+         integer,intent(in) :: x,y,z
          integer :: i,j,k
 #ifdef _DEBUG_INTERP_
-         call insist_shape_match(C,N,dir,'interp_N2C_GF')
-         call insist_shape_staggered(C,N,dir,'interp_N2C_GF')
+         call insist_shape_match(C,N,dir_given_eye((/x,y,z/)),'interp_N2C_GF')
+         call insist_shape_staggered(C,N,dir_given_eye((/x,y,z/)),'interp_N2C_GF')
 #endif
 
 #ifdef _PARALLELIZE_INTERP_

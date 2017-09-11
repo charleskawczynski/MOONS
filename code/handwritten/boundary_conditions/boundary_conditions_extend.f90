@@ -84,6 +84,7 @@
 
        public :: init_props
        public :: defined
+       public :: insist_allocated
 
        public :: restrict
        public :: prolongate

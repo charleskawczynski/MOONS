@@ -43,7 +43,7 @@
        contains
 
        subroutine Euler_time_Euler_sources(PCG_VF,PCG_SF,X,Xstar,Xnm1,phi,F,m,&
-         TMP,temp_F1,temp_E,temp_CC,compute_norms)
+         TMP,temp_F1,temp_CC,compute_norms)
          ! Solves:
          !
          !  X^{*} - X^{n}
@@ -63,7 +63,7 @@
          type(VF),intent(in) :: F
          type(mesh),intent(in) :: m
          type(time_marching_params),intent(in) :: TMP
-         type(VF),intent(inout) :: temp_F1,temp_E
+         type(VF),intent(inout) :: temp_F1
          logical,intent(in) :: compute_norms
          call assign(temp_F1,F)
          call multiply(temp_F1,TMP%dt)
@@ -77,7 +77,7 @@
        end subroutine
 
        subroutine O2_BDF_time_AB2_sources(PCG_VF,PCG_SF,X,Xstar,Xnm1,phi,F,Fnm1,m,&
-         TMP,temp_F1,temp_E,temp_CC,compute_norms)
+         TMP,temp_F1,temp_CC,compute_norms)
          ! Solves:
          !
          !  3X^{*} - 4X^{n} + X^{n-1}
@@ -97,7 +97,7 @@
          type(VF),intent(in) :: F,Fnm1
          type(mesh),intent(in) :: m
          type(time_marching_params),intent(in) :: TMP
-         type(VF),intent(inout) :: temp_F1,temp_E
+         type(VF),intent(inout) :: temp_F1
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
          call AB2(temp_F1,F,Fnm1)
@@ -149,7 +149,7 @@
        end subroutine
 
        subroutine Euler_time_RK_sources(PCG_VF,PCG_SF,X,Xstar,Xnm1,phi,F,Fnm1,L,m,&
-         TMP,RKP,temp_F1,temp_E,temp_CC,compute_norms)
+         TMP,RKP,temp_F1,temp_CC,compute_norms)
          ! Time discretization adopted from:
          ! Lundbladh, Anders, et al. "An efficient spectral method for
          ! simulation of incompressible flow over a flat plate."
@@ -170,7 +170,7 @@
          type(PCG_solver_VF),intent(inout) :: PCG_VF
          type(PCG_solver_SF),intent(inout) :: PCG_SF
          type(SF),intent(inout) :: phi
-         type(VF),intent(inout) :: X,Xstar,Xnm1,temp_E
+         type(VF),intent(inout) :: X,Xstar,Xnm1
          type(VF),intent(in) :: F,Fnm1,L
          type(mesh),intent(in) :: m
          type(time_marching_params),intent(in) :: TMP

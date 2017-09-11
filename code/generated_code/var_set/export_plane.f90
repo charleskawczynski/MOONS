@@ -55,6 +55,10 @@
          implicit none
          type(export_plane),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'export_ever = ',this%export_ever
+         write(un,*) 'dir         = ',this%dir
+         write(un,*) 'plane       = ',this%plane
+         write(un,*) 'suffix      = ',this%suffix
        end subroutine
 
        subroutine display_short_export_plane(this,un)

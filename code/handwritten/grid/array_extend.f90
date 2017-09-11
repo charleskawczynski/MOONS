@@ -41,9 +41,11 @@
 
       interface reverse;            module procedure reverse_array;              end interface
 
-      interface check_bounds;       module procedure check_bounds_array;         end interface
       interface insist_allocated;   module procedure insist_allocated_array;     end interface
+#ifdef _DEBUG_ARRAY_
+      interface check_bounds;       module procedure check_bounds_array;         end interface
       interface insist_equal_sizes; module procedure insist_equal_sizes_array;   end interface
+#endif
 
       contains
 
@@ -317,6 +319,7 @@
         endif
       end subroutine
 
+#ifdef _DEBUG_ARRAY_
       subroutine check_bounds_array(A,i,caller)
         implicit none
         type(array),intent(in) :: A
@@ -335,7 +338,6 @@
         implicit none
         type(array),intent(in) :: A,B
         character(len=*),intent(in) :: caller
-#ifdef _DEBUG_ARRAY_
         call insist_allocated(A,'insist_equal_sizes_array in '//caller//' (A)')
         call insist_allocated(B,'insist_equal_sizes_array in '//caller//' (B)')
         if (A%N.ne.B%N) then
@@ -350,7 +352,7 @@
           write(*,*) 'B%N = ',size(B%f)
           stop 'Done'
         endif
-#endif
       end subroutine
+#endif
 
       end module

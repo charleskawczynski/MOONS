@@ -41,6 +41,7 @@
          write(*,*) ' *********************************************************** '
          write(*,*) ' ************* BEGIN TEMPORAL CONVERGENCE TEST ************* '
          write(*,*) ' *********************************************************** '
+         write(*,*) 'DT%params = ',str(DT%params)
          write(*,*) 't = ',SP%VS%U%TMP%t
          call Ln(e,U,2.0_cp,m); write(*,*) 'dt,e(U) = ',dtime,e
          call Ln(e,P,2.0_cp,m); write(*,*) 'dt,e(P) = ',dtime,e

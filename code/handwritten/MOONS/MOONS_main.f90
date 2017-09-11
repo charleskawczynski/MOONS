@@ -39,7 +39,6 @@
        use momentum_extend_mod
        use induction_extend_mod
        use MOONS_solver_mod
-       use MHDSolver_mod
        use MOONS_mod
        use MOONS_config_mod
 

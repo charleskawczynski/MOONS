@@ -110,6 +110,9 @@
          do i_M=1,s_M
            call display(this%M(i_M),un)
          enddo
+         write(un,*) 'defined = ',this%defined
+         write(un,*) 'g_R1_id = ',this%g_R1_id
+         write(un,*) 'g_R2_id = ',this%g_R2_id
        end subroutine
 
        subroutine display_short_sub_domain(this,un)

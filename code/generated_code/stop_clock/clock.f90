@@ -71,6 +71,15 @@
          implicit none
          type(clock),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 't_elapsed               = ',this%t_elapsed
+         write(un,*) 't_elapsed_computational = ',this%t_elapsed_computational
+         write(un,*) 't_start_computational   = ',this%t_start_computational
+         write(un,*) 't_stop_computational    = ',this%t_stop_computational
+         write(un,*) 't_start                 = ',this%t_start
+         write(un,*) 't_stop                  = ',this%t_stop
+         write(un,*) 'i_start                 = ',this%i_start
+         write(un,*) 'i_stop                  = ',this%i_stop
+         write(un,*) 'count_rate              = ',this%count_rate
        end subroutine
 
        subroutine display_short_clock(this,un)

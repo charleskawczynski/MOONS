@@ -457,7 +457,7 @@
            EF%unsteady_0D%export_now)
          case (5)
            call Euler_time_Euler_sources(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%Bstar,ind%Bnm1,&
-           ind%phi,F,ind%m,TMP,ind%temp_F1,ind%temp_E,ind%temp_CC,&
+           ind%phi,F,ind%m,TMP,ind%temp_F1,ind%temp_CC,&
            EF%unsteady_0D%export_now)
          case (6)
            call Euler_time_AB2_sources(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%Bstar,ind%Bnm1,&
@@ -465,11 +465,11 @@
            EF%unsteady_0D%export_now)
          case (7)
            call O2_BDF_time_AB2_sources(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%Bstar,&
-           ind%Bnm1,ind%phi,F,Fnm1,ind%m,TMP,ind%temp_F1,ind%temp_E,ind%temp_CC,&
+           ind%Bnm1,ind%phi,F,Fnm1,ind%m,TMP,ind%temp_F1,ind%temp_CC,&
            EF%unsteady_0D%export_now)
          case (8)
            call Euler_time_RK_sources(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%Bstar,ind%Bnm1,&
-           ind%phi,F,Fnm1,L,ind%m,TMP,TMP%RKP,ind%temp_F1,ind%temp_E,ind%temp_CC,&
+           ind%phi,F,Fnm1,L,ind%m,TMP,TMP%RKP,ind%temp_F1,ind%temp_CC,&
            EF%unsteady_0D%export_now)
          case default; stop 'Error: bad solveBMethod input solve_induction in induction.f90'
          end select
@@ -493,7 +493,7 @@
          if (EF%unsteady_3D%export_now) call export_unsteady_3D(ind,SP,TMP,DT)
          if (EF%info%export_now) call print(ind,SP)
          if (EF%final_solution%export_now.or.EN%B%this.or.EN%all%this) then
-           call export(ind,SP,DT)
+           call export(ind,str(DT%governing_equations),'ind')
            call export_tec(ind,SP,DT)
          endif
        end subroutine

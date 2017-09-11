@@ -54,6 +54,8 @@
          implicit none
          type(array),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'f = ',this%f
+         write(un,*) 'N = ',this%N
        end subroutine
 
        subroutine display_short_array(this,un)

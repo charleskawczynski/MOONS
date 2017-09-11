@@ -83,8 +83,18 @@
          implicit none
          type(iter_solver_params),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'un                 = ',this%un
          call display(this%dir,un)
          call display(this%name,un)
+         write(un,*) 'iter_max           = ',this%iter_max
+         write(un,*) 'tol_abs            = ',this%tol_abs
+         write(un,*) 'tol_rel            = ',this%tol_rel
+         write(un,*) 'iter_total         = ',this%iter_total
+         write(un,*) 'iter_per_call      = ',this%iter_per_call
+         write(un,*) 'n_skip_check_res   = ',this%n_skip_check_res
+         write(un,*) 'export_convergence = ',this%export_convergence
+         write(un,*) 'export_heavy       = ',this%export_heavy
+         write(un,*) 'exit_loop          = ',this%exit_loop
        end subroutine
 
        subroutine display_short_iter_solver_params(this,un)

@@ -255,6 +255,7 @@
              call display(this%vol(i_vol),un)
            enddo
          endif
+         write(un,*) 'apply_BC_order = ',this%apply_BC_order
        end subroutine
 
        subroutine display_short_block(this,un)

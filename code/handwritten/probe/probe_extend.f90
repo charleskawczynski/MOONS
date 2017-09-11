@@ -20,6 +20,8 @@
        public :: get_data
 
        interface init;     module procedure init_probe;               end interface
+       interface init;     module procedure init_probe_fresh;         end interface
+       interface init;     module procedure init_probe_restart;       end interface
        interface delete;   module procedure delete_probe_many;        end interface
        interface export;   module procedure export_probe_wrapper_dim; end interface
        interface import;   module procedure import_probe_wrapper_dim; end interface
@@ -35,38 +37,51 @@
          character(len=*),intent(in) :: dir,name
          logical,intent(in) :: restart,simple
          type(time_marching_params),intent(in) :: TMP
-         integer :: i_last
-         type(string) :: s
          call delete(p)
          call init(p%dir,dir)
          call init(p%name,name)
-         p%restart = restart
          p%simple = simple
-         if (.not.p%restart) then
-           p%un = new_and_open(dir,name)
-           write(p%un,*) 'TITLE = "'//name//' probe"'
-           call init(s,'VARIABLES = t')
-           call append(s,','//name)
-           p%cols = 2
-           if (.not.p%simple) then
-             p%cols = p%cols+1;call append(s,',d('//name//')/dt')
-             p%cols = p%cols+1;call append(s,',|d('//name//')/dt|')
-             p%cols = p%cols+1;call append(s,',|d('//name//')/dt|/max(d)_used')
-             p%cols = p%cols+1;call append(s,',max(d)')
-           endif
-           write(p%un,*) str(s)
-           call delete(s)
-           write(p%un,*) 'ZONE DATAPACKING = POINT'
-           flush(p%un)
-           p%n_step = 0
-           p%d_amax = 0.0_cp
-         elseif (p%restart) then
-           ! call truncate_data_in_open_file(p,TMP,dir,name,i_last)
-           i_last = get_last_data_point_location(dir,name)
-           ! p%un = open_to_append(dir,name,i_last) ! Does not work yet.
-           p%un = open_to_append(dir,name)
-         else; stop 'Error: no case found in init_probe in probe.f90'
+         if (.not.restart) then; call init(p,dir,name)
+         else;                   call init(p,dir,name,TMP)
          endif
+       end subroutine
+
+       subroutine init_probe_fresh(p,dir,name)
+         implicit none
+         type(probe),intent(inout) :: p
+         character(len=*),intent(in) :: dir,name
+         type(string) :: s
+         p%restart = .false.
+         p%un = new_and_open(dir,name)
+         write(p%un,*) 'TITLE = "'//name//' probe"'
+         call init(s,'VARIABLES = t')
+         call append(s,','//name)
+         p%cols = 2
+         if (.not.p%simple) then
+           p%cols = p%cols+1;call append(s,',d('//name//')/dt')
+           p%cols = p%cols+1;call append(s,',|d('//name//')/dt|')
+           p%cols = p%cols+1;call append(s,',|d('//name//')/dt|/max(d)_used')
+           p%cols = p%cols+1;call append(s,',max(d)')
+         endif
+         write(p%un,*) str(s)
+         call delete(s)
+         write(p%un,*) 'ZONE DATAPACKING = POINT'
+         flush(p%un)
+         p%n_step = 0
+         p%d_amax = 0.0_cp
+       end subroutine
+
+       subroutine init_probe_restart(p,dir,name,TMP)
+         implicit none
+         type(probe),intent(inout) :: p
+         character(len=*),intent(in) :: dir,name
+         type(time_marching_params),intent(in) :: TMP
+         integer :: i_last
+         p%restart = .true.
+         call truncate_data_in_open_file(p,TMP,dir,name,i_last)
+         i_last = get_last_data_point_location(dir,name)
+         ! p%un = open_to_append(dir,name,i_last) ! Does not work yet.
+         p%un = open_to_append(dir,name)
        end subroutine
 
        subroutine delete_probe_many(p)

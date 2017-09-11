@@ -55,7 +55,6 @@
          type(flow_control_logicals) :: FCL
          type(time_statistics_params) :: TSP
          type(sim_config_params) :: SCP
-         logical :: matrix_based = .false.
        end type
 
        contains
@@ -82,7 +81,6 @@
          call init(this%FCL,that%FCL)
          call init(this%TSP,that%TSP)
          call init(this%SCP,that%SCP)
-         this%matrix_based = that%matrix_based
        end subroutine
 
        subroutine delete_sim_params(this)
@@ -105,7 +103,6 @@
          call delete(this%FCL)
          call delete(this%TSP)
          call delete(this%SCP)
-         this%matrix_based = .false.
        end subroutine
 
        subroutine display_sim_params(this,un)
@@ -152,7 +149,6 @@
          call display(this%FCL,un)
          call display(this%TSP,un)
          call display(this%SCP,un)
-         write(un,*) 'matrix_based = ',this%matrix_based
        end subroutine
 
        subroutine print_sim_params(this)
@@ -188,7 +184,6 @@
          call export(this%FCL,un)
          call export(this%TSP,un)
          call export(this%SCP,un)
-         write(un,*) 'matrix_based  = ';write(un,*) this%matrix_based
        end subroutine
 
        subroutine import_sim_params(this,un)
@@ -213,7 +208,6 @@
          call import(this%FCL,un)
          call import(this%TSP,un)
          call import(this%SCP,un)
-         read(un,*); read(un,*) this%matrix_based
        end subroutine
 
        subroutine display_wrap_sim_params(this,dir,name)

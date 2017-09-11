@@ -12,6 +12,8 @@
 
        public :: add,remove,check_unique,sort
        public :: add_PA
+       public :: insist_allocated
+       public :: insist_defined
 
        interface init;             module procedure init_PA;             end interface
        interface insist_defined;   module procedure insist_defined_PA;   end interface

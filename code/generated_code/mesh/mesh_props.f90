@@ -97,6 +97,17 @@
          do i_int_tensor=1,s_int_tensor
            call display(this%int_tensor(i_int_tensor),un)
          enddo
+         write(un,*) 'plane       = ',this%plane
+         write(un,*) 'N_cells     = ',this%N_cells
+         write(un,*) 'plane_any   = ',this%plane_any
+         write(un,*) 'N_cells_tot = ',this%N_cells_tot
+         write(un,*) 'volume      = ',this%volume
+         write(un,*) 'hmax        = ',this%hmax
+         write(un,*) 'hmin        = ',this%hmin
+         write(un,*) 'dhmax       = ',this%dhmax
+         write(un,*) 'dhmin       = ',this%dhmin
+         write(un,*) 'dhmax_max   = ',this%dhmax_max
+         write(un,*) 'dhmin_min   = ',this%dhmin_min
        end subroutine
 
        subroutine display_short_mesh_props(this,un)

@@ -13,7 +13,6 @@
        use face_edge_corner_indexing_mod
        use stitch_mod
        use GF_mod
-       ! use simple_int_tensor_extend_mod
        use mesh_props_mod
        implicit none
 
@@ -48,7 +47,7 @@
        interface init_props;          module procedure init_props_mesh;         end interface
        interface init_apply_BC_order; module procedure init_apply_BC_order_mesh;end interface
        interface init_FEC;            module procedure init_FEC_mesh;           end interface
-       interface patch;               module procedure patch_blocks;             end interface
+       interface patch;               module procedure patch_blocks;            end interface
 
        interface restrict;            module procedure restrictmesh1;           end interface
        interface restrict;            module procedure restrictmesh3;           end interface

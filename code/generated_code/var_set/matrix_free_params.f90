@@ -65,6 +65,13 @@
          implicit none
          type(matrix_free_params),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'suppress_warning          = ',this%suppress_warning
+         write(un,*) 'alpha                     = ',this%alpha
+         write(un,*) 'beta                      = ',this%beta
+         write(un,*) 'coeff_natural             = ',this%coeff_natural
+         write(un,*) 'coeff_explicit            = ',this%coeff_explicit
+         write(un,*) 'coeff_implicit            = ',this%coeff_implicit
+         write(un,*) 'coeff_implicit_time_split = ',this%coeff_implicit_time_split
        end subroutine
 
        subroutine display_short_matrix_free_params(this,un)

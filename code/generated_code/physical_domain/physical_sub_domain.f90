@@ -55,6 +55,7 @@
          integer,intent(in) :: un
          call display(this%total,un)
          call display(this%physical,un)
+         write(un,*) 'defined  = ',this%defined
        end subroutine
 
        subroutine display_short_physical_sub_domain(this,un)

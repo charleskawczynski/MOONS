@@ -82,6 +82,9 @@
          call display(this%T,un)
          call display(this%rho,un)
          call display(this%all,un)
+         write(un,*) 'any_next = ',this%any_next
+         write(un,*) 'any_now  = ',this%any_now
+         write(un,*) 'un       = ',this%un
          call display(this%dir,un)
          call display(this%name,un)
        end subroutine

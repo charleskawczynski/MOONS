@@ -49,6 +49,8 @@
          implicit none
          type(stitch),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'L  = ',this%L
+         write(un,*) 'ID = ',this%ID
        end subroutine
 
        subroutine display_short_stitch(this,un)

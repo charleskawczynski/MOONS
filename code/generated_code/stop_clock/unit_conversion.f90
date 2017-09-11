@@ -74,6 +74,16 @@
          implicit none
          type(unit_conversion),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'days_per_year      = ',this%days_per_year
+         write(un,*) 'seconds_per_second = ',this%seconds_per_second
+         write(un,*) 'seconds_per_minute = ',this%seconds_per_minute
+         write(un,*) 'seconds_per_hour   = ',this%seconds_per_hour
+         write(un,*) 'seconds_per_day    = ',this%seconds_per_day
+         write(un,*) 'seconds_per_year   = ',this%seconds_per_year
+         write(un,*) 'minute_per_seconds = ',this%minute_per_seconds
+         write(un,*) 'hour_per_seconds   = ',this%hour_per_seconds
+         write(un,*) 'day_per_seconds    = ',this%day_per_seconds
+         write(un,*) 'year_per_seconds   = ',this%year_per_seconds
        end subroutine
 
        subroutine display_short_unit_conversion(this,un)

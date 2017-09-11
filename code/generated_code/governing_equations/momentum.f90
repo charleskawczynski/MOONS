@@ -132,6 +132,7 @@
          implicit none
          type(momentum),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'suppress_warning = ',this%suppress_warning
          call display(this%m,un)
          call display(this%PCG_P,un)
          call display(this%PCG_U,un)

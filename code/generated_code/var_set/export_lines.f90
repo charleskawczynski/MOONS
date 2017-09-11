@@ -76,6 +76,7 @@
              call display(this%EL(i_EL),un)
            enddo
          endif
+         write(un,*) 'N  = ',this%N
        end subroutine
 
        subroutine display_short_export_lines(this,un)

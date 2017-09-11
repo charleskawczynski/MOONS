@@ -17,11 +17,6 @@
        use var_set_extend_mod
        use export_analytic_mod
        use mirror_props_mod
-       use vorticity_streamfunction_mod
-       use operator_commute_test_mod
-       use Poisson_test_mod
-       use Taylor_Green_Vortex_test_mod
-       use temporal_convergence_test_mod
        use export_mesh_aux_mod
        use restart_file_mod
 
@@ -45,7 +40,6 @@
        use energy_extend_mod
        use momentum_extend_mod
        use induction_extend_mod
-       use MHDSolver_mod
        use MOONS_mod
 
        implicit none
@@ -98,6 +92,7 @@
          call export(M%SP,str(M%DT%params),'sim_params_raw_exported')
          call display(M%SP,str(M%DT%params),'sim_params_initial')
          call display_compiler_info(str(M%DT%params),'compiler_info')
+         write(*,*) 'GH 1 config'
          call export(M%SP%coupled)
          call export_TMP(M%SP%VS)
 
@@ -114,8 +109,6 @@
            call generate_mesh_generic(M%mom%m,M%SP%MP_mom,M%SP%DP,'momentum in MOONS.f90')
            call generate_mesh_generic(M%ind%m_sigma,M%SP%MP_sigma,M%SP%DP,'sigma in MOONS.f90')
            call generate_mesh_generic(M%ind%m,M%SP%MP_ind,M%SP%DP,'induction in MOONS.f90')
-           write(*,*) 'in MOONS config'
-           write(*,*) 'M%mom%m%s = ',M%mom%m%s
            call export_mesh(M%mom%m,str(M%DT%meshes),'m_mom',1)
            call export_mesh(M%ind%m,str(M%DT%meshes),'m_ind',1)
 
@@ -170,7 +163,6 @@
            stop 'Exported meshes. Turn off stop_after_mesh_export in sim_params.f90 to run sim.'
          endif
 
-           write(*,*) 'before mom init M%mom%m%s = ',M%mom%m%s
          ! Initialize energy,momentum,induction
          if (M%SP%VS%T%SS%initialize) call init(M%nrg,M%SP,M%DT)
          if (M%SP%VS%U%SS%initialize) call init(M%mom,M%SP,M%DT)
@@ -182,9 +174,11 @@
          if (M%SP%EL%export_ICs.and.M%SP%VS%U%SS%initialize) call export_tec(M%mom,M%SP,M%DT)
          if (M%SP%EL%export_ICs.and.M%SP%VS%B%SS%initialize) call export_tec(M%ind,M%SP,M%DT)
 
-         if (M%SP%VS%T%SS%initialize) call print(M%nrg%m)
-         if (M%SP%VS%U%SS%initialize) call print(M%mom%m)
-         if (M%SP%VS%B%SS%initialize) call print(M%ind%m)
+         if (M%SP%FCL%print_mesh_before_solve) then
+           if (M%SP%VS%T%SS%initialize) call print(M%nrg%m)
+           if (M%SP%VS%U%SS%initialize) call print(M%mom%m)
+           if (M%SP%VS%B%SS%initialize) call print(M%ind%m)
+         endif
 
          ! ******************** PREP TIME START/STOP ********************
 
@@ -192,11 +186,14 @@
            stop 'Exported ICs. Turn off stop_before_solve in sim_params.f90 to run sim.'
          endif
 
-         call init(M%KS,str(M%DT%params),'kill_switch'); call export(M%KS)
-         call init(M%EN,str(M%DT%export_now),'EN'); call export(M%EN)
-         call init(M%RM,str(M%DT%refine_mesh),'RM'); call export(M%RM)
-
+         call init(M%KS,str(M%DT%params),'kill_switch')
+         call init(M%EN,str(M%DT%export_now),'EN')
+         call init(M%RM,str(M%DT%refine_mesh),'RM')
+         call export(M%KS)
+         call export(M%EN)
+         call export(M%RM)
          call export(M%SP%EF)
+
          call init(M%ES,M%SP%SCP%export_safe_period)
          call init(M%sc,str(M%DT%wall_clock),'WALL_CLOCK_TIME_INFO')
 

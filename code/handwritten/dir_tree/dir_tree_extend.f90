@@ -60,6 +60,7 @@
         call init(DT%restart,DT%restart1)
 
         call init(DT%unknowns    ,DT%LDC         ,'unknowns'   ,str(DT%PS))
+        call init(DT%governing_equations,DT%LDC,'governing_equations',str(DT%PS))
         call init(DT%U   ,DT%unknowns,'U'   ,str(DT%PS))
         call init(DT%T   ,DT%unknowns,'T'   ,str(DT%PS))
         call init(DT%B   ,DT%unknowns,'B'   ,str(DT%PS))
@@ -102,6 +103,7 @@
         call make_dir(str(DT%restart2))
 
         call make_dir(str(DT%unknowns))
+        call make_dir(str(DT%governing_equations))
         call make_dir_group(DT%U)
         call make_dir_group(DT%T)
         call make_dir_group(DT%B)

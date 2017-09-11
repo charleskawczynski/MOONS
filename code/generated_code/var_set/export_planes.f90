@@ -76,6 +76,7 @@
              call display(this%EP(i_EP),un)
            enddo
          endif
+         write(un,*) 'N  = ',this%N
        end subroutine
 
        subroutine display_short_export_planes(this,un)

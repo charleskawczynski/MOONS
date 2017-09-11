@@ -99,6 +99,10 @@
          call display(this%x_plane,un)
          call display(this%y_plane,un)
          call display(this%z_plane,un)
+         write(un,*) 'any_next     = ',this%any_next
+         write(un,*) 'un           = ',this%un
+         write(un,*) 'i_level      = ',this%i_level
+         write(un,*) 'i_level_last = ',this%i_level_last
          call display(this%dir,un)
          call display(this%name,un)
          call display(this%level,un)

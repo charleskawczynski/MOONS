@@ -87,12 +87,17 @@
          integer,intent(in) :: un
          integer :: i_BF
          integer :: s_BF
+         write(un,*) 's           = ',this%s
          if (allocated(this%BF)) then
            s_BF = size(this%BF)
            do i_BF=1,s_BF
              call display(this%BF(i_BF),un)
            enddo
          endif
+         write(un,*) 'all_neumann = ',this%all_neumann
+         write(un,*) 'numEl       = ',this%numEl
+         write(un,*) 'numPhysEl   = ',this%numPhysEl
+         write(un,*) 'vol         = ',this%vol
          call display(this%DL,un)
        end subroutine
 

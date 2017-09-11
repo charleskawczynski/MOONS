@@ -166,6 +166,24 @@
          integer :: s_colCC
          integer :: s_colN
          integer :: s_colCC_centered
+         write(un,*) 'hmin              = ',this%hmin
+         write(un,*) 'hmax              = ',this%hmax
+         write(un,*) 'amin              = ',this%amin
+         write(un,*) 'amax              = ',this%amax
+         write(un,*) 'maxRange          = ',this%maxRange
+         write(un,*) 'dhMin             = ',this%dhMin
+         write(un,*) 'dhMax             = ',this%dhMax
+         write(un,*) 'dhc_e             = ',this%dhc_e
+         write(un,*) 'dhn_e             = ',this%dhn_e
+         write(un,*) 'hc_e              = ',this%hc_e
+         write(un,*) 'hn_e              = ',this%hn_e
+         write(un,*) 'sc                = ',this%sc
+         write(un,*) 'sn                = ',this%sn
+         write(un,*) 'N                 = ',this%N
+         write(un,*) 'defined           = ',this%defined
+         write(un,*) 'i_midplane        = ',this%i_midplane
+         write(un,*) 'stencils_defined  = ',this%stencils_defined
+         write(un,*) 'stencils_modified = ',this%stencils_modified
          call display(this%stagCC2N,un)
          call display(this%stagN2CC,un)
          call display(this%theta,un)

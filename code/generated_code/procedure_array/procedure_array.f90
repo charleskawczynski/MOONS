@@ -73,12 +73,14 @@
          integer,intent(in) :: un
          integer :: i_SP
          integer :: s_SP
+         write(un,*) 'N       = ',this%N
          if (allocated(this%SP)) then
            s_SP = size(this%SP)
            do i_SP=1,s_SP
              call display(this%SP(i_SP),un)
            enddo
          endif
+         write(un,*) 'defined = ',this%defined
        end subroutine
 
        subroutine display_short_procedure_array(this,un)

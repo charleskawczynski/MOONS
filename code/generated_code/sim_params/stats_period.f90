@@ -74,6 +74,16 @@
          implicit none
          type(stats_period),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 't_start                = ',this%t_start
+         write(un,*) 't_start_actual         = ',this%t_start_actual
+         write(un,*) 't_stop                 = ',this%t_stop
+         write(un,*) 'period                 = ',this%period
+         write(un,*) 'N_stats_collected      = ',this%N_stats_collected
+         write(un,*) 'compute_stats          = ',this%compute_stats
+         write(un,*) 'define_t_start_actual  = ',this%define_t_start_actual
+         write(un,*) 't_start_actual_defined = ',this%t_start_actual_defined
+         write(un,*) 'export_stats           = ',this%export_stats
+         write(un,*) 'exported_stats         = ',this%exported_stats
        end subroutine
 
        subroutine display_short_stats_period(this,un)

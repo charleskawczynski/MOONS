@@ -58,6 +58,11 @@
          implicit none
          type(solver_settings),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'solve_method   = ',this%solve_method
+         write(un,*) 'initialize     = ',this%initialize
+         write(un,*) 'solve          = ',this%solve
+         write(un,*) 'restart        = ',this%restart
+         write(un,*) 'prescribed_BCs = ',this%prescribed_BCs
        end subroutine
 
        subroutine display_short_solver_settings(this,un)

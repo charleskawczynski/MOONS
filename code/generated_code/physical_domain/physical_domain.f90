@@ -73,12 +73,14 @@
          integer,intent(in) :: un
          integer :: i_sd
          integer :: s_sd
+         write(un,*) 's       = ',this%s
          if (allocated(this%sd)) then
            s_sd = size(this%sd)
            do i_sd=1,s_sd
              call display(this%sd(i_sd),un)
            enddo
          endif
+         write(un,*) 'defined = ',this%defined
        end subroutine
 
        subroutine display_short_physical_domain(this,un)

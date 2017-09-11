@@ -285,7 +285,6 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)add_all_energy_sources.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)add_all_momentum_sources.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)add_all_induction_sources.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)MHDSolver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)Poisson_test.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)Taylor_Green_Vortex_test.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)temporal_convergence_test.f90\

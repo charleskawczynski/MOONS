@@ -53,6 +53,8 @@
          implicit none
          type(single_procedure_plane_op),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'defined = ',this%defined
+         write(un,*) 'ID      = ',this%ID
        end subroutine
 
        subroutine display_short_single_procedure_plane_op(this,un)

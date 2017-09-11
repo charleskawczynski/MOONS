@@ -379,7 +379,7 @@
            F,Fnm1,mom%m,TMP,mom%temp_F1,mom%temp_CC,EF%unsteady_0D%export_now)
          case (5)
            call Euler_time_Euler_sources(mom%PCG_U,mom%PCG_P,mom%U,mom%Ustar,mom%Unm1,&
-           mom%p,F,mom%m,TMP,mom%temp_F1,mom%temp_E,mom%temp_CC,&
+           mom%p,F,mom%m,TMP,mom%temp_F1,mom%temp_CC,&
            EF%unsteady_0D%export_now)
          case (6)
            call Euler_time_AB2_sources(mom%PCG_U,mom%PCG_P,mom%U,mom%Ustar,mom%Unm1,&
@@ -387,11 +387,11 @@
            EF%unsteady_0D%export_now)
          case (7)
            call O2_BDF_time_AB2_sources(mom%PCG_U,mom%PCG_P,mom%U,mom%Ustar,&
-           mom%Unm1,mom%p,F,Fnm1,mom%m,TMP,mom%temp_F1,mom%temp_E,mom%temp_CC,&
+           mom%Unm1,mom%p,F,Fnm1,mom%m,TMP,mom%temp_F1,mom%temp_CC,&
            EF%unsteady_0D%export_now)
          case (8)
            call Euler_time_RK_sources(mom%PCG_U,mom%PCG_P,mom%U,mom%Ustar,mom%Unm1,&
-           mom%p,F,Fnm1,L,mom%m,TMP,TMP%RKP,mom%temp_F1,mom%temp_E,mom%temp_CC,&
+           mom%p,F,Fnm1,L,mom%m,TMP,TMP%RKP,mom%temp_F1,mom%temp_CC,&
            EF%unsteady_0D%export_now)
          case default; stop 'Error: solveUMethod must = 1:4 in momentum.f90.'
          end select
@@ -417,7 +417,7 @@
          if (EF%unsteady_3D%export_now) call export_unsteady_3D(mom,SP,TMP,DT)
          if (EF%info%export_now) call print(mom,SP)
          if (EF%final_solution%export_now.or.EN%U%this.or.EN%all%this) then
-           call export(mom,SP,DT)
+           call export(mom,str(DT%governing_equations),'mom')
            call export_tec(mom,SP,DT)
          endif
        end subroutine

@@ -49,6 +49,8 @@
          implicit none
          type(step),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'this = ',this%this
+         write(un,*) 'next = ',this%next
        end subroutine
 
        subroutine display_short_step(this,un)

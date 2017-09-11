@@ -113,6 +113,8 @@
          implicit none
          type(PCG_solver_VF),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'un                = ',this%un
+         write(un,*) 'un_convergence    = ',this%un_convergence
          call display(this%MFP,un)
          call display(this%tempk,un)
          call display(this%k,un)

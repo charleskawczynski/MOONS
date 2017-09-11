@@ -163,6 +163,7 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('export_heavy','logical',priv)
 	g.module[m_name].add_prop('print_every_MHD_step','logical',priv)
 	g.module[m_name].add_prop('compute_surface_power','logical',priv)
+	g.module[m_name].add_prop('print_mesh_before_solve','logical',priv)
 
 	m_name = 'sim_config_params'
 	g.add_module(m_name)
@@ -226,6 +227,5 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('FCL'         ,'flow_control_logicals',priv)
 	g.module[m_name].add_prop('TSP'         ,'time_statistics_params',priv)
 	g.module[m_name].add_prop('SCP'         ,'sim_config_params',priv)
-	g.module[m_name].add_prop('matrix_based','logical',priv)
 
 	return g

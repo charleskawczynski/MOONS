@@ -76,6 +76,17 @@
          implicit none
          type(export_logicals),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'export_analytic    = ',this%export_analytic
+         write(un,*) 'export_meshes      = ',this%export_meshes
+         write(un,*) 'export_vort_SF     = ',this%export_vort_SF
+         write(un,*) 'export_mat_props   = ',this%export_mat_props
+         write(un,*) 'export_cell_volume = ',this%export_cell_volume
+         write(un,*) 'export_ICs         = ',this%export_ICs
+         write(un,*) 'export_planar      = ',this%export_planar
+         write(un,*) 'export_symmetric   = ',this%export_symmetric
+         write(un,*) 'export_mesh_block  = ',this%export_mesh_block
+         write(un,*) 'export_soln_only   = ',this%export_soln_only
+         write(un,*) 'defined            = ',this%defined
        end subroutine
 
        subroutine display_short_export_logicals(this,un)

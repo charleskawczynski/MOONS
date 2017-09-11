@@ -83,7 +83,6 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('fresh_restart_file','logical',priv)
 	g.module[m_name].add_prop('matrix_visualization','logical',priv)
 	g.module[m_name].add_prop('RF'        ,'restart_file',priv)
-	g.module[m_name].add_prop('EF','export_frequency',priv)
 	g.module[m_name].add_prop('EN','export_now',priv)
 	g.module[m_name].add_prop('ES','export_safe',priv)
 	g.module[m_name].add_prop('RM','refine_mesh',priv)

@@ -56,6 +56,10 @@
          implicit none
          type(mirror_props),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'mirror        = ',this%mirror
+         write(un,*) 'mirror_face   = ',this%mirror_face
+         write(un,*) 'mirror_sign   = ',this%mirror_sign
+         write(un,*) 'mirror_sign_a = ',this%mirror_sign_a
        end subroutine
 
        subroutine display_short_mirror_props(this,un)

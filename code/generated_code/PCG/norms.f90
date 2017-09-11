@@ -53,6 +53,9 @@
          implicit none
          type(norms),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'L1   = ',this%L1
+         write(un,*) 'L2   = ',this%L2
+         write(un,*) 'Linf = ',this%Linf
        end subroutine
 
        subroutine display_short_norms(this,un)

@@ -42,6 +42,7 @@
          logical :: export_heavy = .false.
          logical :: print_every_MHD_step = .false.
          logical :: compute_surface_power = .false.
+         logical :: print_mesh_before_solve = .false.
        end type
 
        contains
@@ -70,6 +71,7 @@
          this%export_heavy = that%export_heavy
          this%print_every_MHD_step = that%print_every_MHD_step
          this%compute_surface_power = that%compute_surface_power
+         this%print_mesh_before_solve = that%print_mesh_before_solve
        end subroutine
 
        subroutine delete_flow_control_logicals(this)
@@ -94,12 +96,33 @@
          this%export_heavy = .false.
          this%print_every_MHD_step = .false.
          this%compute_surface_power = .false.
+         this%print_mesh_before_solve = .false.
        end subroutine
 
        subroutine display_flow_control_logicals(this,un)
          implicit none
          type(flow_control_logicals),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'post_process                       = ',this%post_process
+         write(un,*) 'skip_solver_loop                   = ',this%skip_solver_loop
+         write(un,*) 'stop_before_solve                  = ',this%stop_before_solve
+         write(un,*) 'stop_after_mesh_export             = ',this%stop_after_mesh_export
+         write(un,*) 'Poisson_test                       = ',this%Poisson_test
+         write(un,*) 'Taylor_Green_Vortex_test           = ',this%Taylor_Green_Vortex_test
+         write(un,*) 'temporal_convergence_test          = ',this%temporal_convergence_test
+         write(un,*) 'export_numerical_flow_rate         = ',this%export_numerical_flow_rate
+         write(un,*) 'export_Shercliff_Hunt_analytic_sol = ',this%export_Shercliff_Hunt_analytic_sol
+         write(un,*) 'export_vorticity_streamfunction    = ',this%export_vorticity_streamfunction
+         write(un,*) 'compute_export_E_K_Budget          = ',this%compute_export_E_K_Budget
+         write(un,*) 'compute_export_E_M_budget          = ',this%compute_export_E_M_budget
+         write(un,*) 'operator_commute_test              = ',this%operator_commute_test
+         write(un,*) 'export_final_tec                   = ',this%export_final_tec
+         write(un,*) 'export_final_restart               = ',this%export_final_restart
+         write(un,*) 'restart_meshes                     = ',this%restart_meshes
+         write(un,*) 'export_heavy                       = ',this%export_heavy
+         write(un,*) 'print_every_MHD_step               = ',this%print_every_MHD_step
+         write(un,*) 'compute_surface_power              = ',this%compute_surface_power
+         write(un,*) 'print_mesh_before_solve            = ',this%print_mesh_before_solve
        end subroutine
 
        subroutine display_short_flow_control_logicals(this,un)
@@ -125,6 +148,7 @@
          write(un,*) 'export_heavy                       = ',this%export_heavy
          write(un,*) 'print_every_MHD_step               = ',this%print_every_MHD_step
          write(un,*) 'compute_surface_power              = ',this%compute_surface_power
+         write(un,*) 'print_mesh_before_solve            = ',this%print_mesh_before_solve
        end subroutine
 
        subroutine print_flow_control_logicals(this)
@@ -162,6 +186,7 @@
          write(un,*) 'export_heavy                        = ';write(un,*) this%export_heavy
          write(un,*) 'print_every_MHD_step                = ';write(un,*) this%print_every_MHD_step
          write(un,*) 'compute_surface_power               = ';write(un,*) this%compute_surface_power
+         write(un,*) 'print_mesh_before_solve             = ';write(un,*) this%print_mesh_before_solve
        end subroutine
 
        subroutine import_flow_control_logicals(this,un)
@@ -188,6 +213,7 @@
          read(un,*); read(un,*) this%export_heavy
          read(un,*); read(un,*) this%print_every_MHD_step
          read(un,*); read(un,*) this%compute_surface_power
+         read(un,*); read(un,*) this%print_mesh_before_solve
        end subroutine
 
        subroutine display_wrap_flow_control_logicals(this,dir,name)

@@ -6,6 +6,7 @@
 
        private
        public :: eye_given_dir
+       public :: dir_given_eye
 
        public :: dir_given_face
        public :: dir_given_edge
@@ -54,6 +55,17 @@
          case (3); eye = (/0,0,1/)
          case default; stop 'Error: dir must = 1:3 in eye_given_dir in face_edge_corner_indexing.f90'
          end select
+       end function
+
+       function dir_given_eye(eye) result(dir)
+         implicit none
+         integer,dimension(3),intent(in) :: eye
+         integer :: dir
+             if (all((/eye(1).eq.1,eye(2).eq.0,eye(3).eq.0/))) then; dir = 1
+         elseif (all((/eye(1).eq.0,eye(2).eq.1,eye(3).eq.0/))) then; dir = 2
+         elseif (all((/eye(1).eq.0,eye(2).eq.0,eye(3).eq.1/))) then; dir = 3
+         else; stop 'Error: bad eye dir_given_eye in face_edge_corner_indexing.f90'
+         endif
        end function
 
        ! *************************************************************************

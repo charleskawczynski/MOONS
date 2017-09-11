@@ -37,6 +37,7 @@
        public :: get_any_Robin
 
        public :: get_any_prescribed
+       public :: insist_allocated
 
        public :: prolongate
        public :: restrict
