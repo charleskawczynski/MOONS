@@ -1,7 +1,6 @@
        module MOONS_solver_mod
        use current_precision_mod
        use sim_params_mod
-       use var_set_mod
        use var_set_extend_mod
        use VF_extend_mod
        use IO_tools_mod
@@ -21,7 +20,6 @@
        use RK_Params_mod
        use time_statistics_extend_mod
 
-       use ops_embedExtract_mod
        use time_marching_params_mod
        use time_marching_params_extend_mod
        use add_all_energy_sources_mod
@@ -47,13 +45,16 @@
          implicit none
          type(MOONS),intent(inout) :: M
          integer :: i_RK
-
          write(*,*) '***************************************************************'
          write(*,*) '****************** ENTERING MAIN LOOP *************************'
          write(*,*) '***************************************************************'
          do while ((.not.M%KS%terminate_loop).and.(M%SP%coupled%t.lt.M%SP%coupled%t_final-M%SP%coupled%dt*0.5_cp))
+
            call tic(M%SC)
-           if (M%SP%FCL%print_every_MHD_step) write(*,*) 'M%SP%coupled%n_step = ',M%SP%coupled%n_step
+
+           if (M%SP%FCL%print_every_MHD_step) then
+             write(*,*) 'M%SP%coupled%n_step = ',M%SP%coupled%n_step
+           endif
            ! if (M%SP%EF%info%export_now) call print(M%SP)
 
            do i_RK=1,M%SP%coupled%RKP%n_stages
@@ -64,9 +65,7 @@
              call update(M%SP%EF,M%SP%coupled%n_step,i_RK.ne.M%SP%coupled%RKP%n_stages)
              ! if (M%SP%VS%rho%SS%solve)    call solve(dens,M%mom%U,  M%SP%EF,M%EN,M%DT)
              if (M%SP%VS%T%SS%solve) then
-               call embedFace(M%nrg%U_F,M%mom%U,M%nrg%MD)
-               call embedCC(M%nrg%U_CC,M%mom%U_CC,M%nrg%MD)
-               call add_all_energy_sources(M%nrg%F,M%nrg%Fnm1,M%nrg%L,M%nrg,M%SP%VS%U%TMP,M%SP,M%ind)
+               call add_all_energy_sources(M%nrg%F,M%nrg%Fnm1,M%nrg%L,M%nrg,M%SP%VS%U%TMP,M%SP,M%ind,M%mom)
                call solve(M%nrg,M%SP,M%nrg%F,M%nrg%Fnm1,M%nrg%L,M%SP%VS%T%TMP,M%SP%EF)
              endif
              if (M%SP%VS%U%SS%solve) then
@@ -124,14 +123,13 @@
 
            call toc(M%SC,M%SP%coupled)
            if (M%SP%EF%info%export_now) then
-             if (M%SP%FCL%print_every_MHD_step) write(*,*) 'M%SP%coupled%n_step = ',M%SP%coupled%n_step
              ! oldest_modified_file violates intent, but this
              ! would be better to update outside the solvers,
              ! since it should be updated for all solver variables.
              ! call oldest_modified_file(M%DT%restart,M%DT%restart1,M%DT%restart2,'p.dat')
-             if (M%SP%FCL%export_heavy) call print_light(M%SC,M%SP%coupled)
-             if (.not.M%SP%FCL%export_heavy) then
-               write(*,*) ''
+             if (M%SP%FCL%export_heavy) then
+               call print(M%SC,M%SP%coupled)
+             else
                call print_light(M%SC,M%SP%coupled)
              endif
              call export(M%SC,M%SP%coupled%t)
@@ -139,35 +137,8 @@
            endif
            ! call import(M%SP%EF)
          enddo
-         call print_light(M%SC,M%SP%coupled)
-         call export(M%SC,M%SP%coupled)
-
-         ! ***************************************************************
-         ! ********** FINISHED SOLVING MHD EQUATIONS *********************
-         ! ***************************************************************
-         call export_ISP(M%SP%VS)
-         call export_TMP(M%SP%VS)
-         call export(M%SP%coupled)
-
-         ! **************** EXPORT ONE FINAL TIME ***********************
-         if (M%SP%FCL%export_final_tec) then
-         if (M%SP%VS%T%SS%initialize) call export_tec(M%nrg,M%SP,M%DT)
-         if (M%SP%VS%U%SS%initialize) call export_tec(M%mom,M%SP,M%DT)
-         if (M%SP%VS%B%SS%initialize) call export_tec(M%ind,M%SP,M%DT)
-         endif
-
-         if (M%SP%FCL%export_final_restart) then
-         if (M%SP%VS%T%SS%initialize) call export(M%nrg,M%SP,M%DT)
-         if (M%SP%VS%U%SS%initialize) call export(M%mom,M%SP,M%DT)
-         if (M%SP%VS%B%SS%initialize) call export(M%ind,M%SP,M%DT)
-         ! call export(M,str(DT%restart),'MOONS')
-         endif
-
-         call delete(M%SC)
-         call delete(M%EN)
-         call delete(M%ES)
-         call delete(M%KS)
-         call delete(M%RM)
+         write(*,*) '***************************************************************'
+         write(*,*) '******************* EXITING MAIN LOOP *************************'
+         write(*,*) '***************************************************************'
        end subroutine
-
        end module

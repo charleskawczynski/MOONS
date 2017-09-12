@@ -92,7 +92,7 @@
          call export(M%SP,str(M%DT%params),'sim_params_raw_exported')
          call display(M%SP,str(M%DT%params),'sim_params_initial')
          call display_compiler_info(str(M%DT%params),'compiler_info')
-         write(*,*) 'GH 1 config'
+
          call export(M%SP%coupled)
          call export_TMP(M%SP%VS)
 
@@ -109,8 +109,6 @@
            call generate_mesh_generic(M%mom%m,M%SP%MP_mom,M%SP%DP,'momentum in MOONS.f90')
            call generate_mesh_generic(M%ind%m_sigma,M%SP%MP_sigma,M%SP%DP,'sigma in MOONS.f90')
            call generate_mesh_generic(M%ind%m,M%SP%MP_ind,M%SP%DP,'induction in MOONS.f90')
-           call export_mesh(M%mom%m,str(M%DT%meshes),'m_mom',1)
-           call export_mesh(M%ind%m,str(M%DT%meshes),'m_ind',1)
 
            if (M%SP%VS%U%SS%initialize) then; call init_props(M%mom%m); call patch(M%mom%m); endif
            if (M%SP%VS%B%SS%initialize) then; call init_props(M%ind%m); call patch(M%ind%m); endif
@@ -201,7 +199,9 @@
          call export_TMP(M%SP%VS)
          call export(M%SP%coupled)
 
-         if (M%SP%FCL%export_heavy) write(*,*) 'Working directory = ',str(M%DT%tar)
+         if (M%SP%FCL%export_heavy) then
+           write(*,*) 'Working directory = ',str(M%DT%tar)
+         endif
 
        end subroutine
 

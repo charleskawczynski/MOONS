@@ -8,6 +8,7 @@
 
        use version_mod
        use mesh_extend_mod
+       use var_set_extend_mod
        use mesh_domain_extend_mod
        use generate_mesh_generic_mod
        use VF_extend_mod
@@ -17,6 +18,7 @@
        use var_set_mod
        use export_analytic_mod
        use mirror_props_mod
+       use stop_clock_extend_mod
        use vorticity_streamfunction_mod
        use operator_commute_test_mod
        use Poisson_test_mod
@@ -49,6 +51,7 @@
 
        interface main;         module procedure main_MOONS;         end interface
        interface post_process; module procedure post_process_MOONS; end interface
+       interface final_export; module procedure final_export_MOONS; end interface
 
        contains
 
@@ -62,14 +65,39 @@
          call init(M%dir_target,dir_target)
          call config(M)
          if (.not.M%SP%FCL%skip_solver_loop) then
-         call solve(M)
+           call solve(M)
          endif
+         call final_export(M)
          call post_process(M)
          call delete(M)
          write(*,*) ' ******************** COMPUTATIONS COMPLETE ********************'
          write(*,*) ' ******************** COMPUTATIONS COMPLETE ********************'
          write(*,*) ' ******************** COMPUTATIONS COMPLETE ********************'
          write(*,*) ' ******************** LAST LINE EXECUTED ***********************'
+       end subroutine
+
+       subroutine final_export_MOONS(M)
+         implicit none
+         type(MOONS),intent(inout) :: M
+         call print(M%SC,M%SP%coupled)
+         call export(M%SC,M%SP%coupled)
+
+         call export_ISP(M%SP%VS)
+         call export_TMP(M%SP%VS)
+         call export(M%SP%coupled)
+
+         if (M%SP%FCL%export_final_tec) then
+           if (M%SP%VS%T%SS%initialize) call export_tec(M%nrg,M%SP,M%DT)
+           if (M%SP%VS%U%SS%initialize) call export_tec(M%mom,M%SP,M%DT)
+           if (M%SP%VS%B%SS%initialize) call export_tec(M%ind,M%SP,M%DT)
+         endif
+
+         if (M%SP%FCL%export_final_restart) then
+           if (M%SP%VS%T%SS%initialize) call export(M%nrg,M%SP,M%DT)
+           if (M%SP%VS%U%SS%initialize) call export(M%mom,M%SP,M%DT)
+           if (M%SP%VS%B%SS%initialize) call export(M%ind,M%SP,M%DT)
+           ! call export(M,str(DT%restart),'MOONS')
+         endif
        end subroutine
 
        subroutine post_process_MOONS(M)

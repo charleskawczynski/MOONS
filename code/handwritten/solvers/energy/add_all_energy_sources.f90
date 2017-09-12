@@ -4,6 +4,7 @@
        use SF_extend_mod
        use IO_tools_mod
        use time_marching_params_mod
+       use ops_embedExtract_mod
 
        use energy_mod
        use momentum_mod
@@ -17,19 +18,25 @@
 
        contains
 
-       subroutine add_all_energy_sources(F,Fnm1,L,nrg,TMP,SP,ind)
+       subroutine add_all_energy_sources(F,Fnm1,L,nrg,TMP,SP,ind,mom)
          implicit none
          type(SF),intent(inout) :: F,Fnm1,L
          type(energy),intent(inout) :: nrg
+         type(momentum),intent(in) :: mom
          type(induction),intent(inout) :: ind
          type(time_marching_params),intent(in) :: TMP
          type(sim_params),intent(in) :: SP
+
+         if (SP%ET%KE_diffusion%add.or.SP%ET%viscous_dissipation%add) then
+           call embedCC(nrg%U_CC,mom%U_CC,nrg%MD)
+         endif
 
          call assign(Fnm1,F)
          if (TMP%RKP%RK_active) call assign(L,0.0_cp)
          call assign(F,0.0_cp) ! DO NOT REMOVE THIS, FOLLOW THE COMPUTE_ADD PROCEDURE BELOW
 
          if (SP%ET%advection%add) then
+           call embedFace(nrg%U_F,mom%U,nrg%MD)
            call add_advection(F,nrg%T,nrg%U_F,SP%ET%advection%scale,&
            nrg%m,nrg%temp_CC1,nrg%temp_F)
          endif
@@ -40,6 +47,7 @@
              call add_diffusion(F,nrg%T,SP%ET%diffusion%scale,nrg%m,nrg%temp_CC1)
            endif
          endif
+
          if (SP%ET%KE_diffusion%add) then
            call add_KE_diffusion(F,nrg%U_CC,SP%ET%KE_diffusion%scale,&
            nrg%m,nrg%temp_CC1,nrg%temp_CC2,nrg%temp_CC1_VF)

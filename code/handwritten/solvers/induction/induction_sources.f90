@@ -20,17 +20,14 @@
 
        contains
 
-       subroutine add_curl_U_cross_B(F,m,U_E_mom,U_E,B0,B,curlUCrossB,MD_fluid,scale,finite_Rem,temp_F,temp_E_TF,temp_E)
+       subroutine add_curl_U_cross_B(F,m,U_E,B0,B,curlUCrossB,scale,finite_Rem,temp_F,temp_E_TF,temp_E)
          implicit none
          type(VF),intent(inout) :: F,temp_F,curlUCrossB,temp_E
          type(VF),intent(inout) :: B,B0
-         type(TF),intent(in) :: U_E_mom
          type(TF),intent(inout) :: U_E,temp_E_TF
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: scale
-         type(mesh_domain),intent(in) :: MD_fluid
          logical,intent(in) :: finite_Rem
-         call embedVelocity_E(U_E,U_E_mom,MD_fluid)
          if (finite_Rem) then
                call add(temp_F,B,B0) ! Since finite Rem
                call advect_B(curlUCrossB,U_E,temp_F,m,temp_E_TF,temp_E)
