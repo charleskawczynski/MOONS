@@ -64,6 +64,7 @@
          write(*,*) ' ******************** COMPUTATIONS STARTED ********************'
          call init(M%dir_target,dir_target)
          call config(M)
+         call make_restart_dir(M,str(M%DT%restart))
          if (.not.M%SP%FCL%skip_solver_loop) then
            call solve(M)
          endif

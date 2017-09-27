@@ -4,7 +4,7 @@
         use GF_assign_mod
         use GF_subtract_mod
         use grid_mod
-        use data_location_mod
+        use data_location_extend_mod
         use current_precision_mod
         implicit none
         private

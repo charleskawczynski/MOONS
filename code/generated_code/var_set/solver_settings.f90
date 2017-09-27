@@ -3,6 +3,9 @@
        ! ***************************************************
        module solver_settings_mod
        use IO_tools_mod
+       use datatype_conversion_mod
+       use dir_manip_mod
+       use string_mod
        implicit none
 
        private
@@ -10,17 +13,31 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_solver_settings;    end interface
-       interface delete;       module procedure delete_solver_settings;       end interface
-       interface display;      module procedure display_solver_settings;      end interface
-       interface display_short;module procedure display_short_solver_settings;end interface
-       interface display;      module procedure display_wrap_solver_settings; end interface
-       interface print;        module procedure print_solver_settings;        end interface
-       interface print_short;  module procedure print_short_solver_settings;  end interface
-       interface export;       module procedure export_solver_settings;       end interface
-       interface import;       module procedure import_solver_settings;       end interface
-       interface export;       module procedure export_wrap_solver_settings;  end interface
-       interface import;       module procedure import_wrap_solver_settings;  end interface
+       public :: export_primitives,import_primitives
+
+       public :: export_restart,import_restart
+
+       public :: make_restart_dir
+
+       public :: suppress_warnings
+
+       interface init;             module procedure init_copy_solver_settings;        end interface
+       interface delete;           module procedure delete_solver_settings;           end interface
+       interface display;          module procedure display_solver_settings;          end interface
+       interface display_short;    module procedure display_short_solver_settings;    end interface
+       interface display;          module procedure display_wrap_solver_settings;     end interface
+       interface print;            module procedure print_solver_settings;            end interface
+       interface print_short;      module procedure print_short_solver_settings;      end interface
+       interface export;           module procedure export_solver_settings;           end interface
+       interface export_primitives;module procedure export_primitives_solver_settings;end interface
+       interface export_restart;   module procedure export_restart_solver_settings;   end interface
+       interface import;           module procedure import_solver_settings;           end interface
+       interface import_restart;   module procedure import_restart_solver_settings;   end interface
+       interface import_primitives;module procedure import_primitives_solver_settings;end interface
+       interface export;           module procedure export_wrap_solver_settings;      end interface
+       interface import;           module procedure import_wrap_solver_settings;      end interface
+       interface make_restart_dir; module procedure make_restart_dir_solver_settings; end interface
+       interface suppress_warnings;module procedure suppress_warnings_solver_settings;end interface
 
        type solver_settings
          integer :: solve_method = 0
@@ -76,6 +93,16 @@
          write(un,*) 'prescribed_BCs = ',this%prescribed_BCs
        end subroutine
 
+       subroutine display_wrap_solver_settings(this,dir,name)
+         implicit none
+         type(solver_settings),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call display(this,un)
+         close(un)
+       end subroutine
+
        subroutine print_solver_settings(this)
          implicit none
          type(solver_settings),intent(in) :: this
@@ -88,6 +115,17 @@
          call display_short(this,6)
        end subroutine
 
+       subroutine export_primitives_solver_settings(this,un)
+         implicit none
+         type(solver_settings),intent(in) :: this
+         integer,intent(in) :: un
+         write(un,*) 'solve_method    = ';write(un,*) this%solve_method
+         write(un,*) 'initialize      = ';write(un,*) this%initialize
+         write(un,*) 'solve           = ';write(un,*) this%solve
+         write(un,*) 'restart         = ';write(un,*) this%restart
+         write(un,*) 'prescribed_BCs  = ';write(un,*) this%prescribed_BCs
+       end subroutine
+
        subroutine export_solver_settings(this,un)
          implicit none
          type(solver_settings),intent(in) :: this
@@ -97,6 +135,17 @@
          write(un,*) 'solve           = ';write(un,*) this%solve
          write(un,*) 'restart         = ';write(un,*) this%restart
          write(un,*) 'prescribed_BCs  = ';write(un,*) this%prescribed_BCs
+       end subroutine
+
+       subroutine import_primitives_solver_settings(this,un)
+         implicit none
+         type(solver_settings),intent(inout) :: this
+         integer,intent(in) :: un
+         read(un,*); read(un,*) this%solve_method
+         read(un,*); read(un,*) this%initialize
+         read(un,*); read(un,*) this%solve
+         read(un,*); read(un,*) this%restart
+         read(un,*); read(un,*) this%prescribed_BCs
        end subroutine
 
        subroutine import_solver_settings(this,un)
@@ -111,13 +160,23 @@
          read(un,*); read(un,*) this%prescribed_BCs
        end subroutine
 
-       subroutine display_wrap_solver_settings(this,dir,name)
+       subroutine export_restart_solver_settings(this,dir)
          implicit none
          type(solver_settings),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
+         character(len=*),intent(in) :: dir
          integer :: un
-         un = new_and_open(dir,name)
-         call display(this,un)
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_restart_solver_settings(this,dir)
+         implicit none
+         type(solver_settings),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
          close(un)
        end subroutine
 
@@ -139,6 +198,20 @@
          un = open_to_read(dir,name)
          call import(this,un)
          close(un)
+       end subroutine
+
+       subroutine make_restart_dir_solver_settings(this,dir)
+         implicit none
+         type(solver_settings),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+       end subroutine
+
+       subroutine suppress_warnings_solver_settings(this)
+         implicit none
+         type(solver_settings),intent(in) :: this
+         if (.false.) call print(this)
        end subroutine
 
        end module

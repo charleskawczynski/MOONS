@@ -6,7 +6,7 @@
         use grid_mod
         use grid_extend_mod
         use array_mod
-        use data_location_mod
+        use data_location_extend_mod
         use current_precision_mod
         use face_edge_corner_indexing_mod
         use constants_mod

@@ -7,6 +7,8 @@
        use preconditioner_interfaces_mod
        use TF_mod
        use VF_mod
+       use datatype_conversion_mod
+       use dir_manip_mod
        use iter_solver_params_mod
        use matrix_free_params_mod
        use norms_mod
@@ -18,19 +20,33 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_PCG_solver_VF;    end interface
-       interface delete;       module procedure delete_PCG_solver_VF;       end interface
-       interface display;      module procedure display_PCG_solver_VF;      end interface
-       interface display_short;module procedure display_short_PCG_solver_VF;end interface
-       interface display;      module procedure display_wrap_PCG_solver_VF; end interface
-       interface print;        module procedure print_PCG_solver_VF;        end interface
-       interface print_short;  module procedure print_short_PCG_solver_VF;  end interface
-       interface export;       module procedure export_PCG_solver_VF;       end interface
-       interface import;       module procedure import_PCG_solver_VF;       end interface
-       interface export;       module procedure export_wrap_PCG_solver_VF;  end interface
-       interface import;       module procedure import_wrap_PCG_solver_VF;  end interface
-       interface export;       module procedure export_DN_PCG_solver_VF;    end interface
-       interface import;       module procedure import_DN_PCG_solver_VF;    end interface
+       public :: export_primitives,import_primitives
+
+       public :: export_restart,import_restart
+
+       public :: make_restart_dir
+
+       public :: suppress_warnings
+
+       interface init;             module procedure init_copy_PCG_solver_VF;        end interface
+       interface delete;           module procedure delete_PCG_solver_VF;           end interface
+       interface display;          module procedure display_PCG_solver_VF;          end interface
+       interface display_short;    module procedure display_short_PCG_solver_VF;    end interface
+       interface display;          module procedure display_wrap_PCG_solver_VF;     end interface
+       interface print;            module procedure print_PCG_solver_VF;            end interface
+       interface print_short;      module procedure print_short_PCG_solver_VF;      end interface
+       interface export;           module procedure export_PCG_solver_VF;           end interface
+       interface export_primitives;module procedure export_primitives_PCG_solver_VF;end interface
+       interface export_restart;   module procedure export_restart_PCG_solver_VF;   end interface
+       interface import;           module procedure import_PCG_solver_VF;           end interface
+       interface import_restart;   module procedure import_restart_PCG_solver_VF;   end interface
+       interface import_primitives;module procedure import_primitives_PCG_solver_VF;end interface
+       interface export;           module procedure export_wrap_PCG_solver_VF;      end interface
+       interface import;           module procedure import_wrap_PCG_solver_VF;      end interface
+       interface make_restart_dir; module procedure make_restart_dir_PCG_solver_VF; end interface
+       interface suppress_warnings;module procedure suppress_warnings_PCG_solver_VF;end interface
+       interface export;           module procedure export_DN_PCG_solver_VF;        end interface
+       interface import;           module procedure import_DN_PCG_solver_VF;        end interface
 
        type PCG_solver_VF
          integer :: un = 0
@@ -155,6 +171,16 @@
          call display(this%name,un)
        end subroutine
 
+       subroutine display_wrap_PCG_solver_VF(this,dir,name)
+         implicit none
+         type(PCG_solver_VF),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call display(this,un)
+         close(un)
+       end subroutine
+
        subroutine print_PCG_solver_VF(this)
          implicit none
          type(PCG_solver_VF),intent(in) :: this
@@ -165,6 +191,14 @@
          implicit none
          type(PCG_solver_VF),intent(in) :: this
          call display_short(this,6)
+       end subroutine
+
+       subroutine export_primitives_PCG_solver_VF(this,un)
+         implicit none
+         type(PCG_solver_VF),intent(in) :: this
+         integer,intent(in) :: un
+         write(un,*) 'un                 = ';write(un,*) this%un
+         write(un,*) 'un_convergence     = ';write(un,*) this%un_convergence
        end subroutine
 
        subroutine export_PCG_solver_VF(this,un)
@@ -188,6 +222,14 @@
          call export(this%ISP,un)
          call export(this%dir,un)
          call export(this%name,un)
+       end subroutine
+
+       subroutine import_primitives_PCG_solver_VF(this,un)
+         implicit none
+         type(PCG_solver_VF),intent(inout) :: this
+         integer,intent(in) :: un
+         read(un,*); read(un,*) this%un
+         read(un,*); read(un,*) this%un_convergence
        end subroutine
 
        subroutine import_PCG_solver_VF(this,un)
@@ -214,14 +256,50 @@
          call import(this%name,un)
        end subroutine
 
-       subroutine display_wrap_PCG_solver_VF(this,dir,name)
+       subroutine export_restart_PCG_solver_VF(this,dir)
          implicit none
          type(PCG_solver_VF),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
+         character(len=*),intent(in) :: dir
          integer :: un
-         un = new_and_open(dir,name)
-         call display(this,un)
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
          close(un)
+         call export_restart(this%MFP,dir//fortran_PS//'MFP')
+         call export_restart(this%tempk,dir//fortran_PS//'tempk')
+         call export_restart(this%k,dir//fortran_PS//'k')
+         call export_restart(this%r,dir//fortran_PS//'r')
+         call export_restart(this%p,dir//fortran_PS//'p')
+         call export_restart(this%tempx,dir//fortran_PS//'tempx')
+         call export_restart(this%Ax,dir//fortran_PS//'Ax')
+         call export_restart(this%x_BC,dir//fortran_PS//'x_BC')
+         call export_restart(this%vol,dir//fortran_PS//'vol')
+         call export_restart(this%z,dir//fortran_PS//'z')
+         call export_restart(this%Minv,dir//fortran_PS//'Minv')
+         call export_restart(this%norm,dir//fortran_PS//'norm')
+         call export_restart(this%ISP,dir//fortran_PS//'ISP')
+       end subroutine
+
+       subroutine import_restart_PCG_solver_VF(this,dir)
+         implicit none
+         type(PCG_solver_VF),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
+         call import_restart(this%MFP,dir//fortran_PS//'MFP')
+         call import_restart(this%tempk,dir//fortran_PS//'tempk')
+         call import_restart(this%k,dir//fortran_PS//'k')
+         call import_restart(this%r,dir//fortran_PS//'r')
+         call import_restart(this%p,dir//fortran_PS//'p')
+         call import_restart(this%tempx,dir//fortran_PS//'tempx')
+         call import_restart(this%Ax,dir//fortran_PS//'Ax')
+         call import_restart(this%x_BC,dir//fortran_PS//'x_BC')
+         call import_restart(this%vol,dir//fortran_PS//'vol')
+         call import_restart(this%z,dir//fortran_PS//'z')
+         call import_restart(this%Minv,dir//fortran_PS//'Minv')
+         call import_restart(this%norm,dir//fortran_PS//'norm')
+         call import_restart(this%ISP,dir//fortran_PS//'ISP')
        end subroutine
 
        subroutine export_wrap_PCG_solver_VF(this,dir,name)
@@ -262,6 +340,33 @@
          call delete(dir)
          call delete(name)
          close(un)
+       end subroutine
+
+       subroutine make_restart_dir_PCG_solver_VF(this,dir)
+         implicit none
+         type(PCG_solver_VF),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_restart_dir(this%MFP,dir//fortran_PS//'MFP')
+         call make_restart_dir(this%tempk,dir//fortran_PS//'tempk')
+         call make_restart_dir(this%k,dir//fortran_PS//'k')
+         call make_restart_dir(this%r,dir//fortran_PS//'r')
+         call make_restart_dir(this%p,dir//fortran_PS//'p')
+         call make_restart_dir(this%tempx,dir//fortran_PS//'tempx')
+         call make_restart_dir(this%Ax,dir//fortran_PS//'Ax')
+         call make_restart_dir(this%x_BC,dir//fortran_PS//'x_BC')
+         call make_restart_dir(this%vol,dir//fortran_PS//'vol')
+         call make_restart_dir(this%z,dir//fortran_PS//'z')
+         call make_restart_dir(this%Minv,dir//fortran_PS//'Minv')
+         call make_restart_dir(this%norm,dir//fortran_PS//'norm')
+         call make_restart_dir(this%ISP,dir//fortran_PS//'ISP')
+       end subroutine
+
+       subroutine suppress_warnings_PCG_solver_VF(this)
+         implicit none
+         type(PCG_solver_VF),intent(in) :: this
+         if (.false.) call print(this)
        end subroutine
 
        end module

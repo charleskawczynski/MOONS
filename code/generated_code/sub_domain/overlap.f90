@@ -3,6 +3,9 @@
        ! ***************************************************
        module overlap_mod
        use IO_tools_mod
+       use datatype_conversion_mod
+       use dir_manip_mod
+       use string_mod
        implicit none
 
        private
@@ -10,17 +13,31 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_overlap;    end interface
-       interface delete;       module procedure delete_overlap;       end interface
-       interface display;      module procedure display_overlap;      end interface
-       interface display_short;module procedure display_short_overlap;end interface
-       interface display;      module procedure display_wrap_overlap; end interface
-       interface print;        module procedure print_overlap;        end interface
-       interface print_short;  module procedure print_short_overlap;  end interface
-       interface export;       module procedure export_overlap;       end interface
-       interface import;       module procedure import_overlap;       end interface
-       interface export;       module procedure export_wrap_overlap;  end interface
-       interface import;       module procedure import_wrap_overlap;  end interface
+       public :: export_primitives,import_primitives
+
+       public :: export_restart,import_restart
+
+       public :: make_restart_dir
+
+       public :: suppress_warnings
+
+       interface init;             module procedure init_copy_overlap;        end interface
+       interface delete;           module procedure delete_overlap;           end interface
+       interface display;          module procedure display_overlap;          end interface
+       interface display_short;    module procedure display_short_overlap;    end interface
+       interface display;          module procedure display_wrap_overlap;     end interface
+       interface print;            module procedure print_overlap;            end interface
+       interface print_short;      module procedure print_short_overlap;      end interface
+       interface export;           module procedure export_overlap;           end interface
+       interface export_primitives;module procedure export_primitives_overlap;end interface
+       interface export_restart;   module procedure export_restart_overlap;   end interface
+       interface import;           module procedure import_overlap;           end interface
+       interface import_restart;   module procedure import_restart_overlap;   end interface
+       interface import_primitives;module procedure import_primitives_overlap;end interface
+       interface export;           module procedure export_wrap_overlap;      end interface
+       interface import;           module procedure import_wrap_overlap;      end interface
+       interface make_restart_dir; module procedure make_restart_dir_overlap; end interface
+       interface suppress_warnings;module procedure suppress_warnings_overlap;end interface
 
        type overlap
          integer,dimension(2) :: i1 = 0
@@ -71,6 +88,16 @@
          write(un,*) 'success = ',this%success
        end subroutine
 
+       subroutine display_wrap_overlap(this,dir,name)
+         implicit none
+         type(overlap),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call display(this,un)
+         close(un)
+       end subroutine
+
        subroutine print_overlap(this)
          implicit none
          type(overlap),intent(in) :: this
@@ -83,6 +110,16 @@
          call display_short(this,6)
        end subroutine
 
+       subroutine export_primitives_overlap(this,un)
+         implicit none
+         type(overlap),intent(in) :: this
+         integer,intent(in) :: un
+         write(un,*) 'i1       = ';write(un,*) this%i1
+         write(un,*) 'i2       = ';write(un,*) this%i2
+         write(un,*) 'iR       = ';write(un,*) this%iR
+         write(un,*) 'success  = ';write(un,*) this%success
+       end subroutine
+
        subroutine export_overlap(this,un)
          implicit none
          type(overlap),intent(in) :: this
@@ -91,6 +128,16 @@
          write(un,*) 'i2       = ';write(un,*) this%i2
          write(un,*) 'iR       = ';write(un,*) this%iR
          write(un,*) 'success  = ';write(un,*) this%success
+       end subroutine
+
+       subroutine import_primitives_overlap(this,un)
+         implicit none
+         type(overlap),intent(inout) :: this
+         integer,intent(in) :: un
+         read(un,*); read(un,*) this%i1
+         read(un,*); read(un,*) this%i2
+         read(un,*); read(un,*) this%iR
+         read(un,*); read(un,*) this%success
        end subroutine
 
        subroutine import_overlap(this,un)
@@ -104,13 +151,23 @@
          read(un,*); read(un,*) this%success
        end subroutine
 
-       subroutine display_wrap_overlap(this,dir,name)
+       subroutine export_restart_overlap(this,dir)
          implicit none
          type(overlap),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
+         character(len=*),intent(in) :: dir
          integer :: un
-         un = new_and_open(dir,name)
-         call display(this,un)
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_restart_overlap(this,dir)
+         implicit none
+         type(overlap),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
          close(un)
        end subroutine
 
@@ -132,6 +189,20 @@
          un = open_to_read(dir,name)
          call import(this,un)
          close(un)
+       end subroutine
+
+       subroutine make_restart_dir_overlap(this,dir)
+         implicit none
+         type(overlap),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+       end subroutine
+
+       subroutine suppress_warnings_overlap(this)
+         implicit none
+         type(overlap),intent(in) :: this
+         if (.false.) call print(this)
        end subroutine
 
        end module

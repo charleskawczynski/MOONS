@@ -3,6 +3,9 @@
        ! ***************************************************
        module flow_control_logicals_mod
        use IO_tools_mod
+       use datatype_conversion_mod
+       use dir_manip_mod
+       use string_mod
        implicit none
 
        private
@@ -10,17 +13,31 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_flow_control_logicals;    end interface
-       interface delete;       module procedure delete_flow_control_logicals;       end interface
-       interface display;      module procedure display_flow_control_logicals;      end interface
-       interface display_short;module procedure display_short_flow_control_logicals;end interface
-       interface display;      module procedure display_wrap_flow_control_logicals; end interface
-       interface print;        module procedure print_flow_control_logicals;        end interface
-       interface print_short;  module procedure print_short_flow_control_logicals;  end interface
-       interface export;       module procedure export_flow_control_logicals;       end interface
-       interface import;       module procedure import_flow_control_logicals;       end interface
-       interface export;       module procedure export_wrap_flow_control_logicals;  end interface
-       interface import;       module procedure import_wrap_flow_control_logicals;  end interface
+       public :: export_primitives,import_primitives
+
+       public :: export_restart,import_restart
+
+       public :: make_restart_dir
+
+       public :: suppress_warnings
+
+       interface init;             module procedure init_copy_flow_control_logicals;        end interface
+       interface delete;           module procedure delete_flow_control_logicals;           end interface
+       interface display;          module procedure display_flow_control_logicals;          end interface
+       interface display_short;    module procedure display_short_flow_control_logicals;    end interface
+       interface display;          module procedure display_wrap_flow_control_logicals;     end interface
+       interface print;            module procedure print_flow_control_logicals;            end interface
+       interface print_short;      module procedure print_short_flow_control_logicals;      end interface
+       interface export;           module procedure export_flow_control_logicals;           end interface
+       interface export_primitives;module procedure export_primitives_flow_control_logicals;end interface
+       interface export_restart;   module procedure export_restart_flow_control_logicals;   end interface
+       interface import;           module procedure import_flow_control_logicals;           end interface
+       interface import_restart;   module procedure import_restart_flow_control_logicals;   end interface
+       interface import_primitives;module procedure import_primitives_flow_control_logicals;end interface
+       interface export;           module procedure export_wrap_flow_control_logicals;      end interface
+       interface import;           module procedure import_wrap_flow_control_logicals;      end interface
+       interface make_restart_dir; module procedure make_restart_dir_flow_control_logicals; end interface
+       interface suppress_warnings;module procedure suppress_warnings_flow_control_logicals;end interface
 
        type flow_control_logicals
          logical :: post_process = .false.
@@ -104,25 +121,42 @@
          type(flow_control_logicals),intent(in) :: this
          integer,intent(in) :: un
          write(un,*) 'post_process                       = ',this%post_process
-         write(un,*) 'skip_solver_loop                   = ',this%skip_solver_loop
-         write(un,*) 'stop_before_solve                  = ',this%stop_before_solve
-         write(un,*) 'stop_after_mesh_export             = ',this%stop_after_mesh_export
+         write(un,*) 'skip_solver_loop                   = ',&
+         this%skip_solver_loop
+         write(un,*) 'stop_before_solve                  = ',&
+         this%stop_before_solve
+         write(un,*) 'stop_after_mesh_export             = ',&
+         this%stop_after_mesh_export
          write(un,*) 'Poisson_test                       = ',this%Poisson_test
-         write(un,*) 'Taylor_Green_Vortex_test           = ',this%Taylor_Green_Vortex_test
-         write(un,*) 'temporal_convergence_test          = ',this%temporal_convergence_test
-         write(un,*) 'export_numerical_flow_rate         = ',this%export_numerical_flow_rate
-         write(un,*) 'export_Shercliff_Hunt_analytic_sol = ',this%export_Shercliff_Hunt_analytic_sol
-         write(un,*) 'export_vorticity_streamfunction    = ',this%export_vorticity_streamfunction
-         write(un,*) 'compute_export_E_K_Budget          = ',this%compute_export_E_K_Budget
-         write(un,*) 'compute_export_E_M_budget          = ',this%compute_export_E_M_budget
-         write(un,*) 'operator_commute_test              = ',this%operator_commute_test
-         write(un,*) 'export_final_tec                   = ',this%export_final_tec
-         write(un,*) 'export_final_restart               = ',this%export_final_restart
-         write(un,*) 'restart_meshes                     = ',this%restart_meshes
+         write(un,*) 'Taylor_Green_Vortex_test           = ',&
+         this%Taylor_Green_Vortex_test
+         write(un,*) 'temporal_convergence_test          = ',&
+         this%temporal_convergence_test
+         write(un,*) 'export_numerical_flow_rate         = ',&
+         this%export_numerical_flow_rate
+         write(un,*) 'export_Shercliff_Hunt_analytic_sol = ',&
+         this%export_Shercliff_Hunt_analytic_sol
+         write(un,*) 'export_vorticity_streamfunction    = ',&
+         this%export_vorticity_streamfunction
+         write(un,*) 'compute_export_E_K_Budget          = ',&
+         this%compute_export_E_K_Budget
+         write(un,*) 'compute_export_E_M_budget          = ',&
+         this%compute_export_E_M_budget
+         write(un,*) 'operator_commute_test              = ',&
+         this%operator_commute_test
+         write(un,*) 'export_final_tec                   = ',&
+         this%export_final_tec
+         write(un,*) 'export_final_restart               = ',&
+         this%export_final_restart
+         write(un,*) 'restart_meshes                     = ',&
+         this%restart_meshes
          write(un,*) 'export_heavy                       = ',this%export_heavy
-         write(un,*) 'print_every_MHD_step               = ',this%print_every_MHD_step
-         write(un,*) 'compute_surface_power              = ',this%compute_surface_power
-         write(un,*) 'print_mesh_before_solve            = ',this%print_mesh_before_solve
+         write(un,*) 'print_every_MHD_step               = ',&
+         this%print_every_MHD_step
+         write(un,*) 'compute_surface_power              = ',&
+         this%compute_surface_power
+         write(un,*) 'print_mesh_before_solve            = ',&
+         this%print_mesh_before_solve
        end subroutine
 
        subroutine display_short_flow_control_logicals(this,un)
@@ -130,25 +164,52 @@
          type(flow_control_logicals),intent(in) :: this
          integer,intent(in) :: un
          write(un,*) 'post_process                       = ',this%post_process
-         write(un,*) 'skip_solver_loop                   = ',this%skip_solver_loop
-         write(un,*) 'stop_before_solve                  = ',this%stop_before_solve
-         write(un,*) 'stop_after_mesh_export             = ',this%stop_after_mesh_export
+         write(un,*) 'skip_solver_loop                   = ',&
+         this%skip_solver_loop
+         write(un,*) 'stop_before_solve                  = ',&
+         this%stop_before_solve
+         write(un,*) 'stop_after_mesh_export             = ',&
+         this%stop_after_mesh_export
          write(un,*) 'Poisson_test                       = ',this%Poisson_test
-         write(un,*) 'Taylor_Green_Vortex_test           = ',this%Taylor_Green_Vortex_test
-         write(un,*) 'temporal_convergence_test          = ',this%temporal_convergence_test
-         write(un,*) 'export_numerical_flow_rate         = ',this%export_numerical_flow_rate
-         write(un,*) 'export_Shercliff_Hunt_analytic_sol = ',this%export_Shercliff_Hunt_analytic_sol
-         write(un,*) 'export_vorticity_streamfunction    = ',this%export_vorticity_streamfunction
-         write(un,*) 'compute_export_E_K_Budget          = ',this%compute_export_E_K_Budget
-         write(un,*) 'compute_export_E_M_budget          = ',this%compute_export_E_M_budget
-         write(un,*) 'operator_commute_test              = ',this%operator_commute_test
-         write(un,*) 'export_final_tec                   = ',this%export_final_tec
-         write(un,*) 'export_final_restart               = ',this%export_final_restart
-         write(un,*) 'restart_meshes                     = ',this%restart_meshes
+         write(un,*) 'Taylor_Green_Vortex_test           = ',&
+         this%Taylor_Green_Vortex_test
+         write(un,*) 'temporal_convergence_test          = ',&
+         this%temporal_convergence_test
+         write(un,*) 'export_numerical_flow_rate         = ',&
+         this%export_numerical_flow_rate
+         write(un,*) 'export_Shercliff_Hunt_analytic_sol = ',&
+         this%export_Shercliff_Hunt_analytic_sol
+         write(un,*) 'export_vorticity_streamfunction    = ',&
+         this%export_vorticity_streamfunction
+         write(un,*) 'compute_export_E_K_Budget          = ',&
+         this%compute_export_E_K_Budget
+         write(un,*) 'compute_export_E_M_budget          = ',&
+         this%compute_export_E_M_budget
+         write(un,*) 'operator_commute_test              = ',&
+         this%operator_commute_test
+         write(un,*) 'export_final_tec                   = ',&
+         this%export_final_tec
+         write(un,*) 'export_final_restart               = ',&
+         this%export_final_restart
+         write(un,*) 'restart_meshes                     = ',&
+         this%restart_meshes
          write(un,*) 'export_heavy                       = ',this%export_heavy
-         write(un,*) 'print_every_MHD_step               = ',this%print_every_MHD_step
-         write(un,*) 'compute_surface_power              = ',this%compute_surface_power
-         write(un,*) 'print_mesh_before_solve            = ',this%print_mesh_before_solve
+         write(un,*) 'print_every_MHD_step               = ',&
+         this%print_every_MHD_step
+         write(un,*) 'compute_surface_power              = ',&
+         this%compute_surface_power
+         write(un,*) 'print_mesh_before_solve            = ',&
+         this%print_mesh_before_solve
+       end subroutine
+
+       subroutine display_wrap_flow_control_logicals(this,dir,name)
+         implicit none
+         type(flow_control_logicals),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call display(this,un)
+         close(un)
        end subroutine
 
        subroutine print_flow_control_logicals(this)
@@ -161,6 +222,32 @@
          implicit none
          type(flow_control_logicals),intent(in) :: this
          call display_short(this,6)
+       end subroutine
+
+       subroutine export_primitives_flow_control_logicals(this,un)
+         implicit none
+         type(flow_control_logicals),intent(in) :: this
+         integer,intent(in) :: un
+         write(un,*) 'post_process                        = ';write(un,*) this%post_process
+         write(un,*) 'skip_solver_loop                    = ';write(un,*) this%skip_solver_loop
+         write(un,*) 'stop_before_solve                   = ';write(un,*) this%stop_before_solve
+         write(un,*) 'stop_after_mesh_export              = ';write(un,*) this%stop_after_mesh_export
+         write(un,*) 'Poisson_test                        = ';write(un,*) this%Poisson_test
+         write(un,*) 'Taylor_Green_Vortex_test            = ';write(un,*) this%Taylor_Green_Vortex_test
+         write(un,*) 'temporal_convergence_test           = ';write(un,*) this%temporal_convergence_test
+         write(un,*) 'export_numerical_flow_rate          = ';write(un,*) this%export_numerical_flow_rate
+         write(un,*) 'export_Shercliff_Hunt_analytic_sol  = ';write(un,*) this%export_Shercliff_Hunt_analytic_sol
+         write(un,*) 'export_vorticity_streamfunction     = ';write(un,*) this%export_vorticity_streamfunction
+         write(un,*) 'compute_export_E_K_Budget           = ';write(un,*) this%compute_export_E_K_Budget
+         write(un,*) 'compute_export_E_M_budget           = ';write(un,*) this%compute_export_E_M_budget
+         write(un,*) 'operator_commute_test               = ';write(un,*) this%operator_commute_test
+         write(un,*) 'export_final_tec                    = ';write(un,*) this%export_final_tec
+         write(un,*) 'export_final_restart                = ';write(un,*) this%export_final_restart
+         write(un,*) 'restart_meshes                      = ';write(un,*) this%restart_meshes
+         write(un,*) 'export_heavy                        = ';write(un,*) this%export_heavy
+         write(un,*) 'print_every_MHD_step                = ';write(un,*) this%print_every_MHD_step
+         write(un,*) 'compute_surface_power               = ';write(un,*) this%compute_surface_power
+         write(un,*) 'print_mesh_before_solve             = ';write(un,*) this%print_mesh_before_solve
        end subroutine
 
        subroutine export_flow_control_logicals(this,un)
@@ -187,6 +274,32 @@
          write(un,*) 'print_every_MHD_step                = ';write(un,*) this%print_every_MHD_step
          write(un,*) 'compute_surface_power               = ';write(un,*) this%compute_surface_power
          write(un,*) 'print_mesh_before_solve             = ';write(un,*) this%print_mesh_before_solve
+       end subroutine
+
+       subroutine import_primitives_flow_control_logicals(this,un)
+         implicit none
+         type(flow_control_logicals),intent(inout) :: this
+         integer,intent(in) :: un
+         read(un,*); read(un,*) this%post_process
+         read(un,*); read(un,*) this%skip_solver_loop
+         read(un,*); read(un,*) this%stop_before_solve
+         read(un,*); read(un,*) this%stop_after_mesh_export
+         read(un,*); read(un,*) this%Poisson_test
+         read(un,*); read(un,*) this%Taylor_Green_Vortex_test
+         read(un,*); read(un,*) this%temporal_convergence_test
+         read(un,*); read(un,*) this%export_numerical_flow_rate
+         read(un,*); read(un,*) this%export_Shercliff_Hunt_analytic_sol
+         read(un,*); read(un,*) this%export_vorticity_streamfunction
+         read(un,*); read(un,*) this%compute_export_E_K_Budget
+         read(un,*); read(un,*) this%compute_export_E_M_budget
+         read(un,*); read(un,*) this%operator_commute_test
+         read(un,*); read(un,*) this%export_final_tec
+         read(un,*); read(un,*) this%export_final_restart
+         read(un,*); read(un,*) this%restart_meshes
+         read(un,*); read(un,*) this%export_heavy
+         read(un,*); read(un,*) this%print_every_MHD_step
+         read(un,*); read(un,*) this%compute_surface_power
+         read(un,*); read(un,*) this%print_mesh_before_solve
        end subroutine
 
        subroutine import_flow_control_logicals(this,un)
@@ -216,13 +329,23 @@
          read(un,*); read(un,*) this%print_mesh_before_solve
        end subroutine
 
-       subroutine display_wrap_flow_control_logicals(this,dir,name)
+       subroutine export_restart_flow_control_logicals(this,dir)
          implicit none
          type(flow_control_logicals),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
+         character(len=*),intent(in) :: dir
          integer :: un
-         un = new_and_open(dir,name)
-         call display(this,un)
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_restart_flow_control_logicals(this,dir)
+         implicit none
+         type(flow_control_logicals),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
          close(un)
        end subroutine
 
@@ -244,6 +367,20 @@
          un = open_to_read(dir,name)
          call import(this,un)
          close(un)
+       end subroutine
+
+       subroutine make_restart_dir_flow_control_logicals(this,dir)
+         implicit none
+         type(flow_control_logicals),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+       end subroutine
+
+       subroutine suppress_warnings_flow_control_logicals(this)
+         implicit none
+         type(flow_control_logicals),intent(in) :: this
+         if (.false.) call print(this)
        end subroutine
 
        end module

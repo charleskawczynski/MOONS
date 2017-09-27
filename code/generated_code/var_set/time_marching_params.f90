@@ -5,6 +5,8 @@
        use current_precision_mod
        use IO_tools_mod
        use RK_params_mod
+       use datatype_conversion_mod
+       use dir_manip_mod
        use string_mod
        implicit none
 
@@ -13,19 +15,33 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_time_marching_params;    end interface
-       interface delete;       module procedure delete_time_marching_params;       end interface
-       interface display;      module procedure display_time_marching_params;      end interface
-       interface display_short;module procedure display_short_time_marching_params;end interface
-       interface display;      module procedure display_wrap_time_marching_params; end interface
-       interface print;        module procedure print_time_marching_params;        end interface
-       interface print_short;  module procedure print_short_time_marching_params;  end interface
-       interface export;       module procedure export_time_marching_params;       end interface
-       interface import;       module procedure import_time_marching_params;       end interface
-       interface export;       module procedure export_wrap_time_marching_params;  end interface
-       interface import;       module procedure import_wrap_time_marching_params;  end interface
-       interface export;       module procedure export_DN_time_marching_params;    end interface
-       interface import;       module procedure import_DN_time_marching_params;    end interface
+       public :: export_primitives,import_primitives
+
+       public :: export_restart,import_restart
+
+       public :: make_restart_dir
+
+       public :: suppress_warnings
+
+       interface init;             module procedure init_copy_time_marching_params;        end interface
+       interface delete;           module procedure delete_time_marching_params;           end interface
+       interface display;          module procedure display_time_marching_params;          end interface
+       interface display_short;    module procedure display_short_time_marching_params;    end interface
+       interface display;          module procedure display_wrap_time_marching_params;     end interface
+       interface print;            module procedure print_time_marching_params;            end interface
+       interface print_short;      module procedure print_short_time_marching_params;      end interface
+       interface export;           module procedure export_time_marching_params;           end interface
+       interface export_primitives;module procedure export_primitives_time_marching_params;end interface
+       interface export_restart;   module procedure export_restart_time_marching_params;   end interface
+       interface import;           module procedure import_time_marching_params;           end interface
+       interface import_restart;   module procedure import_restart_time_marching_params;   end interface
+       interface import_primitives;module procedure import_primitives_time_marching_params;end interface
+       interface export;           module procedure export_wrap_time_marching_params;      end interface
+       interface import;           module procedure import_wrap_time_marching_params;      end interface
+       interface make_restart_dir; module procedure make_restart_dir_time_marching_params; end interface
+       interface suppress_warnings;module procedure suppress_warnings_time_marching_params;end interface
+       interface export;           module procedure export_DN_time_marching_params;        end interface
+       interface import;           module procedure import_DN_time_marching_params;        end interface
 
        type time_marching_params
          type(RK_Params) :: RKP
@@ -116,6 +132,16 @@
          call display(this%name,un)
        end subroutine
 
+       subroutine display_wrap_time_marching_params(this,dir,name)
+         implicit none
+         type(time_marching_params),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call display(this,un)
+         close(un)
+       end subroutine
+
        subroutine print_time_marching_params(this)
          implicit none
          type(time_marching_params),intent(in) :: this
@@ -126,6 +152,21 @@
          implicit none
          type(time_marching_params),intent(in) :: this
          call display_short(this,6)
+       end subroutine
+
+       subroutine export_primitives_time_marching_params(this,un)
+         implicit none
+         type(time_marching_params),intent(in) :: this
+         integer,intent(in) :: un
+         write(un,*) 'multistep_iter  = ';write(un,*) this%multistep_iter
+         write(un,*) 'un              = ';write(un,*) this%un
+         write(un,*) 'n_step          = ';write(un,*) this%n_step
+         write(un,*) 'n_step_stop     = ';write(un,*) this%n_step_stop
+         write(un,*) 'n_step_start    = ';write(un,*) this%n_step_start
+         write(un,*) 't               = ';write(un,*) this%t
+         write(un,*) 'C_max           = ';write(un,*) this%C_max
+         write(un,*) 't_final         = ';write(un,*) this%t_final
+         write(un,*) 'dt              = ';write(un,*) this%dt
        end subroutine
 
        subroutine export_time_marching_params(this,un)
@@ -144,6 +185,21 @@
          write(un,*) 'dt              = ';write(un,*) this%dt
          call export(this%dir,un)
          call export(this%name,un)
+       end subroutine
+
+       subroutine import_primitives_time_marching_params(this,un)
+         implicit none
+         type(time_marching_params),intent(inout) :: this
+         integer,intent(in) :: un
+         read(un,*); read(un,*) this%multistep_iter
+         read(un,*); read(un,*) this%un
+         read(un,*); read(un,*) this%n_step
+         read(un,*); read(un,*) this%n_step_stop
+         read(un,*); read(un,*) this%n_step_start
+         read(un,*); read(un,*) this%t
+         read(un,*); read(un,*) this%C_max
+         read(un,*); read(un,*) this%t_final
+         read(un,*); read(un,*) this%dt
        end subroutine
 
        subroutine import_time_marching_params(this,un)
@@ -165,14 +221,26 @@
          call import(this%name,un)
        end subroutine
 
-       subroutine display_wrap_time_marching_params(this,dir,name)
+       subroutine export_restart_time_marching_params(this,dir)
          implicit none
          type(time_marching_params),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
+         character(len=*),intent(in) :: dir
          integer :: un
-         un = new_and_open(dir,name)
-         call display(this,un)
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
          close(un)
+         call export_restart(this%RKP,dir//fortran_PS//'RKP')
+       end subroutine
+
+       subroutine import_restart_time_marching_params(this,dir)
+         implicit none
+         type(time_marching_params),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
+         call import_restart(this%RKP,dir//fortran_PS//'RKP')
        end subroutine
 
        subroutine export_wrap_time_marching_params(this,dir,name)
@@ -213,6 +281,21 @@
          call delete(dir)
          call delete(name)
          close(un)
+       end subroutine
+
+       subroutine make_restart_dir_time_marching_params(this,dir)
+         implicit none
+         type(time_marching_params),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_restart_dir(this%RKP,dir//fortran_PS//'RKP')
+       end subroutine
+
+       subroutine suppress_warnings_time_marching_params(this)
+         implicit none
+         type(time_marching_params),intent(in) :: this
+         if (.false.) call print(this)
        end subroutine
 
        end module

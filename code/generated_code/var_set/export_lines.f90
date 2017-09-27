@@ -3,7 +3,10 @@
        ! ***************************************************
        module export_lines_mod
        use IO_tools_mod
+       use datatype_conversion_mod
+       use dir_manip_mod
        use export_line_mod
+       use string_mod
        implicit none
 
        private
@@ -11,17 +14,31 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_export_lines;    end interface
-       interface delete;       module procedure delete_export_lines;       end interface
-       interface display;      module procedure display_export_lines;      end interface
-       interface display_short;module procedure display_short_export_lines;end interface
-       interface display;      module procedure display_wrap_export_lines; end interface
-       interface print;        module procedure print_export_lines;        end interface
-       interface print_short;  module procedure print_short_export_lines;  end interface
-       interface export;       module procedure export_export_lines;       end interface
-       interface import;       module procedure import_export_lines;       end interface
-       interface export;       module procedure export_wrap_export_lines;  end interface
-       interface import;       module procedure import_wrap_export_lines;  end interface
+       public :: export_primitives,import_primitives
+
+       public :: export_restart,import_restart
+
+       public :: make_restart_dir
+
+       public :: suppress_warnings
+
+       interface init;             module procedure init_copy_export_lines;        end interface
+       interface delete;           module procedure delete_export_lines;           end interface
+       interface display;          module procedure display_export_lines;          end interface
+       interface display_short;    module procedure display_short_export_lines;    end interface
+       interface display;          module procedure display_wrap_export_lines;     end interface
+       interface print;            module procedure print_export_lines;            end interface
+       interface print_short;      module procedure print_short_export_lines;      end interface
+       interface export;           module procedure export_export_lines;           end interface
+       interface export_primitives;module procedure export_primitives_export_lines;end interface
+       interface export_restart;   module procedure export_restart_export_lines;   end interface
+       interface import;           module procedure import_export_lines;           end interface
+       interface import_restart;   module procedure import_restart_export_lines;   end interface
+       interface import_primitives;module procedure import_primitives_export_lines;end interface
+       interface export;           module procedure export_wrap_export_lines;      end interface
+       interface import;           module procedure import_wrap_export_lines;      end interface
+       interface make_restart_dir; module procedure make_restart_dir_export_lines; end interface
+       interface suppress_warnings;module procedure suppress_warnings_export_lines;end interface
 
        type export_lines
          type(export_line),dimension(:),allocatable :: EL
@@ -94,6 +111,16 @@
          write(un,*) 'N  = ',this%N
        end subroutine
 
+       subroutine display_wrap_export_lines(this,dir,name)
+         implicit none
+         type(export_lines),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call display(this,un)
+         close(un)
+       end subroutine
+
        subroutine print_export_lines(this)
          implicit none
          type(export_lines),intent(in) :: this
@@ -104,6 +131,13 @@
          implicit none
          type(export_lines),intent(in) :: this
          call display_short(this,6)
+       end subroutine
+
+       subroutine export_primitives_export_lines(this,un)
+         implicit none
+         type(export_lines),intent(in) :: this
+         integer,intent(in) :: un
+         write(un,*) 'N   = ';write(un,*) this%N
        end subroutine
 
        subroutine export_export_lines(this,un)
@@ -122,6 +156,13 @@
          write(un,*) 'N   = ';write(un,*) this%N
        end subroutine
 
+       subroutine import_primitives_export_lines(this,un)
+         implicit none
+         type(export_lines),intent(inout) :: this
+         integer,intent(in) :: un
+         read(un,*); read(un,*) this%N
+       end subroutine
+
        subroutine import_export_lines(this,un)
          implicit none
          type(export_lines),intent(inout) :: this
@@ -138,14 +179,42 @@
          read(un,*); read(un,*) this%N
        end subroutine
 
-       subroutine display_wrap_export_lines(this,dir,name)
+       subroutine export_restart_export_lines(this,dir)
          implicit none
          type(export_lines),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
+         character(len=*),intent(in) :: dir
+         integer :: i_EL
+         integer :: s_EL
          integer :: un
-         un = new_and_open(dir,name)
-         call display(this,un)
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
          close(un)
+         if (allocated(this%EL)) then
+           s_EL = size(this%EL)
+           do i_EL=1,s_EL
+             call export_restart(this%EL(i_EL),&
+             dir//fortran_PS//'EL_'//int2str(i_EL))
+           enddo
+         endif
+       end subroutine
+
+       subroutine import_restart_export_lines(this,dir)
+         implicit none
+         type(export_lines),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_EL
+         integer :: s_EL
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
+         if (allocated(this%EL)) then
+           s_EL = size(this%EL)
+           do i_EL=1,s_EL
+             call import_restart(this%EL(i_EL),&
+             dir//fortran_PS//'EL_'//int2str(i_EL))
+           enddo
+         endif
        end subroutine
 
        subroutine export_wrap_export_lines(this,dir,name)
@@ -166,6 +235,29 @@
          un = open_to_read(dir,name)
          call import(this,un)
          close(un)
+       end subroutine
+
+       subroutine make_restart_dir_export_lines(this,dir)
+         implicit none
+         type(export_lines),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_EL
+         integer :: s_EL
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         if (allocated(this%EL)) then
+           s_EL = size(this%EL)
+           do i_EL=1,s_EL
+             call make_restart_dir(this%EL(i_EL),&
+             dir//fortran_PS//'EL_'//int2str(i_EL))
+           enddo
+         endif
+       end subroutine
+
+       subroutine suppress_warnings_export_lines(this)
+         implicit none
+         type(export_lines),intent(in) :: this
+         if (.false.) call print(this)
        end subroutine
 
        end module

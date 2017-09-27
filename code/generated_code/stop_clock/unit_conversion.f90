@@ -4,6 +4,9 @@
        module unit_conversion_mod
        use current_precision_mod
        use IO_tools_mod
+       use datatype_conversion_mod
+       use dir_manip_mod
+       use string_mod
        implicit none
 
        private
@@ -11,17 +14,31 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_unit_conversion;    end interface
-       interface delete;       module procedure delete_unit_conversion;       end interface
-       interface display;      module procedure display_unit_conversion;      end interface
-       interface display_short;module procedure display_short_unit_conversion;end interface
-       interface display;      module procedure display_wrap_unit_conversion; end interface
-       interface print;        module procedure print_unit_conversion;        end interface
-       interface print_short;  module procedure print_short_unit_conversion;  end interface
-       interface export;       module procedure export_unit_conversion;       end interface
-       interface import;       module procedure import_unit_conversion;       end interface
-       interface export;       module procedure export_wrap_unit_conversion;  end interface
-       interface import;       module procedure import_wrap_unit_conversion;  end interface
+       public :: export_primitives,import_primitives
+
+       public :: export_restart,import_restart
+
+       public :: make_restart_dir
+
+       public :: suppress_warnings
+
+       interface init;             module procedure init_copy_unit_conversion;        end interface
+       interface delete;           module procedure delete_unit_conversion;           end interface
+       interface display;          module procedure display_unit_conversion;          end interface
+       interface display_short;    module procedure display_short_unit_conversion;    end interface
+       interface display;          module procedure display_wrap_unit_conversion;     end interface
+       interface print;            module procedure print_unit_conversion;            end interface
+       interface print_short;      module procedure print_short_unit_conversion;      end interface
+       interface export;           module procedure export_unit_conversion;           end interface
+       interface export_primitives;module procedure export_primitives_unit_conversion;end interface
+       interface export_restart;   module procedure export_restart_unit_conversion;   end interface
+       interface import;           module procedure import_unit_conversion;           end interface
+       interface import_restart;   module procedure import_restart_unit_conversion;   end interface
+       interface import_primitives;module procedure import_primitives_unit_conversion;end interface
+       interface export;           module procedure export_wrap_unit_conversion;      end interface
+       interface import;           module procedure import_wrap_unit_conversion;      end interface
+       interface make_restart_dir; module procedure make_restart_dir_unit_conversion; end interface
+       interface suppress_warnings;module procedure suppress_warnings_unit_conversion;end interface
 
        type unit_conversion
          real(cp) :: days_per_year = 0.0_cp
@@ -102,6 +119,16 @@
          write(un,*) 'year_per_seconds   = ',this%year_per_seconds
        end subroutine
 
+       subroutine display_wrap_unit_conversion(this,dir,name)
+         implicit none
+         type(unit_conversion),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call display(this,un)
+         close(un)
+       end subroutine
+
        subroutine print_unit_conversion(this)
          implicit none
          type(unit_conversion),intent(in) :: this
@@ -112,6 +139,22 @@
          implicit none
          type(unit_conversion),intent(in) :: this
          call display_short(this,6)
+       end subroutine
+
+       subroutine export_primitives_unit_conversion(this,un)
+         implicit none
+         type(unit_conversion),intent(in) :: this
+         integer,intent(in) :: un
+         write(un,*) 'days_per_year       = ';write(un,*) this%days_per_year
+         write(un,*) 'seconds_per_second  = ';write(un,*) this%seconds_per_second
+         write(un,*) 'seconds_per_minute  = ';write(un,*) this%seconds_per_minute
+         write(un,*) 'seconds_per_hour    = ';write(un,*) this%seconds_per_hour
+         write(un,*) 'seconds_per_day     = ';write(un,*) this%seconds_per_day
+         write(un,*) 'seconds_per_year    = ';write(un,*) this%seconds_per_year
+         write(un,*) 'minute_per_seconds  = ';write(un,*) this%minute_per_seconds
+         write(un,*) 'hour_per_seconds    = ';write(un,*) this%hour_per_seconds
+         write(un,*) 'day_per_seconds     = ';write(un,*) this%day_per_seconds
+         write(un,*) 'year_per_seconds    = ';write(un,*) this%year_per_seconds
        end subroutine
 
        subroutine export_unit_conversion(this,un)
@@ -128,6 +171,22 @@
          write(un,*) 'hour_per_seconds    = ';write(un,*) this%hour_per_seconds
          write(un,*) 'day_per_seconds     = ';write(un,*) this%day_per_seconds
          write(un,*) 'year_per_seconds    = ';write(un,*) this%year_per_seconds
+       end subroutine
+
+       subroutine import_primitives_unit_conversion(this,un)
+         implicit none
+         type(unit_conversion),intent(inout) :: this
+         integer,intent(in) :: un
+         read(un,*); read(un,*) this%days_per_year
+         read(un,*); read(un,*) this%seconds_per_second
+         read(un,*); read(un,*) this%seconds_per_minute
+         read(un,*); read(un,*) this%seconds_per_hour
+         read(un,*); read(un,*) this%seconds_per_day
+         read(un,*); read(un,*) this%seconds_per_year
+         read(un,*); read(un,*) this%minute_per_seconds
+         read(un,*); read(un,*) this%hour_per_seconds
+         read(un,*); read(un,*) this%day_per_seconds
+         read(un,*); read(un,*) this%year_per_seconds
        end subroutine
 
        subroutine import_unit_conversion(this,un)
@@ -147,13 +206,23 @@
          read(un,*); read(un,*) this%year_per_seconds
        end subroutine
 
-       subroutine display_wrap_unit_conversion(this,dir,name)
+       subroutine export_restart_unit_conversion(this,dir)
          implicit none
          type(unit_conversion),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
+         character(len=*),intent(in) :: dir
          integer :: un
-         un = new_and_open(dir,name)
-         call display(this,un)
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_restart_unit_conversion(this,dir)
+         implicit none
+         type(unit_conversion),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
          close(un)
        end subroutine
 
@@ -175,6 +244,20 @@
          un = open_to_read(dir,name)
          call import(this,un)
          close(un)
+       end subroutine
+
+       subroutine make_restart_dir_unit_conversion(this,dir)
+         implicit none
+         type(unit_conversion),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+       end subroutine
+
+       subroutine suppress_warnings_unit_conversion(this)
+         implicit none
+         type(unit_conversion),intent(in) :: this
+         if (.false.) call print(this)
        end subroutine
 
        end module

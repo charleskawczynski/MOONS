@@ -3,6 +3,8 @@
        ! ***************************************************
        module MOONS_mod
        use IO_tools_mod
+       use datatype_conversion_mod
+       use dir_manip_mod
        use dir_tree_mod
        use energy_mod
        use export_now_mod
@@ -23,17 +25,31 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_MOONS;    end interface
-       interface delete;       module procedure delete_MOONS;       end interface
-       interface display;      module procedure display_MOONS;      end interface
-       interface display_short;module procedure display_short_MOONS;end interface
-       interface display;      module procedure display_wrap_MOONS; end interface
-       interface print;        module procedure print_MOONS;        end interface
-       interface print_short;  module procedure print_short_MOONS;  end interface
-       interface export;       module procedure export_MOONS;       end interface
-       interface import;       module procedure import_MOONS;       end interface
-       interface export;       module procedure export_wrap_MOONS;  end interface
-       interface import;       module procedure import_wrap_MOONS;  end interface
+       public :: export_primitives,import_primitives
+
+       public :: export_restart,import_restart
+
+       public :: make_restart_dir
+
+       public :: suppress_warnings
+
+       interface init;             module procedure init_copy_MOONS;        end interface
+       interface delete;           module procedure delete_MOONS;           end interface
+       interface display;          module procedure display_MOONS;          end interface
+       interface display_short;    module procedure display_short_MOONS;    end interface
+       interface display;          module procedure display_wrap_MOONS;     end interface
+       interface print;            module procedure print_MOONS;            end interface
+       interface print_short;      module procedure print_short_MOONS;      end interface
+       interface export;           module procedure export_MOONS;           end interface
+       interface export_primitives;module procedure export_primitives_MOONS;end interface
+       interface export_restart;   module procedure export_restart_MOONS;   end interface
+       interface import;           module procedure import_MOONS;           end interface
+       interface import_restart;   module procedure import_restart_MOONS;   end interface
+       interface import_primitives;module procedure import_primitives_MOONS;end interface
+       interface export;           module procedure export_wrap_MOONS;      end interface
+       interface import;           module procedure import_wrap_MOONS;      end interface
+       interface make_restart_dir; module procedure make_restart_dir_MOONS; end interface
+       interface suppress_warnings;module procedure suppress_warnings_MOONS;end interface
 
        type MOONS
          type(momentum) :: mom
@@ -139,6 +155,16 @@
          call display(this%KS,un)
        end subroutine
 
+       subroutine display_wrap_MOONS(this,dir,name)
+         implicit none
+         type(MOONS),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call display(this,un)
+         close(un)
+       end subroutine
+
        subroutine print_MOONS(this)
          implicit none
          type(MOONS),intent(in) :: this
@@ -149,6 +175,14 @@
          implicit none
          type(MOONS),intent(in) :: this
          call display_short(this,6)
+       end subroutine
+
+       subroutine export_primitives_MOONS(this,un)
+         implicit none
+         type(MOONS),intent(in) :: this
+         integer,intent(in) :: un
+         write(un,*) 'fresh_restart_file    = ';write(un,*) this%fresh_restart_file
+         write(un,*) 'matrix_visualization  = ';write(un,*) this%matrix_visualization
        end subroutine
 
        subroutine export_MOONS(this,un)
@@ -170,6 +204,14 @@
          call export(this%ES,un)
          call export(this%RM,un)
          call export(this%KS,un)
+       end subroutine
+
+       subroutine import_primitives_MOONS(this,un)
+         implicit none
+         type(MOONS),intent(inout) :: this
+         integer,intent(in) :: un
+         read(un,*); read(un,*) this%fresh_restart_file
+         read(un,*); read(un,*) this%matrix_visualization
        end subroutine
 
        subroutine import_MOONS(this,un)
@@ -194,14 +236,48 @@
          call import(this%KS,un)
        end subroutine
 
-       subroutine display_wrap_MOONS(this,dir,name)
+       subroutine export_restart_MOONS(this,dir)
          implicit none
          type(MOONS),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
+         character(len=*),intent(in) :: dir
          integer :: un
-         un = new_and_open(dir,name)
-         call display(this,un)
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
          close(un)
+         call export_restart(this%mom,dir//fortran_PS//'mom')
+         call export_restart(this%ind,dir//fortran_PS//'ind')
+         call export_restart(this%nrg,dir//fortran_PS//'nrg')
+         call export_restart(this%DT,dir//fortran_PS//'DT')
+         call export_restart(this%SP,dir//fortran_PS//'SP')
+         call export_restart(this%m_temp,dir//fortran_PS//'m_temp')
+         call export_restart(this%sc,dir//fortran_PS//'sc')
+         call export_restart(this%RF,dir//fortran_PS//'RF')
+         call export_restart(this%EN,dir//fortran_PS//'EN')
+         call export_restart(this%ES,dir//fortran_PS//'ES')
+         call export_restart(this%RM,dir//fortran_PS//'RM')
+         call export_restart(this%KS,dir//fortran_PS//'KS')
+       end subroutine
+
+       subroutine import_restart_MOONS(this,dir)
+         implicit none
+         type(MOONS),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
+         call import_restart(this%mom,dir//fortran_PS//'mom')
+         call import_restart(this%ind,dir//fortran_PS//'ind')
+         call import_restart(this%nrg,dir//fortran_PS//'nrg')
+         call import_restart(this%DT,dir//fortran_PS//'DT')
+         call import_restart(this%SP,dir//fortran_PS//'SP')
+         call import_restart(this%m_temp,dir//fortran_PS//'m_temp')
+         call import_restart(this%sc,dir//fortran_PS//'sc')
+         call import_restart(this%RF,dir//fortran_PS//'RF')
+         call import_restart(this%EN,dir//fortran_PS//'EN')
+         call import_restart(this%ES,dir//fortran_PS//'ES')
+         call import_restart(this%RM,dir//fortran_PS//'RM')
+         call import_restart(this%KS,dir//fortran_PS//'KS')
        end subroutine
 
        subroutine export_wrap_MOONS(this,dir,name)
@@ -222,6 +298,32 @@
          un = open_to_read(dir,name)
          call import(this,un)
          close(un)
+       end subroutine
+
+       subroutine make_restart_dir_MOONS(this,dir)
+         implicit none
+         type(MOONS),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_restart_dir(this%mom,dir//fortran_PS//'mom')
+         call make_restart_dir(this%ind,dir//fortran_PS//'ind')
+         call make_restart_dir(this%nrg,dir//fortran_PS//'nrg')
+         call make_restart_dir(this%DT,dir//fortran_PS//'DT')
+         call make_restart_dir(this%SP,dir//fortran_PS//'SP')
+         call make_restart_dir(this%m_temp,dir//fortran_PS//'m_temp')
+         call make_restart_dir(this%sc,dir//fortran_PS//'sc')
+         call make_restart_dir(this%RF,dir//fortran_PS//'RF')
+         call make_restart_dir(this%EN,dir//fortran_PS//'EN')
+         call make_restart_dir(this%ES,dir//fortran_PS//'ES')
+         call make_restart_dir(this%RM,dir//fortran_PS//'RM')
+         call make_restart_dir(this%KS,dir//fortran_PS//'KS')
+       end subroutine
+
+       subroutine suppress_warnings_MOONS(this)
+         implicit none
+         type(MOONS),intent(in) :: this
+         if (.false.) call print(this)
        end subroutine
 
        end module

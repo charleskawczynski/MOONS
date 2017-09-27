@@ -6,6 +6,10 @@
        use IO_tools_mod
        use data_location_mod
        use block_field_mod
+       use data_location_mod
+       use datatype_conversion_mod
+       use dir_manip_mod
+       use string_mod
        implicit none
 
        private
@@ -13,17 +17,31 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_SF;    end interface
-       interface delete;       module procedure delete_SF;       end interface
-       interface display;      module procedure display_SF;      end interface
-       interface display_short;module procedure display_short_SF;end interface
-       interface display;      module procedure display_wrap_SF; end interface
-       interface print;        module procedure print_SF;        end interface
-       interface print_short;  module procedure print_short_SF;  end interface
-       interface export;       module procedure export_SF;       end interface
-       interface import;       module procedure import_SF;       end interface
-       interface export;       module procedure export_wrap_SF;  end interface
-       interface import;       module procedure import_wrap_SF;  end interface
+       public :: export_primitives,import_primitives
+
+       public :: export_restart,import_restart
+
+       public :: make_restart_dir
+
+       public :: suppress_warnings
+
+       interface init;             module procedure init_copy_SF;        end interface
+       interface delete;           module procedure delete_SF;           end interface
+       interface display;          module procedure display_SF;          end interface
+       interface display_short;    module procedure display_short_SF;    end interface
+       interface display;          module procedure display_wrap_SF;     end interface
+       interface print;            module procedure print_SF;            end interface
+       interface print_short;      module procedure print_short_SF;      end interface
+       interface export;           module procedure export_SF;           end interface
+       interface export_primitives;module procedure export_primitives_SF;end interface
+       interface export_restart;   module procedure export_restart_SF;   end interface
+       interface import;           module procedure import_SF;           end interface
+       interface import_restart;   module procedure import_restart_SF;   end interface
+       interface import_primitives;module procedure import_primitives_SF;end interface
+       interface export;           module procedure export_wrap_SF;      end interface
+       interface import;           module procedure import_wrap_SF;      end interface
+       interface make_restart_dir; module procedure make_restart_dir_SF; end interface
+       interface suppress_warnings;module procedure suppress_warnings_SF;end interface
 
        type SF
          integer :: s = 0
@@ -121,6 +139,16 @@
          call display(this%DL,un)
        end subroutine
 
+       subroutine display_wrap_SF(this,dir,name)
+         implicit none
+         type(SF),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call display(this,un)
+         close(un)
+       end subroutine
+
        subroutine print_SF(this)
          implicit none
          type(SF),intent(in) :: this
@@ -131,6 +159,17 @@
          implicit none
          type(SF),intent(in) :: this
          call display_short(this,6)
+       end subroutine
+
+       subroutine export_primitives_SF(this,un)
+         implicit none
+         type(SF),intent(in) :: this
+         integer,intent(in) :: un
+         write(un,*) 's            = ';write(un,*) this%s
+         write(un,*) 'all_neumann  = ';write(un,*) this%all_neumann
+         write(un,*) 'numEl        = ';write(un,*) this%numEl
+         write(un,*) 'numPhysEl    = ';write(un,*) this%numPhysEl
+         write(un,*) 'vol          = ';write(un,*) this%vol
        end subroutine
 
        subroutine export_SF(this,un)
@@ -154,6 +193,17 @@
          call export(this%DL,un)
        end subroutine
 
+       subroutine import_primitives_SF(this,un)
+         implicit none
+         type(SF),intent(inout) :: this
+         integer,intent(in) :: un
+         read(un,*); read(un,*) this%s
+         read(un,*); read(un,*) this%all_neumann
+         read(un,*); read(un,*) this%numEl
+         read(un,*); read(un,*) this%numPhysEl
+         read(un,*); read(un,*) this%vol
+       end subroutine
+
        subroutine import_SF(this,un)
          implicit none
          type(SF),intent(inout) :: this
@@ -175,14 +225,44 @@
          call import(this%DL,un)
        end subroutine
 
-       subroutine display_wrap_SF(this,dir,name)
+       subroutine export_restart_SF(this,dir)
          implicit none
          type(SF),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
+         character(len=*),intent(in) :: dir
+         integer :: i_BF
+         integer :: s_BF
          integer :: un
-         un = new_and_open(dir,name)
-         call display(this,un)
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
          close(un)
+         if (allocated(this%BF)) then
+           s_BF = size(this%BF)
+           do i_BF=1,s_BF
+             call export_restart(this%BF(i_BF),&
+             dir//fortran_PS//'BF_'//int2str(i_BF))
+           enddo
+         endif
+         call export_restart(this%DL,dir//fortran_PS//'DL')
+       end subroutine
+
+       subroutine import_restart_SF(this,dir)
+         implicit none
+         type(SF),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_BF
+         integer :: s_BF
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
+         if (allocated(this%BF)) then
+           s_BF = size(this%BF)
+           do i_BF=1,s_BF
+             call import_restart(this%BF(i_BF),&
+             dir//fortran_PS//'BF_'//int2str(i_BF))
+           enddo
+         endif
+         call import_restart(this%DL,dir//fortran_PS//'DL')
        end subroutine
 
        subroutine export_wrap_SF(this,dir,name)
@@ -203,6 +283,30 @@
          un = open_to_read(dir,name)
          call import(this,un)
          close(un)
+       end subroutine
+
+       subroutine make_restart_dir_SF(this,dir)
+         implicit none
+         type(SF),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_BF
+         integer :: s_BF
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         if (allocated(this%BF)) then
+           s_BF = size(this%BF)
+           do i_BF=1,s_BF
+             call make_restart_dir(this%BF(i_BF),&
+             dir//fortran_PS//'BF_'//int2str(i_BF))
+           enddo
+         endif
+         call make_restart_dir(this%DL,dir//fortran_PS//'DL')
+       end subroutine
+
+       subroutine suppress_warnings_SF(this)
+         implicit none
+         type(SF),intent(in) :: this
+         if (.false.) call print(this)
        end subroutine
 
        end module

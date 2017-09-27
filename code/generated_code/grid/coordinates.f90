@@ -5,7 +5,10 @@
        use current_precision_mod
        use IO_tools_mod
        use array_mod
+       use datatype_conversion_mod
+       use dir_manip_mod
        use sparse_mod
+       use string_mod
        implicit none
 
        private
@@ -13,17 +16,31 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_coordinates;    end interface
-       interface delete;       module procedure delete_coordinates;       end interface
-       interface display;      module procedure display_coordinates;      end interface
-       interface display_short;module procedure display_short_coordinates;end interface
-       interface display;      module procedure display_wrap_coordinates; end interface
-       interface print;        module procedure print_coordinates;        end interface
-       interface print_short;  module procedure print_short_coordinates;  end interface
-       interface export;       module procedure export_coordinates;       end interface
-       interface import;       module procedure import_coordinates;       end interface
-       interface export;       module procedure export_wrap_coordinates;  end interface
-       interface import;       module procedure import_wrap_coordinates;  end interface
+       public :: export_primitives,import_primitives
+
+       public :: export_restart,import_restart
+
+       public :: make_restart_dir
+
+       public :: suppress_warnings
+
+       interface init;             module procedure init_copy_coordinates;        end interface
+       interface delete;           module procedure delete_coordinates;           end interface
+       interface display;          module procedure display_coordinates;          end interface
+       interface display_short;    module procedure display_short_coordinates;    end interface
+       interface display;          module procedure display_wrap_coordinates;     end interface
+       interface print;            module procedure print_coordinates;            end interface
+       interface print_short;      module procedure print_short_coordinates;      end interface
+       interface export;           module procedure export_coordinates;           end interface
+       interface export_primitives;module procedure export_primitives_coordinates;end interface
+       interface export_restart;   module procedure export_restart_coordinates;   end interface
+       interface import;           module procedure import_coordinates;           end interface
+       interface import_restart;   module procedure import_restart_coordinates;   end interface
+       interface import_primitives;module procedure import_primitives_coordinates;end interface
+       interface export;           module procedure export_wrap_coordinates;      end interface
+       interface import;           module procedure import_wrap_coordinates;      end interface
+       interface make_restart_dir; module procedure make_restart_dir_coordinates; end interface
+       interface suppress_warnings;module procedure suppress_warnings_coordinates;end interface
 
        type coordinates
          real(cp) :: hmin = 0.0_cp
@@ -100,7 +117,8 @@
          enddo
          s_colCC_centered = size(that%colCC_centered)
          do i_colCC_centered=1,s_colCC_centered
-           call init(this%colCC_centered(i_colCC_centered),that%colCC_centered(i_colCC_centered))
+           call init(this%colCC_centered(i_colCC_centered),&
+           that%colCC_centered(i_colCC_centered))
          enddo
          call init(this%hn,that%hn)
          call init(this%hc,that%hc)
@@ -254,6 +272,16 @@
          call display(this%dhc,un)
        end subroutine
 
+       subroutine display_wrap_coordinates(this,dir,name)
+         implicit none
+         type(coordinates),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call display(this,un)
+         close(un)
+       end subroutine
+
        subroutine print_coordinates(this)
          implicit none
          type(coordinates),intent(in) :: this
@@ -264,6 +292,30 @@
          implicit none
          type(coordinates),intent(in) :: this
          call display_short(this,6)
+       end subroutine
+
+       subroutine export_primitives_coordinates(this,un)
+         implicit none
+         type(coordinates),intent(in) :: this
+         integer,intent(in) :: un
+         write(un,*) 'hmin               = ';write(un,*) this%hmin
+         write(un,*) 'hmax               = ';write(un,*) this%hmax
+         write(un,*) 'amin               = ';write(un,*) this%amin
+         write(un,*) 'amax               = ';write(un,*) this%amax
+         write(un,*) 'maxRange           = ';write(un,*) this%maxRange
+         write(un,*) 'dhMin              = ';write(un,*) this%dhMin
+         write(un,*) 'dhMax              = ';write(un,*) this%dhMax
+         write(un,*) 'dhc_e              = ';write(un,*) this%dhc_e
+         write(un,*) 'dhn_e              = ';write(un,*) this%dhn_e
+         write(un,*) 'hc_e               = ';write(un,*) this%hc_e
+         write(un,*) 'hn_e               = ';write(un,*) this%hn_e
+         write(un,*) 'sc                 = ';write(un,*) this%sc
+         write(un,*) 'sn                 = ';write(un,*) this%sn
+         write(un,*) 'N                  = ';write(un,*) this%N
+         write(un,*) 'defined            = ';write(un,*) this%defined
+         write(un,*) 'i_midplane         = ';write(un,*) this%i_midplane
+         write(un,*) 'stencils_defined   = ';write(un,*) this%stencils_defined
+         write(un,*) 'stencils_modified  = ';write(un,*) this%stencils_modified
        end subroutine
 
        subroutine export_coordinates(this,un)
@@ -318,6 +370,30 @@
          call export(this%dhc,un)
        end subroutine
 
+       subroutine import_primitives_coordinates(this,un)
+         implicit none
+         type(coordinates),intent(inout) :: this
+         integer,intent(in) :: un
+         read(un,*); read(un,*) this%hmin
+         read(un,*); read(un,*) this%hmax
+         read(un,*); read(un,*) this%amin
+         read(un,*); read(un,*) this%amax
+         read(un,*); read(un,*) this%maxRange
+         read(un,*); read(un,*) this%dhMin
+         read(un,*); read(un,*) this%dhMax
+         read(un,*); read(un,*) this%dhc_e
+         read(un,*); read(un,*) this%dhn_e
+         read(un,*); read(un,*) this%hc_e
+         read(un,*); read(un,*) this%hn_e
+         read(un,*); read(un,*) this%sc
+         read(un,*); read(un,*) this%sn
+         read(un,*); read(un,*) this%N
+         read(un,*); read(un,*) this%defined
+         read(un,*); read(un,*) this%i_midplane
+         read(un,*); read(un,*) this%stencils_defined
+         read(un,*); read(un,*) this%stencils_modified
+       end subroutine
+
        subroutine import_coordinates(this,un)
          implicit none
          type(coordinates),intent(inout) :: this
@@ -368,14 +444,80 @@
          call import(this%dhc,un)
        end subroutine
 
-       subroutine display_wrap_coordinates(this,dir,name)
+       subroutine export_restart_coordinates(this,dir)
          implicit none
          type(coordinates),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
+         character(len=*),intent(in) :: dir
+         integer :: i_colCC
+         integer :: i_colN
+         integer :: i_colCC_centered
+         integer :: s_colCC
+         integer :: s_colN
+         integer :: s_colCC_centered
          integer :: un
-         un = new_and_open(dir,name)
-         call display(this,un)
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
          close(un)
+         call export_restart(this%stagCC2N,dir//fortran_PS//'stagCC2N')
+         call export_restart(this%stagN2CC,dir//fortran_PS//'stagN2CC')
+         call export_restart(this%theta,dir//fortran_PS//'theta')
+         s_colCC = size(this%colCC)
+         do i_colCC=1,s_colCC
+           call export_restart(this%colCC(i_colCC),&
+           dir//fortran_PS//'colCC_'//int2str(i_colCC))
+         enddo
+         s_colN = size(this%colN)
+         do i_colN=1,s_colN
+           call export_restart(this%colN(i_colN),&
+           dir//fortran_PS//'colN_'//int2str(i_colN))
+         enddo
+         s_colCC_centered = size(this%colCC_centered)
+         do i_colCC_centered=1,s_colCC_centered
+           call export_restart(this%colCC_centered(i_colCC_centered),&
+           dir//fortran_PS//'colCC_centered_'//int2str(i_colCC_centered))
+         enddo
+         call export_restart(this%hn,dir//fortran_PS//'hn')
+         call export_restart(this%hc,dir//fortran_PS//'hc')
+         call export_restart(this%dhn,dir//fortran_PS//'dhn')
+         call export_restart(this%dhc,dir//fortran_PS//'dhc')
+       end subroutine
+
+       subroutine import_restart_coordinates(this,dir)
+         implicit none
+         type(coordinates),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_colCC
+         integer :: i_colN
+         integer :: i_colCC_centered
+         integer :: s_colCC
+         integer :: s_colN
+         integer :: s_colCC_centered
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
+         call import_restart(this%stagCC2N,dir//fortran_PS//'stagCC2N')
+         call import_restart(this%stagN2CC,dir//fortran_PS//'stagN2CC')
+         call import_restart(this%theta,dir//fortran_PS//'theta')
+         s_colCC = size(this%colCC)
+         do i_colCC=1,s_colCC
+           call import_restart(this%colCC(i_colCC),&
+           dir//fortran_PS//'colCC_'//int2str(i_colCC))
+         enddo
+         s_colN = size(this%colN)
+         do i_colN=1,s_colN
+           call import_restart(this%colN(i_colN),&
+           dir//fortran_PS//'colN_'//int2str(i_colN))
+         enddo
+         s_colCC_centered = size(this%colCC_centered)
+         do i_colCC_centered=1,s_colCC_centered
+           call import_restart(this%colCC_centered(i_colCC_centered),&
+           dir//fortran_PS//'colCC_centered_'//int2str(i_colCC_centered))
+         enddo
+         call import_restart(this%hn,dir//fortran_PS//'hn')
+         call import_restart(this%hc,dir//fortran_PS//'hc')
+         call import_restart(this%dhn,dir//fortran_PS//'dhn')
+         call import_restart(this%dhc,dir//fortran_PS//'dhc')
        end subroutine
 
        subroutine export_wrap_coordinates(this,dir,name)
@@ -396,6 +538,48 @@
          un = open_to_read(dir,name)
          call import(this,un)
          close(un)
+       end subroutine
+
+       subroutine make_restart_dir_coordinates(this,dir)
+         implicit none
+         type(coordinates),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_colCC
+         integer :: i_colN
+         integer :: i_colCC_centered
+         integer :: s_colCC
+         integer :: s_colN
+         integer :: s_colCC_centered
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_restart_dir(this%stagCC2N,dir//fortran_PS//'stagCC2N')
+         call make_restart_dir(this%stagN2CC,dir//fortran_PS//'stagN2CC')
+         call make_restart_dir(this%theta,dir//fortran_PS//'theta')
+         s_colCC = size(this%colCC)
+         do i_colCC=1,s_colCC
+           call make_restart_dir(this%colCC(i_colCC),&
+           dir//fortran_PS//'colCC_'//int2str(i_colCC))
+         enddo
+         s_colN = size(this%colN)
+         do i_colN=1,s_colN
+           call make_restart_dir(this%colN(i_colN),&
+           dir//fortran_PS//'colN_'//int2str(i_colN))
+         enddo
+         s_colCC_centered = size(this%colCC_centered)
+         do i_colCC_centered=1,s_colCC_centered
+           call make_restart_dir(this%colCC_centered(i_colCC_centered),&
+           dir//fortran_PS//'colCC_centered_'//int2str(i_colCC_centered))
+         enddo
+         call make_restart_dir(this%hn,dir//fortran_PS//'hn')
+         call make_restart_dir(this%hc,dir//fortran_PS//'hc')
+         call make_restart_dir(this%dhn,dir//fortran_PS//'dhn')
+         call make_restart_dir(this%dhc,dir//fortran_PS//'dhc')
+       end subroutine
+
+       subroutine suppress_warnings_coordinates(this)
+         implicit none
+         type(coordinates),intent(in) :: this
+         if (.false.) call print(this)
        end subroutine
 
        end module

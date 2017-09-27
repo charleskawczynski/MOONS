@@ -1,0 +1,111 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Hartmann type channel flow}
+
+The dimensional momentum and induction equations for uniform material properties are
+
+\begin{equation}\begin{aligned}
+\PD_t u_i+u_j\PD_j u_i = -\frac{1}{\rho} \PD_i p+ \nu \PD_{jj} u_i + \frac{1}{\rho \mu} (B_j \PD_j B_i - \tfrac{1}{2} \PD_i B_k B_k) \\
+\PD_t B_i = \frac{1}{\sigma \mu} \PD_{jj} B_i - \PD_j (u_j B_i - u_i B_j)
+\end{aligned} \end{equation}
+
+Assuming steady duct flow conditions, we have
+
+\begin{equation}\begin{aligned}
+0 = -\frac{1}{\rho} \PD_x p + \nu (\PD_{yy} u + \PD_{zz} u) + \frac{1}{\rho \mu} (B_y \PD_y B_x + B_z \PD_z B_x - \tfrac{1}{2} \PD_x (B_x^2+B_y^2+B_z^2)) \\
+0 = -\frac{1}{\rho} \PD_y p + \nu (\PD_{yy} v + \PD_{zz} v) + \frac{1}{\rho \mu} (B_y \PD_y B_y + B_z \PD_z B_y - \tfrac{1}{2} \PD_y (B_x^2+B_y^2+B_z^2)) \\
+0 = -\frac{1}{\rho} \PD_z p + \nu (\PD_{yy} w + \PD_{zz} w) + \frac{1}{\rho \mu} (B_y \PD_y B_z + B_z \PD_z B_z - \tfrac{1}{2} \PD_z (B_x^2+B_y^2+B_z^2)) \\
+\PD_{yy} B_x = \sigma \mu \PD_y (v B_x - u B_y) \\
+\PD_{yy} B_y = \sigma \mu \PD_y (v B_y - v B_y) \\
+\PD_{yy} B_z = \sigma \mu \PD_y (v B_z - w B_y) \\
+\end{aligned} \end{equation}
+
+Assuming there's only 1 axial velocity and induced magnetic field component, with a single applied magnetic field, $B_z^0$, we have
+
+\begin{equation}\begin{aligned}
+0 = -\frac{1}{\rho} \PD_x p + \nu \PD_{yy} u + \frac{1}{\rho \mu} B_y \PD_y B_x  \\
+0 = -\frac{1}{\rho} \PD_y p - \frac{1}{\rho \mu} B_x \PD_y B_x \\
+\PD_{yy} B_x = - \sigma \mu \PD_y (u B_y^0) \\
+\end{aligned} \end{equation}
+
+Integrating the induction equation once, simplifying a bit, and multiplying and dividing
+the Lorentz force by $Re_m$ ($\frac{Re_m}{\sigma \mu U L}$), we have
+
+\begin{equation}\begin{aligned}
+\PD_x p = \eta \PD_{yy} u - Re_m \frac{{B_y^0}^2}{U \delta \mu} u \\
+\PD_y p = - \frac{1}{\mu} B_x \PD_y B_x \\
+\PD_{yy} B_x = - Re_m \frac{\sigma \mu}{U \delta} \PD_y (u B_y^0) \\
+\PD_{y} B_x = Re_m \frac{B_y^0}{U \delta} u \\
+\end{aligned} \end{equation}
+
+Now, let's expand velocity and pressure with respect to $Re_m$.
+\begin{equation}\begin{aligned}
+	u = u^0 + Re_m u^* + Re_m^2 u^{**} + \hdots \\
+	p = p^0 + Re_m p^* + Re_m^2 p^{**} + \hdots \\
+	B_x = B_x^0 + Re_m B_x^* + Re_m^2 B_x^{**} + \hdots \\
+	B_y = B_y^0 + Re_m B_y^* + Re_m^2 B_y^{**} + \hdots \\
+\end{aligned} \end{equation}
+
+Substituting this in yields
+
+\begin{equation}\begin{aligned}
+\PD_{y} (B_x^0 + Re_m B_x^* + Re_m^2 B_x^{**}) = Re_m \frac{B_y^0}{U \delta} (u^0 + Re_m u^* + Re_m^2 u^{**}) \\
+\PD_x (p^0 + Re_m p^* + Re_m^2 p^{**}) = \eta \PD_{yy} (u^0 + Re_m u^* + Re_m^2 u^{**}) - Re_m \frac{{B_y^0}^2}{U \delta \mu} (u^0 + Re_m u^* + Re_m^2 u^{**}) \\
+\PD_y (p^0 + Re_m p^* + Re_m^2 p^{**}) = - \frac{1}{\mu} (B_x^0 + Re_m B_x^* + Re_m^2 B_x^{**}) \PD_y (B_x^0 + Re_m B_x^* + Re_m^2 B_x^{**}) \\
+\end{aligned} \end{equation}
+
+Equating terms of equal order $Re_m$ yields
+
+\section{My algebra}
+
+$(Re_m)^0$
+\begin{equation}\begin{aligned}
+\PD_{y} B_x^0 = 0 \\
+\PD_x p^0 = \eta \PD_{yy} u^0 \\
+\PD_y p^0 = 0 \\
+\end{aligned} \end{equation}
+
+$(Re_m)^1$
+\begin{equation}\begin{aligned}
+\PD_{y} B_x^* = \frac{B_y^0}{U \delta} u^0 \\
+\PD_x p^* =   \eta \PD_{yy} u^* - \frac{{B_y^0}^2}{U \delta \mu} u^0 \\
+\PD_y p^* = 0 \\
+\end{aligned} \end{equation}
+
+$(Re_m)^2$
+\begin{equation}\begin{aligned}
+\PD_y B_x^{**} = \frac{B_y^0}{U \delta} u^* \\
+\PD_x p^{**} = \eta \PD_{yy} u^{**} - \frac{{B_y^0}^2}{U \delta \mu} u^* \\
+\PD_y p^{**} = - \frac{1}{\mu} B_x^* \PD_y B_x^* \\
+\end{aligned} \end{equation}
+
+
+\section{NASA claims}
+$(Re_m)^0$
+\begin{equation}\begin{aligned}
+\PD_{y} B_x^* = 0 \\
+\PD_x p^0 = \eta \PD_{yy} u^0 \\
+\PD_y p^0 = 0 \\
+\end{aligned} \end{equation}
+
+$(Re_m)^1$
+\begin{equation}\begin{aligned}
+\PD_{y} B_x^* = -\sigma \mu u^0 B_y^0 \\
+\PD_x p^* = \eta \PD_{yy} u^* - \sigma \mu {B_y^0}^2 u^0 \\
+\PD_y p^* = 0 \\
+\end{aligned} \end{equation}
+
+$(Re_m)^2$
+\begin{equation}\begin{aligned}
+\PD_{y} B_x^{**} = -\sigma \mu u^* B_y^0 \\
+\PD_x p^{**} = \eta \PD_{yy} u^{**} - \sigma \mu {B_y^0}^2 u^* \\
+\PD_y p^{**} = - \frac{1}{\mu} B_x^* \PD_y B_x^* \\
+\end{aligned} \end{equation}
+
+\end{document}

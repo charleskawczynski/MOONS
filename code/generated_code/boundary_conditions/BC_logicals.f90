@@ -3,6 +3,9 @@
        ! ***************************************************
        module BC_logicals_mod
        use IO_tools_mod
+       use datatype_conversion_mod
+       use dir_manip_mod
+       use string_mod
        implicit none
 
        private
@@ -10,17 +13,31 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_BC_logicals;    end interface
-       interface delete;       module procedure delete_BC_logicals;       end interface
-       interface display;      module procedure display_BC_logicals;      end interface
-       interface display_short;module procedure display_short_BC_logicals;end interface
-       interface display;      module procedure display_wrap_BC_logicals; end interface
-       interface print;        module procedure print_BC_logicals;        end interface
-       interface print_short;  module procedure print_short_BC_logicals;  end interface
-       interface export;       module procedure export_BC_logicals;       end interface
-       interface import;       module procedure import_BC_logicals;       end interface
-       interface export;       module procedure export_wrap_BC_logicals;  end interface
-       interface import;       module procedure import_wrap_BC_logicals;  end interface
+       public :: export_primitives,import_primitives
+
+       public :: export_restart,import_restart
+
+       public :: make_restart_dir
+
+       public :: suppress_warnings
+
+       interface init;             module procedure init_copy_BC_logicals;        end interface
+       interface delete;           module procedure delete_BC_logicals;           end interface
+       interface display;          module procedure display_BC_logicals;          end interface
+       interface display_short;    module procedure display_short_BC_logicals;    end interface
+       interface display;          module procedure display_wrap_BC_logicals;     end interface
+       interface print;            module procedure print_BC_logicals;            end interface
+       interface print_short;      module procedure print_short_BC_logicals;      end interface
+       interface export;           module procedure export_BC_logicals;           end interface
+       interface export_primitives;module procedure export_primitives_BC_logicals;end interface
+       interface export_restart;   module procedure export_restart_BC_logicals;   end interface
+       interface import;           module procedure import_BC_logicals;           end interface
+       interface import_restart;   module procedure import_restart_BC_logicals;   end interface
+       interface import_primitives;module procedure import_primitives_BC_logicals;end interface
+       interface export;           module procedure export_wrap_BC_logicals;      end interface
+       interface import;           module procedure import_wrap_BC_logicals;      end interface
+       interface make_restart_dir; module procedure make_restart_dir_BC_logicals; end interface
+       interface suppress_warnings;module procedure suppress_warnings_BC_logicals;end interface
 
        type BC_logicals
          logical :: defined = .false.
@@ -126,6 +143,16 @@
          write(un,*) 'any_prescribed    = ',this%any_prescribed
        end subroutine
 
+       subroutine display_wrap_BC_logicals(this,dir,name)
+         implicit none
+         type(BC_logicals),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call display(this,un)
+         close(un)
+       end subroutine
+
        subroutine print_BC_logicals(this)
          implicit none
          type(BC_logicals),intent(in) :: this
@@ -136,6 +163,27 @@
          implicit none
          type(BC_logicals),intent(in) :: this
          call display_short(this,6)
+       end subroutine
+
+       subroutine export_primitives_BC_logicals(this,un)
+         implicit none
+         type(BC_logicals),intent(in) :: this
+         integer,intent(in) :: un
+         write(un,*) 'defined            = ';write(un,*) this%defined
+         write(un,*) 'GFs_defined        = ';write(un,*) this%GFs_defined
+         write(un,*) 'BCT_defined        = ';write(un,*) this%BCT_defined
+         write(un,*) 'vals_defined       = ';write(un,*) this%vals_defined
+         write(un,*) 'all_Dirichlet      = ';write(un,*) this%all_Dirichlet
+         write(un,*) 'all_Neumann        = ';write(un,*) this%all_Neumann
+         write(un,*) 'all_Robin          = ';write(un,*) this%all_Robin
+         write(un,*) 'all_symmetric      = ';write(un,*) this%all_symmetric
+         write(un,*) 'all_antisymmetric  = ';write(un,*) this%all_antisymmetric
+         write(un,*) 'any_Dirichlet      = ';write(un,*) this%any_Dirichlet
+         write(un,*) 'any_Neumann        = ';write(un,*) this%any_Neumann
+         write(un,*) 'any_Robin          = ';write(un,*) this%any_Robin
+         write(un,*) 'any_symmetric      = ';write(un,*) this%any_symmetric
+         write(un,*) 'any_antisymmetric  = ';write(un,*) this%any_antisymmetric
+         write(un,*) 'any_prescribed     = ';write(un,*) this%any_prescribed
        end subroutine
 
        subroutine export_BC_logicals(this,un)
@@ -157,6 +205,27 @@
          write(un,*) 'any_symmetric      = ';write(un,*) this%any_symmetric
          write(un,*) 'any_antisymmetric  = ';write(un,*) this%any_antisymmetric
          write(un,*) 'any_prescribed     = ';write(un,*) this%any_prescribed
+       end subroutine
+
+       subroutine import_primitives_BC_logicals(this,un)
+         implicit none
+         type(BC_logicals),intent(inout) :: this
+         integer,intent(in) :: un
+         read(un,*); read(un,*) this%defined
+         read(un,*); read(un,*) this%GFs_defined
+         read(un,*); read(un,*) this%BCT_defined
+         read(un,*); read(un,*) this%vals_defined
+         read(un,*); read(un,*) this%all_Dirichlet
+         read(un,*); read(un,*) this%all_Neumann
+         read(un,*); read(un,*) this%all_Robin
+         read(un,*); read(un,*) this%all_symmetric
+         read(un,*); read(un,*) this%all_antisymmetric
+         read(un,*); read(un,*) this%any_Dirichlet
+         read(un,*); read(un,*) this%any_Neumann
+         read(un,*); read(un,*) this%any_Robin
+         read(un,*); read(un,*) this%any_symmetric
+         read(un,*); read(un,*) this%any_antisymmetric
+         read(un,*); read(un,*) this%any_prescribed
        end subroutine
 
        subroutine import_BC_logicals(this,un)
@@ -181,13 +250,23 @@
          read(un,*); read(un,*) this%any_prescribed
        end subroutine
 
-       subroutine display_wrap_BC_logicals(this,dir,name)
+       subroutine export_restart_BC_logicals(this,dir)
          implicit none
          type(BC_logicals),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
+         character(len=*),intent(in) :: dir
          integer :: un
-         un = new_and_open(dir,name)
-         call display(this,un)
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_restart_BC_logicals(this,dir)
+         implicit none
+         type(BC_logicals),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
          close(un)
        end subroutine
 
@@ -209,6 +288,20 @@
          un = open_to_read(dir,name)
          call import(this,un)
          close(un)
+       end subroutine
+
+       subroutine make_restart_dir_BC_logicals(this,dir)
+         implicit none
+         type(BC_logicals),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+       end subroutine
+
+       subroutine suppress_warnings_BC_logicals(this)
+         implicit none
+         type(BC_logicals),intent(in) :: this
+         if (.false.) call print(this)
        end subroutine
 
        end module

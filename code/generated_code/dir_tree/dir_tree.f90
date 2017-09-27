@@ -3,7 +3,9 @@
        ! ***************************************************
        module dir_tree_mod
        use IO_tools_mod
+       use datatype_conversion_mod
        use dir_group_mod
+       use dir_manip_mod
        use path_mod
        use string_mod
        implicit none
@@ -13,17 +15,31 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_dir_tree;    end interface
-       interface delete;       module procedure delete_dir_tree;       end interface
-       interface display;      module procedure display_dir_tree;      end interface
-       interface display_short;module procedure display_short_dir_tree;end interface
-       interface display;      module procedure display_wrap_dir_tree; end interface
-       interface print;        module procedure print_dir_tree;        end interface
-       interface print_short;  module procedure print_short_dir_tree;  end interface
-       interface export;       module procedure export_dir_tree;       end interface
-       interface import;       module procedure import_dir_tree;       end interface
-       interface export;       module procedure export_wrap_dir_tree;  end interface
-       interface import;       module procedure import_wrap_dir_tree;  end interface
+       public :: export_primitives,import_primitives
+
+       public :: export_restart,import_restart
+
+       public :: make_restart_dir
+
+       public :: suppress_warnings
+
+       interface init;             module procedure init_copy_dir_tree;        end interface
+       interface delete;           module procedure delete_dir_tree;           end interface
+       interface display;          module procedure display_dir_tree;          end interface
+       interface display_short;    module procedure display_short_dir_tree;    end interface
+       interface display;          module procedure display_wrap_dir_tree;     end interface
+       interface print;            module procedure print_dir_tree;            end interface
+       interface print_short;      module procedure print_short_dir_tree;      end interface
+       interface export;           module procedure export_dir_tree;           end interface
+       interface export_primitives;module procedure export_primitives_dir_tree;end interface
+       interface export_restart;   module procedure export_restart_dir_tree;   end interface
+       interface import;           module procedure import_dir_tree;           end interface
+       interface import_restart;   module procedure import_restart_dir_tree;   end interface
+       interface import_primitives;module procedure import_primitives_dir_tree;end interface
+       interface export;           module procedure export_wrap_dir_tree;      end interface
+       interface import;           module procedure import_wrap_dir_tree;      end interface
+       interface make_restart_dir; module procedure make_restart_dir_dir_tree; end interface
+       interface suppress_warnings;module procedure suppress_warnings_dir_tree;end interface
 
        type dir_tree
          type(path) :: tar_p
@@ -229,6 +245,16 @@
          call display(this%test,un)
        end subroutine
 
+       subroutine display_wrap_dir_tree(this,dir,name)
+         implicit none
+         type(dir_tree),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call display(this,un)
+         close(un)
+       end subroutine
+
        subroutine print_dir_tree(this)
          implicit none
          type(dir_tree),intent(in) :: this
@@ -239,6 +265,15 @@
          implicit none
          type(dir_tree),intent(in) :: this
          call display_short(this,6)
+       end subroutine
+
+       subroutine export_primitives_dir_tree(this,un)
+         implicit none
+         type(dir_tree),intent(in) :: this
+         integer,intent(in) :: un
+         integer :: un_suppress_warning
+         un_suppress_warning = un
+         call suppress_warnings(this)
        end subroutine
 
        subroutine export_dir_tree(this,un)
@@ -280,6 +315,15 @@
          call export(this%phi,un)
          call export(this%rho,un)
          call export(this%test,un)
+       end subroutine
+
+       subroutine import_primitives_dir_tree(this,un)
+         implicit none
+         type(dir_tree),intent(inout) :: this
+         integer,intent(in) :: un
+         integer :: un_suppress_warning
+         un_suppress_warning = un
+         call suppress_warnings(this)
        end subroutine
 
        subroutine import_dir_tree(this,un)
@@ -324,14 +368,98 @@
          call import(this%test,un)
        end subroutine
 
-       subroutine display_wrap_dir_tree(this,dir,name)
+       subroutine export_restart_dir_tree(this,dir)
          implicit none
          type(dir_tree),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
+         character(len=*),intent(in) :: dir
          integer :: un
-         un = new_and_open(dir,name)
-         call display(this,un)
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
          close(un)
+         call export_restart(this%tar_p,dir//fortran_PS//'tar_p')
+         call export_restart(this%out_dir,dir//fortran_PS//'out_dir')
+         call export_restart(this%LDC,dir//fortran_PS//'LDC')
+         call export_restart(this%mat,dir//fortran_PS//'mat')
+         call export_restart(this%meshes,dir//fortran_PS//'meshes')
+         call export_restart(this%BEM,dir//fortran_PS//'BEM')
+         call export_restart(this%wall_clock,dir//fortran_PS//'wall_clock')
+         call export_restart(this%matrix_visualization,&
+         dir//fortran_PS//'matrix_visualization')
+         call export_restart(this%dimensionless_params,&
+         dir//fortran_PS//'dimensionless_params')
+         call export_restart(this%params,dir//fortran_PS//'params')
+         call export_restart(this%ISP,dir//fortran_PS//'ISP')
+         call export_restart(this%TMP,dir//fortran_PS//'TMP')
+         call export_restart(this%EF,dir//fortran_PS//'EF')
+         call export_restart(this%export_now,dir//fortran_PS//'export_now')
+         call export_restart(this%refine_mesh,dir//fortran_PS//'refine_mesh')
+         call export_restart(this%e_budget,dir//fortran_PS//'e_budget')
+         call export_restart(this%e_budget_N,dir//fortran_PS//'e_budget_N')
+         call export_restart(this%e_budget_C,dir//fortran_PS//'e_budget_C')
+         call export_restart(this%restart_sim,dir//fortran_PS//'restart_sim')
+         call export_restart(this%restart1,dir//fortran_PS//'restart1')
+         call export_restart(this%restart2,dir//fortran_PS//'restart2')
+         call export_restart(this%restart,dir//fortran_PS//'restart')
+         call export_restart(this%mesh_restart,&
+         dir//fortran_PS//'mesh_restart')
+         call export_restart(this%unknowns,dir//fortran_PS//'unknowns')
+         call export_restart(this%governing_equations,&
+         dir//fortran_PS//'governing_equations')
+         call export_restart(this%U,dir//fortran_PS//'U')
+         call export_restart(this%B,dir//fortran_PS//'B')
+         call export_restart(this%J,dir//fortran_PS//'J')
+         call export_restart(this%T,dir//fortran_PS//'T')
+         call export_restart(this%p,dir//fortran_PS//'p')
+         call export_restart(this%phi,dir//fortran_PS//'phi')
+         call export_restart(this%rho,dir//fortran_PS//'rho')
+         call export_restart(this%test,dir//fortran_PS//'test')
+       end subroutine
+
+       subroutine import_restart_dir_tree(this,dir)
+         implicit none
+         type(dir_tree),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
+         call import_restart(this%tar_p,dir//fortran_PS//'tar_p')
+         call import_restart(this%out_dir,dir//fortran_PS//'out_dir')
+         call import_restart(this%LDC,dir//fortran_PS//'LDC')
+         call import_restart(this%mat,dir//fortran_PS//'mat')
+         call import_restart(this%meshes,dir//fortran_PS//'meshes')
+         call import_restart(this%BEM,dir//fortran_PS//'BEM')
+         call import_restart(this%wall_clock,dir//fortran_PS//'wall_clock')
+         call import_restart(this%matrix_visualization,&
+         dir//fortran_PS//'matrix_visualization')
+         call import_restart(this%dimensionless_params,&
+         dir//fortran_PS//'dimensionless_params')
+         call import_restart(this%params,dir//fortran_PS//'params')
+         call import_restart(this%ISP,dir//fortran_PS//'ISP')
+         call import_restart(this%TMP,dir//fortran_PS//'TMP')
+         call import_restart(this%EF,dir//fortran_PS//'EF')
+         call import_restart(this%export_now,dir//fortran_PS//'export_now')
+         call import_restart(this%refine_mesh,dir//fortran_PS//'refine_mesh')
+         call import_restart(this%e_budget,dir//fortran_PS//'e_budget')
+         call import_restart(this%e_budget_N,dir//fortran_PS//'e_budget_N')
+         call import_restart(this%e_budget_C,dir//fortran_PS//'e_budget_C')
+         call import_restart(this%restart_sim,dir//fortran_PS//'restart_sim')
+         call import_restart(this%restart1,dir//fortran_PS//'restart1')
+         call import_restart(this%restart2,dir//fortran_PS//'restart2')
+         call import_restart(this%restart,dir//fortran_PS//'restart')
+         call import_restart(this%mesh_restart,&
+         dir//fortran_PS//'mesh_restart')
+         call import_restart(this%unknowns,dir//fortran_PS//'unknowns')
+         call import_restart(this%governing_equations,&
+         dir//fortran_PS//'governing_equations')
+         call import_restart(this%U,dir//fortran_PS//'U')
+         call import_restart(this%B,dir//fortran_PS//'B')
+         call import_restart(this%J,dir//fortran_PS//'J')
+         call import_restart(this%T,dir//fortran_PS//'T')
+         call import_restart(this%p,dir//fortran_PS//'p')
+         call import_restart(this%phi,dir//fortran_PS//'phi')
+         call import_restart(this%rho,dir//fortran_PS//'rho')
+         call import_restart(this%test,dir//fortran_PS//'test')
        end subroutine
 
        subroutine export_wrap_dir_tree(this,dir,name)
@@ -352,6 +480,59 @@
          un = open_to_read(dir,name)
          call import(this,un)
          close(un)
+       end subroutine
+
+       subroutine make_restart_dir_dir_tree(this,dir)
+         implicit none
+         type(dir_tree),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_restart_dir(this%tar_p,dir//fortran_PS//'tar_p')
+         call make_restart_dir(this%out_dir,dir//fortran_PS//'out_dir')
+         call make_restart_dir(this%LDC,dir//fortran_PS//'LDC')
+         call make_restart_dir(this%mat,dir//fortran_PS//'mat')
+         call make_restart_dir(this%meshes,dir//fortran_PS//'meshes')
+         call make_restart_dir(this%BEM,dir//fortran_PS//'BEM')
+         call make_restart_dir(this%wall_clock,dir//fortran_PS//'wall_clock')
+         call make_restart_dir(this%matrix_visualization,&
+         dir//fortran_PS//'matrix_visualization')
+         call make_restart_dir(this%dimensionless_params,&
+         dir//fortran_PS//'dimensionless_params')
+         call make_restart_dir(this%params,dir//fortran_PS//'params')
+         call make_restart_dir(this%ISP,dir//fortran_PS//'ISP')
+         call make_restart_dir(this%TMP,dir//fortran_PS//'TMP')
+         call make_restart_dir(this%EF,dir//fortran_PS//'EF')
+         call make_restart_dir(this%export_now,dir//fortran_PS//'export_now')
+         call make_restart_dir(this%refine_mesh,&
+         dir//fortran_PS//'refine_mesh')
+         call make_restart_dir(this%e_budget,dir//fortran_PS//'e_budget')
+         call make_restart_dir(this%e_budget_N,dir//fortran_PS//'e_budget_N')
+         call make_restart_dir(this%e_budget_C,dir//fortran_PS//'e_budget_C')
+         call make_restart_dir(this%restart_sim,&
+         dir//fortran_PS//'restart_sim')
+         call make_restart_dir(this%restart1,dir//fortran_PS//'restart1')
+         call make_restart_dir(this%restart2,dir//fortran_PS//'restart2')
+         call make_restart_dir(this%restart,dir//fortran_PS//'restart')
+         call make_restart_dir(this%mesh_restart,&
+         dir//fortran_PS//'mesh_restart')
+         call make_restart_dir(this%unknowns,dir//fortran_PS//'unknowns')
+         call make_restart_dir(this%governing_equations,&
+         dir//fortran_PS//'governing_equations')
+         call make_restart_dir(this%U,dir//fortran_PS//'U')
+         call make_restart_dir(this%B,dir//fortran_PS//'B')
+         call make_restart_dir(this%J,dir//fortran_PS//'J')
+         call make_restart_dir(this%T,dir//fortran_PS//'T')
+         call make_restart_dir(this%p,dir//fortran_PS//'p')
+         call make_restart_dir(this%phi,dir//fortran_PS//'phi')
+         call make_restart_dir(this%rho,dir//fortran_PS//'rho')
+         call make_restart_dir(this%test,dir//fortran_PS//'test')
+       end subroutine
+
+       subroutine suppress_warnings_dir_tree(this)
+         implicit none
+         type(dir_tree),intent(in) :: this
+         if (.false.) call print(this)
        end subroutine
 
        end module

@@ -85,9 +85,9 @@
        SP%FCL%compute_surface_power              = T
 
        SP%EL%export_analytic         = F
-       SP%EL%export_meshes           = T
+       SP%EL%export_meshes           = F
        SP%EL%export_vort_SF          = F
-       SP%EL%export_mat_props        = T
+       SP%EL%export_mat_props        = F
        SP%EL%export_ICs              = F
        SP%EL%export_cell_volume      = F
        SP%EL%export_planar           = F
@@ -236,8 +236,8 @@
        ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,export_convergence,dir,name)
        call init(SP%VS%T%ISP,  5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy,str(DT%ISP),'ISP_T')
        call init(SP%VS%U%ISP,  5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy,str(DT%ISP),'ISP_U')
-       call init(SP%VS%P%ISP,  20 ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy,str(DT%ISP),'ISP_P')
-       call init(SP%VS%B%ISP,  20 ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy,str(DT%ISP),'ISP_B')
+       call init(SP%VS%P%ISP,  5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy,str(DT%ISP),'ISP_P')
+       call init(SP%VS%B%ISP,  5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy,str(DT%ISP),'ISP_B')
        call init(SP%VS%B0%ISP, 5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy,str(DT%ISP),'ISP_B0')
        call init(SP%VS%phi%ISP,5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy,str(DT%ISP),'ISP_phi')
        call init(SP%VS%rho%ISP,5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy,str(DT%ISP),'ISP_rho')

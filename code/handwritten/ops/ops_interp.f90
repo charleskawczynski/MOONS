@@ -36,7 +36,7 @@
        use face_edge_corner_indexing_mod
        use grid_mod
        use mesh_extend_mod
-       use data_location_mod
+       use data_location_extend_mod
        use apply_BCs_mod
        use SF_extend_mod
        use VF_extend_mod

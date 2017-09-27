@@ -8,8 +8,11 @@
        use SF_mod
        use TF_mod
        use VF_mod
+       use datatype_conversion_mod
+       use dir_manip_mod
        use mesh_mod
        use probe_mod
+       use string_mod
        use time_statistics_VF_mod
        implicit none
 
@@ -18,17 +21,31 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_momentum;    end interface
-       interface delete;       module procedure delete_momentum;       end interface
-       interface display;      module procedure display_momentum;      end interface
-       interface display_short;module procedure display_short_momentum;end interface
-       interface display;      module procedure display_wrap_momentum; end interface
-       interface print;        module procedure print_momentum;        end interface
-       interface print_short;  module procedure print_short_momentum;  end interface
-       interface export;       module procedure export_momentum;       end interface
-       interface import;       module procedure import_momentum;       end interface
-       interface export;       module procedure export_wrap_momentum;  end interface
-       interface import;       module procedure import_wrap_momentum;  end interface
+       public :: export_primitives,import_primitives
+
+       public :: export_restart,import_restart
+
+       public :: make_restart_dir
+
+       public :: suppress_warnings
+
+       interface init;             module procedure init_copy_momentum;        end interface
+       interface delete;           module procedure delete_momentum;           end interface
+       interface display;          module procedure display_momentum;          end interface
+       interface display_short;    module procedure display_short_momentum;    end interface
+       interface display;          module procedure display_wrap_momentum;     end interface
+       interface print;            module procedure print_momentum;            end interface
+       interface print_short;      module procedure print_short_momentum;      end interface
+       interface export;           module procedure export_momentum;           end interface
+       interface export_primitives;module procedure export_primitives_momentum;end interface
+       interface export_restart;   module procedure export_restart_momentum;   end interface
+       interface import;           module procedure import_momentum;           end interface
+       interface import_restart;   module procedure import_restart_momentum;   end interface
+       interface import_primitives;module procedure import_primitives_momentum;end interface
+       interface export;           module procedure export_wrap_momentum;      end interface
+       interface import;           module procedure import_wrap_momentum;      end interface
+       interface make_restart_dir; module procedure make_restart_dir_momentum; end interface
+       interface suppress_warnings;module procedure suppress_warnings_momentum;end interface
 
        type momentum
          logical :: suppress_warning = .false.
@@ -194,6 +211,16 @@
          call display(this%probe_Q,un)
        end subroutine
 
+       subroutine display_wrap_momentum(this,dir,name)
+         implicit none
+         type(momentum),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call display(this,un)
+         close(un)
+       end subroutine
+
        subroutine print_momentum(this)
          implicit none
          type(momentum),intent(in) :: this
@@ -204,6 +231,13 @@
          implicit none
          type(momentum),intent(in) :: this
          call display_short(this,6)
+       end subroutine
+
+       subroutine export_primitives_momentum(this,un)
+         implicit none
+         type(momentum),intent(in) :: this
+         integer,intent(in) :: un
+         write(un,*) 'suppress_warning  = ';write(un,*) this%suppress_warning
        end subroutine
 
        subroutine export_momentum(this,un)
@@ -237,6 +271,13 @@
          call export(this%probe_KE_2C,un)
          call export(this%probe_divU,un)
          call export(this%probe_Q,un)
+       end subroutine
+
+       subroutine import_primitives_momentum(this,un)
+         implicit none
+         type(momentum),intent(inout) :: this
+         integer,intent(in) :: un
+         read(un,*); read(un,*) this%suppress_warning
        end subroutine
 
        subroutine import_momentum(this,un)
@@ -273,14 +314,76 @@
          call import(this%probe_Q,un)
        end subroutine
 
-       subroutine display_wrap_momentum(this,dir,name)
+       subroutine export_restart_momentum(this,dir)
          implicit none
          type(momentum),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
+         character(len=*),intent(in) :: dir
          integer :: un
-         un = new_and_open(dir,name)
-         call display(this,un)
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
          close(un)
+         call export_restart(this%m,dir//fortran_PS//'m')
+         call export_restart(this%PCG_P,dir//fortran_PS//'PCG_P')
+         call export_restart(this%PCG_U,dir//fortran_PS//'PCG_U')
+         call export_restart(this%TS,dir//fortran_PS//'TS')
+         call export_restart(this%p,dir//fortran_PS//'p')
+         call export_restart(this%divU,dir//fortran_PS//'divU')
+         call export_restart(this%temp_CC,dir//fortran_PS//'temp_CC')
+         call export_restart(this%U,dir//fortran_PS//'U')
+         call export_restart(this%Ustar,dir//fortran_PS//'Ustar')
+         call export_restart(this%Unm1,dir//fortran_PS//'Unm1')
+         call export_restart(this%U_CC,dir//fortran_PS//'U_CC')
+         call export_restart(this%F,dir//fortran_PS//'F')
+         call export_restart(this%Fnm1,dir//fortran_PS//'Fnm1')
+         call export_restart(this%L,dir//fortran_PS//'L')
+         call export_restart(this%temp_F1,dir//fortran_PS//'temp_F1')
+         call export_restart(this%temp_F2,dir//fortran_PS//'temp_F2')
+         call export_restart(this%temp_F3,dir//fortran_PS//'temp_F3')
+         call export_restart(this%temp_E,dir//fortran_PS//'temp_E')
+         call export_restart(this%temp_CC_VF,dir//fortran_PS//'temp_CC_VF')
+         call export_restart(this%U_E,dir//fortran_PS//'U_E')
+         call export_restart(this%TF_CC,dir//fortran_PS//'TF_CC')
+         call export_restart(this%TF_CC_edge,dir//fortran_PS//'TF_CC_edge')
+         call export_restart(this%probe_KE,dir//fortran_PS//'probe_KE')
+         call export_restart(this%probe_KE_2C,dir//fortran_PS//'probe_KE_2C')
+         call export_restart(this%probe_divU,dir//fortran_PS//'probe_divU')
+         call export_restart(this%probe_Q,dir//fortran_PS//'probe_Q')
+       end subroutine
+
+       subroutine import_restart_momentum(this,dir)
+         implicit none
+         type(momentum),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
+         call import_restart(this%m,dir//fortran_PS//'m')
+         call import_restart(this%PCG_P,dir//fortran_PS//'PCG_P')
+         call import_restart(this%PCG_U,dir//fortran_PS//'PCG_U')
+         call import_restart(this%TS,dir//fortran_PS//'TS')
+         call import_restart(this%p,dir//fortran_PS//'p')
+         call import_restart(this%divU,dir//fortran_PS//'divU')
+         call import_restart(this%temp_CC,dir//fortran_PS//'temp_CC')
+         call import_restart(this%U,dir//fortran_PS//'U')
+         call import_restart(this%Ustar,dir//fortran_PS//'Ustar')
+         call import_restart(this%Unm1,dir//fortran_PS//'Unm1')
+         call import_restart(this%U_CC,dir//fortran_PS//'U_CC')
+         call import_restart(this%F,dir//fortran_PS//'F')
+         call import_restart(this%Fnm1,dir//fortran_PS//'Fnm1')
+         call import_restart(this%L,dir//fortran_PS//'L')
+         call import_restart(this%temp_F1,dir//fortran_PS//'temp_F1')
+         call import_restart(this%temp_F2,dir//fortran_PS//'temp_F2')
+         call import_restart(this%temp_F3,dir//fortran_PS//'temp_F3')
+         call import_restart(this%temp_E,dir//fortran_PS//'temp_E')
+         call import_restart(this%temp_CC_VF,dir//fortran_PS//'temp_CC_VF')
+         call import_restart(this%U_E,dir//fortran_PS//'U_E')
+         call import_restart(this%TF_CC,dir//fortran_PS//'TF_CC')
+         call import_restart(this%TF_CC_edge,dir//fortran_PS//'TF_CC_edge')
+         call import_restart(this%probe_KE,dir//fortran_PS//'probe_KE')
+         call import_restart(this%probe_KE_2C,dir//fortran_PS//'probe_KE_2C')
+         call import_restart(this%probe_divU,dir//fortran_PS//'probe_divU')
+         call import_restart(this%probe_Q,dir//fortran_PS//'probe_Q')
        end subroutine
 
        subroutine export_wrap_momentum(this,dir,name)
@@ -301,6 +404,47 @@
          un = open_to_read(dir,name)
          call import(this,un)
          close(un)
+       end subroutine
+
+       subroutine make_restart_dir_momentum(this,dir)
+         implicit none
+         type(momentum),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_restart_dir(this%m,dir//fortran_PS//'m')
+         call make_restart_dir(this%PCG_P,dir//fortran_PS//'PCG_P')
+         call make_restart_dir(this%PCG_U,dir//fortran_PS//'PCG_U')
+         call make_restart_dir(this%TS,dir//fortran_PS//'TS')
+         call make_restart_dir(this%p,dir//fortran_PS//'p')
+         call make_restart_dir(this%divU,dir//fortran_PS//'divU')
+         call make_restart_dir(this%temp_CC,dir//fortran_PS//'temp_CC')
+         call make_restart_dir(this%U,dir//fortran_PS//'U')
+         call make_restart_dir(this%Ustar,dir//fortran_PS//'Ustar')
+         call make_restart_dir(this%Unm1,dir//fortran_PS//'Unm1')
+         call make_restart_dir(this%U_CC,dir//fortran_PS//'U_CC')
+         call make_restart_dir(this%F,dir//fortran_PS//'F')
+         call make_restart_dir(this%Fnm1,dir//fortran_PS//'Fnm1')
+         call make_restart_dir(this%L,dir//fortran_PS//'L')
+         call make_restart_dir(this%temp_F1,dir//fortran_PS//'temp_F1')
+         call make_restart_dir(this%temp_F2,dir//fortran_PS//'temp_F2')
+         call make_restart_dir(this%temp_F3,dir//fortran_PS//'temp_F3')
+         call make_restart_dir(this%temp_E,dir//fortran_PS//'temp_E')
+         call make_restart_dir(this%temp_CC_VF,dir//fortran_PS//'temp_CC_VF')
+         call make_restart_dir(this%U_E,dir//fortran_PS//'U_E')
+         call make_restart_dir(this%TF_CC,dir//fortran_PS//'TF_CC')
+         call make_restart_dir(this%TF_CC_edge,dir//fortran_PS//'TF_CC_edge')
+         call make_restart_dir(this%probe_KE,dir//fortran_PS//'probe_KE')
+         call make_restart_dir(this%probe_KE_2C,&
+         dir//fortran_PS//'probe_KE_2C')
+         call make_restart_dir(this%probe_divU,dir//fortran_PS//'probe_divU')
+         call make_restart_dir(this%probe_Q,dir//fortran_PS//'probe_Q')
+       end subroutine
+
+       subroutine suppress_warnings_momentum(this)
+         implicit none
+         type(momentum),intent(in) :: this
+         if (.false.) call print(this)
        end subroutine
 
        end module

@@ -14,6 +14,7 @@ VPATH +=\
 	$(SRC_DIR_GENERATED)$(PS)mesh_domain\
 	$(SRC_DIR_GENERATED)$(PS)mesh_params\
 	$(SRC_DIR_GENERATED)$(PS)physical_domain\
+	$(SRC_DIR_GENERATED)$(PS)pre_compiled\
 	$(SRC_DIR_GENERATED)$(PS)probe\
 	$(SRC_DIR_GENERATED)$(PS)procedure_array\
 	$(SRC_DIR_GENERATED)$(PS)sim_params\
@@ -24,6 +25,8 @@ VPATH +=\
 	$(SRC_DIR_GENERATED)$(PS)var_set\
 
 SRCS_F+=\
+	$(SRC_DIR_GENERATED)$(PS)pre_compiled$(PS)bctype.f90\
+	$(SRC_DIR_GENERATED)$(PS)pre_compiled$(PS)data_location.f90\
 	$(SRC_DIR_GENERATED)$(PS)stitches$(PS)stitch.f90\
 	$(SRC_DIR_GENERATED)$(PS)stitches$(PS)stitch_face.f90\
 	$(SRC_DIR_GENERATED)$(PS)dir_tree$(PS)path.f90\

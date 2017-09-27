@@ -5,8 +5,12 @@
        use IO_tools_mod
        use data_location_mod
        use boundary_conditions_mod
+       use data_location_mod
+       use datatype_conversion_mod
+       use dir_manip_mod
        use grid_field_mod
        use procedure_array_plane_op_mod
+       use string_mod
        implicit none
 
        private
@@ -14,17 +18,31 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_block_field;    end interface
-       interface delete;       module procedure delete_block_field;       end interface
-       interface display;      module procedure display_block_field;      end interface
-       interface display_short;module procedure display_short_block_field;end interface
-       interface display;      module procedure display_wrap_block_field; end interface
-       interface print;        module procedure print_block_field;        end interface
-       interface print_short;  module procedure print_short_block_field;  end interface
-       interface export;       module procedure export_block_field;       end interface
-       interface import;       module procedure import_block_field;       end interface
-       interface export;       module procedure export_wrap_block_field;  end interface
-       interface import;       module procedure import_wrap_block_field;  end interface
+       public :: export_primitives,import_primitives
+
+       public :: export_restart,import_restart
+
+       public :: make_restart_dir
+
+       public :: suppress_warnings
+
+       interface init;             module procedure init_copy_block_field;        end interface
+       interface delete;           module procedure delete_block_field;           end interface
+       interface display;          module procedure display_block_field;          end interface
+       interface display_short;    module procedure display_short_block_field;    end interface
+       interface display;          module procedure display_wrap_block_field;     end interface
+       interface print;            module procedure print_block_field;            end interface
+       interface print_short;      module procedure print_short_block_field;      end interface
+       interface export;           module procedure export_block_field;           end interface
+       interface export_primitives;module procedure export_primitives_block_field;end interface
+       interface export_restart;   module procedure export_restart_block_field;   end interface
+       interface import;           module procedure import_block_field;           end interface
+       interface import_restart;   module procedure import_restart_block_field;   end interface
+       interface import_primitives;module procedure import_primitives_block_field;end interface
+       interface export;           module procedure export_wrap_block_field;      end interface
+       interface import;           module procedure import_wrap_block_field;      end interface
+       interface make_restart_dir; module procedure make_restart_dir_block_field; end interface
+       interface suppress_warnings;module procedure suppress_warnings_block_field;end interface
 
        type block_field
          type(grid_field) :: GF
@@ -51,11 +69,16 @@
          call init(this%DL,that%DL)
          this%many_cell_N_periodic = that%many_cell_N_periodic
          this%many_cell = that%many_cell
-         call init(this%PA_assign_ghost_XPeriodic,that%PA_assign_ghost_XPeriodic)
-         call init(this%PA_assign_ghost_N_XPeriodic,that%PA_assign_ghost_N_XPeriodic)
-         call init(this%PA_assign_wall_Dirichlet,that%PA_assign_wall_Dirichlet)
-         call init(this%PA_assign_wall_Periodic_single,that%PA_assign_wall_Periodic_single)
-         call init(this%PA_multiply_wall_Neumann,that%PA_multiply_wall_Neumann)
+         call init(this%PA_assign_ghost_XPeriodic,&
+         that%PA_assign_ghost_XPeriodic)
+         call init(this%PA_assign_ghost_N_XPeriodic,&
+         that%PA_assign_ghost_N_XPeriodic)
+         call init(this%PA_assign_wall_Dirichlet,&
+         that%PA_assign_wall_Dirichlet)
+         call init(this%PA_assign_wall_Periodic_single,&
+         that%PA_assign_wall_Periodic_single)
+         call init(this%PA_multiply_wall_Neumann,&
+         that%PA_multiply_wall_Neumann)
        end subroutine
 
        subroutine delete_block_field(this)
@@ -80,7 +103,8 @@
          call display(this%GF,un)
          call display(this%BCs,un)
          call display(this%DL,un)
-         write(un,*) 'many_cell_N_periodic           = ',this%many_cell_N_periodic
+         write(un,*) 'many_cell_N_periodic           = ',&
+         this%many_cell_N_periodic
          write(un,*) 'many_cell                      = ',this%many_cell
          call display(this%PA_assign_ghost_XPeriodic,un)
          call display(this%PA_assign_ghost_N_XPeriodic,un)
@@ -96,13 +120,24 @@
          call display(this%GF,un)
          call display(this%BCs,un)
          call display(this%DL,un)
-         write(un,*) 'many_cell_N_periodic           = ',this%many_cell_N_periodic
+         write(un,*) 'many_cell_N_periodic           = ',&
+         this%many_cell_N_periodic
          write(un,*) 'many_cell                      = ',this%many_cell
          call display(this%PA_assign_ghost_XPeriodic,un)
          call display(this%PA_assign_ghost_N_XPeriodic,un)
          call display(this%PA_assign_wall_Dirichlet,un)
          call display(this%PA_assign_wall_Periodic_single,un)
          call display(this%PA_multiply_wall_Neumann,un)
+       end subroutine
+
+       subroutine display_wrap_block_field(this,dir,name)
+         implicit none
+         type(block_field),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call display(this,un)
+         close(un)
        end subroutine
 
        subroutine print_block_field(this)
@@ -115,6 +150,14 @@
          implicit none
          type(block_field),intent(in) :: this
          call display_short(this,6)
+       end subroutine
+
+       subroutine export_primitives_block_field(this,un)
+         implicit none
+         type(block_field),intent(in) :: this
+         integer,intent(in) :: un
+         write(un,*) 'many_cell_N_periodic            = ';write(un,*) this%many_cell_N_periodic
+         write(un,*) 'many_cell                       = ';write(un,*) this%many_cell
        end subroutine
 
        subroutine export_block_field(this,un)
@@ -131,6 +174,14 @@
          call export(this%PA_assign_wall_Dirichlet,un)
          call export(this%PA_assign_wall_Periodic_single,un)
          call export(this%PA_multiply_wall_Neumann,un)
+       end subroutine
+
+       subroutine import_primitives_block_field(this,un)
+         implicit none
+         type(block_field),intent(inout) :: this
+         integer,intent(in) :: un
+         read(un,*); read(un,*) this%many_cell_N_periodic
+         read(un,*); read(un,*) this%many_cell
        end subroutine
 
        subroutine import_block_field(this,un)
@@ -150,14 +201,50 @@
          call import(this%PA_multiply_wall_Neumann,un)
        end subroutine
 
-       subroutine display_wrap_block_field(this,dir,name)
+       subroutine export_restart_block_field(this,dir)
          implicit none
          type(block_field),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
+         character(len=*),intent(in) :: dir
          integer :: un
-         un = new_and_open(dir,name)
-         call display(this,un)
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
          close(un)
+         call export_restart(this%GF,dir//fortran_PS//'GF')
+         call export_restart(this%BCs,dir//fortran_PS//'BCs')
+         call export_restart(this%DL,dir//fortran_PS//'DL')
+         call export_restart(this%PA_assign_ghost_XPeriodic,&
+         dir//fortran_PS//'PA_assign_ghost_XPeriodic')
+         call export_restart(this%PA_assign_ghost_N_XPeriodic,&
+         dir//fortran_PS//'PA_assign_ghost_N_XPeriodic')
+         call export_restart(this%PA_assign_wall_Dirichlet,&
+         dir//fortran_PS//'PA_assign_wall_Dirichlet')
+         call export_restart(this%PA_assign_wall_Periodic_single,&
+         dir//fortran_PS//'PA_assign_wall_Periodic_single')
+         call export_restart(this%PA_multiply_wall_Neumann,&
+         dir//fortran_PS//'PA_multiply_wall_Neumann')
+       end subroutine
+
+       subroutine import_restart_block_field(this,dir)
+         implicit none
+         type(block_field),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
+         call import_restart(this%GF,dir//fortran_PS//'GF')
+         call import_restart(this%BCs,dir//fortran_PS//'BCs')
+         call import_restart(this%DL,dir//fortran_PS//'DL')
+         call import_restart(this%PA_assign_ghost_XPeriodic,&
+         dir//fortran_PS//'PA_assign_ghost_XPeriodic')
+         call import_restart(this%PA_assign_ghost_N_XPeriodic,&
+         dir//fortran_PS//'PA_assign_ghost_N_XPeriodic')
+         call import_restart(this%PA_assign_wall_Dirichlet,&
+         dir//fortran_PS//'PA_assign_wall_Dirichlet')
+         call import_restart(this%PA_assign_wall_Periodic_single,&
+         dir//fortran_PS//'PA_assign_wall_Periodic_single')
+         call import_restart(this%PA_multiply_wall_Neumann,&
+         dir//fortran_PS//'PA_multiply_wall_Neumann')
        end subroutine
 
        subroutine export_wrap_block_field(this,dir,name)
@@ -178,6 +265,33 @@
          un = open_to_read(dir,name)
          call import(this,un)
          close(un)
+       end subroutine
+
+       subroutine make_restart_dir_block_field(this,dir)
+         implicit none
+         type(block_field),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_restart_dir(this%GF,dir//fortran_PS//'GF')
+         call make_restart_dir(this%BCs,dir//fortran_PS//'BCs')
+         call make_restart_dir(this%DL,dir//fortran_PS//'DL')
+         call make_restart_dir(this%PA_assign_ghost_XPeriodic,&
+         dir//fortran_PS//'PA_assign_ghost_XPeriodic')
+         call make_restart_dir(this%PA_assign_ghost_N_XPeriodic,&
+         dir//fortran_PS//'PA_assign_ghost_N_XPeriodic')
+         call make_restart_dir(this%PA_assign_wall_Dirichlet,&
+         dir//fortran_PS//'PA_assign_wall_Dirichlet')
+         call make_restart_dir(this%PA_assign_wall_Periodic_single,&
+         dir//fortran_PS//'PA_assign_wall_Periodic_single')
+         call make_restart_dir(this%PA_multiply_wall_Neumann,&
+         dir//fortran_PS//'PA_multiply_wall_Neumann')
+       end subroutine
+
+       subroutine suppress_warnings_block_field(this)
+         implicit none
+         type(block_field),intent(in) :: this
+         if (.false.) call print(this)
        end subroutine
 
        end module

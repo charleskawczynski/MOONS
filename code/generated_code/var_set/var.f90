@@ -3,12 +3,15 @@
        ! ***************************************************
        module var_mod
        use IO_tools_mod
+       use datatype_conversion_mod
+       use dir_manip_mod
        use export_field_mod
        use export_lines_mod
        use export_planes_mod
        use iter_solver_params_mod
        use matrix_free_params_mod
        use solver_settings_mod
+       use string_mod
        use time_marching_params_mod
        implicit none
 
@@ -17,17 +20,31 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_var;    end interface
-       interface delete;       module procedure delete_var;       end interface
-       interface display;      module procedure display_var;      end interface
-       interface display_short;module procedure display_short_var;end interface
-       interface display;      module procedure display_wrap_var; end interface
-       interface print;        module procedure print_var;        end interface
-       interface print_short;  module procedure print_short_var;  end interface
-       interface export;       module procedure export_var;       end interface
-       interface import;       module procedure import_var;       end interface
-       interface export;       module procedure export_wrap_var;  end interface
-       interface import;       module procedure import_wrap_var;  end interface
+       public :: export_primitives,import_primitives
+
+       public :: export_restart,import_restart
+
+       public :: make_restart_dir
+
+       public :: suppress_warnings
+
+       interface init;             module procedure init_copy_var;        end interface
+       interface delete;           module procedure delete_var;           end interface
+       interface display;          module procedure display_var;          end interface
+       interface display_short;    module procedure display_short_var;    end interface
+       interface display;          module procedure display_wrap_var;     end interface
+       interface print;            module procedure print_var;            end interface
+       interface print_short;      module procedure print_short_var;      end interface
+       interface export;           module procedure export_var;           end interface
+       interface export_primitives;module procedure export_primitives_var;end interface
+       interface export_restart;   module procedure export_restart_var;   end interface
+       interface import;           module procedure import_var;           end interface
+       interface import_restart;   module procedure import_restart_var;   end interface
+       interface import_primitives;module procedure import_primitives_var;end interface
+       interface export;           module procedure export_wrap_var;      end interface
+       interface import;           module procedure import_wrap_var;      end interface
+       interface make_restart_dir; module procedure make_restart_dir_var; end interface
+       interface suppress_warnings;module procedure suppress_warnings_var;end interface
 
        type var
          integer :: IC = 0
@@ -103,6 +120,16 @@
          call display(this%unsteady_field,un)
        end subroutine
 
+       subroutine display_wrap_var(this,dir,name)
+         implicit none
+         type(var),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call display(this,un)
+         close(un)
+       end subroutine
+
        subroutine print_var(this)
          implicit none
          type(var),intent(in) :: this
@@ -113,6 +140,14 @@
          implicit none
          type(var),intent(in) :: this
          call display_short(this,6)
+       end subroutine
+
+       subroutine export_primitives_var(this,un)
+         implicit none
+         type(var),intent(in) :: this
+         integer,intent(in) :: un
+         write(un,*) 'IC               = ';write(un,*) this%IC
+         write(un,*) 'BC               = ';write(un,*) this%BC
        end subroutine
 
        subroutine export_var(this,un)
@@ -128,6 +163,14 @@
          call export(this%unsteady_lines,un)
          call export(this%unsteady_planes,un)
          call export(this%unsteady_field,un)
+       end subroutine
+
+       subroutine import_primitives_var(this,un)
+         implicit none
+         type(var),intent(inout) :: this
+         integer,intent(in) :: un
+         read(un,*); read(un,*) this%IC
+         read(un,*); read(un,*) this%BC
        end subroutine
 
        subroutine import_var(this,un)
@@ -146,14 +189,44 @@
          call import(this%unsteady_field,un)
        end subroutine
 
-       subroutine display_wrap_var(this,dir,name)
+       subroutine export_restart_var(this,dir)
          implicit none
          type(var),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
+         character(len=*),intent(in) :: dir
          integer :: un
-         un = new_and_open(dir,name)
-         call display(this,un)
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
          close(un)
+         call export_restart(this%SS,dir//fortran_PS//'SS')
+         call export_restart(this%MFP,dir//fortran_PS//'MFP')
+         call export_restart(this%TMP,dir//fortran_PS//'TMP')
+         call export_restart(this%ISP,dir//fortran_PS//'ISP')
+         call export_restart(this%unsteady_lines,&
+         dir//fortran_PS//'unsteady_lines')
+         call export_restart(this%unsteady_planes,&
+         dir//fortran_PS//'unsteady_planes')
+         call export_restart(this%unsteady_field,&
+         dir//fortran_PS//'unsteady_field')
+       end subroutine
+
+       subroutine import_restart_var(this,dir)
+         implicit none
+         type(var),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
+         call import_restart(this%SS,dir//fortran_PS//'SS')
+         call import_restart(this%MFP,dir//fortran_PS//'MFP')
+         call import_restart(this%TMP,dir//fortran_PS//'TMP')
+         call import_restart(this%ISP,dir//fortran_PS//'ISP')
+         call import_restart(this%unsteady_lines,&
+         dir//fortran_PS//'unsteady_lines')
+         call import_restart(this%unsteady_planes,&
+         dir//fortran_PS//'unsteady_planes')
+         call import_restart(this%unsteady_field,&
+         dir//fortran_PS//'unsteady_field')
        end subroutine
 
        subroutine export_wrap_var(this,dir,name)
@@ -174,6 +247,30 @@
          un = open_to_read(dir,name)
          call import(this,un)
          close(un)
+       end subroutine
+
+       subroutine make_restart_dir_var(this,dir)
+         implicit none
+         type(var),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_restart_dir(this%SS,dir//fortran_PS//'SS')
+         call make_restart_dir(this%MFP,dir//fortran_PS//'MFP')
+         call make_restart_dir(this%TMP,dir//fortran_PS//'TMP')
+         call make_restart_dir(this%ISP,dir//fortran_PS//'ISP')
+         call make_restart_dir(this%unsteady_lines,&
+         dir//fortran_PS//'unsteady_lines')
+         call make_restart_dir(this%unsteady_planes,&
+         dir//fortran_PS//'unsteady_planes')
+         call make_restart_dir(this%unsteady_field,&
+         dir//fortran_PS//'unsteady_field')
+       end subroutine
+
+       subroutine suppress_warnings_var(this)
+         implicit none
+         type(var),intent(in) :: this
+         if (.false.) call print(this)
        end subroutine
 
        end module

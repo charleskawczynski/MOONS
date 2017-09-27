@@ -1,0 +1,32 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Governing equations}
+The dimensional momentum and induction equations for uniform $\rho,\mu,\M,\sigma$ are
+
+\begin{equation}\begin{aligned}
+\PD_t u_i+u_j\PD_j u_i = - \frac{1}{\rho} \PD_i p+ \nu \PD_{jj} u_i + \frac{1}{\rho \M} (B_j \PD_j B_i - \tfrac{1}{2} \PD_i B_j B_j) \\
+\PD_t B_i = \frac{1}{\sigma \M} \PD_{jj} B_i + B_j \PD_j u_i - u_j \PD_j B_i
+\end{aligned} \end{equation}
+Remove magnetic pressure
+\begin{equation}\begin{aligned}
+\PD_t u_i+u_j\PD_j u_i = -\PD_i p+ \nu \PD_{jj} u_i + \frac{1}{\rho \M} B_j \PD_j B_i \\
+\PD_t B_i = \frac{1}{\sigma \M} \PD_{jj} B_i - \PD_j (u_j B_i - u_i B_j)
+\PD_t B_i = \frac{1}{\sigma \M} \PD_{jj} B_i - u_j \PD_j B_i + B_j \PD_j u_i
+\end{aligned} \end{equation}
+Expanding equations yields
+\begin{equation}\begin{aligned}
+\PD_t u+ u\PD_x u + v\PD_y u + w\PD_z u = -\frac{1}{\rho}\PD_x p+ \nu (\PD_{xx} u+\PD_{yy} u+\PD_{zz} u) + \frac{1}{\rho \M} (B_x \PD_x B_x + B_y \PD_y B_x + B_z \PD_z B_x) \\
+\PD_t v+ u\PD_x v + v\PD_y v + w\PD_z v = -\frac{1}{\rho}\PD_y p+ \nu (\PD_{xx} v+\PD_{yy} v+\PD_{zz} v) + \frac{1}{\rho \M} (B_x \PD_x B_y + B_y \PD_y B_y + B_z \PD_z B_y) \\
+\PD_t w+ u\PD_x w + v\PD_y w + w\PD_z w = -\frac{1}{\rho}\PD_z p+ \nu (\PD_{xx} w+\PD_{yy} w+\PD_{zz} w) + \frac{1}{\rho \M} (B_x \PD_x B_z + B_y \PD_y B_z + B_z \PD_z B_z) \\
+\PD_t B_x = \frac{1}{\sigma \M} (\PD_{xx} B_x + \PD_{yy} B_x+\PD_{zz} B_x) + (B_x \PD_x u + B_y \PD_y u + B_z \PD_z u)  - (u \PD_x B_x + v \PD_y B_x + w \PD_z B_x) \\
+\PD_t B_y = \frac{1}{\sigma \M} (\PD_{xx} B_y + \PD_{yy} B_y+\PD_{zz} B_y) + (B_x \PD_x v + B_y \PD_y v + B_z \PD_z v)  - (u \PD_x B_y + v \PD_y B_y + w \PD_z B_y) \\
+\PD_t B_z = \frac{1}{\sigma \M} (\PD_{xx} B_z + \PD_{yy} B_z+\PD_{zz} B_z) + (B_x \PD_x w + B_y \PD_y w + B_z \PD_z w)  - (u \PD_x B_z + v \PD_y B_z + w \PD_z B_z) \\
+\end{aligned} \end{equation}
+
+\end{document}

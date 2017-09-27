@@ -1,10 +1,12 @@
-       module bctype_mod
+       module bctype_extend_mod
+       use bctype_mod
        use current_precision_mod
        implicit none
 
        private
        public :: bctype
        public :: init,delete,display,print,export,import ! Essentials
+       public :: display_info
 
        public :: init_Dirichlet,     is_Dirichlet
        public :: init_Neumann,       is_Neumann
@@ -19,29 +21,10 @@
        public :: get_mean_value
        public :: display_type,display_meanVal,get_bctype
 
-       type bctype
-         private
-         logical :: Dirichlet = .false.
-         logical :: Neumann = .false.
-         logical :: Robin = .false.
-         logical :: Periodic = .false.
-         logical :: symmetric = .false.
-         logical :: antisymmetric = .false.
-         logical :: prescribed = .false.
-         logical :: defined = .false.
-         real(cp) :: meanVal = 0.0_cp
-         character(len=1) :: BCT = 'X'
-       end type
-
-       interface init;                module procedure init_copy_b;            end interface
        interface init;                module procedure init_val0;              end interface
        interface init;                module procedure init_val1;              end interface
        interface init;                module procedure init_val2;              end interface
-       interface delete;              module procedure delete_bctype;          end interface
-       interface display;             module procedure display_bctype;         end interface
-       interface print;               module procedure print_bctype;           end interface
-       interface export;              module procedure export_bctype;          end interface
-       interface import;              module procedure import_bctype;          end interface
+       interface display_info;        module procedure display_info_bctype;    end interface
 
        interface init_Dirichlet;      module procedure init_Dirichlet_b;       end interface
        interface init_Neumann;        module procedure init_Neumann_b;         end interface
@@ -92,40 +75,7 @@
          b%meanVal = sum(val)/real(size(val),cp)
        end subroutine
 
-       subroutine init_copy_b(b_out,b_in)
-         implicit none
-         type(bctype),intent(inout) :: b_out
-         type(bctype),intent(in) :: b_in
-         if (.not.b_in%defined) then
-           stop 'Error: trying to copy bctype that has not been fully defined in bctype.f90'
-         endif
-         b_out%meanVal       = b_in%meanVal
-         b_out%Dirichlet     = b_in%Dirichlet
-         b_out%Neumann       = b_in%Neumann
-         b_out%Robin         = b_in%Robin
-         b_out%Periodic      = b_in%Periodic
-         b_out%symmetric     = b_in%symmetric
-         b_out%antisymmetric = b_in%antisymmetric
-         b_out%defined       = b_in%defined
-         b_out%prescribed    = b_in%prescribed
-         b_out%BCT           = b_in%BCT
-       end subroutine
-
-       subroutine delete_bctype(b)
-         implicit none
-         type(bctype),intent(inout) :: b
-         b%Dirichlet = .false.
-         b%Neumann = .false.
-         b%Robin = .false.
-         b%Periodic = .false.
-         b%symmetric = .false.
-         b%antisymmetric = .false.
-         b%defined = .false.
-         b%prescribed = .false.
-         b%BCT = 'X'
-       end subroutine
-
-       subroutine display_bctype(b,un)
+       subroutine display_info_bctype(b,un)
          implicit none
          type(bctype),intent(in) :: b
          integer,intent(in) :: un
@@ -157,48 +107,6 @@
          ! write(un,*) 'meanVal = ',b%meanVal
          ! write(un,*) 'defined = ',b%defined
        end subroutine
-
-       subroutine print_bctype(b)
-         implicit none
-         type(bctype), intent(in) :: b
-         call display(b,6)
-       end subroutine
-
-       subroutine export_bctype(b,un)
-         implicit none
-         type(bctype),intent(in) :: b
-         integer,intent(in) :: un
-         write(un,*) 'Dirichlet';      write(un,*) b%Dirichlet
-         write(un,*) 'Neumann';        write(un,*) b%Neumann
-         write(un,*) 'Robin';          write(un,*) b%Robin
-         write(un,*) 'Periodic';       write(un,*) b%Periodic
-         write(un,*) 'symmetric';      write(un,*) b%symmetric
-         write(un,*) 'antisymmetric';  write(un,*) b%antisymmetric
-         write(un,*) 'defined';        write(un,*) b%defined
-         write(un,*) 'prescribed';     write(un,*) b%prescribed
-         write(un,*) 'meanVal';        write(un,*) b%meanVal
-         write(un,*) 'BCT';            write(un,*) b%BCT
-       end subroutine
-
-       subroutine import_bctype(b,un)
-         implicit none
-         type(bctype),intent(inout) :: b
-         integer,intent(in) :: un
-         read(un,*); read(un,*) b%Dirichlet
-         read(un,*); read(un,*) b%Neumann
-         read(un,*); read(un,*) b%Robin
-         read(un,*); read(un,*) b%Periodic
-         read(un,*); read(un,*) b%symmetric
-         read(un,*); read(un,*) b%antisymmetric
-         read(un,*); read(un,*) b%defined
-         read(un,*); read(un,*) b%prescribed
-         read(un,*); read(un,*) b%meanVal
-         read(un,*); read(un,*) b%BCT
-       end subroutine
-
-       ! **********************************************************
-       ! **********************************************************
-       ! **********************************************************
 
        subroutine init_Dirichlet_b(b)
          implicit none

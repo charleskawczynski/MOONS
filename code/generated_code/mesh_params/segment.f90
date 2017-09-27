@@ -4,6 +4,8 @@
        module segment_mod
        use current_precision_mod
        use IO_tools_mod
+       use datatype_conversion_mod
+       use dir_manip_mod
        use string_mod
        implicit none
 
@@ -12,17 +14,31 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_segment;    end interface
-       interface delete;       module procedure delete_segment;       end interface
-       interface display;      module procedure display_segment;      end interface
-       interface display_short;module procedure display_short_segment;end interface
-       interface display;      module procedure display_wrap_segment; end interface
-       interface print;        module procedure print_segment;        end interface
-       interface print_short;  module procedure print_short_segment;  end interface
-       interface export;       module procedure export_segment;       end interface
-       interface import;       module procedure import_segment;       end interface
-       interface export;       module procedure export_wrap_segment;  end interface
-       interface import;       module procedure import_wrap_segment;  end interface
+       public :: export_primitives,import_primitives
+
+       public :: export_restart,import_restart
+
+       public :: make_restart_dir
+
+       public :: suppress_warnings
+
+       interface init;             module procedure init_copy_segment;        end interface
+       interface delete;           module procedure delete_segment;           end interface
+       interface display;          module procedure display_segment;          end interface
+       interface display_short;    module procedure display_short_segment;    end interface
+       interface display;          module procedure display_wrap_segment;     end interface
+       interface print;            module procedure print_segment;            end interface
+       interface print_short;      module procedure print_short_segment;      end interface
+       interface export;           module procedure export_segment;           end interface
+       interface export_primitives;module procedure export_primitives_segment;end interface
+       interface export_restart;   module procedure export_restart_segment;   end interface
+       interface import;           module procedure import_segment;           end interface
+       interface import_restart;   module procedure import_restart_segment;   end interface
+       interface import_primitives;module procedure import_primitives_segment;end interface
+       interface export;           module procedure export_wrap_segment;      end interface
+       interface import;           module procedure import_wrap_segment;      end interface
+       interface make_restart_dir; module procedure make_restart_dir_segment; end interface
+       interface suppress_warnings;module procedure suppress_warnings_segment;end interface
 
        type segment
          integer :: N_cells = 0
@@ -93,6 +109,16 @@
          write(un,*) 'dir          = ',this%dir
        end subroutine
 
+       subroutine display_wrap_segment(this,dir,name)
+         implicit none
+         type(segment),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call display(this,un)
+         close(un)
+       end subroutine
+
        subroutine print_segment(this)
          implicit none
          type(segment),intent(in) :: this
@@ -103,6 +129,19 @@
          implicit none
          type(segment),intent(in) :: this
          call display_short(this,6)
+       end subroutine
+
+       subroutine export_primitives_segment(this,un)
+         implicit none
+         type(segment),intent(in) :: this
+         integer,intent(in) :: un
+         write(un,*) 'N_cells       = ';write(un,*) this%N_cells
+         write(un,*) 'hmax          = ';write(un,*) this%hmax
+         write(un,*) 'hmin          = ';write(un,*) this%hmin
+         write(un,*) 'L             = ';write(un,*) this%L
+         write(un,*) 'tau           = ';write(un,*) this%tau
+         write(un,*) 'yc            = ';write(un,*) this%yc
+         write(un,*) 'dir           = ';write(un,*) this%dir
        end subroutine
 
        subroutine export_segment(this,un)
@@ -117,6 +156,19 @@
          write(un,*) 'tau           = ';write(un,*) this%tau
          write(un,*) 'yc            = ';write(un,*) this%yc
          write(un,*) 'dir           = ';write(un,*) this%dir
+       end subroutine
+
+       subroutine import_primitives_segment(this,un)
+         implicit none
+         type(segment),intent(inout) :: this
+         integer,intent(in) :: un
+         read(un,*); read(un,*) this%N_cells
+         read(un,*); read(un,*) this%hmax
+         read(un,*); read(un,*) this%hmin
+         read(un,*); read(un,*) this%L
+         read(un,*); read(un,*) this%tau
+         read(un,*); read(un,*) this%yc
+         read(un,*); read(un,*) this%dir
        end subroutine
 
        subroutine import_segment(this,un)
@@ -134,13 +186,23 @@
          read(un,*); read(un,*) this%dir
        end subroutine
 
-       subroutine display_wrap_segment(this,dir,name)
+       subroutine export_restart_segment(this,dir)
          implicit none
          type(segment),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
+         character(len=*),intent(in) :: dir
          integer :: un
-         un = new_and_open(dir,name)
-         call display(this,un)
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_restart_segment(this,dir)
+         implicit none
+         type(segment),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
          close(un)
        end subroutine
 
@@ -162,6 +224,20 @@
          un = open_to_read(dir,name)
          call import(this,un)
          close(un)
+       end subroutine
+
+       subroutine make_restart_dir_segment(this,dir)
+         implicit none
+         type(segment),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+       end subroutine
+
+       subroutine suppress_warnings_segment(this)
+         implicit none
+         type(segment),intent(in) :: this
+         if (.false.) call print(this)
        end subroutine
 
        end module

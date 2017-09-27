@@ -6,7 +6,7 @@
       use IO_export_mod
       use mesh_extend_mod
       use norms_extend_mod
-      use data_location_mod
+      use data_location_extend_mod
       use ops_discrete_mod
       use ops_aux_mod
       use SF_extend_mod

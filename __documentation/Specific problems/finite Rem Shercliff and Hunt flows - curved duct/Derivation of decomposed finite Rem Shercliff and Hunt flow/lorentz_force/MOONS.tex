@@ -1,0 +1,44 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Low but finite Rem Shercliff and Hunt flow}
+Here, we derived the equations for a finite magnetic Reynolds number ($Re_m$) Shercliff / Hunt (SH) flow. The dimensionless momentum and induction equations are
+
+\begin{equation}\begin{aligned}
+\PD_t u_i+u_j\PD_j u_i =-\PD_i p+ Re^{-1} \PD_{jj} u_i + Re_m^{-1} N (B_j \PD_j B_i - \tfrac{1}{2} \PD_i B_j B_j) \\
+\PD_t B_i = Re_m^{-1} \PD_{jj} B_i - \PD_j (u_j B_i - u_i B_j)
+\end{aligned} \end{equation}
+
+Where $\U,\B,p,Re,N,Re_m$ are the velocity, magnetic field, pressure, Reynolds, interaction and magnetic Reynolds number respectively. First, let's let the mechanical pressure absorb the magnetic pressure and seek the steady solution.
+\begin{equation}\begin{aligned}
+u_j\PD_j u_i =-\PD_i p+ Re^{-1} \PD_{jj} u_i + Re_m^{-1} N (B_j \PD_j B_i) \\
+Re_m^{-1} \PD_{jj} B_i = \PD_j (u_j B_i - u_i B_j)
+\end{aligned} \end{equation}
+Since we are interested in when $Re_m$ is small, and the induction equation is linear, we'll combine them by factors of $Re_m$. There is documentation in MOONS how this is done. To be clear we may decompse $\B$ in one of two ways:
+
+\begin{equation}\begin{aligned}
+	\B = \B^0 + \B^1 + \B^2 + \hdots , \\
+	\B = \B^0 + Re_m \B^* + Re_m^2 \B^{**} + \hdots \\
+	\J = \CURL \B = \CURL \B^* + Re_m \CURL \B^{**} + \hdots \\
+	\J \times \B = B_j \PD_j B_i - \underbrace{\tfrac{1}{2} \PD_j (B_i B_i)}_{\text{let pressure absorb}} \\
+	= B_j \PD_j B_i \\
+	= (B_j^0+Re_m B_j^* + \hdots) \PD_j (B_i^*+Re_m^1 B_i^{**} + \hdots) \\
+\end{aligned} \end{equation}
+Setting $\PD_x() = 0$ and looking at the $x$-component of the curl of $\J \times \B$, we have
+\begin{equation}\begin{aligned}
+	\left [\CURL (\J \times \B) \right]_x = 
+	\PD_y ((Re_m B_x^* + Re_m B_y^* + B_z^0+Re_m B_z^*) (\PD_y B_z+\PD_z B_z)) - \\
+	\PD_z ((Re_m B_x^* + Re_m B_y^* + B_z^0+Re_m B_z^*) (\PD_y B_y+\PD_z B_y))
+\end{aligned} \end{equation}
+And the $x$-compontent of $\J \times \B$ is 
+\begin{equation}\begin{aligned}
+	(\J \times \B)_x = 
+	(B_y^0+Re_m B_y^*) \PD_y (B_y^*+Re_m^1 B_y^{**}) + (B_z^0+Re_m B_z^*) \PD_z (B_x^*+Re_m^1 B_x^{**}) \\
+\end{aligned} \end{equation}
+
+\end{document}

@@ -4,6 +4,8 @@
        module iter_solver_params_mod
        use current_precision_mod
        use IO_tools_mod
+       use datatype_conversion_mod
+       use dir_manip_mod
        use string_mod
        implicit none
 
@@ -12,19 +14,33 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_iter_solver_params;    end interface
-       interface delete;       module procedure delete_iter_solver_params;       end interface
-       interface display;      module procedure display_iter_solver_params;      end interface
-       interface display_short;module procedure display_short_iter_solver_params;end interface
-       interface display;      module procedure display_wrap_iter_solver_params; end interface
-       interface print;        module procedure print_iter_solver_params;        end interface
-       interface print_short;  module procedure print_short_iter_solver_params;  end interface
-       interface export;       module procedure export_iter_solver_params;       end interface
-       interface import;       module procedure import_iter_solver_params;       end interface
-       interface export;       module procedure export_wrap_iter_solver_params;  end interface
-       interface import;       module procedure import_wrap_iter_solver_params;  end interface
-       interface export;       module procedure export_DN_iter_solver_params;    end interface
-       interface import;       module procedure import_DN_iter_solver_params;    end interface
+       public :: export_primitives,import_primitives
+
+       public :: export_restart,import_restart
+
+       public :: make_restart_dir
+
+       public :: suppress_warnings
+
+       interface init;             module procedure init_copy_iter_solver_params;        end interface
+       interface delete;           module procedure delete_iter_solver_params;           end interface
+       interface display;          module procedure display_iter_solver_params;          end interface
+       interface display_short;    module procedure display_short_iter_solver_params;    end interface
+       interface display;          module procedure display_wrap_iter_solver_params;     end interface
+       interface print;            module procedure print_iter_solver_params;            end interface
+       interface print_short;      module procedure print_short_iter_solver_params;      end interface
+       interface export;           module procedure export_iter_solver_params;           end interface
+       interface export_primitives;module procedure export_primitives_iter_solver_params;end interface
+       interface export_restart;   module procedure export_restart_iter_solver_params;   end interface
+       interface import;           module procedure import_iter_solver_params;           end interface
+       interface import_restart;   module procedure import_restart_iter_solver_params;   end interface
+       interface import_primitives;module procedure import_primitives_iter_solver_params;end interface
+       interface export;           module procedure export_wrap_iter_solver_params;      end interface
+       interface import;           module procedure import_wrap_iter_solver_params;      end interface
+       interface make_restart_dir; module procedure make_restart_dir_iter_solver_params; end interface
+       interface suppress_warnings;module procedure suppress_warnings_iter_solver_params;end interface
+       interface export;           module procedure export_DN_iter_solver_params;        end interface
+       interface import;           module procedure import_DN_iter_solver_params;        end interface
 
        type iter_solver_params
          integer :: un = 0
@@ -115,6 +131,16 @@
          write(un,*) 'exit_loop          = ',this%exit_loop
        end subroutine
 
+       subroutine display_wrap_iter_solver_params(this,dir,name)
+         implicit none
+         type(iter_solver_params),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call display(this,un)
+         close(un)
+       end subroutine
+
        subroutine print_iter_solver_params(this)
          implicit none
          type(iter_solver_params),intent(in) :: this
@@ -125,6 +151,22 @@
          implicit none
          type(iter_solver_params),intent(in) :: this
          call display_short(this,6)
+       end subroutine
+
+       subroutine export_primitives_iter_solver_params(this,un)
+         implicit none
+         type(iter_solver_params),intent(in) :: this
+         integer,intent(in) :: un
+         write(un,*) 'un                  = ';write(un,*) this%un
+         write(un,*) 'iter_max            = ';write(un,*) this%iter_max
+         write(un,*) 'tol_abs             = ';write(un,*) this%tol_abs
+         write(un,*) 'tol_rel             = ';write(un,*) this%tol_rel
+         write(un,*) 'iter_total          = ';write(un,*) this%iter_total
+         write(un,*) 'iter_per_call       = ';write(un,*) this%iter_per_call
+         write(un,*) 'n_skip_check_res    = ';write(un,*) this%n_skip_check_res
+         write(un,*) 'export_convergence  = ';write(un,*) this%export_convergence
+         write(un,*) 'export_heavy        = ';write(un,*) this%export_heavy
+         write(un,*) 'exit_loop           = ';write(un,*) this%exit_loop
        end subroutine
 
        subroutine export_iter_solver_params(this,un)
@@ -143,6 +185,22 @@
          write(un,*) 'export_convergence  = ';write(un,*) this%export_convergence
          write(un,*) 'export_heavy        = ';write(un,*) this%export_heavy
          write(un,*) 'exit_loop           = ';write(un,*) this%exit_loop
+       end subroutine
+
+       subroutine import_primitives_iter_solver_params(this,un)
+         implicit none
+         type(iter_solver_params),intent(inout) :: this
+         integer,intent(in) :: un
+         read(un,*); read(un,*) this%un
+         read(un,*); read(un,*) this%iter_max
+         read(un,*); read(un,*) this%tol_abs
+         read(un,*); read(un,*) this%tol_rel
+         read(un,*); read(un,*) this%iter_total
+         read(un,*); read(un,*) this%iter_per_call
+         read(un,*); read(un,*) this%n_skip_check_res
+         read(un,*); read(un,*) this%export_convergence
+         read(un,*); read(un,*) this%export_heavy
+         read(un,*); read(un,*) this%exit_loop
        end subroutine
 
        subroutine import_iter_solver_params(this,un)
@@ -164,13 +222,23 @@
          read(un,*); read(un,*) this%exit_loop
        end subroutine
 
-       subroutine display_wrap_iter_solver_params(this,dir,name)
+       subroutine export_restart_iter_solver_params(this,dir)
          implicit none
          type(iter_solver_params),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
+         character(len=*),intent(in) :: dir
          integer :: un
-         un = new_and_open(dir,name)
-         call display(this,un)
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_restart_iter_solver_params(this,dir)
+         implicit none
+         type(iter_solver_params),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
          close(un)
        end subroutine
 
@@ -212,6 +280,20 @@
          call delete(dir)
          call delete(name)
          close(un)
+       end subroutine
+
+       subroutine make_restart_dir_iter_solver_params(this,dir)
+         implicit none
+         type(iter_solver_params),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+       end subroutine
+
+       subroutine suppress_warnings_iter_solver_params(this)
+         implicit none
+         type(iter_solver_params),intent(in) :: this
+         if (.false.) call print(this)
        end subroutine
 
        end module

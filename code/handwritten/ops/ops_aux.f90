@@ -31,7 +31,7 @@
        !
        !
        use current_precision_mod
-       use bctype_mod
+       use bctype_extend_mod
        use face_edge_corner_indexing_mod
        use ops_del_mod
        use ops_interp_mod

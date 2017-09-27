@@ -4,7 +4,7 @@
       use apply_BCs_mod
       use ops_discrete_mod
       use ops_aux_mod
-      use bctype_mod
+      use bctype_extend_mod
       use export_raw_processed_mod
       use SF_extend_mod
       use VF_extend_mod

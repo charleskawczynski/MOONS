@@ -8,9 +8,12 @@
        use SF_mod
        use TF_mod
        use VF_mod
+       use datatype_conversion_mod
+       use dir_manip_mod
        use mesh_mod
        use mesh_domain_mod
        use probe_mod
+       use string_mod
        implicit none
 
        private
@@ -18,17 +21,31 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_induction;    end interface
-       interface delete;       module procedure delete_induction;       end interface
-       interface display;      module procedure display_induction;      end interface
-       interface display_short;module procedure display_short_induction;end interface
-       interface display;      module procedure display_wrap_induction; end interface
-       interface print;        module procedure print_induction;        end interface
-       interface print_short;  module procedure print_short_induction;  end interface
-       interface export;       module procedure export_induction;       end interface
-       interface import;       module procedure import_induction;       end interface
-       interface export;       module procedure export_wrap_induction;  end interface
-       interface import;       module procedure import_wrap_induction;  end interface
+       public :: export_primitives,import_primitives
+
+       public :: export_restart,import_restart
+
+       public :: make_restart_dir
+
+       public :: suppress_warnings
+
+       interface init;             module procedure init_copy_induction;        end interface
+       interface delete;           module procedure delete_induction;           end interface
+       interface display;          module procedure display_induction;          end interface
+       interface display_short;    module procedure display_short_induction;    end interface
+       interface display;          module procedure display_wrap_induction;     end interface
+       interface print;            module procedure print_induction;            end interface
+       interface print_short;      module procedure print_short_induction;      end interface
+       interface export;           module procedure export_induction;           end interface
+       interface export_primitives;module procedure export_primitives_induction;end interface
+       interface export_restart;   module procedure export_restart_induction;   end interface
+       interface import;           module procedure import_induction;           end interface
+       interface import_restart;   module procedure import_restart_induction;   end interface
+       interface import_primitives;module procedure import_primitives_induction;end interface
+       interface export;           module procedure export_wrap_induction;      end interface
+       interface import;           module procedure import_wrap_induction;      end interface
+       interface make_restart_dir; module procedure make_restart_dir_induction; end interface
+       interface suppress_warnings;module procedure suppress_warnings_induction;end interface
 
        type induction
          logical :: suppress_warning = .false.
@@ -141,11 +158,13 @@
          enddo
          s_ME_conductor = size(that%ME_conductor)
          do i_ME_conductor=1,s_ME_conductor
-           call init(this%ME_conductor(i_ME_conductor),that%ME_conductor(i_ME_conductor))
+           call init(this%ME_conductor(i_ME_conductor),&
+           that%ME_conductor(i_ME_conductor))
          enddo
          s_probe_dB0dt = size(that%probe_dB0dt)
          do i_probe_dB0dt=1,s_probe_dB0dt
-           call init(this%probe_dB0dt(i_probe_dB0dt),that%probe_dB0dt(i_probe_dB0dt))
+           call init(this%probe_dB0dt(i_probe_dB0dt),&
+           that%probe_dB0dt(i_probe_dB0dt))
          enddo
          s_probe_B0 = size(that%probe_B0)
          do i_probe_B0=1,s_probe_B0
@@ -379,6 +398,16 @@
          call display(this%MD_sigma,un)
        end subroutine
 
+       subroutine display_wrap_induction(this,dir,name)
+         implicit none
+         type(induction),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call display(this,un)
+         close(un)
+       end subroutine
+
        subroutine print_induction(this)
          implicit none
          type(induction),intent(in) :: this
@@ -389,6 +418,13 @@
          implicit none
          type(induction),intent(in) :: this
          call display_short(this,6)
+       end subroutine
+
+       subroutine export_primitives_induction(this,un)
+         implicit none
+         type(induction),intent(in) :: this
+         integer,intent(in) :: un
+         write(un,*) 'suppress_warning  = ';write(un,*) this%suppress_warning
        end subroutine
 
        subroutine export_induction(this,un)
@@ -471,6 +507,13 @@
          call export(this%MD_sigma,un)
        end subroutine
 
+       subroutine import_primitives_induction(this,un)
+         implicit none
+         type(induction),intent(inout) :: this
+         integer,intent(in) :: un
+         read(un,*); read(un,*) this%suppress_warning
+       end subroutine
+
        subroutine import_induction(this,un)
          implicit none
          type(induction),intent(inout) :: this
@@ -547,14 +590,172 @@
          call import(this%MD_sigma,un)
        end subroutine
 
-       subroutine display_wrap_induction(this,dir,name)
+       subroutine export_restart_induction(this,dir)
          implicit none
          type(induction),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
+         character(len=*),intent(in) :: dir
+         integer :: i_ME
+         integer :: i_ME_fluid
+         integer :: i_ME_conductor
+         integer :: i_probe_dB0dt
+         integer :: i_probe_B0
+         integer :: s_ME
+         integer :: s_ME_fluid
+         integer :: s_ME_conductor
+         integer :: s_probe_dB0dt
+         integer :: s_probe_B0
          integer :: un
-         un = new_and_open(dir,name)
-         call display(this,un)
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
          close(un)
+         call export_restart(this%m,dir//fortran_PS//'m')
+         call export_restart(this%m_sigma,dir//fortran_PS//'m_sigma')
+         call export_restart(this%PCG_B,dir//fortran_PS//'PCG_B')
+         call export_restart(this%PCG_cleanB,dir//fortran_PS//'PCG_cleanB')
+         call export_restart(this%U_E,dir//fortran_PS//'U_E')
+         call export_restart(this%temp_E_TF,dir//fortran_PS//'temp_E_TF')
+         call export_restart(this%temp_F1_TF,dir//fortran_PS//'temp_F1_TF')
+         call export_restart(this%temp_F2_TF,dir//fortran_PS//'temp_F2_TF')
+         call export_restart(this%sigmaInv_CC,dir//fortran_PS//'sigmaInv_CC')
+         call export_restart(this%divB,dir//fortran_PS//'divB')
+         call export_restart(this%divJ,dir//fortran_PS//'divJ')
+         call export_restart(this%phi,dir//fortran_PS//'phi')
+         call export_restart(this%temp_CC,dir//fortran_PS//'temp_CC')
+         call export_restart(this%F,dir//fortran_PS//'F')
+         call export_restart(this%Fnm1,dir//fortran_PS//'Fnm1')
+         call export_restart(this%L,dir//fortran_PS//'L')
+         call export_restart(this%J,dir//fortran_PS//'J')
+         call export_restart(this%temp_E,dir//fortran_PS//'temp_E')
+         call export_restart(this%B,dir//fortran_PS//'B')
+         call export_restart(this%Bnm1,dir//fortran_PS//'Bnm1')
+         call export_restart(this%B0,dir//fortran_PS//'B0')
+         call export_restart(this%B_interior,dir//fortran_PS//'B_interior')
+         call export_restart(this%temp_F1,dir//fortran_PS//'temp_F1')
+         call export_restart(this%temp_F2,dir//fortran_PS//'temp_F2')
+         call export_restart(this%Bstar,dir//fortran_PS//'Bstar')
+         call export_restart(this%dB0dt,dir//fortran_PS//'dB0dt')
+         call export_restart(this%temp_CC_VF,dir//fortran_PS//'temp_CC_VF')
+         call export_restart(this%sigmaInv_edge,&
+         dir//fortran_PS//'sigmaInv_edge')
+         call export_restart(this%J_interior,dir//fortran_PS//'J_interior')
+         call export_restart(this%curlUCrossB,dir//fortran_PS//'curlUCrossB')
+         call export_restart(this%CC_VF_fluid,dir//fortran_PS//'CC_VF_fluid')
+         call export_restart(this%CC_VF_sigma,dir//fortran_PS//'CC_VF_sigma')
+         call export_restart(this%probe_divB,dir//fortran_PS//'probe_divB')
+         call export_restart(this%probe_divJ,dir//fortran_PS//'probe_divJ')
+         call export_restart(this%JE,dir//fortran_PS//'JE')
+         call export_restart(this%JE_fluid,dir//fortran_PS//'JE_fluid')
+         s_ME = size(this%ME)
+         do i_ME=1,s_ME
+           call export_restart(this%ME(i_ME),&
+           dir//fortran_PS//'ME_'//int2str(i_ME))
+         enddo
+         s_ME_fluid = size(this%ME_fluid)
+         do i_ME_fluid=1,s_ME_fluid
+           call export_restart(this%ME_fluid(i_ME_fluid),&
+           dir//fortran_PS//'ME_fluid_'//int2str(i_ME_fluid))
+         enddo
+         s_ME_conductor = size(this%ME_conductor)
+         do i_ME_conductor=1,s_ME_conductor
+           call export_restart(this%ME_conductor(i_ME_conductor),&
+           dir//fortran_PS//'ME_conductor_'//int2str(i_ME_conductor))
+         enddo
+         s_probe_dB0dt = size(this%probe_dB0dt)
+         do i_probe_dB0dt=1,s_probe_dB0dt
+           call export_restart(this%probe_dB0dt(i_probe_dB0dt),&
+           dir//fortran_PS//'probe_dB0dt_'//int2str(i_probe_dB0dt))
+         enddo
+         s_probe_B0 = size(this%probe_B0)
+         do i_probe_B0=1,s_probe_B0
+           call export_restart(this%probe_B0(i_probe_B0),&
+           dir//fortran_PS//'probe_B0_'//int2str(i_probe_B0))
+         enddo
+         call export_restart(this%MD_fluid,dir//fortran_PS//'MD_fluid')
+         call export_restart(this%MD_sigma,dir//fortran_PS//'MD_sigma')
+       end subroutine
+
+       subroutine import_restart_induction(this,dir)
+         implicit none
+         type(induction),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_ME
+         integer :: i_ME_fluid
+         integer :: i_ME_conductor
+         integer :: i_probe_dB0dt
+         integer :: i_probe_B0
+         integer :: s_ME
+         integer :: s_ME_fluid
+         integer :: s_ME_conductor
+         integer :: s_probe_dB0dt
+         integer :: s_probe_B0
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
+         call import_restart(this%m,dir//fortran_PS//'m')
+         call import_restart(this%m_sigma,dir//fortran_PS//'m_sigma')
+         call import_restart(this%PCG_B,dir//fortran_PS//'PCG_B')
+         call import_restart(this%PCG_cleanB,dir//fortran_PS//'PCG_cleanB')
+         call import_restart(this%U_E,dir//fortran_PS//'U_E')
+         call import_restart(this%temp_E_TF,dir//fortran_PS//'temp_E_TF')
+         call import_restart(this%temp_F1_TF,dir//fortran_PS//'temp_F1_TF')
+         call import_restart(this%temp_F2_TF,dir//fortran_PS//'temp_F2_TF')
+         call import_restart(this%sigmaInv_CC,dir//fortran_PS//'sigmaInv_CC')
+         call import_restart(this%divB,dir//fortran_PS//'divB')
+         call import_restart(this%divJ,dir//fortran_PS//'divJ')
+         call import_restart(this%phi,dir//fortran_PS//'phi')
+         call import_restart(this%temp_CC,dir//fortran_PS//'temp_CC')
+         call import_restart(this%F,dir//fortran_PS//'F')
+         call import_restart(this%Fnm1,dir//fortran_PS//'Fnm1')
+         call import_restart(this%L,dir//fortran_PS//'L')
+         call import_restart(this%J,dir//fortran_PS//'J')
+         call import_restart(this%temp_E,dir//fortran_PS//'temp_E')
+         call import_restart(this%B,dir//fortran_PS//'B')
+         call import_restart(this%Bnm1,dir//fortran_PS//'Bnm1')
+         call import_restart(this%B0,dir//fortran_PS//'B0')
+         call import_restart(this%B_interior,dir//fortran_PS//'B_interior')
+         call import_restart(this%temp_F1,dir//fortran_PS//'temp_F1')
+         call import_restart(this%temp_F2,dir//fortran_PS//'temp_F2')
+         call import_restart(this%Bstar,dir//fortran_PS//'Bstar')
+         call import_restart(this%dB0dt,dir//fortran_PS//'dB0dt')
+         call import_restart(this%temp_CC_VF,dir//fortran_PS//'temp_CC_VF')
+         call import_restart(this%sigmaInv_edge,&
+         dir//fortran_PS//'sigmaInv_edge')
+         call import_restart(this%J_interior,dir//fortran_PS//'J_interior')
+         call import_restart(this%curlUCrossB,dir//fortran_PS//'curlUCrossB')
+         call import_restart(this%CC_VF_fluid,dir//fortran_PS//'CC_VF_fluid')
+         call import_restart(this%CC_VF_sigma,dir//fortran_PS//'CC_VF_sigma')
+         call import_restart(this%probe_divB,dir//fortran_PS//'probe_divB')
+         call import_restart(this%probe_divJ,dir//fortran_PS//'probe_divJ')
+         call import_restart(this%JE,dir//fortran_PS//'JE')
+         call import_restart(this%JE_fluid,dir//fortran_PS//'JE_fluid')
+         s_ME = size(this%ME)
+         do i_ME=1,s_ME
+           call import_restart(this%ME(i_ME),&
+           dir//fortran_PS//'ME_'//int2str(i_ME))
+         enddo
+         s_ME_fluid = size(this%ME_fluid)
+         do i_ME_fluid=1,s_ME_fluid
+           call import_restart(this%ME_fluid(i_ME_fluid),&
+           dir//fortran_PS//'ME_fluid_'//int2str(i_ME_fluid))
+         enddo
+         s_ME_conductor = size(this%ME_conductor)
+         do i_ME_conductor=1,s_ME_conductor
+           call import_restart(this%ME_conductor(i_ME_conductor),&
+           dir//fortran_PS//'ME_conductor_'//int2str(i_ME_conductor))
+         enddo
+         s_probe_dB0dt = size(this%probe_dB0dt)
+         do i_probe_dB0dt=1,s_probe_dB0dt
+           call import_restart(this%probe_dB0dt(i_probe_dB0dt),&
+           dir//fortran_PS//'probe_dB0dt_'//int2str(i_probe_dB0dt))
+         enddo
+         s_probe_B0 = size(this%probe_B0)
+         do i_probe_B0=1,s_probe_B0
+           call import_restart(this%probe_B0(i_probe_B0),&
+           dir//fortran_PS//'probe_B0_'//int2str(i_probe_B0))
+         enddo
+         call import_restart(this%MD_fluid,dir//fortran_PS//'MD_fluid')
+         call import_restart(this%MD_sigma,dir//fortran_PS//'MD_sigma')
        end subroutine
 
        subroutine export_wrap_induction(this,dir,name)
@@ -575,6 +776,98 @@
          un = open_to_read(dir,name)
          call import(this,un)
          close(un)
+       end subroutine
+
+       subroutine make_restart_dir_induction(this,dir)
+         implicit none
+         type(induction),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_ME
+         integer :: i_ME_fluid
+         integer :: i_ME_conductor
+         integer :: i_probe_dB0dt
+         integer :: i_probe_B0
+         integer :: s_ME
+         integer :: s_ME_fluid
+         integer :: s_ME_conductor
+         integer :: s_probe_dB0dt
+         integer :: s_probe_B0
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_restart_dir(this%m,dir//fortran_PS//'m')
+         call make_restart_dir(this%m_sigma,dir//fortran_PS//'m_sigma')
+         call make_restart_dir(this%PCG_B,dir//fortran_PS//'PCG_B')
+         call make_restart_dir(this%PCG_cleanB,dir//fortran_PS//'PCG_cleanB')
+         call make_restart_dir(this%U_E,dir//fortran_PS//'U_E')
+         call make_restart_dir(this%temp_E_TF,dir//fortran_PS//'temp_E_TF')
+         call make_restart_dir(this%temp_F1_TF,dir//fortran_PS//'temp_F1_TF')
+         call make_restart_dir(this%temp_F2_TF,dir//fortran_PS//'temp_F2_TF')
+         call make_restart_dir(this%sigmaInv_CC,&
+         dir//fortran_PS//'sigmaInv_CC')
+         call make_restart_dir(this%divB,dir//fortran_PS//'divB')
+         call make_restart_dir(this%divJ,dir//fortran_PS//'divJ')
+         call make_restart_dir(this%phi,dir//fortran_PS//'phi')
+         call make_restart_dir(this%temp_CC,dir//fortran_PS//'temp_CC')
+         call make_restart_dir(this%F,dir//fortran_PS//'F')
+         call make_restart_dir(this%Fnm1,dir//fortran_PS//'Fnm1')
+         call make_restart_dir(this%L,dir//fortran_PS//'L')
+         call make_restart_dir(this%J,dir//fortran_PS//'J')
+         call make_restart_dir(this%temp_E,dir//fortran_PS//'temp_E')
+         call make_restart_dir(this%B,dir//fortran_PS//'B')
+         call make_restart_dir(this%Bnm1,dir//fortran_PS//'Bnm1')
+         call make_restart_dir(this%B0,dir//fortran_PS//'B0')
+         call make_restart_dir(this%B_interior,dir//fortran_PS//'B_interior')
+         call make_restart_dir(this%temp_F1,dir//fortran_PS//'temp_F1')
+         call make_restart_dir(this%temp_F2,dir//fortran_PS//'temp_F2')
+         call make_restart_dir(this%Bstar,dir//fortran_PS//'Bstar')
+         call make_restart_dir(this%dB0dt,dir//fortran_PS//'dB0dt')
+         call make_restart_dir(this%temp_CC_VF,dir//fortran_PS//'temp_CC_VF')
+         call make_restart_dir(this%sigmaInv_edge,&
+         dir//fortran_PS//'sigmaInv_edge')
+         call make_restart_dir(this%J_interior,dir//fortran_PS//'J_interior')
+         call make_restart_dir(this%curlUCrossB,&
+         dir//fortran_PS//'curlUCrossB')
+         call make_restart_dir(this%CC_VF_fluid,&
+         dir//fortran_PS//'CC_VF_fluid')
+         call make_restart_dir(this%CC_VF_sigma,&
+         dir//fortran_PS//'CC_VF_sigma')
+         call make_restart_dir(this%probe_divB,dir//fortran_PS//'probe_divB')
+         call make_restart_dir(this%probe_divJ,dir//fortran_PS//'probe_divJ')
+         call make_restart_dir(this%JE,dir//fortran_PS//'JE')
+         call make_restart_dir(this%JE_fluid,dir//fortran_PS//'JE_fluid')
+         s_ME = size(this%ME)
+         do i_ME=1,s_ME
+           call make_restart_dir(this%ME(i_ME),&
+           dir//fortran_PS//'ME_'//int2str(i_ME))
+         enddo
+         s_ME_fluid = size(this%ME_fluid)
+         do i_ME_fluid=1,s_ME_fluid
+           call make_restart_dir(this%ME_fluid(i_ME_fluid),&
+           dir//fortran_PS//'ME_fluid_'//int2str(i_ME_fluid))
+         enddo
+         s_ME_conductor = size(this%ME_conductor)
+         do i_ME_conductor=1,s_ME_conductor
+           call make_restart_dir(this%ME_conductor(i_ME_conductor),&
+           dir//fortran_PS//'ME_conductor_'//int2str(i_ME_conductor))
+         enddo
+         s_probe_dB0dt = size(this%probe_dB0dt)
+         do i_probe_dB0dt=1,s_probe_dB0dt
+           call make_restart_dir(this%probe_dB0dt(i_probe_dB0dt),&
+           dir//fortran_PS//'probe_dB0dt_'//int2str(i_probe_dB0dt))
+         enddo
+         s_probe_B0 = size(this%probe_B0)
+         do i_probe_B0=1,s_probe_B0
+           call make_restart_dir(this%probe_B0(i_probe_B0),&
+           dir//fortran_PS//'probe_B0_'//int2str(i_probe_B0))
+         enddo
+         call make_restart_dir(this%MD_fluid,dir//fortran_PS//'MD_fluid')
+         call make_restart_dir(this%MD_sigma,dir//fortran_PS//'MD_sigma')
+       end subroutine
+
+       subroutine suppress_warnings_induction(this)
+         implicit none
+         type(induction),intent(in) :: this
+         if (.false.) call print(this)
        end subroutine
 
        end module

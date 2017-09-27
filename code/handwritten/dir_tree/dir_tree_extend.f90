@@ -1,6 +1,7 @@
       module dir_tree_extend_mod
       use dir_tree_mod
       use string_mod
+      use dir_manip_mod
       use path_mod
       use path_extend_mod
       use dir_group_mod
@@ -20,7 +21,6 @@
         implicit none
         type(dir_tree),intent(inout) :: DT
         character(len=*),intent(in) :: dir_tar
-        type(path) :: temp
 #ifdef _OS_LINUX_
        character(len=1),parameter :: PS = '/'
 #else
@@ -71,8 +71,6 @@
         call init(DT%test,DT%unknowns,'test',str(DT%PS))
 
         call make_dir_tree(DT)
-        call oldest_modified_file(temp,DT%restart1,DT%restart2,'p.dat')
-        call delete(temp)
       end subroutine
 
       subroutine make_dir_tree(DT)

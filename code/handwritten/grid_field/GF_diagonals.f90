@@ -1,6 +1,6 @@
       module GF_diagonals_mod
       use current_precision_mod
-      use data_location_mod
+      use data_location_extend_mod
       use grid_mod
       use grid_field_mod
       use GF_assign_mod

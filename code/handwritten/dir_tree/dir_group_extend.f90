@@ -1,5 +1,6 @@
       module dir_group_extend_mod
       use dir_group_mod
+      use dir_manip_mod
       use string_mod
       use path_mod
       use path_extend_mod

@@ -3,6 +3,8 @@
        ! ***************************************************
        module refine_mesh_mod
        use IO_tools_mod
+       use datatype_conversion_mod
+       use dir_manip_mod
        use step_mod
        use string_mod
        implicit none
@@ -12,19 +14,33 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_refine_mesh;    end interface
-       interface delete;       module procedure delete_refine_mesh;       end interface
-       interface display;      module procedure display_refine_mesh;      end interface
-       interface display_short;module procedure display_short_refine_mesh;end interface
-       interface display;      module procedure display_wrap_refine_mesh; end interface
-       interface print;        module procedure print_refine_mesh;        end interface
-       interface print_short;  module procedure print_short_refine_mesh;  end interface
-       interface export;       module procedure export_refine_mesh;       end interface
-       interface import;       module procedure import_refine_mesh;       end interface
-       interface export;       module procedure export_wrap_refine_mesh;  end interface
-       interface import;       module procedure import_wrap_refine_mesh;  end interface
-       interface export;       module procedure export_DN_refine_mesh;    end interface
-       interface import;       module procedure import_DN_refine_mesh;    end interface
+       public :: export_primitives,import_primitives
+
+       public :: export_restart,import_restart
+
+       public :: make_restart_dir
+
+       public :: suppress_warnings
+
+       interface init;             module procedure init_copy_refine_mesh;        end interface
+       interface delete;           module procedure delete_refine_mesh;           end interface
+       interface display;          module procedure display_refine_mesh;          end interface
+       interface display_short;    module procedure display_short_refine_mesh;    end interface
+       interface display;          module procedure display_wrap_refine_mesh;     end interface
+       interface print;            module procedure print_refine_mesh;            end interface
+       interface print_short;      module procedure print_short_refine_mesh;      end interface
+       interface export;           module procedure export_refine_mesh;           end interface
+       interface export_primitives;module procedure export_primitives_refine_mesh;end interface
+       interface export_restart;   module procedure export_restart_refine_mesh;   end interface
+       interface import;           module procedure import_refine_mesh;           end interface
+       interface import_restart;   module procedure import_restart_refine_mesh;   end interface
+       interface import_primitives;module procedure import_primitives_refine_mesh;end interface
+       interface export;           module procedure export_wrap_refine_mesh;      end interface
+       interface import;           module procedure import_wrap_refine_mesh;      end interface
+       interface make_restart_dir; module procedure make_restart_dir_refine_mesh; end interface
+       interface suppress_warnings;module procedure suppress_warnings_refine_mesh;end interface
+       interface export;           module procedure export_DN_refine_mesh;        end interface
+       interface import;           module procedure import_DN_refine_mesh;        end interface
 
        type refine_mesh
          type(step) :: all
@@ -130,6 +146,16 @@
          call display(this%level_last,un)
        end subroutine
 
+       subroutine display_wrap_refine_mesh(this,dir,name)
+         implicit none
+         type(refine_mesh),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call display(this,un)
+         close(un)
+       end subroutine
+
        subroutine print_refine_mesh(this)
          implicit none
          type(refine_mesh),intent(in) :: this
@@ -140,6 +166,16 @@
          implicit none
          type(refine_mesh),intent(in) :: this
          call display_short(this,6)
+       end subroutine
+
+       subroutine export_primitives_refine_mesh(this,un)
+         implicit none
+         type(refine_mesh),intent(in) :: this
+         integer,intent(in) :: un
+         write(un,*) 'any_next      = ';write(un,*) this%any_next
+         write(un,*) 'un            = ';write(un,*) this%un
+         write(un,*) 'i_level       = ';write(un,*) this%i_level
+         write(un,*) 'i_level_last  = ';write(un,*) this%i_level_last
        end subroutine
 
        subroutine export_refine_mesh(this,un)
@@ -161,6 +197,16 @@
          call export(this%name,un)
          call export(this%level,un)
          call export(this%level_last,un)
+       end subroutine
+
+       subroutine import_primitives_refine_mesh(this,un)
+         implicit none
+         type(refine_mesh),intent(inout) :: this
+         integer,intent(in) :: un
+         read(un,*); read(un,*) this%any_next
+         read(un,*); read(un,*) this%un
+         read(un,*); read(un,*) this%i_level
+         read(un,*); read(un,*) this%i_level_last
        end subroutine
 
        subroutine import_refine_mesh(this,un)
@@ -185,14 +231,38 @@
          call import(this%level_last,un)
        end subroutine
 
-       subroutine display_wrap_refine_mesh(this,dir,name)
+       subroutine export_restart_refine_mesh(this,dir)
          implicit none
          type(refine_mesh),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
+         character(len=*),intent(in) :: dir
          integer :: un
-         un = new_and_open(dir,name)
-         call display(this,un)
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
          close(un)
+         call export_restart(this%all,dir//fortran_PS//'all')
+         call export_restart(this%x,dir//fortran_PS//'x')
+         call export_restart(this%y,dir//fortran_PS//'y')
+         call export_restart(this%z,dir//fortran_PS//'z')
+         call export_restart(this%x_plane,dir//fortran_PS//'x_plane')
+         call export_restart(this%y_plane,dir//fortran_PS//'y_plane')
+         call export_restart(this%z_plane,dir//fortran_PS//'z_plane')
+       end subroutine
+
+       subroutine import_restart_refine_mesh(this,dir)
+         implicit none
+         type(refine_mesh),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
+         call import_restart(this%all,dir//fortran_PS//'all')
+         call import_restart(this%x,dir//fortran_PS//'x')
+         call import_restart(this%y,dir//fortran_PS//'y')
+         call import_restart(this%z,dir//fortran_PS//'z')
+         call import_restart(this%x_plane,dir//fortran_PS//'x_plane')
+         call import_restart(this%y_plane,dir//fortran_PS//'y_plane')
+         call import_restart(this%z_plane,dir//fortran_PS//'z_plane')
        end subroutine
 
        subroutine export_wrap_refine_mesh(this,dir,name)
@@ -233,6 +303,27 @@
          call delete(dir)
          call delete(name)
          close(un)
+       end subroutine
+
+       subroutine make_restart_dir_refine_mesh(this,dir)
+         implicit none
+         type(refine_mesh),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_restart_dir(this%all,dir//fortran_PS//'all')
+         call make_restart_dir(this%x,dir//fortran_PS//'x')
+         call make_restart_dir(this%y,dir//fortran_PS//'y')
+         call make_restart_dir(this%z,dir//fortran_PS//'z')
+         call make_restart_dir(this%x_plane,dir//fortran_PS//'x_plane')
+         call make_restart_dir(this%y_plane,dir//fortran_PS//'y_plane')
+         call make_restart_dir(this%z_plane,dir//fortran_PS//'z_plane')
+       end subroutine
+
+       subroutine suppress_warnings_refine_mesh(this)
+         implicit none
+         type(refine_mesh),intent(in) :: this
+         if (.false.) call print(this)
        end subroutine
 
        end module

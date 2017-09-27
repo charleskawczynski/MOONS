@@ -37,7 +37,7 @@
 
         use IO_tools_mod
         use current_precision_mod
-        use data_location_mod
+        use data_location_extend_mod
         use mesh_extend_mod
         use mesh_domain_extend_mod
         use SF_extend_mod

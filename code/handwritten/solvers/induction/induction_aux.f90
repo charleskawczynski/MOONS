@@ -18,7 +18,7 @@
        use probe_extend_mod
        use ops_norms_mod
        use dimensionless_params_mod
-       use data_location_mod
+       use data_location_extend_mod
 
        implicit none
 

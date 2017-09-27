@@ -3,7 +3,7 @@
         use current_precision_mod
         use IO_tools_mod
         use array_mod
-        use data_location_mod
+        use data_location_extend_mod
         use mesh_extend_mod
         use mesh_domain_extend_mod
         use boundary_conditions_extend_mod

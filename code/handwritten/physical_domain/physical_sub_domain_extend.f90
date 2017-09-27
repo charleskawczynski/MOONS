@@ -7,7 +7,7 @@
        use face_edge_corner_indexing_mod
        use sub_domain_mod
        use sub_domain_extend_mod
-       use data_location_mod
+       use data_location_extend_mod
        use coordinates_mod
 
        implicit none

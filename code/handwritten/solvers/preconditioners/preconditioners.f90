@@ -2,7 +2,7 @@
       use current_precision_mod
       use preconditioner_interfaces_mod
       use GF_diagonals_mod
-      use data_location_mod
+      use data_location_extend_mod
       use diagonals_mod
       use mesh_extend_mod
       use SF_extend_mod

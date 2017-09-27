@@ -4,6 +4,8 @@
        module dimensionless_params_mod
        use current_precision_mod
        use IO_tools_mod
+       use datatype_conversion_mod
+       use dir_manip_mod
        use string_mod
        implicit none
 
@@ -12,19 +14,33 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_dimensionless_params;    end interface
-       interface delete;       module procedure delete_dimensionless_params;       end interface
-       interface display;      module procedure display_dimensionless_params;      end interface
-       interface display_short;module procedure display_short_dimensionless_params;end interface
-       interface display;      module procedure display_wrap_dimensionless_params; end interface
-       interface print;        module procedure print_dimensionless_params;        end interface
-       interface print_short;  module procedure print_short_dimensionless_params;  end interface
-       interface export;       module procedure export_dimensionless_params;       end interface
-       interface import;       module procedure import_dimensionless_params;       end interface
-       interface export;       module procedure export_wrap_dimensionless_params;  end interface
-       interface import;       module procedure import_wrap_dimensionless_params;  end interface
-       interface export;       module procedure export_DN_dimensionless_params;    end interface
-       interface import;       module procedure import_DN_dimensionless_params;    end interface
+       public :: export_primitives,import_primitives
+
+       public :: export_restart,import_restart
+
+       public :: make_restart_dir
+
+       public :: suppress_warnings
+
+       interface init;             module procedure init_copy_dimensionless_params;        end interface
+       interface delete;           module procedure delete_dimensionless_params;           end interface
+       interface display;          module procedure display_dimensionless_params;          end interface
+       interface display_short;    module procedure display_short_dimensionless_params;    end interface
+       interface display;          module procedure display_wrap_dimensionless_params;     end interface
+       interface print;            module procedure print_dimensionless_params;            end interface
+       interface print_short;      module procedure print_short_dimensionless_params;      end interface
+       interface export;           module procedure export_dimensionless_params;           end interface
+       interface export_primitives;module procedure export_primitives_dimensionless_params;end interface
+       interface export_restart;   module procedure export_restart_dimensionless_params;   end interface
+       interface import;           module procedure import_dimensionless_params;           end interface
+       interface import_restart;   module procedure import_restart_dimensionless_params;   end interface
+       interface import_primitives;module procedure import_primitives_dimensionless_params;end interface
+       interface export;           module procedure export_wrap_dimensionless_params;      end interface
+       interface import;           module procedure import_wrap_dimensionless_params;      end interface
+       interface make_restart_dir; module procedure make_restart_dir_dimensionless_params; end interface
+       interface suppress_warnings;module procedure suppress_warnings_dimensionless_params;end interface
+       interface export;           module procedure export_DN_dimensionless_params;        end interface
+       interface import;           module procedure import_DN_dimensionless_params;        end interface
 
        type dimensionless_params
          real(cp) :: Re = 0.0_cp
@@ -170,6 +186,16 @@
          call display(this%name,un)
        end subroutine
 
+       subroutine display_wrap_dimensionless_params(this,dir,name)
+         implicit none
+         type(dimensionless_params),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call display(this,un)
+         close(un)
+       end subroutine
+
        subroutine print_dimensionless_params(this)
          implicit none
          type(dimensionless_params),intent(in) :: this
@@ -180,6 +206,33 @@
          implicit none
          type(dimensionless_params),intent(in) :: this
          call display_short(this,6)
+       end subroutine
+
+       subroutine export_primitives_dimensionless_params(this,un)
+         implicit none
+         type(dimensionless_params),intent(in) :: this
+         integer,intent(in) :: un
+         write(un,*) 'Re                    = ';write(un,*) this%Re
+         write(un,*) 'Al                    = ';write(un,*) this%Al
+         write(un,*) 'N                     = ';write(un,*) this%N
+         write(un,*) 'Ha                    = ';write(un,*) this%Ha
+         write(un,*) 'tau                   = ';write(un,*) this%tau
+         write(un,*) 'Gr                    = ';write(un,*) this%Gr
+         write(un,*) 'Fr                    = ';write(un,*) this%Fr
+         write(un,*) 'Pr                    = ';write(un,*) this%Pr
+         write(un,*) 'Pe                    = ';write(un,*) this%Pe
+         write(un,*) 'Ec                    = ';write(un,*) this%Ec
+         write(un,*) 'Rem                   = ';write(un,*) this%Rem
+         write(un,*) 'c_w                   = ';write(un,*) this%c_w
+         write(un,*) 'Robin_coeff           = ';write(un,*) this%Robin_coeff
+         write(un,*) 'Q                     = ';write(un,*) this%Q
+         write(un,*) 'sig_local_over_sig_f  = ';write(un,*) this%sig_local_over_sig_f
+         write(un,*) 'KE_scale              = ';write(un,*) this%KE_scale
+         write(un,*) 'ME_scale              = ';write(un,*) this%ME_scale
+         write(un,*) 'JE_scale              = ';write(un,*) this%JE_scale
+         write(un,*) 'L_eta                 = ';write(un,*) this%L_eta
+         write(un,*) 'U_eta                 = ';write(un,*) this%U_eta
+         write(un,*) 't_eta                 = ';write(un,*) this%t_eta
        end subroutine
 
        subroutine export_dimensionless_params(this,un)
@@ -209,6 +262,33 @@
          write(un,*) 't_eta                 = ';write(un,*) this%t_eta
          call export(this%dir,un)
          call export(this%name,un)
+       end subroutine
+
+       subroutine import_primitives_dimensionless_params(this,un)
+         implicit none
+         type(dimensionless_params),intent(inout) :: this
+         integer,intent(in) :: un
+         read(un,*); read(un,*) this%Re
+         read(un,*); read(un,*) this%Al
+         read(un,*); read(un,*) this%N
+         read(un,*); read(un,*) this%Ha
+         read(un,*); read(un,*) this%tau
+         read(un,*); read(un,*) this%Gr
+         read(un,*); read(un,*) this%Fr
+         read(un,*); read(un,*) this%Pr
+         read(un,*); read(un,*) this%Pe
+         read(un,*); read(un,*) this%Ec
+         read(un,*); read(un,*) this%Rem
+         read(un,*); read(un,*) this%c_w
+         read(un,*); read(un,*) this%Robin_coeff
+         read(un,*); read(un,*) this%Q
+         read(un,*); read(un,*) this%sig_local_over_sig_f
+         read(un,*); read(un,*) this%KE_scale
+         read(un,*); read(un,*) this%ME_scale
+         read(un,*); read(un,*) this%JE_scale
+         read(un,*); read(un,*) this%L_eta
+         read(un,*); read(un,*) this%U_eta
+         read(un,*); read(un,*) this%t_eta
        end subroutine
 
        subroutine import_dimensionless_params(this,un)
@@ -241,13 +321,23 @@
          call import(this%name,un)
        end subroutine
 
-       subroutine display_wrap_dimensionless_params(this,dir,name)
+       subroutine export_restart_dimensionless_params(this,dir)
          implicit none
          type(dimensionless_params),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
+         character(len=*),intent(in) :: dir
          integer :: un
-         un = new_and_open(dir,name)
-         call display(this,un)
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_restart_dimensionless_params(this,dir)
+         implicit none
+         type(dimensionless_params),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
          close(un)
        end subroutine
 
@@ -289,6 +379,20 @@
          call delete(dir)
          call delete(name)
          close(un)
+       end subroutine
+
+       subroutine make_restart_dir_dimensionless_params(this,dir)
+         implicit none
+         type(dimensionless_params),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+       end subroutine
+
+       subroutine suppress_warnings_dimensionless_params(this)
+         implicit none
+         type(dimensionless_params),intent(in) :: this
+         if (.false.) call print(this)
        end subroutine
 
        end module

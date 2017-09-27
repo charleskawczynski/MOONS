@@ -1,5 +1,5 @@
       module GF_export_mod
-      use data_location_mod
+      use data_location_extend_mod
       use string_mod
       use grid_field_mod
       use grid_mod

@@ -1,0 +1,183 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Post NASA report}
+
+\section{Low but finite Rem Shercliff and Hunt flow}
+The dimensionl equations are
+
+\begin{equation}\begin{aligned}
+\PD_t u_i + u_j \PD_j u_i = - \frac{1}{\rho} \PD_i p + \nu \PD_{jj} u_i + \frac{1}{\rho \mu} B_j \PD_j B_i \\
+\PD_t B_i + \PD_j (u_j B_i - u_i B_j) = \frac{1}{\sigma \mu} \PD_{jj} B_i
+\end{aligned} \end{equation}
+
+Where mechanical pressure has absorbed the magnetic pressure. Let's seek the steady solution.
+\begin{equation}\begin{aligned}
+\rho u_j \PD_j u_i = - \PD_i p + \eta \PD_{jj} u_i + \mu^{-1} B_j \PD_j B_i \\
+\PD_{jj} B_i = \sigma \mu \PD_j (u_j B_i - u_i B_j)
+\end{aligned} \end{equation}
+Since we are interested in when $Re_m$ is small, and the induction equation is linear, we'll combine them by factors of $Re_m$. There is documentation in MOONS how this is done. To be clear we may decompse $\B$ in one of two ways:
+\begin{equation}\begin{aligned}
+	\B = \B^0 + \B^1 + \B^2 + \hdots , \\
+	\B = \B^0 + Re_m \B^* + Re_m^2 \B^{**} + \hdots \\
+	\J = \CURL \B = \CURL \B^* + Re_m \CURL \B^{**} + \hdots \\
+	\J \times \B = B_j \PD_j B_i - \underbrace{\tfrac{1}{2} \PD_j (B_i B_i)}_{\text{let pressure absorb}} \\
+	= B_j \PD_j B_i \\
+	= (B_j^0+Re_m B_j^* + \hdots) \PD_j (B_i^*+Re_m B_i^{**} + \hdots) \\
+\end{aligned} \end{equation}
+Now, let's rewrite the induction equation and Lorentz force with this expansion
+and multiply the RHS of the induction equation by unity $(Re_m/\sigma \mu U L)$, which yields
+\begin{equation}\begin{aligned}
+\rho u_j \PD_j u_i = - \PD_i p + \eta \PD_{jj} u_i + \mu^{-1} (B_j^0 + Re_m B_j^* + Re_m^2 B_j^{**}) \PD_j (B_i^0 + Re_m B_i^* + Re_m^2 B_i^{**}) \\
+\PD_{jj} (B_i^0 + Re_m B_i^* + Re_m^2 B_i^{**}) = Re_m (LU)^{-1} \PD_j (u_j (B_i^0 + Re_m B_i^* + Re_m^2 B_i^{**}) - u_i (B_j^0 + Re_m B_j^* + Re_m^2 B_j^{**}))
+\end{aligned} \end{equation}
+Note that integrating the induction equation once would yield the second factor in the 
+Lorentz force. That is, the second factor in the Lorentz force is of order $Re_m$, therefore
+we may neglect terms of order $Re_m^2$ in the first factor of the Lorentz force, and terms of 
+order $Re_m^3$ in the advection term of the induction equation, yielding
+\begin{equation}\boxed{\begin{aligned}
+\rho u_j \PD_j u_i = - \PD_i p + \eta \PD_{jj} u_i + \mu^{-1} (B_j^0 + Re_m B_j^*) \PD_j (B_i^0 + Re_m B_i^* + Re_m^2 B_i^{**}) \\
+\PD_{jj} (B_i^0 + Re_m B_i^* + Re_m^2 B_i^{**}) = Re_m (LU)^{-1} \PD_j (u_j (B_i^0 + Re_m B_i^*) - u_i (B_j^0 + Re_m B_j^*))
+\end{aligned}}\end{equation}
+Now, let's expand velocity and pressure with respect to $Re_m$.
+\begin{equation}\begin{aligned}
+	\U = \U^0 + Re_m \U^* + Re_m^2 \U^{**} + \hdots \\
+	p = p^0 + Re_m p^* + Re_m^2 p^{**} + \hdots
+\end{aligned} \end{equation}
+Plug into the momentum and induction equations.
+\tiny\begin{equation}\begin{aligned}
+\rho (u_j^0+Re_m u_j^*+Re_m^2 u_j^{**}) \PD_j (u_i^0+Re_m u_i^*+Re_m^2 u_i^{**}) = -\PD_i p^0 -Re_m\PD_i p^* -Re_m^2\PD_i p^{**} + \eta \PD_{jj} (u_i^0+Re_m u_i^*+Re_m^2 u_i^{**}) + \mu^{-1} (B_j^0 + Re_m B_j^*) \PD_j (B_i^0 + Re_m B_i^* + Re_m^2 B_i^{**}) \\
+\PD_{jj} (B_i^0 + Re_m B_i^* + Re_m^2 B_i^{**}) = Re_m (LU)^{-1} \PD_j ((u_j^0+Re_m u_j^*+Re_m^2 u_j^{**}) (B_i^0 + Re_m B_i^*) - (u_i^0+Re_m u_i^*+Re_m^2 u_i^{**}) (B_j^0 + Re_m B_j^*))
+\end{aligned}\end{equation}\normalsize
+Multiplying this out we have
+\tiny\begin{equation}\begin{aligned}
+\PD_i p^0 + Re_m\PD_i p^* + Re_m^2\PD_i p^{**} + \rho (u_j^0+Re_m u_j^*+Re_m^2 u_j^{**}) \PD_j (u_i^0+Re_m u_i^*+Re_m^2 u_i^{**}) = \eta \PD_{jj} (u_i^0+Re_m u_i^*+Re_m^2 u_i^{**}) + \mu^{-1} (B_j^0 + Re_m B_j^*) \PD_j (B_i^0 + Re_m B_i^* + Re_m^2 B_i^{**}) \\
+\PD_{jj} (B_i^0 + Re_m B_i^* + Re_m^2 B_i^{**}) = 
+Re_m (LU)^{-1} \PD_j ((u_j^0+Re_m u_j^*+Re_m^2 u_j^{**}) (B_i^0 + Re_m B_i^*) - (u_i^0+Re_m u_i^*+Re_m^2 u_i^{**}) (B_j^0 + Re_m B_j^*))
+\end{aligned}\end{equation}\normalsize
+
+Let's collect terms of $Re_m$
+
+$Re_m^0$ (hydrodynamic case)
+\begin{equation}\begin{aligned}
+\PD_i p^0 + \rho u_j^0 \PD_j u_i^0 = \eta \PD_{jj} u_i^0 \\
+\end{aligned}\end{equation}
+
+$Re_m^1$ (low $Re_m$ case)
+\begin{equation}\begin{aligned}
+\PD_i p^* + \rho (u_j^0 \PD_j u_i^* + u_j^* \PD_j u_i^0) = \eta \PD_{jj} u_i^* + \mu^{-1} B_j^0 \PD_j (B_i^0 + Re_m B_i^* + Re_m^2 B_i^{**}) \\
+\PD_{jj} (B_i^0 + Re_m B_i^* + Re_m^2 B_i^{**}) = (LU)^{-1} \PD_j (u_j^0 B_i^0 - u_i^0 B_j^0), \qquad \text{order $Re_m^1$}
+\end{aligned}\end{equation}
+
+$Re_m^2$ (finite $Re_m$ case)
+\tiny\begin{equation}\begin{aligned}
+\PD_i p^{**} + \rho (u_j^0 \PD_j u_i^{**} + u_j^* \PD_j u_i^* + u_j^{**} \PD_j u_i^0) = \eta \PD_{jj} u_i^{**} + \mu^{-1} (B_j^0 \PD_j (B_i^0 + Re_m B_i^* + Re_m^2 B_i^{**})_2 + Re_m B_j^* \PD_j (B_i^0 + Re_m B_i^* + Re_m^2 B_i^{**})_1) \\
+\PD_{jj} (B_i^0 + Re_m B_i^* + Re_m^2 B_i^{**})_1 = Re_m (LU)^{-1} \PD_j (u_j^0 B_i^0 - u_i^0 B_j^0), \qquad \text{order $Re_m^1$} \\
+\PD_{jj} (B_i^0 + Re_m B_i^* + Re_m^2 B_i^{**})_2 = Re_m^2 (LU)^{-1} \PD_j ((u_j^0 B_i^*+u_j^* B_i^0) - (u_i^0 B_j^*+u_i^* B_j^0)), \qquad \text{order $Re_m^2$} \\
+\end{aligned}\end{equation}\normalsize
+
+\section{Demo}
+\begin{equation}\begin{aligned}
+\PD_{jj} (B_x^0 + Re_m B_x^* + Re_m^2 B_x^{**}) = (LU)^{-1} \PD_x (u^0 B_x^0 - u^0 B_x^0) + \PD_y (v^0 B_x^0 - u^0 B_y^0) + \PD_z (w^0 B_x^0 - u^0 B_z^0) \\
+\PD_{jj} (B_y^0 + Re_m B_y^* + Re_m^2 B_y^{**}) = (LU)^{-1} \PD_x (u^0 B_y^0 - v^0 B_x^0) + \PD_y (v^0 B_y^0 - v^0 B_y^0) + \PD_z (w^0 B_y^0 - v^0 B_z^0) \\
+\PD_{jj} (B_z^0 + Re_m B_z^* + Re_m^2 B_z^{**}) = (LU)^{-1} \PD_x (u^0 B_z^0 - w^0 B_x^0) + \PD_y (v^0 B_z^0 - w^0 B_y^0) + \PD_z (w^0 B_z^0 - w^0 B_z^0) \\
+\end{aligned}\end{equation}
+
+
+\section{FD duct flow conditions}
+Let's consider fully developed duct flow conditions along $x$ with a uniform applied magnetic field along $z$:
+
+$Re_m^0$ (hydrodynamic case)
+\begin{equation}\begin{aligned}
+\PD_x p^0 = \eta (\PD_{yy} u^0 + \PD_{zz} u^0) \\
+v^0 = 0 \\
+w^0 = 0 \\
+\end{aligned}\end{equation}
+
+$Re_m^1$ (low $Re_m$ case)
+\begin{equation}\begin{aligned}
+\PD_i p^* + \rho (u_j^0 \PD_j u_i^* + u_j^* \PD_j u_i^0) = \eta \PD_{jj} u_i^* + \mu^{-1} B_j^0 \PD_j B_i^* \\
+\PD_{jj} B_i^* = (LU)^{-1} \PD_j (u_j^0 B_i^0 - u_i^0 B_j^0) \\
+\vdots \\
+\PD_x p^* + \rho (u_j^0 \PD_j u^* + u_j^* \PD_j u^0) = \eta \PD_{jj} u^* + \mu^{-1} B_j^0 \PD_j B_x^* \\
+\PD_y p^* + \rho (u_j^0 \PD_j v^* + u_j^* \PD_j v^0) = \eta \PD_{jj} v^* + \mu^{-1} B_j^0 \PD_j B_y^* \\
+\PD_z p^* + \rho (u_j^0 \PD_j w^* + u_j^* \PD_j w^0) = \eta \PD_{jj} w^* + \mu^{-1} B_j^0 \PD_j B_z^* \\
+\PD_{jj} B_x^* = (LU)^{-1} (\PD_y (v^0 B_x^0 - u^0 B_y^0) + \PD_z (w^0 B_x^0 - u^0 B_z^0)) \\
+\PD_{jj} B_y^* = (LU)^{-1} (\PD_x (u^0 B_y^0 - v^0 B_x^0) + \PD_z (w^0 B_y^0 - v^0 B_z^0)) \\
+\PD_{jj} B_z^* = (LU)^{-1} (\PD_x (u^0 B_z^0 - w^0 B_x^0) + \PD_y (v^0 B_z^0 - w^0 B_y^0)) \\
+\vdots \\
+\PD_x p^* = \eta \PD_{jj} u^* + \mu^{-1} B_z^0 \PD_z B_x^* \\
+v^* = 0 \\
+w^* = 0 \\
+\PD_{yy} B_x^* + \PD_{zz} B_x^* =-(LU)^{-1} \PD_z (u^0 B_z^0) \\
+B_y^* = 0 \\
+B_z^* = 0 \\
+\vdots \\
+\PD_x p^* = \eta \PD_{jj} u^* + (LU)^{-1} \mu^{-1} {B_z^0}^2 u^0 \\
+v^* = 0 \\
+w^* = 0 \\
+\PD_{jj} B_x^* =-(LU)^{-1} (\PD_z (u^0 B_z^0)) \\
+B_y^* = 0 \\
+B_z^* = 0 \\
+\end{aligned}\end{equation}
+
+\newpage
+$Re_m^2$ (finite $Re_m$ case)
+\begin{equation}\begin{aligned}
+\PD_i p^{**} + \rho (u_j^0 \PD_j u_i^{**} + u_j^* \PD_j u_i^* + u_j^{**} \PD_j u_i^0) = \eta \PD_{jj} u_i^{**} + \mu^{-1} (B_j^0 \PD_j B_i^{**} + B_j^* \PD_j B_i^*) \\
+\PD_{jj} B_i^* = (LU)^{-1} \PD_j (u_j^0 B_i^0 - u_i^0 B_j^0) \\
+\PD_{jj} B_i^{**} = (LU)^{-1} \PD_j ((u_j^0 B_i^*+u_j^* B_i^0) - (u_i^0 B_j^*+u_i^* B_j^0)) \\
+\vdots \\
+\PD_x p^{**} + \rho (u_j^0 \PD_j u^{**} + u_j^* \PD_j u^* + u_j^{**} \PD_j u^0) = \eta \PD_{jj} u^{**} + \mu^{-1} (B_j^0 \PD_j B_x^{**} + B_j^* \PD_j B_x^*) \\
+\PD_y p^{**} + \rho (u_j^0 \PD_j v^{**} + u_j^* \PD_j v^* + u_j^{**} \PD_j v^0) = \eta \PD_{jj} v^{**} + \mu^{-1} (B_j^0 \PD_j B_y^{**} + B_j^* \PD_j B_y^*) \\
+\PD_z p^{**} + \rho (u_j^0 \PD_j w^{**} + u_j^* \PD_j w^* + u_j^{**} \PD_j w^0) = \eta \PD_{jj} w^{**} + \mu^{-1} (B_j^0 \PD_j B_z^{**} + B_j^* \PD_j B_z^*) \\
+\PD_{jj} B_x^* = (LU)^{-1} \PD_j (u_j^0 B_x^0 - u^0 B_j^0) \\
+\PD_{jj} B_y^* = (LU)^{-1} \PD_j (u_j^0 B_y^0 - v^0 B_j^0) \\
+\PD_{jj} B_z^* = (LU)^{-1} \PD_j (u_j^0 B_z^0 - w^0 B_j^0) \\
+\PD_{jj} B_x^{**} = (LU)^{-1} \PD_j ((u_j^0 B_x^*+u_j^* B_x^0) - (u^0 B_j^*+u^* B_j^0)) \\
+\PD_{jj} B_y^{**} = (LU)^{-1} \PD_j ((u_j^0 B_y^*+u_j^* B_y^0) - (v^0 B_j^*+v^* B_j^0)) \\
+\PD_{jj} B_z^{**} = (LU)^{-1} \PD_j ((u_j^0 B_z^*+u_j^* B_z^0) - (w^0 B_j^*+w^* B_j^0)) \\
+\vdots \\
+\PD_x p^{**} + \rho (v^* \PD_y u^* + w^* \PD_z u^* + v^{**} \PD_y u^0 + w^{**} \PD_z u^0) = \eta (\PD_{yy} u^{**} + \PD_{zz} u^{**}) + \mu^{-1} (B_z^0 \PD_z B_x^{**} + B_y^* \PD_y B_x^* + B_z^* \PD_z B_x^*) \\
+\PD_y p^{**} + \rho (v^* \PD_y v^* + w^* \PD_z v^*) = \eta (\PD_{yy} v^{**} + \PD_{zz} v^{**}) + \mu^{-1} (B_z^0 \PD_z B_y^{**} + B_z^* \PD_z B_y^*) \\
+\PD_z p^{**} + \rho (v^* \PD_y w^* + w^* \PD_z w^*) = \eta (\PD_{yy} w^{**} + \PD_{zz} w^{**}) + \mu^{-1} (B_z^0 \PD_z B_z^{**} + B_y^* \PD_y B_z^*) \\
+\PD_{yy} B_x^* + \PD_{zz} B_x^* = - (LU)^{-1} \PD_z (u^0 B_z^0) \\
+B_y^* = 0 \\
+B_z^* = 0 \\
+\PD_{jj} B_x^{**} =-(LU)^{-1} (\PD_y (u^0 B_y^*) + \PD_z (u^0 B_z^*+u^* B_z^0)) \\
+\PD_{jj} B_y^{**} =-(LU)^{-1} (\PD_z (v^* B_z^0)) \\
+\PD_{jj} B_z^{**} = (LU)^{-1} (\PD_y (v^* B_z^0) + \PD_z (w^* B_z^0 - w^* B_z^0)) \\
+\end{aligned}\end{equation}
+
+\newpage
+\section{Aside}
+Dimensional Lorentz force and induction equation:
+\begin{equation}\begin{aligned}
+\frac{1}{\rho \mu} B_j \PD_j B_i \\
+\PD_{jj} B_i = \sigma \mu \PD_j (u_j B_i - u_i B_j)
+\end{aligned}\end{equation}
+Integrating the induction equation once, we have
+\begin{equation}\begin{aligned}
+\PD_{j} B_i = \sigma \mu (u_j B_i - u_i B_j)
+\end{aligned}\end{equation}
+Substituting this back into the Lorentz force, we have
+\begin{equation}\begin{aligned}
+\frac{\sigma}{\rho} B_j (u_j B_i - u_i B_j) \\
+\end{aligned}\end{equation}
+Note that
+\begin{equation}\begin{aligned}
+\frac{\sigma}{\rho} (u_j B_i B_j - u_i B_j^2) = 0 , \qquad \text{if $i = j$} \\
+\end{aligned}\end{equation}
+Each component may be written as
+\begin{equation}\begin{aligned}
+\frac{\sigma}{\rho} (B_y (v B_x - u B_y) + B_z (w B_x - u B_z)) \\
+\frac{\sigma}{\rho} (B_x (u B_y - v B_x) + B_z (w B_y - v B_z)) \\
+\frac{\sigma}{\rho} (B_x (u B_z - w B_x) + B_y (v B_z - w B_y)) \\
+\end{aligned}\end{equation}
+
+\end{document}

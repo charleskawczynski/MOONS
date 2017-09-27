@@ -7,7 +7,7 @@
        use datatype_conversion_mod
        use physical_sub_domain_mod
        use physical_sub_domain_extend_mod
-       use data_location_mod
+       use data_location_extend_mod
        use grid_mod
        use mesh_extend_mod
        implicit none

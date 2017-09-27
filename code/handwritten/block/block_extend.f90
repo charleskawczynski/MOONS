@@ -7,7 +7,7 @@
        use sparse_mod
        use sparse_extend_mod
        use face_edge_corner_indexing_mod
-       use data_location_mod
+       use data_location_extend_mod
        use IO_tools_mod
        use GF_diagonals_mod
        implicit none

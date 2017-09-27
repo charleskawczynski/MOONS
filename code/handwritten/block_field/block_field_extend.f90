@@ -5,11 +5,11 @@
         use grid_mod
         use block_mod
         use block_extend_mod
-        use bctype_mod
-        use data_location_mod
+        use bctype_extend_mod
+        use data_location_extend_mod
         use GF_mod
         use block_extend_mod
-        use data_location_mod
+        use data_location_extend_mod
         use procedure_array_mod
         use procedure_array_extend_mod
         use procedure_array_plane_op_mod

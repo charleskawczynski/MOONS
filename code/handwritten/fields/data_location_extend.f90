@@ -1,5 +1,7 @@
-       module data_location_mod
+       module data_location_extend_mod
+       use data_location_mod
        ! Compiler flags: (_DEBUG_DATA_LOCATION_)
+       use dir_manip_mod
        implicit none
 
        private
@@ -35,23 +37,6 @@
        public :: defined
        public :: indentical
 
-       type data_location
-         private
-         logical :: C = .false.                      ! cell center, cell corner, cell edge, cell face
-         logical :: N = .false.                      ! cell center, cell corner, cell edge, cell face
-         logical :: E = .false.                      ! cell center, cell corner, cell edge, cell face
-         logical :: F = .false.                      ! cell center, cell corner, cell edge, cell face
-         integer :: face = 0                         ! face direction, edge direction
-         integer :: edge = 0                         ! face direction, edge direction
-         logical,dimension(3) :: CC_along = .false.  !
-         logical,dimension(3) :: N_along = .false.   !
-         integer,dimension(3) :: CC_eye = 0          !
-         integer,dimension(3) :: N_eye = 0           !
-         logical :: defined = .false.                !
-         integer :: volume_ID = 0                    ! face direction, edge direction
-       end type
-
-       interface init;                module procedure init_copy_DL;            end interface
        interface init_CC;             module procedure init_CC_DL;              end interface
        interface init_Node;           module procedure init_Node_DL;            end interface
        interface init_Face;           module procedure init_Face_DL;            end interface
@@ -97,40 +82,9 @@
        interface is_collocated_VF;    module procedure is_collocated_VF_DL;     end interface
        interface is_collocated_TF;    module procedure is_collocated_TF_DL;     end interface
 
-       interface delete;              module procedure delete_DL;               end interface
-       interface display;             module procedure display_DL;              end interface
-       interface print;               module procedure print_DL;                end interface
        interface print;               module procedure print_DL3;               end interface
-       interface export;              module procedure export_DL;               end interface
-       interface import;              module procedure import_DL;               end interface
 
        contains
-
-       ! **********************************************************
-       ! ********************* ESSENTIALS *************************
-       ! **********************************************************
-
-       subroutine init_copy_DL(DL,DL_in)
-         implicit none
-         type(data_location),intent(inout) :: DL
-         type(data_location),intent(in) :: DL_in
-         call delete(DL)
-#ifdef _DEBUG_DATA_LOCATION_
-         call insist_defined(DL,'init_copy_DL')
-#endif
-         DL%C         = DL_in%C
-         DL%N         = DL_in%N
-         DL%E         = DL_in%E
-         DL%F         = DL_in%F
-         DL%face      = DL_in%face
-         DL%edge      = DL_in%edge
-         DL%defined   = DL_in%defined
-         DL%CC_along  = DL_in%CC_along
-         DL%N_along   = DL_in%N_along
-         DL%volume_ID = DL_in%volume_ID
-         DL%CC_eye    = DL_in%CC_eye
-         DL%N_eye     = DL_in%N_eye
-       end subroutine
 
        function indentical_DL(A,B) result(L_all)
          implicit none
@@ -212,83 +166,12 @@
          end select
        end subroutine
 
-       subroutine delete_DL(DL)
-         implicit none
-         type(data_location),intent(inout) :: DL
-         DL%C = .false.
-         DL%N = .false.
-         DL%E = .false.
-         DL%F = .false.
-         DL%CC_along = .false.
-         DL%N_along = .false.
-         DL%face = 0
-         DL%edge = 0
-         DL%defined = .false.
-         DL%volume_ID = 0
-         DL%N_eye = 0
-         DL%CC_eye = 0
-       end subroutine
-
-       subroutine display_DL(DL,un)
-         implicit none
-         type(data_location),intent(in) :: DL
-         integer,intent(in) :: un
-         write(un,*) 'C = ',DL%C
-         write(un,*) 'N = ',DL%N
-         write(un,*) 'E = ',DL%E
-         write(un,*) 'F = ',DL%F
-         write(un,*) 'face = ',DL%face
-         write(un,*) 'edge = ',DL%edge
-         write(un,*) 'defined = ',DL%defined
-         write(un,*) 'CC_along = ',DL%CC_along
-         write(un,*) 'N_along = ',DL%N_along
-         write(un,*) 'volume_ID = ',DL%volume_ID
-       end subroutine
-
        subroutine print_DL3(DL)
          implicit none
          type(data_location),dimension(3),intent(in) :: DL
          call display(DL(1),6)
          call display(DL(2),6)
          call display(DL(3),6)
-       end subroutine
-
-       subroutine print_DL(DL)
-         implicit none
-         type(data_location),intent(in) :: DL
-         call display(DL,6)
-       end subroutine
-
-       subroutine export_DL(DL,un)
-         implicit none
-         type(data_location),intent(in) :: DL
-         integer,intent(in) :: un
-         write(un,*) 'defined = ';   write(un,*) DL%defined
-         write(un,*) 'C = ';         write(un,*) DL%C
-         write(un,*) 'N = ';         write(un,*) DL%N
-         write(un,*) 'E = ';         write(un,*) DL%E
-         write(un,*) 'F = ';         write(un,*) DL%F
-         write(un,*) 'face = ';      write(un,*) DL%face
-         write(un,*) 'edge = ';      write(un,*) DL%edge
-         write(un,*) 'CC_along = ';  write(un,*) DL%CC_along
-         write(un,*) 'N_along = ';   write(un,*) DL%N_along
-         write(un,*) 'volume_ID = '; write(un,*) DL%volume_ID
-       end subroutine
-
-       subroutine import_DL(DL,un)
-         implicit none
-         type(data_location),intent(inout) :: DL
-         integer,intent(in) :: un
-         read(un,*); read(un,*) DL%defined
-         read(un,*); read(un,*) DL%C
-         read(un,*); read(un,*) DL%N
-         read(un,*); read(un,*) DL%E
-         read(un,*); read(un,*) DL%F
-         read(un,*); read(un,*) DL%face
-         read(un,*); read(un,*) DL%edge
-         read(un,*); read(un,*) DL%CC_along
-         read(un,*); read(un,*) DL%N_along
-         read(un,*); read(un,*) DL%volume_ID
        end subroutine
 
        function CC_eye_DL(DL) result(I)

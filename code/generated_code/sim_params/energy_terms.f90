@@ -3,7 +3,10 @@
        ! ***************************************************
        module energy_terms_mod
        use IO_tools_mod
+       use datatype_conversion_mod
+       use dir_manip_mod
        use equation_term_mod
+       use string_mod
        implicit none
 
        private
@@ -11,17 +14,31 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_energy_terms;    end interface
-       interface delete;       module procedure delete_energy_terms;       end interface
-       interface display;      module procedure display_energy_terms;      end interface
-       interface display_short;module procedure display_short_energy_terms;end interface
-       interface display;      module procedure display_wrap_energy_terms; end interface
-       interface print;        module procedure print_energy_terms;        end interface
-       interface print_short;  module procedure print_short_energy_terms;  end interface
-       interface export;       module procedure export_energy_terms;       end interface
-       interface import;       module procedure import_energy_terms;       end interface
-       interface export;       module procedure export_wrap_energy_terms;  end interface
-       interface import;       module procedure import_wrap_energy_terms;  end interface
+       public :: export_primitives,import_primitives
+
+       public :: export_restart,import_restart
+
+       public :: make_restart_dir
+
+       public :: suppress_warnings
+
+       interface init;             module procedure init_copy_energy_terms;        end interface
+       interface delete;           module procedure delete_energy_terms;           end interface
+       interface display;          module procedure display_energy_terms;          end interface
+       interface display_short;    module procedure display_short_energy_terms;    end interface
+       interface display;          module procedure display_wrap_energy_terms;     end interface
+       interface print;            module procedure print_energy_terms;            end interface
+       interface print_short;      module procedure print_short_energy_terms;      end interface
+       interface export;           module procedure export_energy_terms;           end interface
+       interface export_primitives;module procedure export_primitives_energy_terms;end interface
+       interface export_restart;   module procedure export_restart_energy_terms;   end interface
+       interface import;           module procedure import_energy_terms;           end interface
+       interface import_restart;   module procedure import_restart_energy_terms;   end interface
+       interface import_primitives;module procedure import_primitives_energy_terms;end interface
+       interface export;           module procedure export_wrap_energy_terms;      end interface
+       interface import;           module procedure import_wrap_energy_terms;      end interface
+       interface make_restart_dir; module procedure make_restart_dir_energy_terms; end interface
+       interface suppress_warnings;module procedure suppress_warnings_energy_terms;end interface
 
        type energy_terms
          type(equation_term) :: advection
@@ -87,6 +104,16 @@
          call display(this%volumetric_heating,un)
        end subroutine
 
+       subroutine display_wrap_energy_terms(this,dir,name)
+         implicit none
+         type(energy_terms),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call display(this,un)
+         close(un)
+       end subroutine
+
        subroutine print_energy_terms(this)
          implicit none
          type(energy_terms),intent(in) :: this
@@ -97,6 +124,15 @@
          implicit none
          type(energy_terms),intent(in) :: this
          call display_short(this,6)
+       end subroutine
+
+       subroutine export_primitives_energy_terms(this,un)
+         implicit none
+         type(energy_terms),intent(in) :: this
+         integer,intent(in) :: un
+         integer :: un_suppress_warning
+         un_suppress_warning = un
+         call suppress_warnings(this)
        end subroutine
 
        subroutine export_energy_terms(this,un)
@@ -110,6 +146,15 @@
          call export(this%viscous_dissipation,un)
          call export(this%joule_heating,un)
          call export(this%volumetric_heating,un)
+       end subroutine
+
+       subroutine import_primitives_energy_terms(this,un)
+         implicit none
+         type(energy_terms),intent(inout) :: this
+         integer,intent(in) :: un
+         integer :: un_suppress_warning
+         un_suppress_warning = un
+         call suppress_warnings(this)
        end subroutine
 
        subroutine import_energy_terms(this,un)
@@ -126,14 +171,48 @@
          call import(this%volumetric_heating,un)
        end subroutine
 
-       subroutine display_wrap_energy_terms(this,dir,name)
+       subroutine export_restart_energy_terms(this,dir)
          implicit none
          type(energy_terms),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
+         character(len=*),intent(in) :: dir
          integer :: un
-         un = new_and_open(dir,name)
-         call display(this,un)
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
          close(un)
+         call export_restart(this%advection,dir//fortran_PS//'advection')
+         call export_restart(this%diffusion,dir//fortran_PS//'diffusion')
+         call export_restart(this%diffusion_linear,&
+         dir//fortran_PS//'diffusion_linear')
+         call export_restart(this%KE_diffusion,&
+         dir//fortran_PS//'KE_diffusion')
+         call export_restart(this%viscous_dissipation,&
+         dir//fortran_PS//'viscous_dissipation')
+         call export_restart(this%joule_heating,&
+         dir//fortran_PS//'joule_heating')
+         call export_restart(this%volumetric_heating,&
+         dir//fortran_PS//'volumetric_heating')
+       end subroutine
+
+       subroutine import_restart_energy_terms(this,dir)
+         implicit none
+         type(energy_terms),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
+         call import_restart(this%advection,dir//fortran_PS//'advection')
+         call import_restart(this%diffusion,dir//fortran_PS//'diffusion')
+         call import_restart(this%diffusion_linear,&
+         dir//fortran_PS//'diffusion_linear')
+         call import_restart(this%KE_diffusion,&
+         dir//fortran_PS//'KE_diffusion')
+         call import_restart(this%viscous_dissipation,&
+         dir//fortran_PS//'viscous_dissipation')
+         call import_restart(this%joule_heating,&
+         dir//fortran_PS//'joule_heating')
+         call import_restart(this%volumetric_heating,&
+         dir//fortran_PS//'volumetric_heating')
        end subroutine
 
        subroutine export_wrap_energy_terms(this,dir,name)
@@ -154,6 +233,32 @@
          un = open_to_read(dir,name)
          call import(this,un)
          close(un)
+       end subroutine
+
+       subroutine make_restart_dir_energy_terms(this,dir)
+         implicit none
+         type(energy_terms),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_restart_dir(this%advection,dir//fortran_PS//'advection')
+         call make_restart_dir(this%diffusion,dir//fortran_PS//'diffusion')
+         call make_restart_dir(this%diffusion_linear,&
+         dir//fortran_PS//'diffusion_linear')
+         call make_restart_dir(this%KE_diffusion,&
+         dir//fortran_PS//'KE_diffusion')
+         call make_restart_dir(this%viscous_dissipation,&
+         dir//fortran_PS//'viscous_dissipation')
+         call make_restart_dir(this%joule_heating,&
+         dir//fortran_PS//'joule_heating')
+         call make_restart_dir(this%volumetric_heating,&
+         dir//fortran_PS//'volumetric_heating')
+       end subroutine
+
+       subroutine suppress_warnings_energy_terms(this)
+         implicit none
+         type(energy_terms),intent(in) :: this
+         if (.false.) call print(this)
        end subroutine
 
        end module

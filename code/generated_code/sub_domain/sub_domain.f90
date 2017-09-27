@@ -3,7 +3,10 @@
        ! ***************************************************
        module sub_domain_mod
        use IO_tools_mod
+       use datatype_conversion_mod
+       use dir_manip_mod
        use overlap_mod
+       use string_mod
        implicit none
 
        private
@@ -11,17 +14,31 @@
        public :: init,delete,display,print,export,import
        public :: display_short,print_short
 
-       interface init;         module procedure init_copy_sub_domain;    end interface
-       interface delete;       module procedure delete_sub_domain;       end interface
-       interface display;      module procedure display_sub_domain;      end interface
-       interface display_short;module procedure display_short_sub_domain;end interface
-       interface display;      module procedure display_wrap_sub_domain; end interface
-       interface print;        module procedure print_sub_domain;        end interface
-       interface print_short;  module procedure print_short_sub_domain;  end interface
-       interface export;       module procedure export_sub_domain;       end interface
-       interface import;       module procedure import_sub_domain;       end interface
-       interface export;       module procedure export_wrap_sub_domain;  end interface
-       interface import;       module procedure import_wrap_sub_domain;  end interface
+       public :: export_primitives,import_primitives
+
+       public :: export_restart,import_restart
+
+       public :: make_restart_dir
+
+       public :: suppress_warnings
+
+       interface init;             module procedure init_copy_sub_domain;        end interface
+       interface delete;           module procedure delete_sub_domain;           end interface
+       interface display;          module procedure display_sub_domain;          end interface
+       interface display_short;    module procedure display_short_sub_domain;    end interface
+       interface display;          module procedure display_wrap_sub_domain;     end interface
+       interface print;            module procedure print_sub_domain;            end interface
+       interface print_short;      module procedure print_short_sub_domain;      end interface
+       interface export;           module procedure export_sub_domain;           end interface
+       interface export_primitives;module procedure export_primitives_sub_domain;end interface
+       interface export_restart;   module procedure export_restart_sub_domain;   end interface
+       interface import;           module procedure import_sub_domain;           end interface
+       interface import_restart;   module procedure import_restart_sub_domain;   end interface
+       interface import_primitives;module procedure import_primitives_sub_domain;end interface
+       interface export;           module procedure export_wrap_sub_domain;      end interface
+       interface import;           module procedure import_wrap_sub_domain;      end interface
+       interface make_restart_dir; module procedure make_restart_dir_sub_domain; end interface
+       interface suppress_warnings;module procedure suppress_warnings_sub_domain;end interface
 
        type sub_domain
          type(overlap),dimension(3) :: C
@@ -142,6 +159,16 @@
          write(un,*) 'g_R2_id = ',this%g_R2_id
        end subroutine
 
+       subroutine display_wrap_sub_domain(this,dir,name)
+         implicit none
+         type(sub_domain),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call display(this,un)
+         close(un)
+       end subroutine
+
        subroutine print_sub_domain(this)
          implicit none
          type(sub_domain),intent(in) :: this
@@ -152,6 +179,15 @@
          implicit none
          type(sub_domain),intent(in) :: this
          call display_short(this,6)
+       end subroutine
+
+       subroutine export_primitives_sub_domain(this,un)
+         implicit none
+         type(sub_domain),intent(in) :: this
+         integer,intent(in) :: un
+         write(un,*) 'defined  = ';write(un,*) this%defined
+         write(un,*) 'g_R1_id  = ';write(un,*) this%g_R1_id
+         write(un,*) 'g_R2_id  = ';write(un,*) this%g_R2_id
        end subroutine
 
        subroutine export_sub_domain(this,un)
@@ -184,6 +220,15 @@
          write(un,*) 'g_R2_id  = ';write(un,*) this%g_R2_id
        end subroutine
 
+       subroutine import_primitives_sub_domain(this,un)
+         implicit none
+         type(sub_domain),intent(inout) :: this
+         integer,intent(in) :: un
+         read(un,*); read(un,*) this%defined
+         read(un,*); read(un,*) this%g_R1_id
+         read(un,*); read(un,*) this%g_R2_id
+       end subroutine
+
        subroutine import_sub_domain(this,un)
          implicit none
          type(sub_domain),intent(inout) :: this
@@ -212,14 +257,66 @@
          read(un,*); read(un,*) this%g_R2_id
        end subroutine
 
-       subroutine display_wrap_sub_domain(this,dir,name)
+       subroutine export_restart_sub_domain(this,dir)
          implicit none
          type(sub_domain),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
+         character(len=*),intent(in) :: dir
+         integer :: i_C
+         integer :: i_N
+         integer :: i_M
+         integer :: s_C
+         integer :: s_N
+         integer :: s_M
          integer :: un
-         un = new_and_open(dir,name)
-         call display(this,un)
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
          close(un)
+         s_C = size(this%C)
+         do i_C=1,s_C
+           call export_restart(this%C(i_C),&
+           dir//fortran_PS//'C_'//int2str(i_C))
+         enddo
+         s_N = size(this%N)
+         do i_N=1,s_N
+           call export_restart(this%N(i_N),&
+           dir//fortran_PS//'N_'//int2str(i_N))
+         enddo
+         s_M = size(this%M)
+         do i_M=1,s_M
+           call export_restart(this%M(i_M),&
+           dir//fortran_PS//'M_'//int2str(i_M))
+         enddo
+       end subroutine
+
+       subroutine import_restart_sub_domain(this,dir)
+         implicit none
+         type(sub_domain),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_C
+         integer :: i_N
+         integer :: i_M
+         integer :: s_C
+         integer :: s_N
+         integer :: s_M
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
+         s_C = size(this%C)
+         do i_C=1,s_C
+           call import_restart(this%C(i_C),&
+           dir//fortran_PS//'C_'//int2str(i_C))
+         enddo
+         s_N = size(this%N)
+         do i_N=1,s_N
+           call import_restart(this%N(i_N),&
+           dir//fortran_PS//'N_'//int2str(i_N))
+         enddo
+         s_M = size(this%M)
+         do i_M=1,s_M
+           call import_restart(this%M(i_M),&
+           dir//fortran_PS//'M_'//int2str(i_M))
+         enddo
        end subroutine
 
        subroutine export_wrap_sub_domain(this,dir,name)
@@ -240,6 +337,41 @@
          un = open_to_read(dir,name)
          call import(this,un)
          close(un)
+       end subroutine
+
+       subroutine make_restart_dir_sub_domain(this,dir)
+         implicit none
+         type(sub_domain),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_C
+         integer :: i_N
+         integer :: i_M
+         integer :: s_C
+         integer :: s_N
+         integer :: s_M
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         s_C = size(this%C)
+         do i_C=1,s_C
+           call make_restart_dir(this%C(i_C),&
+           dir//fortran_PS//'C_'//int2str(i_C))
+         enddo
+         s_N = size(this%N)
+         do i_N=1,s_N
+           call make_restart_dir(this%N(i_N),&
+           dir//fortran_PS//'N_'//int2str(i_N))
+         enddo
+         s_M = size(this%M)
+         do i_M=1,s_M
+           call make_restart_dir(this%M(i_M),&
+           dir//fortran_PS//'M_'//int2str(i_M))
+         enddo
+       end subroutine
+
+       subroutine suppress_warnings_sub_domain(this)
+         implicit none
+         type(sub_domain),intent(in) :: this
+         if (.false.) call print(this)
        end subroutine
 
        end module

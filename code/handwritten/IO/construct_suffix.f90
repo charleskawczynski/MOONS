@@ -1,6 +1,6 @@
       module construct_suffix_mod
       use string_mod
-      use data_location_mod
+      use data_location_extend_mod
       use face_edge_corner_indexing_mod
       use datatype_conversion_mod
       implicit none

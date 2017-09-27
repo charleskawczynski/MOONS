@@ -77,12 +77,13 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)BCs$(PS)face_edge_corner_indexing.f90\
 	$(SRC_DIR)$(PS)math$(PS)is_nan.f90\
 	$(SRC_DIR)$(PS)math$(PS)even_odd.f90\
-	$(SRC_DIR)$(PS)IO$(PS)datatype_conversion.f90\
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Zone.f90\
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Header.f90\
 	$(SRC_DIR)$(PS)dir_tree$(PS)path_extend.f90\
 	$(SRC_DIR)$(PS)dir_tree$(PS)dir_group_extend.f90\
 	$(SRC_DIR)$(PS)dir_tree$(PS)dir_tree_extend.f90\
+	$(SRC_DIR)$(PS)fields$(PS)data_location_extend.f90\
+	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)bctype_extend.f90\
 	$(SRC_DIR)$(PS)probe$(PS)probe_extend.f90\
 	$(SRC_DIR)$(PS)mesh_params$(PS)mesh_quality_params_extend.f90\
 	$(SRC_DIR)$(PS)mesh_params$(PS)segment_extend.f90\

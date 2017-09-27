@@ -37,6 +37,7 @@ import modules.apply_face_BC_op as apply_face_BC_op
 import modules.procedure_array as procedure_array
 import modules.dir_tree as dir_tree
 import modules.stitches as stitches
+import modules.pre_compiled as pre_compiled
 import modules.PCG as PCG
 import modules.FFT_solver as FFT_solver
 import modules.governing_equations as governing_equations
@@ -99,6 +100,8 @@ g.add_base_files(['IO'+PS+'IO_tools.f90'])
 g.add_base_files(['string'+PS+'string.f90'])
 g.add_base_files(['string'+PS+'string_aux.f90'])
 g.add_base_modules(['string'])
+g.add_base_modules(['dir_manip'])
+g.add_base_modules(['datatype_conversion'])
 # g.print()
 priv = 'public'
 log = 'logical'
@@ -106,6 +109,10 @@ real = 'real(cp)' # ! Double precision (default)
 T = True
 F = False
 g.set_default_real('0.0_cp')
+
+
+# --------------- pre-compiled for convenience
+g = pre_compiled.add_modules(g,T,F,priv,real)
 
 # --------------- Small data structures
 g = stitches.add_modules(g,T,F,priv,real)

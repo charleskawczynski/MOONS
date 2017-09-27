@@ -2,8 +2,8 @@
        use current_precision_mod
        use datatype_conversion_mod
        use check_BCs_mod
-       use data_location_mod
-       use bctype_mod
+       use data_location_extend_mod
+       use bctype_extend_mod
        use apply_BCs_faces_bridge_implicit_mod
        ! use apply_BCs_edges_bridge_implicit_mod
        ! use apply_BCs_corners_bridge_implicit_mod

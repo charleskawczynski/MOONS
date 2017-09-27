@@ -38,7 +38,7 @@
 
        use current_precision_mod
        use face_edge_corner_indexing_mod
-       use data_location_mod
+       use data_location_extend_mod
        use grid_mod
        use block_extend_mod
        use block_mod
@@ -46,7 +46,7 @@
        use face_SD_mod
        use face_SD_extend_mod
        use GF_mod
-       use bctype_mod
+       use bctype_extend_mod
        use BC_logicals_mod
        use IO_tools_mod
        use table_mod

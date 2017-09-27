@@ -1,7 +1,7 @@
       module base_export_mod
       use current_precision_mod
       use mesh_extend_mod
-      use data_location_mod
+      use data_location_extend_mod
       use SF_extend_mod
       use VF_extend_mod
       use GF_export_mod

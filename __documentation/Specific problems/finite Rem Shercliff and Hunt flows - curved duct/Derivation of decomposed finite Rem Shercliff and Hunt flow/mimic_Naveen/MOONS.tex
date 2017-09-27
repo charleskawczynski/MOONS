@@ -1,0 +1,24 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Mimicking Naveen's LSA}
+We start with the equation
+\begin{equation}\begin{aligned}
+\PD_t u_i + u_j \PD_j u_i = -\PD_i p + Re^{-1} \PD_{jj} u_i - Ha^2 Re^{-1} \left( \frac{a}{b} \right)^2 u_i + F_i \\
+\PD_i u_i = 0
+\end{aligned}\end{equation}
+Using
+\begin{equation}\begin{aligned}
+\Psi,\omega = (\Psi_0,\omega_0 + \Psi_1,\omega_1) e^{i(\alpha x - \beta t)}
+\end{aligned}\end{equation}
+We get
+\begin{equation}\begin{aligned}
+\PD_t \omega_i + u_j \PD_j u_i = Re^{-1} \PD_{jj} \omega_i - Ha^2 Re^{-1} \left( \frac{a}{b} \right)^2 u_i \\
+\end{aligned}\end{equation}
+
+\end{document}

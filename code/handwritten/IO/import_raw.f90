@@ -4,7 +4,7 @@
        use string_mod
        use SF_extend_mod
        use VF_extend_mod
-       use data_location_mod
+       use data_location_extend_mod
        use IO_tools_mod
        use IO_import_mod
 
