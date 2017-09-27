@@ -45,18 +45,17 @@
        if (SP%MP%mirror) SP%DP%JE_scale = SP%DP%JE_scale*2.0_cp
      end subroutine
 
-     subroutine set_restart_SP(SP,restart_fields)
+     subroutine set_restart_SP(SP)
        implicit none
        type(sim_params),intent(inout) :: SP
-       logical,intent(in) :: restart_fields
-       SP%FCL%restart_meshes= restart_fields
-       SP%VS%T%SS%restart   = restart_fields
-       SP%VS%U%SS%restart   = restart_fields
-       SP%VS%P%SS%restart   = restart_fields
-       SP%VS%B%SS%restart   = restart_fields
-       SP%VS%B0%SS%restart  = restart_fields
-       SP%VS%phi%SS%restart = restart_fields
-       SP%VS%rho%SS%restart = restart_fields
+       SP%FCL%restart_meshes = .true.
+       SP%VS%T%SS%restart    = .true.
+       SP%VS%U%SS%restart    = .true.
+       SP%VS%P%SS%restart    = .true.
+       SP%VS%B%SS%restart    = .true.
+       SP%VS%B0%SS%restart   = .true.
+       SP%VS%phi%SS%restart  = .true.
+       SP%VS%rho%SS%restart  = .true.
        call import(SP%coupled)
        call import_TMP(SP%VS)
      end subroutine

@@ -302,8 +302,8 @@
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
-         call make_restart_dir(this%c,dir//fortran_PS//'c')
-         call make_restart_dir(this%uc,dir//fortran_PS//'uc')
+         call make_restart_dir(this%c,dir//'c'//fortran_PS)
+         call make_restart_dir(this%uc,dir//'uc'//fortran_PS)
        end subroutine
 
        subroutine export_restart_stop_clock(this,dir)
@@ -314,8 +314,8 @@
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
-         call export_restart(this%c,dir//fortran_PS//'c')
-         call export_restart(this%uc,dir//fortran_PS//'uc')
+         call export_restart(this%c,dir//'c'//fortran_PS)
+         call export_restart(this%uc,dir//'uc'//fortran_PS)
        end subroutine
 
        subroutine import_restart_stop_clock(this,dir)
@@ -326,8 +326,8 @@
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         call import_restart(this%c,dir//fortran_PS//'c')
-         call import_restart(this%uc,dir//fortran_PS//'uc')
+         call import_restart(this%c,dir//'c'//fortran_PS)
+         call import_restart(this%uc,dir//'uc'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_stop_clock(this)

@@ -233,19 +233,19 @@
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
-         call make_restart_dir(this%info,dir//fortran_PS//'info')
+         call make_restart_dir(this%info,dir//'info'//fortran_PS)
          call make_restart_dir(this%unsteady_0D,&
-         dir//fortran_PS//'unsteady_0D')
+         dir//'unsteady_0D'//fortran_PS)
          call make_restart_dir(this%unsteady_1D,&
-         dir//fortran_PS//'unsteady_1D')
+         dir//'unsteady_1D'//fortran_PS)
          call make_restart_dir(this%unsteady_2D,&
-         dir//fortran_PS//'unsteady_2D')
+         dir//'unsteady_2D'//fortran_PS)
          call make_restart_dir(this%unsteady_3D,&
-         dir//fortran_PS//'unsteady_3D')
+         dir//'unsteady_3D'//fortran_PS)
          call make_restart_dir(this%final_solution,&
-         dir//fortran_PS//'final_solution')
+         dir//'final_solution'//fortran_PS)
          call make_restart_dir(this%restart_files,&
-         dir//fortran_PS//'restart_files')
+         dir//'restart_files'//fortran_PS)
        end subroutine
 
        subroutine export_restart_export_frequency(this,dir)
@@ -256,15 +256,15 @@
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
-         call export_restart(this%info,dir//fortran_PS//'info')
-         call export_restart(this%unsteady_0D,dir//fortran_PS//'unsteady_0D')
-         call export_restart(this%unsteady_1D,dir//fortran_PS//'unsteady_1D')
-         call export_restart(this%unsteady_2D,dir//fortran_PS//'unsteady_2D')
-         call export_restart(this%unsteady_3D,dir//fortran_PS//'unsteady_3D')
+         call export_restart(this%info,dir//'info'//fortran_PS)
+         call export_restart(this%unsteady_0D,dir//'unsteady_0D'//fortran_PS)
+         call export_restart(this%unsteady_1D,dir//'unsteady_1D'//fortran_PS)
+         call export_restart(this%unsteady_2D,dir//'unsteady_2D'//fortran_PS)
+         call export_restart(this%unsteady_3D,dir//'unsteady_3D'//fortran_PS)
          call export_restart(this%final_solution,&
-         dir//fortran_PS//'final_solution')
+         dir//'final_solution'//fortran_PS)
          call export_restart(this%restart_files,&
-         dir//fortran_PS//'restart_files')
+         dir//'restart_files'//fortran_PS)
        end subroutine
 
        subroutine import_restart_export_frequency(this,dir)
@@ -275,15 +275,15 @@
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         call import_restart(this%info,dir//fortran_PS//'info')
-         call import_restart(this%unsteady_0D,dir//fortran_PS//'unsteady_0D')
-         call import_restart(this%unsteady_1D,dir//fortran_PS//'unsteady_1D')
-         call import_restart(this%unsteady_2D,dir//fortran_PS//'unsteady_2D')
-         call import_restart(this%unsteady_3D,dir//fortran_PS//'unsteady_3D')
+         call import_restart(this%info,dir//'info'//fortran_PS)
+         call import_restart(this%unsteady_0D,dir//'unsteady_0D'//fortran_PS)
+         call import_restart(this%unsteady_1D,dir//'unsteady_1D'//fortran_PS)
+         call import_restart(this%unsteady_2D,dir//'unsteady_2D'//fortran_PS)
+         call import_restart(this%unsteady_3D,dir//'unsteady_3D'//fortran_PS)
          call import_restart(this%final_solution,&
-         dir//fortran_PS//'final_solution')
+         dir//'final_solution'//fortran_PS)
          call import_restart(this%restart_files,&
-         dir//fortran_PS//'restart_files')
+         dir//'restart_files'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_export_frequency(this)

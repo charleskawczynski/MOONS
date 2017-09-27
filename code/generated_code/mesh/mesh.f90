@@ -228,10 +228,10 @@
            s_B = size(this%B)
            do i_B=1,s_B
              call make_restart_dir(this%B(i_B),&
-             dir//fortran_PS//'B_'//int2str(i_B))
+             dir//'B_'//int2str(i_B)//fortran_PS)
            enddo
          endif
-         call make_restart_dir(this%MP,dir//fortran_PS//'MP')
+         call make_restart_dir(this%MP,dir//'MP'//fortran_PS)
        end subroutine
 
        subroutine export_restart_mesh(this,dir)
@@ -248,10 +248,10 @@
            s_B = size(this%B)
            do i_B=1,s_B
              call export_restart(this%B(i_B),&
-             dir//fortran_PS//'B_'//int2str(i_B))
+             dir//'B_'//int2str(i_B)//fortran_PS)
            enddo
          endif
-         call export_restart(this%MP,dir//fortran_PS//'MP')
+         call export_restart(this%MP,dir//'MP'//fortran_PS)
        end subroutine
 
        subroutine import_restart_mesh(this,dir)
@@ -268,10 +268,10 @@
            s_B = size(this%B)
            do i_B=1,s_B
              call import_restart(this%B(i_B),&
-             dir//fortran_PS//'B_'//int2str(i_B))
+             dir//'B_'//int2str(i_B)//fortran_PS)
            enddo
          endif
-         call import_restart(this%MP,dir//fortran_PS//'MP')
+         call import_restart(this%MP,dir//'MP'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_mesh(this)

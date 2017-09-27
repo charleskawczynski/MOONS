@@ -211,7 +211,7 @@
            s_EL = size(this%EL)
            do i_EL=1,s_EL
              call make_restart_dir(this%EL(i_EL),&
-             dir//fortran_PS//'EL_'//int2str(i_EL))
+             dir//'EL_'//int2str(i_EL)//fortran_PS)
            enddo
          endif
        end subroutine
@@ -230,7 +230,7 @@
            s_EL = size(this%EL)
            do i_EL=1,s_EL
              call export_restart(this%EL(i_EL),&
-             dir//fortran_PS//'EL_'//int2str(i_EL))
+             dir//'EL_'//int2str(i_EL)//fortran_PS)
            enddo
          endif
        end subroutine
@@ -249,7 +249,7 @@
            s_EL = size(this%EL)
            do i_EL=1,s_EL
              call import_restart(this%EL(i_EL),&
-             dir//fortran_PS//'EL_'//int2str(i_EL))
+             dir//'EL_'//int2str(i_EL)//fortran_PS)
            enddo
          endif
        end subroutine

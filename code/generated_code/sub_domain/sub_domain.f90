@@ -292,17 +292,17 @@
          s_C = size(this%C)
          do i_C=1,s_C
            call make_restart_dir(this%C(i_C),&
-           dir//fortran_PS//'C_'//int2str(i_C))
+           dir//'C_'//int2str(i_C)//fortran_PS)
          enddo
          s_N = size(this%N)
          do i_N=1,s_N
            call make_restart_dir(this%N(i_N),&
-           dir//fortran_PS//'N_'//int2str(i_N))
+           dir//'N_'//int2str(i_N)//fortran_PS)
          enddo
          s_M = size(this%M)
          do i_M=1,s_M
            call make_restart_dir(this%M(i_M),&
-           dir//fortran_PS//'M_'//int2str(i_M))
+           dir//'M_'//int2str(i_M)//fortran_PS)
          enddo
        end subroutine
 
@@ -323,17 +323,17 @@
          s_C = size(this%C)
          do i_C=1,s_C
            call export_restart(this%C(i_C),&
-           dir//fortran_PS//'C_'//int2str(i_C))
+           dir//'C_'//int2str(i_C)//fortran_PS)
          enddo
          s_N = size(this%N)
          do i_N=1,s_N
            call export_restart(this%N(i_N),&
-           dir//fortran_PS//'N_'//int2str(i_N))
+           dir//'N_'//int2str(i_N)//fortran_PS)
          enddo
          s_M = size(this%M)
          do i_M=1,s_M
            call export_restart(this%M(i_M),&
-           dir//fortran_PS//'M_'//int2str(i_M))
+           dir//'M_'//int2str(i_M)//fortran_PS)
          enddo
        end subroutine
 
@@ -354,17 +354,17 @@
          s_C = size(this%C)
          do i_C=1,s_C
            call import_restart(this%C(i_C),&
-           dir//fortran_PS//'C_'//int2str(i_C))
+           dir//'C_'//int2str(i_C)//fortran_PS)
          enddo
          s_N = size(this%N)
          do i_N=1,s_N
            call import_restart(this%N(i_N),&
-           dir//fortran_PS//'N_'//int2str(i_N))
+           dir//'N_'//int2str(i_N)//fortran_PS)
          enddo
          s_M = size(this%M)
          do i_M=1,s_M
            call import_restart(this%M(i_M),&
-           dir//fortran_PS//'M_'//int2str(i_M))
+           dir//'M_'//int2str(i_M)//fortran_PS)
          enddo
        end subroutine
 

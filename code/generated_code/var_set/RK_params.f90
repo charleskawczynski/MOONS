@@ -197,10 +197,10 @@
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
-         call make_restart_dir(this%gamma,dir//fortran_PS//'gamma')
-         call make_restart_dir(this%zeta,dir//fortran_PS//'zeta')
-         call make_restart_dir(this%alpha,dir//fortran_PS//'alpha')
-         call make_restart_dir(this%beta,dir//fortran_PS//'beta')
+         call make_restart_dir(this%gamma,dir//'gamma'//fortran_PS)
+         call make_restart_dir(this%zeta,dir//'zeta'//fortran_PS)
+         call make_restart_dir(this%alpha,dir//'alpha'//fortran_PS)
+         call make_restart_dir(this%beta,dir//'beta'//fortran_PS)
        end subroutine
 
        subroutine export_restart_RK_params(this,dir)
@@ -211,10 +211,10 @@
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
-         call export_restart(this%gamma,dir//fortran_PS//'gamma')
-         call export_restart(this%zeta,dir//fortran_PS//'zeta')
-         call export_restart(this%alpha,dir//fortran_PS//'alpha')
-         call export_restart(this%beta,dir//fortran_PS//'beta')
+         call export_restart(this%gamma,dir//'gamma'//fortran_PS)
+         call export_restart(this%zeta,dir//'zeta'//fortran_PS)
+         call export_restart(this%alpha,dir//'alpha'//fortran_PS)
+         call export_restart(this%beta,dir//'beta'//fortran_PS)
        end subroutine
 
        subroutine import_restart_RK_params(this,dir)
@@ -225,10 +225,10 @@
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         call import_restart(this%gamma,dir//fortran_PS//'gamma')
-         call import_restart(this%zeta,dir//fortran_PS//'zeta')
-         call import_restart(this%alpha,dir//fortran_PS//'alpha')
-         call import_restart(this%beta,dir//fortran_PS//'beta')
+         call import_restart(this%gamma,dir//'gamma'//fortran_PS)
+         call import_restart(this%zeta,dir//'zeta'//fortran_PS)
+         call import_restart(this%alpha,dir//'alpha'//fortran_PS)
+         call import_restart(this%beta,dir//'beta'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_RK_params(this)

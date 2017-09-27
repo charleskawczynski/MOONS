@@ -226,10 +226,10 @@
            s_SB = size(this%SB)
            do i_SB=1,s_SB
              call make_restart_dir(this%SB(i_SB),&
-             dir//fortran_PS//'SB_'//int2str(i_SB))
+             dir//'SB_'//int2str(i_SB)//fortran_PS)
            enddo
          endif
-         call make_restart_dir(this%BCL,dir//fortran_PS//'BCL')
+         call make_restart_dir(this%BCL,dir//'BCL'//fortran_PS)
        end subroutine
 
        subroutine export_restart_boundary(this,dir)
@@ -246,10 +246,10 @@
            s_SB = size(this%SB)
            do i_SB=1,s_SB
              call export_restart(this%SB(i_SB),&
-             dir//fortran_PS//'SB_'//int2str(i_SB))
+             dir//'SB_'//int2str(i_SB)//fortran_PS)
            enddo
          endif
-         call export_restart(this%BCL,dir//fortran_PS//'BCL')
+         call export_restart(this%BCL,dir//'BCL'//fortran_PS)
        end subroutine
 
        subroutine import_restart_boundary(this,dir)
@@ -266,10 +266,10 @@
            s_SB = size(this%SB)
            do i_SB=1,s_SB
              call import_restart(this%SB(i_SB),&
-             dir//fortran_PS//'SB_'//int2str(i_SB))
+             dir//'SB_'//int2str(i_SB)//fortran_PS)
            enddo
          endif
-         call import_restart(this%BCL,dir//fortran_PS//'BCL')
+         call import_restart(this%BCL,dir//'BCL'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_boundary(this)

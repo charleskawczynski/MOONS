@@ -220,7 +220,7 @@
            s_sd = size(this%sd)
            do i_sd=1,s_sd
              call make_restart_dir(this%sd(i_sd),&
-             dir//fortran_PS//'sd_'//int2str(i_sd))
+             dir//'sd_'//int2str(i_sd)//fortran_PS)
            enddo
          endif
        end subroutine
@@ -239,7 +239,7 @@
            s_sd = size(this%sd)
            do i_sd=1,s_sd
              call export_restart(this%sd(i_sd),&
-             dir//fortran_PS//'sd_'//int2str(i_sd))
+             dir//'sd_'//int2str(i_sd)//fortran_PS)
            enddo
          endif
        end subroutine
@@ -258,7 +258,7 @@
            s_sd = size(this%sd)
            do i_sd=1,s_sd
              call import_restart(this%sd(i_sd),&
-             dir//fortran_PS//'sd_'//int2str(i_sd))
+             dir//'sd_'//int2str(i_sd)//fortran_PS)
            enddo
          endif
        end subroutine

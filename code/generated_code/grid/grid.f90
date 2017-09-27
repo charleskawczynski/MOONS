@@ -204,7 +204,7 @@
          s_c = size(this%c)
          do i_c=1,s_c
            call make_restart_dir(this%c(i_c),&
-           dir//fortran_PS//'c_'//int2str(i_c))
+           dir//'c_'//int2str(i_c)//fortran_PS)
          enddo
        end subroutine
 
@@ -221,7 +221,7 @@
          s_c = size(this%c)
          do i_c=1,s_c
            call export_restart(this%c(i_c),&
-           dir//fortran_PS//'c_'//int2str(i_c))
+           dir//'c_'//int2str(i_c)//fortran_PS)
          enddo
        end subroutine
 
@@ -238,7 +238,7 @@
          s_c = size(this%c)
          do i_c=1,s_c
            call import_restart(this%c(i_c),&
-           dir//fortran_PS//'c_'//int2str(i_c))
+           dir//'c_'//int2str(i_c)//fortran_PS)
          enddo
        end subroutine
 

@@ -243,17 +243,17 @@
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
-         call make_restart_dir(this%U_sum,dir//fortran_PS//'U_sum')
-         call make_restart_dir(this%U_ave,dir//fortran_PS//'U_ave')
+         call make_restart_dir(this%U_sum,dir//'U_sum'//fortran_PS)
+         call make_restart_dir(this%U_ave,dir//'U_ave'//fortran_PS)
          call make_restart_dir(this%mean_energy,&
-         dir//fortran_PS//'mean_energy')
-         call make_restart_dir(this%RMS,dir//fortran_PS//'RMS')
-         call make_restart_dir(this%stresses,dir//fortran_PS//'stresses')
+         dir//'mean_energy'//fortran_PS)
+         call make_restart_dir(this%RMS,dir//'RMS'//fortran_PS)
+         call make_restart_dir(this%stresses,dir//'stresses'//fortran_PS)
          call make_restart_dir(this%stresses_sum,&
-         dir//fortran_PS//'stresses_sum')
+         dir//'stresses_sum'//fortran_PS)
          call make_restart_dir(this%L2_stresses,&
-         dir//fortran_PS//'L2_stresses')
-         call make_restart_dir(this%TSP,dir//fortran_PS//'TSP')
+         dir//'L2_stresses'//fortran_PS)
+         call make_restart_dir(this%TSP,dir//'TSP'//fortran_PS)
        end subroutine
 
        subroutine export_restart_time_statistics_VF(this,dir)
@@ -264,15 +264,15 @@
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
-         call export_restart(this%U_sum,dir//fortran_PS//'U_sum')
-         call export_restart(this%U_ave,dir//fortran_PS//'U_ave')
-         call export_restart(this%mean_energy,dir//fortran_PS//'mean_energy')
-         call export_restart(this%RMS,dir//fortran_PS//'RMS')
-         call export_restart(this%stresses,dir//fortran_PS//'stresses')
+         call export_restart(this%U_sum,dir//'U_sum'//fortran_PS)
+         call export_restart(this%U_ave,dir//'U_ave'//fortran_PS)
+         call export_restart(this%mean_energy,dir//'mean_energy'//fortran_PS)
+         call export_restart(this%RMS,dir//'RMS'//fortran_PS)
+         call export_restart(this%stresses,dir//'stresses'//fortran_PS)
          call export_restart(this%stresses_sum,&
-         dir//fortran_PS//'stresses_sum')
-         call export_restart(this%L2_stresses,dir//fortran_PS//'L2_stresses')
-         call export_restart(this%TSP,dir//fortran_PS//'TSP')
+         dir//'stresses_sum'//fortran_PS)
+         call export_restart(this%L2_stresses,dir//'L2_stresses'//fortran_PS)
+         call export_restart(this%TSP,dir//'TSP'//fortran_PS)
        end subroutine
 
        subroutine import_restart_time_statistics_VF(this,dir)
@@ -283,15 +283,15 @@
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         call import_restart(this%U_sum,dir//fortran_PS//'U_sum')
-         call import_restart(this%U_ave,dir//fortran_PS//'U_ave')
-         call import_restart(this%mean_energy,dir//fortran_PS//'mean_energy')
-         call import_restart(this%RMS,dir//fortran_PS//'RMS')
-         call import_restart(this%stresses,dir//fortran_PS//'stresses')
+         call import_restart(this%U_sum,dir//'U_sum'//fortran_PS)
+         call import_restart(this%U_ave,dir//'U_ave'//fortran_PS)
+         call import_restart(this%mean_energy,dir//'mean_energy'//fortran_PS)
+         call import_restart(this%RMS,dir//'RMS'//fortran_PS)
+         call import_restart(this%stresses,dir//'stresses'//fortran_PS)
          call import_restart(this%stresses_sum,&
-         dir//fortran_PS//'stresses_sum')
-         call import_restart(this%L2_stresses,dir//fortran_PS//'L2_stresses')
-         call import_restart(this%TSP,dir//fortran_PS//'TSP')
+         dir//'stresses_sum'//fortran_PS)
+         call import_restart(this%L2_stresses,dir//'L2_stresses'//fortran_PS)
+         call import_restart(this%TSP,dir//'TSP'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_time_statistics_VF(this)

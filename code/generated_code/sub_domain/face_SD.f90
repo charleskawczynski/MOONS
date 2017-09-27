@@ -474,37 +474,37 @@
          s_G = size(this%G)
          do i_G=1,s_G
            call make_restart_dir(this%G(i_G),&
-           dir//fortran_PS//'G_'//int2str(i_G))
+           dir//'G_'//int2str(i_G)//fortran_PS)
          enddo
          s_G_periodic_N = size(this%G_periodic_N)
          do i_G_periodic_N=1,s_G_periodic_N
            call make_restart_dir(this%G_periodic_N(i_G_periodic_N),&
-           dir//fortran_PS//'G_periodic_N_'//int2str(i_G_periodic_N))
+           dir//'G_periodic_N_'//int2str(i_G_periodic_N)//fortran_PS)
          enddo
          s_B = size(this%B)
          do i_B=1,s_B
            call make_restart_dir(this%B(i_B),&
-           dir//fortran_PS//'B_'//int2str(i_B))
+           dir//'B_'//int2str(i_B)//fortran_PS)
          enddo
          s_I = size(this%I)
          do i_I=1,s_I
            call make_restart_dir(this%I(i_I),&
-           dir//fortran_PS//'I_'//int2str(i_I))
+           dir//'I_'//int2str(i_I)//fortran_PS)
          enddo
          s_I_OPP = size(this%I_OPP)
          do i_I_OPP=1,s_I_OPP
            call make_restart_dir(this%I_OPP(i_I_OPP),&
-           dir//fortran_PS//'I_OPP_'//int2str(i_I_OPP))
+           dir//'I_OPP_'//int2str(i_I_OPP)//fortran_PS)
          enddo
          s_I_OPP_periodic_N = size(this%I_OPP_periodic_N)
          do i_I_OPP_periodic_N=1,s_I_OPP_periodic_N
            call make_restart_dir(this%I_OPP_periodic_N(i_I_OPP_periodic_N),&
-           dir//fortran_PS//'I_OPP_periodic_N_'//int2str(i_I_OPP_periodic_N))
+           dir//'I_OPP_periodic_N_'//int2str(i_I_OPP_periodic_N)//fortran_PS)
          enddo
          s_i_2D = size(this%i_2D)
          do i_i_2D=1,s_i_2D
            call make_restart_dir(this%i_2D(i_i_2D),&
-           dir//fortran_PS//'i_2D_'//int2str(i_i_2D))
+           dir//'i_2D_'//int2str(i_i_2D)//fortran_PS)
          enddo
        end subroutine
 
@@ -533,37 +533,37 @@
          s_G = size(this%G)
          do i_G=1,s_G
            call export_restart(this%G(i_G),&
-           dir//fortran_PS//'G_'//int2str(i_G))
+           dir//'G_'//int2str(i_G)//fortran_PS)
          enddo
          s_G_periodic_N = size(this%G_periodic_N)
          do i_G_periodic_N=1,s_G_periodic_N
            call export_restart(this%G_periodic_N(i_G_periodic_N),&
-           dir//fortran_PS//'G_periodic_N_'//int2str(i_G_periodic_N))
+           dir//'G_periodic_N_'//int2str(i_G_periodic_N)//fortran_PS)
          enddo
          s_B = size(this%B)
          do i_B=1,s_B
            call export_restart(this%B(i_B),&
-           dir//fortran_PS//'B_'//int2str(i_B))
+           dir//'B_'//int2str(i_B)//fortran_PS)
          enddo
          s_I = size(this%I)
          do i_I=1,s_I
            call export_restart(this%I(i_I),&
-           dir//fortran_PS//'I_'//int2str(i_I))
+           dir//'I_'//int2str(i_I)//fortran_PS)
          enddo
          s_I_OPP = size(this%I_OPP)
          do i_I_OPP=1,s_I_OPP
            call export_restart(this%I_OPP(i_I_OPP),&
-           dir//fortran_PS//'I_OPP_'//int2str(i_I_OPP))
+           dir//'I_OPP_'//int2str(i_I_OPP)//fortran_PS)
          enddo
          s_I_OPP_periodic_N = size(this%I_OPP_periodic_N)
          do i_I_OPP_periodic_N=1,s_I_OPP_periodic_N
            call export_restart(this%I_OPP_periodic_N(i_I_OPP_periodic_N),&
-           dir//fortran_PS//'I_OPP_periodic_N_'//int2str(i_I_OPP_periodic_N))
+           dir//'I_OPP_periodic_N_'//int2str(i_I_OPP_periodic_N)//fortran_PS)
          enddo
          s_i_2D = size(this%i_2D)
          do i_i_2D=1,s_i_2D
            call export_restart(this%i_2D(i_i_2D),&
-           dir//fortran_PS//'i_2D_'//int2str(i_i_2D))
+           dir//'i_2D_'//int2str(i_i_2D)//fortran_PS)
          enddo
        end subroutine
 
@@ -592,37 +592,37 @@
          s_G = size(this%G)
          do i_G=1,s_G
            call import_restart(this%G(i_G),&
-           dir//fortran_PS//'G_'//int2str(i_G))
+           dir//'G_'//int2str(i_G)//fortran_PS)
          enddo
          s_G_periodic_N = size(this%G_periodic_N)
          do i_G_periodic_N=1,s_G_periodic_N
            call import_restart(this%G_periodic_N(i_G_periodic_N),&
-           dir//fortran_PS//'G_periodic_N_'//int2str(i_G_periodic_N))
+           dir//'G_periodic_N_'//int2str(i_G_periodic_N)//fortran_PS)
          enddo
          s_B = size(this%B)
          do i_B=1,s_B
            call import_restart(this%B(i_B),&
-           dir//fortran_PS//'B_'//int2str(i_B))
+           dir//'B_'//int2str(i_B)//fortran_PS)
          enddo
          s_I = size(this%I)
          do i_I=1,s_I
            call import_restart(this%I(i_I),&
-           dir//fortran_PS//'I_'//int2str(i_I))
+           dir//'I_'//int2str(i_I)//fortran_PS)
          enddo
          s_I_OPP = size(this%I_OPP)
          do i_I_OPP=1,s_I_OPP
            call import_restart(this%I_OPP(i_I_OPP),&
-           dir//fortran_PS//'I_OPP_'//int2str(i_I_OPP))
+           dir//'I_OPP_'//int2str(i_I_OPP)//fortran_PS)
          enddo
          s_I_OPP_periodic_N = size(this%I_OPP_periodic_N)
          do i_I_OPP_periodic_N=1,s_I_OPP_periodic_N
            call import_restart(this%I_OPP_periodic_N(i_I_OPP_periodic_N),&
-           dir//fortran_PS//'I_OPP_periodic_N_'//int2str(i_I_OPP_periodic_N))
+           dir//'I_OPP_periodic_N_'//int2str(i_I_OPP_periodic_N)//fortran_PS)
          enddo
          s_i_2D = size(this%i_2D)
          do i_i_2D=1,s_i_2D
            call import_restart(this%i_2D(i_i_2D),&
-           dir//fortran_PS//'i_2D_'//int2str(i_i_2D))
+           dir//'i_2D_'//int2str(i_i_2D)//fortran_PS)
          enddo
        end subroutine
 

@@ -226,23 +226,23 @@
          call suppress_warnings(this)
          call make_dir_quiet(dir)
          call make_restart_dir(this%pressure_grad,&
-         dir//fortran_PS//'pressure_grad')
+         dir//'pressure_grad'//fortran_PS)
          call make_restart_dir(this%advection_divergence,&
-         dir//fortran_PS//'advection_divergence')
+         dir//'advection_divergence'//fortran_PS)
          call make_restart_dir(this%advection_convection,&
-         dir//fortran_PS//'advection_convection')
+         dir//'advection_convection'//fortran_PS)
          call make_restart_dir(this%advection_base_flow,&
-         dir//fortran_PS//'advection_base_flow')
-         call make_restart_dir(this%diffusion,dir//fortran_PS//'diffusion')
+         dir//'advection_base_flow'//fortran_PS)
+         call make_restart_dir(this%diffusion,dir//'diffusion'//fortran_PS)
          call make_restart_dir(this%diffusion_linear,&
-         dir//fortran_PS//'diffusion_linear')
+         dir//'diffusion_linear'//fortran_PS)
          call make_restart_dir(this%mean_pressure_grad,&
-         dir//fortran_PS//'mean_pressure_grad')
-         call make_restart_dir(this%JCrossB,dir//fortran_PS//'JCrossB')
+         dir//'mean_pressure_grad'//fortran_PS)
+         call make_restart_dir(this%JCrossB,dir//'JCrossB'//fortran_PS)
          call make_restart_dir(this%Q2D_JCrossB,&
-         dir//fortran_PS//'Q2D_JCrossB')
-         call make_restart_dir(this%Buoyancy,dir//fortran_PS//'Buoyancy')
-         call make_restart_dir(this%Gravity,dir//fortran_PS//'Gravity')
+         dir//'Q2D_JCrossB'//fortran_PS)
+         call make_restart_dir(this%Buoyancy,dir//'Buoyancy'//fortran_PS)
+         call make_restart_dir(this%Gravity,dir//'Gravity'//fortran_PS)
        end subroutine
 
        subroutine export_restart_momentum_terms(this,dir)
@@ -254,22 +254,22 @@
          call export_primitives(this,un)
          close(un)
          call export_restart(this%pressure_grad,&
-         dir//fortran_PS//'pressure_grad')
+         dir//'pressure_grad'//fortran_PS)
          call export_restart(this%advection_divergence,&
-         dir//fortran_PS//'advection_divergence')
+         dir//'advection_divergence'//fortran_PS)
          call export_restart(this%advection_convection,&
-         dir//fortran_PS//'advection_convection')
+         dir//'advection_convection'//fortran_PS)
          call export_restart(this%advection_base_flow,&
-         dir//fortran_PS//'advection_base_flow')
-         call export_restart(this%diffusion,dir//fortran_PS//'diffusion')
+         dir//'advection_base_flow'//fortran_PS)
+         call export_restart(this%diffusion,dir//'diffusion'//fortran_PS)
          call export_restart(this%diffusion_linear,&
-         dir//fortran_PS//'diffusion_linear')
+         dir//'diffusion_linear'//fortran_PS)
          call export_restart(this%mean_pressure_grad,&
-         dir//fortran_PS//'mean_pressure_grad')
-         call export_restart(this%JCrossB,dir//fortran_PS//'JCrossB')
-         call export_restart(this%Q2D_JCrossB,dir//fortran_PS//'Q2D_JCrossB')
-         call export_restart(this%Buoyancy,dir//fortran_PS//'Buoyancy')
-         call export_restart(this%Gravity,dir//fortran_PS//'Gravity')
+         dir//'mean_pressure_grad'//fortran_PS)
+         call export_restart(this%JCrossB,dir//'JCrossB'//fortran_PS)
+         call export_restart(this%Q2D_JCrossB,dir//'Q2D_JCrossB'//fortran_PS)
+         call export_restart(this%Buoyancy,dir//'Buoyancy'//fortran_PS)
+         call export_restart(this%Gravity,dir//'Gravity'//fortran_PS)
        end subroutine
 
        subroutine import_restart_momentum_terms(this,dir)
@@ -281,22 +281,22 @@
          call import_primitives(this,un)
          close(un)
          call import_restart(this%pressure_grad,&
-         dir//fortran_PS//'pressure_grad')
+         dir//'pressure_grad'//fortran_PS)
          call import_restart(this%advection_divergence,&
-         dir//fortran_PS//'advection_divergence')
+         dir//'advection_divergence'//fortran_PS)
          call import_restart(this%advection_convection,&
-         dir//fortran_PS//'advection_convection')
+         dir//'advection_convection'//fortran_PS)
          call import_restart(this%advection_base_flow,&
-         dir//fortran_PS//'advection_base_flow')
-         call import_restart(this%diffusion,dir//fortran_PS//'diffusion')
+         dir//'advection_base_flow'//fortran_PS)
+         call import_restart(this%diffusion,dir//'diffusion'//fortran_PS)
          call import_restart(this%diffusion_linear,&
-         dir//fortran_PS//'diffusion_linear')
+         dir//'diffusion_linear'//fortran_PS)
          call import_restart(this%mean_pressure_grad,&
-         dir//fortran_PS//'mean_pressure_grad')
-         call import_restart(this%JCrossB,dir//fortran_PS//'JCrossB')
-         call import_restart(this%Q2D_JCrossB,dir//fortran_PS//'Q2D_JCrossB')
-         call import_restart(this%Buoyancy,dir//fortran_PS//'Buoyancy')
-         call import_restart(this%Gravity,dir//fortran_PS//'Gravity')
+         dir//'mean_pressure_grad'//fortran_PS)
+         call import_restart(this%JCrossB,dir//'JCrossB'//fortran_PS)
+         call import_restart(this%Q2D_JCrossB,dir//'Q2D_JCrossB'//fortran_PS)
+         call import_restart(this%Buoyancy,dir//'Buoyancy'//fortran_PS)
+         call import_restart(this%Gravity,dir//'Gravity'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_momentum_terms(this)

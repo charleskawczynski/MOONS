@@ -327,26 +327,26 @@
          integer :: s_vol
          call suppress_warnings(this)
          call make_dir_quiet(dir)
-         call make_restart_dir(this%g,dir//fortran_PS//'g')
+         call make_restart_dir(this%g,dir//'g'//fortran_PS)
          if (allocated(this%f)) then
            s_f = size(this%f)
            do i_f=1,s_f
              call make_restart_dir(this%f(i_f),&
-             dir//fortran_PS//'f_'//int2str(i_f))
+             dir//'f_'//int2str(i_f)//fortran_PS)
            enddo
          endif
          if (allocated(this%fb)) then
            s_fb = size(this%fb)
            do i_fb=1,s_fb
              call make_restart_dir(this%fb(i_fb),&
-             dir//fortran_PS//'fb_'//int2str(i_fb))
+             dir//'fb_'//int2str(i_fb)//fortran_PS)
            enddo
          endif
          if (allocated(this%vol)) then
            s_vol = size(this%vol)
            do i_vol=1,s_vol
              call make_restart_dir(this%vol(i_vol),&
-             dir//fortran_PS//'vol_'//int2str(i_vol))
+             dir//'vol_'//int2str(i_vol)//fortran_PS)
            enddo
          endif
        end subroutine
@@ -365,26 +365,26 @@
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
-         call export_restart(this%g,dir//fortran_PS//'g')
+         call export_restart(this%g,dir//'g'//fortran_PS)
          if (allocated(this%f)) then
            s_f = size(this%f)
            do i_f=1,s_f
              call export_restart(this%f(i_f),&
-             dir//fortran_PS//'f_'//int2str(i_f))
+             dir//'f_'//int2str(i_f)//fortran_PS)
            enddo
          endif
          if (allocated(this%fb)) then
            s_fb = size(this%fb)
            do i_fb=1,s_fb
              call export_restart(this%fb(i_fb),&
-             dir//fortran_PS//'fb_'//int2str(i_fb))
+             dir//'fb_'//int2str(i_fb)//fortran_PS)
            enddo
          endif
          if (allocated(this%vol)) then
            s_vol = size(this%vol)
            do i_vol=1,s_vol
              call export_restart(this%vol(i_vol),&
-             dir//fortran_PS//'vol_'//int2str(i_vol))
+             dir//'vol_'//int2str(i_vol)//fortran_PS)
            enddo
          endif
        end subroutine
@@ -403,26 +403,26 @@
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         call import_restart(this%g,dir//fortran_PS//'g')
+         call import_restart(this%g,dir//'g'//fortran_PS)
          if (allocated(this%f)) then
            s_f = size(this%f)
            do i_f=1,s_f
              call import_restart(this%f(i_f),&
-             dir//fortran_PS//'f_'//int2str(i_f))
+             dir//'f_'//int2str(i_f)//fortran_PS)
            enddo
          endif
          if (allocated(this%fb)) then
            s_fb = size(this%fb)
            do i_fb=1,s_fb
              call import_restart(this%fb(i_fb),&
-             dir//fortran_PS//'fb_'//int2str(i_fb))
+             dir//'fb_'//int2str(i_fb)//fortran_PS)
            enddo
          endif
          if (allocated(this%vol)) then
            s_vol = size(this%vol)
            do i_vol=1,s_vol
              call import_restart(this%vol(i_vol),&
-             dir//fortran_PS//'vol_'//int2str(i_vol))
+             dir//'vol_'//int2str(i_vol)//fortran_PS)
            enddo
          endif
        end subroutine

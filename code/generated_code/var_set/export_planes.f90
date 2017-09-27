@@ -211,7 +211,7 @@
            s_EP = size(this%EP)
            do i_EP=1,s_EP
              call make_restart_dir(this%EP(i_EP),&
-             dir//fortran_PS//'EP_'//int2str(i_EP))
+             dir//'EP_'//int2str(i_EP)//fortran_PS)
            enddo
          endif
        end subroutine
@@ -230,7 +230,7 @@
            s_EP = size(this%EP)
            do i_EP=1,s_EP
              call export_restart(this%EP(i_EP),&
-             dir//fortran_PS//'EP_'//int2str(i_EP))
+             dir//'EP_'//int2str(i_EP)//fortran_PS)
            enddo
          endif
        end subroutine
@@ -249,7 +249,7 @@
            s_EP = size(this%EP)
            do i_EP=1,s_EP
              call import_restart(this%EP(i_EP),&
-             dir//fortran_PS//'EP_'//int2str(i_EP))
+             dir//'EP_'//int2str(i_EP)//fortran_PS)
            enddo
          endif
        end subroutine

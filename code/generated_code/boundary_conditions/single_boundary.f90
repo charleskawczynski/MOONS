@@ -178,10 +178,10 @@
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
-         call make_restart_dir(this%bct,dir//fortran_PS//'bct')
-         call make_restart_dir(this%b,dir//fortran_PS//'b')
-         call make_restart_dir(this%b_modified,dir//fortran_PS//'b_modified')
-         call make_restart_dir(this%b_total,dir//fortran_PS//'b_total')
+         call make_restart_dir(this%bct,dir//'bct'//fortran_PS)
+         call make_restart_dir(this%b,dir//'b'//fortran_PS)
+         call make_restart_dir(this%b_modified,dir//'b_modified'//fortran_PS)
+         call make_restart_dir(this%b_total,dir//'b_total'//fortran_PS)
        end subroutine
 
        subroutine export_restart_single_boundary(this,dir)
@@ -192,10 +192,10 @@
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
-         call export_restart(this%bct,dir//fortran_PS//'bct')
-         call export_restart(this%b,dir//fortran_PS//'b')
-         call export_restart(this%b_modified,dir//fortran_PS//'b_modified')
-         call export_restart(this%b_total,dir//fortran_PS//'b_total')
+         call export_restart(this%bct,dir//'bct'//fortran_PS)
+         call export_restart(this%b,dir//'b'//fortran_PS)
+         call export_restart(this%b_modified,dir//'b_modified'//fortran_PS)
+         call export_restart(this%b_total,dir//'b_total'//fortran_PS)
        end subroutine
 
        subroutine import_restart_single_boundary(this,dir)
@@ -206,10 +206,10 @@
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         call import_restart(this%bct,dir//fortran_PS//'bct')
-         call import_restart(this%b,dir//fortran_PS//'b')
-         call import_restart(this%b_modified,dir//fortran_PS//'b_modified')
-         call import_restart(this%b_total,dir//fortran_PS//'b_total')
+         call import_restart(this%bct,dir//'bct'//fortran_PS)
+         call import_restart(this%b,dir//'b'//fortran_PS)
+         call import_restart(this%b_modified,dir//'b_modified'//fortran_PS)
+         call import_restart(this%b_total,dir//'b_total'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_single_boundary(this)

@@ -215,16 +215,16 @@
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
-         call make_restart_dir(this%SS,dir//fortran_PS//'SS')
-         call make_restart_dir(this%MFP,dir//fortran_PS//'MFP')
-         call make_restart_dir(this%TMP,dir//fortran_PS//'TMP')
-         call make_restart_dir(this%ISP,dir//fortran_PS//'ISP')
+         call make_restart_dir(this%SS,dir//'SS'//fortran_PS)
+         call make_restart_dir(this%MFP,dir//'MFP'//fortran_PS)
+         call make_restart_dir(this%TMP,dir//'TMP'//fortran_PS)
+         call make_restart_dir(this%ISP,dir//'ISP'//fortran_PS)
          call make_restart_dir(this%unsteady_lines,&
-         dir//fortran_PS//'unsteady_lines')
+         dir//'unsteady_lines'//fortran_PS)
          call make_restart_dir(this%unsteady_planes,&
-         dir//fortran_PS//'unsteady_planes')
+         dir//'unsteady_planes'//fortran_PS)
          call make_restart_dir(this%unsteady_field,&
-         dir//fortran_PS//'unsteady_field')
+         dir//'unsteady_field'//fortran_PS)
        end subroutine
 
        subroutine export_restart_var(this,dir)
@@ -235,16 +235,16 @@
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
-         call export_restart(this%SS,dir//fortran_PS//'SS')
-         call export_restart(this%MFP,dir//fortran_PS//'MFP')
-         call export_restart(this%TMP,dir//fortran_PS//'TMP')
-         call export_restart(this%ISP,dir//fortran_PS//'ISP')
+         call export_restart(this%SS,dir//'SS'//fortran_PS)
+         call export_restart(this%MFP,dir//'MFP'//fortran_PS)
+         call export_restart(this%TMP,dir//'TMP'//fortran_PS)
+         call export_restart(this%ISP,dir//'ISP'//fortran_PS)
          call export_restart(this%unsteady_lines,&
-         dir//fortran_PS//'unsteady_lines')
+         dir//'unsteady_lines'//fortran_PS)
          call export_restart(this%unsteady_planes,&
-         dir//fortran_PS//'unsteady_planes')
+         dir//'unsteady_planes'//fortran_PS)
          call export_restart(this%unsteady_field,&
-         dir//fortran_PS//'unsteady_field')
+         dir//'unsteady_field'//fortran_PS)
        end subroutine
 
        subroutine import_restart_var(this,dir)
@@ -255,16 +255,16 @@
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         call import_restart(this%SS,dir//fortran_PS//'SS')
-         call import_restart(this%MFP,dir//fortran_PS//'MFP')
-         call import_restart(this%TMP,dir//fortran_PS//'TMP')
-         call import_restart(this%ISP,dir//fortran_PS//'ISP')
+         call import_restart(this%SS,dir//'SS'//fortran_PS)
+         call import_restart(this%MFP,dir//'MFP'//fortran_PS)
+         call import_restart(this%TMP,dir//'TMP'//fortran_PS)
+         call import_restart(this%ISP,dir//'ISP'//fortran_PS)
          call import_restart(this%unsteady_lines,&
-         dir//fortran_PS//'unsteady_lines')
+         dir//'unsteady_lines'//fortran_PS)
          call import_restart(this%unsteady_planes,&
-         dir//fortran_PS//'unsteady_planes')
+         dir//'unsteady_planes'//fortran_PS)
          call import_restart(this%unsteady_field,&
-         dir//fortran_PS//'unsteady_field')
+         dir//'unsteady_field'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_var(this)

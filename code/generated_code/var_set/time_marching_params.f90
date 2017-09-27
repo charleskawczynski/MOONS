@@ -267,7 +267,7 @@
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
-         call make_restart_dir(this%RKP,dir//fortran_PS//'RKP')
+         call make_restart_dir(this%RKP,dir//'RKP'//fortran_PS)
        end subroutine
 
        subroutine export_restart_time_marching_params(this,dir)
@@ -278,7 +278,7 @@
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
-         call export_restart(this%RKP,dir//fortran_PS//'RKP')
+         call export_restart(this%RKP,dir//'RKP'//fortran_PS)
        end subroutine
 
        subroutine import_restart_time_marching_params(this,dir)
@@ -289,7 +289,7 @@
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         call import_restart(this%RKP,dir//fortran_PS//'RKP')
+         call import_restart(this%RKP,dir//'RKP'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_time_marching_params(this)

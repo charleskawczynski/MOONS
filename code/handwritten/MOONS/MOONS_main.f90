@@ -63,13 +63,12 @@
          write(*,*) ' ******************** COMPUTATIONS STARTED ********************'
          write(*,*) ' ******************** COMPUTATIONS STARTED ********************'
          write(*,*) ' ******************** COMPUTATIONS STARTED ********************'
-         call init(M%dir_target,dir_target)
+         call init(M%C%dir_target,dir_target)
          call config(M) ! The flow control should be uniquely defined after this line.
          call init(M)
-         ! call make_restart_dir(M,str(M%DT%restart))
-         ! call export_restart(M,str(M%DT%restart))
-         ! call export(M,str(M%DT%restart),'MOONS')
-         if (.not.M%SP%FCL%skip_solver_loop) then
+         ! call make_restart_dir(M,str(M%C%DT%restart))
+         ! call export_restart(M,str(M%C%DT%restart))
+         if (.not.M%C%SP%FCL%skip_solver_loop) then
            call solve(M)
          endif
          call final_export(M)
@@ -84,23 +83,23 @@
        subroutine final_export_MOONS(M)
          implicit none
          type(MOONS),intent(inout) :: M
-         call print(M%SC,M%SP%coupled)
-         call export(M%SC,M%SP%coupled)
+         call print(M%C%sc,M%C%SP%coupled)
+         call export(M%C%sc,M%C%SP%coupled)
 
-         call export_ISP(M%SP%VS)
-         call export_TMP(M%SP%VS)
-         call export(M%SP%coupled)
+         call export_ISP(M%C%SP%VS)
+         call export_TMP(M%C%SP%VS)
+         call export(M%C%SP%coupled)
 
-         if (M%SP%FCL%export_final_tec) then
-           if (M%SP%VS%T%SS%initialize) call export_tec(M%nrg,M%SP,M%DT)
-           if (M%SP%VS%U%SS%initialize) call export_tec(M%mom,M%SP,M%DT)
-           if (M%SP%VS%B%SS%initialize) call export_tec(M%ind,M%SP,M%DT)
+         if (M%C%SP%FCL%export_final_tec) then
+           if (M%C%SP%VS%T%SS%initialize) call export_tec(M%GE%nrg,M%C%SP,M%C%DT)
+           if (M%C%SP%VS%U%SS%initialize) call export_tec(M%GE%mom,M%C%SP,M%C%DT)
+           if (M%C%SP%VS%B%SS%initialize) call export_tec(M%GE%ind,M%C%SP,M%C%DT)
          endif
 
-         if (M%SP%FCL%export_final_restart) then
-           if (M%SP%VS%T%SS%initialize) call export(M%nrg,M%SP,M%DT)
-           if (M%SP%VS%U%SS%initialize) call export(M%mom,M%SP,M%DT)
-           if (M%SP%VS%B%SS%initialize) call export(M%ind,M%SP,M%DT)
+         if (M%C%SP%FCL%export_final_restart) then
+           if (M%C%SP%VS%T%SS%initialize) call export(M%GE%nrg,M%C%SP,M%C%DT)
+           if (M%C%SP%VS%U%SS%initialize) call export(M%GE%mom,M%C%SP,M%C%DT)
+           if (M%C%SP%VS%B%SS%initialize) call export(M%GE%ind,M%C%SP,M%C%DT)
            ! call export(M,str(DT%restart),'MOONS')
          endif
        end subroutine
@@ -111,32 +110,32 @@
          write(*,*) ' *********************** POST PROCESSING ***********************'
          write(*,*) ' *********************** POST PROCESSING ***********************'
          write(*,*) ' *********************** POST PROCESSING ***********************'
-         if (M%SP%FCL%Poisson_test) then
-           call Poisson_test(M%mom%U,M%mom%p,M%mom%m,M%DT)
+         if (M%C%SP%FCL%Poisson_test) then
+           call Poisson_test(M%GE%mom%U,M%GE%mom%p,M%GE%mom%m,M%C%DT)
          endif
-         if (M%SP%FCL%export_vorticity_streamfunction) then
-           call export_vorticity_streamfunction(M%mom%U,M%mom%m,M%DT,M%SP)
+         if (M%C%SP%FCL%export_vorticity_streamfunction) then
+           call export_vorticity_streamfunction(M%GE%mom%U,M%GE%mom%m,M%C%DT,M%C%SP)
          endif
-         if (M%SP%FCL%compute_export_E_K_Budget) then
-           call compute_export_E_K_Budget(M%mom,M%SP,M%ind%B,M%ind%B0,M%ind%J,M%ind%MD_fluid,M%DT)
+         if (M%C%SP%FCL%compute_export_E_K_Budget) then
+           call compute_export_E_K_Budget(M%GE%mom,M%C%SP,M%GE%ind%B,M%GE%ind%B0,M%GE%ind%J,M%GE%ind%MD_fluid,M%C%DT)
          endif
-         if (M%SP%FCL%compute_export_E_M_budget) then
-           call compute_export_E_M_budget(M%ind,M%SP,M%mom%U,M%DT)
+         if (M%C%SP%FCL%compute_export_E_M_budget) then
+           call compute_export_E_M_budget(M%GE%ind,M%C%SP,M%GE%mom%U,M%C%DT)
          endif
-         if (M%SP%FCL%export_Shercliff_Hunt_analytic_sol) then
-           call export_Shercliff_Hunt_analytic_sol(M%mom%m,M%mom%U%x,M%SP%DP%Ha,0.0_cp,-1.0_cp,1,M%DT)
+         if (M%C%SP%FCL%export_Shercliff_Hunt_analytic_sol) then
+           call export_Shercliff_Hunt_analytic_sol(M%GE%mom%m,M%GE%mom%U%x,M%C%SP%DP%Ha,0.0_cp,-1.0_cp,1,M%C%DT)
          endif
-         if (M%SP%FCL%export_numerical_flow_rate) then
-           call export_numerical_flow_rate(M%mom%m,M%mom%U%x,M%SP%DP%Re,M%DT)
+         if (M%C%SP%FCL%export_numerical_flow_rate) then
+           call export_numerical_flow_rate(M%GE%mom%m,M%GE%mom%U%x,M%C%SP%DP%Re,M%C%DT)
          endif
-         if (M%SP%FCL%Taylor_Green_Vortex_test) then
-           call Taylor_Green_Vortex_test(M%mom%U,M%mom%p,M%mom%m,M%DT,M%SP)
+         if (M%C%SP%FCL%Taylor_Green_Vortex_test) then
+           call Taylor_Green_Vortex_test(M%GE%mom%U,M%GE%mom%p,M%GE%mom%m,M%C%DT,M%C%SP)
          endif
-         if (M%SP%FCL%temporal_convergence_test) then
-           call temporal_convergence_test(M%mom%U,M%mom%p,M%mom%m,M%DT,M%SP)
+         if (M%C%SP%FCL%temporal_convergence_test) then
+           call temporal_convergence_test(M%GE%mom%U,M%GE%mom%p,M%GE%mom%m,M%C%DT,M%C%SP)
          endif
-         if (M%SP%FCL%operator_commute_test) then
-           call operator_commute_test(M%mom%U,M%mom%p,M%mom%m,M%DT)
+         if (M%C%SP%FCL%operator_commute_test) then
+           call operator_commute_test(M%GE%mom%U,M%GE%mom%p,M%GE%mom%m,M%C%DT)
          endif
        end subroutine
 

@@ -494,6 +494,7 @@ class fortran_property:
     f_name = "'"+self.name+"'"
     suffix_loop = '//'+'int2str('+self.do_loop_iter+')'
     f_name_loop = "dir//"+f_sep+"//'"+self.name+"_'"+suffix_loop
+    f_name_loop = "dir"+"//'"+self.name+"_'"+suffix_loop+"//"+f_sep
     # f_name = "'"+self.restart_dir_name+"'"
     # f_name = "'"+f_sep+self.restart_dir_name+"'"
     f_call = 'call make_restart_dir'
@@ -546,7 +547,7 @@ class fortran_property:
         L = L + [f_call + '(this%' + self.name+'('+self.do_loop_iter+'),'+f_name+')']
         L = L + ['enddo']
       elif     self.object_type=='object'    and not self.allocatable and not self.dimension>1 and not self.rank>1:
-        L = L + [f_call +  "(this%" + self.name + ",dir//"+f_sep+"//"+f_name+")"]
+        L = L + [f_call +  "(this%" + self.name + ",dir"+"//"+f_name+"//"+f_sep+")"]
       elif     self.object_type=='procedure' and     self.allocatable and     self.dimension>1 and     self.rank>1: pass
       elif     self.object_type=='procedure' and not self.allocatable and     self.dimension>1 and     self.rank>1: pass
       elif     self.object_type=='procedure' and     self.allocatable and     self.dimension>1 and not self.rank>1: pass
@@ -562,6 +563,7 @@ class fortran_property:
     f_name = "'"+self.name+"'"
     suffix_loop = '//'+'int2str('+self.do_loop_iter+')'
     f_name_loop = "dir//"+f_sep+"//'"+self.name+"_'"+suffix_loop
+    f_name_loop = "dir"+"//'"+self.name+"_'"+suffix_loop+"//"+f_sep
     # f_name = "'"+self.restart_dir_name+"'"
     # f_name = "'"+f_sep+self.restart_dir_name+"'"
     f_call = 'call export_restart'
@@ -614,7 +616,7 @@ class fortran_property:
         L = L + [f_call + '(this%' + self.name+'('+self.do_loop_iter+'),'+f_name+')']
         L = L + ['enddo']
       elif     self.object_type=='object'    and not self.allocatable and not self.dimension>1 and not self.rank>1:
-        L = L + [f_call +  "(this%" + self.name + ",dir//"+f_sep+"//"+f_name+")"]
+        L = L + [f_call +  "(this%" + self.name + ",dir"+"//"+f_name+"//"+f_sep+")"]
       elif     self.object_type=='procedure' and     self.allocatable and     self.dimension>1 and     self.rank>1: pass
       elif     self.object_type=='procedure' and not self.allocatable and     self.dimension>1 and     self.rank>1: pass
       elif     self.object_type=='procedure' and     self.allocatable and     self.dimension>1 and not self.rank>1: pass
@@ -630,6 +632,7 @@ class fortran_property:
     f_name = "'"+self.name+"'"
     suffix_loop = '//'+'int2str('+self.do_loop_iter+')'
     f_name_loop = "dir//"+f_sep+"//'"+self.name+"_'"+suffix_loop
+    f_name_loop = "dir"+"//'"+self.name+"_'"+suffix_loop+"//"+f_sep
     # f_name = "'"+self.restart_dir_name+"'"
     # f_name = "'"+f_sep+self.restart_dir_name+"'"
     f_call = 'call import_restart'
@@ -682,7 +685,7 @@ class fortran_property:
         L = L + [f_call + '(this%' + self.name+'('+self.do_loop_iter+'),'+f_name+')']
         L = L + ['enddo']
       elif     self.object_type=='object'    and not self.allocatable and not self.dimension>1 and not self.rank>1:
-        L = L + [f_call +  "(this%" + self.name + ",dir//"+f_sep+"//"+f_name+")"]
+        L = L + [f_call +  "(this%" + self.name + ",dir"+"//"+f_name+"//"+f_sep+")"]
       elif     self.object_type=='procedure' and     self.allocatable and     self.dimension>1 and     self.rank>1: pass
       elif     self.object_type=='procedure' and not self.allocatable and     self.dimension>1 and     self.rank>1: pass
       elif     self.object_type=='procedure' and     self.allocatable and     self.dimension>1 and not self.rank>1: pass

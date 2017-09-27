@@ -280,19 +280,19 @@
          integer :: s_s_ext
          call suppress_warnings(this)
          call make_dir_quiet(dir)
-         call make_restart_dir(this%MQP,dir//fortran_PS//'MQP')
+         call make_restart_dir(this%MQP,dir//'MQP'//fortran_PS)
          if (allocated(this%s_base)) then
            s_s_base = size(this%s_base)
            do i_s_base=1,s_s_base
              call make_restart_dir(this%s_base(i_s_base),&
-             dir//fortran_PS//'s_base_'//int2str(i_s_base))
+             dir//'s_base_'//int2str(i_s_base)//fortran_PS)
            enddo
          endif
          if (allocated(this%s_ext)) then
            s_s_ext = size(this%s_ext)
            do i_s_ext=1,s_s_ext
              call make_restart_dir(this%s_ext(i_s_ext),&
-             dir//fortran_PS//'s_ext_'//int2str(i_s_ext))
+             dir//'s_ext_'//int2str(i_s_ext)//fortran_PS)
            enddo
          endif
        end subroutine
@@ -309,19 +309,19 @@
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
-         call export_restart(this%MQP,dir//fortran_PS//'MQP')
+         call export_restart(this%MQP,dir//'MQP'//fortran_PS)
          if (allocated(this%s_base)) then
            s_s_base = size(this%s_base)
            do i_s_base=1,s_s_base
              call export_restart(this%s_base(i_s_base),&
-             dir//fortran_PS//'s_base_'//int2str(i_s_base))
+             dir//'s_base_'//int2str(i_s_base)//fortran_PS)
            enddo
          endif
          if (allocated(this%s_ext)) then
            s_s_ext = size(this%s_ext)
            do i_s_ext=1,s_s_ext
              call export_restart(this%s_ext(i_s_ext),&
-             dir//fortran_PS//'s_ext_'//int2str(i_s_ext))
+             dir//'s_ext_'//int2str(i_s_ext)//fortran_PS)
            enddo
          endif
        end subroutine
@@ -338,19 +338,19 @@
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         call import_restart(this%MQP,dir//fortran_PS//'MQP')
+         call import_restart(this%MQP,dir//'MQP'//fortran_PS)
          if (allocated(this%s_base)) then
            s_s_base = size(this%s_base)
            do i_s_base=1,s_s_base
              call import_restart(this%s_base(i_s_base),&
-             dir//fortran_PS//'s_base_'//int2str(i_s_base))
+             dir//'s_base_'//int2str(i_s_base)//fortran_PS)
            enddo
          endif
          if (allocated(this%s_ext)) then
            s_s_ext = size(this%s_ext)
            do i_s_ext=1,s_s_ext
              call import_restart(this%s_ext(i_s_ext),&
-             dir//fortran_PS//'s_ext_'//int2str(i_s_ext))
+             dir//'s_ext_'//int2str(i_s_ext)//fortran_PS)
            enddo
          endif
        end subroutine

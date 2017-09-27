@@ -163,8 +163,8 @@
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
-         call make_restart_dir(this%m,dir//fortran_PS//'m')
-         call make_restart_dir(this%B,dir//fortran_PS//'B')
+         call make_restart_dir(this%m,dir//'m'//fortran_PS)
+         call make_restart_dir(this%B,dir//'B'//fortran_PS)
        end subroutine
 
        subroutine export_restart_mesh_block(this,dir)
@@ -175,8 +175,8 @@
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
-         call export_restart(this%m,dir//fortran_PS//'m')
-         call export_restart(this%B,dir//fortran_PS//'B')
+         call export_restart(this%m,dir//'m'//fortran_PS)
+         call export_restart(this%B,dir//'B'//fortran_PS)
        end subroutine
 
        subroutine import_restart_mesh_block(this,dir)
@@ -187,8 +187,8 @@
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         call import_restart(this%m,dir//fortran_PS//'m')
-         call import_restart(this%B,dir//fortran_PS//'B')
+         call import_restart(this%m,dir//'m'//fortran_PS)
+         call import_restart(this%B,dir//'B'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_mesh_block(this)

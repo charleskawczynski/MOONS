@@ -227,19 +227,19 @@
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
-         call make_restart_dir(this%GF,dir//fortran_PS//'GF')
-         call make_restart_dir(this%BCs,dir//fortran_PS//'BCs')
-         call make_restart_dir(this%DL,dir//fortran_PS//'DL')
+         call make_restart_dir(this%GF,dir//'GF'//fortran_PS)
+         call make_restart_dir(this%BCs,dir//'BCs'//fortran_PS)
+         call make_restart_dir(this%DL,dir//'DL'//fortran_PS)
          call make_restart_dir(this%PA_assign_ghost_XPeriodic,&
-         dir//fortran_PS//'PA_assign_ghost_XPeriodic')
+         dir//'PA_assign_ghost_XPeriodic'//fortran_PS)
          call make_restart_dir(this%PA_assign_ghost_N_XPeriodic,&
-         dir//fortran_PS//'PA_assign_ghost_N_XPeriodic')
+         dir//'PA_assign_ghost_N_XPeriodic'//fortran_PS)
          call make_restart_dir(this%PA_assign_wall_Dirichlet,&
-         dir//fortran_PS//'PA_assign_wall_Dirichlet')
+         dir//'PA_assign_wall_Dirichlet'//fortran_PS)
          call make_restart_dir(this%PA_assign_wall_Periodic_single,&
-         dir//fortran_PS//'PA_assign_wall_Periodic_single')
+         dir//'PA_assign_wall_Periodic_single'//fortran_PS)
          call make_restart_dir(this%PA_multiply_wall_Neumann,&
-         dir//fortran_PS//'PA_multiply_wall_Neumann')
+         dir//'PA_multiply_wall_Neumann'//fortran_PS)
        end subroutine
 
        subroutine export_restart_block_field(this,dir)
@@ -250,19 +250,19 @@
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
-         call export_restart(this%GF,dir//fortran_PS//'GF')
-         call export_restart(this%BCs,dir//fortran_PS//'BCs')
-         call export_restart(this%DL,dir//fortran_PS//'DL')
+         call export_restart(this%GF,dir//'GF'//fortran_PS)
+         call export_restart(this%BCs,dir//'BCs'//fortran_PS)
+         call export_restart(this%DL,dir//'DL'//fortran_PS)
          call export_restart(this%PA_assign_ghost_XPeriodic,&
-         dir//fortran_PS//'PA_assign_ghost_XPeriodic')
+         dir//'PA_assign_ghost_XPeriodic'//fortran_PS)
          call export_restart(this%PA_assign_ghost_N_XPeriodic,&
-         dir//fortran_PS//'PA_assign_ghost_N_XPeriodic')
+         dir//'PA_assign_ghost_N_XPeriodic'//fortran_PS)
          call export_restart(this%PA_assign_wall_Dirichlet,&
-         dir//fortran_PS//'PA_assign_wall_Dirichlet')
+         dir//'PA_assign_wall_Dirichlet'//fortran_PS)
          call export_restart(this%PA_assign_wall_Periodic_single,&
-         dir//fortran_PS//'PA_assign_wall_Periodic_single')
+         dir//'PA_assign_wall_Periodic_single'//fortran_PS)
          call export_restart(this%PA_multiply_wall_Neumann,&
-         dir//fortran_PS//'PA_multiply_wall_Neumann')
+         dir//'PA_multiply_wall_Neumann'//fortran_PS)
        end subroutine
 
        subroutine import_restart_block_field(this,dir)
@@ -273,19 +273,19 @@
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         call import_restart(this%GF,dir//fortran_PS//'GF')
-         call import_restart(this%BCs,dir//fortran_PS//'BCs')
-         call import_restart(this%DL,dir//fortran_PS//'DL')
+         call import_restart(this%GF,dir//'GF'//fortran_PS)
+         call import_restart(this%BCs,dir//'BCs'//fortran_PS)
+         call import_restart(this%DL,dir//'DL'//fortran_PS)
          call import_restart(this%PA_assign_ghost_XPeriodic,&
-         dir//fortran_PS//'PA_assign_ghost_XPeriodic')
+         dir//'PA_assign_ghost_XPeriodic'//fortran_PS)
          call import_restart(this%PA_assign_ghost_N_XPeriodic,&
-         dir//fortran_PS//'PA_assign_ghost_N_XPeriodic')
+         dir//'PA_assign_ghost_N_XPeriodic'//fortran_PS)
          call import_restart(this%PA_assign_wall_Dirichlet,&
-         dir//fortran_PS//'PA_assign_wall_Dirichlet')
+         dir//'PA_assign_wall_Dirichlet'//fortran_PS)
          call import_restart(this%PA_assign_wall_Periodic_single,&
-         dir//fortran_PS//'PA_assign_wall_Periodic_single')
+         dir//'PA_assign_wall_Periodic_single'//fortran_PS)
          call import_restart(this%PA_multiply_wall_Neumann,&
-         dir//fortran_PS//'PA_multiply_wall_Neumann')
+         dir//'PA_multiply_wall_Neumann'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_block_field(this)

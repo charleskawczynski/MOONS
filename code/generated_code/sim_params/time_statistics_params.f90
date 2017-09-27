@@ -165,8 +165,8 @@
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
-         call make_restart_dir(this%O1_stats,dir//fortran_PS//'O1_stats')
-         call make_restart_dir(this%O2_stats,dir//fortran_PS//'O2_stats')
+         call make_restart_dir(this%O1_stats,dir//'O1_stats'//fortran_PS)
+         call make_restart_dir(this%O2_stats,dir//'O2_stats'//fortran_PS)
        end subroutine
 
        subroutine export_restart_time_statistics_params(this,dir)
@@ -177,8 +177,8 @@
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
-         call export_restart(this%O1_stats,dir//fortran_PS//'O1_stats')
-         call export_restart(this%O2_stats,dir//fortran_PS//'O2_stats')
+         call export_restart(this%O1_stats,dir//'O1_stats'//fortran_PS)
+         call export_restart(this%O2_stats,dir//'O2_stats'//fortran_PS)
        end subroutine
 
        subroutine import_restart_time_statistics_params(this,dir)
@@ -189,8 +189,8 @@
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         call import_restart(this%O1_stats,dir//fortran_PS//'O1_stats')
-         call import_restart(this%O2_stats,dir//fortran_PS//'O2_stats')
+         call import_restart(this%O1_stats,dir//'O1_stats'//fortran_PS)
+         call import_restart(this%O2_stats,dir//'O2_stats'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_time_statistics_params(this)

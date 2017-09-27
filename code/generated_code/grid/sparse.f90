@@ -172,9 +172,9 @@
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
-         call make_restart_dir(this%L,dir//fortran_PS//'L')
-         call make_restart_dir(this%D,dir//fortran_PS//'D')
-         call make_restart_dir(this%U,dir//fortran_PS//'U')
+         call make_restart_dir(this%L,dir//'L'//fortran_PS)
+         call make_restart_dir(this%D,dir//'D'//fortran_PS)
+         call make_restart_dir(this%U,dir//'U'//fortran_PS)
        end subroutine
 
        subroutine export_restart_sparse(this,dir)
@@ -185,9 +185,9 @@
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
-         call export_restart(this%L,dir//fortran_PS//'L')
-         call export_restart(this%D,dir//fortran_PS//'D')
-         call export_restart(this%U,dir//fortran_PS//'U')
+         call export_restart(this%L,dir//'L'//fortran_PS)
+         call export_restart(this%D,dir//'D'//fortran_PS)
+         call export_restart(this%U,dir//'U'//fortran_PS)
        end subroutine
 
        subroutine import_restart_sparse(this,dir)
@@ -198,9 +198,9 @@
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         call import_restart(this%L,dir//fortran_PS//'L')
-         call import_restart(this%D,dir//fortran_PS//'D')
-         call import_restart(this%U,dir//fortran_PS//'U')
+         call import_restart(this%L,dir//'L'//fortran_PS)
+         call import_restart(this%D,dir//'D'//fortran_PS)
+         call import_restart(this%U,dir//'U'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_sparse(this)

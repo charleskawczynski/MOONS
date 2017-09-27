@@ -220,7 +220,7 @@
            s_SP = size(this%SP)
            do i_SP=1,s_SP
              call make_restart_dir(this%SP(i_SP),&
-             dir//fortran_PS//'SP_'//int2str(i_SP))
+             dir//'SP_'//int2str(i_SP)//fortran_PS)
            enddo
          endif
        end subroutine
@@ -239,7 +239,7 @@
            s_SP = size(this%SP)
            do i_SP=1,s_SP
              call export_restart(this%SP(i_SP),&
-             dir//fortran_PS//'SP_'//int2str(i_SP))
+             dir//'SP_'//int2str(i_SP)//fortran_PS)
            enddo
          endif
        end subroutine
@@ -258,7 +258,7 @@
            s_SP = size(this%SP)
            do i_SP=1,s_SP
              call import_restart(this%SP(i_SP),&
-             dir//fortran_PS//'SP_'//int2str(i_SP))
+             dir//'SP_'//int2str(i_SP)//fortran_PS)
            enddo
          endif
        end subroutine

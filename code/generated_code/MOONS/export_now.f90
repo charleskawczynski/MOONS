@@ -240,11 +240,11 @@
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
-         call make_restart_dir(this%U,dir//fortran_PS//'U')
-         call make_restart_dir(this%B,dir//fortran_PS//'B')
-         call make_restart_dir(this%T,dir//fortran_PS//'T')
-         call make_restart_dir(this%rho,dir//fortran_PS//'rho')
-         call make_restart_dir(this%all,dir//fortran_PS//'all')
+         call make_restart_dir(this%U,dir//'U'//fortran_PS)
+         call make_restart_dir(this%B,dir//'B'//fortran_PS)
+         call make_restart_dir(this%T,dir//'T'//fortran_PS)
+         call make_restart_dir(this%rho,dir//'rho'//fortran_PS)
+         call make_restart_dir(this%all,dir//'all'//fortran_PS)
        end subroutine
 
        subroutine export_restart_export_now(this,dir)
@@ -255,11 +255,11 @@
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
-         call export_restart(this%U,dir//fortran_PS//'U')
-         call export_restart(this%B,dir//fortran_PS//'B')
-         call export_restart(this%T,dir//fortran_PS//'T')
-         call export_restart(this%rho,dir//fortran_PS//'rho')
-         call export_restart(this%all,dir//fortran_PS//'all')
+         call export_restart(this%U,dir//'U'//fortran_PS)
+         call export_restart(this%B,dir//'B'//fortran_PS)
+         call export_restart(this%T,dir//'T'//fortran_PS)
+         call export_restart(this%rho,dir//'rho'//fortran_PS)
+         call export_restart(this%all,dir//'all'//fortran_PS)
        end subroutine
 
        subroutine import_restart_export_now(this,dir)
@@ -270,11 +270,11 @@
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         call import_restart(this%U,dir//fortran_PS//'U')
-         call import_restart(this%B,dir//fortran_PS//'B')
-         call import_restart(this%T,dir//fortran_PS//'T')
-         call import_restart(this%rho,dir//fortran_PS//'rho')
-         call import_restart(this%all,dir//fortran_PS//'all')
+         call import_restart(this%U,dir//'U'//fortran_PS)
+         call import_restart(this%B,dir//'B'//fortran_PS)
+         call import_restart(this%T,dir//'T'//fortran_PS)
+         call import_restart(this%rho,dir//'rho'//fortran_PS)
+         call import_restart(this%all,dir//'all'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_export_now(this)

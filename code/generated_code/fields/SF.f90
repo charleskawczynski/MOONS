@@ -257,10 +257,10 @@
            s_BF = size(this%BF)
            do i_BF=1,s_BF
              call make_restart_dir(this%BF(i_BF),&
-             dir//fortran_PS//'BF_'//int2str(i_BF))
+             dir//'BF_'//int2str(i_BF)//fortran_PS)
            enddo
          endif
-         call make_restart_dir(this%DL,dir//fortran_PS//'DL')
+         call make_restart_dir(this%DL,dir//'DL'//fortran_PS)
        end subroutine
 
        subroutine export_restart_SF(this,dir)
@@ -277,10 +277,10 @@
            s_BF = size(this%BF)
            do i_BF=1,s_BF
              call export_restart(this%BF(i_BF),&
-             dir//fortran_PS//'BF_'//int2str(i_BF))
+             dir//'BF_'//int2str(i_BF)//fortran_PS)
            enddo
          endif
-         call export_restart(this%DL,dir//fortran_PS//'DL')
+         call export_restart(this%DL,dir//'DL'//fortran_PS)
        end subroutine
 
        subroutine import_restart_SF(this,dir)
@@ -297,10 +297,10 @@
            s_BF = size(this%BF)
            do i_BF=1,s_BF
              call import_restart(this%BF(i_BF),&
-             dir//fortran_PS//'BF_'//int2str(i_BF))
+             dir//'BF_'//int2str(i_BF)//fortran_PS)
            enddo
          endif
-         call import_restart(this%DL,dir//fortran_PS//'DL')
+         call import_restart(this%DL,dir//'DL'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_SF(this)

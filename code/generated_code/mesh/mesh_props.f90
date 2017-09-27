@@ -286,7 +286,7 @@
          s_int_tensor = size(this%int_tensor)
          do i_int_tensor=1,s_int_tensor
            call make_restart_dir(this%int_tensor(i_int_tensor),&
-           dir//fortran_PS//'int_tensor_'//int2str(i_int_tensor))
+           dir//'int_tensor_'//int2str(i_int_tensor)//fortran_PS)
          enddo
        end subroutine
 
@@ -303,7 +303,7 @@
          s_int_tensor = size(this%int_tensor)
          do i_int_tensor=1,s_int_tensor
            call export_restart(this%int_tensor(i_int_tensor),&
-           dir//fortran_PS//'int_tensor_'//int2str(i_int_tensor))
+           dir//'int_tensor_'//int2str(i_int_tensor)//fortran_PS)
          enddo
        end subroutine
 
@@ -320,7 +320,7 @@
          s_int_tensor = size(this%int_tensor)
          do i_int_tensor=1,s_int_tensor
            call import_restart(this%int_tensor(i_int_tensor),&
-           dir//fortran_PS//'int_tensor_'//int2str(i_int_tensor))
+           dir//'int_tensor_'//int2str(i_int_tensor)//fortran_PS)
          enddo
        end subroutine
 

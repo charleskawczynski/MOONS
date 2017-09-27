@@ -48,94 +48,94 @@
          write(*,*) '***************************************************************'
          write(*,*) '****************** ENTERING MAIN LOOP *************************'
          write(*,*) '***************************************************************'
-         do while ((.not.M%KS%terminate_loop).and.(M%SP%coupled%t.lt.M%SP%coupled%t_final-M%SP%coupled%dt*0.5_cp))
+         do while ((.not.M%C%KS%terminate_loop).and.(M%C%SP%coupled%t.lt.M%C%SP%coupled%t_final-M%C%SP%coupled%dt*0.5_cp))
 
-           call tic(M%SC)
+           call tic(M%C%sc)
 
-           if (M%SP%FCL%print_every_MHD_step) then
-             write(*,*) 'M%SP%coupled%n_step = ',M%SP%coupled%n_step
+           if (M%C%SP%FCL%print_every_MHD_step) then
+             write(*,*) 'M%C%SP%coupled%n_step = ',M%C%SP%coupled%n_step
            endif
-           ! if (M%SP%EF%info%export_now) call print(M%SP)
+           ! if (M%C%SP%EF%info%export_now) call print(M%C%SP)
 
-           do i_RK=1,M%SP%coupled%RKP%n_stages
-             call assign_RK_stage(M%SP%VS%T%TMP,i_RK)
-             call assign_RK_stage(M%SP%VS%U%TMP,i_RK)
-             call assign_RK_stage(M%SP%VS%B%TMP,i_RK)
-             call assign_RK_stage(M%SP%coupled,i_RK)
-             call update(M%SP%EF,M%SP%coupled%n_step,i_RK.ne.M%SP%coupled%RKP%n_stages)
-             ! if (M%SP%VS%rho%SS%solve)    call solve(dens,M%mom%U,  M%SP%EF,M%EN,M%DT)
-             if (M%SP%VS%T%SS%solve) then
-               call add_all_energy_sources(M%nrg%F,M%nrg%Fnm1,M%nrg%L,M%nrg,M%SP%VS%U%TMP,M%SP,M%ind,M%mom)
-               call solve(M%nrg,M%SP,M%nrg%F,M%nrg%Fnm1,M%nrg%L,M%SP%VS%T%TMP,M%SP%EF)
+           do i_RK=1,M%C%SP%coupled%RKP%n_stages
+             call assign_RK_stage(M%C%SP%VS%T%TMP,i_RK)
+             call assign_RK_stage(M%C%SP%VS%U%TMP,i_RK)
+             call assign_RK_stage(M%C%SP%VS%B%TMP,i_RK)
+             call assign_RK_stage(M%C%SP%coupled,i_RK)
+             call update(M%C%SP%EF,M%C%SP%coupled%n_step,i_RK.ne.M%C%SP%coupled%RKP%n_stages)
+             ! if (M%C%SP%VS%rho%SS%solve)    call solve(dens,M%GE%mom%U,  M%C%SP%EF,M%C%EN,M%C%DT)
+             if (M%C%SP%VS%T%SS%solve) then
+               call add_all_energy_sources(M%GE%nrg%F,M%GE%nrg%Fnm1,M%GE%nrg%L,M%GE%nrg,M%C%SP%VS%U%TMP,M%C%SP,M%GE%ind,M%GE%mom)
+               call solve(M%GE%nrg,M%C%SP,M%GE%nrg%F,M%GE%nrg%Fnm1,M%GE%nrg%L,M%C%SP%VS%T%TMP,M%C%SP%EF)
              endif
-             if (M%SP%VS%U%SS%solve) then
-               call add_all_momentum_sources(M%mom%F,M%mom%Fnm1,M%mom%L,M%mom,M%SP%VS%U%TMP,M%SP,M%ind,M%nrg)
-               call solve(M%mom,M%SP,M%mom%F,M%mom%Fnm1,M%mom%L,M%SP%VS%U%TMP,M%SP%EF)
+             if (M%C%SP%VS%U%SS%solve) then
+               call add_all_momentum_sources(M%GE%mom%F,M%GE%mom%Fnm1,M%GE%mom%L,M%GE%mom,M%C%SP%VS%U%TMP,M%C%SP,M%GE%ind,M%GE%nrg)
+               call solve(M%GE%mom,M%C%SP,M%GE%mom%F,M%GE%mom%Fnm1,M%GE%mom%L,M%C%SP%VS%U%TMP,M%C%SP%EF)
              endif
-             if (M%SP%VS%B%SS%solve) then
-               call add_all_induction_sources(M%ind%F,M%ind%Fnm1,M%ind%L,M%ind,M%SP%VS%B%TMP,M%SP,M%mom)
-               call solve(M%ind,M%SP,M%ind%F,M%ind%Fnm1,M%ind%L,M%SP%VS%B%TMP,M%SP%EF)
+             if (M%C%SP%VS%B%SS%solve) then
+               call add_all_induction_sources(M%GE%ind%F,M%GE%ind%Fnm1,M%GE%ind%L,M%GE%ind,M%C%SP%VS%B%TMP,M%C%SP,M%GE%mom)
+               call solve(M%GE%ind,M%C%SP,M%GE%ind%F,M%GE%ind%Fnm1,M%GE%ind%L,M%C%SP%VS%B%TMP,M%C%SP%EF)
              endif
-             call iterate_RK(M%SP%VS%T%TMP)
-             call iterate_RK(M%SP%VS%U%TMP)
-             call iterate_RK(M%SP%VS%B%TMP)
-             call iterate_RK(M%SP%coupled)
+             call iterate_RK(M%C%SP%VS%T%TMP)
+             call iterate_RK(M%C%SP%VS%U%TMP)
+             call iterate_RK(M%C%SP%VS%B%TMP)
+             call iterate_RK(M%C%SP%coupled)
            enddo
-           call update(M%SP%EF,M%SP%coupled%n_step,.false.)
+           call update(M%C%SP%EF,M%C%SP%coupled%n_step,.false.)
 
-           if (M%SP%VS%T%SS%solve) call iterate_step(M%SP%VS%T%TMP)
-           if (M%SP%VS%U%SS%solve) call iterate_step(M%SP%VS%U%TMP)
-           if (M%SP%VS%B%SS%solve) call iterate_step(M%SP%VS%B%TMP)
-           call iterate_step(M%SP%coupled)
+           if (M%C%SP%VS%T%SS%solve) call iterate_step(M%C%SP%VS%T%TMP)
+           if (M%C%SP%VS%U%SS%solve) call iterate_step(M%C%SP%VS%U%TMP)
+           if (M%C%SP%VS%B%SS%solve) call iterate_step(M%C%SP%VS%B%TMP)
+           call iterate_step(M%C%SP%coupled)
 
-           if (M%SP%VS%T%SS%solve) call export_unsteady(M%nrg,M%SP,M%SP%VS%T%TMP,M%SP%EF,M%EN,M%DT)
-           if (M%SP%VS%U%SS%solve) call export_unsteady(M%mom,M%SP,M%SP%VS%U%TMP,M%SP%EF,M%EN,M%DT)
-           if (M%SP%VS%B%SS%solve) call export_unsteady(M%ind,M%SP,M%SP%VS%B%TMP,M%SP%EF,M%EN,M%DT)
+           if (M%C%SP%VS%T%SS%solve) call export_unsteady(M%GE%nrg,M%C%SP,M%C%SP%VS%T%TMP,M%C%SP%EF,M%C%EN,M%C%DT)
+           if (M%C%SP%VS%U%SS%solve) call export_unsteady(M%GE%mom,M%C%SP,M%C%SP%VS%U%TMP,M%C%SP%EF,M%C%EN,M%C%DT)
+           if (M%C%SP%VS%B%SS%solve) call export_unsteady(M%GE%ind,M%C%SP,M%C%SP%VS%B%TMP,M%C%SP%EF,M%C%EN,M%C%DT)
 
            ! Statistics
-           call update(M%mom%TS,M%mom%m,M%mom%U,M%SP%VS%U%TMP,M%mom%temp_F1,M%mom%temp_CC_VF,M%mom%TF_CC)
+           call update(M%GE%mom%TS,M%GE%mom%m,M%GE%mom%U,M%C%SP%VS%U%TMP,M%GE%mom%temp_F1,M%GE%mom%temp_CC_VF,M%GE%mom%TF_CC)
 
-           if (M%EN%any_now) then
-             call export_ISP(M%SP%VS)
-             call export_TMP(M%SP%VS)
-             call export(M%SP%coupled)
+           if (M%C%EN%any_now) then
+             call export_ISP(M%C%SP%VS)
+             call export_TMP(M%C%SP%VS)
+             call export(M%C%SP%coupled)
            endif
 
-           ! call import(M%SP%DP,str(M%DT%dimensionless_params),'dimensionless_params')
-           call import_exit_criteria(M%mom%PCG_U%ISP)
-           call import_exit_criteria(M%mom%PCG_P%ISP)
-           call import_exit_criteria(M%ind%PCG_B%ISP)
-           call import_exit_criteria(M%ind%PCG_cleanB%ISP)
-           call import_exit_criteria(M%SP%VS)
-           call import_TMP_dt(M%SP%VS)
-           call import_dt(M%SP%coupled)
-           if (M%SP%SCP%couple_time_steps) call couple_time_step(M%SP%VS,M%SP%coupled)
+           ! call import(M%C%SP%DP,str(M%C%DT%dimensionless_params),'dimensionless_params')
+           call import_exit_criteria(M%GE%mom%PCG_U%ISP)
+           call import_exit_criteria(M%GE%mom%PCG_P%ISP)
+           call import_exit_criteria(M%GE%ind%PCG_B%ISP)
+           call import_exit_criteria(M%GE%ind%PCG_cleanB%ISP)
+           call import_exit_criteria(M%C%SP%VS)
+           call import_TMP_dt(M%C%SP%VS)
+           call import_dt(M%C%SP%coupled)
+           if (M%C%SP%SCP%couple_time_steps) call couple_time_step(M%C%SP%VS,M%C%SP%coupled)
 
-           call update(M%ES,M%SC%t_passed)
+           call update(M%C%ES,M%C%sc%t_passed)
 
-           call import(M%EN)
-           call update(M%EN,M%ES%export_now)
-           if (M%EN%any_next) call export(M%EN)
+           call import(M%C%EN)
+           call update(M%C%EN,M%C%ES%export_now)
+           if (M%C%EN%any_next) call export(M%C%EN)
 
-           call import(M%RM)
-           call update(M%RM)
-           if (M%RM%any_next) call export(M%RM)
+           call import(M%C%RM)
+           call update(M%C%RM)
+           if (M%C%RM%any_next) call export(M%C%RM)
 
-           call toc(M%SC,M%SP%coupled)
-           if (M%SP%EF%info%export_now) then
+           call toc(M%C%sc,M%C%SP%coupled)
+           if (M%C%SP%EF%info%export_now) then
              ! oldest_modified_file violates intent, but this
              ! would be better to update outside the solvers,
              ! since it should be updated for all solver variables.
-             ! call oldest_modified_file(M%DT%restart,M%DT%restart1,M%DT%restart2,'p.dat')
-             if (M%SP%FCL%export_heavy) then
-               call print(M%SC,M%SP%coupled)
+             ! call oldest_modified_file(M%C%DT%restart,M%C%DT%restart1,M%C%DT%restart2,'p.dat')
+             if (M%C%SP%FCL%export_heavy) then
+               call print(M%C%sc,M%C%SP%coupled)
              else
-               call print_light(M%SC,M%SP%coupled)
+               call print_light(M%C%sc,M%C%SP%coupled)
              endif
-             call export(M%SC,M%SP%coupled%t)
-             call import(M%KS)
+             call export(M%C%sc,M%C%SP%coupled%t)
+             call import(M%C%KS)
            endif
-           ! call import(M%SP%EF)
+           ! call import(M%C%SP%EF)
          enddo
          write(*,*) '***************************************************************'
          write(*,*) '******************* EXITING MAIN LOOP *************************'

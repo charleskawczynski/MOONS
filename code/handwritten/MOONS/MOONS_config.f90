@@ -46,11 +46,36 @@
 
        private
        public :: config
-       interface config;   module procedure config_MOONS;   end interface
+       interface config;         module procedure config_MOONS;         end interface
+
+       public :: config_fresh
+       interface config_fresh;   module procedure config_fresh_MOONS;   end interface
 
        contains
 
        subroutine config_MOONS(M)
+         implicit none
+         type(MOONS),intent(inout) :: M
+         write(*,*) ' ************** STARTED CONFIGURING MOONS ************** '
+         call init(M%C%DT,str(M%C%dir_target))  ! Initialize + make directory tree
+
+         if (file_exists(str(M%C%DT%restart),'config')) then
+           ! Restart is default if files exist!
+           call import_restart(M%C,str(M%C%DT%restart))
+           ! call import_restart(M%C,str(M%C%DT%restart),'config')
+           ! Need to make sure init knows to restart:
+           call set_restart(M%C%SP)
+           ! call import_TMP(M%C%SP%VS)  ! start from last exported time step
+           ! call import(M%C%SP%coupled) ! start from last exported time step
+         else
+           call config_fresh(M)
+         endif
+         call make_restart_dir(M%C,str(M%C%DT%restart))
+         call export_restart(M%C,str(M%C%DT%restart))
+         write(*,*) ' ************** FINISHED CONFIGURING MOONS ************** '
+       end subroutine
+
+       subroutine config_fresh_MOONS(M)
          implicit none
          type(MOONS),intent(inout) :: M
          call delete_file('','mesh_generation_error')
@@ -59,45 +84,22 @@
 
 #endif
 
-         call init(M%DT,str(M%dir_target))  ! Initialize + make directory tree
-
-         M%SP%FCL%matrix_visualization = .false.
-         if (M%SP%FCL%matrix_visualization) then
-           call export_matrix_visualization(M%DT)
+         M%C%SP%FCL%matrix_visualization = .false.
+         if (M%C%SP%FCL%matrix_visualization) then
+           call export_matrix_visualization(M%C%DT)
          endif
 
-         call delete(M%RF)
+         call init(M%C%SP,M%C%DT)
 
-         M%SP%FCL%fresh_restart_file = .true.
-         if (M%SP%FCL%fresh_restart_file) then
-           call export(M%RF,'','restart_file') ! Use default, compiled SP + fields
-         endif
+         call export(M%C%SP,str(M%C%DT%params),'sim_params_raw_exported')
+         call display(M%C%SP,str(M%C%DT%params),'sim_params_initial')
+         call display_compiler_info(str(M%C%DT%params),'compiler_info')
 
-         call import(M%RF,'','restart_file')
-
-         if (M%RF%restart_input_file) then
-           call import(M%SP,'','sim_params_raw')
-         endif
-
-         if ((.not.M%RF%restart_input_file).and.(.not.M%RF%restart_fields)) then
-           call init(M%SP,M%DT)
-         endif
-
-         if (M%RF%restart_fields) then
-           call set_restart(M%SP,M%RF%restart_fields) ! restart fields+mesh
-           call import_TMP(M%SP%VS)                   ! start from last exported time step
-           call import(M%SP%coupled)                  ! start from last exported time step
-         endif
-
-         call export(M%SP,str(M%DT%params),'sim_params_raw_exported')
-         call display(M%SP,str(M%DT%params),'sim_params_initial')
-         call display_compiler_info(str(M%DT%params),'compiler_info')
-
-         call export(M%SP%coupled)
-         call export_TMP(M%SP%VS)
+         call export(M%C%SP%coupled)
+         call export_TMP(M%C%SP%VS)
 
          call print_version()
-         call export_version(str(M%DT%LDC))
+         call export_version(str(M%C%DT%LDC))
        end subroutine
 
        end module
