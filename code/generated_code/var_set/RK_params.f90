@@ -171,34 +171,6 @@
          call import(this%beta,un)
        end subroutine
 
-       subroutine export_restart_RK_params(this,dir)
-         implicit none
-         type(RK_params),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = new_and_open(dir,'primitives')
-         call export_primitives(this,un)
-         close(un)
-         call export_restart(this%gamma,dir//fortran_PS//'gamma')
-         call export_restart(this%zeta,dir//fortran_PS//'zeta')
-         call export_restart(this%alpha,dir//fortran_PS//'alpha')
-         call export_restart(this%beta,dir//fortran_PS//'beta')
-       end subroutine
-
-       subroutine import_restart_RK_params(this,dir)
-         implicit none
-         type(RK_params),intent(inout) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = open_to_read(dir,'primitives')
-         call import_primitives(this,un)
-         close(un)
-         call import_restart(this%gamma,dir//fortran_PS//'gamma')
-         call import_restart(this%zeta,dir//fortran_PS//'zeta')
-         call import_restart(this%alpha,dir//fortran_PS//'alpha')
-         call import_restart(this%beta,dir//fortran_PS//'beta')
-       end subroutine
-
        subroutine export_wrap_RK_params(this,dir,name)
          implicit none
          type(RK_params),intent(in) :: this
@@ -229,6 +201,34 @@
          call make_restart_dir(this%zeta,dir//fortran_PS//'zeta')
          call make_restart_dir(this%alpha,dir//fortran_PS//'alpha')
          call make_restart_dir(this%beta,dir//fortran_PS//'beta')
+       end subroutine
+
+       subroutine export_restart_RK_params(this,dir)
+         implicit none
+         type(RK_params),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
+         close(un)
+         call export_restart(this%gamma,dir//fortran_PS//'gamma')
+         call export_restart(this%zeta,dir//fortran_PS//'zeta')
+         call export_restart(this%alpha,dir//fortran_PS//'alpha')
+         call export_restart(this%beta,dir//fortran_PS//'beta')
+       end subroutine
+
+       subroutine import_restart_RK_params(this,dir)
+         implicit none
+         type(RK_params),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
+         call import_restart(this%gamma,dir//fortran_PS//'gamma')
+         call import_restart(this%zeta,dir//fortran_PS//'zeta')
+         call import_restart(this%alpha,dir//fortran_PS//'alpha')
+         call import_restart(this%beta,dir//fortran_PS//'beta')
        end subroutine
 
        subroutine suppress_warnings_RK_params(this)

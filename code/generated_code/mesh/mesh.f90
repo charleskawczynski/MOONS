@@ -196,6 +196,44 @@
          read(un,*); read(un,*) this%s
        end subroutine
 
+       subroutine export_wrap_mesh(this,dir,name)
+         implicit none
+         type(mesh),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call export(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_wrap_mesh(this,dir,name)
+         implicit none
+         type(mesh),intent(inout) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = open_to_read(dir,name)
+         call import(this,un)
+         close(un)
+       end subroutine
+
+       subroutine make_restart_dir_mesh(this,dir)
+         implicit none
+         type(mesh),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_B
+         integer :: s_B
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         if (allocated(this%B)) then
+           s_B = size(this%B)
+           do i_B=1,s_B
+             call make_restart_dir(this%B(i_B),&
+             dir//fortran_PS//'B_'//int2str(i_B))
+           enddo
+         endif
+         call make_restart_dir(this%MP,dir//fortran_PS//'MP')
+       end subroutine
+
        subroutine export_restart_mesh(this,dir)
          implicit none
          type(mesh),intent(in) :: this
@@ -234,44 +272,6 @@
            enddo
          endif
          call import_restart(this%MP,dir//fortran_PS//'MP')
-       end subroutine
-
-       subroutine export_wrap_mesh(this,dir,name)
-         implicit none
-         type(mesh),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = new_and_open(dir,name)
-         call export(this,un)
-         close(un)
-       end subroutine
-
-       subroutine import_wrap_mesh(this,dir,name)
-         implicit none
-         type(mesh),intent(inout) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = open_to_read(dir,name)
-         call import(this,un)
-         close(un)
-       end subroutine
-
-       subroutine make_restart_dir_mesh(this,dir)
-         implicit none
-         type(mesh),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         integer :: i_B
-         integer :: s_B
-         call suppress_warnings(this)
-         call make_dir_quiet(dir)
-         if (allocated(this%B)) then
-           s_B = size(this%B)
-           do i_B=1,s_B
-             call make_restart_dir(this%B(i_B),&
-             dir//fortran_PS//'B_'//int2str(i_B))
-           enddo
-         endif
-         call make_restart_dir(this%MP,dir//fortran_PS//'MP')
        end subroutine
 
        subroutine suppress_warnings_mesh(this)

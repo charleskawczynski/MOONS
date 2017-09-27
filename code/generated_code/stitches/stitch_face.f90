@@ -151,26 +151,6 @@
          read(un,*); read(un,*) this%hmax_id
        end subroutine
 
-       subroutine export_restart_stitch_face(this,dir)
-         implicit none
-         type(stitch_face),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = new_and_open(dir,'primitives')
-         call export_primitives(this,un)
-         close(un)
-       end subroutine
-
-       subroutine import_restart_stitch_face(this,dir)
-         implicit none
-         type(stitch_face),intent(inout) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = open_to_read(dir,'primitives')
-         call import_primitives(this,un)
-         close(un)
-       end subroutine
-
        subroutine export_wrap_stitch_face(this,dir,name)
          implicit none
          type(stitch_face),intent(in) :: this
@@ -197,6 +177,26 @@
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
+       end subroutine
+
+       subroutine export_restart_stitch_face(this,dir)
+         implicit none
+         type(stitch_face),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_restart_stitch_face(this,dir)
+         implicit none
+         type(stitch_face),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_stitch_face(this)

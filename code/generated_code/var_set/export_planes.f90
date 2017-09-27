@@ -179,6 +179,43 @@
          read(un,*); read(un,*) this%N
        end subroutine
 
+       subroutine export_wrap_export_planes(this,dir,name)
+         implicit none
+         type(export_planes),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call export(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_wrap_export_planes(this,dir,name)
+         implicit none
+         type(export_planes),intent(inout) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = open_to_read(dir,name)
+         call import(this,un)
+         close(un)
+       end subroutine
+
+       subroutine make_restart_dir_export_planes(this,dir)
+         implicit none
+         type(export_planes),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_EP
+         integer :: s_EP
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         if (allocated(this%EP)) then
+           s_EP = size(this%EP)
+           do i_EP=1,s_EP
+             call make_restart_dir(this%EP(i_EP),&
+             dir//fortran_PS//'EP_'//int2str(i_EP))
+           enddo
+         endif
+       end subroutine
+
        subroutine export_restart_export_planes(this,dir)
          implicit none
          type(export_planes),intent(in) :: this
@@ -212,43 +249,6 @@
            s_EP = size(this%EP)
            do i_EP=1,s_EP
              call import_restart(this%EP(i_EP),&
-             dir//fortran_PS//'EP_'//int2str(i_EP))
-           enddo
-         endif
-       end subroutine
-
-       subroutine export_wrap_export_planes(this,dir,name)
-         implicit none
-         type(export_planes),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = new_and_open(dir,name)
-         call export(this,un)
-         close(un)
-       end subroutine
-
-       subroutine import_wrap_export_planes(this,dir,name)
-         implicit none
-         type(export_planes),intent(inout) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = open_to_read(dir,name)
-         call import(this,un)
-         close(un)
-       end subroutine
-
-       subroutine make_restart_dir_export_planes(this,dir)
-         implicit none
-         type(export_planes),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         integer :: i_EP
-         integer :: s_EP
-         call suppress_warnings(this)
-         call make_dir_quiet(dir)
-         if (allocated(this%EP)) then
-           s_EP = size(this%EP)
-           do i_EP=1,s_EP
-             call make_restart_dir(this%EP(i_EP),&
              dir//fortran_PS//'EP_'//int2str(i_EP))
            enddo
          endif

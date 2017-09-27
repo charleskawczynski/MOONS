@@ -263,8 +263,6 @@ class fortran_module:
         c.append(self.export_module(False)+[''])
         c.append(self.import_module(True)+[''])
         c.append(self.import_module(False)+[''])
-        c.append(self.export_restart_module()+[''])
-        c.append(self.import_restart_module()+[''])
         c.append(self.export_wrap_module()+[''])
         c.append(self.import_wrap_module()+[''])
         if self.has_dir_name:
@@ -272,6 +270,8 @@ class fortran_module:
           c.append(self.import_DN()+[''])
 
         c.append(self.make_restart_dir_module()+[''])
+        c.append(self.export_restart_module()+[''])
+        c.append(self.import_restart_module()+[''])
 
         if suppress_all_warnings:
             c.append(self.suppress_fortran_warnings_module()+[''])

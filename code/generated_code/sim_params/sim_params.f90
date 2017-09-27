@@ -255,6 +255,51 @@
          call import(this%SCP,un)
        end subroutine
 
+       subroutine export_wrap_sim_params(this,dir,name)
+         implicit none
+         type(sim_params),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call export(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_wrap_sim_params(this,dir,name)
+         implicit none
+         type(sim_params),intent(inout) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = open_to_read(dir,name)
+         call import(this,un)
+         close(un)
+       end subroutine
+
+       subroutine make_restart_dir_sim_params(this,dir)
+         implicit none
+         type(sim_params),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_restart_dir(this%VS,dir//fortran_PS//'VS')
+         call make_restart_dir(this%MP_mom,dir//fortran_PS//'MP_mom')
+         call make_restart_dir(this%MQP,dir//fortran_PS//'MQP')
+         call make_restart_dir(this%MP_ind,dir//fortran_PS//'MP_ind')
+         call make_restart_dir(this%MP_sigma,dir//fortran_PS//'MP_sigma')
+         call make_restart_dir(this%DP,dir//fortran_PS//'DP')
+         call make_restart_dir(this%EL,dir//fortran_PS//'EL')
+         call make_restart_dir(this%EF,dir//fortran_PS//'EF')
+         call make_restart_dir(this%ET,dir//fortran_PS//'ET')
+         call make_restart_dir(this%MT,dir//fortran_PS//'MT')
+         call make_restart_dir(this%IT,dir//fortran_PS//'IT')
+         call make_restart_dir(this%GP,dir//fortran_PS//'GP')
+         call make_restart_dir(this%MP,dir//fortran_PS//'MP')
+         call make_restart_dir(this%coupled,dir//fortran_PS//'coupled')
+         call make_restart_dir(this%FCL,dir//fortran_PS//'FCL')
+         call make_restart_dir(this%TSP,dir//fortran_PS//'TSP')
+         call make_restart_dir(this%SCP,dir//fortran_PS//'SCP')
+       end subroutine
+
        subroutine export_restart_sim_params(this,dir)
          implicit none
          type(sim_params),intent(in) :: this
@@ -307,51 +352,6 @@
          call import_restart(this%FCL,dir//fortran_PS//'FCL')
          call import_restart(this%TSP,dir//fortran_PS//'TSP')
          call import_restart(this%SCP,dir//fortran_PS//'SCP')
-       end subroutine
-
-       subroutine export_wrap_sim_params(this,dir,name)
-         implicit none
-         type(sim_params),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = new_and_open(dir,name)
-         call export(this,un)
-         close(un)
-       end subroutine
-
-       subroutine import_wrap_sim_params(this,dir,name)
-         implicit none
-         type(sim_params),intent(inout) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = open_to_read(dir,name)
-         call import(this,un)
-         close(un)
-       end subroutine
-
-       subroutine make_restart_dir_sim_params(this,dir)
-         implicit none
-         type(sim_params),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         call suppress_warnings(this)
-         call make_dir_quiet(dir)
-         call make_restart_dir(this%VS,dir//fortran_PS//'VS')
-         call make_restart_dir(this%MP_mom,dir//fortran_PS//'MP_mom')
-         call make_restart_dir(this%MQP,dir//fortran_PS//'MQP')
-         call make_restart_dir(this%MP_ind,dir//fortran_PS//'MP_ind')
-         call make_restart_dir(this%MP_sigma,dir//fortran_PS//'MP_sigma')
-         call make_restart_dir(this%DP,dir//fortran_PS//'DP')
-         call make_restart_dir(this%EL,dir//fortran_PS//'EL')
-         call make_restart_dir(this%EF,dir//fortran_PS//'EF')
-         call make_restart_dir(this%ET,dir//fortran_PS//'ET')
-         call make_restart_dir(this%MT,dir//fortran_PS//'MT')
-         call make_restart_dir(this%IT,dir//fortran_PS//'IT')
-         call make_restart_dir(this%GP,dir//fortran_PS//'GP')
-         call make_restart_dir(this%MP,dir//fortran_PS//'MP')
-         call make_restart_dir(this%coupled,dir//fortran_PS//'coupled')
-         call make_restart_dir(this%FCL,dir//fortran_PS//'FCL')
-         call make_restart_dir(this%TSP,dir//fortran_PS//'TSP')
-         call make_restart_dir(this%SCP,dir//fortran_PS//'SCP')
        end subroutine
 
        subroutine suppress_warnings_sim_params(this)

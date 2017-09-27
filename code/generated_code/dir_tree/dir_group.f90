@@ -185,6 +185,43 @@
          call import(this%BCs,un)
        end subroutine
 
+       subroutine export_wrap_dir_group(this,dir,name)
+         implicit none
+         type(dir_group),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call export(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_wrap_dir_group(this,dir,name)
+         implicit none
+         type(dir_group),intent(inout) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = open_to_read(dir,name)
+         call import(this,un)
+         close(un)
+       end subroutine
+
+       subroutine make_restart_dir_dir_group(this,dir)
+         implicit none
+         type(dir_group),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_restart_dir(this%base,dir//fortran_PS//'base')
+         call make_restart_dir(this%field,dir//fortran_PS//'field')
+         call make_restart_dir(this%restart,dir//fortran_PS//'restart')
+         call make_restart_dir(this%debug,dir//fortran_PS//'debug')
+         call make_restart_dir(this%energy,dir//fortran_PS//'energy')
+         call make_restart_dir(this%residual,dir//fortran_PS//'residual')
+         call make_restart_dir(this%unsteady,dir//fortran_PS//'unsteady')
+         call make_restart_dir(this%stats,dir//fortran_PS//'stats')
+         call make_restart_dir(this%BCs,dir//fortran_PS//'BCs')
+       end subroutine
+
        subroutine export_restart_dir_group(this,dir)
          implicit none
          type(dir_group),intent(in) :: this
@@ -221,43 +258,6 @@
          call import_restart(this%unsteady,dir//fortran_PS//'unsteady')
          call import_restart(this%stats,dir//fortran_PS//'stats')
          call import_restart(this%BCs,dir//fortran_PS//'BCs')
-       end subroutine
-
-       subroutine export_wrap_dir_group(this,dir,name)
-         implicit none
-         type(dir_group),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = new_and_open(dir,name)
-         call export(this,un)
-         close(un)
-       end subroutine
-
-       subroutine import_wrap_dir_group(this,dir,name)
-         implicit none
-         type(dir_group),intent(inout) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = open_to_read(dir,name)
-         call import(this,un)
-         close(un)
-       end subroutine
-
-       subroutine make_restart_dir_dir_group(this,dir)
-         implicit none
-         type(dir_group),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         call suppress_warnings(this)
-         call make_dir_quiet(dir)
-         call make_restart_dir(this%base,dir//fortran_PS//'base')
-         call make_restart_dir(this%field,dir//fortran_PS//'field')
-         call make_restart_dir(this%restart,dir//fortran_PS//'restart')
-         call make_restart_dir(this%debug,dir//fortran_PS//'debug')
-         call make_restart_dir(this%energy,dir//fortran_PS//'energy')
-         call make_restart_dir(this%residual,dir//fortran_PS//'residual')
-         call make_restart_dir(this%unsteady,dir//fortran_PS//'unsteady')
-         call make_restart_dir(this%stats,dir//fortran_PS//'stats')
-         call make_restart_dir(this%BCs,dir//fortran_PS//'BCs')
        end subroutine
 
        subroutine suppress_warnings_dir_group(this)

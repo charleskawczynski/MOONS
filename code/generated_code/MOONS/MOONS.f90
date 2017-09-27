@@ -60,8 +60,6 @@
          type(string) :: dir_target
          type(mesh) :: m_temp
          type(stop_clock) :: sc
-         logical :: fresh_restart_file = .false.
-         logical :: matrix_visualization = .false.
          type(restart_file) :: RF
          type(export_now) :: EN
          type(export_safe) :: ES
@@ -84,8 +82,6 @@
          call init(this%dir_target,that%dir_target)
          call init(this%m_temp,that%m_temp)
          call init(this%sc,that%sc)
-         this%fresh_restart_file = that%fresh_restart_file
-         this%matrix_visualization = that%matrix_visualization
          call init(this%RF,that%RF)
          call init(this%EN,that%EN)
          call init(this%ES,that%ES)
@@ -104,8 +100,6 @@
          call delete(this%dir_target)
          call delete(this%m_temp)
          call delete(this%sc)
-         this%fresh_restart_file = .false.
-         this%matrix_visualization = .false.
          call delete(this%RF)
          call delete(this%EN)
          call delete(this%ES)
@@ -125,8 +119,6 @@
          call display(this%dir_target,un)
          call display(this%m_temp,un)
          call display(this%sc,un)
-         write(un,*) 'fresh_restart_file   = ',this%fresh_restart_file
-         write(un,*) 'matrix_visualization = ',this%matrix_visualization
          call display(this%RF,un)
          call display(this%EN,un)
          call display(this%ES,un)
@@ -146,8 +138,6 @@
          call display(this%dir_target,un)
          call display(this%m_temp,un)
          call display(this%sc,un)
-         write(un,*) 'fresh_restart_file   = ',this%fresh_restart_file
-         write(un,*) 'matrix_visualization = ',this%matrix_visualization
          call display(this%RF,un)
          call display(this%EN,un)
          call display(this%ES,un)
@@ -181,8 +171,9 @@
          implicit none
          type(MOONS),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'fresh_restart_file    = ';write(un,*) this%fresh_restart_file
-         write(un,*) 'matrix_visualization  = ';write(un,*) this%matrix_visualization
+         integer :: un_suppress_warning
+         un_suppress_warning = un
+         call suppress_warnings(this)
        end subroutine
 
        subroutine export_MOONS(this,un)
@@ -197,8 +188,6 @@
          call export(this%dir_target,un)
          call export(this%m_temp,un)
          call export(this%sc,un)
-         write(un,*) 'fresh_restart_file    = ';write(un,*) this%fresh_restart_file
-         write(un,*) 'matrix_visualization  = ';write(un,*) this%matrix_visualization
          call export(this%RF,un)
          call export(this%EN,un)
          call export(this%ES,un)
@@ -210,8 +199,9 @@
          implicit none
          type(MOONS),intent(inout) :: this
          integer,intent(in) :: un
-         read(un,*); read(un,*) this%fresh_restart_file
-         read(un,*); read(un,*) this%matrix_visualization
+         integer :: un_suppress_warning
+         un_suppress_warning = un
+         call suppress_warnings(this)
        end subroutine
 
        subroutine import_MOONS(this,un)
@@ -227,13 +217,51 @@
          call import(this%dir_target,un)
          call import(this%m_temp,un)
          call import(this%sc,un)
-         read(un,*); read(un,*) this%fresh_restart_file
-         read(un,*); read(un,*) this%matrix_visualization
          call import(this%RF,un)
          call import(this%EN,un)
          call import(this%ES,un)
          call import(this%RM,un)
          call import(this%KS,un)
+       end subroutine
+
+       subroutine export_wrap_MOONS(this,dir,name)
+         implicit none
+         type(MOONS),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call export(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_wrap_MOONS(this,dir,name)
+         implicit none
+         type(MOONS),intent(inout) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = open_to_read(dir,name)
+         call import(this,un)
+         close(un)
+       end subroutine
+
+       subroutine make_restart_dir_MOONS(this,dir)
+         implicit none
+         type(MOONS),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_restart_dir(this%mom,dir//fortran_PS//'mom')
+         call make_restart_dir(this%ind,dir//fortran_PS//'ind')
+         call make_restart_dir(this%nrg,dir//fortran_PS//'nrg')
+         call make_restart_dir(this%DT,dir//fortran_PS//'DT')
+         call make_restart_dir(this%SP,dir//fortran_PS//'SP')
+         call make_restart_dir(this%m_temp,dir//fortran_PS//'m_temp')
+         call make_restart_dir(this%sc,dir//fortran_PS//'sc')
+         call make_restart_dir(this%RF,dir//fortran_PS//'RF')
+         call make_restart_dir(this%EN,dir//fortran_PS//'EN')
+         call make_restart_dir(this%ES,dir//fortran_PS//'ES')
+         call make_restart_dir(this%RM,dir//fortran_PS//'RM')
+         call make_restart_dir(this%KS,dir//fortran_PS//'KS')
        end subroutine
 
        subroutine export_restart_MOONS(this,dir)
@@ -278,46 +306,6 @@
          call import_restart(this%ES,dir//fortran_PS//'ES')
          call import_restart(this%RM,dir//fortran_PS//'RM')
          call import_restart(this%KS,dir//fortran_PS//'KS')
-       end subroutine
-
-       subroutine export_wrap_MOONS(this,dir,name)
-         implicit none
-         type(MOONS),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = new_and_open(dir,name)
-         call export(this,un)
-         close(un)
-       end subroutine
-
-       subroutine import_wrap_MOONS(this,dir,name)
-         implicit none
-         type(MOONS),intent(inout) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = open_to_read(dir,name)
-         call import(this,un)
-         close(un)
-       end subroutine
-
-       subroutine make_restart_dir_MOONS(this,dir)
-         implicit none
-         type(MOONS),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         call suppress_warnings(this)
-         call make_dir_quiet(dir)
-         call make_restart_dir(this%mom,dir//fortran_PS//'mom')
-         call make_restart_dir(this%ind,dir//fortran_PS//'ind')
-         call make_restart_dir(this%nrg,dir//fortran_PS//'nrg')
-         call make_restart_dir(this%DT,dir//fortran_PS//'DT')
-         call make_restart_dir(this%SP,dir//fortran_PS//'SP')
-         call make_restart_dir(this%m_temp,dir//fortran_PS//'m_temp')
-         call make_restart_dir(this%sc,dir//fortran_PS//'sc')
-         call make_restart_dir(this%RF,dir//fortran_PS//'RF')
-         call make_restart_dir(this%EN,dir//fortran_PS//'EN')
-         call make_restart_dir(this%ES,dir//fortran_PS//'ES')
-         call make_restart_dir(this%RM,dir//fortran_PS//'RM')
-         call make_restart_dir(this%KS,dir//fortran_PS//'KS')
        end subroutine
 
        subroutine suppress_warnings_MOONS(this)

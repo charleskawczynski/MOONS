@@ -160,26 +160,6 @@
          read(un,*); read(un,*) this%prescribed_BCs
        end subroutine
 
-       subroutine export_restart_solver_settings(this,dir)
-         implicit none
-         type(solver_settings),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = new_and_open(dir,'primitives')
-         call export_primitives(this,un)
-         close(un)
-       end subroutine
-
-       subroutine import_restart_solver_settings(this,dir)
-         implicit none
-         type(solver_settings),intent(inout) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = open_to_read(dir,'primitives')
-         call import_primitives(this,un)
-         close(un)
-       end subroutine
-
        subroutine export_wrap_solver_settings(this,dir,name)
          implicit none
          type(solver_settings),intent(in) :: this
@@ -206,6 +186,26 @@
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
+       end subroutine
+
+       subroutine export_restart_solver_settings(this,dir)
+         implicit none
+         type(solver_settings),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_restart_solver_settings(this,dir)
+         implicit none
+         type(solver_settings),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_solver_settings(this)

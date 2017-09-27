@@ -173,40 +173,6 @@
          read(un,*); read(un,*) this%defined
        end subroutine
 
-       subroutine export_restart_grid(this,dir)
-         implicit none
-         type(grid),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         integer :: i_c
-         integer :: s_c
-         integer :: un
-         un = new_and_open(dir,'primitives')
-         call export_primitives(this,un)
-         close(un)
-         s_c = size(this%c)
-         do i_c=1,s_c
-           call export_restart(this%c(i_c),&
-           dir//fortran_PS//'c_'//int2str(i_c))
-         enddo
-       end subroutine
-
-       subroutine import_restart_grid(this,dir)
-         implicit none
-         type(grid),intent(inout) :: this
-         character(len=*),intent(in) :: dir
-         integer :: i_c
-         integer :: s_c
-         integer :: un
-         un = open_to_read(dir,'primitives')
-         call import_primitives(this,un)
-         close(un)
-         s_c = size(this%c)
-         do i_c=1,s_c
-           call import_restart(this%c(i_c),&
-           dir//fortran_PS//'c_'//int2str(i_c))
-         enddo
-       end subroutine
-
        subroutine export_wrap_grid(this,dir,name)
          implicit none
          type(grid),intent(in) :: this
@@ -238,6 +204,40 @@
          s_c = size(this%c)
          do i_c=1,s_c
            call make_restart_dir(this%c(i_c),&
+           dir//fortran_PS//'c_'//int2str(i_c))
+         enddo
+       end subroutine
+
+       subroutine export_restart_grid(this,dir)
+         implicit none
+         type(grid),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_c
+         integer :: s_c
+         integer :: un
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
+         close(un)
+         s_c = size(this%c)
+         do i_c=1,s_c
+           call export_restart(this%c(i_c),&
+           dir//fortran_PS//'c_'//int2str(i_c))
+         enddo
+       end subroutine
+
+       subroutine import_restart_grid(this,dir)
+         implicit none
+         type(grid),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_c
+         integer :: s_c
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
+         s_c = size(this%c)
+         do i_c=1,s_c
+           call import_restart(this%c(i_c),&
            dir//fortran_PS//'c_'//int2str(i_c))
          enddo
        end subroutine

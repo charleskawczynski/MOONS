@@ -152,26 +152,6 @@
          read(un,*); read(un,*) this%apply_BC_order
        end subroutine
 
-       subroutine export_restart_geometry_props(this,dir)
-         implicit none
-         type(geometry_props),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = new_and_open(dir,'primitives')
-         call export_primitives(this,un)
-         close(un)
-       end subroutine
-
-       subroutine import_restart_geometry_props(this,dir)
-         implicit none
-         type(geometry_props),intent(inout) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = open_to_read(dir,'primitives')
-         call import_primitives(this,un)
-         close(un)
-       end subroutine
-
        subroutine export_wrap_geometry_props(this,dir,name)
          implicit none
          type(geometry_props),intent(in) :: this
@@ -198,6 +178,26 @@
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
+       end subroutine
+
+       subroutine export_restart_geometry_props(this,dir)
+         implicit none
+         type(geometry_props),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_restart_geometry_props(this,dir)
+         implicit none
+         type(geometry_props),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_geometry_props(this)

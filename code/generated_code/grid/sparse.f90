@@ -146,32 +146,6 @@
          read(un,*); read(un,*) this%staggered
        end subroutine
 
-       subroutine export_restart_sparse(this,dir)
-         implicit none
-         type(sparse),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = new_and_open(dir,'primitives')
-         call export_primitives(this,un)
-         close(un)
-         call export_restart(this%L,dir//fortran_PS//'L')
-         call export_restart(this%D,dir//fortran_PS//'D')
-         call export_restart(this%U,dir//fortran_PS//'U')
-       end subroutine
-
-       subroutine import_restart_sparse(this,dir)
-         implicit none
-         type(sparse),intent(inout) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = open_to_read(dir,'primitives')
-         call import_primitives(this,un)
-         close(un)
-         call import_restart(this%L,dir//fortran_PS//'L')
-         call import_restart(this%D,dir//fortran_PS//'D')
-         call import_restart(this%U,dir//fortran_PS//'U')
-       end subroutine
-
        subroutine export_wrap_sparse(this,dir,name)
          implicit none
          type(sparse),intent(in) :: this
@@ -201,6 +175,32 @@
          call make_restart_dir(this%L,dir//fortran_PS//'L')
          call make_restart_dir(this%D,dir//fortran_PS//'D')
          call make_restart_dir(this%U,dir//fortran_PS//'U')
+       end subroutine
+
+       subroutine export_restart_sparse(this,dir)
+         implicit none
+         type(sparse),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
+         close(un)
+         call export_restart(this%L,dir//fortran_PS//'L')
+         call export_restart(this%D,dir//fortran_PS//'D')
+         call export_restart(this%U,dir//fortran_PS//'U')
+       end subroutine
+
+       subroutine import_restart_sparse(this,dir)
+         implicit none
+         type(sparse),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
+         call import_restart(this%L,dir//fortran_PS//'L')
+         call import_restart(this%D,dir//fortran_PS//'D')
+         call import_restart(this%U,dir//fortran_PS//'U')
        end subroutine
 
        subroutine suppress_warnings_sparse(this)

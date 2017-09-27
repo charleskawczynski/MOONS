@@ -137,30 +137,6 @@
          call import(this%B,un)
        end subroutine
 
-       subroutine export_restart_mesh_block(this,dir)
-         implicit none
-         type(mesh_block),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = new_and_open(dir,'primitives')
-         call export_primitives(this,un)
-         close(un)
-         call export_restart(this%m,dir//fortran_PS//'m')
-         call export_restart(this%B,dir//fortran_PS//'B')
-       end subroutine
-
-       subroutine import_restart_mesh_block(this,dir)
-         implicit none
-         type(mesh_block),intent(inout) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = open_to_read(dir,'primitives')
-         call import_primitives(this,un)
-         close(un)
-         call import_restart(this%m,dir//fortran_PS//'m')
-         call import_restart(this%B,dir//fortran_PS//'B')
-       end subroutine
-
        subroutine export_wrap_mesh_block(this,dir,name)
          implicit none
          type(mesh_block),intent(in) :: this
@@ -189,6 +165,30 @@
          call make_dir_quiet(dir)
          call make_restart_dir(this%m,dir//fortran_PS//'m')
          call make_restart_dir(this%B,dir//fortran_PS//'B')
+       end subroutine
+
+       subroutine export_restart_mesh_block(this,dir)
+         implicit none
+         type(mesh_block),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
+         close(un)
+         call export_restart(this%m,dir//fortran_PS//'m')
+         call export_restart(this%B,dir//fortran_PS//'B')
+       end subroutine
+
+       subroutine import_restart_mesh_block(this,dir)
+         implicit none
+         type(mesh_block),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
+         call import_restart(this%m,dir//fortran_PS//'m')
+         call import_restart(this%B,dir//fortran_PS//'B')
        end subroutine
 
        subroutine suppress_warnings_mesh_block(this)

@@ -27,13 +27,13 @@
          call init(MB%m,B%g)
          call init(temp,B%g)
          call init_FEC(temp)
-         do i=1,6; call add(MB%m,temp%f(i)); enddo
-         do i=1,6; call add(MB%m,temp%e(i)); enddo
-         do i=1,6; call add(MB%m,temp%c(i)); enddo
+         do i=1,6;  call add(MB%m,temp%f(i)); enddo
+         ! do i=1,12; call add(MB%m,temp%e(i)); enddo
+         ! do i=1,8;  call add(MB%m,temp%c(i)); enddo
 
-         ! do i=1,6; call add(MB%m,temp%fb(i)); enddo
-         ! do i=1,6; call add(MB%m,temp%eb(i)); enddo
-         ! do i=1,6; call add(MB%m,temp%cb(i)); enddo
+         ! do i=1,6;  call add(MB%m,temp%fb(i)); enddo
+         ! do i=1,12; call add(MB%m,temp%eb(i)); enddo
+         ! do i=1,8;  call add(MB%m,temp%cb(i)); enddo
          call delete(temp)
        end subroutine
 

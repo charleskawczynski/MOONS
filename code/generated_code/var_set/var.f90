@@ -189,6 +189,44 @@
          call import(this%unsteady_field,un)
        end subroutine
 
+       subroutine export_wrap_var(this,dir,name)
+         implicit none
+         type(var),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call export(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_wrap_var(this,dir,name)
+         implicit none
+         type(var),intent(inout) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = open_to_read(dir,name)
+         call import(this,un)
+         close(un)
+       end subroutine
+
+       subroutine make_restart_dir_var(this,dir)
+         implicit none
+         type(var),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_restart_dir(this%SS,dir//fortran_PS//'SS')
+         call make_restart_dir(this%MFP,dir//fortran_PS//'MFP')
+         call make_restart_dir(this%TMP,dir//fortran_PS//'TMP')
+         call make_restart_dir(this%ISP,dir//fortran_PS//'ISP')
+         call make_restart_dir(this%unsteady_lines,&
+         dir//fortran_PS//'unsteady_lines')
+         call make_restart_dir(this%unsteady_planes,&
+         dir//fortran_PS//'unsteady_planes')
+         call make_restart_dir(this%unsteady_field,&
+         dir//fortran_PS//'unsteady_field')
+       end subroutine
+
        subroutine export_restart_var(this,dir)
          implicit none
          type(var),intent(in) :: this
@@ -226,44 +264,6 @@
          call import_restart(this%unsteady_planes,&
          dir//fortran_PS//'unsteady_planes')
          call import_restart(this%unsteady_field,&
-         dir//fortran_PS//'unsteady_field')
-       end subroutine
-
-       subroutine export_wrap_var(this,dir,name)
-         implicit none
-         type(var),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = new_and_open(dir,name)
-         call export(this,un)
-         close(un)
-       end subroutine
-
-       subroutine import_wrap_var(this,dir,name)
-         implicit none
-         type(var),intent(inout) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = open_to_read(dir,name)
-         call import(this,un)
-         close(un)
-       end subroutine
-
-       subroutine make_restart_dir_var(this,dir)
-         implicit none
-         type(var),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         call suppress_warnings(this)
-         call make_dir_quiet(dir)
-         call make_restart_dir(this%SS,dir//fortran_PS//'SS')
-         call make_restart_dir(this%MFP,dir//fortran_PS//'MFP')
-         call make_restart_dir(this%TMP,dir//fortran_PS//'TMP')
-         call make_restart_dir(this%ISP,dir//fortran_PS//'ISP')
-         call make_restart_dir(this%unsteady_lines,&
-         dir//fortran_PS//'unsteady_lines')
-         call make_restart_dir(this%unsteady_planes,&
-         dir//fortran_PS//'unsteady_planes')
-         call make_restart_dir(this%unsteady_field,&
          dir//fortran_PS//'unsteady_field')
        end subroutine
 

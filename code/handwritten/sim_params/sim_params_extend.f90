@@ -44,8 +44,9 @@
        call init(SP%MP_sigma,SP%MQP)
        call init(SP%MP_ind,SP%MQP)
        call add_base(SP%MP_mom,seg_1d(1,'grid_uniform',45,-1.0_cp,1.0_cp))
-       call add_base(SP%MP_mom,seg_1d(3,'grid_uniform',45,-1.0_cp,1.0_cp))
        call add_base(SP%MP_mom,seg_1d(2,'grid_uniform',45,-1.0_cp,1.0_cp))
+       call add_base(SP%MP_mom,seg_1d(3,'grid_uniform',45,-1.0_cp,1.0_cp))
+       ! call add_base(SP%MP_mom,seg_1d(3,'grid_uniform',45,-1.0_cp,1.0_cp))
        call init(SP%MP_ind,SP%MP_mom)
        call init(SP%MP_sigma,SP%MP_ind)
        call add_ext(SP%MP_ind,seg_1d(1,'ext_uniform_IO',11))
@@ -132,11 +133,11 @@
        time                          = 30.0_cp
        ! dtime                         = 1.0_cp*pow(-2)
        ! dtime                         = 1.0_cp*pow(-4)*0.5_cp**(4.0_cp)
-       dtime                         = 1.0_cp*pow(-2)
+       dtime                         = 1.0_cp*pow(-1)
 
        SP%GP%tw                      = 0.05_cp
        SP%GP%geometry                = 7
-       SP%GP%periodic_dir            = (/0,0,0/)
+       SP%GP%periodic_dir            = (/0,0,1/)
        ! SP%GP%apply_BC_order          = (/3,4,5,6,1,2/) ! good for LDC
        ! SP%GP%apply_BC_order       = (/3,4,5,6,1,2/) ! good for periodic in y?
        SP%GP%apply_BC_order       = (/5,6,1,2,3,4/) ! good for periodic in y?

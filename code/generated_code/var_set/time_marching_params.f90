@@ -221,28 +221,6 @@
          call import(this%name,un)
        end subroutine
 
-       subroutine export_restart_time_marching_params(this,dir)
-         implicit none
-         type(time_marching_params),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = new_and_open(dir,'primitives')
-         call export_primitives(this,un)
-         close(un)
-         call export_restart(this%RKP,dir//fortran_PS//'RKP')
-       end subroutine
-
-       subroutine import_restart_time_marching_params(this,dir)
-         implicit none
-         type(time_marching_params),intent(inout) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = open_to_read(dir,'primitives')
-         call import_primitives(this,un)
-         close(un)
-         call import_restart(this%RKP,dir//fortran_PS//'RKP')
-       end subroutine
-
        subroutine export_wrap_time_marching_params(this,dir,name)
          implicit none
          type(time_marching_params),intent(in) :: this
@@ -290,6 +268,28 @@
          call suppress_warnings(this)
          call make_dir_quiet(dir)
          call make_restart_dir(this%RKP,dir//fortran_PS//'RKP')
+       end subroutine
+
+       subroutine export_restart_time_marching_params(this,dir)
+         implicit none
+         type(time_marching_params),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
+         close(un)
+         call export_restart(this%RKP,dir//fortran_PS//'RKP')
+       end subroutine
+
+       subroutine import_restart_time_marching_params(this,dir)
+         implicit none
+         type(time_marching_params),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
+         call import_restart(this%RKP,dir//fortran_PS//'RKP')
        end subroutine
 
        subroutine suppress_warnings_time_marching_params(this)

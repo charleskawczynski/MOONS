@@ -199,6 +199,52 @@
          call import(this%Gravity,un)
        end subroutine
 
+       subroutine export_wrap_momentum_terms(this,dir,name)
+         implicit none
+         type(momentum_terms),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call export(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_wrap_momentum_terms(this,dir,name)
+         implicit none
+         type(momentum_terms),intent(inout) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = open_to_read(dir,name)
+         call import(this,un)
+         close(un)
+       end subroutine
+
+       subroutine make_restart_dir_momentum_terms(this,dir)
+         implicit none
+         type(momentum_terms),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_restart_dir(this%pressure_grad,&
+         dir//fortran_PS//'pressure_grad')
+         call make_restart_dir(this%advection_divergence,&
+         dir//fortran_PS//'advection_divergence')
+         call make_restart_dir(this%advection_convection,&
+         dir//fortran_PS//'advection_convection')
+         call make_restart_dir(this%advection_base_flow,&
+         dir//fortran_PS//'advection_base_flow')
+         call make_restart_dir(this%diffusion,dir//fortran_PS//'diffusion')
+         call make_restart_dir(this%diffusion_linear,&
+         dir//fortran_PS//'diffusion_linear')
+         call make_restart_dir(this%mean_pressure_grad,&
+         dir//fortran_PS//'mean_pressure_grad')
+         call make_restart_dir(this%JCrossB,dir//fortran_PS//'JCrossB')
+         call make_restart_dir(this%Q2D_JCrossB,&
+         dir//fortran_PS//'Q2D_JCrossB')
+         call make_restart_dir(this%Buoyancy,dir//fortran_PS//'Buoyancy')
+         call make_restart_dir(this%Gravity,dir//fortran_PS//'Gravity')
+       end subroutine
+
        subroutine export_restart_momentum_terms(this,dir)
          implicit none
          type(momentum_terms),intent(in) :: this
@@ -251,52 +297,6 @@
          call import_restart(this%Q2D_JCrossB,dir//fortran_PS//'Q2D_JCrossB')
          call import_restart(this%Buoyancy,dir//fortran_PS//'Buoyancy')
          call import_restart(this%Gravity,dir//fortran_PS//'Gravity')
-       end subroutine
-
-       subroutine export_wrap_momentum_terms(this,dir,name)
-         implicit none
-         type(momentum_terms),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = new_and_open(dir,name)
-         call export(this,un)
-         close(un)
-       end subroutine
-
-       subroutine import_wrap_momentum_terms(this,dir,name)
-         implicit none
-         type(momentum_terms),intent(inout) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = open_to_read(dir,name)
-         call import(this,un)
-         close(un)
-       end subroutine
-
-       subroutine make_restart_dir_momentum_terms(this,dir)
-         implicit none
-         type(momentum_terms),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         call suppress_warnings(this)
-         call make_dir_quiet(dir)
-         call make_restart_dir(this%pressure_grad,&
-         dir//fortran_PS//'pressure_grad')
-         call make_restart_dir(this%advection_divergence,&
-         dir//fortran_PS//'advection_divergence')
-         call make_restart_dir(this%advection_convection,&
-         dir//fortran_PS//'advection_convection')
-         call make_restart_dir(this%advection_base_flow,&
-         dir//fortran_PS//'advection_base_flow')
-         call make_restart_dir(this%diffusion,dir//fortran_PS//'diffusion')
-         call make_restart_dir(this%diffusion_linear,&
-         dir//fortran_PS//'diffusion_linear')
-         call make_restart_dir(this%mean_pressure_grad,&
-         dir//fortran_PS//'mean_pressure_grad')
-         call make_restart_dir(this%JCrossB,dir//fortran_PS//'JCrossB')
-         call make_restart_dir(this%Q2D_JCrossB,&
-         dir//fortran_PS//'Q2D_JCrossB')
-         call make_restart_dir(this%Buoyancy,dir//fortran_PS//'Buoyancy')
-         call make_restart_dir(this%Gravity,dir//fortran_PS//'Gravity')
        end subroutine
 
        subroutine suppress_warnings_momentum_terms(this)

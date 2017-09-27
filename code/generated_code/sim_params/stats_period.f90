@@ -206,26 +206,6 @@
          read(un,*); read(un,*) this%exported_stats
        end subroutine
 
-       subroutine export_restart_stats_period(this,dir)
-         implicit none
-         type(stats_period),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = new_and_open(dir,'primitives')
-         call export_primitives(this,un)
-         close(un)
-       end subroutine
-
-       subroutine import_restart_stats_period(this,dir)
-         implicit none
-         type(stats_period),intent(inout) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = open_to_read(dir,'primitives')
-         call import_primitives(this,un)
-         close(un)
-       end subroutine
-
        subroutine export_wrap_stats_period(this,dir,name)
          implicit none
          type(stats_period),intent(in) :: this
@@ -252,6 +232,26 @@
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
+       end subroutine
+
+       subroutine export_restart_stats_period(this,dir)
+         implicit none
+         type(stats_period),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_restart_stats_period(this,dir)
+         implicit none
+         type(stats_period),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_stats_period(this)

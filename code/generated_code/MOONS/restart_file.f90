@@ -133,26 +133,6 @@
          read(un,*); read(un,*) this%restart_fields
        end subroutine
 
-       subroutine export_restart_restart_file(this,dir)
-         implicit none
-         type(restart_file),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = new_and_open(dir,'primitives')
-         call export_primitives(this,un)
-         close(un)
-       end subroutine
-
-       subroutine import_restart_restart_file(this,dir)
-         implicit none
-         type(restart_file),intent(inout) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = open_to_read(dir,'primitives')
-         call import_primitives(this,un)
-         close(un)
-       end subroutine
-
        subroutine export_wrap_restart_file(this,dir,name)
          implicit none
          type(restart_file),intent(in) :: this
@@ -179,6 +159,26 @@
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
+       end subroutine
+
+       subroutine export_restart_restart_file(this,dir)
+         implicit none
+         type(restart_file),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_restart_restart_file(this,dir)
+         implicit none
+         type(restart_file),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_restart_file(this)

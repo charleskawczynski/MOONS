@@ -431,6 +431,83 @@
          read(un,*); read(un,*) this%Robin_coeff
        end subroutine
 
+       subroutine export_wrap_face_SD(this,dir,name)
+         implicit none
+         type(face_SD),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call export(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_wrap_face_SD(this,dir,name)
+         implicit none
+         type(face_SD),intent(inout) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = open_to_read(dir,name)
+         call import(this,un)
+         close(un)
+       end subroutine
+
+       subroutine make_restart_dir_face_SD(this,dir)
+         implicit none
+         type(face_SD),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_G
+         integer :: i_G_periodic_N
+         integer :: i_B
+         integer :: i_I
+         integer :: i_I_OPP
+         integer :: i_I_OPP_periodic_N
+         integer :: i_i_2D
+         integer :: s_G
+         integer :: s_G_periodic_N
+         integer :: s_B
+         integer :: s_I
+         integer :: s_I_OPP
+         integer :: s_I_OPP_periodic_N
+         integer :: s_i_2D
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         s_G = size(this%G)
+         do i_G=1,s_G
+           call make_restart_dir(this%G(i_G),&
+           dir//fortran_PS//'G_'//int2str(i_G))
+         enddo
+         s_G_periodic_N = size(this%G_periodic_N)
+         do i_G_periodic_N=1,s_G_periodic_N
+           call make_restart_dir(this%G_periodic_N(i_G_periodic_N),&
+           dir//fortran_PS//'G_periodic_N_'//int2str(i_G_periodic_N))
+         enddo
+         s_B = size(this%B)
+         do i_B=1,s_B
+           call make_restart_dir(this%B(i_B),&
+           dir//fortran_PS//'B_'//int2str(i_B))
+         enddo
+         s_I = size(this%I)
+         do i_I=1,s_I
+           call make_restart_dir(this%I(i_I),&
+           dir//fortran_PS//'I_'//int2str(i_I))
+         enddo
+         s_I_OPP = size(this%I_OPP)
+         do i_I_OPP=1,s_I_OPP
+           call make_restart_dir(this%I_OPP(i_I_OPP),&
+           dir//fortran_PS//'I_OPP_'//int2str(i_I_OPP))
+         enddo
+         s_I_OPP_periodic_N = size(this%I_OPP_periodic_N)
+         do i_I_OPP_periodic_N=1,s_I_OPP_periodic_N
+           call make_restart_dir(this%I_OPP_periodic_N(i_I_OPP_periodic_N),&
+           dir//fortran_PS//'I_OPP_periodic_N_'//int2str(i_I_OPP_periodic_N))
+         enddo
+         s_i_2D = size(this%i_2D)
+         do i_i_2D=1,s_i_2D
+           call make_restart_dir(this%i_2D(i_i_2D),&
+           dir//fortran_PS//'i_2D_'//int2str(i_i_2D))
+         enddo
+       end subroutine
+
        subroutine export_restart_face_SD(this,dir)
          implicit none
          type(face_SD),intent(in) :: this
@@ -545,83 +622,6 @@
          s_i_2D = size(this%i_2D)
          do i_i_2D=1,s_i_2D
            call import_restart(this%i_2D(i_i_2D),&
-           dir//fortran_PS//'i_2D_'//int2str(i_i_2D))
-         enddo
-       end subroutine
-
-       subroutine export_wrap_face_SD(this,dir,name)
-         implicit none
-         type(face_SD),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = new_and_open(dir,name)
-         call export(this,un)
-         close(un)
-       end subroutine
-
-       subroutine import_wrap_face_SD(this,dir,name)
-         implicit none
-         type(face_SD),intent(inout) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = open_to_read(dir,name)
-         call import(this,un)
-         close(un)
-       end subroutine
-
-       subroutine make_restart_dir_face_SD(this,dir)
-         implicit none
-         type(face_SD),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         integer :: i_G
-         integer :: i_G_periodic_N
-         integer :: i_B
-         integer :: i_I
-         integer :: i_I_OPP
-         integer :: i_I_OPP_periodic_N
-         integer :: i_i_2D
-         integer :: s_G
-         integer :: s_G_periodic_N
-         integer :: s_B
-         integer :: s_I
-         integer :: s_I_OPP
-         integer :: s_I_OPP_periodic_N
-         integer :: s_i_2D
-         call suppress_warnings(this)
-         call make_dir_quiet(dir)
-         s_G = size(this%G)
-         do i_G=1,s_G
-           call make_restart_dir(this%G(i_G),&
-           dir//fortran_PS//'G_'//int2str(i_G))
-         enddo
-         s_G_periodic_N = size(this%G_periodic_N)
-         do i_G_periodic_N=1,s_G_periodic_N
-           call make_restart_dir(this%G_periodic_N(i_G_periodic_N),&
-           dir//fortran_PS//'G_periodic_N_'//int2str(i_G_periodic_N))
-         enddo
-         s_B = size(this%B)
-         do i_B=1,s_B
-           call make_restart_dir(this%B(i_B),&
-           dir//fortran_PS//'B_'//int2str(i_B))
-         enddo
-         s_I = size(this%I)
-         do i_I=1,s_I
-           call make_restart_dir(this%I(i_I),&
-           dir//fortran_PS//'I_'//int2str(i_I))
-         enddo
-         s_I_OPP = size(this%I_OPP)
-         do i_I_OPP=1,s_I_OPP
-           call make_restart_dir(this%I_OPP(i_I_OPP),&
-           dir//fortran_PS//'I_OPP_'//int2str(i_I_OPP))
-         enddo
-         s_I_OPP_periodic_N = size(this%I_OPP_periodic_N)
-         do i_I_OPP_periodic_N=1,s_I_OPP_periodic_N
-           call make_restart_dir(this%I_OPP_periodic_N(i_I_OPP_periodic_N),&
-           dir//fortran_PS//'I_OPP_periodic_N_'//int2str(i_I_OPP_periodic_N))
-         enddo
-         s_i_2D = size(this%i_2D)
-         do i_i_2D=1,s_i_2D
-           call make_restart_dir(this%i_2D(i_i_2D),&
            dir//fortran_PS//'i_2D_'//int2str(i_i_2D))
          enddo
        end subroutine

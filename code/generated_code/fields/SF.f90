@@ -225,6 +225,44 @@
          call import(this%DL,un)
        end subroutine
 
+       subroutine export_wrap_SF(this,dir,name)
+         implicit none
+         type(SF),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call export(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_wrap_SF(this,dir,name)
+         implicit none
+         type(SF),intent(inout) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = open_to_read(dir,name)
+         call import(this,un)
+         close(un)
+       end subroutine
+
+       subroutine make_restart_dir_SF(this,dir)
+         implicit none
+         type(SF),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_BF
+         integer :: s_BF
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         if (allocated(this%BF)) then
+           s_BF = size(this%BF)
+           do i_BF=1,s_BF
+             call make_restart_dir(this%BF(i_BF),&
+             dir//fortran_PS//'BF_'//int2str(i_BF))
+           enddo
+         endif
+         call make_restart_dir(this%DL,dir//fortran_PS//'DL')
+       end subroutine
+
        subroutine export_restart_SF(this,dir)
          implicit none
          type(SF),intent(in) :: this
@@ -263,44 +301,6 @@
            enddo
          endif
          call import_restart(this%DL,dir//fortran_PS//'DL')
-       end subroutine
-
-       subroutine export_wrap_SF(this,dir,name)
-         implicit none
-         type(SF),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = new_and_open(dir,name)
-         call export(this,un)
-         close(un)
-       end subroutine
-
-       subroutine import_wrap_SF(this,dir,name)
-         implicit none
-         type(SF),intent(inout) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = open_to_read(dir,name)
-         call import(this,un)
-         close(un)
-       end subroutine
-
-       subroutine make_restart_dir_SF(this,dir)
-         implicit none
-         type(SF),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         integer :: i_BF
-         integer :: s_BF
-         call suppress_warnings(this)
-         call make_dir_quiet(dir)
-         if (allocated(this%BF)) then
-           s_BF = size(this%BF)
-           do i_BF=1,s_BF
-             call make_restart_dir(this%BF(i_BF),&
-             dir//fortran_PS//'BF_'//int2str(i_BF))
-           enddo
-         endif
-         call make_restart_dir(this%DL,dir//fortran_PS//'DL')
        end subroutine
 
        subroutine suppress_warnings_SF(this)

@@ -96,8 +96,8 @@
          call init(B%name,name)
          B%n = n
              if (n.eq.6 ) then; do i=1,n; call init(B%SB(i),BL%fb(i),DL); enddo
-         elseif (n.eq.12) then; do i=1,n; call init(B%SB(i),BL%eb(i),DL); enddo
-         elseif (n.eq.8 ) then; do i=1,n; call init(B%SB(i),BL%cb(i),DL); enddo
+         ! elseif (n.eq.12) then; do i=1,n; call init(B%SB(i),BL%eb(i),DL); enddo
+         ! elseif (n.eq.8 ) then; do i=1,n; call init(B%SB(i),BL%cb(i),DL); enddo
          else; stop 'Error: bad input to init_GFs_boundary_DL in B.f90'
          endif
          call init_vals_all_S(B,0.0_cp)

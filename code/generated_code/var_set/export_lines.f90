@@ -179,6 +179,43 @@
          read(un,*); read(un,*) this%N
        end subroutine
 
+       subroutine export_wrap_export_lines(this,dir,name)
+         implicit none
+         type(export_lines),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call export(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_wrap_export_lines(this,dir,name)
+         implicit none
+         type(export_lines),intent(inout) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = open_to_read(dir,name)
+         call import(this,un)
+         close(un)
+       end subroutine
+
+       subroutine make_restart_dir_export_lines(this,dir)
+         implicit none
+         type(export_lines),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_EL
+         integer :: s_EL
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         if (allocated(this%EL)) then
+           s_EL = size(this%EL)
+           do i_EL=1,s_EL
+             call make_restart_dir(this%EL(i_EL),&
+             dir//fortran_PS//'EL_'//int2str(i_EL))
+           enddo
+         endif
+       end subroutine
+
        subroutine export_restart_export_lines(this,dir)
          implicit none
          type(export_lines),intent(in) :: this
@@ -212,43 +249,6 @@
            s_EL = size(this%EL)
            do i_EL=1,s_EL
              call import_restart(this%EL(i_EL),&
-             dir//fortran_PS//'EL_'//int2str(i_EL))
-           enddo
-         endif
-       end subroutine
-
-       subroutine export_wrap_export_lines(this,dir,name)
-         implicit none
-         type(export_lines),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = new_and_open(dir,name)
-         call export(this,un)
-         close(un)
-       end subroutine
-
-       subroutine import_wrap_export_lines(this,dir,name)
-         implicit none
-         type(export_lines),intent(inout) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = open_to_read(dir,name)
-         call import(this,un)
-         close(un)
-       end subroutine
-
-       subroutine make_restart_dir_export_lines(this,dir)
-         implicit none
-         type(export_lines),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         integer :: i_EL
-         integer :: s_EL
-         call suppress_warnings(this)
-         call make_dir_quiet(dir)
-         if (allocated(this%EL)) then
-           s_EL = size(this%EL)
-           do i_EL=1,s_EL
-             call make_restart_dir(this%EL(i_EL),&
              dir//fortran_PS//'EL_'//int2str(i_EL))
            enddo
          endif

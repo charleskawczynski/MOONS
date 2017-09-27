@@ -255,40 +255,6 @@
          read(un,*); read(un,*) this%dhmin_min
        end subroutine
 
-       subroutine export_restart_mesh_props(this,dir)
-         implicit none
-         type(mesh_props),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         integer :: i_int_tensor
-         integer :: s_int_tensor
-         integer :: un
-         un = new_and_open(dir,'primitives')
-         call export_primitives(this,un)
-         close(un)
-         s_int_tensor = size(this%int_tensor)
-         do i_int_tensor=1,s_int_tensor
-           call export_restart(this%int_tensor(i_int_tensor),&
-           dir//fortran_PS//'int_tensor_'//int2str(i_int_tensor))
-         enddo
-       end subroutine
-
-       subroutine import_restart_mesh_props(this,dir)
-         implicit none
-         type(mesh_props),intent(inout) :: this
-         character(len=*),intent(in) :: dir
-         integer :: i_int_tensor
-         integer :: s_int_tensor
-         integer :: un
-         un = open_to_read(dir,'primitives')
-         call import_primitives(this,un)
-         close(un)
-         s_int_tensor = size(this%int_tensor)
-         do i_int_tensor=1,s_int_tensor
-           call import_restart(this%int_tensor(i_int_tensor),&
-           dir//fortran_PS//'int_tensor_'//int2str(i_int_tensor))
-         enddo
-       end subroutine
-
        subroutine export_wrap_mesh_props(this,dir,name)
          implicit none
          type(mesh_props),intent(in) :: this
@@ -320,6 +286,40 @@
          s_int_tensor = size(this%int_tensor)
          do i_int_tensor=1,s_int_tensor
            call make_restart_dir(this%int_tensor(i_int_tensor),&
+           dir//fortran_PS//'int_tensor_'//int2str(i_int_tensor))
+         enddo
+       end subroutine
+
+       subroutine export_restart_mesh_props(this,dir)
+         implicit none
+         type(mesh_props),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_int_tensor
+         integer :: s_int_tensor
+         integer :: un
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
+         close(un)
+         s_int_tensor = size(this%int_tensor)
+         do i_int_tensor=1,s_int_tensor
+           call export_restart(this%int_tensor(i_int_tensor),&
+           dir//fortran_PS//'int_tensor_'//int2str(i_int_tensor))
+         enddo
+       end subroutine
+
+       subroutine import_restart_mesh_props(this,dir)
+         implicit none
+         type(mesh_props),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_int_tensor
+         integer :: s_int_tensor
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
+         s_int_tensor = size(this%int_tensor)
+         do i_int_tensor=1,s_int_tensor
+           call import_restart(this%int_tensor(i_int_tensor),&
            dir//fortran_PS//'int_tensor_'//int2str(i_int_tensor))
          enddo
        end subroutine

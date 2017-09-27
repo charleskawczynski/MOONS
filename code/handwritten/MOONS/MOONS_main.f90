@@ -43,6 +43,7 @@
        use MOONS_solver_mod
        use MOONS_mod
        use MOONS_config_mod
+       use MOONS_init_mod
 
        implicit none
 
@@ -63,8 +64,11 @@
          write(*,*) ' ******************** COMPUTATIONS STARTED ********************'
          write(*,*) ' ******************** COMPUTATIONS STARTED ********************'
          call init(M%dir_target,dir_target)
-         call config(M)
-         call make_restart_dir(M,str(M%DT%restart))
+         call config(M) ! The flow control should be uniquely defined after this line.
+         call init(M)
+         ! call make_restart_dir(M,str(M%DT%restart))
+         ! call export_restart(M,str(M%DT%restart))
+         ! call export(M,str(M%DT%restart),'MOONS')
          if (.not.M%SP%FCL%skip_solver_loop) then
            call solve(M)
          endif

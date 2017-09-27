@@ -257,6 +257,55 @@
          read(un,*); read(un,*) this%g_R2_id
        end subroutine
 
+       subroutine export_wrap_sub_domain(this,dir,name)
+         implicit none
+         type(sub_domain),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call export(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_wrap_sub_domain(this,dir,name)
+         implicit none
+         type(sub_domain),intent(inout) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = open_to_read(dir,name)
+         call import(this,un)
+         close(un)
+       end subroutine
+
+       subroutine make_restart_dir_sub_domain(this,dir)
+         implicit none
+         type(sub_domain),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_C
+         integer :: i_N
+         integer :: i_M
+         integer :: s_C
+         integer :: s_N
+         integer :: s_M
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         s_C = size(this%C)
+         do i_C=1,s_C
+           call make_restart_dir(this%C(i_C),&
+           dir//fortran_PS//'C_'//int2str(i_C))
+         enddo
+         s_N = size(this%N)
+         do i_N=1,s_N
+           call make_restart_dir(this%N(i_N),&
+           dir//fortran_PS//'N_'//int2str(i_N))
+         enddo
+         s_M = size(this%M)
+         do i_M=1,s_M
+           call make_restart_dir(this%M(i_M),&
+           dir//fortran_PS//'M_'//int2str(i_M))
+         enddo
+       end subroutine
+
        subroutine export_restart_sub_domain(this,dir)
          implicit none
          type(sub_domain),intent(in) :: this
@@ -315,55 +364,6 @@
          s_M = size(this%M)
          do i_M=1,s_M
            call import_restart(this%M(i_M),&
-           dir//fortran_PS//'M_'//int2str(i_M))
-         enddo
-       end subroutine
-
-       subroutine export_wrap_sub_domain(this,dir,name)
-         implicit none
-         type(sub_domain),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = new_and_open(dir,name)
-         call export(this,un)
-         close(un)
-       end subroutine
-
-       subroutine import_wrap_sub_domain(this,dir,name)
-         implicit none
-         type(sub_domain),intent(inout) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = open_to_read(dir,name)
-         call import(this,un)
-         close(un)
-       end subroutine
-
-       subroutine make_restart_dir_sub_domain(this,dir)
-         implicit none
-         type(sub_domain),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         integer :: i_C
-         integer :: i_N
-         integer :: i_M
-         integer :: s_C
-         integer :: s_N
-         integer :: s_M
-         call suppress_warnings(this)
-         call make_dir_quiet(dir)
-         s_C = size(this%C)
-         do i_C=1,s_C
-           call make_restart_dir(this%C(i_C),&
-           dir//fortran_PS//'C_'//int2str(i_C))
-         enddo
-         s_N = size(this%N)
-         do i_N=1,s_N
-           call make_restart_dir(this%N(i_N),&
-           dir//fortran_PS//'N_'//int2str(i_N))
-         enddo
-         s_M = size(this%M)
-         do i_M=1,s_M
-           call make_restart_dir(this%M(i_M),&
            dir//fortran_PS//'M_'//int2str(i_M))
          enddo
        end subroutine

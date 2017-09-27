@@ -444,6 +444,62 @@
          call import(this%dhc,un)
        end subroutine
 
+       subroutine export_wrap_coordinates(this,dir,name)
+         implicit none
+         type(coordinates),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call export(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_wrap_coordinates(this,dir,name)
+         implicit none
+         type(coordinates),intent(inout) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = open_to_read(dir,name)
+         call import(this,un)
+         close(un)
+       end subroutine
+
+       subroutine make_restart_dir_coordinates(this,dir)
+         implicit none
+         type(coordinates),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_colCC
+         integer :: i_colN
+         integer :: i_colCC_centered
+         integer :: s_colCC
+         integer :: s_colN
+         integer :: s_colCC_centered
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_restart_dir(this%stagCC2N,dir//fortran_PS//'stagCC2N')
+         call make_restart_dir(this%stagN2CC,dir//fortran_PS//'stagN2CC')
+         call make_restart_dir(this%theta,dir//fortran_PS//'theta')
+         s_colCC = size(this%colCC)
+         do i_colCC=1,s_colCC
+           call make_restart_dir(this%colCC(i_colCC),&
+           dir//fortran_PS//'colCC_'//int2str(i_colCC))
+         enddo
+         s_colN = size(this%colN)
+         do i_colN=1,s_colN
+           call make_restart_dir(this%colN(i_colN),&
+           dir//fortran_PS//'colN_'//int2str(i_colN))
+         enddo
+         s_colCC_centered = size(this%colCC_centered)
+         do i_colCC_centered=1,s_colCC_centered
+           call make_restart_dir(this%colCC_centered(i_colCC_centered),&
+           dir//fortran_PS//'colCC_centered_'//int2str(i_colCC_centered))
+         enddo
+         call make_restart_dir(this%hn,dir//fortran_PS//'hn')
+         call make_restart_dir(this%hc,dir//fortran_PS//'hc')
+         call make_restart_dir(this%dhn,dir//fortran_PS//'dhn')
+         call make_restart_dir(this%dhc,dir//fortran_PS//'dhc')
+       end subroutine
+
        subroutine export_restart_coordinates(this,dir)
          implicit none
          type(coordinates),intent(in) :: this
@@ -518,62 +574,6 @@
          call import_restart(this%hc,dir//fortran_PS//'hc')
          call import_restart(this%dhn,dir//fortran_PS//'dhn')
          call import_restart(this%dhc,dir//fortran_PS//'dhc')
-       end subroutine
-
-       subroutine export_wrap_coordinates(this,dir,name)
-         implicit none
-         type(coordinates),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = new_and_open(dir,name)
-         call export(this,un)
-         close(un)
-       end subroutine
-
-       subroutine import_wrap_coordinates(this,dir,name)
-         implicit none
-         type(coordinates),intent(inout) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = open_to_read(dir,name)
-         call import(this,un)
-         close(un)
-       end subroutine
-
-       subroutine make_restart_dir_coordinates(this,dir)
-         implicit none
-         type(coordinates),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         integer :: i_colCC
-         integer :: i_colN
-         integer :: i_colCC_centered
-         integer :: s_colCC
-         integer :: s_colN
-         integer :: s_colCC_centered
-         call suppress_warnings(this)
-         call make_dir_quiet(dir)
-         call make_restart_dir(this%stagCC2N,dir//fortran_PS//'stagCC2N')
-         call make_restart_dir(this%stagN2CC,dir//fortran_PS//'stagN2CC')
-         call make_restart_dir(this%theta,dir//fortran_PS//'theta')
-         s_colCC = size(this%colCC)
-         do i_colCC=1,s_colCC
-           call make_restart_dir(this%colCC(i_colCC),&
-           dir//fortran_PS//'colCC_'//int2str(i_colCC))
-         enddo
-         s_colN = size(this%colN)
-         do i_colN=1,s_colN
-           call make_restart_dir(this%colN(i_colN),&
-           dir//fortran_PS//'colN_'//int2str(i_colN))
-         enddo
-         s_colCC_centered = size(this%colCC_centered)
-         do i_colCC_centered=1,s_colCC_centered
-           call make_restart_dir(this%colCC_centered(i_colCC_centered),&
-           dir//fortran_PS//'colCC_centered_'//int2str(i_colCC_centered))
-         enddo
-         call make_restart_dir(this%hn,dir//fortran_PS//'hn')
-         call make_restart_dir(this%hc,dir//fortran_PS//'hc')
-         call make_restart_dir(this%dhn,dir//fortran_PS//'dhn')
-         call make_restart_dir(this%dhc,dir//fortran_PS//'dhc')
        end subroutine
 
        subroutine suppress_warnings_coordinates(this)

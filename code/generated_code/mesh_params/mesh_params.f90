@@ -250,6 +250,53 @@
          read(un,*); read(un,*) this%N_ext
        end subroutine
 
+       subroutine export_wrap_mesh_params(this,dir,name)
+         implicit none
+         type(mesh_params),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call export(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_wrap_mesh_params(this,dir,name)
+         implicit none
+         type(mesh_params),intent(inout) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = open_to_read(dir,name)
+         call import(this,un)
+         close(un)
+       end subroutine
+
+       subroutine make_restart_dir_mesh_params(this,dir)
+         implicit none
+         type(mesh_params),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_s_base
+         integer :: i_s_ext
+         integer :: s_s_base
+         integer :: s_s_ext
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_restart_dir(this%MQP,dir//fortran_PS//'MQP')
+         if (allocated(this%s_base)) then
+           s_s_base = size(this%s_base)
+           do i_s_base=1,s_s_base
+             call make_restart_dir(this%s_base(i_s_base),&
+             dir//fortran_PS//'s_base_'//int2str(i_s_base))
+           enddo
+         endif
+         if (allocated(this%s_ext)) then
+           s_s_ext = size(this%s_ext)
+           do i_s_ext=1,s_s_ext
+             call make_restart_dir(this%s_ext(i_s_ext),&
+             dir//fortran_PS//'s_ext_'//int2str(i_s_ext))
+           enddo
+         endif
+       end subroutine
+
        subroutine export_restart_mesh_params(this,dir)
          implicit none
          type(mesh_params),intent(in) :: this
@@ -303,53 +350,6 @@
            s_s_ext = size(this%s_ext)
            do i_s_ext=1,s_s_ext
              call import_restart(this%s_ext(i_s_ext),&
-             dir//fortran_PS//'s_ext_'//int2str(i_s_ext))
-           enddo
-         endif
-       end subroutine
-
-       subroutine export_wrap_mesh_params(this,dir,name)
-         implicit none
-         type(mesh_params),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = new_and_open(dir,name)
-         call export(this,un)
-         close(un)
-       end subroutine
-
-       subroutine import_wrap_mesh_params(this,dir,name)
-         implicit none
-         type(mesh_params),intent(inout) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = open_to_read(dir,name)
-         call import(this,un)
-         close(un)
-       end subroutine
-
-       subroutine make_restart_dir_mesh_params(this,dir)
-         implicit none
-         type(mesh_params),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         integer :: i_s_base
-         integer :: i_s_ext
-         integer :: s_s_base
-         integer :: s_s_ext
-         call suppress_warnings(this)
-         call make_dir_quiet(dir)
-         call make_restart_dir(this%MQP,dir//fortran_PS//'MQP')
-         if (allocated(this%s_base)) then
-           s_s_base = size(this%s_base)
-           do i_s_base=1,s_s_base
-             call make_restart_dir(this%s_base(i_s_base),&
-             dir//fortran_PS//'s_base_'//int2str(i_s_base))
-           enddo
-         endif
-         if (allocated(this%s_ext)) then
-           s_s_ext = size(this%s_ext)
-           do i_s_ext=1,s_s_ext
-             call make_restart_dir(this%s_ext(i_s_ext),&
              dir//fortran_PS//'s_ext_'//int2str(i_s_ext))
            enddo
          endif

@@ -171,6 +171,46 @@
          call import(this%volumetric_heating,un)
        end subroutine
 
+       subroutine export_wrap_energy_terms(this,dir,name)
+         implicit none
+         type(energy_terms),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call export(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_wrap_energy_terms(this,dir,name)
+         implicit none
+         type(energy_terms),intent(inout) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = open_to_read(dir,name)
+         call import(this,un)
+         close(un)
+       end subroutine
+
+       subroutine make_restart_dir_energy_terms(this,dir)
+         implicit none
+         type(energy_terms),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_restart_dir(this%advection,dir//fortran_PS//'advection')
+         call make_restart_dir(this%diffusion,dir//fortran_PS//'diffusion')
+         call make_restart_dir(this%diffusion_linear,&
+         dir//fortran_PS//'diffusion_linear')
+         call make_restart_dir(this%KE_diffusion,&
+         dir//fortran_PS//'KE_diffusion')
+         call make_restart_dir(this%viscous_dissipation,&
+         dir//fortran_PS//'viscous_dissipation')
+         call make_restart_dir(this%joule_heating,&
+         dir//fortran_PS//'joule_heating')
+         call make_restart_dir(this%volumetric_heating,&
+         dir//fortran_PS//'volumetric_heating')
+       end subroutine
+
        subroutine export_restart_energy_terms(this,dir)
          implicit none
          type(energy_terms),intent(in) :: this
@@ -212,46 +252,6 @@
          call import_restart(this%joule_heating,&
          dir//fortran_PS//'joule_heating')
          call import_restart(this%volumetric_heating,&
-         dir//fortran_PS//'volumetric_heating')
-       end subroutine
-
-       subroutine export_wrap_energy_terms(this,dir,name)
-         implicit none
-         type(energy_terms),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = new_and_open(dir,name)
-         call export(this,un)
-         close(un)
-       end subroutine
-
-       subroutine import_wrap_energy_terms(this,dir,name)
-         implicit none
-         type(energy_terms),intent(inout) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = open_to_read(dir,name)
-         call import(this,un)
-         close(un)
-       end subroutine
-
-       subroutine make_restart_dir_energy_terms(this,dir)
-         implicit none
-         type(energy_terms),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         call suppress_warnings(this)
-         call make_dir_quiet(dir)
-         call make_restart_dir(this%advection,dir//fortran_PS//'advection')
-         call make_restart_dir(this%diffusion,dir//fortran_PS//'diffusion')
-         call make_restart_dir(this%diffusion_linear,&
-         dir//fortran_PS//'diffusion_linear')
-         call make_restart_dir(this%KE_diffusion,&
-         dir//fortran_PS//'KE_diffusion')
-         call make_restart_dir(this%viscous_dissipation,&
-         dir//fortran_PS//'viscous_dissipation')
-         call make_restart_dir(this%joule_heating,&
-         dir//fortran_PS//'joule_heating')
-         call make_restart_dir(this%volumetric_heating,&
          dir//fortran_PS//'volumetric_heating')
        end subroutine
 

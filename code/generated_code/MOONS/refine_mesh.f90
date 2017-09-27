@@ -231,40 +231,6 @@
          call import(this%level_last,un)
        end subroutine
 
-       subroutine export_restart_refine_mesh(this,dir)
-         implicit none
-         type(refine_mesh),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = new_and_open(dir,'primitives')
-         call export_primitives(this,un)
-         close(un)
-         call export_restart(this%all,dir//fortran_PS//'all')
-         call export_restart(this%x,dir//fortran_PS//'x')
-         call export_restart(this%y,dir//fortran_PS//'y')
-         call export_restart(this%z,dir//fortran_PS//'z')
-         call export_restart(this%x_plane,dir//fortran_PS//'x_plane')
-         call export_restart(this%y_plane,dir//fortran_PS//'y_plane')
-         call export_restart(this%z_plane,dir//fortran_PS//'z_plane')
-       end subroutine
-
-       subroutine import_restart_refine_mesh(this,dir)
-         implicit none
-         type(refine_mesh),intent(inout) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = open_to_read(dir,'primitives')
-         call import_primitives(this,un)
-         close(un)
-         call import_restart(this%all,dir//fortran_PS//'all')
-         call import_restart(this%x,dir//fortran_PS//'x')
-         call import_restart(this%y,dir//fortran_PS//'y')
-         call import_restart(this%z,dir//fortran_PS//'z')
-         call import_restart(this%x_plane,dir//fortran_PS//'x_plane')
-         call import_restart(this%y_plane,dir//fortran_PS//'y_plane')
-         call import_restart(this%z_plane,dir//fortran_PS//'z_plane')
-       end subroutine
-
        subroutine export_wrap_refine_mesh(this,dir,name)
          implicit none
          type(refine_mesh),intent(in) :: this
@@ -318,6 +284,40 @@
          call make_restart_dir(this%x_plane,dir//fortran_PS//'x_plane')
          call make_restart_dir(this%y_plane,dir//fortran_PS//'y_plane')
          call make_restart_dir(this%z_plane,dir//fortran_PS//'z_plane')
+       end subroutine
+
+       subroutine export_restart_refine_mesh(this,dir)
+         implicit none
+         type(refine_mesh),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
+         close(un)
+         call export_restart(this%all,dir//fortran_PS//'all')
+         call export_restart(this%x,dir//fortran_PS//'x')
+         call export_restart(this%y,dir//fortran_PS//'y')
+         call export_restart(this%z,dir//fortran_PS//'z')
+         call export_restart(this%x_plane,dir//fortran_PS//'x_plane')
+         call export_restart(this%y_plane,dir//fortran_PS//'y_plane')
+         call export_restart(this%z_plane,dir//fortran_PS//'z_plane')
+       end subroutine
+
+       subroutine import_restart_refine_mesh(this,dir)
+         implicit none
+         type(refine_mesh),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
+         call import_restart(this%all,dir//fortran_PS//'all')
+         call import_restart(this%x,dir//fortran_PS//'x')
+         call import_restart(this%y,dir//fortran_PS//'y')
+         call import_restart(this%z,dir//fortran_PS//'z')
+         call import_restart(this%x_plane,dir//fortran_PS//'x_plane')
+         call import_restart(this%y_plane,dir//fortran_PS//'y_plane')
+         call import_restart(this%z_plane,dir//fortran_PS//'z_plane')
        end subroutine
 
        subroutine suppress_warnings_refine_mesh(this)

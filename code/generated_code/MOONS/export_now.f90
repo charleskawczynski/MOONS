@@ -194,36 +194,6 @@
          call import(this%name,un)
        end subroutine
 
-       subroutine export_restart_export_now(this,dir)
-         implicit none
-         type(export_now),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = new_and_open(dir,'primitives')
-         call export_primitives(this,un)
-         close(un)
-         call export_restart(this%U,dir//fortran_PS//'U')
-         call export_restart(this%B,dir//fortran_PS//'B')
-         call export_restart(this%T,dir//fortran_PS//'T')
-         call export_restart(this%rho,dir//fortran_PS//'rho')
-         call export_restart(this%all,dir//fortran_PS//'all')
-       end subroutine
-
-       subroutine import_restart_export_now(this,dir)
-         implicit none
-         type(export_now),intent(inout) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = open_to_read(dir,'primitives')
-         call import_primitives(this,un)
-         close(un)
-         call import_restart(this%U,dir//fortran_PS//'U')
-         call import_restart(this%B,dir//fortran_PS//'B')
-         call import_restart(this%T,dir//fortran_PS//'T')
-         call import_restart(this%rho,dir//fortran_PS//'rho')
-         call import_restart(this%all,dir//fortran_PS//'all')
-       end subroutine
-
        subroutine export_wrap_export_now(this,dir,name)
          implicit none
          type(export_now),intent(in) :: this
@@ -275,6 +245,36 @@
          call make_restart_dir(this%T,dir//fortran_PS//'T')
          call make_restart_dir(this%rho,dir//fortran_PS//'rho')
          call make_restart_dir(this%all,dir//fortran_PS//'all')
+       end subroutine
+
+       subroutine export_restart_export_now(this,dir)
+         implicit none
+         type(export_now),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
+         close(un)
+         call export_restart(this%U,dir//fortran_PS//'U')
+         call export_restart(this%B,dir//fortran_PS//'B')
+         call export_restart(this%T,dir//fortran_PS//'T')
+         call export_restart(this%rho,dir//fortran_PS//'rho')
+         call export_restart(this%all,dir//fortran_PS//'all')
+       end subroutine
+
+       subroutine import_restart_export_now(this,dir)
+         implicit none
+         type(export_now),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
+         call import_restart(this%U,dir//fortran_PS//'U')
+         call import_restart(this%B,dir//fortran_PS//'B')
+         call import_restart(this%T,dir//fortran_PS//'T')
+         call import_restart(this%rho,dir//fortran_PS//'rho')
+         call import_restart(this%all,dir//fortran_PS//'all')
        end subroutine
 
        subroutine suppress_warnings_export_now(this)

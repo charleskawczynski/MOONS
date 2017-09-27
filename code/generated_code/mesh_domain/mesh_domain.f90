@@ -144,32 +144,6 @@
          call import(this%m_R2,un)
        end subroutine
 
-       subroutine export_restart_mesh_domain(this,dir)
-         implicit none
-         type(mesh_domain),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = new_and_open(dir,'primitives')
-         call export_primitives(this,un)
-         close(un)
-         call export_restart(this%D,dir//fortran_PS//'D')
-         call export_restart(this%m_R1,dir//fortran_PS//'m_R1')
-         call export_restart(this%m_R2,dir//fortran_PS//'m_R2')
-       end subroutine
-
-       subroutine import_restart_mesh_domain(this,dir)
-         implicit none
-         type(mesh_domain),intent(inout) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = open_to_read(dir,'primitives')
-         call import_primitives(this,un)
-         close(un)
-         call import_restart(this%D,dir//fortran_PS//'D')
-         call import_restart(this%m_R1,dir//fortran_PS//'m_R1')
-         call import_restart(this%m_R2,dir//fortran_PS//'m_R2')
-       end subroutine
-
        subroutine export_wrap_mesh_domain(this,dir,name)
          implicit none
          type(mesh_domain),intent(in) :: this
@@ -199,6 +173,32 @@
          call make_restart_dir(this%D,dir//fortran_PS//'D')
          call make_restart_dir(this%m_R1,dir//fortran_PS//'m_R1')
          call make_restart_dir(this%m_R2,dir//fortran_PS//'m_R2')
+       end subroutine
+
+       subroutine export_restart_mesh_domain(this,dir)
+         implicit none
+         type(mesh_domain),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
+         close(un)
+         call export_restart(this%D,dir//fortran_PS//'D')
+         call export_restart(this%m_R1,dir//fortran_PS//'m_R1')
+         call export_restart(this%m_R2,dir//fortran_PS//'m_R2')
+       end subroutine
+
+       subroutine import_restart_mesh_domain(this,dir)
+         implicit none
+         type(mesh_domain),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
+         call import_restart(this%D,dir//fortran_PS//'D')
+         call import_restart(this%m_R1,dir//fortran_PS//'m_R1')
+         call import_restart(this%m_R2,dir//fortran_PS//'m_R2')
        end subroutine
 
        subroutine suppress_warnings_mesh_domain(this)

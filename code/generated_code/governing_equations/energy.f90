@@ -285,6 +285,58 @@
          call import(this%MD,un)
        end subroutine
 
+       subroutine export_wrap_energy(this,dir,name)
+         implicit none
+         type(energy),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call export(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_wrap_energy(this,dir,name)
+         implicit none
+         type(energy),intent(inout) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = open_to_read(dir,name)
+         call import(this,un)
+         close(un)
+       end subroutine
+
+       subroutine make_restart_dir_energy(this,dir)
+         implicit none
+         type(energy),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_restart_dir(this%m,dir//fortran_PS//'m')
+         call make_restart_dir(this%PCG_T,dir//fortran_PS//'PCG_T')
+         call make_restart_dir(this%T,dir//fortran_PS//'T')
+         call make_restart_dir(this%Tnm1,dir//fortran_PS//'Tnm1')
+         call make_restart_dir(this%temp_CC1,dir//fortran_PS//'temp_CC1')
+         call make_restart_dir(this%temp_CC2,dir//fortran_PS//'temp_CC2')
+         call make_restart_dir(this%F,dir//fortran_PS//'F')
+         call make_restart_dir(this%Fnm1,dir//fortran_PS//'Fnm1')
+         call make_restart_dir(this%L,dir//fortran_PS//'L')
+         call make_restart_dir(this%divQ,dir//fortran_PS//'divQ')
+         call make_restart_dir(this%Q_source,dir//fortran_PS//'Q_source')
+         call make_restart_dir(this%temp_F,dir//fortran_PS//'temp_F')
+         call make_restart_dir(this%k,dir//fortran_PS//'k')
+         call make_restart_dir(this%U_F,dir//fortran_PS//'U_F')
+         call make_restart_dir(this%U_CC,dir//fortran_PS//'U_CC')
+         call make_restart_dir(this%gravity,dir//fortran_PS//'gravity')
+         call make_restart_dir(this%temp_CC1_VF,&
+         dir//fortran_PS//'temp_CC1_VF')
+         call make_restart_dir(this%temp_CC2_VF,&
+         dir//fortran_PS//'temp_CC2_VF')
+         call make_restart_dir(this%temp_CC_TF,dir//fortran_PS//'temp_CC_TF')
+         call make_restart_dir(this%temp_F_TF,dir//fortran_PS//'temp_F_TF')
+         call make_restart_dir(this%probe_divQ,dir//fortran_PS//'probe_divQ')
+         call make_restart_dir(this%MD,dir//fortran_PS//'MD')
+       end subroutine
+
        subroutine export_restart_energy(this,dir)
          implicit none
          type(energy),intent(in) :: this
@@ -347,58 +399,6 @@
          call import_restart(this%temp_F_TF,dir//fortran_PS//'temp_F_TF')
          call import_restart(this%probe_divQ,dir//fortran_PS//'probe_divQ')
          call import_restart(this%MD,dir//fortran_PS//'MD')
-       end subroutine
-
-       subroutine export_wrap_energy(this,dir,name)
-         implicit none
-         type(energy),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = new_and_open(dir,name)
-         call export(this,un)
-         close(un)
-       end subroutine
-
-       subroutine import_wrap_energy(this,dir,name)
-         implicit none
-         type(energy),intent(inout) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = open_to_read(dir,name)
-         call import(this,un)
-         close(un)
-       end subroutine
-
-       subroutine make_restart_dir_energy(this,dir)
-         implicit none
-         type(energy),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         call suppress_warnings(this)
-         call make_dir_quiet(dir)
-         call make_restart_dir(this%m,dir//fortran_PS//'m')
-         call make_restart_dir(this%PCG_T,dir//fortran_PS//'PCG_T')
-         call make_restart_dir(this%T,dir//fortran_PS//'T')
-         call make_restart_dir(this%Tnm1,dir//fortran_PS//'Tnm1')
-         call make_restart_dir(this%temp_CC1,dir//fortran_PS//'temp_CC1')
-         call make_restart_dir(this%temp_CC2,dir//fortran_PS//'temp_CC2')
-         call make_restart_dir(this%F,dir//fortran_PS//'F')
-         call make_restart_dir(this%Fnm1,dir//fortran_PS//'Fnm1')
-         call make_restart_dir(this%L,dir//fortran_PS//'L')
-         call make_restart_dir(this%divQ,dir//fortran_PS//'divQ')
-         call make_restart_dir(this%Q_source,dir//fortran_PS//'Q_source')
-         call make_restart_dir(this%temp_F,dir//fortran_PS//'temp_F')
-         call make_restart_dir(this%k,dir//fortran_PS//'k')
-         call make_restart_dir(this%U_F,dir//fortran_PS//'U_F')
-         call make_restart_dir(this%U_CC,dir//fortran_PS//'U_CC')
-         call make_restart_dir(this%gravity,dir//fortran_PS//'gravity')
-         call make_restart_dir(this%temp_CC1_VF,&
-         dir//fortran_PS//'temp_CC1_VF')
-         call make_restart_dir(this%temp_CC2_VF,&
-         dir//fortran_PS//'temp_CC2_VF')
-         call make_restart_dir(this%temp_CC_TF,dir//fortran_PS//'temp_CC_TF')
-         call make_restart_dir(this%temp_F_TF,dir//fortran_PS//'temp_F_TF')
-         call make_restart_dir(this%probe_divQ,dir//fortran_PS//'probe_divQ')
-         call make_restart_dir(this%MD,dir//fortran_PS//'MD')
        end subroutine
 
        subroutine suppress_warnings_energy(this)

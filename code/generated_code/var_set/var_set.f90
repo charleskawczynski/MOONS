@@ -171,40 +171,6 @@
          call import(this%rho,un)
        end subroutine
 
-       subroutine export_restart_var_set(this,dir)
-         implicit none
-         type(var_set),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = new_and_open(dir,'primitives')
-         call export_primitives(this,un)
-         close(un)
-         call export_restart(this%T,dir//fortran_PS//'T')
-         call export_restart(this%U,dir//fortran_PS//'U')
-         call export_restart(this%p,dir//fortran_PS//'p')
-         call export_restart(this%B,dir//fortran_PS//'B')
-         call export_restart(this%B0,dir//fortran_PS//'B0')
-         call export_restart(this%phi,dir//fortran_PS//'phi')
-         call export_restart(this%rho,dir//fortran_PS//'rho')
-       end subroutine
-
-       subroutine import_restart_var_set(this,dir)
-         implicit none
-         type(var_set),intent(inout) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = open_to_read(dir,'primitives')
-         call import_primitives(this,un)
-         close(un)
-         call import_restart(this%T,dir//fortran_PS//'T')
-         call import_restart(this%U,dir//fortran_PS//'U')
-         call import_restart(this%p,dir//fortran_PS//'p')
-         call import_restart(this%B,dir//fortran_PS//'B')
-         call import_restart(this%B0,dir//fortran_PS//'B0')
-         call import_restart(this%phi,dir//fortran_PS//'phi')
-         call import_restart(this%rho,dir//fortran_PS//'rho')
-       end subroutine
-
        subroutine export_wrap_var_set(this,dir,name)
          implicit none
          type(var_set),intent(in) :: this
@@ -238,6 +204,40 @@
          call make_restart_dir(this%B0,dir//fortran_PS//'B0')
          call make_restart_dir(this%phi,dir//fortran_PS//'phi')
          call make_restart_dir(this%rho,dir//fortran_PS//'rho')
+       end subroutine
+
+       subroutine export_restart_var_set(this,dir)
+         implicit none
+         type(var_set),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
+         close(un)
+         call export_restart(this%T,dir//fortran_PS//'T')
+         call export_restart(this%U,dir//fortran_PS//'U')
+         call export_restart(this%p,dir//fortran_PS//'p')
+         call export_restart(this%B,dir//fortran_PS//'B')
+         call export_restart(this%B0,dir//fortran_PS//'B0')
+         call export_restart(this%phi,dir//fortran_PS//'phi')
+         call export_restart(this%rho,dir//fortran_PS//'rho')
+       end subroutine
+
+       subroutine import_restart_var_set(this,dir)
+         implicit none
+         type(var_set),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
+         call import_restart(this%T,dir//fortran_PS//'T')
+         call import_restart(this%U,dir//fortran_PS//'U')
+         call import_restart(this%p,dir//fortran_PS//'p')
+         call import_restart(this%B,dir//fortran_PS//'B')
+         call import_restart(this%B0,dir//fortran_PS//'B0')
+         call import_restart(this%phi,dir//fortran_PS//'phi')
+         call import_restart(this%rho,dir//fortran_PS//'rho')
        end subroutine
 
        subroutine suppress_warnings_var_set(this)

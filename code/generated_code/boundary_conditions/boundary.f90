@@ -194,6 +194,44 @@
          call import(this%BCL,un)
        end subroutine
 
+       subroutine export_wrap_boundary(this,dir,name)
+         implicit none
+         type(boundary),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call export(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_wrap_boundary(this,dir,name)
+         implicit none
+         type(boundary),intent(inout) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = open_to_read(dir,name)
+         call import(this,un)
+         close(un)
+       end subroutine
+
+       subroutine make_restart_dir_boundary(this,dir)
+         implicit none
+         type(boundary),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_SB
+         integer :: s_SB
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         if (allocated(this%SB)) then
+           s_SB = size(this%SB)
+           do i_SB=1,s_SB
+             call make_restart_dir(this%SB(i_SB),&
+             dir//fortran_PS//'SB_'//int2str(i_SB))
+           enddo
+         endif
+         call make_restart_dir(this%BCL,dir//fortran_PS//'BCL')
+       end subroutine
+
        subroutine export_restart_boundary(this,dir)
          implicit none
          type(boundary),intent(in) :: this
@@ -232,44 +270,6 @@
            enddo
          endif
          call import_restart(this%BCL,dir//fortran_PS//'BCL')
-       end subroutine
-
-       subroutine export_wrap_boundary(this,dir,name)
-         implicit none
-         type(boundary),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = new_and_open(dir,name)
-         call export(this,un)
-         close(un)
-       end subroutine
-
-       subroutine import_wrap_boundary(this,dir,name)
-         implicit none
-         type(boundary),intent(inout) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = open_to_read(dir,name)
-         call import(this,un)
-         close(un)
-       end subroutine
-
-       subroutine make_restart_dir_boundary(this,dir)
-         implicit none
-         type(boundary),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         integer :: i_SB
-         integer :: s_SB
-         call suppress_warnings(this)
-         call make_dir_quiet(dir)
-         if (allocated(this%SB)) then
-           s_SB = size(this%SB)
-           do i_SB=1,s_SB
-             call make_restart_dir(this%SB(i_SB),&
-             dir//fortran_PS//'SB_'//int2str(i_SB))
-           enddo
-         endif
-         call make_restart_dir(this%BCL,dir//fortran_PS//'BCL')
        end subroutine
 
        subroutine suppress_warnings_boundary(this)

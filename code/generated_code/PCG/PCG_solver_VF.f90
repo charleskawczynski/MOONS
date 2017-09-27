@@ -256,52 +256,6 @@
          call import(this%name,un)
        end subroutine
 
-       subroutine export_restart_PCG_solver_VF(this,dir)
-         implicit none
-         type(PCG_solver_VF),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = new_and_open(dir,'primitives')
-         call export_primitives(this,un)
-         close(un)
-         call export_restart(this%MFP,dir//fortran_PS//'MFP')
-         call export_restart(this%tempk,dir//fortran_PS//'tempk')
-         call export_restart(this%k,dir//fortran_PS//'k')
-         call export_restart(this%r,dir//fortran_PS//'r')
-         call export_restart(this%p,dir//fortran_PS//'p')
-         call export_restart(this%tempx,dir//fortran_PS//'tempx')
-         call export_restart(this%Ax,dir//fortran_PS//'Ax')
-         call export_restart(this%x_BC,dir//fortran_PS//'x_BC')
-         call export_restart(this%vol,dir//fortran_PS//'vol')
-         call export_restart(this%z,dir//fortran_PS//'z')
-         call export_restart(this%Minv,dir//fortran_PS//'Minv')
-         call export_restart(this%norm,dir//fortran_PS//'norm')
-         call export_restart(this%ISP,dir//fortran_PS//'ISP')
-       end subroutine
-
-       subroutine import_restart_PCG_solver_VF(this,dir)
-         implicit none
-         type(PCG_solver_VF),intent(inout) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = open_to_read(dir,'primitives')
-         call import_primitives(this,un)
-         close(un)
-         call import_restart(this%MFP,dir//fortran_PS//'MFP')
-         call import_restart(this%tempk,dir//fortran_PS//'tempk')
-         call import_restart(this%k,dir//fortran_PS//'k')
-         call import_restart(this%r,dir//fortran_PS//'r')
-         call import_restart(this%p,dir//fortran_PS//'p')
-         call import_restart(this%tempx,dir//fortran_PS//'tempx')
-         call import_restart(this%Ax,dir//fortran_PS//'Ax')
-         call import_restart(this%x_BC,dir//fortran_PS//'x_BC')
-         call import_restart(this%vol,dir//fortran_PS//'vol')
-         call import_restart(this%z,dir//fortran_PS//'z')
-         call import_restart(this%Minv,dir//fortran_PS//'Minv')
-         call import_restart(this%norm,dir//fortran_PS//'norm')
-         call import_restart(this%ISP,dir//fortran_PS//'ISP')
-       end subroutine
-
        subroutine export_wrap_PCG_solver_VF(this,dir,name)
          implicit none
          type(PCG_solver_VF),intent(in) :: this
@@ -361,6 +315,52 @@
          call make_restart_dir(this%Minv,dir//fortran_PS//'Minv')
          call make_restart_dir(this%norm,dir//fortran_PS//'norm')
          call make_restart_dir(this%ISP,dir//fortran_PS//'ISP')
+       end subroutine
+
+       subroutine export_restart_PCG_solver_VF(this,dir)
+         implicit none
+         type(PCG_solver_VF),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
+         close(un)
+         call export_restart(this%MFP,dir//fortran_PS//'MFP')
+         call export_restart(this%tempk,dir//fortran_PS//'tempk')
+         call export_restart(this%k,dir//fortran_PS//'k')
+         call export_restart(this%r,dir//fortran_PS//'r')
+         call export_restart(this%p,dir//fortran_PS//'p')
+         call export_restart(this%tempx,dir//fortran_PS//'tempx')
+         call export_restart(this%Ax,dir//fortran_PS//'Ax')
+         call export_restart(this%x_BC,dir//fortran_PS//'x_BC')
+         call export_restart(this%vol,dir//fortran_PS//'vol')
+         call export_restart(this%z,dir//fortran_PS//'z')
+         call export_restart(this%Minv,dir//fortran_PS//'Minv')
+         call export_restart(this%norm,dir//fortran_PS//'norm')
+         call export_restart(this%ISP,dir//fortran_PS//'ISP')
+       end subroutine
+
+       subroutine import_restart_PCG_solver_VF(this,dir)
+         implicit none
+         type(PCG_solver_VF),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
+         call import_restart(this%MFP,dir//fortran_PS//'MFP')
+         call import_restart(this%tempk,dir//fortran_PS//'tempk')
+         call import_restart(this%k,dir//fortran_PS//'k')
+         call import_restart(this%r,dir//fortran_PS//'r')
+         call import_restart(this%p,dir//fortran_PS//'p')
+         call import_restart(this%tempx,dir//fortran_PS//'tempx')
+         call import_restart(this%Ax,dir//fortran_PS//'Ax')
+         call import_restart(this%x_BC,dir//fortran_PS//'x_BC')
+         call import_restart(this%vol,dir//fortran_PS//'vol')
+         call import_restart(this%z,dir//fortran_PS//'z')
+         call import_restart(this%Minv,dir//fortran_PS//'Minv')
+         call import_restart(this%norm,dir//fortran_PS//'norm')
+         call import_restart(this%ISP,dir//fortran_PS//'ISP')
        end subroutine
 
        subroutine suppress_warnings_PCG_solver_VF(this)

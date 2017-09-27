@@ -152,34 +152,6 @@
          call import(this%b_total,un)
        end subroutine
 
-       subroutine export_restart_single_boundary(this,dir)
-         implicit none
-         type(single_boundary),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = new_and_open(dir,'primitives')
-         call export_primitives(this,un)
-         close(un)
-         call export_restart(this%bct,dir//fortran_PS//'bct')
-         call export_restart(this%b,dir//fortran_PS//'b')
-         call export_restart(this%b_modified,dir//fortran_PS//'b_modified')
-         call export_restart(this%b_total,dir//fortran_PS//'b_total')
-       end subroutine
-
-       subroutine import_restart_single_boundary(this,dir)
-         implicit none
-         type(single_boundary),intent(inout) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = open_to_read(dir,'primitives')
-         call import_primitives(this,un)
-         close(un)
-         call import_restart(this%bct,dir//fortran_PS//'bct')
-         call import_restart(this%b,dir//fortran_PS//'b')
-         call import_restart(this%b_modified,dir//fortran_PS//'b_modified')
-         call import_restart(this%b_total,dir//fortran_PS//'b_total')
-       end subroutine
-
        subroutine export_wrap_single_boundary(this,dir,name)
          implicit none
          type(single_boundary),intent(in) :: this
@@ -210,6 +182,34 @@
          call make_restart_dir(this%b,dir//fortran_PS//'b')
          call make_restart_dir(this%b_modified,dir//fortran_PS//'b_modified')
          call make_restart_dir(this%b_total,dir//fortran_PS//'b_total')
+       end subroutine
+
+       subroutine export_restart_single_boundary(this,dir)
+         implicit none
+         type(single_boundary),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
+         close(un)
+         call export_restart(this%bct,dir//fortran_PS//'bct')
+         call export_restart(this%b,dir//fortran_PS//'b')
+         call export_restart(this%b_modified,dir//fortran_PS//'b_modified')
+         call export_restart(this%b_total,dir//fortran_PS//'b_total')
+       end subroutine
+
+       subroutine import_restart_single_boundary(this,dir)
+         implicit none
+         type(single_boundary),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
+         call import_restart(this%bct,dir//fortran_PS//'bct')
+         call import_restart(this%b,dir//fortran_PS//'b')
+         call import_restart(this%b_modified,dir//fortran_PS//'b_modified')
+         call import_restart(this%b_total,dir//fortran_PS//'b_total')
        end subroutine
 
        subroutine suppress_warnings_single_boundary(this)

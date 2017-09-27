@@ -164,40 +164,6 @@
          call import(this%B_applied,un)
        end subroutine
 
-       subroutine export_restart_induction_terms(this,dir)
-         implicit none
-         type(induction_terms),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = new_and_open(dir,'primitives')
-         call export_primitives(this,un)
-         close(un)
-         call export_restart(this%advection,dir//fortran_PS//'advection')
-         call export_restart(this%diffusion,dir//fortran_PS//'diffusion')
-         call export_restart(this%diffusion_linear,&
-         dir//fortran_PS//'diffusion_linear')
-         call export_restart(this%unsteady_B0,dir//fortran_PS//'unsteady_B0')
-         call export_restart(this%current,dir//fortran_PS//'current')
-         call export_restart(this%B_applied,dir//fortran_PS//'B_applied')
-       end subroutine
-
-       subroutine import_restart_induction_terms(this,dir)
-         implicit none
-         type(induction_terms),intent(inout) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = open_to_read(dir,'primitives')
-         call import_primitives(this,un)
-         close(un)
-         call import_restart(this%advection,dir//fortran_PS//'advection')
-         call import_restart(this%diffusion,dir//fortran_PS//'diffusion')
-         call import_restart(this%diffusion_linear,&
-         dir//fortran_PS//'diffusion_linear')
-         call import_restart(this%unsteady_B0,dir//fortran_PS//'unsteady_B0')
-         call import_restart(this%current,dir//fortran_PS//'current')
-         call import_restart(this%B_applied,dir//fortran_PS//'B_applied')
-       end subroutine
-
        subroutine export_wrap_induction_terms(this,dir,name)
          implicit none
          type(induction_terms),intent(in) :: this
@@ -232,6 +198,40 @@
          dir//fortran_PS//'unsteady_B0')
          call make_restart_dir(this%current,dir//fortran_PS//'current')
          call make_restart_dir(this%B_applied,dir//fortran_PS//'B_applied')
+       end subroutine
+
+       subroutine export_restart_induction_terms(this,dir)
+         implicit none
+         type(induction_terms),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
+         close(un)
+         call export_restart(this%advection,dir//fortran_PS//'advection')
+         call export_restart(this%diffusion,dir//fortran_PS//'diffusion')
+         call export_restart(this%diffusion_linear,&
+         dir//fortran_PS//'diffusion_linear')
+         call export_restart(this%unsteady_B0,dir//fortran_PS//'unsteady_B0')
+         call export_restart(this%current,dir//fortran_PS//'current')
+         call export_restart(this%B_applied,dir//fortran_PS//'B_applied')
+       end subroutine
+
+       subroutine import_restart_induction_terms(this,dir)
+         implicit none
+         type(induction_terms),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
+         call import_restart(this%advection,dir//fortran_PS//'advection')
+         call import_restart(this%diffusion,dir//fortran_PS//'diffusion')
+         call import_restart(this%diffusion_linear,&
+         dir//fortran_PS//'diffusion_linear')
+         call import_restart(this%unsteady_B0,dir//fortran_PS//'unsteady_B0')
+         call import_restart(this%current,dir//fortran_PS//'current')
+         call import_restart(this%B_applied,dir//fortran_PS//'B_applied')
        end subroutine
 
        subroutine suppress_warnings_induction_terms(this)

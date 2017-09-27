@@ -143,32 +143,6 @@
          call import(this%z,un)
        end subroutine
 
-       subroutine export_restart_TF(this,dir)
-         implicit none
-         type(TF),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = new_and_open(dir,'primitives')
-         call export_primitives(this,un)
-         close(un)
-         call export_restart(this%x,dir//fortran_PS//'x')
-         call export_restart(this%y,dir//fortran_PS//'y')
-         call export_restart(this%z,dir//fortran_PS//'z')
-       end subroutine
-
-       subroutine import_restart_TF(this,dir)
-         implicit none
-         type(TF),intent(inout) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = open_to_read(dir,'primitives')
-         call import_primitives(this,un)
-         close(un)
-         call import_restart(this%x,dir//fortran_PS//'x')
-         call import_restart(this%y,dir//fortran_PS//'y')
-         call import_restart(this%z,dir//fortran_PS//'z')
-       end subroutine
-
        subroutine export_wrap_TF(this,dir,name)
          implicit none
          type(TF),intent(in) :: this
@@ -197,6 +171,32 @@
          call make_restart_dir(this%x,dir//fortran_PS//'x')
          call make_restart_dir(this%y,dir//fortran_PS//'y')
          call make_restart_dir(this%z,dir//fortran_PS//'z')
+       end subroutine
+
+       subroutine export_restart_TF(this,dir)
+         implicit none
+         type(TF),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
+         close(un)
+         call export_restart(this%x,dir//fortran_PS//'x')
+         call export_restart(this%y,dir//fortran_PS//'y')
+         call export_restart(this%z,dir//fortran_PS//'z')
+       end subroutine
+
+       subroutine import_restart_TF(this,dir)
+         implicit none
+         type(TF),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
+         call import_restart(this%x,dir//fortran_PS//'x')
+         call import_restart(this%y,dir//fortran_PS//'y')
+         call import_restart(this%z,dir//fortran_PS//'z')
        end subroutine
 
        subroutine suppress_warnings_TF(this)

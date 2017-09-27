@@ -172,40 +172,6 @@
          call import(this%f_BCs,un)
        end subroutine
 
-       subroutine export_restart_boundary_conditions(this,dir)
-         implicit none
-         type(boundary_conditions),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = new_and_open(dir,'primitives')
-         call export_primitives(this,un)
-         close(un)
-         call export_restart(this%BCL,dir//fortran_PS//'BCL')
-         call export_restart(this%DL,dir//fortran_PS//'DL')
-         call export_restart(this%face,dir//fortran_PS//'face')
-         call export_restart(this%PA_face_BCs,dir//fortran_PS//'PA_face_BCs')
-         call export_restart(this%PA_face_implicit_BCs,&
-         dir//fortran_PS//'PA_face_implicit_BCs')
-         call export_restart(this%f_BCs,dir//fortran_PS//'f_BCs')
-       end subroutine
-
-       subroutine import_restart_boundary_conditions(this,dir)
-         implicit none
-         type(boundary_conditions),intent(inout) :: this
-         character(len=*),intent(in) :: dir
-         integer :: un
-         un = open_to_read(dir,'primitives')
-         call import_primitives(this,un)
-         close(un)
-         call import_restart(this%BCL,dir//fortran_PS//'BCL')
-         call import_restart(this%DL,dir//fortran_PS//'DL')
-         call import_restart(this%face,dir//fortran_PS//'face')
-         call import_restart(this%PA_face_BCs,dir//fortran_PS//'PA_face_BCs')
-         call import_restart(this%PA_face_implicit_BCs,&
-         dir//fortran_PS//'PA_face_implicit_BCs')
-         call import_restart(this%f_BCs,dir//fortran_PS//'f_BCs')
-       end subroutine
-
        subroutine export_wrap_boundary_conditions(this,dir,name)
          implicit none
          type(boundary_conditions),intent(in) :: this
@@ -240,6 +206,40 @@
          call make_restart_dir(this%PA_face_implicit_BCs,&
          dir//fortran_PS//'PA_face_implicit_BCs')
          call make_restart_dir(this%f_BCs,dir//fortran_PS//'f_BCs')
+       end subroutine
+
+       subroutine export_restart_boundary_conditions(this,dir)
+         implicit none
+         type(boundary_conditions),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
+         close(un)
+         call export_restart(this%BCL,dir//fortran_PS//'BCL')
+         call export_restart(this%DL,dir//fortran_PS//'DL')
+         call export_restart(this%face,dir//fortran_PS//'face')
+         call export_restart(this%PA_face_BCs,dir//fortran_PS//'PA_face_BCs')
+         call export_restart(this%PA_face_implicit_BCs,&
+         dir//fortran_PS//'PA_face_implicit_BCs')
+         call export_restart(this%f_BCs,dir//fortran_PS//'f_BCs')
+       end subroutine
+
+       subroutine import_restart_boundary_conditions(this,dir)
+         implicit none
+         type(boundary_conditions),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import_primitives(this,un)
+         close(un)
+         call import_restart(this%BCL,dir//fortran_PS//'BCL')
+         call import_restart(this%DL,dir//fortran_PS//'DL')
+         call import_restart(this%face,dir//fortran_PS//'face')
+         call import_restart(this%PA_face_BCs,dir//fortran_PS//'PA_face_BCs')
+         call import_restart(this%PA_face_implicit_BCs,&
+         dir//fortran_PS//'PA_face_implicit_BCs')
+         call import_restart(this%f_BCs,dir//fortran_PS//'f_BCs')
        end subroutine
 
        subroutine suppress_warnings_boundary_conditions(this)

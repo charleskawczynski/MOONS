@@ -314,6 +314,61 @@
          call import(this%probe_Q,un)
        end subroutine
 
+       subroutine export_wrap_momentum(this,dir,name)
+         implicit none
+         type(momentum),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call export(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_wrap_momentum(this,dir,name)
+         implicit none
+         type(momentum),intent(inout) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = open_to_read(dir,name)
+         call import(this,un)
+         close(un)
+       end subroutine
+
+       subroutine make_restart_dir_momentum(this,dir)
+         implicit none
+         type(momentum),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_restart_dir(this%m,dir//fortran_PS//'m')
+         call make_restart_dir(this%PCG_P,dir//fortran_PS//'PCG_P')
+         call make_restart_dir(this%PCG_U,dir//fortran_PS//'PCG_U')
+         call make_restart_dir(this%TS,dir//fortran_PS//'TS')
+         call make_restart_dir(this%p,dir//fortran_PS//'p')
+         call make_restart_dir(this%divU,dir//fortran_PS//'divU')
+         call make_restart_dir(this%temp_CC,dir//fortran_PS//'temp_CC')
+         call make_restart_dir(this%U,dir//fortran_PS//'U')
+         call make_restart_dir(this%Ustar,dir//fortran_PS//'Ustar')
+         call make_restart_dir(this%Unm1,dir//fortran_PS//'Unm1')
+         call make_restart_dir(this%U_CC,dir//fortran_PS//'U_CC')
+         call make_restart_dir(this%F,dir//fortran_PS//'F')
+         call make_restart_dir(this%Fnm1,dir//fortran_PS//'Fnm1')
+         call make_restart_dir(this%L,dir//fortran_PS//'L')
+         call make_restart_dir(this%temp_F1,dir//fortran_PS//'temp_F1')
+         call make_restart_dir(this%temp_F2,dir//fortran_PS//'temp_F2')
+         call make_restart_dir(this%temp_F3,dir//fortran_PS//'temp_F3')
+         call make_restart_dir(this%temp_E,dir//fortran_PS//'temp_E')
+         call make_restart_dir(this%temp_CC_VF,dir//fortran_PS//'temp_CC_VF')
+         call make_restart_dir(this%U_E,dir//fortran_PS//'U_E')
+         call make_restart_dir(this%TF_CC,dir//fortran_PS//'TF_CC')
+         call make_restart_dir(this%TF_CC_edge,dir//fortran_PS//'TF_CC_edge')
+         call make_restart_dir(this%probe_KE,dir//fortran_PS//'probe_KE')
+         call make_restart_dir(this%probe_KE_2C,&
+         dir//fortran_PS//'probe_KE_2C')
+         call make_restart_dir(this%probe_divU,dir//fortran_PS//'probe_divU')
+         call make_restart_dir(this%probe_Q,dir//fortran_PS//'probe_Q')
+       end subroutine
+
        subroutine export_restart_momentum(this,dir)
          implicit none
          type(momentum),intent(in) :: this
@@ -384,61 +439,6 @@
          call import_restart(this%probe_KE_2C,dir//fortran_PS//'probe_KE_2C')
          call import_restart(this%probe_divU,dir//fortran_PS//'probe_divU')
          call import_restart(this%probe_Q,dir//fortran_PS//'probe_Q')
-       end subroutine
-
-       subroutine export_wrap_momentum(this,dir,name)
-         implicit none
-         type(momentum),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = new_and_open(dir,name)
-         call export(this,un)
-         close(un)
-       end subroutine
-
-       subroutine import_wrap_momentum(this,dir,name)
-         implicit none
-         type(momentum),intent(inout) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = open_to_read(dir,name)
-         call import(this,un)
-         close(un)
-       end subroutine
-
-       subroutine make_restart_dir_momentum(this,dir)
-         implicit none
-         type(momentum),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         call suppress_warnings(this)
-         call make_dir_quiet(dir)
-         call make_restart_dir(this%m,dir//fortran_PS//'m')
-         call make_restart_dir(this%PCG_P,dir//fortran_PS//'PCG_P')
-         call make_restart_dir(this%PCG_U,dir//fortran_PS//'PCG_U')
-         call make_restart_dir(this%TS,dir//fortran_PS//'TS')
-         call make_restart_dir(this%p,dir//fortran_PS//'p')
-         call make_restart_dir(this%divU,dir//fortran_PS//'divU')
-         call make_restart_dir(this%temp_CC,dir//fortran_PS//'temp_CC')
-         call make_restart_dir(this%U,dir//fortran_PS//'U')
-         call make_restart_dir(this%Ustar,dir//fortran_PS//'Ustar')
-         call make_restart_dir(this%Unm1,dir//fortran_PS//'Unm1')
-         call make_restart_dir(this%U_CC,dir//fortran_PS//'U_CC')
-         call make_restart_dir(this%F,dir//fortran_PS//'F')
-         call make_restart_dir(this%Fnm1,dir//fortran_PS//'Fnm1')
-         call make_restart_dir(this%L,dir//fortran_PS//'L')
-         call make_restart_dir(this%temp_F1,dir//fortran_PS//'temp_F1')
-         call make_restart_dir(this%temp_F2,dir//fortran_PS//'temp_F2')
-         call make_restart_dir(this%temp_F3,dir//fortran_PS//'temp_F3')
-         call make_restart_dir(this%temp_E,dir//fortran_PS//'temp_E')
-         call make_restart_dir(this%temp_CC_VF,dir//fortran_PS//'temp_CC_VF')
-         call make_restart_dir(this%U_E,dir//fortran_PS//'U_E')
-         call make_restart_dir(this%TF_CC,dir//fortran_PS//'TF_CC')
-         call make_restart_dir(this%TF_CC_edge,dir//fortran_PS//'TF_CC_edge')
-         call make_restart_dir(this%probe_KE,dir//fortran_PS//'probe_KE')
-         call make_restart_dir(this%probe_KE_2C,&
-         dir//fortran_PS//'probe_KE_2C')
-         call make_restart_dir(this%probe_divU,dir//fortran_PS//'probe_divU')
-         call make_restart_dir(this%probe_Q,dir//fortran_PS//'probe_Q')
        end subroutine
 
        subroutine suppress_warnings_momentum(this)

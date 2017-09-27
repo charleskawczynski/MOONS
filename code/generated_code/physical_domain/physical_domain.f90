@@ -188,6 +188,43 @@
          read(un,*); read(un,*) this%defined
        end subroutine
 
+       subroutine export_wrap_physical_domain(this,dir,name)
+         implicit none
+         type(physical_domain),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call export(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_wrap_physical_domain(this,dir,name)
+         implicit none
+         type(physical_domain),intent(inout) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = open_to_read(dir,name)
+         call import(this,un)
+         close(un)
+       end subroutine
+
+       subroutine make_restart_dir_physical_domain(this,dir)
+         implicit none
+         type(physical_domain),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_sd
+         integer :: s_sd
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         if (allocated(this%sd)) then
+           s_sd = size(this%sd)
+           do i_sd=1,s_sd
+             call make_restart_dir(this%sd(i_sd),&
+             dir//fortran_PS//'sd_'//int2str(i_sd))
+           enddo
+         endif
+       end subroutine
+
        subroutine export_restart_physical_domain(this,dir)
          implicit none
          type(physical_domain),intent(in) :: this
@@ -221,43 +258,6 @@
            s_sd = size(this%sd)
            do i_sd=1,s_sd
              call import_restart(this%sd(i_sd),&
-             dir//fortran_PS//'sd_'//int2str(i_sd))
-           enddo
-         endif
-       end subroutine
-
-       subroutine export_wrap_physical_domain(this,dir,name)
-         implicit none
-         type(physical_domain),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = new_and_open(dir,name)
-         call export(this,un)
-         close(un)
-       end subroutine
-
-       subroutine import_wrap_physical_domain(this,dir,name)
-         implicit none
-         type(physical_domain),intent(inout) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = open_to_read(dir,name)
-         call import(this,un)
-         close(un)
-       end subroutine
-
-       subroutine make_restart_dir_physical_domain(this,dir)
-         implicit none
-         type(physical_domain),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         integer :: i_sd
-         integer :: s_sd
-         call suppress_warnings(this)
-         call make_dir_quiet(dir)
-         if (allocated(this%sd)) then
-           s_sd = size(this%sd)
-           do i_sd=1,s_sd
-             call make_restart_dir(this%sd(i_sd),&
              dir//fortran_PS//'sd_'//int2str(i_sd))
            enddo
          endif

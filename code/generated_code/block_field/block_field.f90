@@ -201,6 +201,47 @@
          call import(this%PA_multiply_wall_Neumann,un)
        end subroutine
 
+       subroutine export_wrap_block_field(this,dir,name)
+         implicit none
+         type(block_field),intent(in) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = new_and_open(dir,name)
+         call export(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_wrap_block_field(this,dir,name)
+         implicit none
+         type(block_field),intent(inout) :: this
+         character(len=*),intent(in) :: dir,name
+         integer :: un
+         un = open_to_read(dir,name)
+         call import(this,un)
+         close(un)
+       end subroutine
+
+       subroutine make_restart_dir_block_field(this,dir)
+         implicit none
+         type(block_field),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_restart_dir(this%GF,dir//fortran_PS//'GF')
+         call make_restart_dir(this%BCs,dir//fortran_PS//'BCs')
+         call make_restart_dir(this%DL,dir//fortran_PS//'DL')
+         call make_restart_dir(this%PA_assign_ghost_XPeriodic,&
+         dir//fortran_PS//'PA_assign_ghost_XPeriodic')
+         call make_restart_dir(this%PA_assign_ghost_N_XPeriodic,&
+         dir//fortran_PS//'PA_assign_ghost_N_XPeriodic')
+         call make_restart_dir(this%PA_assign_wall_Dirichlet,&
+         dir//fortran_PS//'PA_assign_wall_Dirichlet')
+         call make_restart_dir(this%PA_assign_wall_Periodic_single,&
+         dir//fortran_PS//'PA_assign_wall_Periodic_single')
+         call make_restart_dir(this%PA_multiply_wall_Neumann,&
+         dir//fortran_PS//'PA_multiply_wall_Neumann')
+       end subroutine
+
        subroutine export_restart_block_field(this,dir)
          implicit none
          type(block_field),intent(in) :: this
@@ -244,47 +285,6 @@
          call import_restart(this%PA_assign_wall_Periodic_single,&
          dir//fortran_PS//'PA_assign_wall_Periodic_single')
          call import_restart(this%PA_multiply_wall_Neumann,&
-         dir//fortran_PS//'PA_multiply_wall_Neumann')
-       end subroutine
-
-       subroutine export_wrap_block_field(this,dir,name)
-         implicit none
-         type(block_field),intent(in) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = new_and_open(dir,name)
-         call export(this,un)
-         close(un)
-       end subroutine
-
-       subroutine import_wrap_block_field(this,dir,name)
-         implicit none
-         type(block_field),intent(inout) :: this
-         character(len=*),intent(in) :: dir,name
-         integer :: un
-         un = open_to_read(dir,name)
-         call import(this,un)
-         close(un)
-       end subroutine
-
-       subroutine make_restart_dir_block_field(this,dir)
-         implicit none
-         type(block_field),intent(in) :: this
-         character(len=*),intent(in) :: dir
-         call suppress_warnings(this)
-         call make_dir_quiet(dir)
-         call make_restart_dir(this%GF,dir//fortran_PS//'GF')
-         call make_restart_dir(this%BCs,dir//fortran_PS//'BCs')
-         call make_restart_dir(this%DL,dir//fortran_PS//'DL')
-         call make_restart_dir(this%PA_assign_ghost_XPeriodic,&
-         dir//fortran_PS//'PA_assign_ghost_XPeriodic')
-         call make_restart_dir(this%PA_assign_ghost_N_XPeriodic,&
-         dir//fortran_PS//'PA_assign_ghost_N_XPeriodic')
-         call make_restart_dir(this%PA_assign_wall_Dirichlet,&
-         dir//fortran_PS//'PA_assign_wall_Dirichlet')
-         call make_restart_dir(this%PA_assign_wall_Periodic_single,&
-         dir//fortran_PS//'PA_assign_wall_Periodic_single')
-         call make_restart_dir(this%PA_multiply_wall_Neumann,&
          dir//fortran_PS//'PA_multiply_wall_Neumann')
        end subroutine
 
