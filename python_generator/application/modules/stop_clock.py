@@ -42,6 +42,7 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].set_folder_name(__name__.split('.')[1])
 	g.module[m_name].set_used_modules(['IO_tools_mod'])
 	g.module[m_name].add_prop(['dir','name'],'string',priv)
+	g.module[m_name].add_prop(['dir_out','name_out'],'string',priv)
 	g.module[m_name].add_prop('c','clock',priv)
 	g.module[m_name].add_prop('uc','unit_conversion',priv)
 	g.module[m_name].add_prop('percentage_complete_RB',real,priv)

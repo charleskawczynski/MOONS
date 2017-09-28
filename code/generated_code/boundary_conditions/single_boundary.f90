@@ -18,29 +18,29 @@
 
        public :: export_primitives,import_primitives
 
-       public :: export_restart,import_restart
+       public :: export_structured,import_structured
 
-       public :: make_restart_dir
+       public :: set_IO_dir
 
        public :: suppress_warnings
 
-       interface init;             module procedure init_copy_single_boundary;        end interface
-       interface delete;           module procedure delete_single_boundary;           end interface
-       interface display;          module procedure display_single_boundary;          end interface
-       interface display_short;    module procedure display_short_single_boundary;    end interface
-       interface display;          module procedure display_wrap_single_boundary;     end interface
-       interface print;            module procedure print_single_boundary;            end interface
-       interface print_short;      module procedure print_short_single_boundary;      end interface
-       interface export;           module procedure export_single_boundary;           end interface
-       interface export_primitives;module procedure export_primitives_single_boundary;end interface
-       interface export_restart;   module procedure export_restart_single_boundary;   end interface
-       interface import;           module procedure import_single_boundary;           end interface
-       interface import_restart;   module procedure import_restart_single_boundary;   end interface
-       interface import_primitives;module procedure import_primitives_single_boundary;end interface
-       interface export;           module procedure export_wrap_single_boundary;      end interface
-       interface import;           module procedure import_wrap_single_boundary;      end interface
-       interface make_restart_dir; module procedure make_restart_dir_single_boundary; end interface
-       interface suppress_warnings;module procedure suppress_warnings_single_boundary;end interface
+       interface init;             module procedure init_copy_single_boundary;          end interface
+       interface delete;           module procedure delete_single_boundary;             end interface
+       interface display;          module procedure display_single_boundary;            end interface
+       interface display_short;    module procedure display_short_single_boundary;      end interface
+       interface display;          module procedure display_wrap_single_boundary;       end interface
+       interface print;            module procedure print_single_boundary;              end interface
+       interface print_short;      module procedure print_short_single_boundary;        end interface
+       interface export;           module procedure export_single_boundary;             end interface
+       interface export_primitives;module procedure export_primitives_single_boundary;  end interface
+       interface import;           module procedure import_single_boundary;             end interface
+       interface export_structured;module procedure export_structured_D_single_boundary;end interface
+       interface import_structured;module procedure import_structured_D_single_boundary;end interface
+       interface import_primitives;module procedure import_primitives_single_boundary;  end interface
+       interface export;           module procedure export_wrap_single_boundary;        end interface
+       interface import;           module procedure import_wrap_single_boundary;        end interface
+       interface set_IO_dir;       module procedure set_IO_dir_single_boundary;         end interface
+       interface suppress_warnings;module procedure suppress_warnings_single_boundary;  end interface
 
        type single_boundary
          type(bctype) :: bct
@@ -113,15 +113,6 @@
          call display_short(this,6)
        end subroutine
 
-       subroutine export_primitives_single_boundary(this,un)
-         implicit none
-         type(single_boundary),intent(in) :: this
-         integer,intent(in) :: un
-         integer :: un_suppress_warning
-         un_suppress_warning = un
-         call suppress_warnings(this)
-       end subroutine
-
        subroutine export_single_boundary(this,un)
          implicit none
          type(single_boundary),intent(in) :: this
@@ -130,15 +121,6 @@
          call export(this%b,un)
          call export(this%b_modified,un)
          call export(this%b_total,un)
-       end subroutine
-
-       subroutine import_primitives_single_boundary(this,un)
-         implicit none
-         type(single_boundary),intent(inout) :: this
-         integer,intent(in) :: un
-         integer :: un_suppress_warning
-         un_suppress_warning = un
-         call suppress_warnings(this)
        end subroutine
 
        subroutine import_single_boundary(this,un)
@@ -150,6 +132,24 @@
          call import(this%b,un)
          call import(this%b_modified,un)
          call import(this%b_total,un)
+       end subroutine
+
+       subroutine export_primitives_single_boundary(this,un)
+         implicit none
+         type(single_boundary),intent(in) :: this
+         integer,intent(in) :: un
+         integer :: un_suppress_warning
+         un_suppress_warning = un
+         call suppress_warnings(this)
+       end subroutine
+
+       subroutine import_primitives_single_boundary(this,un)
+         implicit none
+         type(single_boundary),intent(inout) :: this
+         integer,intent(in) :: un
+         integer :: un_suppress_warning
+         un_suppress_warning = un
+         call suppress_warnings(this)
        end subroutine
 
        subroutine export_wrap_single_boundary(this,dir,name)
@@ -168,23 +168,23 @@
          character(len=*),intent(in) :: dir,name
          integer :: un
          un = open_to_read(dir,name)
-         call import(this,un)
+         call export(this,un)
          close(un)
        end subroutine
 
-       subroutine make_restart_dir_single_boundary(this,dir)
+       subroutine set_IO_dir_single_boundary(this,dir)
          implicit none
          type(single_boundary),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
-         call make_restart_dir(this%bct,dir//'bct'//fortran_PS)
-         call make_restart_dir(this%b,dir//'b'//fortran_PS)
-         call make_restart_dir(this%b_modified,dir//'b_modified'//fortran_PS)
-         call make_restart_dir(this%b_total,dir//'b_total'//fortran_PS)
+         call set_IO_dir(this%bct,dir//'bct'//fortran_PS)
+         call set_IO_dir(this%b,dir//'b'//fortran_PS)
+         call set_IO_dir(this%b_modified,dir//'b_modified'//fortran_PS)
+         call set_IO_dir(this%b_total,dir//'b_total'//fortran_PS)
        end subroutine
 
-       subroutine export_restart_single_boundary(this,dir)
+       subroutine export_structured_D_single_boundary(this,dir)
          implicit none
          type(single_boundary),intent(in) :: this
          character(len=*),intent(in) :: dir
@@ -192,13 +192,13 @@
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
-         call export_restart(this%bct,dir//'bct'//fortran_PS)
-         call export_restart(this%b,dir//'b'//fortran_PS)
-         call export_restart(this%b_modified,dir//'b_modified'//fortran_PS)
-         call export_restart(this%b_total,dir//'b_total'//fortran_PS)
+         call export_structured(this%bct,dir//'bct'//fortran_PS)
+         call export_structured(this%b,dir//'b'//fortran_PS)
+         call export_structured(this%b_modified,dir//'b_modified'//fortran_PS)
+         call export_structured(this%b_total,dir//'b_total'//fortran_PS)
        end subroutine
 
-       subroutine import_restart_single_boundary(this,dir)
+       subroutine import_structured_D_single_boundary(this,dir)
          implicit none
          type(single_boundary),intent(inout) :: this
          character(len=*),intent(in) :: dir
@@ -206,10 +206,10 @@
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         call import_restart(this%bct,dir//'bct'//fortran_PS)
-         call import_restart(this%b,dir//'b'//fortran_PS)
-         call import_restart(this%b_modified,dir//'b_modified'//fortran_PS)
-         call import_restart(this%b_total,dir//'b_total'//fortran_PS)
+         call import_structured(this%bct,dir//'bct'//fortran_PS)
+         call import_structured(this%b,dir//'b'//fortran_PS)
+         call import_structured(this%b_modified,dir//'b_modified'//fortran_PS)
+         call import_structured(this%b_total,dir//'b_total'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_single_boundary(this)

@@ -137,20 +137,16 @@
            stop 'Exported ICs. Turn off stop_before_solve in sim_params.f90 to run sim.'
          endif
 
-         call init(M%C%KS,str(M%C%DT%params),'kill_switch')
-         call init(M%C%EN,str(M%C%DT%export_now),'EN')
-         call init(M%C%RM,str(M%C%DT%refine_mesh),'RM')
-         call export(M%C%KS)
-         call export(M%C%EN)
-         call export(M%C%RM)
-         call export(M%C%SP%EF)
+         ! call init(M%C%KS,str(M%C%DT%params),'kill_switch')
+         ! call init(M%C%EN,str(M%C%DT%export_now),'EN')
+         ! call init(M%C%RM,str(M%C%DT%refine_mesh),'RM')
 
          call init(M%C%ES,M%C%SP%SCP%export_safe_period)
          call init(M%C%sc,str(M%C%DT%wall_clock),'WALL_CLOCK_TIME_INFO')
 
-         call export_ISP(M%C%SP%VS)
-         call export_TMP(M%C%SP%VS)
-         call export(M%C%SP%coupled)
+         ! call export_ISP(M%C%SP%VS)
+         ! call export_TMP(M%C%SP%VS)
+         ! call export(M%C%SP%coupled)
 
          if (M%C%SP%FCL%export_heavy) then
            write(*,*) 'Working directory = ',str(M%C%DT%tar)

@@ -35,7 +35,6 @@
      subroutine post_process_SP(SP)
        implicit none
        type(sim_params),intent(inout) :: SP
-       ! call export_import_SS(SP%VS)
        call sanity_check(SP)
        if (SP%SCP%couple_time_steps) call couple_time_step(SP%VS,SP%coupled)
        if (SP%MP%mirror) SP%DP%KE_scale = SP%DP%KE_scale*2.0_cp
@@ -54,14 +53,13 @@
        SP%VS%B0%SS%restart   = .true.
        SP%VS%phi%SS%restart  = .true.
        SP%VS%rho%SS%restart  = .true.
-       call import(SP%coupled)
-       call import_TMP(SP%VS)
+       ! call import(SP%coupled)
+       ! call import_TMP(SP%VS)
      end subroutine
 
      subroutine sanity_check_SP(SP)
        implicit none
        type(sim_params),intent(in) :: SP
-       if (SP%coupled%n_step_stop.lt.1) stop 'Error: coupled%n_step_stop<1 in sim_params.f90'
        call sanity_check(SP%VS)
      end subroutine
 

@@ -238,10 +238,10 @@
            write(un,*) '************************** MAGNETIC **************************'
            write(un,*) '**************************************************************'
            write(un,*) 'Rem,finite_Rem,include_vacuum = ',SP%DP%Rem,SP%SCP%finite_Rem,SP%SCP%include_vacuum
-           write(un,*) 't,dt = ',SP%VS%B%TMP%t,SP%VS%B%TMP%dt
+           write(un,*) 't,dt = ',SP%VS%B%TMP%t,SP%VS%B%TMP%TS%dt
            write(un,*) 'solveBMethod,N_ind,N_cleanB = ',SP%VS%B%SS%solve_method,&
-           SP%VS%B%ISP%iter_max,SP%VS%phi%ISP%iter_max
-           write(un,*) 'tol_ind,tol_cleanB = ',SP%VS%B%ISP%tol_rel,SP%VS%phi%ISP%tol_rel
+           SP%VS%B%ISP%EC%iter_max,SP%VS%phi%ISP%EC%iter_max
+           write(un,*) 'tol_ind,tol_cleanB = ',SP%VS%B%ISP%EC%tol_rel,SP%VS%phi%ISP%EC%tol_rel
            write(un,*) 'nstep,ME = ',SP%VS%B%TMP%n_step,get_data(ind%ME(1))
            ! call displayPhysicalMinMax(ind%dB0dt,'dB0dt',un)
            ! call displayPhysicalMinMax(ind%B0,'B0',un)

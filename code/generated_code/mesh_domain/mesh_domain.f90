@@ -17,29 +17,29 @@
 
        public :: export_primitives,import_primitives
 
-       public :: export_restart,import_restart
+       public :: export_structured,import_structured
 
-       public :: make_restart_dir
+       public :: set_IO_dir
 
        public :: suppress_warnings
 
-       interface init;             module procedure init_copy_mesh_domain;        end interface
-       interface delete;           module procedure delete_mesh_domain;           end interface
-       interface display;          module procedure display_mesh_domain;          end interface
-       interface display_short;    module procedure display_short_mesh_domain;    end interface
-       interface display;          module procedure display_wrap_mesh_domain;     end interface
-       interface print;            module procedure print_mesh_domain;            end interface
-       interface print_short;      module procedure print_short_mesh_domain;      end interface
-       interface export;           module procedure export_mesh_domain;           end interface
-       interface export_primitives;module procedure export_primitives_mesh_domain;end interface
-       interface export_restart;   module procedure export_restart_mesh_domain;   end interface
-       interface import;           module procedure import_mesh_domain;           end interface
-       interface import_restart;   module procedure import_restart_mesh_domain;   end interface
-       interface import_primitives;module procedure import_primitives_mesh_domain;end interface
-       interface export;           module procedure export_wrap_mesh_domain;      end interface
-       interface import;           module procedure import_wrap_mesh_domain;      end interface
-       interface make_restart_dir; module procedure make_restart_dir_mesh_domain; end interface
-       interface suppress_warnings;module procedure suppress_warnings_mesh_domain;end interface
+       interface init;             module procedure init_copy_mesh_domain;          end interface
+       interface delete;           module procedure delete_mesh_domain;             end interface
+       interface display;          module procedure display_mesh_domain;            end interface
+       interface display_short;    module procedure display_short_mesh_domain;      end interface
+       interface display;          module procedure display_wrap_mesh_domain;       end interface
+       interface print;            module procedure print_mesh_domain;              end interface
+       interface print_short;      module procedure print_short_mesh_domain;        end interface
+       interface export;           module procedure export_mesh_domain;             end interface
+       interface export_primitives;module procedure export_primitives_mesh_domain;  end interface
+       interface import;           module procedure import_mesh_domain;             end interface
+       interface export_structured;module procedure export_structured_D_mesh_domain;end interface
+       interface import_structured;module procedure import_structured_D_mesh_domain;end interface
+       interface import_primitives;module procedure import_primitives_mesh_domain;  end interface
+       interface export;           module procedure export_wrap_mesh_domain;        end interface
+       interface import;           module procedure import_wrap_mesh_domain;        end interface
+       interface set_IO_dir;       module procedure set_IO_dir_mesh_domain;         end interface
+       interface suppress_warnings;module procedure suppress_warnings_mesh_domain;  end interface
 
        type mesh_domain
          type(physical_domain) :: D
@@ -107,15 +107,6 @@
          call display_short(this,6)
        end subroutine
 
-       subroutine export_primitives_mesh_domain(this,un)
-         implicit none
-         type(mesh_domain),intent(in) :: this
-         integer,intent(in) :: un
-         integer :: un_suppress_warning
-         un_suppress_warning = un
-         call suppress_warnings(this)
-       end subroutine
-
        subroutine export_mesh_domain(this,un)
          implicit none
          type(mesh_domain),intent(in) :: this
@@ -123,15 +114,6 @@
          call export(this%D,un)
          call export(this%m_R1,un)
          call export(this%m_R2,un)
-       end subroutine
-
-       subroutine import_primitives_mesh_domain(this,un)
-         implicit none
-         type(mesh_domain),intent(inout) :: this
-         integer,intent(in) :: un
-         integer :: un_suppress_warning
-         un_suppress_warning = un
-         call suppress_warnings(this)
        end subroutine
 
        subroutine import_mesh_domain(this,un)
@@ -142,6 +124,24 @@
          call import(this%D,un)
          call import(this%m_R1,un)
          call import(this%m_R2,un)
+       end subroutine
+
+       subroutine export_primitives_mesh_domain(this,un)
+         implicit none
+         type(mesh_domain),intent(in) :: this
+         integer,intent(in) :: un
+         integer :: un_suppress_warning
+         un_suppress_warning = un
+         call suppress_warnings(this)
+       end subroutine
+
+       subroutine import_primitives_mesh_domain(this,un)
+         implicit none
+         type(mesh_domain),intent(inout) :: this
+         integer,intent(in) :: un
+         integer :: un_suppress_warning
+         un_suppress_warning = un
+         call suppress_warnings(this)
        end subroutine
 
        subroutine export_wrap_mesh_domain(this,dir,name)
@@ -160,22 +160,22 @@
          character(len=*),intent(in) :: dir,name
          integer :: un
          un = open_to_read(dir,name)
-         call import(this,un)
+         call export(this,un)
          close(un)
        end subroutine
 
-       subroutine make_restart_dir_mesh_domain(this,dir)
+       subroutine set_IO_dir_mesh_domain(this,dir)
          implicit none
          type(mesh_domain),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
-         call make_restart_dir(this%D,dir//'D'//fortran_PS)
-         call make_restart_dir(this%m_R1,dir//'m_R1'//fortran_PS)
-         call make_restart_dir(this%m_R2,dir//'m_R2'//fortran_PS)
+         call set_IO_dir(this%D,dir//'D'//fortran_PS)
+         call set_IO_dir(this%m_R1,dir//'m_R1'//fortran_PS)
+         call set_IO_dir(this%m_R2,dir//'m_R2'//fortran_PS)
        end subroutine
 
-       subroutine export_restart_mesh_domain(this,dir)
+       subroutine export_structured_D_mesh_domain(this,dir)
          implicit none
          type(mesh_domain),intent(in) :: this
          character(len=*),intent(in) :: dir
@@ -183,12 +183,12 @@
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
-         call export_restart(this%D,dir//'D'//fortran_PS)
-         call export_restart(this%m_R1,dir//'m_R1'//fortran_PS)
-         call export_restart(this%m_R2,dir//'m_R2'//fortran_PS)
+         call export_structured(this%D,dir//'D'//fortran_PS)
+         call export_structured(this%m_R1,dir//'m_R1'//fortran_PS)
+         call export_structured(this%m_R2,dir//'m_R2'//fortran_PS)
        end subroutine
 
-       subroutine import_restart_mesh_domain(this,dir)
+       subroutine import_structured_D_mesh_domain(this,dir)
          implicit none
          type(mesh_domain),intent(inout) :: this
          character(len=*),intent(in) :: dir
@@ -196,9 +196,9 @@
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         call import_restart(this%D,dir//'D'//fortran_PS)
-         call import_restart(this%m_R1,dir//'m_R1'//fortran_PS)
-         call import_restart(this%m_R2,dir//'m_R2'//fortran_PS)
+         call import_structured(this%D,dir//'D'//fortran_PS)
+         call import_structured(this%m_R1,dir//'m_R1'//fortran_PS)
+         call import_structured(this%m_R2,dir//'m_R2'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_mesh_domain(this)

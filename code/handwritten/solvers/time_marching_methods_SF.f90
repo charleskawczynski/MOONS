@@ -59,12 +59,12 @@
          type(time_marching_params),intent(in) :: TMP
          logical,intent(in) :: compute_norms
          call AB2(temp_F1,F,Fnm1)
-         call multiply(temp_F1,two_thirds*TMP%dt)
+         call multiply(temp_F1,two_thirds*TMP%TS%dt)
          call assign_wall_Dirichlet(temp_F1,0.0_cp,X)
          call add_product(temp_F1,X,four_thirds)
          call add_product(temp_F1,Xnm1,neg_one_third)
          call assign(Xnm1,X)
-         call update_MFP(PCG_SF,m,TMP%dt*two_thirds*PCG_SF%MFP%coeff_implicit,TMP%n_step.le.2)
+         call update_MFP(PCG_SF,m,TMP%TS%dt*two_thirds*PCG_SF%MFP%coeff_implicit,TMP%n_step.le.2)
          call solve(PCG_SF,X,temp_F1,m,compute_norms) ! Solve for X
        end subroutine
 
@@ -89,11 +89,11 @@
          type(SF),intent(inout) :: temp_F1
          logical,intent(in) :: compute_norms
          call AB2(temp_F1,F,Fnm1)
-         call multiply(temp_F1,TMP%dt)
+         call multiply(temp_F1,TMP%TS%dt)
          call assign_wall_Dirichlet(temp_F1,0.0_cp,X)
          call add(temp_F1,X)
          call assign(Xnm1,X)
-         call update_MFP(PCG_SF,m,TMP%dt*1.0_cp*PCG_SF%MFP%coeff_implicit,TMP%n_step.le.2)
+         call update_MFP(PCG_SF,m,TMP%TS%dt*1.0_cp*PCG_SF%MFP%coeff_implicit,TMP%n_step.le.2)
          call solve(PCG_SF,X,temp_F1,m,compute_norms) ! Solve for X
        end subroutine
 
@@ -118,13 +118,13 @@
          type(RK_Params),intent(in) :: RKP
          type(SF),intent(inout) :: temp_F1
          logical,intent(in) :: compute_norms
-         call multiply(temp_F1,F      ,TMP%dt*RKP%gamma%f(RKP%n))
-         call add_product(temp_F1,Fnm1,TMP%dt*RKP%zeta%f(RKP%n))
-         call add_product(temp_F1,L   ,TMP%dt*RKP%alpha%f(RKP%n))
+         call multiply(temp_F1,F      ,TMP%TS%dt*RKP%gamma%f(RKP%n))
+         call add_product(temp_F1,Fnm1,TMP%TS%dt*RKP%zeta%f(RKP%n))
+         call add_product(temp_F1,L   ,TMP%TS%dt*RKP%alpha%f(RKP%n))
          call assign_wall_Dirichlet(temp_F1,0.0_cp,X)
          call add(temp_F1,X)
          call assign(Xnm1,X)
-         call update_MFP(PCG_SF,m,TMP%dt*RKP%beta%f(RKP%n)*PCG_SF%MFP%coeff_implicit,.true.)
+         call update_MFP(PCG_SF,m,TMP%TS%dt*RKP%beta%f(RKP%n)*PCG_SF%MFP%coeff_implicit,.true.)
          call solve(PCG_SF,X,temp_F1,m,compute_norms) ! Solve for X
        end subroutine
 
@@ -146,7 +146,7 @@
          type(SF),intent(in) :: F,Fnm1
          type(time_marching_params),intent(in) :: TMP
          call AB2(Xstar,F,Fnm1)
-         call multiply(Xstar,TMP%dt)
+         call multiply(Xstar,TMP%TS%dt)
          call assign_wall_Dirichlet(Xstar,0.0_cp,X)
          call add(X,Xstar)
        end subroutine
@@ -164,7 +164,7 @@
          type(SF),intent(inout) :: X,Xstar
          type(SF),intent(in) :: F
          type(time_marching_params),intent(in) :: TMP
-         call multiply(Xstar,F,TMP%dt)
+         call multiply(Xstar,F,TMP%TS%dt)
          call assign_wall_Dirichlet(Xstar,0.0_cp,X)
          call add(X,Xstar)
        end subroutine

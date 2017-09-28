@@ -16,29 +16,29 @@
 
        public :: export_primitives,import_primitives
 
-       public :: export_restart,import_restart
+       public :: export_structured,import_structured
 
-       public :: make_restart_dir
+       public :: set_IO_dir
 
        public :: suppress_warnings
 
-       interface init;             module procedure init_copy_momentum_terms;        end interface
-       interface delete;           module procedure delete_momentum_terms;           end interface
-       interface display;          module procedure display_momentum_terms;          end interface
-       interface display_short;    module procedure display_short_momentum_terms;    end interface
-       interface display;          module procedure display_wrap_momentum_terms;     end interface
-       interface print;            module procedure print_momentum_terms;            end interface
-       interface print_short;      module procedure print_short_momentum_terms;      end interface
-       interface export;           module procedure export_momentum_terms;           end interface
-       interface export_primitives;module procedure export_primitives_momentum_terms;end interface
-       interface export_restart;   module procedure export_restart_momentum_terms;   end interface
-       interface import;           module procedure import_momentum_terms;           end interface
-       interface import_restart;   module procedure import_restart_momentum_terms;   end interface
-       interface import_primitives;module procedure import_primitives_momentum_terms;end interface
-       interface export;           module procedure export_wrap_momentum_terms;      end interface
-       interface import;           module procedure import_wrap_momentum_terms;      end interface
-       interface make_restart_dir; module procedure make_restart_dir_momentum_terms; end interface
-       interface suppress_warnings;module procedure suppress_warnings_momentum_terms;end interface
+       interface init;             module procedure init_copy_momentum_terms;          end interface
+       interface delete;           module procedure delete_momentum_terms;             end interface
+       interface display;          module procedure display_momentum_terms;            end interface
+       interface display_short;    module procedure display_short_momentum_terms;      end interface
+       interface display;          module procedure display_wrap_momentum_terms;       end interface
+       interface print;            module procedure print_momentum_terms;              end interface
+       interface print_short;      module procedure print_short_momentum_terms;        end interface
+       interface export;           module procedure export_momentum_terms;             end interface
+       interface export_primitives;module procedure export_primitives_momentum_terms;  end interface
+       interface import;           module procedure import_momentum_terms;             end interface
+       interface export_structured;module procedure export_structured_D_momentum_terms;end interface
+       interface import_structured;module procedure import_structured_D_momentum_terms;end interface
+       interface import_primitives;module procedure import_primitives_momentum_terms;  end interface
+       interface export;           module procedure export_wrap_momentum_terms;        end interface
+       interface import;           module procedure import_wrap_momentum_terms;        end interface
+       interface set_IO_dir;       module procedure set_IO_dir_momentum_terms;         end interface
+       interface suppress_warnings;module procedure suppress_warnings_momentum_terms;  end interface
 
        type momentum_terms
          type(equation_term) :: pressure_grad
@@ -146,15 +146,6 @@
          call display_short(this,6)
        end subroutine
 
-       subroutine export_primitives_momentum_terms(this,un)
-         implicit none
-         type(momentum_terms),intent(in) :: this
-         integer,intent(in) :: un
-         integer :: un_suppress_warning
-         un_suppress_warning = un
-         call suppress_warnings(this)
-       end subroutine
-
        subroutine export_momentum_terms(this,un)
          implicit none
          type(momentum_terms),intent(in) :: this
@@ -170,15 +161,6 @@
          call export(this%Q2D_JCrossB,un)
          call export(this%Buoyancy,un)
          call export(this%Gravity,un)
-       end subroutine
-
-       subroutine import_primitives_momentum_terms(this,un)
-         implicit none
-         type(momentum_terms),intent(inout) :: this
-         integer,intent(in) :: un
-         integer :: un_suppress_warning
-         un_suppress_warning = un
-         call suppress_warnings(this)
        end subroutine
 
        subroutine import_momentum_terms(this,un)
@@ -199,6 +181,24 @@
          call import(this%Gravity,un)
        end subroutine
 
+       subroutine export_primitives_momentum_terms(this,un)
+         implicit none
+         type(momentum_terms),intent(in) :: this
+         integer,intent(in) :: un
+         integer :: un_suppress_warning
+         un_suppress_warning = un
+         call suppress_warnings(this)
+       end subroutine
+
+       subroutine import_primitives_momentum_terms(this,un)
+         implicit none
+         type(momentum_terms),intent(inout) :: this
+         integer,intent(in) :: un
+         integer :: un_suppress_warning
+         un_suppress_warning = un
+         call suppress_warnings(this)
+       end subroutine
+
        subroutine export_wrap_momentum_terms(this,dir,name)
          implicit none
          type(momentum_terms),intent(in) :: this
@@ -215,37 +215,35 @@
          character(len=*),intent(in) :: dir,name
          integer :: un
          un = open_to_read(dir,name)
-         call import(this,un)
+         call export(this,un)
          close(un)
        end subroutine
 
-       subroutine make_restart_dir_momentum_terms(this,dir)
+       subroutine set_IO_dir_momentum_terms(this,dir)
          implicit none
          type(momentum_terms),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
-         call make_restart_dir(this%pressure_grad,&
-         dir//'pressure_grad'//fortran_PS)
-         call make_restart_dir(this%advection_divergence,&
+         call set_IO_dir(this%pressure_grad,dir//'pressure_grad'//fortran_PS)
+         call set_IO_dir(this%advection_divergence,&
          dir//'advection_divergence'//fortran_PS)
-         call make_restart_dir(this%advection_convection,&
+         call set_IO_dir(this%advection_convection,&
          dir//'advection_convection'//fortran_PS)
-         call make_restart_dir(this%advection_base_flow,&
+         call set_IO_dir(this%advection_base_flow,&
          dir//'advection_base_flow'//fortran_PS)
-         call make_restart_dir(this%diffusion,dir//'diffusion'//fortran_PS)
-         call make_restart_dir(this%diffusion_linear,&
+         call set_IO_dir(this%diffusion,dir//'diffusion'//fortran_PS)
+         call set_IO_dir(this%diffusion_linear,&
          dir//'diffusion_linear'//fortran_PS)
-         call make_restart_dir(this%mean_pressure_grad,&
+         call set_IO_dir(this%mean_pressure_grad,&
          dir//'mean_pressure_grad'//fortran_PS)
-         call make_restart_dir(this%JCrossB,dir//'JCrossB'//fortran_PS)
-         call make_restart_dir(this%Q2D_JCrossB,&
-         dir//'Q2D_JCrossB'//fortran_PS)
-         call make_restart_dir(this%Buoyancy,dir//'Buoyancy'//fortran_PS)
-         call make_restart_dir(this%Gravity,dir//'Gravity'//fortran_PS)
+         call set_IO_dir(this%JCrossB,dir//'JCrossB'//fortran_PS)
+         call set_IO_dir(this%Q2D_JCrossB,dir//'Q2D_JCrossB'//fortran_PS)
+         call set_IO_dir(this%Buoyancy,dir//'Buoyancy'//fortran_PS)
+         call set_IO_dir(this%Gravity,dir//'Gravity'//fortran_PS)
        end subroutine
 
-       subroutine export_restart_momentum_terms(this,dir)
+       subroutine export_structured_D_momentum_terms(this,dir)
          implicit none
          type(momentum_terms),intent(in) :: this
          character(len=*),intent(in) :: dir
@@ -253,26 +251,27 @@
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
-         call export_restart(this%pressure_grad,&
+         call export_structured(this%pressure_grad,&
          dir//'pressure_grad'//fortran_PS)
-         call export_restart(this%advection_divergence,&
+         call export_structured(this%advection_divergence,&
          dir//'advection_divergence'//fortran_PS)
-         call export_restart(this%advection_convection,&
+         call export_structured(this%advection_convection,&
          dir//'advection_convection'//fortran_PS)
-         call export_restart(this%advection_base_flow,&
+         call export_structured(this%advection_base_flow,&
          dir//'advection_base_flow'//fortran_PS)
-         call export_restart(this%diffusion,dir//'diffusion'//fortran_PS)
-         call export_restart(this%diffusion_linear,&
+         call export_structured(this%diffusion,dir//'diffusion'//fortran_PS)
+         call export_structured(this%diffusion_linear,&
          dir//'diffusion_linear'//fortran_PS)
-         call export_restart(this%mean_pressure_grad,&
+         call export_structured(this%mean_pressure_grad,&
          dir//'mean_pressure_grad'//fortran_PS)
-         call export_restart(this%JCrossB,dir//'JCrossB'//fortran_PS)
-         call export_restart(this%Q2D_JCrossB,dir//'Q2D_JCrossB'//fortran_PS)
-         call export_restart(this%Buoyancy,dir//'Buoyancy'//fortran_PS)
-         call export_restart(this%Gravity,dir//'Gravity'//fortran_PS)
+         call export_structured(this%JCrossB,dir//'JCrossB'//fortran_PS)
+         call export_structured(this%Q2D_JCrossB,&
+         dir//'Q2D_JCrossB'//fortran_PS)
+         call export_structured(this%Buoyancy,dir//'Buoyancy'//fortran_PS)
+         call export_structured(this%Gravity,dir//'Gravity'//fortran_PS)
        end subroutine
 
-       subroutine import_restart_momentum_terms(this,dir)
+       subroutine import_structured_D_momentum_terms(this,dir)
          implicit none
          type(momentum_terms),intent(inout) :: this
          character(len=*),intent(in) :: dir
@@ -280,23 +279,24 @@
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         call import_restart(this%pressure_grad,&
+         call import_structured(this%pressure_grad,&
          dir//'pressure_grad'//fortran_PS)
-         call import_restart(this%advection_divergence,&
+         call import_structured(this%advection_divergence,&
          dir//'advection_divergence'//fortran_PS)
-         call import_restart(this%advection_convection,&
+         call import_structured(this%advection_convection,&
          dir//'advection_convection'//fortran_PS)
-         call import_restart(this%advection_base_flow,&
+         call import_structured(this%advection_base_flow,&
          dir//'advection_base_flow'//fortran_PS)
-         call import_restart(this%diffusion,dir//'diffusion'//fortran_PS)
-         call import_restart(this%diffusion_linear,&
+         call import_structured(this%diffusion,dir//'diffusion'//fortran_PS)
+         call import_structured(this%diffusion_linear,&
          dir//'diffusion_linear'//fortran_PS)
-         call import_restart(this%mean_pressure_grad,&
+         call import_structured(this%mean_pressure_grad,&
          dir//'mean_pressure_grad'//fortran_PS)
-         call import_restart(this%JCrossB,dir//'JCrossB'//fortran_PS)
-         call import_restart(this%Q2D_JCrossB,dir//'Q2D_JCrossB'//fortran_PS)
-         call import_restart(this%Buoyancy,dir//'Buoyancy'//fortran_PS)
-         call import_restart(this%Gravity,dir//'Gravity'//fortran_PS)
+         call import_structured(this%JCrossB,dir//'JCrossB'//fortran_PS)
+         call import_structured(this%Q2D_JCrossB,&
+         dir//'Q2D_JCrossB'//fortran_PS)
+         call import_structured(this%Buoyancy,dir//'Buoyancy'//fortran_PS)
+         call import_structured(this%Gravity,dir//'Gravity'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_momentum_terms(this)

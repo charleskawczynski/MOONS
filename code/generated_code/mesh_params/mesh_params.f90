@@ -17,29 +17,29 @@
 
        public :: export_primitives,import_primitives
 
-       public :: export_restart,import_restart
+       public :: export_structured,import_structured
 
-       public :: make_restart_dir
+       public :: set_IO_dir
 
        public :: suppress_warnings
 
-       interface init;             module procedure init_copy_mesh_params;        end interface
-       interface delete;           module procedure delete_mesh_params;           end interface
-       interface display;          module procedure display_mesh_params;          end interface
-       interface display_short;    module procedure display_short_mesh_params;    end interface
-       interface display;          module procedure display_wrap_mesh_params;     end interface
-       interface print;            module procedure print_mesh_params;            end interface
-       interface print_short;      module procedure print_short_mesh_params;      end interface
-       interface export;           module procedure export_mesh_params;           end interface
-       interface export_primitives;module procedure export_primitives_mesh_params;end interface
-       interface export_restart;   module procedure export_restart_mesh_params;   end interface
-       interface import;           module procedure import_mesh_params;           end interface
-       interface import_restart;   module procedure import_restart_mesh_params;   end interface
-       interface import_primitives;module procedure import_primitives_mesh_params;end interface
-       interface export;           module procedure export_wrap_mesh_params;      end interface
-       interface import;           module procedure import_wrap_mesh_params;      end interface
-       interface make_restart_dir; module procedure make_restart_dir_mesh_params; end interface
-       interface suppress_warnings;module procedure suppress_warnings_mesh_params;end interface
+       interface init;             module procedure init_copy_mesh_params;          end interface
+       interface delete;           module procedure delete_mesh_params;             end interface
+       interface display;          module procedure display_mesh_params;            end interface
+       interface display_short;    module procedure display_short_mesh_params;      end interface
+       interface display;          module procedure display_wrap_mesh_params;       end interface
+       interface print;            module procedure print_mesh_params;              end interface
+       interface print_short;      module procedure print_short_mesh_params;        end interface
+       interface export;           module procedure export_mesh_params;             end interface
+       interface export_primitives;module procedure export_primitives_mesh_params;  end interface
+       interface import;           module procedure import_mesh_params;             end interface
+       interface export_structured;module procedure export_structured_D_mesh_params;end interface
+       interface import_structured;module procedure import_structured_D_mesh_params;end interface
+       interface import_primitives;module procedure import_primitives_mesh_params;  end interface
+       interface export;           module procedure export_wrap_mesh_params;        end interface
+       interface import;           module procedure import_wrap_mesh_params;        end interface
+       interface set_IO_dir;       module procedure set_IO_dir_mesh_params;         end interface
+       interface suppress_warnings;module procedure suppress_warnings_mesh_params;  end interface
 
        type mesh_params
          type(mesh_quality_params) :: MQP
@@ -181,14 +181,6 @@
          call display_short(this,6)
        end subroutine
 
-       subroutine export_primitives_mesh_params(this,un)
-         implicit none
-         type(mesh_params),intent(in) :: this
-         integer,intent(in) :: un
-         write(un,*) 'N_base  = ';write(un,*) this%N_base
-         write(un,*) 'N_ext   = ';write(un,*) this%N_ext
-       end subroutine
-
        subroutine export_mesh_params(this,un)
          implicit none
          type(mesh_params),intent(in) :: this
@@ -216,14 +208,6 @@
          write(un,*) 'N_ext   = ';write(un,*) this%N_ext
        end subroutine
 
-       subroutine import_primitives_mesh_params(this,un)
-         implicit none
-         type(mesh_params),intent(inout) :: this
-         integer,intent(in) :: un
-         read(un,*); read(un,*) this%N_base
-         read(un,*); read(un,*) this%N_ext
-       end subroutine
-
        subroutine import_mesh_params(this,un)
          implicit none
          type(mesh_params),intent(inout) :: this
@@ -236,16 +220,36 @@
          call import(this%MQP,un)
          if (allocated(this%s_base)) then
            read(un,*) s_s_base
-           do i_s_base=1,s_s_base
-             call import(this%s_base(i_s_base),un)
-           enddo
+           if (s_s_base.gt.0) then
+             do i_s_base=1,s_s_base
+               call import(this%s_base(i_s_base),un)
+             enddo
+           endif
          endif
          if (allocated(this%s_ext)) then
            read(un,*) s_s_ext
-           do i_s_ext=1,s_s_ext
-             call import(this%s_ext(i_s_ext),un)
-           enddo
+           if (s_s_ext.gt.0) then
+             do i_s_ext=1,s_s_ext
+               call import(this%s_ext(i_s_ext),un)
+             enddo
+           endif
          endif
+         read(un,*); read(un,*) this%N_base
+         read(un,*); read(un,*) this%N_ext
+       end subroutine
+
+       subroutine export_primitives_mesh_params(this,un)
+         implicit none
+         type(mesh_params),intent(in) :: this
+         integer,intent(in) :: un
+         write(un,*) 'N_base  = ';write(un,*) this%N_base
+         write(un,*) 'N_ext   = ';write(un,*) this%N_ext
+       end subroutine
+
+       subroutine import_primitives_mesh_params(this,un)
+         implicit none
+         type(mesh_params),intent(inout) :: this
+         integer,intent(in) :: un
          read(un,*); read(un,*) this%N_base
          read(un,*); read(un,*) this%N_ext
        end subroutine
@@ -266,11 +270,11 @@
          character(len=*),intent(in) :: dir,name
          integer :: un
          un = open_to_read(dir,name)
-         call import(this,un)
+         call export(this,un)
          close(un)
        end subroutine
 
-       subroutine make_restart_dir_mesh_params(this,dir)
+       subroutine set_IO_dir_mesh_params(this,dir)
          implicit none
          type(mesh_params),intent(inout) :: this
          character(len=*),intent(in) :: dir
@@ -280,24 +284,24 @@
          integer :: s_s_ext
          call suppress_warnings(this)
          call make_dir_quiet(dir)
-         call make_restart_dir(this%MQP,dir//'MQP'//fortran_PS)
+         call set_IO_dir(this%MQP,dir//'MQP'//fortran_PS)
          if (allocated(this%s_base)) then
            s_s_base = size(this%s_base)
            do i_s_base=1,s_s_base
-             call make_restart_dir(this%s_base(i_s_base),&
+             call set_IO_dir(this%s_base(i_s_base),&
              dir//'s_base_'//int2str(i_s_base)//fortran_PS)
            enddo
          endif
          if (allocated(this%s_ext)) then
            s_s_ext = size(this%s_ext)
            do i_s_ext=1,s_s_ext
-             call make_restart_dir(this%s_ext(i_s_ext),&
+             call set_IO_dir(this%s_ext(i_s_ext),&
              dir//'s_ext_'//int2str(i_s_ext)//fortran_PS)
            enddo
          endif
        end subroutine
 
-       subroutine export_restart_mesh_params(this,dir)
+       subroutine export_structured_D_mesh_params(this,dir)
          implicit none
          type(mesh_params),intent(in) :: this
          character(len=*),intent(in) :: dir
@@ -309,24 +313,24 @@
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
-         call export_restart(this%MQP,dir//'MQP'//fortran_PS)
+         call export_structured(this%MQP,dir//'MQP'//fortran_PS)
          if (allocated(this%s_base)) then
            s_s_base = size(this%s_base)
            do i_s_base=1,s_s_base
-             call export_restart(this%s_base(i_s_base),&
+             call export_structured(this%s_base(i_s_base),&
              dir//'s_base_'//int2str(i_s_base)//fortran_PS)
            enddo
          endif
          if (allocated(this%s_ext)) then
            s_s_ext = size(this%s_ext)
            do i_s_ext=1,s_s_ext
-             call export_restart(this%s_ext(i_s_ext),&
+             call export_structured(this%s_ext(i_s_ext),&
              dir//'s_ext_'//int2str(i_s_ext)//fortran_PS)
            enddo
          endif
        end subroutine
 
-       subroutine import_restart_mesh_params(this,dir)
+       subroutine import_structured_D_mesh_params(this,dir)
          implicit none
          type(mesh_params),intent(inout) :: this
          character(len=*),intent(in) :: dir
@@ -338,18 +342,18 @@
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         call import_restart(this%MQP,dir//'MQP'//fortran_PS)
+         call import_structured(this%MQP,dir//'MQP'//fortran_PS)
          if (allocated(this%s_base)) then
            s_s_base = size(this%s_base)
            do i_s_base=1,s_s_base
-             call import_restart(this%s_base(i_s_base),&
+             call import_structured(this%s_base(i_s_base),&
              dir//'s_base_'//int2str(i_s_base)//fortran_PS)
            enddo
          endif
          if (allocated(this%s_ext)) then
            s_s_ext = size(this%s_ext)
            do i_s_ext=1,s_s_ext
-             call import_restart(this%s_ext(i_s_ext),&
+             call import_structured(this%s_ext(i_s_ext),&
              dir//'s_ext_'//int2str(i_s_ext)//fortran_PS)
            enddo
          endif

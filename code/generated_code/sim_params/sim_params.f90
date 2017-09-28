@@ -30,29 +30,29 @@
 
        public :: export_primitives,import_primitives
 
-       public :: export_restart,import_restart
+       public :: export_structured,import_structured
 
-       public :: make_restart_dir
+       public :: set_IO_dir
 
        public :: suppress_warnings
 
-       interface init;             module procedure init_copy_sim_params;        end interface
-       interface delete;           module procedure delete_sim_params;           end interface
-       interface display;          module procedure display_sim_params;          end interface
-       interface display_short;    module procedure display_short_sim_params;    end interface
-       interface display;          module procedure display_wrap_sim_params;     end interface
-       interface print;            module procedure print_sim_params;            end interface
-       interface print_short;      module procedure print_short_sim_params;      end interface
-       interface export;           module procedure export_sim_params;           end interface
-       interface export_primitives;module procedure export_primitives_sim_params;end interface
-       interface export_restart;   module procedure export_restart_sim_params;   end interface
-       interface import;           module procedure import_sim_params;           end interface
-       interface import_restart;   module procedure import_restart_sim_params;   end interface
-       interface import_primitives;module procedure import_primitives_sim_params;end interface
-       interface export;           module procedure export_wrap_sim_params;      end interface
-       interface import;           module procedure import_wrap_sim_params;      end interface
-       interface make_restart_dir; module procedure make_restart_dir_sim_params; end interface
-       interface suppress_warnings;module procedure suppress_warnings_sim_params;end interface
+       interface init;             module procedure init_copy_sim_params;          end interface
+       interface delete;           module procedure delete_sim_params;             end interface
+       interface display;          module procedure display_sim_params;            end interface
+       interface display_short;    module procedure display_short_sim_params;      end interface
+       interface display;          module procedure display_wrap_sim_params;       end interface
+       interface print;            module procedure print_sim_params;              end interface
+       interface print_short;      module procedure print_short_sim_params;        end interface
+       interface export;           module procedure export_sim_params;             end interface
+       interface export_primitives;module procedure export_primitives_sim_params;  end interface
+       interface import;           module procedure import_sim_params;             end interface
+       interface export_structured;module procedure export_structured_D_sim_params;end interface
+       interface import_structured;module procedure import_structured_D_sim_params;end interface
+       interface import_primitives;module procedure import_primitives_sim_params;  end interface
+       interface export;           module procedure export_wrap_sim_params;        end interface
+       interface import;           module procedure import_wrap_sim_params;        end interface
+       interface set_IO_dir;       module procedure set_IO_dir_sim_params;         end interface
+       interface suppress_warnings;module procedure suppress_warnings_sim_params;  end interface
 
        type sim_params
          type(var_set) :: VS
@@ -190,15 +190,6 @@
          call display_short(this,6)
        end subroutine
 
-       subroutine export_primitives_sim_params(this,un)
-         implicit none
-         type(sim_params),intent(in) :: this
-         integer,intent(in) :: un
-         integer :: un_suppress_warning
-         un_suppress_warning = un
-         call suppress_warnings(this)
-       end subroutine
-
        subroutine export_sim_params(this,un)
          implicit none
          type(sim_params),intent(in) :: this
@@ -220,15 +211,6 @@
          call export(this%FCL,un)
          call export(this%TSP,un)
          call export(this%SCP,un)
-       end subroutine
-
-       subroutine import_primitives_sim_params(this,un)
-         implicit none
-         type(sim_params),intent(inout) :: this
-         integer,intent(in) :: un
-         integer :: un_suppress_warning
-         un_suppress_warning = un
-         call suppress_warnings(this)
        end subroutine
 
        subroutine import_sim_params(this,un)
@@ -255,6 +237,24 @@
          call import(this%SCP,un)
        end subroutine
 
+       subroutine export_primitives_sim_params(this,un)
+         implicit none
+         type(sim_params),intent(in) :: this
+         integer,intent(in) :: un
+         integer :: un_suppress_warning
+         un_suppress_warning = un
+         call suppress_warnings(this)
+       end subroutine
+
+       subroutine import_primitives_sim_params(this,un)
+         implicit none
+         type(sim_params),intent(inout) :: this
+         integer,intent(in) :: un
+         integer :: un_suppress_warning
+         un_suppress_warning = un
+         call suppress_warnings(this)
+       end subroutine
+
        subroutine export_wrap_sim_params(this,dir,name)
          implicit none
          type(sim_params),intent(in) :: this
@@ -271,36 +271,36 @@
          character(len=*),intent(in) :: dir,name
          integer :: un
          un = open_to_read(dir,name)
-         call import(this,un)
+         call export(this,un)
          close(un)
        end subroutine
 
-       subroutine make_restart_dir_sim_params(this,dir)
+       subroutine set_IO_dir_sim_params(this,dir)
          implicit none
          type(sim_params),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
-         call make_restart_dir(this%VS,dir//'VS'//fortran_PS)
-         call make_restart_dir(this%MP_mom,dir//'MP_mom'//fortran_PS)
-         call make_restart_dir(this%MQP,dir//'MQP'//fortran_PS)
-         call make_restart_dir(this%MP_ind,dir//'MP_ind'//fortran_PS)
-         call make_restart_dir(this%MP_sigma,dir//'MP_sigma'//fortran_PS)
-         call make_restart_dir(this%DP,dir//'DP'//fortran_PS)
-         call make_restart_dir(this%EL,dir//'EL'//fortran_PS)
-         call make_restart_dir(this%EF,dir//'EF'//fortran_PS)
-         call make_restart_dir(this%ET,dir//'ET'//fortran_PS)
-         call make_restart_dir(this%MT,dir//'MT'//fortran_PS)
-         call make_restart_dir(this%IT,dir//'IT'//fortran_PS)
-         call make_restart_dir(this%GP,dir//'GP'//fortran_PS)
-         call make_restart_dir(this%MP,dir//'MP'//fortran_PS)
-         call make_restart_dir(this%coupled,dir//'coupled'//fortran_PS)
-         call make_restart_dir(this%FCL,dir//'FCL'//fortran_PS)
-         call make_restart_dir(this%TSP,dir//'TSP'//fortran_PS)
-         call make_restart_dir(this%SCP,dir//'SCP'//fortran_PS)
+         call set_IO_dir(this%VS,dir//'VS'//fortran_PS)
+         call set_IO_dir(this%MP_mom,dir//'MP_mom'//fortran_PS)
+         call set_IO_dir(this%MQP,dir//'MQP'//fortran_PS)
+         call set_IO_dir(this%MP_ind,dir//'MP_ind'//fortran_PS)
+         call set_IO_dir(this%MP_sigma,dir//'MP_sigma'//fortran_PS)
+         call set_IO_dir(this%DP,dir//'DP'//fortran_PS)
+         call set_IO_dir(this%EL,dir//'EL'//fortran_PS)
+         call set_IO_dir(this%EF,dir//'EF'//fortran_PS)
+         call set_IO_dir(this%ET,dir//'ET'//fortran_PS)
+         call set_IO_dir(this%MT,dir//'MT'//fortran_PS)
+         call set_IO_dir(this%IT,dir//'IT'//fortran_PS)
+         call set_IO_dir(this%GP,dir//'GP'//fortran_PS)
+         call set_IO_dir(this%MP,dir//'MP'//fortran_PS)
+         call set_IO_dir(this%coupled,dir//'coupled'//fortran_PS)
+         call set_IO_dir(this%FCL,dir//'FCL'//fortran_PS)
+         call set_IO_dir(this%TSP,dir//'TSP'//fortran_PS)
+         call set_IO_dir(this%SCP,dir//'SCP'//fortran_PS)
        end subroutine
 
-       subroutine export_restart_sim_params(this,dir)
+       subroutine export_structured_D_sim_params(this,dir)
          implicit none
          type(sim_params),intent(in) :: this
          character(len=*),intent(in) :: dir
@@ -308,26 +308,26 @@
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
-         call export_restart(this%VS,dir//'VS'//fortran_PS)
-         call export_restart(this%MP_mom,dir//'MP_mom'//fortran_PS)
-         call export_restart(this%MQP,dir//'MQP'//fortran_PS)
-         call export_restart(this%MP_ind,dir//'MP_ind'//fortran_PS)
-         call export_restart(this%MP_sigma,dir//'MP_sigma'//fortran_PS)
-         call export_restart(this%DP,dir//'DP'//fortran_PS)
-         call export_restart(this%EL,dir//'EL'//fortran_PS)
-         call export_restart(this%EF,dir//'EF'//fortran_PS)
-         call export_restart(this%ET,dir//'ET'//fortran_PS)
-         call export_restart(this%MT,dir//'MT'//fortran_PS)
-         call export_restart(this%IT,dir//'IT'//fortran_PS)
-         call export_restart(this%GP,dir//'GP'//fortran_PS)
-         call export_restart(this%MP,dir//'MP'//fortran_PS)
-         call export_restart(this%coupled,dir//'coupled'//fortran_PS)
-         call export_restart(this%FCL,dir//'FCL'//fortran_PS)
-         call export_restart(this%TSP,dir//'TSP'//fortran_PS)
-         call export_restart(this%SCP,dir//'SCP'//fortran_PS)
+         call export_structured(this%VS,dir//'VS'//fortran_PS)
+         call export_structured(this%MP_mom,dir//'MP_mom'//fortran_PS)
+         call export_structured(this%MQP,dir//'MQP'//fortran_PS)
+         call export_structured(this%MP_ind,dir//'MP_ind'//fortran_PS)
+         call export_structured(this%MP_sigma,dir//'MP_sigma'//fortran_PS)
+         call export_structured(this%DP,dir//'DP'//fortran_PS)
+         call export_structured(this%EL,dir//'EL'//fortran_PS)
+         call export_structured(this%EF,dir//'EF'//fortran_PS)
+         call export_structured(this%ET,dir//'ET'//fortran_PS)
+         call export_structured(this%MT,dir//'MT'//fortran_PS)
+         call export_structured(this%IT,dir//'IT'//fortran_PS)
+         call export_structured(this%GP,dir//'GP'//fortran_PS)
+         call export_structured(this%MP,dir//'MP'//fortran_PS)
+         call export_structured(this%coupled,dir//'coupled'//fortran_PS)
+         call export_structured(this%FCL,dir//'FCL'//fortran_PS)
+         call export_structured(this%TSP,dir//'TSP'//fortran_PS)
+         call export_structured(this%SCP,dir//'SCP'//fortran_PS)
        end subroutine
 
-       subroutine import_restart_sim_params(this,dir)
+       subroutine import_structured_D_sim_params(this,dir)
          implicit none
          type(sim_params),intent(inout) :: this
          character(len=*),intent(in) :: dir
@@ -335,23 +335,23 @@
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         call import_restart(this%VS,dir//'VS'//fortran_PS)
-         call import_restart(this%MP_mom,dir//'MP_mom'//fortran_PS)
-         call import_restart(this%MQP,dir//'MQP'//fortran_PS)
-         call import_restart(this%MP_ind,dir//'MP_ind'//fortran_PS)
-         call import_restart(this%MP_sigma,dir//'MP_sigma'//fortran_PS)
-         call import_restart(this%DP,dir//'DP'//fortran_PS)
-         call import_restart(this%EL,dir//'EL'//fortran_PS)
-         call import_restart(this%EF,dir//'EF'//fortran_PS)
-         call import_restart(this%ET,dir//'ET'//fortran_PS)
-         call import_restart(this%MT,dir//'MT'//fortran_PS)
-         call import_restart(this%IT,dir//'IT'//fortran_PS)
-         call import_restart(this%GP,dir//'GP'//fortran_PS)
-         call import_restart(this%MP,dir//'MP'//fortran_PS)
-         call import_restart(this%coupled,dir//'coupled'//fortran_PS)
-         call import_restart(this%FCL,dir//'FCL'//fortran_PS)
-         call import_restart(this%TSP,dir//'TSP'//fortran_PS)
-         call import_restart(this%SCP,dir//'SCP'//fortran_PS)
+         call import_structured(this%VS,dir//'VS'//fortran_PS)
+         call import_structured(this%MP_mom,dir//'MP_mom'//fortran_PS)
+         call import_structured(this%MQP,dir//'MQP'//fortran_PS)
+         call import_structured(this%MP_ind,dir//'MP_ind'//fortran_PS)
+         call import_structured(this%MP_sigma,dir//'MP_sigma'//fortran_PS)
+         call import_structured(this%DP,dir//'DP'//fortran_PS)
+         call import_structured(this%EL,dir//'EL'//fortran_PS)
+         call import_structured(this%EF,dir//'EF'//fortran_PS)
+         call import_structured(this%ET,dir//'ET'//fortran_PS)
+         call import_structured(this%MT,dir//'MT'//fortran_PS)
+         call import_structured(this%IT,dir//'IT'//fortran_PS)
+         call import_structured(this%GP,dir//'GP'//fortran_PS)
+         call import_structured(this%MP,dir//'MP'//fortran_PS)
+         call import_structured(this%coupled,dir//'coupled'//fortran_PS)
+         call import_structured(this%FCL,dir//'FCL'//fortran_PS)
+         call import_structured(this%TSP,dir//'TSP'//fortran_PS)
+         call import_structured(this%SCP,dir//'SCP'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_sim_params(this)

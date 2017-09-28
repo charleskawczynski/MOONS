@@ -43,11 +43,20 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('coeff_implicit',real,priv)
 	g.module[m_name].add_prop('coeff_implicit_time_split',real,priv)
 
+	m_name = 'time_step'
+	g.add_module(m_name)
+	g.module[m_name].set_folder_name(__name__.split('.')[1])
+	g.module[m_name].set_used_modules(['IO_tools_mod'])
+	g.module[m_name].add_prop('dt',real,priv)
+	g.module[m_name].add_prop('t_final','real(cp)',priv)
+	g.module[m_name].add_prop(['dir','name'],'string',priv)
+
 	m_name = 'time_marching_params'
 	g.add_module(m_name)
 	g.module[m_name].set_folder_name(__name__.split('.')[1])
 	g.module[m_name].set_used_modules(['IO_tools_mod'])
 	g.module[m_name].add_prop('RKP','RK_Params',priv)
+	g.module[m_name].add_prop('TS','time_step',priv)
 	g.module[m_name].add_prop('multistep_iter','integer',priv)
 	g.module[m_name].add_prop('un','integer',priv)
 	g.module[m_name].add_prop('n_step','integer(li)',priv)
@@ -55,25 +64,45 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('n_step_start','integer(li)',priv)
 	g.module[m_name].add_prop('t','real(cp)',priv)
 	g.module[m_name].add_prop('C_max','real(cp)',priv)
-	g.module[m_name].add_prop('t_final','real(cp)',priv)
-	g.module[m_name].add_prop('dt','real(cp)',priv)
+
+	m_name = 'exit_criteria'
+	g.add_module(m_name)
+	g.module[m_name].set_folder_name(__name__.split('.')[1])
+	g.module[m_name].set_used_modules(['IO_tools_mod'])
 	g.module[m_name].add_prop(['dir','name'],'string',priv)
+	g.module[m_name].add_prop('iter_max','integer',priv)
+	g.module[m_name].add_prop('tol_abs',real,priv)
+	g.module[m_name].add_prop('tol_rel',real,priv)
 
 	m_name = 'iter_solver_params'
 	g.add_module(m_name)
 	g.module[m_name].set_folder_name(__name__.split('.')[1])
 	g.module[m_name].set_used_modules(['IO_tools_mod'])
+	g.module[m_name].add_prop('EC','exit_criteria',priv)
+	g.module[m_name].add_prop('exit_loop','logical',priv,F,1,3)
 	g.module[m_name].add_prop('un','integer',priv)
 	g.module[m_name].add_prop(['dir','name'],'string',priv)
-	g.module[m_name].add_prop('iter_max','integer',priv)
-	g.module[m_name].add_prop('tol_abs',real,priv)
-	g.module[m_name].add_prop('tol_rel',real,priv)
 	g.module[m_name].add_prop('iter_total','integer',priv)
 	g.module[m_name].add_prop('iter_per_call','integer',priv)
 	g.module[m_name].add_prop('n_skip_check_res','integer',priv)
 	g.module[m_name].add_prop('export_convergence','logical',priv)
 	g.module[m_name].add_prop('export_heavy','logical',priv)
-	g.module[m_name].add_prop('exit_loop','logical',priv,F,1,3)
+
+	# m_name = 'iter_solver_params'
+	# g.add_module(m_name)
+	# g.module[m_name].set_folder_name(__name__.split('.')[1])
+	# g.module[m_name].set_used_modules(['IO_tools_mod'])
+	# g.module[m_name].add_prop('un','integer',priv)
+	# g.module[m_name].add_prop(['dir','name'],'string',priv)
+	# g.module[m_name].add_prop('iter_max','integer',priv)
+	# g.module[m_name].add_prop('tol_abs',real,priv)
+	# g.module[m_name].add_prop('tol_rel',real,priv)
+	# g.module[m_name].add_prop('iter_total','integer',priv)
+	# g.module[m_name].add_prop('iter_per_call','integer',priv)
+	# g.module[m_name].add_prop('n_skip_check_res','integer',priv)
+	# g.module[m_name].add_prop('export_convergence','logical',priv)
+	# g.module[m_name].add_prop('export_heavy','logical',priv)
+	# g.module[m_name].add_prop('exit_loop','logical',priv,F,1,3)
 
 	m_name = 'export_line'
 	g.add_module(m_name)

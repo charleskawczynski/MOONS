@@ -30,6 +30,7 @@ def indent_lines(L):
   indent = '  '
   T_up = ('if','do')
   T_dn = ('endif','enddo')
+  T_unindent = ['else','elseif']
   indent_cumulative = ''
   s_indent = len(indent)
   temp = ['' for x in L]
@@ -40,6 +41,7 @@ def indent_lines(L):
     if x.startswith(T_up):
       indent_cumulative = indent_cumulative + indent
   L = [s+x for (s,x) in zip(temp,L)]
+  L = [x[s_indent:] for x in L if any([y in x for y in T_unindent])]
   return L
 
 class fortran_module:
@@ -122,6 +124,10 @@ class fortran_module:
         self.raw_lines = self.raw_lines+raw_lines
         self.raw_lines_used = True
 
+    def get_suffix(self): return self.name
+    # def get_suffix(self): return self.int_name
+    # def get_suffix(self): return 'class'
+
     ################################################################################*/
 
     def contruct_fortran_module(self,class_list,abstract_interfaces,base_modules):
@@ -163,8 +169,8 @@ class fortran_module:
         c.append(['public :: init,delete,display,print,export,import'])
         c.append(['public :: display_short,print_short']+[''])
         c.append(['public :: export_primitives,import_primitives']+[''])
-        c.append(['public :: export_restart,import_restart']+[''])
-        c.append(['public :: make_restart_dir']+[''])
+        c.append(['public :: export_structured,import_structured']+[''])
+        c.append(['public :: set_IO_dir']+[''])
         if suppress_all_warnings:
             c.append(['public :: suppress_warnings']+[''])
         c.append(self.write_interfaces()+[''])
@@ -218,13 +224,13 @@ class fortran_module:
         alias = alias+['print_short'];       sub_name = sub_name+['print_short'];
         alias = alias+['export'];            sub_name = sub_name+['export'];
         alias = alias+['export_primitives']; sub_name = sub_name+['export_primitives'];
-        alias = alias+['export_restart'];    sub_name = sub_name+['export_restart'];
         alias = alias+['import'];            sub_name = sub_name+['import'];
-        alias = alias+['import_restart'];    sub_name = sub_name+['import_restart'];
+        alias = alias+['export_structured']; sub_name = sub_name+['export_structured_D'];
+        alias = alias+['import_structured']; sub_name = sub_name+['import_structured_D'];
         alias = alias+['import_primitives']; sub_name = sub_name+['import_primitives'];
         alias = alias+['export'];            sub_name = sub_name+['export_wrap'];
         alias = alias+['import'];            sub_name = sub_name+['import_wrap'];
-        alias = alias+['make_restart_dir'];  sub_name = sub_name+['make_restart_dir'];
+        alias = alias+['set_IO_dir'];        sub_name = sub_name+['set_IO_dir'];
 
         if suppress_all_warnings:
             alias = alias+['suppress_warnings']; sub_name = sub_name+['suppress_warnings'];
@@ -232,13 +238,15 @@ class fortran_module:
         if self.has_dir_name:
           alias = alias+['export'];          sub_name = sub_name+['export_DN'];
           alias = alias+['import'];          sub_name = sub_name+['import_DN'];
+          alias = alias+['export_structured']; sub_name = sub_name+['export_structured_DN'];
+          alias = alias+['import_structured']; sub_name = sub_name+['import_structured_DN'];
         st_al = [len(x) for x in alias]
         st_sn = [len(x) for x in sub_name]
         sp_al = [self.spaces[max(st_al)-x] for x in st_al]
         sp_sn = [self.spaces[max(st_sn)-x] for x in st_sn]
         c = ['interface '+x+';'+s for x,s in zip(alias,sp_al)]
         # c = [x+'module procedure '+sn+'_'+self.name+';' for x,sn in zip(c,sub_name)]
-        c = [x+'module procedure '+sn+'_'+self.int_name+';' for x,sn in zip(c,sub_name)]
+        c = [x+'module procedure '+sn+'_'+self.get_suffix()+';' for x,sn in zip(c,sub_name)]
         c = [x+s+'end interface' for x,s in zip(c,sp_sn)]
         return c
 
@@ -259,19 +267,23 @@ class fortran_module:
         c.append(self.print_module()+[''])
         c.append(self.print_short_module()+[''])
 
-        c.append(self.export_module(True)+[''])
-        c.append(self.export_module(False)+[''])
-        c.append(self.import_module(True)+[''])
-        c.append(self.import_module(False)+[''])
-        c.append(self.export_wrap_module()+[''])
-        c.append(self.import_wrap_module()+[''])
-        if self.has_dir_name:
-          c.append(self.export_DN()+[''])
-          c.append(self.import_DN()+[''])
+        c.append(self.export_module_un(False)+['']) # export(this,un)
+        c.append(self.import_module_un(False)+['']) # import(this,un)
+        c.append(self.export_module_un(True)+[''])  # export_primitives(this,un)
+        c.append(self.import_module_un(True)+[''])  # import_primitives(this,un)
+        c.append(self.export_wrap_module()+[''])    # export(this,dir,name)
+        c.append(self.import_wrap_module()+[''])    # import(this,dir,name)
 
-        c.append(self.make_restart_dir_module()+[''])
-        c.append(self.export_restart_module()+[''])
-        c.append(self.import_restart_module()+[''])
+        if self.has_dir_name:
+          c.append(self.export_DN_module()+[''])    # export(this), if has (dir,name)
+          c.append(self.import_DN_module()+[''])    # import(this), if has (dir,name)
+          c.append(self.export_structured_DN_module()+['']) # export_structured(this,dir), names are determined by data structure
+          c.append(self.import_structured_DN_module()+['']) # import_structured(this,dir), names are determined by data structure
+
+        c.append(self.set_IO_dir_module()+[''])
+        c.append(self.export_structured_D_module()+['']) # export_structured(this), if has (dir,name)
+        c.append(self.import_structured_D_module()+['']) # import_structured(this), if has (dir,name)
+
 
         if suppress_all_warnings:
             c.append(self.suppress_fortran_warnings_module()+[''])
@@ -291,7 +303,7 @@ class fortran_module:
         return c
 
     def init_copy(self):
-        sig = 'init_copy_' + self.int_name
+        sig = 'init_copy_' + self.get_suffix()
         c = [self.full_sub_signature(sig,'this,that')]
         c.append(self.spaces[2] + self.implicitNone )
         c.append(self.spaces[2] + 'type(' + self.name + '),intent(inout) :: this' )
@@ -309,7 +321,7 @@ class fortran_module:
         return c
 
     def init_delete(self):
-        sig = 'delete_' + self.int_name
+        sig = 'delete_' + self.get_suffix()
         c = [self.full_sub_signature(sig,'this')]
         c.append(self.spaces[2] + self.implicitNone )
         c.append(self.spaces[2] + 'type(' + self.name + '),intent(inout) :: this' )
@@ -325,7 +337,7 @@ class fortran_module:
         return c
 
     def display_module(self):
-        sig = 'display_' + self.int_name
+        sig = 'display_' + self.get_suffix()
         c = [self.full_sub_signature(sig,'this,un')]
         self.set_arg_objects()
         self.set_arg_list()
@@ -351,7 +363,7 @@ class fortran_module:
         return c
 
     def display_short_module(self):
-        sig = 'display_short_' + self.int_name
+        sig = 'display_short_' + self.get_suffix()
         c = [self.full_sub_signature(sig,'this,un')]
         self.set_arg_objects()
         self.set_arg_list()
@@ -376,7 +388,7 @@ class fortran_module:
         return c
 
     def print_module(self):
-        sig = 'print_' + self.int_name
+        sig = 'print_' + self.get_suffix()
         c = [self.full_sub_signature(sig,'this')]
         c.append(self.spaces[2] + self.implicitNone)
         c.append(self.spaces[2] + 'type(' + self.name + '),intent(in) :: this' )
@@ -385,7 +397,7 @@ class fortran_module:
         return c
 
     def print_short_module(self):
-        sig = 'print_short_' + self.int_name
+        sig = 'print_short_' + self.get_suffix()
         c = [self.full_sub_signature(sig,'this')]
         c.append(self.spaces[2] + self.implicitNone)
         c.append(self.spaces[2] + 'type(' + self.name + '),intent(in) :: this' )
@@ -393,11 +405,11 @@ class fortran_module:
         c.append(self.end_sub() )
         return c
 
-    def export_module(self,primitives_only):
+    def export_module_un(self,primitives_only):
         if primitives_only:
-            sig = 'export_primitives_' + self.int_name
+            sig = 'export_primitives_' + self.get_suffix()
         else:
-            sig = 'export_' + self.int_name
+            sig = 'export_' + self.get_suffix()
         c = [self.full_sub_signature(sig,'this,un')]
         c.append(self.spaces[2] + self.implicitNone)
         c.append(self.spaces[2] + 'type(' + self.name + '),intent(in) :: this' )
@@ -422,11 +434,11 @@ class fortran_module:
         c.append(self.end_sub())
         return c
 
-    def import_module(self,primitives_only):
+    def import_module_un(self,primitives_only):
         if primitives_only:
-            sig = 'import_primitives_' + self.int_name
+            sig = 'import_primitives_' + self.get_suffix()
         else:
-            sig = 'import_' + self.int_name
+            sig = 'import_' + self.get_suffix()
         c = [self.full_sub_signature(sig,'this,un')]
         c.append(self.spaces[2] + self.implicitNone)
         c.append(self.spaces[2] + 'type(' + self.name + '),intent(inout) :: this' )
@@ -453,7 +465,7 @@ class fortran_module:
         return c
 
     def display_wrap_module(self):
-        sig = 'display_wrap_' + self.int_name
+        sig = 'display_wrap_' + self.get_suffix()
         L = [self.full_sub_signature(sig,'this,dir,name')]
         L=L+[self.spaces[2]+self.implicitNone]
         L=L+[self.spaces[2]+'type('+self.name+'),intent(in) :: this']
@@ -477,7 +489,7 @@ class fortran_module:
         return L
 
     def export_wrap_module_standard(self):
-        sig = 'export_wrap_' + self.int_name
+        sig = 'export_wrap_' + self.get_suffix()
         L = [self.full_sub_signature(sig,'this,dir,name')]
         L=L+[self.spaces[2]+self.implicitNone]
         L=L+[self.spaces[2]+'type('+self.name+'),intent(in) :: this']
@@ -490,7 +502,7 @@ class fortran_module:
         return L
 
     def export_wrap_module_specialized(self):
-        sig = 'export_wrap_' + self.int_name
+        sig = 'export_wrap_' + self.get_suffix()
         c = [self.full_sub_signature(sig,'this,dir,name')]
         c=c+[self.spaces[2]+self.implicitNone]
         c=c+[self.spaces[2]+'type('+self.name+'),intent(in) :: this']
@@ -501,21 +513,43 @@ class fortran_module:
         return c
 
     def import_wrap_module(self):
-        sig = 'import_wrap_' + self.int_name
+        name_list = []
+        for key in self.prop:
+          name_list = name_list+[self.prop[key].name]
+        special_arg_list = ['x','y','z']
+        if all([x in special_arg_list for x in name_list]):
+          L = self.import_wrap_module_specialized()
+        else:
+          L = self.import_wrap_module_standard()
+        return L
+
+    def import_wrap_module_standard(self):
+        sig = 'import_wrap_' + self.get_suffix()
         L = [self.full_sub_signature(sig,'this,dir,name')]
         L=L+[self.spaces[2]+self.implicitNone]
         L=L+[self.spaces[2]+'type('+self.name+'),intent(inout) :: this']
         L=L+[self.spaces[2]+'character(len=*),intent(in) :: dir,name']
         L=L+[self.spaces[2]+'integer :: un']
         L=L+[self.spaces[2]+'un = open_to_read(dir,name)']
-        L=L+[self.spaces[2]+'call import(this,un)']
+        L=L+[self.spaces[2]+'call export(this,un)']
         L=L+[self.spaces[2]+'close(un)']
         L=L+[self.end_sub()]
         return L
 
-    def export_DN(self):
+    def import_wrap_module_specialized(self):
+        sig = 'import_wrap_' + self.get_suffix()
+        c = [self.full_sub_signature(sig,'this,dir,name')]
+        c=c+[self.spaces[2]+self.implicitNone]
+        c=c+[self.spaces[2]+'type('+self.name+'),intent(inout) :: this']
+        c=c+[self.spaces[2]+'character(len=*),intent(in) :: dir,name']
+        for key in self.prop:
+            c.append([self.spaces[2]+x for x in self.prop[key].write_import_wrap_specialized()])
+        c.append(self.end_sub())
+        return c
+
+    def export_DN_module(self):
         L = []
-        sig = 'export_DN_' + self.int_name
+        sig = 'export_DN_' + self.get_suffix()
         L = [self.full_sub_signature(sig,'this')]
         L=L+[self.spaces[2]+self.implicitNone]
         L=L+[self.spaces[2]+'type('+self.name+'),intent(in) :: this']
@@ -523,9 +557,9 @@ class fortran_module:
         L=L+[self.end_sub()]
         return L
 
-    def import_DN(self):
+    def import_DN_module(self):
         L = []
-        sig = 'import_DN_' + self.int_name
+        sig = 'import_DN_' + self.get_suffix()
         L = [self.full_sub_signature(sig,'this')]
         L=L+[self.spaces[2]+self.implicitNone]
         L=L+[self.spaces[2]+'type('+self.name+'),intent(inout) :: this']
@@ -541,9 +575,9 @@ class fortran_module:
         L=L+[self.end_sub()]
         return L
 
-    def export_restart_module(self):
-        sig = 'export_restart_' + self.get_name()
-        # sig = 'make_restart_dir_'
+    def export_structured_D_module(self):
+        sig = 'export_structured_D_' + self.get_suffix()
+        # sig = 'set_IO_dir_'
         c = [self.full_sub_signature(sig,'this,dir')]
         c.append(self.spaces[2] + self.implicitNone)
         c.append(self.spaces[2] + 'type(' + self.name + '),intent(in) :: this' )
@@ -560,13 +594,35 @@ class fortran_module:
         c.append(self.spaces[2] + "call export_primitives(this,un)" )
         c.append(self.spaces[2] + "close(un)" )
         for key in self.prop:
-            c.append([self.spaces[2]+x for x in self.prop[key].write_export_restart()])
+            c.append([self.spaces[2]+x for x in self.prop[key].write_export_structured('dir')])
         c.append(self.end_sub())
         return c
 
-    def import_restart_module(self):
-        sig = 'import_restart_' + self.get_name()
-        # sig = 'make_restart_dir_'
+    def export_structured_DN_module(self):
+        sig = 'export_structured_DN_' + self.get_suffix()
+        # sig = 'set_IO_dir_'
+        c = [self.full_sub_signature(sig,'this')]
+        c.append(self.spaces[2] + self.implicitNone)
+        c.append(self.spaces[2] + 'type(' + self.name + '),intent(in) :: this' )
+        for key in self.arg_objects:
+            L = self.arg_objects[key].get_list_of_local_iterators()
+            if L: c.append(L)
+        if self.any_non_primitive_high_dimension:
+            for key in self.arg_objects:
+                L = self.arg_objects[key].get_list_of_local_shape()
+                if L: c.append(L)
+        c.append(self.spaces[2] + "integer :: un" )
+        c.append(self.spaces[2] + "un = new_and_open(str(this%dir),'primitives')" )
+        c.append(self.spaces[2] + "call export_primitives(this,un)" )
+        c.append(self.spaces[2] + "close(un)" )
+        for key in self.prop:
+            c.append([self.spaces[2]+x for x in self.prop[key].write_export_structured('str(this%dir)')])
+        c.append(self.end_sub())
+        return c
+
+    def import_structured_D_module(self):
+        sig = 'import_structured_D_' + self.get_suffix()
+        # sig = 'set_IO_dir_'
         c = [self.full_sub_signature(sig,'this,dir')]
         c.append(self.spaces[2] + self.implicitNone)
         c.append(self.spaces[2] + 'type(' + self.name + '),intent(inout) :: this' )
@@ -583,13 +639,35 @@ class fortran_module:
         c.append(self.spaces[2] + "call import_primitives(this,un)" )
         c.append(self.spaces[2] + "close(un)" )
         for key in self.prop:
-            c.append([self.spaces[2]+x for x in self.prop[key].write_import_restart()])
+            c.append([self.spaces[2]+x for x in self.prop[key].write_import_structured('dir')])
         c.append(self.end_sub())
         return c
 
-    def make_restart_dir_module(self):
-        sig = 'make_restart_dir_' + self.get_name()
-        # sig = 'make_restart_dir_'
+    def import_structured_DN_module(self):
+        sig = 'import_structured_DN_' + self.get_suffix()
+        # sig = 'set_IO_dir_'
+        c = [self.full_sub_signature(sig,'this')]
+        c.append(self.spaces[2] + self.implicitNone)
+        c.append(self.spaces[2] + 'type(' + self.name + '),intent(inout) :: this' )
+        for key in self.arg_objects:
+            L = self.arg_objects[key].get_list_of_local_iterators()
+            if L: c.append(L)
+        if self.any_non_primitive_high_dimension:
+            for key in self.arg_objects:
+                L = self.arg_objects[key].get_list_of_local_shape()
+                if L: c.append(L)
+        c.append(self.spaces[2] + "integer :: un" )
+        c.append(self.spaces[2] + "un = open_to_read(str(this%dir),'primitives')" )
+        c.append(self.spaces[2] + "call import_primitives(this,un)" )
+        c.append(self.spaces[2] + "close(un)" )
+        for key in self.prop:
+            c.append([self.spaces[2]+x for x in self.prop[key].write_import_structured('str(this%dir)')])
+        c.append(self.end_sub())
+        return c
+
+    def set_IO_dir_module(self):
+        sig = 'set_IO_dir_' + self.get_suffix()
+        # sig = 'set_IO_dir_'
         c = [self.full_sub_signature(sig,'this,dir')]
         c.append(self.spaces[2] + self.implicitNone)
         c.append(self.spaces[2] + 'type(' + self.name + '),intent(inout) :: this' )
@@ -608,13 +686,13 @@ class fortran_module:
             c.append(self.spaces[2] + "call init(this%dir,dir)" )
             c.append(self.spaces[2] + "call init(this%name,'primitives')" )
         for key in self.prop:
-            c.append([self.spaces[2]+x for x in self.prop[key].write_make_restart_dir()])
+            c.append([self.spaces[2]+x for x in self.prop[key].write_set_IO_dir()])
         c.append(self.end_sub())
         return c
 
     def suppress_fortran_warnings_module(self):
         if suppress_all_warnings:
-            sig = 'suppress_warnings_' + self.get_name()
+            sig = 'suppress_warnings_' + self.get_suffix()
             c = [self.full_sub_signature(sig,'this')]
             c.append(self.spaces[2] + self.implicitNone)
             c.append(self.spaces[2] + 'type(' + self.name + '),intent(in) :: this' )

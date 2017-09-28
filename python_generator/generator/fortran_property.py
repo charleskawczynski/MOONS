@@ -27,6 +27,7 @@ def indent_lines(L):
   indent = '  '
   T_up = ('if','do')
   T_dn = ('endif','enddo')
+  T_unindent = ['else','elseif']
   indent_cumulative = ''
   s_indent = len(indent)
   temp = ['' for x in L]
@@ -39,6 +40,7 @@ def indent_lines(L):
   L = [s+x for (s,x) in zip(temp,L)]
   L = [break_single_line(x) for x in L]
   L = [item for sublist in L for item in sublist]
+  L = [x[s_indent:] if any([y in x for y in T_unindent]) else x for x in L]
   return L
 
 class fortran_property:
@@ -57,6 +59,7 @@ class fortran_property:
     self.default_value = '0'
     # self.fortran_string_sep = '/'
     self.fortran_string_sep = 'fortran_PS'
+    self.if_sufficient_size = 'if_sufficient_size'
     self.default_real = '0'
     self.do_loop_iter = []
     self.do_loop_iter_max = []
@@ -247,14 +250,22 @@ class fortran_property:
       L = L + ['if (allocated(this%'+self.name+')) then']
       L = L + [self.int_rank_shape_this]
       L = L + [self.export_rank_shape]
+      L = L + [self.if_sufficient_size]
       L = L + [p+'write(un,*) this%'  +self.name]
+      L = L + ['endif']
+      L = L + ['else']
+      L = L + [self.export_zero_shape]
       L = L + ['endif']
     elif     self.object_type=='primitive' and not self.allocatable and     self.dimension>1 and     self.rank>1: pass
     elif     self.object_type=='primitive' and     self.allocatable and     self.dimension>1 and not self.rank>1:
       L = L + ['if (allocated(this%'+self.name+')) then']
       L = L + [self.int_rank_shape_this]
       L = L + [self.export_rank_shape]
+      L = L + [self.if_sufficient_size]
       L = L + [p+'write(un,*) this%'  +self.name]
+      L = L + ['endif']
+      L = L + ['else']
+      L = L + [self.export_zero_shape]
       L = L + ['endif']
     elif     self.object_type=='primitive' and not self.allocatable and     self.dimension>1 and not self.rank>1:
       L = L + [p+'write(un,*) this%'  +self.name]
@@ -269,6 +280,8 @@ class fortran_property:
         L = L + [x for x in ['do '+self.do_loop_iter+'=1,'+self.do_loop_iter_max]]
         L = L + ['call export(this%' + self.name+'('+self.do_loop_iter+'),un)']
         L = L + ['enddo']
+        L = L + ['else']
+        L = L + [self.export_zero_shape]
         L = L + ['endif']
     elif     self.object_type=='object'    and not self.allocatable and     self.dimension>1 and     self.rank>1:
       if not primitives_only:
@@ -326,14 +339,18 @@ class fortran_property:
     # p = ""
     if       self.object_type=='primitive' and     self.allocatable and     self.dimension>1 and     self.rank>1:
       L = L + [self.import_rank_shape]
+      L = L + [self.if_sufficient_size]
       L = L + ['allocate(this%'+self.name+'('+self.int_rank_list+'))']
       L = L + [p+'read(un,*) this%'  +self.name]
+      L = L + ['endif']
     elif     self.object_type=='primitive' and not self.allocatable and     self.dimension>1 and     self.rank>1:
       L = L + [p+'read(un,*) this%'  +self.name]
     elif     self.object_type=='primitive' and     self.allocatable and     self.dimension>1 and not self.rank>1:
       L = L + [self.import_rank_shape]
+      L = L + [self.if_sufficient_size]
       L = L + ['allocate(this%'+self.name+'('+self.do_loop_iter_max+'))']
       L = L + [p+'read(un,*) this%'  +self.name]
+      L = L + ['endif']
     elif     self.object_type=='primitive' and not self.allocatable and     self.dimension>1 and not self.rank>1:
       L = L + [p+'read(un,*) this%'  +self.name]
     elif     self.object_type=='primitive' and not self.allocatable and not self.dimension>1 and not self.rank>1:
@@ -343,9 +360,11 @@ class fortran_property:
       if not primitives_only:
         L = L + ['if (allocated(this%'+self.name+')) then']
         L = L + [self.import_rank_shape]
+        L = L + [self.if_sufficient_size]
         L = L + ['do '+self.do_loop_iter+'=1,'+self.do_loop_iter_max]
         L = L + ['call import(this%' + self.name+'('+self.do_loop_iter+'),un)']
         L = L + ['enddo']
+        L = L + ['endif']
         L = L + ['endif']
     elif     self.object_type=='object'    and not self.allocatable and     self.dimension>1 and     self.rank>1:
       if not primitives_only:
@@ -354,16 +373,20 @@ class fortran_property:
       if not primitives_only:
         L = L + ['if (allocated(this%'+self.name+')) then']
         L = L + [self.import_rank_shape]
+        L = L + [self.if_sufficient_size]
         L = L + ['do '+self.do_loop_iter+'=1,'+self.do_loop_iter_max]
         L = L + ['call import(this%' + self.name+'('+self.do_loop_iter+'),un)']
         L = L + ['enddo']
         L = L + ['endif']
+        L = L + ['endif']
     elif     self.object_type=='object'    and not self.allocatable and     self.dimension>1 and not self.rank>1:
       if not primitives_only:
         L = L + [self.import_rank_shape]
+        L = L + [self.if_sufficient_size]
         L = L + ['do '+self.do_loop_iter+'=1,'+self.do_loop_iter_max]
         L = L + ['call import(this%' + self.name+'('+self.do_loop_iter+'),un)']
         L = L + ['enddo']
+        L = L + ['endif']
     elif     self.object_type=='object'    and not self.allocatable and not self.dimension>1 and not self.rank>1:
       if not primitives_only:
         L = L + ['call import(this%' + self.name+',un)']
@@ -488,16 +511,15 @@ class fortran_property:
 
     return indent_lines(L)
 
-  def write_make_restart_dir(self):
+  def write_set_IO_dir(self):
     L = []
     f_sep = self.fortran_string_sep
     f_name = "'"+self.name+"'"
     suffix_loop = '//'+'int2str('+self.do_loop_iter+')'
-    f_name_loop = "dir//"+f_sep+"//'"+self.name+"_'"+suffix_loop
     f_name_loop = "dir"+"//'"+self.name+"_'"+suffix_loop+"//"+f_sep
     # f_name = "'"+self.restart_dir_name+"'"
     # f_name = "'"+f_sep+self.restart_dir_name+"'"
-    f_call = 'call make_restart_dir'
+    f_call = 'call set_IO_dir'
 
     if not self.class_=='string':
       if       self.object_type=='primitive' and     self.allocatable and     self.dimension>1 and     self.rank>1:
@@ -557,16 +579,13 @@ class fortran_property:
 
     return indent_lines(L)
 
-  def write_export_restart(self):
+  def write_export_structured(self,directory):
     L = []
     f_sep = self.fortran_string_sep
     f_name = "'"+self.name+"'"
     suffix_loop = '//'+'int2str('+self.do_loop_iter+')'
-    f_name_loop = "dir//"+f_sep+"//'"+self.name+"_'"+suffix_loop
-    f_name_loop = "dir"+"//'"+self.name+"_'"+suffix_loop+"//"+f_sep
-    # f_name = "'"+self.restart_dir_name+"'"
-    # f_name = "'"+f_sep+self.restart_dir_name+"'"
-    f_call = 'call export_restart'
+    f_name_loop = directory+"//'"+self.name+"_'"+suffix_loop+"//"+f_sep
+    f_call = 'call export_structured'
 
     if not self.class_=='string':
       if       self.object_type=='primitive' and     self.allocatable and     self.dimension>1 and     self.rank>1:
@@ -585,9 +604,13 @@ class fortran_property:
         # pass
         L = L + ['if (allocated(this%'+self.name+')) then']
         L = L + [self.int_rank_shape_this]
+        L = L + [self.if_sufficient_size]
         L = L + ['do '+self.do_loop_iter+'=1,'+self.do_loop_iter_max]
         L = L + [f_call + '(this%' + self.name+'('+self.do_loop_iter+'),'+f_name+')']
         L = L + ['enddo']
+        L = L + ['endif']
+        L = L + ['else']
+        L = L + ['write(un,*) '+self.do_loop_iter_max]
         L = L + ['endif']
       elif     self.object_type=='object'    and not self.allocatable and     self.dimension>1 and     self.rank>1:
         suffix = suffix_loop
@@ -616,7 +639,7 @@ class fortran_property:
         L = L + [f_call + '(this%' + self.name+'('+self.do_loop_iter+'),'+f_name+')']
         L = L + ['enddo']
       elif     self.object_type=='object'    and not self.allocatable and not self.dimension>1 and not self.rank>1:
-        L = L + [f_call +  "(this%" + self.name + ",dir"+"//"+f_name+"//"+f_sep+")"]
+        L = L + [f_call +  "(this%" + self.name + ","+directory+"//"+f_name+"//"+f_sep+")"]
       elif     self.object_type=='procedure' and     self.allocatable and     self.dimension>1 and     self.rank>1: pass
       elif     self.object_type=='procedure' and not self.allocatable and     self.dimension>1 and     self.rank>1: pass
       elif     self.object_type=='procedure' and     self.allocatable and     self.dimension>1 and not self.rank>1: pass
@@ -626,16 +649,13 @@ class fortran_property:
 
     return indent_lines(L)
 
-  def write_import_restart(self):
+  def write_import_structured(self,directory):
     L = []
     f_sep = self.fortran_string_sep
     f_name = "'"+self.name+"'"
     suffix_loop = '//'+'int2str('+self.do_loop_iter+')'
-    f_name_loop = "dir//"+f_sep+"//'"+self.name+"_'"+suffix_loop
-    f_name_loop = "dir"+"//'"+self.name+"_'"+suffix_loop+"//"+f_sep
-    # f_name = "'"+self.restart_dir_name+"'"
-    # f_name = "'"+f_sep+self.restart_dir_name+"'"
-    f_call = 'call import_restart'
+    f_name_loop = directory+"//'"+self.name+"_'"+suffix_loop+"//"+f_sep
+    f_call = 'call import_structured'
 
     if not self.class_=='string':
       if       self.object_type=='primitive' and     self.allocatable and     self.dimension>1 and     self.rank>1:
@@ -654,9 +674,13 @@ class fortran_property:
         # pass
         L = L + ['if (allocated(this%'+self.name+')) then']
         L = L + [self.int_rank_shape_this]
+        L = L + [self.if_sufficient_size]
         L = L + ['do '+self.do_loop_iter+'=1,'+self.do_loop_iter_max]
         L = L + [f_call + '(this%' + self.name+'('+self.do_loop_iter+'),'+f_name+')']
         L = L + ['enddo']
+        L = L + ['endif']
+        L = L + ['else']
+        L = L + ['write(un,*) '+self.do_loop_iter_max]
         L = L + ['endif']
       elif     self.object_type=='object'    and not self.allocatable and     self.dimension>1 and     self.rank>1:
         suffix = suffix_loop
@@ -685,7 +709,7 @@ class fortran_property:
         L = L + [f_call + '(this%' + self.name+'('+self.do_loop_iter+'),'+f_name+')']
         L = L + ['enddo']
       elif     self.object_type=='object'    and not self.allocatable and not self.dimension>1 and not self.rank>1:
-        L = L + [f_call +  "(this%" + self.name + ",dir"+"//"+f_name+"//"+f_sep+")"]
+        L = L + [f_call +  "(this%" + self.name + ","+directory+"//"+f_name+"//"+f_sep+")"]
       elif     self.object_type=='procedure' and     self.allocatable and     self.dimension>1 and     self.rank>1: pass
       elif     self.object_type=='procedure' and not self.allocatable and     self.dimension>1 and     self.rank>1: pass
       elif     self.object_type=='procedure' and     self.allocatable and     self.dimension>1 and not self.rank>1: pass
@@ -755,12 +779,16 @@ class fortran_property:
       self.int_rank_shape_this = self.do_loop_iter_max+' = shape(this%'+self.name+')'
       self.import_rank_shape = 'read(un,*) '+self.do_loop_iter_max
       self.export_rank_shape = 'write(un,*) '+self.do_loop_iter_max
+      self.export_zero_shape = 'write(un,*) 0'
       self.int_rank_list = ''.join([self.do_loop_iter_max+'('+str(x+1)+'),' for x in range(self.rank)])[:-1]
+      self.if_sufficient_size = 'if (all((/'+''.join([self.do_loop_iter_max+'('+str(x+1)+').gt.0,' for x in range(self.rank)])[:-1]+'/))) then'
     else:
       self.int_rank_shape_that = self.do_loop_iter_max+' = size(that%'+self.name+')'
       self.int_rank_shape_this = self.do_loop_iter_max+' = size(this%'+self.name+')'
       self.import_rank_shape = 'read(un,*) '+self.do_loop_iter_max
       self.export_rank_shape = 'write(un,*) '+self.do_loop_iter_max
+      self.export_zero_shape = 'write(un,*) 0'
+      self.if_sufficient_size = 'if ('+self.do_loop_iter_max+'.gt.0) then'
       self.int_rank_list = ''
 
     if allocatable and dimension>1: self.dimension_s = self.rank_deffered

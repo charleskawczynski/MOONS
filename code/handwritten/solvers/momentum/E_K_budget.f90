@@ -98,7 +98,7 @@
          call extractEdge(temp_J,J,MD_fluid)
 
          call compute_E_K_budget_fields(DT,e_budget,U,Unm1,U_CC,&
-         temp_B,temp_B0,temp_J,p,m,TMP%dt,DP,&
+         temp_B,temp_B0,temp_J,p,m,TMP%TS%dt,DP,&
          VF_F1,VF_F2,TF_CC1,TF_CC2)
 
          call export_integral_E_K_budget(DT,TMP,e_budget)

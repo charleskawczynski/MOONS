@@ -18,35 +18,39 @@
 
        public :: export_primitives,import_primitives
 
-       public :: export_restart,import_restart
+       public :: export_structured,import_structured
 
-       public :: make_restart_dir
+       public :: set_IO_dir
 
        public :: suppress_warnings
 
-       interface init;             module procedure init_copy_stop_clock;        end interface
-       interface delete;           module procedure delete_stop_clock;           end interface
-       interface display;          module procedure display_stop_clock;          end interface
-       interface display_short;    module procedure display_short_stop_clock;    end interface
-       interface display;          module procedure display_wrap_stop_clock;     end interface
-       interface print;            module procedure print_stop_clock;            end interface
-       interface print_short;      module procedure print_short_stop_clock;      end interface
-       interface export;           module procedure export_stop_clock;           end interface
-       interface export_primitives;module procedure export_primitives_stop_clock;end interface
-       interface export_restart;   module procedure export_restart_stop_clock;   end interface
-       interface import;           module procedure import_stop_clock;           end interface
-       interface import_restart;   module procedure import_restart_stop_clock;   end interface
-       interface import_primitives;module procedure import_primitives_stop_clock;end interface
-       interface export;           module procedure export_wrap_stop_clock;      end interface
-       interface import;           module procedure import_wrap_stop_clock;      end interface
-       interface make_restart_dir; module procedure make_restart_dir_stop_clock; end interface
-       interface suppress_warnings;module procedure suppress_warnings_stop_clock;end interface
-       interface export;           module procedure export_DN_stop_clock;        end interface
-       interface import;           module procedure import_DN_stop_clock;        end interface
+       interface init;             module procedure init_copy_stop_clock;           end interface
+       interface delete;           module procedure delete_stop_clock;              end interface
+       interface display;          module procedure display_stop_clock;             end interface
+       interface display_short;    module procedure display_short_stop_clock;       end interface
+       interface display;          module procedure display_wrap_stop_clock;        end interface
+       interface print;            module procedure print_stop_clock;               end interface
+       interface print_short;      module procedure print_short_stop_clock;         end interface
+       interface export;           module procedure export_stop_clock;              end interface
+       interface export_primitives;module procedure export_primitives_stop_clock;   end interface
+       interface import;           module procedure import_stop_clock;              end interface
+       interface export_structured;module procedure export_structured_D_stop_clock; end interface
+       interface import_structured;module procedure import_structured_D_stop_clock; end interface
+       interface import_primitives;module procedure import_primitives_stop_clock;   end interface
+       interface export;           module procedure export_wrap_stop_clock;         end interface
+       interface import;           module procedure import_wrap_stop_clock;         end interface
+       interface set_IO_dir;       module procedure set_IO_dir_stop_clock;          end interface
+       interface suppress_warnings;module procedure suppress_warnings_stop_clock;   end interface
+       interface export;           module procedure export_DN_stop_clock;           end interface
+       interface import;           module procedure import_DN_stop_clock;           end interface
+       interface export_structured;module procedure export_structured_DN_stop_clock;end interface
+       interface import_structured;module procedure import_structured_DN_stop_clock;end interface
 
        type stop_clock
          type(string) :: dir
          type(string) :: name
+         type(string) :: dir_out
+         type(string) :: name_out
          type(clock) :: c
          type(unit_conversion) :: uc
          real(cp) :: percentage_complete_RB = 0.0_cp
@@ -72,6 +76,8 @@
          call delete(this)
          call init(this%dir,that%dir)
          call init(this%name,that%name)
+         call init(this%dir_out,that%dir_out)
+         call init(this%name_out,that%name_out)
          call init(this%c,that%c)
          call init(this%uc,that%uc)
          this%percentage_complete_RB = that%percentage_complete_RB
@@ -93,6 +99,8 @@
          type(stop_clock),intent(inout) :: this
          call delete(this%dir)
          call delete(this%name)
+         call delete(this%dir_out)
+         call delete(this%name_out)
          call delete(this%c)
          call delete(this%uc)
          this%percentage_complete_RB = 0.0_cp
@@ -115,6 +123,8 @@
          integer,intent(in) :: un
          call display(this%dir,un)
          call display(this%name,un)
+         call display(this%dir_out,un)
+         call display(this%name_out,un)
          call display(this%c,un)
          call display(this%uc,un)
          write(un,*) 'percentage_complete_RB = ',this%percentage_complete_RB
@@ -137,6 +147,8 @@
          integer,intent(in) :: un
          call display(this%dir,un)
          call display(this%name,un)
+         call display(this%dir_out,un)
+         call display(this%name_out,un)
          call display(this%c,un)
          call display(this%uc,un)
          write(un,*) 'percentage_complete_RB = ',this%percentage_complete_RB
@@ -175,10 +187,16 @@
          call display_short(this,6)
        end subroutine
 
-       subroutine export_primitives_stop_clock(this,un)
+       subroutine export_stop_clock(this,un)
          implicit none
          type(stop_clock),intent(in) :: this
          integer,intent(in) :: un
+         call export(this%dir,un)
+         call export(this%name,un)
+         call export(this%dir_out,un)
+         call export(this%name_out,un)
+         call export(this%c,un)
+         call export(this%uc,un)
          write(un,*) 'percentage_complete_RB  = ';write(un,*) this%percentage_complete_RB
          write(un,*) 'percentage_complete_SB  = ';write(un,*) this%percentage_complete_SB
          write(un,*) 'seconds_per_step        = ';write(un,*) this%seconds_per_step
@@ -193,14 +211,35 @@
          write(un,*) 'un_plot                 = ';write(un,*) this%un_plot
        end subroutine
 
-       subroutine export_stop_clock(this,un)
+       subroutine import_stop_clock(this,un)
+         implicit none
+         type(stop_clock),intent(inout) :: this
+         integer,intent(in) :: un
+         call delete(this)
+         call import(this%dir,un)
+         call import(this%name,un)
+         call import(this%dir_out,un)
+         call import(this%name_out,un)
+         call import(this%c,un)
+         call import(this%uc,un)
+         read(un,*); read(un,*) this%percentage_complete_RB
+         read(un,*); read(un,*) this%percentage_complete_SB
+         read(un,*); read(un,*) this%seconds_per_step
+         read(un,*); read(un,*) this%sim_time_per_sec
+         read(un,*); read(un,*) this%t_passed
+         read(un,*); read(un,*) this%estimated_total
+         read(un,*); read(un,*) this%estimated_remaining
+         read(un,*); read(un,*) this%percentage_complete
+         read(un,*); read(un,*) this%percentage_complete_wc
+         read(un,*); read(un,*) this%t_elapsed
+         read(un,*); read(un,*) this%frozen_elapsed
+         read(un,*); read(un,*) this%un_plot
+       end subroutine
+
+       subroutine export_primitives_stop_clock(this,un)
          implicit none
          type(stop_clock),intent(in) :: this
          integer,intent(in) :: un
-         call export(this%dir,un)
-         call export(this%name,un)
-         call export(this%c,un)
-         call export(this%uc,un)
          write(un,*) 'percentage_complete_RB  = ';write(un,*) this%percentage_complete_RB
          write(un,*) 'percentage_complete_SB  = ';write(un,*) this%percentage_complete_SB
          write(un,*) 'seconds_per_step        = ';write(un,*) this%seconds_per_step
@@ -233,29 +272,6 @@
          read(un,*); read(un,*) this%un_plot
        end subroutine
 
-       subroutine import_stop_clock(this,un)
-         implicit none
-         type(stop_clock),intent(inout) :: this
-         integer,intent(in) :: un
-         call delete(this)
-         call import(this%dir,un)
-         call import(this%name,un)
-         call import(this%c,un)
-         call import(this%uc,un)
-         read(un,*); read(un,*) this%percentage_complete_RB
-         read(un,*); read(un,*) this%percentage_complete_SB
-         read(un,*); read(un,*) this%seconds_per_step
-         read(un,*); read(un,*) this%sim_time_per_sec
-         read(un,*); read(un,*) this%t_passed
-         read(un,*); read(un,*) this%estimated_total
-         read(un,*); read(un,*) this%estimated_remaining
-         read(un,*); read(un,*) this%percentage_complete
-         read(un,*); read(un,*) this%percentage_complete_wc
-         read(un,*); read(un,*) this%t_elapsed
-         read(un,*); read(un,*) this%frozen_elapsed
-         read(un,*); read(un,*) this%un_plot
-       end subroutine
-
        subroutine export_wrap_stop_clock(this,dir,name)
          implicit none
          type(stop_clock),intent(in) :: this
@@ -272,7 +288,7 @@
          character(len=*),intent(in) :: dir,name
          integer :: un
          un = open_to_read(dir,name)
-         call import(this,un)
+         call export(this,un)
          close(un)
        end subroutine
 
@@ -296,7 +312,29 @@
          close(un)
        end subroutine
 
-       subroutine make_restart_dir_stop_clock(this,dir)
+       subroutine export_structured_DN_stop_clock(this)
+         implicit none
+         type(stop_clock),intent(in) :: this
+         integer :: un
+         un = new_and_open(str(this%dir),'primitives')
+         call export_primitives(this,un)
+         close(un)
+         call export_structured(this%c,str(this%dir)//'c'//fortran_PS)
+         call export_structured(this%uc,str(this%dir)//'uc'//fortran_PS)
+       end subroutine
+
+       subroutine import_structured_DN_stop_clock(this)
+         implicit none
+         type(stop_clock),intent(inout) :: this
+         integer :: un
+         un = open_to_read(str(this%dir),'primitives')
+         call import_primitives(this,un)
+         close(un)
+         call import_structured(this%c,str(this%dir)//'c'//fortran_PS)
+         call import_structured(this%uc,str(this%dir)//'uc'//fortran_PS)
+       end subroutine
+
+       subroutine set_IO_dir_stop_clock(this,dir)
          implicit none
          type(stop_clock),intent(inout) :: this
          character(len=*),intent(in) :: dir
@@ -304,11 +342,11 @@
          call make_dir_quiet(dir)
          call init(this%dir,dir)
          call init(this%name,'primitives')
-         call make_restart_dir(this%c,dir//'c'//fortran_PS)
-         call make_restart_dir(this%uc,dir//'uc'//fortran_PS)
+         call set_IO_dir(this%c,dir//'c'//fortran_PS)
+         call set_IO_dir(this%uc,dir//'uc'//fortran_PS)
        end subroutine
 
-       subroutine export_restart_stop_clock(this,dir)
+       subroutine export_structured_D_stop_clock(this,dir)
          implicit none
          type(stop_clock),intent(in) :: this
          character(len=*),intent(in) :: dir
@@ -316,11 +354,11 @@
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
-         call export_restart(this%c,dir//'c'//fortran_PS)
-         call export_restart(this%uc,dir//'uc'//fortran_PS)
+         call export_structured(this%c,dir//'c'//fortran_PS)
+         call export_structured(this%uc,dir//'uc'//fortran_PS)
        end subroutine
 
-       subroutine import_restart_stop_clock(this,dir)
+       subroutine import_structured_D_stop_clock(this,dir)
          implicit none
          type(stop_clock),intent(inout) :: this
          character(len=*),intent(in) :: dir
@@ -328,8 +366,8 @@
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         call import_restart(this%c,dir//'c'//fortran_PS)
-         call import_restart(this%uc,dir//'uc'//fortran_PS)
+         call import_structured(this%c,dir//'c'//fortran_PS)
+         call import_structured(this%uc,dir//'uc'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_stop_clock(this)

@@ -59,9 +59,9 @@
          call omp_set_num_threads(12) ! Set number of openMP threads
 
 #endif
-         if (file_exists(str(M%C%DT%restart),'config')) then
+         if (file_exists(str(M%C%DT%config),'primitives')) then
            ! Restart is default if files exist!
-           call import_restart(M%C,str(M%C%DT%restart))
+           call import_structured(M%C,str(M%C%DT%config))
            ! call import_restart(M%C,str(M%C%DT%restart),'config')
            ! Need to make sure init knows to restart:
            call set_restart(M%C%SP)

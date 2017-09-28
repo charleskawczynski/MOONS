@@ -43,7 +43,7 @@
          type(time_marching_params),intent(in) :: TMP
          logical,dimension(4) :: L
          real(cp) :: tol
-         tol = TMP%dt*10.0_cp**(-6.0_cp)
+         tol = TMP%TS%dt*10.0_cp**(-6.0_cp)
          L(1) = TMP%t.gt.SP%t_start+tol
          L(2) = TMP%t.lt.SP%t_stop+tol
          L(3) = .not.SP%exported_stats
@@ -74,8 +74,8 @@
          type(time_marching_params),intent(in) :: TMP
          logical,dimension(2) :: L
          real(cp) :: tol
-         tol = TMP%dt*10.0_cp**(-6.0_cp)
-         L(1) = SP%t_start.gt.TMP%t-TMP%dt-tol
+         tol = TMP%TS%dt*10.0_cp**(-6.0_cp)
+         L(1) = SP%t_start.gt.TMP%t-TMP%TS%dt-tol
          L(2) = SP%t_start.lt.TMP%t+tol
          SP%define_t_start_actual = all(L).and.(.not.SP%t_start_actual_defined)
          if (SP%define_t_start_actual) then

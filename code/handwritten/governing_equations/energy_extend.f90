@@ -150,9 +150,9 @@
            write(un,*) '**************************************************************'
            write(un,*) 'Pe = ',SP%DP%Pe
            write(un,*) 'Ec,Ha = ',SP%DP%Ec,SP%DP%Ha
-           write(un,*) 't,dt = ',SP%VS%T%TMP%t,SP%VS%T%TMP%dt
-           write(un,*) 'solveTMethod,N_nrg = ',SP%VS%T%SS%solve_method,SP%VS%T%ISP%iter_max
-           write(un,*) 'tol_nrg = ',SP%VS%T%ISP%tol_rel
+           write(un,*) 't,dt = ',SP%VS%T%TMP%t,SP%VS%T%TMP%TS%dt
+           write(un,*) 'solveTMethod,N_nrg = ',SP%VS%T%SS%solve_method,SP%VS%T%ISP%EC%iter_max
+           write(un,*) 'tol_nrg = ',SP%VS%T%ISP%EC%tol_rel
            call displayPhysicalMinMax(nrg%T,'T',un)
            call displayPhysicalMinMax(nrg%divQ,'divQ',un)
            write(un,*) ''

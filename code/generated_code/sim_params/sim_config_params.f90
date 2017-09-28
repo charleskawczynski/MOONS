@@ -16,29 +16,29 @@
 
        public :: export_primitives,import_primitives
 
-       public :: export_restart,import_restart
+       public :: export_structured,import_structured
 
-       public :: make_restart_dir
+       public :: set_IO_dir
 
        public :: suppress_warnings
 
-       interface init;             module procedure init_copy_sim_config_params;        end interface
-       interface delete;           module procedure delete_sim_config_params;           end interface
-       interface display;          module procedure display_sim_config_params;          end interface
-       interface display_short;    module procedure display_short_sim_config_params;    end interface
-       interface display;          module procedure display_wrap_sim_config_params;     end interface
-       interface print;            module procedure print_sim_config_params;            end interface
-       interface print_short;      module procedure print_short_sim_config_params;      end interface
-       interface export;           module procedure export_sim_config_params;           end interface
-       interface export_primitives;module procedure export_primitives_sim_config_params;end interface
-       interface export_restart;   module procedure export_restart_sim_config_params;   end interface
-       interface import;           module procedure import_sim_config_params;           end interface
-       interface import_restart;   module procedure import_restart_sim_config_params;   end interface
-       interface import_primitives;module procedure import_primitives_sim_config_params;end interface
-       interface export;           module procedure export_wrap_sim_config_params;      end interface
-       interface import;           module procedure import_wrap_sim_config_params;      end interface
-       interface make_restart_dir; module procedure make_restart_dir_sim_config_params; end interface
-       interface suppress_warnings;module procedure suppress_warnings_sim_config_params;end interface
+       interface init;             module procedure init_copy_sim_config_params;          end interface
+       interface delete;           module procedure delete_sim_config_params;             end interface
+       interface display;          module procedure display_sim_config_params;            end interface
+       interface display_short;    module procedure display_short_sim_config_params;      end interface
+       interface display;          module procedure display_wrap_sim_config_params;       end interface
+       interface print;            module procedure print_sim_config_params;              end interface
+       interface print_short;      module procedure print_short_sim_config_params;        end interface
+       interface export;           module procedure export_sim_config_params;             end interface
+       interface export_primitives;module procedure export_primitives_sim_config_params;  end interface
+       interface import;           module procedure import_sim_config_params;             end interface
+       interface export_structured;module procedure export_structured_D_sim_config_params;end interface
+       interface import_structured;module procedure import_structured_D_sim_config_params;end interface
+       interface import_primitives;module procedure import_primitives_sim_config_params;  end interface
+       interface export;           module procedure export_wrap_sim_config_params;        end interface
+       interface import;           module procedure import_wrap_sim_config_params;        end interface
+       interface set_IO_dir;       module procedure set_IO_dir_sim_config_params;         end interface
+       interface suppress_warnings;module procedure suppress_warnings_sim_config_params;  end interface
 
        type sim_config_params
          real(cp) :: export_safe_period = 0.0_cp
@@ -131,7 +131,7 @@
          call display_short(this,6)
        end subroutine
 
-       subroutine export_primitives_sim_config_params(this,un)
+       subroutine export_sim_config_params(this,un)
          implicit none
          type(sim_config_params),intent(in) :: this
          integer,intent(in) :: un
@@ -145,7 +145,22 @@
          write(un,*) 'uniform_gravity_dir  = ';write(un,*) this%uniform_gravity_dir
        end subroutine
 
-       subroutine export_sim_config_params(this,un)
+       subroutine import_sim_config_params(this,un)
+         implicit none
+         type(sim_config_params),intent(inout) :: this
+         integer,intent(in) :: un
+         call delete(this)
+         read(un,*); read(un,*) this%export_safe_period
+         read(un,*); read(un,*) this%embed_b_interior
+         read(un,*); read(un,*) this%couple_time_steps
+         read(un,*); read(un,*) this%finite_rem
+         read(un,*); read(un,*) this%include_vacuum
+         read(un,*); read(un,*) this%mpg_dir
+         read(un,*); read(un,*) this%uniform_b0_dir
+         read(un,*); read(un,*) this%uniform_gravity_dir
+       end subroutine
+
+       subroutine export_primitives_sim_config_params(this,un)
          implicit none
          type(sim_config_params),intent(in) :: this
          integer,intent(in) :: un
@@ -173,21 +188,6 @@
          read(un,*); read(un,*) this%uniform_gravity_dir
        end subroutine
 
-       subroutine import_sim_config_params(this,un)
-         implicit none
-         type(sim_config_params),intent(inout) :: this
-         integer,intent(in) :: un
-         call delete(this)
-         read(un,*); read(un,*) this%export_safe_period
-         read(un,*); read(un,*) this%embed_b_interior
-         read(un,*); read(un,*) this%couple_time_steps
-         read(un,*); read(un,*) this%finite_rem
-         read(un,*); read(un,*) this%include_vacuum
-         read(un,*); read(un,*) this%mpg_dir
-         read(un,*); read(un,*) this%uniform_b0_dir
-         read(un,*); read(un,*) this%uniform_gravity_dir
-       end subroutine
-
        subroutine export_wrap_sim_config_params(this,dir,name)
          implicit none
          type(sim_config_params),intent(in) :: this
@@ -204,11 +204,11 @@
          character(len=*),intent(in) :: dir,name
          integer :: un
          un = open_to_read(dir,name)
-         call import(this,un)
+         call export(this,un)
          close(un)
        end subroutine
 
-       subroutine make_restart_dir_sim_config_params(this,dir)
+       subroutine set_IO_dir_sim_config_params(this,dir)
          implicit none
          type(sim_config_params),intent(inout) :: this
          character(len=*),intent(in) :: dir
@@ -216,7 +216,7 @@
          call make_dir_quiet(dir)
        end subroutine
 
-       subroutine export_restart_sim_config_params(this,dir)
+       subroutine export_structured_D_sim_config_params(this,dir)
          implicit none
          type(sim_config_params),intent(in) :: this
          character(len=*),intent(in) :: dir
@@ -226,7 +226,7 @@
          close(un)
        end subroutine
 
-       subroutine import_restart_sim_config_params(this,dir)
+       subroutine import_structured_D_sim_config_params(this,dir)
          implicit none
          type(sim_config_params),intent(inout) :: this
          character(len=*),intent(in) :: dir

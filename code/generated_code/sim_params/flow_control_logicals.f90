@@ -15,29 +15,29 @@
 
        public :: export_primitives,import_primitives
 
-       public :: export_restart,import_restart
+       public :: export_structured,import_structured
 
-       public :: make_restart_dir
+       public :: set_IO_dir
 
        public :: suppress_warnings
 
-       interface init;             module procedure init_copy_flow_control_logicals;        end interface
-       interface delete;           module procedure delete_flow_control_logicals;           end interface
-       interface display;          module procedure display_flow_control_logicals;          end interface
-       interface display_short;    module procedure display_short_flow_control_logicals;    end interface
-       interface display;          module procedure display_wrap_flow_control_logicals;     end interface
-       interface print;            module procedure print_flow_control_logicals;            end interface
-       interface print_short;      module procedure print_short_flow_control_logicals;      end interface
-       interface export;           module procedure export_flow_control_logicals;           end interface
-       interface export_primitives;module procedure export_primitives_flow_control_logicals;end interface
-       interface export_restart;   module procedure export_restart_flow_control_logicals;   end interface
-       interface import;           module procedure import_flow_control_logicals;           end interface
-       interface import_restart;   module procedure import_restart_flow_control_logicals;   end interface
-       interface import_primitives;module procedure import_primitives_flow_control_logicals;end interface
-       interface export;           module procedure export_wrap_flow_control_logicals;      end interface
-       interface import;           module procedure import_wrap_flow_control_logicals;      end interface
-       interface make_restart_dir; module procedure make_restart_dir_flow_control_logicals; end interface
-       interface suppress_warnings;module procedure suppress_warnings_flow_control_logicals;end interface
+       interface init;             module procedure init_copy_flow_control_logicals;          end interface
+       interface delete;           module procedure delete_flow_control_logicals;             end interface
+       interface display;          module procedure display_flow_control_logicals;            end interface
+       interface display_short;    module procedure display_short_flow_control_logicals;      end interface
+       interface display;          module procedure display_wrap_flow_control_logicals;       end interface
+       interface print;            module procedure print_flow_control_logicals;              end interface
+       interface print_short;      module procedure print_short_flow_control_logicals;        end interface
+       interface export;           module procedure export_flow_control_logicals;             end interface
+       interface export_primitives;module procedure export_primitives_flow_control_logicals;  end interface
+       interface import;           module procedure import_flow_control_logicals;             end interface
+       interface export_structured;module procedure export_structured_D_flow_control_logicals;end interface
+       interface import_structured;module procedure import_structured_D_flow_control_logicals;end interface
+       interface import_primitives;module procedure import_primitives_flow_control_logicals;  end interface
+       interface export;           module procedure export_wrap_flow_control_logicals;        end interface
+       interface import;           module procedure import_wrap_flow_control_logicals;        end interface
+       interface set_IO_dir;       module procedure set_IO_dir_flow_control_logicals;         end interface
+       interface suppress_warnings;module procedure suppress_warnings_flow_control_logicals;  end interface
 
        type flow_control_logicals
          logical :: post_process = .false.
@@ -238,7 +238,7 @@
          call display_short(this,6)
        end subroutine
 
-       subroutine export_primitives_flow_control_logicals(this,un)
+       subroutine export_flow_control_logicals(this,un)
          implicit none
          type(flow_control_logicals),intent(in) :: this
          integer,intent(in) :: un
@@ -266,7 +266,36 @@
          write(un,*) 'matrix_visualization                = ';write(un,*) this%matrix_visualization
        end subroutine
 
-       subroutine export_flow_control_logicals(this,un)
+       subroutine import_flow_control_logicals(this,un)
+         implicit none
+         type(flow_control_logicals),intent(inout) :: this
+         integer,intent(in) :: un
+         call delete(this)
+         read(un,*); read(un,*) this%post_process
+         read(un,*); read(un,*) this%skip_solver_loop
+         read(un,*); read(un,*) this%stop_before_solve
+         read(un,*); read(un,*) this%stop_after_mesh_export
+         read(un,*); read(un,*) this%Poisson_test
+         read(un,*); read(un,*) this%Taylor_Green_Vortex_test
+         read(un,*); read(un,*) this%temporal_convergence_test
+         read(un,*); read(un,*) this%export_numerical_flow_rate
+         read(un,*); read(un,*) this%export_Shercliff_Hunt_analytic_sol
+         read(un,*); read(un,*) this%export_vorticity_streamfunction
+         read(un,*); read(un,*) this%compute_export_E_K_Budget
+         read(un,*); read(un,*) this%compute_export_E_M_budget
+         read(un,*); read(un,*) this%operator_commute_test
+         read(un,*); read(un,*) this%export_final_tec
+         read(un,*); read(un,*) this%export_final_restart
+         read(un,*); read(un,*) this%restart_meshes
+         read(un,*); read(un,*) this%export_heavy
+         read(un,*); read(un,*) this%print_every_MHD_step
+         read(un,*); read(un,*) this%compute_surface_power
+         read(un,*); read(un,*) this%print_mesh_before_solve
+         read(un,*); read(un,*) this%fresh_restart_file
+         read(un,*); read(un,*) this%matrix_visualization
+       end subroutine
+
+       subroutine export_primitives_flow_control_logicals(this,un)
          implicit none
          type(flow_control_logicals),intent(in) :: this
          integer,intent(in) :: un
@@ -322,35 +351,6 @@
          read(un,*); read(un,*) this%matrix_visualization
        end subroutine
 
-       subroutine import_flow_control_logicals(this,un)
-         implicit none
-         type(flow_control_logicals),intent(inout) :: this
-         integer,intent(in) :: un
-         call delete(this)
-         read(un,*); read(un,*) this%post_process
-         read(un,*); read(un,*) this%skip_solver_loop
-         read(un,*); read(un,*) this%stop_before_solve
-         read(un,*); read(un,*) this%stop_after_mesh_export
-         read(un,*); read(un,*) this%Poisson_test
-         read(un,*); read(un,*) this%Taylor_Green_Vortex_test
-         read(un,*); read(un,*) this%temporal_convergence_test
-         read(un,*); read(un,*) this%export_numerical_flow_rate
-         read(un,*); read(un,*) this%export_Shercliff_Hunt_analytic_sol
-         read(un,*); read(un,*) this%export_vorticity_streamfunction
-         read(un,*); read(un,*) this%compute_export_E_K_Budget
-         read(un,*); read(un,*) this%compute_export_E_M_budget
-         read(un,*); read(un,*) this%operator_commute_test
-         read(un,*); read(un,*) this%export_final_tec
-         read(un,*); read(un,*) this%export_final_restart
-         read(un,*); read(un,*) this%restart_meshes
-         read(un,*); read(un,*) this%export_heavy
-         read(un,*); read(un,*) this%print_every_MHD_step
-         read(un,*); read(un,*) this%compute_surface_power
-         read(un,*); read(un,*) this%print_mesh_before_solve
-         read(un,*); read(un,*) this%fresh_restart_file
-         read(un,*); read(un,*) this%matrix_visualization
-       end subroutine
-
        subroutine export_wrap_flow_control_logicals(this,dir,name)
          implicit none
          type(flow_control_logicals),intent(in) :: this
@@ -367,11 +367,11 @@
          character(len=*),intent(in) :: dir,name
          integer :: un
          un = open_to_read(dir,name)
-         call import(this,un)
+         call export(this,un)
          close(un)
        end subroutine
 
-       subroutine make_restart_dir_flow_control_logicals(this,dir)
+       subroutine set_IO_dir_flow_control_logicals(this,dir)
          implicit none
          type(flow_control_logicals),intent(inout) :: this
          character(len=*),intent(in) :: dir
@@ -379,7 +379,7 @@
          call make_dir_quiet(dir)
        end subroutine
 
-       subroutine export_restart_flow_control_logicals(this,dir)
+       subroutine export_structured_D_flow_control_logicals(this,dir)
          implicit none
          type(flow_control_logicals),intent(in) :: this
          character(len=*),intent(in) :: dir
@@ -389,7 +389,7 @@
          close(un)
        end subroutine
 
-       subroutine import_restart_flow_control_logicals(this,dir)
+       subroutine import_structured_D_flow_control_logicals(this,dir)
          implicit none
          type(flow_control_logicals),intent(inout) :: this
          character(len=*),intent(in) :: dir

@@ -139,9 +139,9 @@
          write(un,*) '**************************************************************'
          write(un,*) '*************************** density ***************************'
          write(un,*) '**************************************************************'
-         write(un,*) 't,dt = ',SP%VS%rho%TMP%t,SP%VS%rho%TMP%dt
-         write(un,*) 'solveTMethod,N_dens = ',SP%VS%rho%SS%solve_method,SP%VS%rho%ISP%iter_max
-         write(un,*) 'tol_dens = ',SP%VS%rho%ISP%tol_rel
+         write(un,*) 't,dt = ',SP%VS%rho%TMP%t,SP%VS%rho%TMP%TS%dt
+         write(un,*) 'solveTMethod,N_dens = ',SP%VS%rho%SS%solve_method,SP%VS%rho%ISP%EC%iter_max
+         write(un,*) 'tol_dens = ',SP%VS%rho%ISP%EC%tol_rel
          call displayPhysicalMinMax(dens%rho,'rho',un)
          write(un,*) ''
          call print(dens%m)
@@ -203,7 +203,7 @@
          call embedFace(dens%U_F,U,dens%MD)
 
          select case (SP%VS%rho%SS%solve_method)
-         case (1); call Euler(dens%rho,dens%U_F,TMP%dt,dens%m,dens%temp_CC1,dens%temp_F)
+         case (1); call Euler(dens%rho,dens%U_F,TMP%TS%dt,dens%m,dens%temp_CC1,dens%temp_F)
 
          case default; stop 'Erorr: bad solveTMethod value in solve_density in density.f90'
          end select

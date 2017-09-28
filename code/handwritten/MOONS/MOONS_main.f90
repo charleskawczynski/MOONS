@@ -66,8 +66,8 @@
          call init(M%C%dir_target,dir_target)
          call init(M%C%DT,str(M%C%dir_target))  ! Initialize + make directory tree
          call config(M) ! The flow control should be uniquely defined after this line.
-         call make_restart_dir(M%C,str(M%C%DT%restart))
-         call export_restart(M%C,str(M%C%DT%restart))
+         call set_IO_dir(M%C,str(M%C%DT%config))
+         call export_structured(M%C)
          call init(M)
          if (.not.M%C%SP%FCL%skip_solver_loop) then
            call solve(M)
@@ -87,7 +87,7 @@
          call print(M%C%sc,M%C%SP%coupled)
          ! call export(M%C%sc,M%C%SP%coupled)
 
-         call export_restart(M%C,str(M%C%DT%restart))
+         call export_structured(M%C)
          ! call export_ISP(M%C%SP%VS)
          ! call export_TMP(M%C%SP%VS)
          ! call export(M%C%SP%coupled)

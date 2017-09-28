@@ -124,7 +124,7 @@
          call embedFace(temp_U,U,MD_fluid)
 
          call compute_E_M_Budget_fields(DT,e_budget,B_temp,Bnm1_temp,J,&
-         sigInv_F_ideal,sigInv_CC_ideal,temp_U,m,TMP%dt,DP,&
+         sigInv_F_ideal,sigInv_CC_ideal,temp_U,m,TMP%TS%dt,DP,&
          temp_CC_TF,temp_CC_VF,temp_F1,&
          temp_F1_TF,temp_F2_TF,temp_F3_TF)
 

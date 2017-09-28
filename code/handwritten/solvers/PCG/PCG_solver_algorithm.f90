@@ -66,7 +66,7 @@
         rhok = dot_product(r,z,x,tempx); res_norm%L2 = sqrt(abs(rhok))
         call update_exit_loop(ISP,res_norm%L2,res_norm0%L2)
         if (.not.ISP%exit_loop(2)) then ! Only do PCG if necessary!
-          do i=1,ISP%iter_max
+          do i=1,ISP%EC%iter_max
             call operator(Ax,p,k,m,MFP,tempk)
             call multiply_wall_Neumann(Ax,0.5_cp,x_BC)
             call assign_wall_Dirichlet(Ax,0.0_cp,x_BC)
@@ -137,7 +137,7 @@
         rhok = dot_product(r,z,x,tempx); res_norm%L2 = sqrt(abs(rhok))
         call update_exit_loop(ISP,res_norm%L2,res_norm0%L2)
         if (.not.ISP%exit_loop(2)) then ! Only do PCG if necessary!
-          do i=1,ISP%iter_max
+          do i=1,ISP%EC%iter_max
             call operator(Ax,p,k,m,MFP,tempk)
             call multiply_wall_Neumann(Ax,0.5_cp,x_BC)
             call assign_wall_Dirichlet(Ax,0.0_cp,x_BC)

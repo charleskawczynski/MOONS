@@ -16,29 +16,29 @@
 
        public :: export_primitives,import_primitives
 
-       public :: export_restart,import_restart
+       public :: export_structured,import_structured
 
-       public :: make_restart_dir
+       public :: set_IO_dir
 
        public :: suppress_warnings
 
-       interface init;             module procedure init_copy_var_set;        end interface
-       interface delete;           module procedure delete_var_set;           end interface
-       interface display;          module procedure display_var_set;          end interface
-       interface display_short;    module procedure display_short_var_set;    end interface
-       interface display;          module procedure display_wrap_var_set;     end interface
-       interface print;            module procedure print_var_set;            end interface
-       interface print_short;      module procedure print_short_var_set;      end interface
-       interface export;           module procedure export_var_set;           end interface
-       interface export_primitives;module procedure export_primitives_var_set;end interface
-       interface export_restart;   module procedure export_restart_var_set;   end interface
-       interface import;           module procedure import_var_set;           end interface
-       interface import_restart;   module procedure import_restart_var_set;   end interface
-       interface import_primitives;module procedure import_primitives_var_set;end interface
-       interface export;           module procedure export_wrap_var_set;      end interface
-       interface import;           module procedure import_wrap_var_set;      end interface
-       interface make_restart_dir; module procedure make_restart_dir_var_set; end interface
-       interface suppress_warnings;module procedure suppress_warnings_var_set;end interface
+       interface init;             module procedure init_copy_var_set;          end interface
+       interface delete;           module procedure delete_var_set;             end interface
+       interface display;          module procedure display_var_set;            end interface
+       interface display_short;    module procedure display_short_var_set;      end interface
+       interface display;          module procedure display_wrap_var_set;       end interface
+       interface print;            module procedure print_var_set;              end interface
+       interface print_short;      module procedure print_short_var_set;        end interface
+       interface export;           module procedure export_var_set;             end interface
+       interface export_primitives;module procedure export_primitives_var_set;  end interface
+       interface import;           module procedure import_var_set;             end interface
+       interface export_structured;module procedure export_structured_D_var_set;end interface
+       interface import_structured;module procedure import_structured_D_var_set;end interface
+       interface import_primitives;module procedure import_primitives_var_set;  end interface
+       interface export;           module procedure export_wrap_var_set;        end interface
+       interface import;           module procedure import_wrap_var_set;        end interface
+       interface set_IO_dir;       module procedure set_IO_dir_var_set;         end interface
+       interface suppress_warnings;module procedure suppress_warnings_var_set;  end interface
 
        type var_set
          type(var) :: T
@@ -126,15 +126,6 @@
          call display_short(this,6)
        end subroutine
 
-       subroutine export_primitives_var_set(this,un)
-         implicit none
-         type(var_set),intent(in) :: this
-         integer,intent(in) :: un
-         integer :: un_suppress_warning
-         un_suppress_warning = un
-         call suppress_warnings(this)
-       end subroutine
-
        subroutine export_var_set(this,un)
          implicit none
          type(var_set),intent(in) :: this
@@ -146,15 +137,6 @@
          call export(this%B0,un)
          call export(this%phi,un)
          call export(this%rho,un)
-       end subroutine
-
-       subroutine import_primitives_var_set(this,un)
-         implicit none
-         type(var_set),intent(inout) :: this
-         integer,intent(in) :: un
-         integer :: un_suppress_warning
-         un_suppress_warning = un
-         call suppress_warnings(this)
        end subroutine
 
        subroutine import_var_set(this,un)
@@ -169,6 +151,24 @@
          call import(this%B0,un)
          call import(this%phi,un)
          call import(this%rho,un)
+       end subroutine
+
+       subroutine export_primitives_var_set(this,un)
+         implicit none
+         type(var_set),intent(in) :: this
+         integer,intent(in) :: un
+         integer :: un_suppress_warning
+         un_suppress_warning = un
+         call suppress_warnings(this)
+       end subroutine
+
+       subroutine import_primitives_var_set(this,un)
+         implicit none
+         type(var_set),intent(inout) :: this
+         integer,intent(in) :: un
+         integer :: un_suppress_warning
+         un_suppress_warning = un
+         call suppress_warnings(this)
        end subroutine
 
        subroutine export_wrap_var_set(this,dir,name)
@@ -187,26 +187,26 @@
          character(len=*),intent(in) :: dir,name
          integer :: un
          un = open_to_read(dir,name)
-         call import(this,un)
+         call export(this,un)
          close(un)
        end subroutine
 
-       subroutine make_restart_dir_var_set(this,dir)
+       subroutine set_IO_dir_var_set(this,dir)
          implicit none
          type(var_set),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
-         call make_restart_dir(this%T,dir//'T'//fortran_PS)
-         call make_restart_dir(this%U,dir//'U'//fortran_PS)
-         call make_restart_dir(this%p,dir//'p'//fortran_PS)
-         call make_restart_dir(this%B,dir//'B'//fortran_PS)
-         call make_restart_dir(this%B0,dir//'B0'//fortran_PS)
-         call make_restart_dir(this%phi,dir//'phi'//fortran_PS)
-         call make_restart_dir(this%rho,dir//'rho'//fortran_PS)
+         call set_IO_dir(this%T,dir//'T'//fortran_PS)
+         call set_IO_dir(this%U,dir//'U'//fortran_PS)
+         call set_IO_dir(this%p,dir//'p'//fortran_PS)
+         call set_IO_dir(this%B,dir//'B'//fortran_PS)
+         call set_IO_dir(this%B0,dir//'B0'//fortran_PS)
+         call set_IO_dir(this%phi,dir//'phi'//fortran_PS)
+         call set_IO_dir(this%rho,dir//'rho'//fortran_PS)
        end subroutine
 
-       subroutine export_restart_var_set(this,dir)
+       subroutine export_structured_D_var_set(this,dir)
          implicit none
          type(var_set),intent(in) :: this
          character(len=*),intent(in) :: dir
@@ -214,16 +214,16 @@
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
-         call export_restart(this%T,dir//'T'//fortran_PS)
-         call export_restart(this%U,dir//'U'//fortran_PS)
-         call export_restart(this%p,dir//'p'//fortran_PS)
-         call export_restart(this%B,dir//'B'//fortran_PS)
-         call export_restart(this%B0,dir//'B0'//fortran_PS)
-         call export_restart(this%phi,dir//'phi'//fortran_PS)
-         call export_restart(this%rho,dir//'rho'//fortran_PS)
+         call export_structured(this%T,dir//'T'//fortran_PS)
+         call export_structured(this%U,dir//'U'//fortran_PS)
+         call export_structured(this%p,dir//'p'//fortran_PS)
+         call export_structured(this%B,dir//'B'//fortran_PS)
+         call export_structured(this%B0,dir//'B0'//fortran_PS)
+         call export_structured(this%phi,dir//'phi'//fortran_PS)
+         call export_structured(this%rho,dir//'rho'//fortran_PS)
        end subroutine
 
-       subroutine import_restart_var_set(this,dir)
+       subroutine import_structured_D_var_set(this,dir)
          implicit none
          type(var_set),intent(inout) :: this
          character(len=*),intent(in) :: dir
@@ -231,13 +231,13 @@
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         call import_restart(this%T,dir//'T'//fortran_PS)
-         call import_restart(this%U,dir//'U'//fortran_PS)
-         call import_restart(this%p,dir//'p'//fortran_PS)
-         call import_restart(this%B,dir//'B'//fortran_PS)
-         call import_restart(this%B0,dir//'B0'//fortran_PS)
-         call import_restart(this%phi,dir//'phi'//fortran_PS)
-         call import_restart(this%rho,dir//'rho'//fortran_PS)
+         call import_structured(this%T,dir//'T'//fortran_PS)
+         call import_structured(this%U,dir//'U'//fortran_PS)
+         call import_structured(this%p,dir//'p'//fortran_PS)
+         call import_structured(this%B,dir//'B'//fortran_PS)
+         call import_structured(this%B0,dir//'B0'//fortran_PS)
+         call import_structured(this%phi,dir//'phi'//fortran_PS)
+         call import_structured(this%rho,dir//'rho'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_var_set(this)

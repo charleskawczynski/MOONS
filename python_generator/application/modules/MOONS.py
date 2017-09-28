@@ -78,6 +78,7 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('ES'        ,'export_safe',priv)
 	g.module[m_name].add_prop('RM'        ,'refine_mesh',priv)
 	g.module[m_name].add_prop('KS'        ,'kill_switch',priv)
+	g.module[m_name].add_prop(['dir','name'],'string',priv)
 
 	m_name = 'governing_equations'
 	g.add_module(m_name)

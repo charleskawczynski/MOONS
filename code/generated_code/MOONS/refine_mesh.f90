@@ -16,31 +16,33 @@
 
        public :: export_primitives,import_primitives
 
-       public :: export_restart,import_restart
+       public :: export_structured,import_structured
 
-       public :: make_restart_dir
+       public :: set_IO_dir
 
        public :: suppress_warnings
 
-       interface init;             module procedure init_copy_refine_mesh;        end interface
-       interface delete;           module procedure delete_refine_mesh;           end interface
-       interface display;          module procedure display_refine_mesh;          end interface
-       interface display_short;    module procedure display_short_refine_mesh;    end interface
-       interface display;          module procedure display_wrap_refine_mesh;     end interface
-       interface print;            module procedure print_refine_mesh;            end interface
-       interface print_short;      module procedure print_short_refine_mesh;      end interface
-       interface export;           module procedure export_refine_mesh;           end interface
-       interface export_primitives;module procedure export_primitives_refine_mesh;end interface
-       interface export_restart;   module procedure export_restart_refine_mesh;   end interface
-       interface import;           module procedure import_refine_mesh;           end interface
-       interface import_restart;   module procedure import_restart_refine_mesh;   end interface
-       interface import_primitives;module procedure import_primitives_refine_mesh;end interface
-       interface export;           module procedure export_wrap_refine_mesh;      end interface
-       interface import;           module procedure import_wrap_refine_mesh;      end interface
-       interface make_restart_dir; module procedure make_restart_dir_refine_mesh; end interface
-       interface suppress_warnings;module procedure suppress_warnings_refine_mesh;end interface
-       interface export;           module procedure export_DN_refine_mesh;        end interface
-       interface import;           module procedure import_DN_refine_mesh;        end interface
+       interface init;             module procedure init_copy_refine_mesh;           end interface
+       interface delete;           module procedure delete_refine_mesh;              end interface
+       interface display;          module procedure display_refine_mesh;             end interface
+       interface display_short;    module procedure display_short_refine_mesh;       end interface
+       interface display;          module procedure display_wrap_refine_mesh;        end interface
+       interface print;            module procedure print_refine_mesh;               end interface
+       interface print_short;      module procedure print_short_refine_mesh;         end interface
+       interface export;           module procedure export_refine_mesh;              end interface
+       interface export_primitives;module procedure export_primitives_refine_mesh;   end interface
+       interface import;           module procedure import_refine_mesh;              end interface
+       interface export_structured;module procedure export_structured_D_refine_mesh; end interface
+       interface import_structured;module procedure import_structured_D_refine_mesh; end interface
+       interface import_primitives;module procedure import_primitives_refine_mesh;   end interface
+       interface export;           module procedure export_wrap_refine_mesh;         end interface
+       interface import;           module procedure import_wrap_refine_mesh;         end interface
+       interface set_IO_dir;       module procedure set_IO_dir_refine_mesh;          end interface
+       interface suppress_warnings;module procedure suppress_warnings_refine_mesh;   end interface
+       interface export;           module procedure export_DN_refine_mesh;           end interface
+       interface import;           module procedure import_DN_refine_mesh;           end interface
+       interface export_structured;module procedure export_structured_DN_refine_mesh;end interface
+       interface import_structured;module procedure import_structured_DN_refine_mesh;end interface
 
        type refine_mesh
          type(step) :: all
@@ -168,16 +170,6 @@
          call display_short(this,6)
        end subroutine
 
-       subroutine export_primitives_refine_mesh(this,un)
-         implicit none
-         type(refine_mesh),intent(in) :: this
-         integer,intent(in) :: un
-         write(un,*) 'any_next      = ';write(un,*) this%any_next
-         write(un,*) 'un            = ';write(un,*) this%un
-         write(un,*) 'i_level       = ';write(un,*) this%i_level
-         write(un,*) 'i_level_last  = ';write(un,*) this%i_level_last
-       end subroutine
-
        subroutine export_refine_mesh(this,un)
          implicit none
          type(refine_mesh),intent(in) :: this
@@ -197,16 +189,6 @@
          call export(this%name,un)
          call export(this%level,un)
          call export(this%level_last,un)
-       end subroutine
-
-       subroutine import_primitives_refine_mesh(this,un)
-         implicit none
-         type(refine_mesh),intent(inout) :: this
-         integer,intent(in) :: un
-         read(un,*); read(un,*) this%any_next
-         read(un,*); read(un,*) this%un
-         read(un,*); read(un,*) this%i_level
-         read(un,*); read(un,*) this%i_level_last
        end subroutine
 
        subroutine import_refine_mesh(this,un)
@@ -231,6 +213,26 @@
          call import(this%level_last,un)
        end subroutine
 
+       subroutine export_primitives_refine_mesh(this,un)
+         implicit none
+         type(refine_mesh),intent(in) :: this
+         integer,intent(in) :: un
+         write(un,*) 'any_next      = ';write(un,*) this%any_next
+         write(un,*) 'un            = ';write(un,*) this%un
+         write(un,*) 'i_level       = ';write(un,*) this%i_level
+         write(un,*) 'i_level_last  = ';write(un,*) this%i_level_last
+       end subroutine
+
+       subroutine import_primitives_refine_mesh(this,un)
+         implicit none
+         type(refine_mesh),intent(inout) :: this
+         integer,intent(in) :: un
+         read(un,*); read(un,*) this%any_next
+         read(un,*); read(un,*) this%un
+         read(un,*); read(un,*) this%i_level
+         read(un,*); read(un,*) this%i_level_last
+       end subroutine
+
        subroutine export_wrap_refine_mesh(this,dir,name)
          implicit none
          type(refine_mesh),intent(in) :: this
@@ -247,7 +249,7 @@
          character(len=*),intent(in) :: dir,name
          integer :: un
          un = open_to_read(dir,name)
-         call import(this,un)
+         call export(this,un)
          close(un)
        end subroutine
 
@@ -271,7 +273,45 @@
          close(un)
        end subroutine
 
-       subroutine make_restart_dir_refine_mesh(this,dir)
+       subroutine export_structured_DN_refine_mesh(this)
+         implicit none
+         type(refine_mesh),intent(in) :: this
+         integer :: un
+         un = new_and_open(str(this%dir),'primitives')
+         call export_primitives(this,un)
+         close(un)
+         call export_structured(this%all,str(this%dir)//'all'//fortran_PS)
+         call export_structured(this%x,str(this%dir)//'x'//fortran_PS)
+         call export_structured(this%y,str(this%dir)//'y'//fortran_PS)
+         call export_structured(this%z,str(this%dir)//'z'//fortran_PS)
+         call export_structured(this%x_plane,&
+         str(this%dir)//'x_plane'//fortran_PS)
+         call export_structured(this%y_plane,&
+         str(this%dir)//'y_plane'//fortran_PS)
+         call export_structured(this%z_plane,&
+         str(this%dir)//'z_plane'//fortran_PS)
+       end subroutine
+
+       subroutine import_structured_DN_refine_mesh(this)
+         implicit none
+         type(refine_mesh),intent(inout) :: this
+         integer :: un
+         un = open_to_read(str(this%dir),'primitives')
+         call import_primitives(this,un)
+         close(un)
+         call import_structured(this%all,str(this%dir)//'all'//fortran_PS)
+         call import_structured(this%x,str(this%dir)//'x'//fortran_PS)
+         call import_structured(this%y,str(this%dir)//'y'//fortran_PS)
+         call import_structured(this%z,str(this%dir)//'z'//fortran_PS)
+         call import_structured(this%x_plane,&
+         str(this%dir)//'x_plane'//fortran_PS)
+         call import_structured(this%y_plane,&
+         str(this%dir)//'y_plane'//fortran_PS)
+         call import_structured(this%z_plane,&
+         str(this%dir)//'z_plane'//fortran_PS)
+       end subroutine
+
+       subroutine set_IO_dir_refine_mesh(this,dir)
          implicit none
          type(refine_mesh),intent(inout) :: this
          character(len=*),intent(in) :: dir
@@ -279,16 +319,16 @@
          call make_dir_quiet(dir)
          call init(this%dir,dir)
          call init(this%name,'primitives')
-         call make_restart_dir(this%all,dir//'all'//fortran_PS)
-         call make_restart_dir(this%x,dir//'x'//fortran_PS)
-         call make_restart_dir(this%y,dir//'y'//fortran_PS)
-         call make_restart_dir(this%z,dir//'z'//fortran_PS)
-         call make_restart_dir(this%x_plane,dir//'x_plane'//fortran_PS)
-         call make_restart_dir(this%y_plane,dir//'y_plane'//fortran_PS)
-         call make_restart_dir(this%z_plane,dir//'z_plane'//fortran_PS)
+         call set_IO_dir(this%all,dir//'all'//fortran_PS)
+         call set_IO_dir(this%x,dir//'x'//fortran_PS)
+         call set_IO_dir(this%y,dir//'y'//fortran_PS)
+         call set_IO_dir(this%z,dir//'z'//fortran_PS)
+         call set_IO_dir(this%x_plane,dir//'x_plane'//fortran_PS)
+         call set_IO_dir(this%y_plane,dir//'y_plane'//fortran_PS)
+         call set_IO_dir(this%z_plane,dir//'z_plane'//fortran_PS)
        end subroutine
 
-       subroutine export_restart_refine_mesh(this,dir)
+       subroutine export_structured_D_refine_mesh(this,dir)
          implicit none
          type(refine_mesh),intent(in) :: this
          character(len=*),intent(in) :: dir
@@ -296,16 +336,16 @@
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
-         call export_restart(this%all,dir//'all'//fortran_PS)
-         call export_restart(this%x,dir//'x'//fortran_PS)
-         call export_restart(this%y,dir//'y'//fortran_PS)
-         call export_restart(this%z,dir//'z'//fortran_PS)
-         call export_restart(this%x_plane,dir//'x_plane'//fortran_PS)
-         call export_restart(this%y_plane,dir//'y_plane'//fortran_PS)
-         call export_restart(this%z_plane,dir//'z_plane'//fortran_PS)
+         call export_structured(this%all,dir//'all'//fortran_PS)
+         call export_structured(this%x,dir//'x'//fortran_PS)
+         call export_structured(this%y,dir//'y'//fortran_PS)
+         call export_structured(this%z,dir//'z'//fortran_PS)
+         call export_structured(this%x_plane,dir//'x_plane'//fortran_PS)
+         call export_structured(this%y_plane,dir//'y_plane'//fortran_PS)
+         call export_structured(this%z_plane,dir//'z_plane'//fortran_PS)
        end subroutine
 
-       subroutine import_restart_refine_mesh(this,dir)
+       subroutine import_structured_D_refine_mesh(this,dir)
          implicit none
          type(refine_mesh),intent(inout) :: this
          character(len=*),intent(in) :: dir
@@ -313,13 +353,13 @@
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         call import_restart(this%all,dir//'all'//fortran_PS)
-         call import_restart(this%x,dir//'x'//fortran_PS)
-         call import_restart(this%y,dir//'y'//fortran_PS)
-         call import_restart(this%z,dir//'z'//fortran_PS)
-         call import_restart(this%x_plane,dir//'x_plane'//fortran_PS)
-         call import_restart(this%y_plane,dir//'y_plane'//fortran_PS)
-         call import_restart(this%z_plane,dir//'z_plane'//fortran_PS)
+         call import_structured(this%all,dir//'all'//fortran_PS)
+         call import_structured(this%x,dir//'x'//fortran_PS)
+         call import_structured(this%y,dir//'y'//fortran_PS)
+         call import_structured(this%z,dir//'z'//fortran_PS)
+         call import_structured(this%x_plane,dir//'x_plane'//fortran_PS)
+         call import_structured(this%y_plane,dir//'y_plane'//fortran_PS)
+         call import_structured(this%z_plane,dir//'z_plane'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_refine_mesh(this)

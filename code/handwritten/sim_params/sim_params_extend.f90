@@ -59,7 +59,7 @@
        type(sim_params),intent(inout) :: SP
        logical,parameter :: T = .true.
        logical,parameter :: F = .false.
-       real(cp) :: time,dtime
+       real(cp) :: t_final,dtime
        call delete(SP)
 
        SP%FCL%stop_after_mesh_export             = F
@@ -128,7 +128,7 @@
        ! call init(SP%TSP,T,30.0_cp,60.0_cp)
        call init(SP%TSP,F,700.0_cp,800.0_cp)
 
-       time                          = 30.0_cp
+       t_final                          = 30.0_cp
        ! dtime                         = 1.0_cp*pow(-2)
        ! dtime                         = 1.0_cp*pow(-4)*0.5_cp**(4.0_cp)
        dtime                         = 1.0_cp*pow(-1)
@@ -241,14 +241,14 @@
        call init(SP%VS%rho%ISP,5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy)
 
        ! call init(TMP,RK_n_stages,RK_active,multistep_iter,n_step_stop,dtime)
-       call init(SP%coupled,   1,F,1 ,ceiling(time/dtime,li),dtime        )
-       call init(SP%VS%T%TMP,  1,F,1 ,SP%coupled%n_step_stop,SP%coupled%dt)
-       call init(SP%VS%U%TMP,  1,F,1 ,SP%coupled%n_step_stop,SP%coupled%dt)
-       call init(SP%VS%P%TMP,  1,F,1 ,SP%coupled%n_step_stop,SP%coupled%dt)
-       call init(SP%VS%B%TMP,  1,F,1 ,SP%coupled%n_step_stop,SP%coupled%dt)
-       call init(SP%VS%B0%TMP, 1,F,1 ,SP%coupled%n_step_stop,SP%coupled%dt)
-       call init(SP%VS%phi%TMP,1,F,1 ,SP%coupled%n_step_stop,SP%coupled%dt)
-       call init(SP%VS%rho%TMP,1,F,1 ,SP%coupled%n_step_stop,SP%coupled%dt)
+       call init(SP%coupled,   1,F,1 ,t_final,dtime)
+       call init(SP%VS%T%TMP,  1,F,1 ,t_final,dtime)
+       call init(SP%VS%U%TMP,  1,F,1 ,t_final,dtime)
+       call init(SP%VS%P%TMP,  1,F,1 ,t_final,dtime)
+       call init(SP%VS%B%TMP,  1,F,1 ,t_final,dtime)
+       call init(SP%VS%B0%TMP, 1,F,1 ,t_final,dtime)
+       call init(SP%VS%phi%TMP,1,F,1 ,t_final,dtime)
+       call init(SP%VS%rho%TMP,1,F,1 ,t_final,dtime)
 
        ! Matrix-free parameters:
        ! coeff_natural  = coefficient of terms in non-discretized equation

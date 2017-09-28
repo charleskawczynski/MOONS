@@ -43,7 +43,9 @@ SRCS_F+=\
 	$(SRC_DIR_GENERATED)$(PS)var_set$(PS)RK_params.f90\
 	$(SRC_DIR_GENERATED)$(PS)var_set$(PS)solver_settings.f90\
 	$(SRC_DIR_GENERATED)$(PS)var_set$(PS)matrix_free_params.f90\
+	$(SRC_DIR_GENERATED)$(PS)var_set$(PS)time_step.f90\
 	$(SRC_DIR_GENERATED)$(PS)var_set$(PS)time_marching_params.f90\
+	$(SRC_DIR_GENERATED)$(PS)var_set$(PS)exit_criteria.f90\
 	$(SRC_DIR_GENERATED)$(PS)var_set$(PS)iter_solver_params.f90\
 	$(SRC_DIR_GENERATED)$(PS)var_set$(PS)export_line.f90\
 	$(SRC_DIR_GENERATED)$(PS)var_set$(PS)export_lines.f90\

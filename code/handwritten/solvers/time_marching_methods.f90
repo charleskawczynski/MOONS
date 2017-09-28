@@ -66,13 +66,13 @@
          type(VF),intent(inout) :: temp_F1
          logical,intent(in) :: compute_norms
          call assign(temp_F1,F)
-         call multiply(temp_F1,TMP%dt)
+         call multiply(temp_F1,TMP%TS%dt)
          call assign_wall_Dirichlet(temp_F1,0.0_cp,X)
          call add(temp_F1,X)
          call assign(Xnm1,X)
-         call update_MFP(PCG_VF,m,TMP%dt*1.0_cp*PCG_VF%MFP%coeff_implicit,TMP%n_step.le.2)
+         call update_MFP(PCG_VF,m,TMP%TS%dt*1.0_cp*PCG_VF%MFP%coeff_implicit,TMP%n_step.le.2)
          call solve(PCG_VF,Xstar,temp_F1,m,compute_norms) ! Solve for X*
-         ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%dt,m,temp_F1,temp_CC,compute_norms)
+         ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%TS%dt,m,temp_F1,temp_CC,compute_norms)
          call clean_div(PCG_SF,X,Xstar,phi,1.0_cp,m,temp_F1,temp_CC,compute_norms)
        end subroutine
 
@@ -101,14 +101,14 @@
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
          call AB2(temp_F1,F,Fnm1)
-         call multiply(temp_F1,two_thirds*TMP%dt)
+         call multiply(temp_F1,two_thirds*TMP%TS%dt)
          call assign_wall_Dirichlet(temp_F1,0.0_cp,X)
          call add_product(temp_F1,X,four_thirds)
          call add_product(temp_F1,Xnm1,neg_one_third)
          call assign(Xnm1,X)
-         call update_MFP(PCG_VF,m,TMP%dt*two_thirds*PCG_VF%MFP%coeff_implicit,TMP%n_step.le.2)
+         call update_MFP(PCG_VF,m,TMP%TS%dt*two_thirds*PCG_VF%MFP%coeff_implicit,TMP%n_step.le.2)
          call solve(PCG_VF,Xstar,temp_F1,m,compute_norms) ! Solve for X*
-         ! call clean_div(PCG_SF,X,Xstar,phi,three_halfs/TMP%dt,m,temp_F1,temp_CC,compute_norms)
+         ! call clean_div(PCG_SF,X,Xstar,phi,three_halfs/TMP%TS%dt,m,temp_F1,temp_CC,compute_norms)
          call clean_div(PCG_SF,X,Xstar,phi,1.0_cp,m,temp_F1,temp_CC,compute_norms)
        end subroutine
 
@@ -138,14 +138,14 @@
          logical,intent(in) :: compute_norms
          call AB2(temp_F1,F,Fnm1)
          call add(temp_F1,L)
-         call multiply(temp_F1,TMP%dt)
+         call multiply(temp_F1,TMP%TS%dt)
          call assign_wall_Dirichlet(temp_F1,0.0_cp,X)
          call add(temp_F1,X)
          call assign(Xnm1,X)
-         ! call update_MFP(PCG_VF,m,TMP%dt*1.0_cp*PCG_VF%MFP%coeff_implicit,TMP%n_step.le.2)
-         call update_MFP(PCG_VF,m,TMP%dt*1.0_cp*PCG_VF%MFP%coeff_implicit,.true.)
+         ! call update_MFP(PCG_VF,m,TMP%TS%dt*1.0_cp*PCG_VF%MFP%coeff_implicit,TMP%n_step.le.2)
+         call update_MFP(PCG_VF,m,TMP%TS%dt*1.0_cp*PCG_VF%MFP%coeff_implicit,.true.)
          call solve(PCG_VF,Xstar,temp_F1,m,compute_norms) ! Solve for X*
-         call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%dt,m,temp_F1,temp_CC,compute_norms)
+         call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%TS%dt,m,temp_F1,temp_CC,compute_norms)
        end subroutine
 
        subroutine Euler_time_RK_sources(PCG_VF,PCG_SF,X,Xstar,Xnm1,phi,F,Fnm1,L,m,&
@@ -178,19 +178,19 @@
          type(VF),intent(inout) :: temp_F1
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
-         call multiply(temp_F1,F      ,TMP%dt*RKP%gamma%f(RKP%n))
-         call add_product(temp_F1,Fnm1,TMP%dt*RKP%zeta%f(RKP%n))
-         ! call add_product(temp_F1,L   ,TMP%dt*RKP%alpha%f(RKP%n))
-         call add_product(temp_F1,L   ,TMP%dt*2.0_cp*RKP%alpha%f(RKP%n))
+         call multiply(temp_F1,F      ,TMP%TS%dt*RKP%gamma%f(RKP%n))
+         call add_product(temp_F1,Fnm1,TMP%TS%dt*RKP%zeta%f(RKP%n))
+         ! call add_product(temp_F1,L   ,TMP%TS%dt*RKP%alpha%f(RKP%n))
+         call add_product(temp_F1,L   ,TMP%TS%dt*2.0_cp*RKP%alpha%f(RKP%n))
          call assign_wall_Dirichlet(temp_F1,0.0_cp,X)
          call add(temp_F1,X)
          call assign(Xnm1,X)
-         ! call update_MFP(PCG_VF,m,TMP%dt*RKP%d%f(RKP%n)*PCG_VF%MFP%coeff_implicit,.true.)
-         call update_MFP(PCG_VF,m,TMP%dt*2.0_cp*RKP%beta%f(RKP%n)*PCG_VF%MFP%coeff_implicit,.true.)
+         ! call update_MFP(PCG_VF,m,TMP%TS%dt*RKP%d%f(RKP%n)*PCG_VF%MFP%coeff_implicit,.true.)
+         call update_MFP(PCG_VF,m,TMP%TS%dt*2.0_cp*RKP%beta%f(RKP%n)*PCG_VF%MFP%coeff_implicit,.true.)
          call solve(PCG_VF,Xstar,temp_F1,m,compute_norms) ! Solve for X*
-         ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%dt,m,temp_F1,temp_CC,compute_norms)
+         ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%TS%dt,m,temp_F1,temp_CC,compute_norms)
          call clean_div(PCG_SF,X,Xstar,phi,1.0_cp,m,temp_F1,temp_CC,compute_norms)
-         ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/(TMP%dt*RKP%gamma%f(RKP%n)),m,temp_F1,temp_CC,compute_norms)
+         ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/(TMP%TS%dt*RKP%gamma%f(RKP%n)),m,temp_F1,temp_CC,compute_norms)
        end subroutine
 
        ! **********************************************************************
@@ -221,12 +221,12 @@
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
          call AB2(Xstar,F,Fnm1)
-         call multiply(Xstar,TMP%dt)
+         call multiply(Xstar,TMP%TS%dt)
          call assign_wall_Dirichlet(Xstar,0.0_cp,X)
          call add(Xstar,X)
          call assign(Xnm1,X)
          call clean_div(PCG_SF,X,Xstar,phi,1.0_cp,m,temp_F1,temp_CC,compute_norms)
-         ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%dt,m,temp_F1,temp_CC,compute_norms)
+         ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%TS%dt,m,temp_F1,temp_CC,compute_norms)
        end subroutine
 
        subroutine Euler_time_no_diff_Euler_sources(PCG_SF,X,Xstar,Xnm1,phi,F,m,TMP,&
@@ -252,12 +252,12 @@
          type(VF),intent(inout) :: temp_F1
          type(SF),intent(inout) :: temp_CC
          logical,intent(in) :: compute_norms
-         call multiply(Xstar,F,TMP%dt)
+         call multiply(Xstar,F,TMP%TS%dt)
          call assign_wall_Dirichlet(Xstar,0.0_cp,X)
          call add(Xstar,X)
          call assign(Xnm1,X)
          call clean_div(PCG_SF,X,Xstar,phi,1.0_cp,m,temp_F1,temp_CC,compute_norms)
-         ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%dt,m,temp_F1,temp_CC,compute_norms)
+         ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%TS%dt,m,temp_F1,temp_CC,compute_norms)
        end subroutine
 
        subroutine Euler_time_no_diff_AB2_sources_no_correction(X,Xstar,F,Fnm1,TMP)
@@ -274,7 +274,7 @@
          type(VF),intent(in) :: F,Fnm1
          type(time_marching_params),intent(in) :: TMP
          call AB2(Xstar,F,Fnm1)
-         call multiply(Xstar,TMP%dt)
+         call multiply(Xstar,TMP%TS%dt)
          call assign_wall_Dirichlet(Xstar,0.0_cp,X)
          call add(X,Xstar)
          call apply_BCs(X)
@@ -293,7 +293,7 @@
          type(VF),intent(inout) :: X,Xstar
          type(VF),intent(in) :: F
          type(time_marching_params),intent(in) :: TMP
-         call multiply(Xstar,F,TMP%dt)
+         call multiply(Xstar,F,TMP%TS%dt)
          call assign_wall_Dirichlet(Xstar,0.0_cp,X)
          call add(X,Xstar)
          call apply_BCs(X)

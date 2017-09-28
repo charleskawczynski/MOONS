@@ -197,15 +197,15 @@
            write(un,*) 'Re,Ha = ',SP%DP%Re,SP%DP%Ha
            write(un,*) 'N,Gr = ',SP%DP%N,SP%DP%Gr
            ! write(un,*) 'flow_rate = ',plane_sum_x(mom%U%x%BF(1)%GF,mom%m%B(1)%g,2,1.0_cp)/SP%DP%Re
-           write(un,*) 't,dt = ',SP%VS%U%TMP%t,SP%VS%U%TMP%dt
+           write(un,*) 't,dt = ',SP%VS%U%TMP%t,SP%VS%U%TMP%TS%dt
            write(un,*) 'solveUMethod,N_mom,N_PPE = ',SP%VS%U%SS%solve_method,&
-           SP%VS%U%ISP%iter_max,SP%VS%P%ISP%iter_max
-           write(un,*) 'tol_mom,tol_PPE = ',SP%VS%U%ISP%tol_rel,SP%VS%P%ISP%tol_rel
+           SP%VS%U%ISP%EC%iter_max,SP%VS%P%ISP%EC%iter_max
+           write(un,*) 'tol_mom,tol_PPE = ',SP%VS%U%ISP%EC%tol_rel,SP%VS%P%ISP%EC%tol_rel
            write(un,*) 'nstep,KE = ',SP%VS%U%TMP%n_step,get_data(mom%probe_KE)
            if (mom%TS%TSP%collect) call display(mom%TS%TSP,un)
            ! call displayPhysicalMinMax(mom%U,'U',un)
            call displayPhysicalMinMax(mom%divU,'divU',un)
-           write(un,*) 'CFL = ',CFL_number(mom%U_CC,mom%m,SP%VS%U%TMP%dt)
+           write(un,*) 'CFL = ',CFL_number(mom%U_CC,mom%m,SP%VS%U%TMP%TS%dt)
            write(un,*) ''
            ! call display(mom%m,un)
          endif

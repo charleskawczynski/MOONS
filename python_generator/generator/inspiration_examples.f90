@@ -1,3 +1,82 @@
+SF and array need a more protected IO:
+
+       subroutine export_array(this,un)
+         implicit none
+         type(array),intent(in) :: this
+         integer,intent(in) :: un
+         integer :: s_f
+         if (allocated(this%f)) then
+           s_f = size(this%f)
+           write(un,*) s_f
+           if (s_f.gt.0) then
+             write(un,*) 'f  = ';write(un,*) this%f
+           endif
+         else
+           write(un,*) 0
+         endif
+         write(un,*) 'N  = ';write(un,*) this%N
+       end subroutine
+
+       subroutine import_array(this,un)
+         implicit none
+         type(array),intent(inout) :: this
+         integer,intent(in) :: un
+         integer :: s_f
+         call delete(this)
+         read(un,*) s_f
+         if (s_f.gt.0) then
+           allocate(this%f(s_f))
+           read(un,*); read(un,*) this%f
+         endif
+         read(un,*); read(un,*) this%N
+       end subroutine
+
+       subroutine export_SF(this,un)
+         implicit none
+         type(SF),intent(in) :: this
+         integer,intent(in) :: un
+         integer :: i_BF
+         integer :: s_BF
+         if (allocated(this%BF)) then
+           s_BF = size(this%BF)
+           write(un,*) s_BF
+           if (s_BF.gt.0) then
+             do i_BF=1,s_BF
+               call export(this%BF(i_BF),un)
+             enddo
+           endif
+         else
+           write(un,*) 0
+         endif
+         write(un,*) 'all_neumann  = ';write(un,*) this%all_neumann
+         write(un,*) 'numEl        = ';write(un,*) this%numEl
+         write(un,*) 'numPhysEl    = ';write(un,*) this%numPhysEl
+         write(un,*) 'vol          = ';write(un,*) this%vol
+         write(un,*) 's            = ';write(un,*) this%s
+         call export(this%DL,un)
+       end subroutine
+
+       subroutine import_SF(this,un)
+         implicit none
+         type(SF),intent(inout) :: this
+         integer,intent(in) :: un
+         integer :: i_BF
+         integer :: s_BF
+         call delete(this)
+         read(un,*) s_BF
+         if (s_BF.gt.0) then
+           do i_BF=1,s_BF
+             call import(this%BF(i_BF),un)
+           enddo
+         endif
+         read(un,*); read(un,*) this%all_neumann
+         read(un,*); read(un,*) this%numEl
+         read(un,*); read(un,*) this%numPhysEl
+         read(un,*); read(un,*) this%vol
+         read(un,*); read(un,*) this%s
+         call import(this%DL,un)
+       end subroutine
+
         subroutine display_GF(a,un)
           implicit none
           type(grid_field),intent(in) :: a

@@ -16,29 +16,29 @@
 
        public :: export_primitives,import_primitives
 
-       public :: export_restart,import_restart
+       public :: export_structured,import_structured
 
-       public :: make_restart_dir
+       public :: set_IO_dir
 
        public :: suppress_warnings
 
-       interface init;             module procedure init_copy_matrix_free_params;        end interface
-       interface delete;           module procedure delete_matrix_free_params;           end interface
-       interface display;          module procedure display_matrix_free_params;          end interface
-       interface display_short;    module procedure display_short_matrix_free_params;    end interface
-       interface display;          module procedure display_wrap_matrix_free_params;     end interface
-       interface print;            module procedure print_matrix_free_params;            end interface
-       interface print_short;      module procedure print_short_matrix_free_params;      end interface
-       interface export;           module procedure export_matrix_free_params;           end interface
-       interface export_primitives;module procedure export_primitives_matrix_free_params;end interface
-       interface export_restart;   module procedure export_restart_matrix_free_params;   end interface
-       interface import;           module procedure import_matrix_free_params;           end interface
-       interface import_restart;   module procedure import_restart_matrix_free_params;   end interface
-       interface import_primitives;module procedure import_primitives_matrix_free_params;end interface
-       interface export;           module procedure export_wrap_matrix_free_params;      end interface
-       interface import;           module procedure import_wrap_matrix_free_params;      end interface
-       interface make_restart_dir; module procedure make_restart_dir_matrix_free_params; end interface
-       interface suppress_warnings;module procedure suppress_warnings_matrix_free_params;end interface
+       interface init;             module procedure init_copy_matrix_free_params;          end interface
+       interface delete;           module procedure delete_matrix_free_params;             end interface
+       interface display;          module procedure display_matrix_free_params;            end interface
+       interface display_short;    module procedure display_short_matrix_free_params;      end interface
+       interface display;          module procedure display_wrap_matrix_free_params;       end interface
+       interface print;            module procedure print_matrix_free_params;              end interface
+       interface print_short;      module procedure print_short_matrix_free_params;        end interface
+       interface export;           module procedure export_matrix_free_params;             end interface
+       interface export_primitives;module procedure export_primitives_matrix_free_params;  end interface
+       interface import;           module procedure import_matrix_free_params;             end interface
+       interface export_structured;module procedure export_structured_D_matrix_free_params;end interface
+       interface import_structured;module procedure import_structured_D_matrix_free_params;end interface
+       interface import_primitives;module procedure import_primitives_matrix_free_params;  end interface
+       interface export;           module procedure export_wrap_matrix_free_params;        end interface
+       interface import;           module procedure import_wrap_matrix_free_params;        end interface
+       interface set_IO_dir;       module procedure set_IO_dir_matrix_free_params;         end interface
+       interface suppress_warnings;module procedure suppress_warnings_matrix_free_params;  end interface
 
        type matrix_free_params
          logical :: suppress_warning = .false.
@@ -128,7 +128,7 @@
          call display_short(this,6)
        end subroutine
 
-       subroutine export_primitives_matrix_free_params(this,un)
+       subroutine export_matrix_free_params(this,un)
          implicit none
          type(matrix_free_params),intent(in) :: this
          integer,intent(in) :: un
@@ -141,7 +141,21 @@
          write(un,*) 'coeff_implicit_time_split  = ';write(un,*) this%coeff_implicit_time_split
        end subroutine
 
-       subroutine export_matrix_free_params(this,un)
+       subroutine import_matrix_free_params(this,un)
+         implicit none
+         type(matrix_free_params),intent(inout) :: this
+         integer,intent(in) :: un
+         call delete(this)
+         read(un,*); read(un,*) this%suppress_warning
+         read(un,*); read(un,*) this%alpha
+         read(un,*); read(un,*) this%beta
+         read(un,*); read(un,*) this%coeff_natural
+         read(un,*); read(un,*) this%coeff_explicit
+         read(un,*); read(un,*) this%coeff_implicit
+         read(un,*); read(un,*) this%coeff_implicit_time_split
+       end subroutine
+
+       subroutine export_primitives_matrix_free_params(this,un)
          implicit none
          type(matrix_free_params),intent(in) :: this
          integer,intent(in) :: un
@@ -167,20 +181,6 @@
          read(un,*); read(un,*) this%coeff_implicit_time_split
        end subroutine
 
-       subroutine import_matrix_free_params(this,un)
-         implicit none
-         type(matrix_free_params),intent(inout) :: this
-         integer,intent(in) :: un
-         call delete(this)
-         read(un,*); read(un,*) this%suppress_warning
-         read(un,*); read(un,*) this%alpha
-         read(un,*); read(un,*) this%beta
-         read(un,*); read(un,*) this%coeff_natural
-         read(un,*); read(un,*) this%coeff_explicit
-         read(un,*); read(un,*) this%coeff_implicit
-         read(un,*); read(un,*) this%coeff_implicit_time_split
-       end subroutine
-
        subroutine export_wrap_matrix_free_params(this,dir,name)
          implicit none
          type(matrix_free_params),intent(in) :: this
@@ -197,11 +197,11 @@
          character(len=*),intent(in) :: dir,name
          integer :: un
          un = open_to_read(dir,name)
-         call import(this,un)
+         call export(this,un)
          close(un)
        end subroutine
 
-       subroutine make_restart_dir_matrix_free_params(this,dir)
+       subroutine set_IO_dir_matrix_free_params(this,dir)
          implicit none
          type(matrix_free_params),intent(inout) :: this
          character(len=*),intent(in) :: dir
@@ -209,7 +209,7 @@
          call make_dir_quiet(dir)
        end subroutine
 
-       subroutine export_restart_matrix_free_params(this,dir)
+       subroutine export_structured_D_matrix_free_params(this,dir)
          implicit none
          type(matrix_free_params),intent(in) :: this
          character(len=*),intent(in) :: dir
@@ -219,7 +219,7 @@
          close(un)
        end subroutine
 
-       subroutine import_restart_matrix_free_params(this,dir)
+       subroutine import_structured_D_matrix_free_params(this,dir)
          implicit none
          type(matrix_free_params),intent(inout) :: this
          character(len=*),intent(in) :: dir

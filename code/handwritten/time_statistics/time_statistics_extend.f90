@@ -93,7 +93,7 @@
            call update(TS%TSP,TMP)
 
            if (TS%TSP%O1_stats%compute_stats) then ! Compute 1st order statistics (ubar)
-             call add_product(TS%U_sum,U,TMP%dt)
+             call add_product(TS%U_sum,U,TMP%TS%dt)
 
              call assign(TS%U_ave,TS%U_sum)
              call multiply(TS%U_ave,get_coeff(TS%TSP%O1_stats,TMP))
@@ -103,7 +103,7 @@
 
              call assign(temp,U)
              call square(temp)
-             call add_product(TS%RMS,temp,TMP%dt)
+             call add_product(TS%RMS,temp,TMP%TS%dt)
            endif
 
            if (TS%TSP%O1_stats%export_stats) then
@@ -131,7 +131,7 @@
 
            call update(TS%TSP,TMP)
            if (TS%TSP%O1_stats%compute_stats) then ! Compute 1st order statistics (ubar)
-             call add_product(TS%U_sum,U,TMP%dt)
+             call add_product(TS%U_sum,U,TMP%TS%dt)
 
              ! call add(temp_VF,U,Unm1)
              call multiply(TS%U_ave,get_coeff(TS%TSP%O1_stats,TMP))
@@ -144,7 +144,7 @@
 
              call assign(temp_VF,U)
              call square(temp_VF)
-             call add_product(TS%RMS,temp_VF,TMP%dt)
+             call add_product(TS%RMS,temp_VF,TMP%TS%dt)
              call add_stat(TS%TSP%O1_stats)
            endif
 
@@ -160,7 +160,7 @@
              call multiply(TF_CC%z%x,temp_CC%z,temp_CC%x)
              call multiply(TF_CC%z%y,temp_CC%z,temp_CC%y)
              call multiply(TF_CC%z%z,temp_CC%z,temp_CC%z)
-             call add_product(TS%stresses_sum,TF_CC,TMP%dt)
+             call add_product(TS%stresses_sum,TF_CC,TMP%TS%dt)
 
              call assign(TS%stresses,TS%stresses_sum)
              call multiply(TS%stresses,get_coeff(TS%TSP%O2_stats,TMP))
@@ -194,7 +194,7 @@
          type(time_marching_params),intent(in) :: TMP
          real(cp) :: coeff
          coeff = 1.0_cp/(TMP%t-SP%t_start)
-         coeff = 1.0_cp/(TMP%t-SP%t_start+TMP%dt)
+         coeff = 1.0_cp/(TMP%t-SP%t_start+TMP%TS%dt)
        end function
 
        end module

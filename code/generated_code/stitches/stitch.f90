@@ -15,29 +15,29 @@
 
        public :: export_primitives,import_primitives
 
-       public :: export_restart,import_restart
+       public :: export_structured,import_structured
 
-       public :: make_restart_dir
+       public :: set_IO_dir
 
        public :: suppress_warnings
 
-       interface init;             module procedure init_copy_stitch;        end interface
-       interface delete;           module procedure delete_stitch;           end interface
-       interface display;          module procedure display_stitch;          end interface
-       interface display_short;    module procedure display_short_stitch;    end interface
-       interface display;          module procedure display_wrap_stitch;     end interface
-       interface print;            module procedure print_stitch;            end interface
-       interface print_short;      module procedure print_short_stitch;      end interface
-       interface export;           module procedure export_stitch;           end interface
-       interface export_primitives;module procedure export_primitives_stitch;end interface
-       interface export_restart;   module procedure export_restart_stitch;   end interface
-       interface import;           module procedure import_stitch;           end interface
-       interface import_restart;   module procedure import_restart_stitch;   end interface
-       interface import_primitives;module procedure import_primitives_stitch;end interface
-       interface export;           module procedure export_wrap_stitch;      end interface
-       interface import;           module procedure import_wrap_stitch;      end interface
-       interface make_restart_dir; module procedure make_restart_dir_stitch; end interface
-       interface suppress_warnings;module procedure suppress_warnings_stitch;end interface
+       interface init;             module procedure init_copy_stitch;          end interface
+       interface delete;           module procedure delete_stitch;             end interface
+       interface display;          module procedure display_stitch;            end interface
+       interface display_short;    module procedure display_short_stitch;      end interface
+       interface display;          module procedure display_wrap_stitch;       end interface
+       interface print;            module procedure print_stitch;              end interface
+       interface print_short;      module procedure print_short_stitch;        end interface
+       interface export;           module procedure export_stitch;             end interface
+       interface export_primitives;module procedure export_primitives_stitch;  end interface
+       interface import;           module procedure import_stitch;             end interface
+       interface export_structured;module procedure export_structured_D_stitch;end interface
+       interface import_structured;module procedure import_structured_D_stitch;end interface
+       interface import_primitives;module procedure import_primitives_stitch;  end interface
+       interface export;           module procedure export_wrap_stitch;        end interface
+       interface import;           module procedure import_wrap_stitch;        end interface
+       interface set_IO_dir;       module procedure set_IO_dir_stitch;         end interface
+       interface suppress_warnings;module procedure suppress_warnings_stitch;  end interface
 
        type stitch
          logical :: L = .false.
@@ -100,7 +100,7 @@
          call display_short(this,6)
        end subroutine
 
-       subroutine export_primitives_stitch(this,un)
+       subroutine export_stitch(this,un)
          implicit none
          type(stitch),intent(in) :: this
          integer,intent(in) :: un
@@ -108,7 +108,16 @@
          write(un,*) 'ID  = ';write(un,*) this%ID
        end subroutine
 
-       subroutine export_stitch(this,un)
+       subroutine import_stitch(this,un)
+         implicit none
+         type(stitch),intent(inout) :: this
+         integer,intent(in) :: un
+         call delete(this)
+         read(un,*); read(un,*) this%L
+         read(un,*); read(un,*) this%ID
+       end subroutine
+
+       subroutine export_primitives_stitch(this,un)
          implicit none
          type(stitch),intent(in) :: this
          integer,intent(in) :: un
@@ -120,15 +129,6 @@
          implicit none
          type(stitch),intent(inout) :: this
          integer,intent(in) :: un
-         read(un,*); read(un,*) this%L
-         read(un,*); read(un,*) this%ID
-       end subroutine
-
-       subroutine import_stitch(this,un)
-         implicit none
-         type(stitch),intent(inout) :: this
-         integer,intent(in) :: un
-         call delete(this)
          read(un,*); read(un,*) this%L
          read(un,*); read(un,*) this%ID
        end subroutine
@@ -149,11 +149,11 @@
          character(len=*),intent(in) :: dir,name
          integer :: un
          un = open_to_read(dir,name)
-         call import(this,un)
+         call export(this,un)
          close(un)
        end subroutine
 
-       subroutine make_restart_dir_stitch(this,dir)
+       subroutine set_IO_dir_stitch(this,dir)
          implicit none
          type(stitch),intent(inout) :: this
          character(len=*),intent(in) :: dir
@@ -161,7 +161,7 @@
          call make_dir_quiet(dir)
        end subroutine
 
-       subroutine export_restart_stitch(this,dir)
+       subroutine export_structured_D_stitch(this,dir)
          implicit none
          type(stitch),intent(in) :: this
          character(len=*),intent(in) :: dir
@@ -171,7 +171,7 @@
          close(un)
        end subroutine
 
-       subroutine import_restart_stitch(this,dir)
+       subroutine import_structured_D_stitch(this,dir)
          implicit none
          type(stitch),intent(inout) :: this
          character(len=*),intent(in) :: dir

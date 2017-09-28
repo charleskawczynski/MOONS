@@ -48,7 +48,7 @@
          write(*,*) '***************************************************************'
          write(*,*) '****************** ENTERING MAIN LOOP *************************'
          write(*,*) '***************************************************************'
-         do while ((.not.M%C%KS%terminate_loop).and.(M%C%SP%coupled%t.lt.M%C%SP%coupled%t_final-M%C%SP%coupled%dt*0.5_cp))
+         do while ((.not.M%C%KS%terminate_loop).and.(M%C%SP%coupled%t.lt.M%C%SP%coupled%TS%t_final-M%C%SP%coupled%TS%dt*0.5_cp))
 
            call tic(M%C%sc)
 
@@ -96,30 +96,25 @@
            call update(M%GE%mom%TS,M%GE%mom%m,M%GE%mom%U,M%C%SP%VS%U%TMP,M%GE%mom%temp_F1,M%GE%mom%temp_CC_VF,M%GE%mom%TF_CC)
 
            if (M%C%EN%any_now) then
-             call export_ISP(M%C%SP%VS)
-             call export_TMP(M%C%SP%VS)
-             call export(M%C%SP%coupled)
+             call export_structured(M%C)
            endif
 
-           ! call import(M%C%SP%DP,str(M%C%DT%dimensionless_params),'dimensionless_params')
-           call import_exit_criteria(M%GE%mom%PCG_U%ISP)
-           call import_exit_criteria(M%GE%mom%PCG_P%ISP)
-           call import_exit_criteria(M%GE%ind%PCG_B%ISP)
-           call import_exit_criteria(M%GE%ind%PCG_cleanB%ISP)
+           call import_structured(M%C%SP%DP)
+           call import_structured(M%GE%mom%PCG_U%ISP%EC)
+           call import_structured(M%GE%mom%PCG_P%ISP%EC)
+           call import_structured(M%GE%ind%PCG_B%ISP%EC)
+           call import_structured(M%GE%ind%PCG_B%ISP%EC)
+           call import_structured(M%GE%ind%PCG_cleanB%ISP%EC)
            call import_exit_criteria(M%C%SP%VS)
            call import_TMP_dt(M%C%SP%VS)
-           call import_dt(M%C%SP%coupled)
+           call import_structured(M%C%SP%coupled%TS)
            if (M%C%SP%SCP%couple_time_steps) call couple_time_step(M%C%SP%VS,M%C%SP%coupled)
 
            call update(M%C%ES,M%C%sc%t_passed)
 
-           call import(M%C%EN)
+           call import_structured(M%C%EN)
            call update(M%C%EN,M%C%ES%export_now)
-           if (M%C%EN%any_next) call export(M%C%EN)
-
-           call import(M%C%RM)
-           call update(M%C%RM)
-           if (M%C%RM%any_next) call export(M%C%RM)
+           if (M%C%EN%any_next) call export_structured(M%C%EN)
 
            call toc(M%C%sc,M%C%SP%coupled)
            if (M%C%SP%EF%info%export_now) then
@@ -133,9 +128,9 @@
                call print_light(M%C%sc,M%C%SP%coupled)
              endif
              call export(M%C%sc,M%C%SP%coupled%t)
-             call import(M%C%KS)
+             call import_structured(M%C%KS)
            endif
-           ! call import(M%C%SP%EF)
+           ! call import_structured(M%C%SP%EF)
          enddo
          write(*,*) '***************************************************************'
          write(*,*) '******************* EXITING MAIN LOOP *************************'

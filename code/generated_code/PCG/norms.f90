@@ -16,29 +16,29 @@
 
        public :: export_primitives,import_primitives
 
-       public :: export_restart,import_restart
+       public :: export_structured,import_structured
 
-       public :: make_restart_dir
+       public :: set_IO_dir
 
        public :: suppress_warnings
 
-       interface init;             module procedure init_copy_norms;        end interface
-       interface delete;           module procedure delete_norms;           end interface
-       interface display;          module procedure display_norms;          end interface
-       interface display_short;    module procedure display_short_norms;    end interface
-       interface display;          module procedure display_wrap_norms;     end interface
-       interface print;            module procedure print_norms;            end interface
-       interface print_short;      module procedure print_short_norms;      end interface
-       interface export;           module procedure export_norms;           end interface
-       interface export_primitives;module procedure export_primitives_norms;end interface
-       interface export_restart;   module procedure export_restart_norms;   end interface
-       interface import;           module procedure import_norms;           end interface
-       interface import_restart;   module procedure import_restart_norms;   end interface
-       interface import_primitives;module procedure import_primitives_norms;end interface
-       interface export;           module procedure export_wrap_norms;      end interface
-       interface import;           module procedure import_wrap_norms;      end interface
-       interface make_restart_dir; module procedure make_restart_dir_norms; end interface
-       interface suppress_warnings;module procedure suppress_warnings_norms;end interface
+       interface init;             module procedure init_copy_norms;          end interface
+       interface delete;           module procedure delete_norms;             end interface
+       interface display;          module procedure display_norms;            end interface
+       interface display_short;    module procedure display_short_norms;      end interface
+       interface display;          module procedure display_wrap_norms;       end interface
+       interface print;            module procedure print_norms;              end interface
+       interface print_short;      module procedure print_short_norms;        end interface
+       interface export;           module procedure export_norms;             end interface
+       interface export_primitives;module procedure export_primitives_norms;  end interface
+       interface import;           module procedure import_norms;             end interface
+       interface export_structured;module procedure export_structured_D_norms;end interface
+       interface import_structured;module procedure import_structured_D_norms;end interface
+       interface import_primitives;module procedure import_primitives_norms;  end interface
+       interface export;           module procedure export_wrap_norms;        end interface
+       interface import;           module procedure import_wrap_norms;        end interface
+       interface set_IO_dir;       module procedure set_IO_dir_norms;         end interface
+       interface suppress_warnings;module procedure suppress_warnings_norms;  end interface
 
        type norms
          real(cp) :: L1 = 0.0_cp
@@ -106,7 +106,7 @@
          call display_short(this,6)
        end subroutine
 
-       subroutine export_primitives_norms(this,un)
+       subroutine export_norms(this,un)
          implicit none
          type(norms),intent(in) :: this
          integer,intent(in) :: un
@@ -115,7 +115,17 @@
          write(un,*) 'Linf  = ';write(un,*) this%Linf
        end subroutine
 
-       subroutine export_norms(this,un)
+       subroutine import_norms(this,un)
+         implicit none
+         type(norms),intent(inout) :: this
+         integer,intent(in) :: un
+         call delete(this)
+         read(un,*); read(un,*) this%L1
+         read(un,*); read(un,*) this%L2
+         read(un,*); read(un,*) this%Linf
+       end subroutine
+
+       subroutine export_primitives_norms(this,un)
          implicit none
          type(norms),intent(in) :: this
          integer,intent(in) :: un
@@ -128,16 +138,6 @@
          implicit none
          type(norms),intent(inout) :: this
          integer,intent(in) :: un
-         read(un,*); read(un,*) this%L1
-         read(un,*); read(un,*) this%L2
-         read(un,*); read(un,*) this%Linf
-       end subroutine
-
-       subroutine import_norms(this,un)
-         implicit none
-         type(norms),intent(inout) :: this
-         integer,intent(in) :: un
-         call delete(this)
          read(un,*); read(un,*) this%L1
          read(un,*); read(un,*) this%L2
          read(un,*); read(un,*) this%Linf
@@ -159,11 +159,11 @@
          character(len=*),intent(in) :: dir,name
          integer :: un
          un = open_to_read(dir,name)
-         call import(this,un)
+         call export(this,un)
          close(un)
        end subroutine
 
-       subroutine make_restart_dir_norms(this,dir)
+       subroutine set_IO_dir_norms(this,dir)
          implicit none
          type(norms),intent(inout) :: this
          character(len=*),intent(in) :: dir
@@ -171,7 +171,7 @@
          call make_dir_quiet(dir)
        end subroutine
 
-       subroutine export_restart_norms(this,dir)
+       subroutine export_structured_D_norms(this,dir)
          implicit none
          type(norms),intent(in) :: this
          character(len=*),intent(in) :: dir
@@ -181,7 +181,7 @@
          close(un)
        end subroutine
 
-       subroutine import_restart_norms(this,dir)
+       subroutine import_structured_D_norms(this,dir)
          implicit none
          type(norms),intent(inout) :: this
          character(len=*),intent(in) :: dir

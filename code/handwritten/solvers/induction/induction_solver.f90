@@ -65,12 +65,12 @@
            call subtract(curlE,curlUCrossB)
          endif
          do i=1,TMP%multistep_iter
-           call multiply(temp_F1,curlE,-TMP%dt)
+           call multiply(temp_F1,curlE,-TMP%TS%dt)
            call add(B,temp_F1)
            call apply_BCs(B)
            call embedFace(B,B_interior,MD_sigma)
          enddo
-         call clean_div(PCG_cleanB,B,Bstar,phi,1.0_cp/TMP%dt,m,temp_F1,SF_CC,compute_norms)
+         call clean_div(PCG_cleanB,B,Bstar,phi,1.0_cp/TMP%TS%dt,m,temp_F1,SF_CC,compute_norms)
          call embedFace(B,B_interior,MD_sigma)
        end subroutine
 

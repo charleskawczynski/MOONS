@@ -15,29 +15,29 @@
 
        public :: export_primitives,import_primitives
 
-       public :: export_restart,import_restart
+       public :: export_structured,import_structured
 
-       public :: make_restart_dir
+       public :: set_IO_dir
 
        public :: suppress_warnings
 
-       interface init;             module procedure init_copy_index_2D;        end interface
-       interface delete;           module procedure delete_index_2D;           end interface
-       interface display;          module procedure display_index_2D;          end interface
-       interface display_short;    module procedure display_short_index_2D;    end interface
-       interface display;          module procedure display_wrap_index_2D;     end interface
-       interface print;            module procedure print_index_2D;            end interface
-       interface print_short;      module procedure print_short_index_2D;      end interface
-       interface export;           module procedure export_index_2D;           end interface
-       interface export_primitives;module procedure export_primitives_index_2D;end interface
-       interface export_restart;   module procedure export_restart_index_2D;   end interface
-       interface import;           module procedure import_index_2D;           end interface
-       interface import_restart;   module procedure import_restart_index_2D;   end interface
-       interface import_primitives;module procedure import_primitives_index_2D;end interface
-       interface export;           module procedure export_wrap_index_2D;      end interface
-       interface import;           module procedure import_wrap_index_2D;      end interface
-       interface make_restart_dir; module procedure make_restart_dir_index_2D; end interface
-       interface suppress_warnings;module procedure suppress_warnings_index_2D;end interface
+       interface init;             module procedure init_copy_index_2D;          end interface
+       interface delete;           module procedure delete_index_2D;             end interface
+       interface display;          module procedure display_index_2D;            end interface
+       interface display_short;    module procedure display_short_index_2D;      end interface
+       interface display;          module procedure display_wrap_index_2D;       end interface
+       interface print;            module procedure print_index_2D;              end interface
+       interface print_short;      module procedure print_short_index_2D;        end interface
+       interface export;           module procedure export_index_2D;             end interface
+       interface export_primitives;module procedure export_primitives_index_2D;  end interface
+       interface import;           module procedure import_index_2D;             end interface
+       interface export_structured;module procedure export_structured_D_index_2D;end interface
+       interface import_structured;module procedure import_structured_D_index_2D;end interface
+       interface import_primitives;module procedure import_primitives_index_2D;  end interface
+       interface export;           module procedure export_wrap_index_2D;        end interface
+       interface import;           module procedure import_wrap_index_2D;        end interface
+       interface set_IO_dir;       module procedure set_IO_dir_index_2D;         end interface
+       interface suppress_warnings;module procedure suppress_warnings_index_2D;  end interface
 
        type index_2D
          integer,dimension(2) :: i = 0
@@ -95,14 +95,22 @@
          call display_short(this,6)
        end subroutine
 
-       subroutine export_primitives_index_2D(this,un)
+       subroutine export_index_2D(this,un)
          implicit none
          type(index_2D),intent(in) :: this
          integer,intent(in) :: un
          write(un,*) 'i  = ';write(un,*) this%i
        end subroutine
 
-       subroutine export_index_2D(this,un)
+       subroutine import_index_2D(this,un)
+         implicit none
+         type(index_2D),intent(inout) :: this
+         integer,intent(in) :: un
+         call delete(this)
+         read(un,*); read(un,*) this%i
+       end subroutine
+
+       subroutine export_primitives_index_2D(this,un)
          implicit none
          type(index_2D),intent(in) :: this
          integer,intent(in) :: un
@@ -113,14 +121,6 @@
          implicit none
          type(index_2D),intent(inout) :: this
          integer,intent(in) :: un
-         read(un,*); read(un,*) this%i
-       end subroutine
-
-       subroutine import_index_2D(this,un)
-         implicit none
-         type(index_2D),intent(inout) :: this
-         integer,intent(in) :: un
-         call delete(this)
          read(un,*); read(un,*) this%i
        end subroutine
 
@@ -140,11 +140,11 @@
          character(len=*),intent(in) :: dir,name
          integer :: un
          un = open_to_read(dir,name)
-         call import(this,un)
+         call export(this,un)
          close(un)
        end subroutine
 
-       subroutine make_restart_dir_index_2D(this,dir)
+       subroutine set_IO_dir_index_2D(this,dir)
          implicit none
          type(index_2D),intent(inout) :: this
          character(len=*),intent(in) :: dir
@@ -152,7 +152,7 @@
          call make_dir_quiet(dir)
        end subroutine
 
-       subroutine export_restart_index_2D(this,dir)
+       subroutine export_structured_D_index_2D(this,dir)
          implicit none
          type(index_2D),intent(in) :: this
          character(len=*),intent(in) :: dir
@@ -162,7 +162,7 @@
          close(un)
        end subroutine
 
-       subroutine import_restart_index_2D(this,dir)
+       subroutine import_structured_D_index_2D(this,dir)
          implicit none
          type(index_2D),intent(inout) :: this
          character(len=*),intent(in) :: dir

@@ -16,29 +16,29 @@
 
        public :: export_primitives,import_primitives
 
-       public :: export_restart,import_restart
+       public :: export_structured,import_structured
 
-       public :: make_restart_dir
+       public :: set_IO_dir
 
        public :: suppress_warnings
 
-       interface init;             module procedure init_copy_physical_sub_domain;        end interface
-       interface delete;           module procedure delete_physical_sub_domain;           end interface
-       interface display;          module procedure display_physical_sub_domain;          end interface
-       interface display_short;    module procedure display_short_physical_sub_domain;    end interface
-       interface display;          module procedure display_wrap_physical_sub_domain;     end interface
-       interface print;            module procedure print_physical_sub_domain;            end interface
-       interface print_short;      module procedure print_short_physical_sub_domain;      end interface
-       interface export;           module procedure export_physical_sub_domain;           end interface
-       interface export_primitives;module procedure export_primitives_physical_sub_domain;end interface
-       interface export_restart;   module procedure export_restart_physical_sub_domain;   end interface
-       interface import;           module procedure import_physical_sub_domain;           end interface
-       interface import_restart;   module procedure import_restart_physical_sub_domain;   end interface
-       interface import_primitives;module procedure import_primitives_physical_sub_domain;end interface
-       interface export;           module procedure export_wrap_physical_sub_domain;      end interface
-       interface import;           module procedure import_wrap_physical_sub_domain;      end interface
-       interface make_restart_dir; module procedure make_restart_dir_physical_sub_domain; end interface
-       interface suppress_warnings;module procedure suppress_warnings_physical_sub_domain;end interface
+       interface init;             module procedure init_copy_physical_sub_domain;          end interface
+       interface delete;           module procedure delete_physical_sub_domain;             end interface
+       interface display;          module procedure display_physical_sub_domain;            end interface
+       interface display_short;    module procedure display_short_physical_sub_domain;      end interface
+       interface display;          module procedure display_wrap_physical_sub_domain;       end interface
+       interface print;            module procedure print_physical_sub_domain;              end interface
+       interface print_short;      module procedure print_short_physical_sub_domain;        end interface
+       interface export;           module procedure export_physical_sub_domain;             end interface
+       interface export_primitives;module procedure export_primitives_physical_sub_domain;  end interface
+       interface import;           module procedure import_physical_sub_domain;             end interface
+       interface export_structured;module procedure export_structured_D_physical_sub_domain;end interface
+       interface import_structured;module procedure import_structured_D_physical_sub_domain;end interface
+       interface import_primitives;module procedure import_primitives_physical_sub_domain;  end interface
+       interface export;           module procedure export_wrap_physical_sub_domain;        end interface
+       interface import;           module procedure import_wrap_physical_sub_domain;        end interface
+       interface set_IO_dir;       module procedure set_IO_dir_physical_sub_domain;         end interface
+       interface suppress_warnings;module procedure suppress_warnings_physical_sub_domain;  end interface
 
        type physical_sub_domain
          type(sub_domain) :: total
@@ -106,13 +106,6 @@
          call display_short(this,6)
        end subroutine
 
-       subroutine export_primitives_physical_sub_domain(this,un)
-         implicit none
-         type(physical_sub_domain),intent(in) :: this
-         integer,intent(in) :: un
-         write(un,*) 'defined   = ';write(un,*) this%defined
-       end subroutine
-
        subroutine export_physical_sub_domain(this,un)
          implicit none
          type(physical_sub_domain),intent(in) :: this
@@ -122,13 +115,6 @@
          write(un,*) 'defined   = ';write(un,*) this%defined
        end subroutine
 
-       subroutine import_primitives_physical_sub_domain(this,un)
-         implicit none
-         type(physical_sub_domain),intent(inout) :: this
-         integer,intent(in) :: un
-         read(un,*); read(un,*) this%defined
-       end subroutine
-
        subroutine import_physical_sub_domain(this,un)
          implicit none
          type(physical_sub_domain),intent(inout) :: this
@@ -136,6 +122,20 @@
          call delete(this)
          call import(this%total,un)
          call import(this%physical,un)
+         read(un,*); read(un,*) this%defined
+       end subroutine
+
+       subroutine export_primitives_physical_sub_domain(this,un)
+         implicit none
+         type(physical_sub_domain),intent(in) :: this
+         integer,intent(in) :: un
+         write(un,*) 'defined   = ';write(un,*) this%defined
+       end subroutine
+
+       subroutine import_primitives_physical_sub_domain(this,un)
+         implicit none
+         type(physical_sub_domain),intent(inout) :: this
+         integer,intent(in) :: un
          read(un,*); read(un,*) this%defined
        end subroutine
 
@@ -155,21 +155,21 @@
          character(len=*),intent(in) :: dir,name
          integer :: un
          un = open_to_read(dir,name)
-         call import(this,un)
+         call export(this,un)
          close(un)
        end subroutine
 
-       subroutine make_restart_dir_physical_sub_domain(this,dir)
+       subroutine set_IO_dir_physical_sub_domain(this,dir)
          implicit none
          type(physical_sub_domain),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
-         call make_restart_dir(this%total,dir//'total'//fortran_PS)
-         call make_restart_dir(this%physical,dir//'physical'//fortran_PS)
+         call set_IO_dir(this%total,dir//'total'//fortran_PS)
+         call set_IO_dir(this%physical,dir//'physical'//fortran_PS)
        end subroutine
 
-       subroutine export_restart_physical_sub_domain(this,dir)
+       subroutine export_structured_D_physical_sub_domain(this,dir)
          implicit none
          type(physical_sub_domain),intent(in) :: this
          character(len=*),intent(in) :: dir
@@ -177,11 +177,11 @@
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
-         call export_restart(this%total,dir//'total'//fortran_PS)
-         call export_restart(this%physical,dir//'physical'//fortran_PS)
+         call export_structured(this%total,dir//'total'//fortran_PS)
+         call export_structured(this%physical,dir//'physical'//fortran_PS)
        end subroutine
 
-       subroutine import_restart_physical_sub_domain(this,dir)
+       subroutine import_structured_D_physical_sub_domain(this,dir)
          implicit none
          type(physical_sub_domain),intent(inout) :: this
          character(len=*),intent(in) :: dir
@@ -189,8 +189,8 @@
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         call import_restart(this%total,dir//'total'//fortran_PS)
-         call import_restart(this%physical,dir//'physical'//fortran_PS)
+         call import_structured(this%total,dir//'total'//fortran_PS)
+         call import_structured(this%physical,dir//'physical'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_physical_sub_domain(this)

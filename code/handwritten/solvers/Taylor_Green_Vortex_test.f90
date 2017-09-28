@@ -40,7 +40,7 @@
          type(SF) :: P_error,P_analytic,p_actual,p_mod
          real(cp) :: e,dtime,Re
          Re = SP%DP%Re
-         dtime = SP%VS%U%TMP%dt
+         dtime = SP%VS%U%TMP%TS%dt
          write(*,*) ' ************************************************************ '
          write(*,*) ' ************** BEGIN TAYLOR GREEN VORTEX TEST ************** '
          write(*,*) ' ************************************************************ '

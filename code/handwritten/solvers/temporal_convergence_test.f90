@@ -37,7 +37,7 @@
          type(dir_tree),intent(in) :: DT
          type(sim_params),intent(in) :: SP
          real(cp) :: e,dtime
-         dtime = SP%VS%U%TMP%dt
+         dtime = SP%VS%U%TMP%TS%dt
          write(*,*) ' *********************************************************** '
          write(*,*) ' ************* BEGIN TEMPORAL CONVERGENCE TEST ************* '
          write(*,*) ' *********************************************************** '

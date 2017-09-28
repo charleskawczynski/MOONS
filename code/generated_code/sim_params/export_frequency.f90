@@ -16,31 +16,33 @@
 
        public :: export_primitives,import_primitives
 
-       public :: export_restart,import_restart
+       public :: export_structured,import_structured
 
-       public :: make_restart_dir
+       public :: set_IO_dir
 
        public :: suppress_warnings
 
-       interface init;             module procedure init_copy_export_frequency;        end interface
-       interface delete;           module procedure delete_export_frequency;           end interface
-       interface display;          module procedure display_export_frequency;          end interface
-       interface display_short;    module procedure display_short_export_frequency;    end interface
-       interface display;          module procedure display_wrap_export_frequency;     end interface
-       interface print;            module procedure print_export_frequency;            end interface
-       interface print_short;      module procedure print_short_export_frequency;      end interface
-       interface export;           module procedure export_export_frequency;           end interface
-       interface export_primitives;module procedure export_primitives_export_frequency;end interface
-       interface export_restart;   module procedure export_restart_export_frequency;   end interface
-       interface import;           module procedure import_export_frequency;           end interface
-       interface import_restart;   module procedure import_restart_export_frequency;   end interface
-       interface import_primitives;module procedure import_primitives_export_frequency;end interface
-       interface export;           module procedure export_wrap_export_frequency;      end interface
-       interface import;           module procedure import_wrap_export_frequency;      end interface
-       interface make_restart_dir; module procedure make_restart_dir_export_frequency; end interface
-       interface suppress_warnings;module procedure suppress_warnings_export_frequency;end interface
-       interface export;           module procedure export_DN_export_frequency;        end interface
-       interface import;           module procedure import_DN_export_frequency;        end interface
+       interface init;             module procedure init_copy_export_frequency;           end interface
+       interface delete;           module procedure delete_export_frequency;              end interface
+       interface display;          module procedure display_export_frequency;             end interface
+       interface display_short;    module procedure display_short_export_frequency;       end interface
+       interface display;          module procedure display_wrap_export_frequency;        end interface
+       interface print;            module procedure print_export_frequency;               end interface
+       interface print_short;      module procedure print_short_export_frequency;         end interface
+       interface export;           module procedure export_export_frequency;              end interface
+       interface export_primitives;module procedure export_primitives_export_frequency;   end interface
+       interface import;           module procedure import_export_frequency;              end interface
+       interface export_structured;module procedure export_structured_D_export_frequency; end interface
+       interface import_structured;module procedure import_structured_D_export_frequency; end interface
+       interface import_primitives;module procedure import_primitives_export_frequency;   end interface
+       interface export;           module procedure export_wrap_export_frequency;         end interface
+       interface import;           module procedure import_wrap_export_frequency;         end interface
+       interface set_IO_dir;       module procedure set_IO_dir_export_frequency;          end interface
+       interface suppress_warnings;module procedure suppress_warnings_export_frequency;   end interface
+       interface export;           module procedure export_DN_export_frequency;           end interface
+       interface import;           module procedure import_DN_export_frequency;           end interface
+       interface export_structured;module procedure export_structured_DN_export_frequency;end interface
+       interface import_structured;module procedure import_structured_DN_export_frequency;end interface
 
        type export_frequency
          type(export_frequency_params) :: info
@@ -138,15 +140,6 @@
          call display_short(this,6)
        end subroutine
 
-       subroutine export_primitives_export_frequency(this,un)
-         implicit none
-         type(export_frequency),intent(in) :: this
-         integer,intent(in) :: un
-         integer :: un_suppress_warning
-         un_suppress_warning = un
-         call suppress_warnings(this)
-       end subroutine
-
        subroutine export_export_frequency(this,un)
          implicit none
          type(export_frequency),intent(in) :: this
@@ -160,15 +153,6 @@
          call export(this%restart_files,un)
          call export(this%dir,un)
          call export(this%name,un)
-       end subroutine
-
-       subroutine import_primitives_export_frequency(this,un)
-         implicit none
-         type(export_frequency),intent(inout) :: this
-         integer,intent(in) :: un
-         integer :: un_suppress_warning
-         un_suppress_warning = un
-         call suppress_warnings(this)
        end subroutine
 
        subroutine import_export_frequency(this,un)
@@ -187,6 +171,24 @@
          call import(this%name,un)
        end subroutine
 
+       subroutine export_primitives_export_frequency(this,un)
+         implicit none
+         type(export_frequency),intent(in) :: this
+         integer,intent(in) :: un
+         integer :: un_suppress_warning
+         un_suppress_warning = un
+         call suppress_warnings(this)
+       end subroutine
+
+       subroutine import_primitives_export_frequency(this,un)
+         implicit none
+         type(export_frequency),intent(inout) :: this
+         integer,intent(in) :: un
+         integer :: un_suppress_warning
+         un_suppress_warning = un
+         call suppress_warnings(this)
+       end subroutine
+
        subroutine export_wrap_export_frequency(this,dir,name)
          implicit none
          type(export_frequency),intent(in) :: this
@@ -203,7 +205,7 @@
          character(len=*),intent(in) :: dir,name
          integer :: un
          un = open_to_read(dir,name)
-         call import(this,un)
+         call export(this,un)
          close(un)
        end subroutine
 
@@ -227,7 +229,51 @@
          close(un)
        end subroutine
 
-       subroutine make_restart_dir_export_frequency(this,dir)
+       subroutine export_structured_DN_export_frequency(this)
+         implicit none
+         type(export_frequency),intent(in) :: this
+         integer :: un
+         un = new_and_open(str(this%dir),'primitives')
+         call export_primitives(this,un)
+         close(un)
+         call export_structured(this%info,str(this%dir)//'info'//fortran_PS)
+         call export_structured(this%unsteady_0D,&
+         str(this%dir)//'unsteady_0D'//fortran_PS)
+         call export_structured(this%unsteady_1D,&
+         str(this%dir)//'unsteady_1D'//fortran_PS)
+         call export_structured(this%unsteady_2D,&
+         str(this%dir)//'unsteady_2D'//fortran_PS)
+         call export_structured(this%unsteady_3D,&
+         str(this%dir)//'unsteady_3D'//fortran_PS)
+         call export_structured(this%final_solution,&
+         str(this%dir)//'final_solution'//fortran_PS)
+         call export_structured(this%restart_files,&
+         str(this%dir)//'restart_files'//fortran_PS)
+       end subroutine
+
+       subroutine import_structured_DN_export_frequency(this)
+         implicit none
+         type(export_frequency),intent(inout) :: this
+         integer :: un
+         un = open_to_read(str(this%dir),'primitives')
+         call import_primitives(this,un)
+         close(un)
+         call import_structured(this%info,str(this%dir)//'info'//fortran_PS)
+         call import_structured(this%unsteady_0D,&
+         str(this%dir)//'unsteady_0D'//fortran_PS)
+         call import_structured(this%unsteady_1D,&
+         str(this%dir)//'unsteady_1D'//fortran_PS)
+         call import_structured(this%unsteady_2D,&
+         str(this%dir)//'unsteady_2D'//fortran_PS)
+         call import_structured(this%unsteady_3D,&
+         str(this%dir)//'unsteady_3D'//fortran_PS)
+         call import_structured(this%final_solution,&
+         str(this%dir)//'final_solution'//fortran_PS)
+         call import_structured(this%restart_files,&
+         str(this%dir)//'restart_files'//fortran_PS)
+       end subroutine
+
+       subroutine set_IO_dir_export_frequency(this,dir)
          implicit none
          type(export_frequency),intent(inout) :: this
          character(len=*),intent(in) :: dir
@@ -235,22 +281,17 @@
          call make_dir_quiet(dir)
          call init(this%dir,dir)
          call init(this%name,'primitives')
-         call make_restart_dir(this%info,dir//'info'//fortran_PS)
-         call make_restart_dir(this%unsteady_0D,&
-         dir//'unsteady_0D'//fortran_PS)
-         call make_restart_dir(this%unsteady_1D,&
-         dir//'unsteady_1D'//fortran_PS)
-         call make_restart_dir(this%unsteady_2D,&
-         dir//'unsteady_2D'//fortran_PS)
-         call make_restart_dir(this%unsteady_3D,&
-         dir//'unsteady_3D'//fortran_PS)
-         call make_restart_dir(this%final_solution,&
+         call set_IO_dir(this%info,dir//'info'//fortran_PS)
+         call set_IO_dir(this%unsteady_0D,dir//'unsteady_0D'//fortran_PS)
+         call set_IO_dir(this%unsteady_1D,dir//'unsteady_1D'//fortran_PS)
+         call set_IO_dir(this%unsteady_2D,dir//'unsteady_2D'//fortran_PS)
+         call set_IO_dir(this%unsteady_3D,dir//'unsteady_3D'//fortran_PS)
+         call set_IO_dir(this%final_solution,&
          dir//'final_solution'//fortran_PS)
-         call make_restart_dir(this%restart_files,&
-         dir//'restart_files'//fortran_PS)
+         call set_IO_dir(this%restart_files,dir//'restart_files'//fortran_PS)
        end subroutine
 
-       subroutine export_restart_export_frequency(this,dir)
+       subroutine export_structured_D_export_frequency(this,dir)
          implicit none
          type(export_frequency),intent(in) :: this
          character(len=*),intent(in) :: dir
@@ -258,18 +299,22 @@
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
-         call export_restart(this%info,dir//'info'//fortran_PS)
-         call export_restart(this%unsteady_0D,dir//'unsteady_0D'//fortran_PS)
-         call export_restart(this%unsteady_1D,dir//'unsteady_1D'//fortran_PS)
-         call export_restart(this%unsteady_2D,dir//'unsteady_2D'//fortran_PS)
-         call export_restart(this%unsteady_3D,dir//'unsteady_3D'//fortran_PS)
-         call export_restart(this%final_solution,&
+         call export_structured(this%info,dir//'info'//fortran_PS)
+         call export_structured(this%unsteady_0D,&
+         dir//'unsteady_0D'//fortran_PS)
+         call export_structured(this%unsteady_1D,&
+         dir//'unsteady_1D'//fortran_PS)
+         call export_structured(this%unsteady_2D,&
+         dir//'unsteady_2D'//fortran_PS)
+         call export_structured(this%unsteady_3D,&
+         dir//'unsteady_3D'//fortran_PS)
+         call export_structured(this%final_solution,&
          dir//'final_solution'//fortran_PS)
-         call export_restart(this%restart_files,&
+         call export_structured(this%restart_files,&
          dir//'restart_files'//fortran_PS)
        end subroutine
 
-       subroutine import_restart_export_frequency(this,dir)
+       subroutine import_structured_D_export_frequency(this,dir)
          implicit none
          type(export_frequency),intent(inout) :: this
          character(len=*),intent(in) :: dir
@@ -277,14 +322,18 @@
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         call import_restart(this%info,dir//'info'//fortran_PS)
-         call import_restart(this%unsteady_0D,dir//'unsteady_0D'//fortran_PS)
-         call import_restart(this%unsteady_1D,dir//'unsteady_1D'//fortran_PS)
-         call import_restart(this%unsteady_2D,dir//'unsteady_2D'//fortran_PS)
-         call import_restart(this%unsteady_3D,dir//'unsteady_3D'//fortran_PS)
-         call import_restart(this%final_solution,&
+         call import_structured(this%info,dir//'info'//fortran_PS)
+         call import_structured(this%unsteady_0D,&
+         dir//'unsteady_0D'//fortran_PS)
+         call import_structured(this%unsteady_1D,&
+         dir//'unsteady_1D'//fortran_PS)
+         call import_structured(this%unsteady_2D,&
+         dir//'unsteady_2D'//fortran_PS)
+         call import_structured(this%unsteady_3D,&
+         dir//'unsteady_3D'//fortran_PS)
+         call import_structured(this%final_solution,&
          dir//'final_solution'//fortran_PS)
-         call import_restart(this%restart_files,&
+         call import_structured(this%restart_files,&
          dir//'restart_files'//fortran_PS)
        end subroutine
 

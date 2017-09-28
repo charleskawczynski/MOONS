@@ -16,29 +16,29 @@
 
        public :: export_primitives,import_primitives
 
-       public :: export_restart,import_restart
+       public :: export_structured,import_structured
 
-       public :: make_restart_dir
+       public :: set_IO_dir
 
        public :: suppress_warnings
 
-       interface init;             module procedure init_copy_bctype;        end interface
-       interface delete;           module procedure delete_bctype;           end interface
-       interface display;          module procedure display_bctype;          end interface
-       interface display_short;    module procedure display_short_bctype;    end interface
-       interface display;          module procedure display_wrap_bctype;     end interface
-       interface print;            module procedure print_bctype;            end interface
-       interface print_short;      module procedure print_short_bctype;      end interface
-       interface export;           module procedure export_bctype;           end interface
-       interface export_primitives;module procedure export_primitives_bctype;end interface
-       interface export_restart;   module procedure export_restart_bctype;   end interface
-       interface import;           module procedure import_bctype;           end interface
-       interface import_restart;   module procedure import_restart_bctype;   end interface
-       interface import_primitives;module procedure import_primitives_bctype;end interface
-       interface export;           module procedure export_wrap_bctype;      end interface
-       interface import;           module procedure import_wrap_bctype;      end interface
-       interface make_restart_dir; module procedure make_restart_dir_bctype; end interface
-       interface suppress_warnings;module procedure suppress_warnings_bctype;end interface
+       interface init;             module procedure init_copy_bctype;          end interface
+       interface delete;           module procedure delete_bctype;             end interface
+       interface display;          module procedure display_bctype;            end interface
+       interface display_short;    module procedure display_short_bctype;      end interface
+       interface display;          module procedure display_wrap_bctype;       end interface
+       interface print;            module procedure print_bctype;              end interface
+       interface print_short;      module procedure print_short_bctype;        end interface
+       interface export;           module procedure export_bctype;             end interface
+       interface export_primitives;module procedure export_primitives_bctype;  end interface
+       interface import;           module procedure import_bctype;             end interface
+       interface export_structured;module procedure export_structured_D_bctype;end interface
+       interface import_structured;module procedure import_structured_D_bctype;end interface
+       interface import_primitives;module procedure import_primitives_bctype;  end interface
+       interface export;           module procedure export_wrap_bctype;        end interface
+       interface import;           module procedure import_wrap_bctype;        end interface
+       interface set_IO_dir;       module procedure set_IO_dir_bctype;         end interface
+       interface suppress_warnings;module procedure suppress_warnings_bctype;  end interface
 
        type bctype
          logical :: Dirichlet = .false.
@@ -141,7 +141,7 @@
          call display_short(this,6)
        end subroutine
 
-       subroutine export_primitives_bctype(this,un)
+       subroutine export_bctype(this,un)
          implicit none
          type(bctype),intent(in) :: this
          integer,intent(in) :: un
@@ -157,7 +157,24 @@
          write(un,*) 'BCT            = ';write(un,*) this%BCT
        end subroutine
 
-       subroutine export_bctype(this,un)
+       subroutine import_bctype(this,un)
+         implicit none
+         type(bctype),intent(inout) :: this
+         integer,intent(in) :: un
+         call delete(this)
+         read(un,*); read(un,*) this%Dirichlet
+         read(un,*); read(un,*) this%Neumann
+         read(un,*); read(un,*) this%Robin
+         read(un,*); read(un,*) this%Periodic
+         read(un,*); read(un,*) this%symmetric
+         read(un,*); read(un,*) this%antisymmetric
+         read(un,*); read(un,*) this%prescribed
+         read(un,*); read(un,*) this%defined
+         read(un,*); read(un,*) this%meanVal
+         read(un,*); read(un,*) this%BCT
+       end subroutine
+
+       subroutine export_primitives_bctype(this,un)
          implicit none
          type(bctype),intent(in) :: this
          integer,intent(in) :: un
@@ -189,23 +206,6 @@
          read(un,*); read(un,*) this%BCT
        end subroutine
 
-       subroutine import_bctype(this,un)
-         implicit none
-         type(bctype),intent(inout) :: this
-         integer,intent(in) :: un
-         call delete(this)
-         read(un,*); read(un,*) this%Dirichlet
-         read(un,*); read(un,*) this%Neumann
-         read(un,*); read(un,*) this%Robin
-         read(un,*); read(un,*) this%Periodic
-         read(un,*); read(un,*) this%symmetric
-         read(un,*); read(un,*) this%antisymmetric
-         read(un,*); read(un,*) this%prescribed
-         read(un,*); read(un,*) this%defined
-         read(un,*); read(un,*) this%meanVal
-         read(un,*); read(un,*) this%BCT
-       end subroutine
-
        subroutine export_wrap_bctype(this,dir,name)
          implicit none
          type(bctype),intent(in) :: this
@@ -222,11 +222,11 @@
          character(len=*),intent(in) :: dir,name
          integer :: un
          un = open_to_read(dir,name)
-         call import(this,un)
+         call export(this,un)
          close(un)
        end subroutine
 
-       subroutine make_restart_dir_bctype(this,dir)
+       subroutine set_IO_dir_bctype(this,dir)
          implicit none
          type(bctype),intent(inout) :: this
          character(len=*),intent(in) :: dir
@@ -234,7 +234,7 @@
          call make_dir_quiet(dir)
        end subroutine
 
-       subroutine export_restart_bctype(this,dir)
+       subroutine export_structured_D_bctype(this,dir)
          implicit none
          type(bctype),intent(in) :: this
          character(len=*),intent(in) :: dir
@@ -244,7 +244,7 @@
          close(un)
        end subroutine
 
-       subroutine import_restart_bctype(this,dir)
+       subroutine import_structured_D_bctype(this,dir)
          implicit none
          type(bctype),intent(inout) :: this
          character(len=*),intent(in) :: dir

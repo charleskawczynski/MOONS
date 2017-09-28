@@ -23,29 +23,29 @@
 
        public :: export_primitives,import_primitives
 
-       public :: export_restart,import_restart
+       public :: export_structured,import_structured
 
-       public :: make_restart_dir
+       public :: set_IO_dir
 
        public :: suppress_warnings
 
-       interface init;             module procedure init_copy_momentum;        end interface
-       interface delete;           module procedure delete_momentum;           end interface
-       interface display;          module procedure display_momentum;          end interface
-       interface display_short;    module procedure display_short_momentum;    end interface
-       interface display;          module procedure display_wrap_momentum;     end interface
-       interface print;            module procedure print_momentum;            end interface
-       interface print_short;      module procedure print_short_momentum;      end interface
-       interface export;           module procedure export_momentum;           end interface
-       interface export_primitives;module procedure export_primitives_momentum;end interface
-       interface export_restart;   module procedure export_restart_momentum;   end interface
-       interface import;           module procedure import_momentum;           end interface
-       interface import_restart;   module procedure import_restart_momentum;   end interface
-       interface import_primitives;module procedure import_primitives_momentum;end interface
-       interface export;           module procedure export_wrap_momentum;      end interface
-       interface import;           module procedure import_wrap_momentum;      end interface
-       interface make_restart_dir; module procedure make_restart_dir_momentum; end interface
-       interface suppress_warnings;module procedure suppress_warnings_momentum;end interface
+       interface init;             module procedure init_copy_momentum;          end interface
+       interface delete;           module procedure delete_momentum;             end interface
+       interface display;          module procedure display_momentum;            end interface
+       interface display_short;    module procedure display_short_momentum;      end interface
+       interface display;          module procedure display_wrap_momentum;       end interface
+       interface print;            module procedure print_momentum;              end interface
+       interface print_short;      module procedure print_short_momentum;        end interface
+       interface export;           module procedure export_momentum;             end interface
+       interface export_primitives;module procedure export_primitives_momentum;  end interface
+       interface import;           module procedure import_momentum;             end interface
+       interface export_structured;module procedure export_structured_D_momentum;end interface
+       interface import_structured;module procedure import_structured_D_momentum;end interface
+       interface import_primitives;module procedure import_primitives_momentum;  end interface
+       interface export;           module procedure export_wrap_momentum;        end interface
+       interface import;           module procedure import_wrap_momentum;        end interface
+       interface set_IO_dir;       module procedure set_IO_dir_momentum;         end interface
+       interface suppress_warnings;module procedure suppress_warnings_momentum;  end interface
 
        type momentum
          logical :: suppress_warning = .false.
@@ -233,13 +233,6 @@
          call display_short(this,6)
        end subroutine
 
-       subroutine export_primitives_momentum(this,un)
-         implicit none
-         type(momentum),intent(in) :: this
-         integer,intent(in) :: un
-         write(un,*) 'suppress_warning  = ';write(un,*) this%suppress_warning
-       end subroutine
-
        subroutine export_momentum(this,un)
          implicit none
          type(momentum),intent(in) :: this
@@ -271,13 +264,6 @@
          call export(this%probe_KE_2C,un)
          call export(this%probe_divU,un)
          call export(this%probe_Q,un)
-       end subroutine
-
-       subroutine import_primitives_momentum(this,un)
-         implicit none
-         type(momentum),intent(inout) :: this
-         integer,intent(in) :: un
-         read(un,*); read(un,*) this%suppress_warning
        end subroutine
 
        subroutine import_momentum(this,un)
@@ -314,6 +300,20 @@
          call import(this%probe_Q,un)
        end subroutine
 
+       subroutine export_primitives_momentum(this,un)
+         implicit none
+         type(momentum),intent(in) :: this
+         integer,intent(in) :: un
+         write(un,*) 'suppress_warning  = ';write(un,*) this%suppress_warning
+       end subroutine
+
+       subroutine import_primitives_momentum(this,un)
+         implicit none
+         type(momentum),intent(inout) :: this
+         integer,intent(in) :: un
+         read(un,*); read(un,*) this%suppress_warning
+       end subroutine
+
        subroutine export_wrap_momentum(this,dir,name)
          implicit none
          type(momentum),intent(in) :: this
@@ -330,46 +330,45 @@
          character(len=*),intent(in) :: dir,name
          integer :: un
          un = open_to_read(dir,name)
-         call import(this,un)
+         call export(this,un)
          close(un)
        end subroutine
 
-       subroutine make_restart_dir_momentum(this,dir)
+       subroutine set_IO_dir_momentum(this,dir)
          implicit none
          type(momentum),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
-         call make_restart_dir(this%m,dir//'m'//fortran_PS)
-         call make_restart_dir(this%PCG_P,dir//'PCG_P'//fortran_PS)
-         call make_restart_dir(this%PCG_U,dir//'PCG_U'//fortran_PS)
-         call make_restart_dir(this%TS,dir//'TS'//fortran_PS)
-         call make_restart_dir(this%p,dir//'p'//fortran_PS)
-         call make_restart_dir(this%divU,dir//'divU'//fortran_PS)
-         call make_restart_dir(this%temp_CC,dir//'temp_CC'//fortran_PS)
-         call make_restart_dir(this%U,dir//'U'//fortran_PS)
-         call make_restart_dir(this%Ustar,dir//'Ustar'//fortran_PS)
-         call make_restart_dir(this%Unm1,dir//'Unm1'//fortran_PS)
-         call make_restart_dir(this%U_CC,dir//'U_CC'//fortran_PS)
-         call make_restart_dir(this%F,dir//'F'//fortran_PS)
-         call make_restart_dir(this%Fnm1,dir//'Fnm1'//fortran_PS)
-         call make_restart_dir(this%L,dir//'L'//fortran_PS)
-         call make_restart_dir(this%temp_F1,dir//'temp_F1'//fortran_PS)
-         call make_restart_dir(this%temp_F2,dir//'temp_F2'//fortran_PS)
-         call make_restart_dir(this%temp_F3,dir//'temp_F3'//fortran_PS)
-         call make_restart_dir(this%temp_E,dir//'temp_E'//fortran_PS)
-         call make_restart_dir(this%temp_CC_VF,dir//'temp_CC_VF'//fortran_PS)
-         call make_restart_dir(this%U_E,dir//'U_E'//fortran_PS)
-         call make_restart_dir(this%TF_CC,dir//'TF_CC'//fortran_PS)
-         call make_restart_dir(this%TF_CC_edge,dir//'TF_CC_edge'//fortran_PS)
-         call make_restart_dir(this%probe_KE,dir//'probe_KE'//fortran_PS)
-         call make_restart_dir(this%probe_KE_2C,&
-         dir//'probe_KE_2C'//fortran_PS)
-         call make_restart_dir(this%probe_divU,dir//'probe_divU'//fortran_PS)
-         call make_restart_dir(this%probe_Q,dir//'probe_Q'//fortran_PS)
+         call set_IO_dir(this%m,dir//'m'//fortran_PS)
+         call set_IO_dir(this%PCG_P,dir//'PCG_P'//fortran_PS)
+         call set_IO_dir(this%PCG_U,dir//'PCG_U'//fortran_PS)
+         call set_IO_dir(this%TS,dir//'TS'//fortran_PS)
+         call set_IO_dir(this%p,dir//'p'//fortran_PS)
+         call set_IO_dir(this%divU,dir//'divU'//fortran_PS)
+         call set_IO_dir(this%temp_CC,dir//'temp_CC'//fortran_PS)
+         call set_IO_dir(this%U,dir//'U'//fortran_PS)
+         call set_IO_dir(this%Ustar,dir//'Ustar'//fortran_PS)
+         call set_IO_dir(this%Unm1,dir//'Unm1'//fortran_PS)
+         call set_IO_dir(this%U_CC,dir//'U_CC'//fortran_PS)
+         call set_IO_dir(this%F,dir//'F'//fortran_PS)
+         call set_IO_dir(this%Fnm1,dir//'Fnm1'//fortran_PS)
+         call set_IO_dir(this%L,dir//'L'//fortran_PS)
+         call set_IO_dir(this%temp_F1,dir//'temp_F1'//fortran_PS)
+         call set_IO_dir(this%temp_F2,dir//'temp_F2'//fortran_PS)
+         call set_IO_dir(this%temp_F3,dir//'temp_F3'//fortran_PS)
+         call set_IO_dir(this%temp_E,dir//'temp_E'//fortran_PS)
+         call set_IO_dir(this%temp_CC_VF,dir//'temp_CC_VF'//fortran_PS)
+         call set_IO_dir(this%U_E,dir//'U_E'//fortran_PS)
+         call set_IO_dir(this%TF_CC,dir//'TF_CC'//fortran_PS)
+         call set_IO_dir(this%TF_CC_edge,dir//'TF_CC_edge'//fortran_PS)
+         call set_IO_dir(this%probe_KE,dir//'probe_KE'//fortran_PS)
+         call set_IO_dir(this%probe_KE_2C,dir//'probe_KE_2C'//fortran_PS)
+         call set_IO_dir(this%probe_divU,dir//'probe_divU'//fortran_PS)
+         call set_IO_dir(this%probe_Q,dir//'probe_Q'//fortran_PS)
        end subroutine
 
-       subroutine export_restart_momentum(this,dir)
+       subroutine export_structured_D_momentum(this,dir)
          implicit none
          type(momentum),intent(in) :: this
          character(len=*),intent(in) :: dir
@@ -377,35 +376,36 @@
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
-         call export_restart(this%m,dir//'m'//fortran_PS)
-         call export_restart(this%PCG_P,dir//'PCG_P'//fortran_PS)
-         call export_restart(this%PCG_U,dir//'PCG_U'//fortran_PS)
-         call export_restart(this%TS,dir//'TS'//fortran_PS)
-         call export_restart(this%p,dir//'p'//fortran_PS)
-         call export_restart(this%divU,dir//'divU'//fortran_PS)
-         call export_restart(this%temp_CC,dir//'temp_CC'//fortran_PS)
-         call export_restart(this%U,dir//'U'//fortran_PS)
-         call export_restart(this%Ustar,dir//'Ustar'//fortran_PS)
-         call export_restart(this%Unm1,dir//'Unm1'//fortran_PS)
-         call export_restart(this%U_CC,dir//'U_CC'//fortran_PS)
-         call export_restart(this%F,dir//'F'//fortran_PS)
-         call export_restart(this%Fnm1,dir//'Fnm1'//fortran_PS)
-         call export_restart(this%L,dir//'L'//fortran_PS)
-         call export_restart(this%temp_F1,dir//'temp_F1'//fortran_PS)
-         call export_restart(this%temp_F2,dir//'temp_F2'//fortran_PS)
-         call export_restart(this%temp_F3,dir//'temp_F3'//fortran_PS)
-         call export_restart(this%temp_E,dir//'temp_E'//fortran_PS)
-         call export_restart(this%temp_CC_VF,dir//'temp_CC_VF'//fortran_PS)
-         call export_restart(this%U_E,dir//'U_E'//fortran_PS)
-         call export_restart(this%TF_CC,dir//'TF_CC'//fortran_PS)
-         call export_restart(this%TF_CC_edge,dir//'TF_CC_edge'//fortran_PS)
-         call export_restart(this%probe_KE,dir//'probe_KE'//fortran_PS)
-         call export_restart(this%probe_KE_2C,dir//'probe_KE_2C'//fortran_PS)
-         call export_restart(this%probe_divU,dir//'probe_divU'//fortran_PS)
-         call export_restart(this%probe_Q,dir//'probe_Q'//fortran_PS)
+         call export_structured(this%m,dir//'m'//fortran_PS)
+         call export_structured(this%PCG_P,dir//'PCG_P'//fortran_PS)
+         call export_structured(this%PCG_U,dir//'PCG_U'//fortran_PS)
+         call export_structured(this%TS,dir//'TS'//fortran_PS)
+         call export_structured(this%p,dir//'p'//fortran_PS)
+         call export_structured(this%divU,dir//'divU'//fortran_PS)
+         call export_structured(this%temp_CC,dir//'temp_CC'//fortran_PS)
+         call export_structured(this%U,dir//'U'//fortran_PS)
+         call export_structured(this%Ustar,dir//'Ustar'//fortran_PS)
+         call export_structured(this%Unm1,dir//'Unm1'//fortran_PS)
+         call export_structured(this%U_CC,dir//'U_CC'//fortran_PS)
+         call export_structured(this%F,dir//'F'//fortran_PS)
+         call export_structured(this%Fnm1,dir//'Fnm1'//fortran_PS)
+         call export_structured(this%L,dir//'L'//fortran_PS)
+         call export_structured(this%temp_F1,dir//'temp_F1'//fortran_PS)
+         call export_structured(this%temp_F2,dir//'temp_F2'//fortran_PS)
+         call export_structured(this%temp_F3,dir//'temp_F3'//fortran_PS)
+         call export_structured(this%temp_E,dir//'temp_E'//fortran_PS)
+         call export_structured(this%temp_CC_VF,dir//'temp_CC_VF'//fortran_PS)
+         call export_structured(this%U_E,dir//'U_E'//fortran_PS)
+         call export_structured(this%TF_CC,dir//'TF_CC'//fortran_PS)
+         call export_structured(this%TF_CC_edge,dir//'TF_CC_edge'//fortran_PS)
+         call export_structured(this%probe_KE,dir//'probe_KE'//fortran_PS)
+         call export_structured(this%probe_KE_2C,&
+         dir//'probe_KE_2C'//fortran_PS)
+         call export_structured(this%probe_divU,dir//'probe_divU'//fortran_PS)
+         call export_structured(this%probe_Q,dir//'probe_Q'//fortran_PS)
        end subroutine
 
-       subroutine import_restart_momentum(this,dir)
+       subroutine import_structured_D_momentum(this,dir)
          implicit none
          type(momentum),intent(inout) :: this
          character(len=*),intent(in) :: dir
@@ -413,32 +413,33 @@
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         call import_restart(this%m,dir//'m'//fortran_PS)
-         call import_restart(this%PCG_P,dir//'PCG_P'//fortran_PS)
-         call import_restart(this%PCG_U,dir//'PCG_U'//fortran_PS)
-         call import_restart(this%TS,dir//'TS'//fortran_PS)
-         call import_restart(this%p,dir//'p'//fortran_PS)
-         call import_restart(this%divU,dir//'divU'//fortran_PS)
-         call import_restart(this%temp_CC,dir//'temp_CC'//fortran_PS)
-         call import_restart(this%U,dir//'U'//fortran_PS)
-         call import_restart(this%Ustar,dir//'Ustar'//fortran_PS)
-         call import_restart(this%Unm1,dir//'Unm1'//fortran_PS)
-         call import_restart(this%U_CC,dir//'U_CC'//fortran_PS)
-         call import_restart(this%F,dir//'F'//fortran_PS)
-         call import_restart(this%Fnm1,dir//'Fnm1'//fortran_PS)
-         call import_restart(this%L,dir//'L'//fortran_PS)
-         call import_restart(this%temp_F1,dir//'temp_F1'//fortran_PS)
-         call import_restart(this%temp_F2,dir//'temp_F2'//fortran_PS)
-         call import_restart(this%temp_F3,dir//'temp_F3'//fortran_PS)
-         call import_restart(this%temp_E,dir//'temp_E'//fortran_PS)
-         call import_restart(this%temp_CC_VF,dir//'temp_CC_VF'//fortran_PS)
-         call import_restart(this%U_E,dir//'U_E'//fortran_PS)
-         call import_restart(this%TF_CC,dir//'TF_CC'//fortran_PS)
-         call import_restart(this%TF_CC_edge,dir//'TF_CC_edge'//fortran_PS)
-         call import_restart(this%probe_KE,dir//'probe_KE'//fortran_PS)
-         call import_restart(this%probe_KE_2C,dir//'probe_KE_2C'//fortran_PS)
-         call import_restart(this%probe_divU,dir//'probe_divU'//fortran_PS)
-         call import_restart(this%probe_Q,dir//'probe_Q'//fortran_PS)
+         call import_structured(this%m,dir//'m'//fortran_PS)
+         call import_structured(this%PCG_P,dir//'PCG_P'//fortran_PS)
+         call import_structured(this%PCG_U,dir//'PCG_U'//fortran_PS)
+         call import_structured(this%TS,dir//'TS'//fortran_PS)
+         call import_structured(this%p,dir//'p'//fortran_PS)
+         call import_structured(this%divU,dir//'divU'//fortran_PS)
+         call import_structured(this%temp_CC,dir//'temp_CC'//fortran_PS)
+         call import_structured(this%U,dir//'U'//fortran_PS)
+         call import_structured(this%Ustar,dir//'Ustar'//fortran_PS)
+         call import_structured(this%Unm1,dir//'Unm1'//fortran_PS)
+         call import_structured(this%U_CC,dir//'U_CC'//fortran_PS)
+         call import_structured(this%F,dir//'F'//fortran_PS)
+         call import_structured(this%Fnm1,dir//'Fnm1'//fortran_PS)
+         call import_structured(this%L,dir//'L'//fortran_PS)
+         call import_structured(this%temp_F1,dir//'temp_F1'//fortran_PS)
+         call import_structured(this%temp_F2,dir//'temp_F2'//fortran_PS)
+         call import_structured(this%temp_F3,dir//'temp_F3'//fortran_PS)
+         call import_structured(this%temp_E,dir//'temp_E'//fortran_PS)
+         call import_structured(this%temp_CC_VF,dir//'temp_CC_VF'//fortran_PS)
+         call import_structured(this%U_E,dir//'U_E'//fortran_PS)
+         call import_structured(this%TF_CC,dir//'TF_CC'//fortran_PS)
+         call import_structured(this%TF_CC_edge,dir//'TF_CC_edge'//fortran_PS)
+         call import_structured(this%probe_KE,dir//'probe_KE'//fortran_PS)
+         call import_structured(this%probe_KE_2C,&
+         dir//'probe_KE_2C'//fortran_PS)
+         call import_structured(this%probe_divU,dir//'probe_divU'//fortran_PS)
+         call import_structured(this%probe_Q,dir//'probe_Q'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_momentum(this)

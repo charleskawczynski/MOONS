@@ -16,29 +16,29 @@
 
        public :: export_primitives,import_primitives
 
-       public :: export_restart,import_restart
+       public :: export_structured,import_structured
 
-       public :: make_restart_dir
+       public :: set_IO_dir
 
        public :: suppress_warnings
 
-       interface init;             module procedure init_copy_unit_conversion;        end interface
-       interface delete;           module procedure delete_unit_conversion;           end interface
-       interface display;          module procedure display_unit_conversion;          end interface
-       interface display_short;    module procedure display_short_unit_conversion;    end interface
-       interface display;          module procedure display_wrap_unit_conversion;     end interface
-       interface print;            module procedure print_unit_conversion;            end interface
-       interface print_short;      module procedure print_short_unit_conversion;      end interface
-       interface export;           module procedure export_unit_conversion;           end interface
-       interface export_primitives;module procedure export_primitives_unit_conversion;end interface
-       interface export_restart;   module procedure export_restart_unit_conversion;   end interface
-       interface import;           module procedure import_unit_conversion;           end interface
-       interface import_restart;   module procedure import_restart_unit_conversion;   end interface
-       interface import_primitives;module procedure import_primitives_unit_conversion;end interface
-       interface export;           module procedure export_wrap_unit_conversion;      end interface
-       interface import;           module procedure import_wrap_unit_conversion;      end interface
-       interface make_restart_dir; module procedure make_restart_dir_unit_conversion; end interface
-       interface suppress_warnings;module procedure suppress_warnings_unit_conversion;end interface
+       interface init;             module procedure init_copy_unit_conversion;          end interface
+       interface delete;           module procedure delete_unit_conversion;             end interface
+       interface display;          module procedure display_unit_conversion;            end interface
+       interface display_short;    module procedure display_short_unit_conversion;      end interface
+       interface display;          module procedure display_wrap_unit_conversion;       end interface
+       interface print;            module procedure print_unit_conversion;              end interface
+       interface print_short;      module procedure print_short_unit_conversion;        end interface
+       interface export;           module procedure export_unit_conversion;             end interface
+       interface export_primitives;module procedure export_primitives_unit_conversion;  end interface
+       interface import;           module procedure import_unit_conversion;             end interface
+       interface export_structured;module procedure export_structured_D_unit_conversion;end interface
+       interface import_structured;module procedure import_structured_D_unit_conversion;end interface
+       interface import_primitives;module procedure import_primitives_unit_conversion;  end interface
+       interface export;           module procedure export_wrap_unit_conversion;        end interface
+       interface import;           module procedure import_wrap_unit_conversion;        end interface
+       interface set_IO_dir;       module procedure set_IO_dir_unit_conversion;         end interface
+       interface suppress_warnings;module procedure suppress_warnings_unit_conversion;  end interface
 
        type unit_conversion
          real(cp) :: days_per_year = 0.0_cp
@@ -141,7 +141,7 @@
          call display_short(this,6)
        end subroutine
 
-       subroutine export_primitives_unit_conversion(this,un)
+       subroutine export_unit_conversion(this,un)
          implicit none
          type(unit_conversion),intent(in) :: this
          integer,intent(in) :: un
@@ -157,7 +157,24 @@
          write(un,*) 'year_per_seconds    = ';write(un,*) this%year_per_seconds
        end subroutine
 
-       subroutine export_unit_conversion(this,un)
+       subroutine import_unit_conversion(this,un)
+         implicit none
+         type(unit_conversion),intent(inout) :: this
+         integer,intent(in) :: un
+         call delete(this)
+         read(un,*); read(un,*) this%days_per_year
+         read(un,*); read(un,*) this%seconds_per_second
+         read(un,*); read(un,*) this%seconds_per_minute
+         read(un,*); read(un,*) this%seconds_per_hour
+         read(un,*); read(un,*) this%seconds_per_day
+         read(un,*); read(un,*) this%seconds_per_year
+         read(un,*); read(un,*) this%minute_per_seconds
+         read(un,*); read(un,*) this%hour_per_seconds
+         read(un,*); read(un,*) this%day_per_seconds
+         read(un,*); read(un,*) this%year_per_seconds
+       end subroutine
+
+       subroutine export_primitives_unit_conversion(this,un)
          implicit none
          type(unit_conversion),intent(in) :: this
          integer,intent(in) :: un
@@ -189,23 +206,6 @@
          read(un,*); read(un,*) this%year_per_seconds
        end subroutine
 
-       subroutine import_unit_conversion(this,un)
-         implicit none
-         type(unit_conversion),intent(inout) :: this
-         integer,intent(in) :: un
-         call delete(this)
-         read(un,*); read(un,*) this%days_per_year
-         read(un,*); read(un,*) this%seconds_per_second
-         read(un,*); read(un,*) this%seconds_per_minute
-         read(un,*); read(un,*) this%seconds_per_hour
-         read(un,*); read(un,*) this%seconds_per_day
-         read(un,*); read(un,*) this%seconds_per_year
-         read(un,*); read(un,*) this%minute_per_seconds
-         read(un,*); read(un,*) this%hour_per_seconds
-         read(un,*); read(un,*) this%day_per_seconds
-         read(un,*); read(un,*) this%year_per_seconds
-       end subroutine
-
        subroutine export_wrap_unit_conversion(this,dir,name)
          implicit none
          type(unit_conversion),intent(in) :: this
@@ -222,11 +222,11 @@
          character(len=*),intent(in) :: dir,name
          integer :: un
          un = open_to_read(dir,name)
-         call import(this,un)
+         call export(this,un)
          close(un)
        end subroutine
 
-       subroutine make_restart_dir_unit_conversion(this,dir)
+       subroutine set_IO_dir_unit_conversion(this,dir)
          implicit none
          type(unit_conversion),intent(inout) :: this
          character(len=*),intent(in) :: dir
@@ -234,7 +234,7 @@
          call make_dir_quiet(dir)
        end subroutine
 
-       subroutine export_restart_unit_conversion(this,dir)
+       subroutine export_structured_D_unit_conversion(this,dir)
          implicit none
          type(unit_conversion),intent(in) :: this
          character(len=*),intent(in) :: dir
@@ -244,7 +244,7 @@
          close(un)
        end subroutine
 
-       subroutine import_restart_unit_conversion(this,dir)
+       subroutine import_structured_D_unit_conversion(this,dir)
          implicit none
          type(unit_conversion),intent(inout) :: this
          character(len=*),intent(in) :: dir

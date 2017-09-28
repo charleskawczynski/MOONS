@@ -37,6 +37,7 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('out_dir','path',priv)
 	g.module[m_name].add_prop('LDC','path',priv)
 	g.module[m_name].add_prop('mat','path',priv)
+	g.module[m_name].add_prop('config','path',priv)
 	g.module[m_name].add_prop('meshes','path',priv)
 	g.module[m_name].add_prop('BEM','path',priv)
 	g.module[m_name].add_prop('wall_clock','path',priv)

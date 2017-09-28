@@ -178,8 +178,8 @@
         type(SF),intent(in) :: f
         type(mesh),intent(in) :: m
         logical,intent(in) :: compute_norm
-        call solve_GS(u,f,GS%D_inv,m,GS%p,GS%d,GS%vol,GS%gt,GS%ISP%iter_max,&
-        GS%ISP%tol_rel,GS%norm,compute_norm,GS%N_iter,GS%un,GS%lapu,GS%res,GS%f,GS%tempk,&
+        call solve_GS(u,f,GS%D_inv,m,GS%p,GS%d,GS%vol,GS%gt,GS%ISP%EC%iter_max,&
+        GS%ISP%EC%tol_rel,GS%norm,compute_norm,GS%N_iter,GS%un,GS%lapu,GS%res,GS%f,GS%tempk,&
         str(GS%name),GS%ISP%n_skip_check_res)
       end subroutine
 

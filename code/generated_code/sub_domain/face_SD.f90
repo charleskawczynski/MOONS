@@ -18,29 +18,29 @@
 
        public :: export_primitives,import_primitives
 
-       public :: export_restart,import_restart
+       public :: export_structured,import_structured
 
-       public :: make_restart_dir
+       public :: set_IO_dir
 
        public :: suppress_warnings
 
-       interface init;             module procedure init_copy_face_SD;        end interface
-       interface delete;           module procedure delete_face_SD;           end interface
-       interface display;          module procedure display_face_SD;          end interface
-       interface display_short;    module procedure display_short_face_SD;    end interface
-       interface display;          module procedure display_wrap_face_SD;     end interface
-       interface print;            module procedure print_face_SD;            end interface
-       interface print_short;      module procedure print_short_face_SD;      end interface
-       interface export;           module procedure export_face_SD;           end interface
-       interface export_primitives;module procedure export_primitives_face_SD;end interface
-       interface export_restart;   module procedure export_restart_face_SD;   end interface
-       interface import;           module procedure import_face_SD;           end interface
-       interface import_restart;   module procedure import_restart_face_SD;   end interface
-       interface import_primitives;module procedure import_primitives_face_SD;end interface
-       interface export;           module procedure export_wrap_face_SD;      end interface
-       interface import;           module procedure import_wrap_face_SD;      end interface
-       interface make_restart_dir; module procedure make_restart_dir_face_SD; end interface
-       interface suppress_warnings;module procedure suppress_warnings_face_SD;end interface
+       interface init;             module procedure init_copy_face_SD;          end interface
+       interface delete;           module procedure delete_face_SD;             end interface
+       interface display;          module procedure display_face_SD;            end interface
+       interface display_short;    module procedure display_short_face_SD;      end interface
+       interface display;          module procedure display_wrap_face_SD;       end interface
+       interface print;            module procedure print_face_SD;              end interface
+       interface print_short;      module procedure print_short_face_SD;        end interface
+       interface export;           module procedure export_face_SD;             end interface
+       interface export_primitives;module procedure export_primitives_face_SD;  end interface
+       interface import;           module procedure import_face_SD;             end interface
+       interface export_structured;module procedure export_structured_D_face_SD;end interface
+       interface import_structured;module procedure import_structured_D_face_SD;end interface
+       interface import_primitives;module procedure import_primitives_face_SD;  end interface
+       interface export;           module procedure export_wrap_face_SD;        end interface
+       interface import;           module procedure import_wrap_face_SD;        end interface
+       interface set_IO_dir;       module procedure set_IO_dir_face_SD;         end interface
+       interface suppress_warnings;module procedure suppress_warnings_face_SD;  end interface
 
        type face_SD
          integer :: s = 0
@@ -295,17 +295,6 @@
          call display_short(this,6)
        end subroutine
 
-       subroutine export_primitives_face_SD(this,un)
-         implicit none
-         type(face_SD),intent(in) :: this
-         integer,intent(in) :: un
-         write(un,*) 's                 = ';write(un,*) this%s
-         write(un,*) 'dh                = ';write(un,*) this%dh
-         write(un,*) 'nhat              = ';write(un,*) this%nhat
-         write(un,*) 'c_w               = ';write(un,*) this%c_w
-         write(un,*) 'Robin_coeff       = ';write(un,*) this%Robin_coeff
-       end subroutine
-
        subroutine export_face_SD(this,un)
          implicit none
          type(face_SD),intent(in) :: this
@@ -366,17 +355,6 @@
          write(un,*) 'Robin_coeff       = ';write(un,*) this%Robin_coeff
        end subroutine
 
-       subroutine import_primitives_face_SD(this,un)
-         implicit none
-         type(face_SD),intent(inout) :: this
-         integer,intent(in) :: un
-         read(un,*); read(un,*) this%s
-         read(un,*); read(un,*) this%dh
-         read(un,*); read(un,*) this%nhat
-         read(un,*); read(un,*) this%c_w
-         read(un,*); read(un,*) this%Robin_coeff
-       end subroutine
-
        subroutine import_face_SD(this,un)
          implicit none
          type(face_SD),intent(inout) :: this
@@ -398,33 +376,69 @@
          call delete(this)
          read(un,*); read(un,*) this%s
          read(un,*) s_G
-         do i_G=1,s_G
-           call import(this%G(i_G),un)
-         enddo
+         if (s_G.gt.0) then
+           do i_G=1,s_G
+             call import(this%G(i_G),un)
+           enddo
+         endif
          read(un,*) s_G_periodic_N
-         do i_G_periodic_N=1,s_G_periodic_N
-           call import(this%G_periodic_N(i_G_periodic_N),un)
-         enddo
+         if (s_G_periodic_N.gt.0) then
+           do i_G_periodic_N=1,s_G_periodic_N
+             call import(this%G_periodic_N(i_G_periodic_N),un)
+           enddo
+         endif
          read(un,*) s_B
-         do i_B=1,s_B
-           call import(this%B(i_B),un)
-         enddo
+         if (s_B.gt.0) then
+           do i_B=1,s_B
+             call import(this%B(i_B),un)
+           enddo
+         endif
          read(un,*) s_I
-         do i_I=1,s_I
-           call import(this%I(i_I),un)
-         enddo
+         if (s_I.gt.0) then
+           do i_I=1,s_I
+             call import(this%I(i_I),un)
+           enddo
+         endif
          read(un,*) s_I_OPP
-         do i_I_OPP=1,s_I_OPP
-           call import(this%I_OPP(i_I_OPP),un)
-         enddo
+         if (s_I_OPP.gt.0) then
+           do i_I_OPP=1,s_I_OPP
+             call import(this%I_OPP(i_I_OPP),un)
+           enddo
+         endif
          read(un,*) s_I_OPP_periodic_N
-         do i_I_OPP_periodic_N=1,s_I_OPP_periodic_N
-           call import(this%I_OPP_periodic_N(i_I_OPP_periodic_N),un)
-         enddo
+         if (s_I_OPP_periodic_N.gt.0) then
+           do i_I_OPP_periodic_N=1,s_I_OPP_periodic_N
+             call import(this%I_OPP_periodic_N(i_I_OPP_periodic_N),un)
+           enddo
+         endif
          read(un,*) s_i_2D
-         do i_i_2D=1,s_i_2D
-           call import(this%i_2D(i_i_2D),un)
-         enddo
+         if (s_i_2D.gt.0) then
+           do i_i_2D=1,s_i_2D
+             call import(this%i_2D(i_i_2D),un)
+           enddo
+         endif
+         read(un,*); read(un,*) this%dh
+         read(un,*); read(un,*) this%nhat
+         read(un,*); read(un,*) this%c_w
+         read(un,*); read(un,*) this%Robin_coeff
+       end subroutine
+
+       subroutine export_primitives_face_SD(this,un)
+         implicit none
+         type(face_SD),intent(in) :: this
+         integer,intent(in) :: un
+         write(un,*) 's                 = ';write(un,*) this%s
+         write(un,*) 'dh                = ';write(un,*) this%dh
+         write(un,*) 'nhat              = ';write(un,*) this%nhat
+         write(un,*) 'c_w               = ';write(un,*) this%c_w
+         write(un,*) 'Robin_coeff       = ';write(un,*) this%Robin_coeff
+       end subroutine
+
+       subroutine import_primitives_face_SD(this,un)
+         implicit none
+         type(face_SD),intent(inout) :: this
+         integer,intent(in) :: un
+         read(un,*); read(un,*) this%s
          read(un,*); read(un,*) this%dh
          read(un,*); read(un,*) this%nhat
          read(un,*); read(un,*) this%c_w
@@ -447,11 +461,11 @@
          character(len=*),intent(in) :: dir,name
          integer :: un
          un = open_to_read(dir,name)
-         call import(this,un)
+         call export(this,un)
          close(un)
        end subroutine
 
-       subroutine make_restart_dir_face_SD(this,dir)
+       subroutine set_IO_dir_face_SD(this,dir)
          implicit none
          type(face_SD),intent(inout) :: this
          character(len=*),intent(in) :: dir
@@ -473,42 +487,39 @@
          call make_dir_quiet(dir)
          s_G = size(this%G)
          do i_G=1,s_G
-           call make_restart_dir(this%G(i_G),&
-           dir//'G_'//int2str(i_G)//fortran_PS)
+           call set_IO_dir(this%G(i_G),dir//'G_'//int2str(i_G)//fortran_PS)
          enddo
          s_G_periodic_N = size(this%G_periodic_N)
          do i_G_periodic_N=1,s_G_periodic_N
-           call make_restart_dir(this%G_periodic_N(i_G_periodic_N),&
+           call set_IO_dir(this%G_periodic_N(i_G_periodic_N),&
            dir//'G_periodic_N_'//int2str(i_G_periodic_N)//fortran_PS)
          enddo
          s_B = size(this%B)
          do i_B=1,s_B
-           call make_restart_dir(this%B(i_B),&
-           dir//'B_'//int2str(i_B)//fortran_PS)
+           call set_IO_dir(this%B(i_B),dir//'B_'//int2str(i_B)//fortran_PS)
          enddo
          s_I = size(this%I)
          do i_I=1,s_I
-           call make_restart_dir(this%I(i_I),&
-           dir//'I_'//int2str(i_I)//fortran_PS)
+           call set_IO_dir(this%I(i_I),dir//'I_'//int2str(i_I)//fortran_PS)
          enddo
          s_I_OPP = size(this%I_OPP)
          do i_I_OPP=1,s_I_OPP
-           call make_restart_dir(this%I_OPP(i_I_OPP),&
+           call set_IO_dir(this%I_OPP(i_I_OPP),&
            dir//'I_OPP_'//int2str(i_I_OPP)//fortran_PS)
          enddo
          s_I_OPP_periodic_N = size(this%I_OPP_periodic_N)
          do i_I_OPP_periodic_N=1,s_I_OPP_periodic_N
-           call make_restart_dir(this%I_OPP_periodic_N(i_I_OPP_periodic_N),&
+           call set_IO_dir(this%I_OPP_periodic_N(i_I_OPP_periodic_N),&
            dir//'I_OPP_periodic_N_'//int2str(i_I_OPP_periodic_N)//fortran_PS)
          enddo
          s_i_2D = size(this%i_2D)
          do i_i_2D=1,s_i_2D
-           call make_restart_dir(this%i_2D(i_i_2D),&
+           call set_IO_dir(this%i_2D(i_i_2D),&
            dir//'i_2D_'//int2str(i_i_2D)//fortran_PS)
          enddo
        end subroutine
 
-       subroutine export_restart_face_SD(this,dir)
+       subroutine export_structured_D_face_SD(this,dir)
          implicit none
          type(face_SD),intent(in) :: this
          character(len=*),intent(in) :: dir
@@ -532,42 +543,42 @@
          close(un)
          s_G = size(this%G)
          do i_G=1,s_G
-           call export_restart(this%G(i_G),&
+           call export_structured(this%G(i_G),&
            dir//'G_'//int2str(i_G)//fortran_PS)
          enddo
          s_G_periodic_N = size(this%G_periodic_N)
          do i_G_periodic_N=1,s_G_periodic_N
-           call export_restart(this%G_periodic_N(i_G_periodic_N),&
+           call export_structured(this%G_periodic_N(i_G_periodic_N),&
            dir//'G_periodic_N_'//int2str(i_G_periodic_N)//fortran_PS)
          enddo
          s_B = size(this%B)
          do i_B=1,s_B
-           call export_restart(this%B(i_B),&
+           call export_structured(this%B(i_B),&
            dir//'B_'//int2str(i_B)//fortran_PS)
          enddo
          s_I = size(this%I)
          do i_I=1,s_I
-           call export_restart(this%I(i_I),&
+           call export_structured(this%I(i_I),&
            dir//'I_'//int2str(i_I)//fortran_PS)
          enddo
          s_I_OPP = size(this%I_OPP)
          do i_I_OPP=1,s_I_OPP
-           call export_restart(this%I_OPP(i_I_OPP),&
+           call export_structured(this%I_OPP(i_I_OPP),&
            dir//'I_OPP_'//int2str(i_I_OPP)//fortran_PS)
          enddo
          s_I_OPP_periodic_N = size(this%I_OPP_periodic_N)
          do i_I_OPP_periodic_N=1,s_I_OPP_periodic_N
-           call export_restart(this%I_OPP_periodic_N(i_I_OPP_periodic_N),&
+           call export_structured(this%I_OPP_periodic_N(i_I_OPP_periodic_N),&
            dir//'I_OPP_periodic_N_'//int2str(i_I_OPP_periodic_N)//fortran_PS)
          enddo
          s_i_2D = size(this%i_2D)
          do i_i_2D=1,s_i_2D
-           call export_restart(this%i_2D(i_i_2D),&
+           call export_structured(this%i_2D(i_i_2D),&
            dir//'i_2D_'//int2str(i_i_2D)//fortran_PS)
          enddo
        end subroutine
 
-       subroutine import_restart_face_SD(this,dir)
+       subroutine import_structured_D_face_SD(this,dir)
          implicit none
          type(face_SD),intent(inout) :: this
          character(len=*),intent(in) :: dir
@@ -591,37 +602,37 @@
          close(un)
          s_G = size(this%G)
          do i_G=1,s_G
-           call import_restart(this%G(i_G),&
+           call import_structured(this%G(i_G),&
            dir//'G_'//int2str(i_G)//fortran_PS)
          enddo
          s_G_periodic_N = size(this%G_periodic_N)
          do i_G_periodic_N=1,s_G_periodic_N
-           call import_restart(this%G_periodic_N(i_G_periodic_N),&
+           call import_structured(this%G_periodic_N(i_G_periodic_N),&
            dir//'G_periodic_N_'//int2str(i_G_periodic_N)//fortran_PS)
          enddo
          s_B = size(this%B)
          do i_B=1,s_B
-           call import_restart(this%B(i_B),&
+           call import_structured(this%B(i_B),&
            dir//'B_'//int2str(i_B)//fortran_PS)
          enddo
          s_I = size(this%I)
          do i_I=1,s_I
-           call import_restart(this%I(i_I),&
+           call import_structured(this%I(i_I),&
            dir//'I_'//int2str(i_I)//fortran_PS)
          enddo
          s_I_OPP = size(this%I_OPP)
          do i_I_OPP=1,s_I_OPP
-           call import_restart(this%I_OPP(i_I_OPP),&
+           call import_structured(this%I_OPP(i_I_OPP),&
            dir//'I_OPP_'//int2str(i_I_OPP)//fortran_PS)
          enddo
          s_I_OPP_periodic_N = size(this%I_OPP_periodic_N)
          do i_I_OPP_periodic_N=1,s_I_OPP_periodic_N
-           call import_restart(this%I_OPP_periodic_N(i_I_OPP_periodic_N),&
+           call import_structured(this%I_OPP_periodic_N(i_I_OPP_periodic_N),&
            dir//'I_OPP_periodic_N_'//int2str(i_I_OPP_periodic_N)//fortran_PS)
          enddo
          s_i_2D = size(this%i_2D)
          do i_i_2D=1,s_i_2D
-           call import_restart(this%i_2D(i_i_2D),&
+           call import_structured(this%i_2D(i_i_2D),&
            dir//'i_2D_'//int2str(i_i_2D)//fortran_PS)
          enddo
        end subroutine

@@ -10,7 +10,6 @@
        public :: init
        public :: display_exit_loop
        public :: print_exit_loop
-       public :: import_exit_criteria
 
        public :: check_res
        public :: solve_exact
@@ -21,7 +20,6 @@
        public :: boost,reset
 
        interface init;                 module procedure init_ISP;                 end interface
-       interface import_exit_criteria; module procedure import_exit_criteria_ISP; end interface
        interface display_exit_loop;    module procedure display_exit_loop_ISP;    end interface
        interface print_exit_loop;      module procedure print_exit_loop_ISP;      end interface
 
@@ -49,35 +47,23 @@
          integer,intent(in) :: iter_max,n_skip_check_res
          real(cp),intent(in) :: tol_rel,tol_abs
          logical,intent(in) :: export_convergence,export_heavy
-         ISP%iter_max = iter_max
          ISP%iter_total = 0
          ISP%iter_per_call = 0
-         ISP%tol_rel = tol_rel
-         ISP%tol_abs = tol_abs
+         ISP%EC%iter_max = iter_max
+         ISP%EC%tol_rel = tol_rel
+         ISP%EC%tol_abs = tol_abs
          ISP%export_convergence = export_convergence
          ISP%export_heavy = export_heavy
          ISP%n_skip_check_res = n_skip_check_res
          ISP%exit_loop = .false.
        end subroutine
 
-       subroutine import_exit_criteria_ISP(ISP)
-         implicit none
-         type(iter_solver_params),intent(inout) :: ISP
-         type(iter_solver_params) :: temp
-         call init(temp,ISP)
-         call import(temp,str(ISP%dir),str(ISP%name))
-         ISP%tol_rel = temp%tol_rel
-         ISP%tol_abs = temp%tol_abs
-         ISP%iter_max = temp%iter_max
-         call delete(temp)
-       end subroutine
-
        subroutine display_exit_loop_ISP(ISP,un)
          implicit none
          type(iter_solver_params),intent(in) :: ISP
          integer,intent(in) :: un
-         write(un,*) 'tol (rel,abs)      = ',ISP%tol_rel,ISP%tol_abs
-         write(un,*) 'exit_loop,iter_max = ',ISP%exit_loop,ISP%iter_max
+         write(un,*) 'tol (rel,abs)      = ',ISP%EC%tol_rel,ISP%EC%tol_abs
+         write(un,*) 'exit_loop,iter_max = ',ISP%exit_loop,ISP%EC%iter_max
        end subroutine
 
        subroutine print_exit_loop_ISP(ISP)
@@ -89,27 +75,27 @@
        subroutine boost_ISP(ISP)
          implicit none
          type(iter_solver_params),intent(inout) :: ISP
-         ISP%iter_max = 4*ISP%iter_max
+         ISP%EC%iter_max = 4*ISP%EC%iter_max
        end subroutine
        subroutine reset_ISP(ISP)
          implicit none
          type(iter_solver_params),intent(inout) :: ISP
-         ISP%iter_max = ISP%iter_max/4
+         ISP%EC%iter_max = ISP%EC%iter_max/4
        end subroutine
 
        subroutine update_exit_loop_ISP(ISP,res,res0)
          implicit none
          type(iter_solver_params),intent(inout) :: ISP
          real(cp),intent(in) :: res,res0
-         ISP%exit_loop(1) = res/res0.lt.ISP%tol_rel
-         ISP%exit_loop(2) = res.lt.ISP%tol_abs
-         ISP%exit_loop(3) = ISP%iter_per_call.ge.ISP%iter_max
+         ISP%exit_loop(1) = res/res0.lt.ISP%EC%tol_rel
+         ISP%exit_loop(2) = res.lt.ISP%EC%tol_abs
+         ISP%exit_loop(3) = ISP%iter_per_call.ge.ISP%EC%iter_max
        end subroutine
 
        subroutine update_exit_loop_ISP2(ISP)
          implicit none
          type(iter_solver_params),intent(inout) :: ISP
-         ISP%exit_loop(3) = ISP%iter_per_call.ge.ISP%iter_max
+         ISP%exit_loop(3) = ISP%iter_per_call.ge.ISP%EC%iter_max
        end subroutine
 
        subroutine update_iter_ISP(ISP)

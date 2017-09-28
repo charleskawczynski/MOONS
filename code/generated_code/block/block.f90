@@ -17,29 +17,29 @@
 
        public :: export_primitives,import_primitives
 
-       public :: export_restart,import_restart
+       public :: export_structured,import_structured
 
-       public :: make_restart_dir
+       public :: set_IO_dir
 
        public :: suppress_warnings
 
-       interface init;             module procedure init_copy_block;        end interface
-       interface delete;           module procedure delete_block;           end interface
-       interface display;          module procedure display_block;          end interface
-       interface display_short;    module procedure display_short_block;    end interface
-       interface display;          module procedure display_wrap_block;     end interface
-       interface print;            module procedure print_block;            end interface
-       interface print_short;      module procedure print_short_block;      end interface
-       interface export;           module procedure export_block;           end interface
-       interface export_primitives;module procedure export_primitives_block;end interface
-       interface export_restart;   module procedure export_restart_block;   end interface
-       interface import;           module procedure import_block;           end interface
-       interface import_restart;   module procedure import_restart_block;   end interface
-       interface import_primitives;module procedure import_primitives_block;end interface
-       interface export;           module procedure export_wrap_block;      end interface
-       interface import;           module procedure import_wrap_block;      end interface
-       interface make_restart_dir; module procedure make_restart_dir_block; end interface
-       interface suppress_warnings;module procedure suppress_warnings_block;end interface
+       interface init;             module procedure init_copy_block;          end interface
+       interface delete;           module procedure delete_block;             end interface
+       interface display;          module procedure display_block;            end interface
+       interface display_short;    module procedure display_short_block;      end interface
+       interface display;          module procedure display_wrap_block;       end interface
+       interface print;            module procedure print_block;              end interface
+       interface print_short;      module procedure print_short_block;        end interface
+       interface export;           module procedure export_block;             end interface
+       interface export_primitives;module procedure export_primitives_block;  end interface
+       interface import;           module procedure import_block;             end interface
+       interface export_structured;module procedure export_structured_D_block;end interface
+       interface import_structured;module procedure import_structured_D_block;end interface
+       interface import_primitives;module procedure import_primitives_block;  end interface
+       interface export;           module procedure export_wrap_block;        end interface
+       interface import;           module procedure import_wrap_block;        end interface
+       interface set_IO_dir;       module procedure set_IO_dir_block;         end interface
+       interface suppress_warnings;module procedure suppress_warnings_block;  end interface
 
        type block
          type(grid) :: g
@@ -213,13 +213,6 @@
          call display_short(this,6)
        end subroutine
 
-       subroutine export_primitives_block(this,un)
-         implicit none
-         type(block),intent(in) :: this
-         integer,intent(in) :: un
-         write(un,*) 'apply_BC_order  = ';write(un,*) this%apply_BC_order
-       end subroutine
-
        subroutine export_block(this,un)
          implicit none
          type(block),intent(in) :: this
@@ -255,13 +248,6 @@
          write(un,*) 'apply_BC_order  = ';write(un,*) this%apply_BC_order
        end subroutine
 
-       subroutine import_primitives_block(this,un)
-         implicit none
-         type(block),intent(inout) :: this
-         integer,intent(in) :: un
-         read(un,*); read(un,*) this%apply_BC_order
-       end subroutine
-
        subroutine import_block(this,un)
          implicit none
          type(block),intent(inout) :: this
@@ -276,22 +262,42 @@
          call import(this%g,un)
          if (allocated(this%f)) then
            read(un,*) s_f
-           do i_f=1,s_f
-             call import(this%f(i_f),un)
-           enddo
+           if (s_f.gt.0) then
+             do i_f=1,s_f
+               call import(this%f(i_f),un)
+             enddo
+           endif
          endif
          if (allocated(this%fb)) then
            read(un,*) s_fb
-           do i_fb=1,s_fb
-             call import(this%fb(i_fb),un)
-           enddo
+           if (s_fb.gt.0) then
+             do i_fb=1,s_fb
+               call import(this%fb(i_fb),un)
+             enddo
+           endif
          endif
          if (allocated(this%vol)) then
            read(un,*) s_vol
-           do i_vol=1,s_vol
-             call import(this%vol(i_vol),un)
-           enddo
+           if (s_vol.gt.0) then
+             do i_vol=1,s_vol
+               call import(this%vol(i_vol),un)
+             enddo
+           endif
          endif
+         read(un,*); read(un,*) this%apply_BC_order
+       end subroutine
+
+       subroutine export_primitives_block(this,un)
+         implicit none
+         type(block),intent(in) :: this
+         integer,intent(in) :: un
+         write(un,*) 'apply_BC_order  = ';write(un,*) this%apply_BC_order
+       end subroutine
+
+       subroutine import_primitives_block(this,un)
+         implicit none
+         type(block),intent(inout) :: this
+         integer,intent(in) :: un
          read(un,*); read(un,*) this%apply_BC_order
        end subroutine
 
@@ -311,11 +317,11 @@
          character(len=*),intent(in) :: dir,name
          integer :: un
          un = open_to_read(dir,name)
-         call import(this,un)
+         call export(this,un)
          close(un)
        end subroutine
 
-       subroutine make_restart_dir_block(this,dir)
+       subroutine set_IO_dir_block(this,dir)
          implicit none
          type(block),intent(inout) :: this
          character(len=*),intent(in) :: dir
@@ -327,31 +333,30 @@
          integer :: s_vol
          call suppress_warnings(this)
          call make_dir_quiet(dir)
-         call make_restart_dir(this%g,dir//'g'//fortran_PS)
+         call set_IO_dir(this%g,dir//'g'//fortran_PS)
          if (allocated(this%f)) then
            s_f = size(this%f)
            do i_f=1,s_f
-             call make_restart_dir(this%f(i_f),&
-             dir//'f_'//int2str(i_f)//fortran_PS)
+             call set_IO_dir(this%f(i_f),dir//'f_'//int2str(i_f)//fortran_PS)
            enddo
          endif
          if (allocated(this%fb)) then
            s_fb = size(this%fb)
            do i_fb=1,s_fb
-             call make_restart_dir(this%fb(i_fb),&
+             call set_IO_dir(this%fb(i_fb),&
              dir//'fb_'//int2str(i_fb)//fortran_PS)
            enddo
          endif
          if (allocated(this%vol)) then
            s_vol = size(this%vol)
            do i_vol=1,s_vol
-             call make_restart_dir(this%vol(i_vol),&
+             call set_IO_dir(this%vol(i_vol),&
              dir//'vol_'//int2str(i_vol)//fortran_PS)
            enddo
          endif
        end subroutine
 
-       subroutine export_restart_block(this,dir)
+       subroutine export_structured_D_block(this,dir)
          implicit none
          type(block),intent(in) :: this
          character(len=*),intent(in) :: dir
@@ -365,31 +370,31 @@
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
-         call export_restart(this%g,dir//'g'//fortran_PS)
+         call export_structured(this%g,dir//'g'//fortran_PS)
          if (allocated(this%f)) then
            s_f = size(this%f)
            do i_f=1,s_f
-             call export_restart(this%f(i_f),&
+             call export_structured(this%f(i_f),&
              dir//'f_'//int2str(i_f)//fortran_PS)
            enddo
          endif
          if (allocated(this%fb)) then
            s_fb = size(this%fb)
            do i_fb=1,s_fb
-             call export_restart(this%fb(i_fb),&
+             call export_structured(this%fb(i_fb),&
              dir//'fb_'//int2str(i_fb)//fortran_PS)
            enddo
          endif
          if (allocated(this%vol)) then
            s_vol = size(this%vol)
            do i_vol=1,s_vol
-             call export_restart(this%vol(i_vol),&
+             call export_structured(this%vol(i_vol),&
              dir//'vol_'//int2str(i_vol)//fortran_PS)
            enddo
          endif
        end subroutine
 
-       subroutine import_restart_block(this,dir)
+       subroutine import_structured_D_block(this,dir)
          implicit none
          type(block),intent(inout) :: this
          character(len=*),intent(in) :: dir
@@ -403,25 +408,25 @@
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         call import_restart(this%g,dir//'g'//fortran_PS)
+         call import_structured(this%g,dir//'g'//fortran_PS)
          if (allocated(this%f)) then
            s_f = size(this%f)
            do i_f=1,s_f
-             call import_restart(this%f(i_f),&
+             call import_structured(this%f(i_f),&
              dir//'f_'//int2str(i_f)//fortran_PS)
            enddo
          endif
          if (allocated(this%fb)) then
            s_fb = size(this%fb)
            do i_fb=1,s_fb
-             call import_restart(this%fb(i_fb),&
+             call import_structured(this%fb(i_fb),&
              dir//'fb_'//int2str(i_fb)//fortran_PS)
            enddo
          endif
          if (allocated(this%vol)) then
            s_vol = size(this%vol)
            do i_vol=1,s_vol
-             call import_restart(this%vol(i_vol),&
+             call import_structured(this%vol(i_vol),&
              dir//'vol_'//int2str(i_vol)//fortran_PS)
            enddo
          endif

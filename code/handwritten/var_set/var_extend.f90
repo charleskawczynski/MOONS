@@ -26,11 +26,11 @@
          integer,intent(in) :: un
          write(un,*) 'solve_method = ',V%SS%solve_method
          write(un,*) 'alpha        = ',V%MFP%alpha
-         write(un,*) 'dt           = ',V%TMP%dt
+         write(un,*) 'dt           = ',V%TMP%TS%dt
          write(un,*) 't            = ',V%TMP%t
-         write(un,*) 'tol_rel      = ',V%ISP%tol_rel
-         write(un,*) 'tol_abs      = ',V%ISP%tol_abs
-         write(un,*) 'iter_max     = ',V%ISP%iter_max
+         write(un,*) 'tol_rel      = ',V%ISP%EC%tol_rel
+         write(un,*) 'tol_abs      = ',V%ISP%EC%tol_abs
+         write(un,*) 'iter_max     = ',V%ISP%EC%iter_max
        end subroutine
 
        subroutine print_info_V(V)

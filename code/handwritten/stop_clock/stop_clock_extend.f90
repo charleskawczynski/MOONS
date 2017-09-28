@@ -34,17 +34,17 @@
 
        contains
 
-      subroutine init_sc(sc,dir,name)
+      subroutine init_sc(sc,dir_out,name_out)
         implicit none
         type(stop_clock),intent(inout) :: sc
-        character(len=*),intent(in) :: dir,name
+        character(len=*),intent(in) :: dir_out,name_out
         type(string) :: vars
         call delete(sc)
         call init(sc%c)
-        call init(sc%dir,dir)
-        call init(sc%name,name)
+        call init(sc%dir_out,dir_out)
+        call init(sc%name_out,name_out)
 
-        sc%un_plot = new_and_open(dir,name//'_plot')
+        sc%un_plot = new_and_open(dir_out,name_out//'_plot')
 
         call init(vars,'VARIABLES = ')
         call append(vars,'t,')
@@ -78,11 +78,11 @@
         endif
         sc%t_passed = sc%t_passed + sc%t_elapsed
         sc%seconds_per_step = sc%t_elapsed
-        sc%sim_time_per_sec = TMP%dt/sc%seconds_per_step
-        sc%estimated_remaining = (TMP%t_final-TMP%t)/sc%sim_time_per_sec
+        sc%sim_time_per_sec = TMP%TS%dt/sc%seconds_per_step
+        sc%estimated_remaining = (TMP%TS%t_final-TMP%t)/sc%sim_time_per_sec
         sc%estimated_total = sc%t_passed + sc%estimated_remaining
         sc%percentage_complete_RB = (sc%estimated_total-sc%estimated_remaining)/sc%estimated_total*100.0_cp
-        sc%percentage_complete_SB = TMP%t/TMP%t_final*100.0_cp
+        sc%percentage_complete_SB = TMP%t/TMP%TS%t_final*100.0_cp
       end subroutine
 
       subroutine export_plot_sc(sc,t)
@@ -101,9 +101,9 @@
         type(stop_clock),intent(in) :: sc
         type(time_marching_params),intent(in) :: TMP
         integer :: un
-        un = new_and_open(str(sc%dir),str(sc%name))
+        un = new_and_open(str(sc%dir_out),str(sc%name_out))
         call export(sc,TMP,un)
-        call close_and_message(un,str(sc%dir),str(sc%name))
+        call close_and_message(un,str(sc%dir_out),str(sc%name_out))
       end subroutine
 
       subroutine print_sc(sc,TMP)
@@ -132,7 +132,7 @@
         ! CPU_TIME/(convective unit)/unknown
         ! Where unknowns = (3 momentum + 3 induction)*problem size
         write(un,*) '     now                  = ',TMP%t
-        write(un,*) '     final                = ',TMP%t_final
+        write(un,*) '     final                = ',TMP%TS%t_final
         write(un,*) ''
 
         write(un,*) 'Wall clock time '
@@ -174,8 +174,8 @@
         write(un,*) 'Wall clock time *completed* (', u,') = ',temp
         write(un,*) 'Time (convective),n_step = ',TMP%t,TMP%n_step
         write(un,*) 'Convective time'
-        write(un,*) '     per hour       = ',sc%uc%seconds_per_hour/sc%seconds_per_step*TMP%dt
-        write(un,*) '     per day        = ',sc%uc%seconds_per_day/sc%seconds_per_step*TMP%dt
+        write(un,*) '     per hour       = ',sc%uc%seconds_per_hour/sc%seconds_per_step*TMP%TS%dt
+        write(un,*) '     per day        = ',sc%uc%seconds_per_day/sc%seconds_per_step*TMP%TS%dt
         write(un,*) '--------------------------------------------------------------'
       end subroutine
 
