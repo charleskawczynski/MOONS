@@ -174,7 +174,7 @@
 
        subroutine make_restart_dir_mesh_quality_params(this,dir)
          implicit none
-         type(mesh_quality_params),intent(in) :: this
+         type(mesh_quality_params),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)

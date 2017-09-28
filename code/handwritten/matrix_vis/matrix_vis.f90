@@ -39,7 +39,9 @@
          logical :: test_symmetry,export_operator
          export_operator = .true.
          test_symmetry = .true.
-         call init(ISP,10000,pow(-15),pow(-15),1,.true.,.true.,str(DT%ISP),'matrix_visualization')
+         call init(ISP,10000,pow(-15),pow(-15),1,.true.,.true.)
+         call init(ISP%dir,str(DT%ISP))
+         call init(ISP%name,'matrix_visualization')
          call matrix_visualization_mesh(m)
          MFP%coeff_implicit_time_split = 0.1_cp
          call export_mesh(m,str(DT%matrix_visualization),'m',1)

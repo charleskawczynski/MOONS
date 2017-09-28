@@ -184,7 +184,7 @@
 
        subroutine make_restart_dir_grid_field(this,dir)
          implicit none
-         type(grid_field),intent(in) :: this
+         type(grid_field),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)

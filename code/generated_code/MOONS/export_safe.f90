@@ -174,7 +174,7 @@
 
        subroutine make_restart_dir_export_safe(this,dir)
          implicit none
-         type(export_safe),intent(in) :: this
+         type(export_safe),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)

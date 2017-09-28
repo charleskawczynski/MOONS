@@ -173,7 +173,7 @@
 
        subroutine make_restart_dir_export_line(this,dir)
          implicit none
-         type(export_line),intent(in) :: this
+         type(export_line),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)

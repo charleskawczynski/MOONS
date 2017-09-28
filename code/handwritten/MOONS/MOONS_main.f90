@@ -64,10 +64,11 @@
          write(*,*) ' ******************** COMPUTATIONS STARTED ********************'
          write(*,*) ' ******************** COMPUTATIONS STARTED ********************'
          call init(M%C%dir_target,dir_target)
+         call init(M%C%DT,str(M%C%dir_target))  ! Initialize + make directory tree
          call config(M) ! The flow control should be uniquely defined after this line.
+         call make_restart_dir(M%C,str(M%C%DT%restart))
+         call export_restart(M%C,str(M%C%DT%restart))
          call init(M)
-         ! call make_restart_dir(M,str(M%C%DT%restart))
-         ! call export_restart(M,str(M%C%DT%restart))
          if (.not.M%C%SP%FCL%skip_solver_loop) then
            call solve(M)
          endif
@@ -84,11 +85,12 @@
          implicit none
          type(MOONS),intent(inout) :: M
          call print(M%C%sc,M%C%SP%coupled)
-         call export(M%C%sc,M%C%SP%coupled)
+         ! call export(M%C%sc,M%C%SP%coupled)
 
-         call export_ISP(M%C%SP%VS)
-         call export_TMP(M%C%SP%VS)
-         call export(M%C%SP%coupled)
+         call export_restart(M%C,str(M%C%DT%restart))
+         ! call export_ISP(M%C%SP%VS)
+         ! call export_TMP(M%C%SP%VS)
+         ! call export(M%C%SP%coupled)
 
          if (M%C%SP%FCL%export_final_tec) then
            if (M%C%SP%VS%T%SS%initialize) call export_tec(M%GE%nrg,M%C%SP,M%C%DT)
@@ -110,6 +112,9 @@
          write(*,*) ' *********************** POST PROCESSING ***********************'
          write(*,*) ' *********************** POST PROCESSING ***********************'
          write(*,*) ' *********************** POST PROCESSING ***********************'
+         if (M%C%SP%FCL%matrix_visualization) then
+           call export_matrix_visualization(M%C%DT)
+         endif
          if (M%C%SP%FCL%Poisson_test) then
            call Poisson_test(M%GE%mom%U,M%GE%mom%p,M%GE%mom%m,M%C%DT)
          endif

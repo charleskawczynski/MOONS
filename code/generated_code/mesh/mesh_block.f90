@@ -159,7 +159,7 @@
 
        subroutine make_restart_dir_mesh_block(this,dir)
          implicit none
-         type(mesh_block),intent(in) :: this
+         type(mesh_block),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)

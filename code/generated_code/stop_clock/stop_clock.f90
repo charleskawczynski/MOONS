@@ -298,10 +298,12 @@
 
        subroutine make_restart_dir_stop_clock(this,dir)
          implicit none
-         type(stop_clock),intent(in) :: this
+         type(stop_clock),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
+         call init(this%dir,dir)
+         call init(this%name,'primitives')
          call make_restart_dir(this%c,dir//'c'//fortran_PS)
          call make_restart_dir(this%uc,dir//'uc'//fortran_PS)
        end subroutine

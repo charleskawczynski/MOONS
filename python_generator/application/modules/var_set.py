@@ -57,16 +57,14 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('C_max','real(cp)',priv)
 	g.module[m_name].add_prop('t_final','real(cp)',priv)
 	g.module[m_name].add_prop('dt','real(cp)',priv)
-	g.module[m_name].add_prop('dir','string',priv)
-	g.module[m_name].add_prop('name','string',priv)
+	g.module[m_name].add_prop(['dir','name'],'string',priv)
 
 	m_name = 'iter_solver_params'
 	g.add_module(m_name)
 	g.module[m_name].set_folder_name(__name__.split('.')[1])
 	g.module[m_name].set_used_modules(['IO_tools_mod'])
 	g.module[m_name].add_prop('un','integer',priv)
-	g.module[m_name].add_prop('dir','string',priv)
-	g.module[m_name].add_prop('name','string',priv)
+	g.module[m_name].add_prop(['dir','name'],'string',priv)
 	g.module[m_name].add_prop('iter_max','integer',priv)
 	g.module[m_name].add_prop('tol_abs',real,priv)
 	g.module[m_name].add_prop('tol_rel',real,priv)

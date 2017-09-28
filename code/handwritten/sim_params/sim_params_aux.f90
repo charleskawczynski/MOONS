@@ -32,11 +32,9 @@
 
      contains
 
-     subroutine post_process_SP(SP,DT)
+     subroutine post_process_SP(SP)
        implicit none
        type(sim_params),intent(inout) :: SP
-       type(dir_tree),intent(in) :: DT
-       call export(SP%DP,str(DT%dimensionless_params),'dimensionless_params')
        ! call export_import_SS(SP%VS)
        call sanity_check(SP)
        if (SP%SCP%couple_time_steps) call couple_time_step(SP%VS,SP%coupled)

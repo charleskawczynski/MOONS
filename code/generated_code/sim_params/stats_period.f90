@@ -228,7 +228,7 @@
 
        subroutine make_restart_dir_stats_period(this,dir)
          implicit none
-         type(stats_period),intent(in) :: this
+         type(stats_period),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)

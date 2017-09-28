@@ -167,7 +167,7 @@
 
        subroutine make_restart_dir_governing_equations(this,dir)
          implicit none
-         type(governing_equations),intent(in) :: this
+         type(governing_equations),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)

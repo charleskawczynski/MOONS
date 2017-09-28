@@ -161,7 +161,7 @@
 
        subroutine make_restart_dir_physical_sub_domain(this,dir)
          implicit none
-         type(physical_sub_domain),intent(in) :: this
+         type(physical_sub_domain),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)

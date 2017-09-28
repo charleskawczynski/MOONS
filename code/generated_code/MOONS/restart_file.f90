@@ -155,7 +155,7 @@
 
        subroutine make_restart_dir_restart_file(this,dir)
          implicit none
-         type(restart_file),intent(in) :: this
+         type(restart_file),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)

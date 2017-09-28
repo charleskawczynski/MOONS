@@ -34,14 +34,13 @@
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-       subroutine init_TMP(TMP,n_stages,active,multistep_iter,n_step_stop,dt,dir,name)
+       subroutine init_TMP(TMP,n_stages,active,multistep_iter,n_step_stop,dt)
          implicit none
          type(time_marching_params),intent(inout) :: TMP
          integer,intent(in) :: n_stages,multistep_iter
          logical,intent(in) :: active
          integer(li),intent(in) :: n_step_stop
          real(cp),intent(in) :: dt
-         character(len=*),intent(in) :: dir,name
          call init(TMP%RKP,n_stages,active)
          TMP%n_step_start = 0
          TMP%n_step = 0
@@ -51,8 +50,6 @@
          TMP%C_max = 0.1_cp
          TMP%dt = dt
          TMP%t_final = TMP%dt*real(TMP%n_step_stop,cp)
-         call init(TMP%dir,dir)
-         call init(TMP%name,name)
        end subroutine
 
        subroutine import_dt_TMP_wrapper(TMP)

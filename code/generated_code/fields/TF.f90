@@ -164,7 +164,7 @@
 
        subroutine make_restart_dir_TF(this,dir)
          implicit none
-         type(TF),intent(in) :: this
+         type(TF),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)

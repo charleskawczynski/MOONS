@@ -228,7 +228,7 @@
 
        subroutine make_restart_dir_unit_conversion(this,dir)
          implicit none
-         type(unit_conversion),intent(in) :: this
+         type(unit_conversion),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)

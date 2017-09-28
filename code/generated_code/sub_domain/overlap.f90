@@ -173,7 +173,7 @@
 
        subroutine make_restart_dir_overlap(this,dir)
          implicit none
-         type(overlap),intent(in) :: this
+         type(overlap),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)

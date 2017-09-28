@@ -363,10 +363,12 @@
 
        subroutine make_restart_dir_dimensionless_params(this,dir)
          implicit none
-         type(dimensionless_params),intent(in) :: this
+         type(dimensionless_params),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
+         call init(this%dir,dir)
+         call init(this%name,'primitives')
        end subroutine
 
        subroutine export_restart_dimensionless_params(this,dir)

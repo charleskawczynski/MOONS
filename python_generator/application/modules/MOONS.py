@@ -14,8 +14,7 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].set_used_modules(['IO_tools_mod'])
 	g.module[m_name].add_prop('un','integer',priv)
 	g.module[m_name].add_prop('terminate_loop','logical',priv)
-	g.module[m_name].add_prop('dir','string',priv)
-	g.module[m_name].add_prop('name','string',priv)
+	g.module[m_name].add_prop(['dir','name'],'string',priv)
 
 	m_name = 'step'
 	g.add_module(m_name)
@@ -32,8 +31,7 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('any_next','logical',priv)
 	g.module[m_name].add_prop('any_now','logical',priv)
 	g.module[m_name].add_prop('un','integer',priv)
-	g.module[m_name].add_prop('dir','string',priv)
-	g.module[m_name].add_prop('name','string',priv)
+	g.module[m_name].add_prop(['dir','name'],'string',priv)
 
 	m_name = 'refine_mesh'
 	g.add_module(m_name)
@@ -47,8 +45,7 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('un','integer',priv)
 	g.module[m_name].add_prop('i_level','integer',priv)
 	g.module[m_name].add_prop('i_level_last','integer',priv)
-	g.module[m_name].add_prop('dir','string',priv)
-	g.module[m_name].add_prop('name','string',priv)
+	g.module[m_name].add_prop(['dir','name'],'string',priv)
 	g.module[m_name].add_prop('level','string',priv)
 	g.module[m_name].add_prop('level_last','string',priv)
 

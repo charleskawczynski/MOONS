@@ -255,10 +255,12 @@
 
        subroutine make_restart_dir_probe(this,dir)
          implicit none
-         type(probe),intent(in) :: this
+         type(probe),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
+         call init(this%dir,dir)
+         call init(this%name,'primitives')
        end subroutine
 
        subroutine export_restart_probe(this,dir)

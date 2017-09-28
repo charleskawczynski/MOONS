@@ -247,7 +247,7 @@
 
        subroutine make_restart_dir_SF(this,dir)
          implicit none
-         type(SF),intent(in) :: this
+         type(SF),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: i_BF
          integer :: s_BF

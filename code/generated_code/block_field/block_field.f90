@@ -223,7 +223,7 @@
 
        subroutine make_restart_dir_block_field(this,dir)
          implicit none
-         type(block_field),intent(in) :: this
+         type(block_field),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)

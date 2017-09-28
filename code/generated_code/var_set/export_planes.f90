@@ -201,7 +201,7 @@
 
        subroutine make_restart_dir_export_planes(this,dir)
          implicit none
-         type(export_planes),intent(in) :: this
+         type(export_planes),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: i_EP
          integer :: s_EP

@@ -307,7 +307,7 @@
 
        subroutine make_restart_dir_energy(this,dir)
          implicit none
-         type(energy),intent(in) :: this
+         type(energy),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)

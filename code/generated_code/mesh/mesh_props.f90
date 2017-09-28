@@ -277,7 +277,7 @@
 
        subroutine make_restart_dir_mesh_props(this,dir)
          implicit none
-         type(mesh_props),intent(in) :: this
+         type(mesh_props),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: i_int_tensor
          integer :: s_int_tensor

@@ -239,10 +239,12 @@
 
        subroutine make_restart_dir_time_statistics_VF(this,dir)
          implicit none
-         type(time_statistics_VF),intent(in) :: this
+         type(time_statistics_VF),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
+         call init(this%dir,dir)
+         call init(this%name,'primitives')
          call make_restart_dir(this%U_sum,dir//'U_sum'//fortran_PS)
          call make_restart_dir(this%U_ave,dir//'U_ave'//fortran_PS)
          call make_restart_dir(this%mean_energy,&

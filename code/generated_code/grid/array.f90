@@ -175,7 +175,7 @@
 
        subroutine make_restart_dir_array(this,dir)
          implicit none
-         type(array),intent(in) :: this
+         type(array),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)

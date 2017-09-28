@@ -194,7 +194,7 @@
 
        subroutine make_restart_dir_boundary_conditions(this,dir)
          implicit none
-         type(boundary_conditions),intent(in) :: this
+         type(boundary_conditions),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)

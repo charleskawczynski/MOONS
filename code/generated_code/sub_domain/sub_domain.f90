@@ -279,7 +279,7 @@
 
        subroutine make_restart_dir_sub_domain(this,dir)
          implicit none
-         type(sub_domain),intent(in) :: this
+         type(sub_domain),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: i_C
          integer :: i_N

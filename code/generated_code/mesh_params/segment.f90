@@ -208,7 +208,7 @@
 
        subroutine make_restart_dir_segment(this,dir)
          implicit none
-         type(segment),intent(in) :: this
+         type(segment),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)

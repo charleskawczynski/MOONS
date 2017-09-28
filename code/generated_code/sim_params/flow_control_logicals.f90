@@ -373,7 +373,7 @@
 
        subroutine make_restart_dir_flow_control_logicals(this,dir)
          implicit none
-         type(flow_control_logicals),intent(in) :: this
+         type(flow_control_logicals),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)

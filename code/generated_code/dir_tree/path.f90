@@ -157,7 +157,7 @@
 
        subroutine make_restart_dir_path(this,dir)
          implicit none
-         type(path),intent(in) :: this
+         type(path),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)

@@ -298,10 +298,12 @@
 
        subroutine make_restart_dir_PCG_solver_SF(this,dir)
          implicit none
-         type(PCG_solver_SF),intent(in) :: this
+         type(PCG_solver_SF),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
+         call init(this%dir,dir)
+         call init(this%name,'primitives')
          call make_restart_dir(this%MFP,dir//'MFP'//fortran_PS)
          call make_restart_dir(this%tempk,dir//'tempk'//fortran_PS)
          call make_restart_dir(this%k,dir//'k'//fortran_PS)

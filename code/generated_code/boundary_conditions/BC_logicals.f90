@@ -272,7 +272,7 @@
 
        subroutine make_restart_dir_BC_logicals(this,dir)
          implicit none
-         type(BC_logicals),intent(in) :: this
+         type(BC_logicals),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)

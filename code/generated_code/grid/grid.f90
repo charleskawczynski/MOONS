@@ -195,7 +195,7 @@
 
        subroutine make_restart_dir_grid(this,dir)
          implicit none
-         type(grid),intent(in) :: this
+         type(grid),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: i_c
          integer :: s_c

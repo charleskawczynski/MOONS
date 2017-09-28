@@ -210,7 +210,7 @@
 
        subroutine make_restart_dir_physical_domain(this,dir)
          implicit none
-         type(physical_domain),intent(in) :: this
+         type(physical_domain),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: i_sd
          integer :: s_sd

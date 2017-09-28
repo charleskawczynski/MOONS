@@ -173,7 +173,7 @@
 
        subroutine make_restart_dir_stitch_face(this,dir)
          implicit none
-         type(stitch_face),intent(in) :: this
+         type(stitch_face),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)

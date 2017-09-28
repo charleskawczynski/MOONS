@@ -272,7 +272,7 @@
 
        subroutine make_restart_dir_mesh_params(this,dir)
          implicit none
-         type(mesh_params),intent(in) :: this
+         type(mesh_params),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: i_s_base
          integer :: i_s_ext

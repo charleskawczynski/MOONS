@@ -612,7 +612,7 @@
 
        subroutine make_restart_dir_induction(this,dir)
          implicit none
-         type(induction),intent(in) :: this
+         type(induction),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: i_ME
          integer :: i_ME_fluid

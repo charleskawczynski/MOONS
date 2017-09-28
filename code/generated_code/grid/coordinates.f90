@@ -466,7 +466,7 @@
 
        subroutine make_restart_dir_coordinates(this,dir)
          implicit none
-         type(coordinates),intent(in) :: this
+         type(coordinates),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: i_colCC
          integer :: i_colN

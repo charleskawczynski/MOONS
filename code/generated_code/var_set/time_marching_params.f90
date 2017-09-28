@@ -263,10 +263,12 @@
 
        subroutine make_restart_dir_time_marching_params(this,dir)
          implicit none
-         type(time_marching_params),intent(in) :: this
+         type(time_marching_params),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
+         call init(this%dir,dir)
+         call init(this%name,'primitives')
          call make_restart_dir(this%RKP,dir//'RKP'//fortran_PS)
        end subroutine
 

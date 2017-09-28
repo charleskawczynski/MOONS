@@ -58,7 +58,9 @@
          type(iter_solver_params) :: ISP
          type(matrix_free_params) :: MFP
          logical,parameter :: T = .true.
-         call init(ISP,2000,pow(-20),pow(-18),1,T,T,str(DT%test%field),'Poisson_test_CC')
+         call init(ISP,2000,pow(-20),pow(-18),1,T,T)
+         call init(ISP%dir,str(DT%test%field))
+         call init(ISP%name,'Poisson_test_CC')
          call init(phi,p)
          call assign(phi,0.0_cp)
          call init_CC(temp_CC,m)
@@ -101,7 +103,9 @@
          type(iter_solver_params) :: ISP
          type(matrix_free_params) :: MFP
          logical,parameter :: T = .true.
-         call init(ISP,10000,pow(-15),pow(-15),1,T,T,str(DT%test%field),'Poisson_test_Face')
+         call init(ISP,10000,pow(-15),pow(-15),1,T,T)
+         call init(ISP%dir,str(DT%test%field))
+         call init(ISP%name,'Poisson_test_Face')
          call init(U,X)
          call assign(U,0.0_cp)
          call init_CC_edge(temp_CC_edge,m)

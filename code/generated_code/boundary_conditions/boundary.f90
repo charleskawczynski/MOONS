@@ -216,7 +216,7 @@
 
        subroutine make_restart_dir_boundary(this,dir)
          implicit none
-         type(boundary),intent(in) :: this
+         type(boundary),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: i_SB
          integer :: s_SB

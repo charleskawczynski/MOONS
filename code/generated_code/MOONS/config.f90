@@ -214,7 +214,7 @@
 
        subroutine make_restart_dir_config(this,dir)
          implicit none
-         type(config),intent(in) :: this
+         type(config),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)

@@ -218,7 +218,7 @@
 
        subroutine make_restart_dir_mesh(this,dir)
          implicit none
-         type(mesh),intent(in) :: this
+         type(mesh),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: i_B
          integer :: s_B

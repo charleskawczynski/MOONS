@@ -273,10 +273,12 @@
 
        subroutine make_restart_dir_refine_mesh(this,dir)
          implicit none
-         type(refine_mesh),intent(in) :: this
+         type(refine_mesh),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
+         call init(this%dir,dir)
+         call init(this%name,'primitives')
          call make_restart_dir(this%all,dir//'all'//fortran_PS)
          call make_restart_dir(this%x,dir//'x'//fortran_PS)
          call make_restart_dir(this%y,dir//'y'//fortran_PS)

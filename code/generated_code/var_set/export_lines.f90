@@ -201,7 +201,7 @@
 
        subroutine make_restart_dir_export_lines(this,dir)
          implicit none
-         type(export_lines),intent(in) :: this
+         type(export_lines),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: i_EL
          integer :: s_EL

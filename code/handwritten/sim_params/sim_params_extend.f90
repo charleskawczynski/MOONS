@@ -54,10 +54,9 @@
        call add_ext(SP%MP_ind,seg_1d(3,'ext_uniform_IO',11))
      end subroutine
 
-     subroutine init_SP(SP,DT)
+     subroutine init_SP(SP)
        implicit none
        type(sim_params),intent(inout) :: SP
-       type(dir_tree),intent(in) :: DT
        logical,parameter :: T = .true.
        logical,parameter :: F = .false.
        real(cp) :: time,dtime
@@ -68,6 +67,7 @@
        SP%FCL%skip_solver_loop                   = F
        SP%FCL%post_process                       = F
        SP%FCL%Poisson_test                       = F
+       SP%FCL%matrix_visualization               = F
        SP%FCL%Taylor_Green_Vortex_test           = F
        SP%FCL%temporal_convergence_test          = F
        SP%FCL%operator_commute_test              = F
@@ -117,8 +117,6 @@
        call init(SP%EF%unsteady_3D   ,F,F,1,10,4)
        call init(SP%EF%restart_files ,F,F,1,10,2)
        call init(SP%EF%final_solution,F,F,1,10,6)
-       call init(SP%EF%dir,str(DT%EF))
-       call init(SP%EF%name,'EF')
 
        ! call init(MQP,auto_find_N,max_mesh_stretch_ratio,N_max_points_add)
        call init(SP%MQP,T,1.5_cp,50)
@@ -145,7 +143,6 @@
        ! SP%GP%apply_BC_order       = (/3,4,1,2,5,6/) ! good for periodic in z?
 
        call delete(SP%DP)
-       call init(SP%DP,str(DT%dimensionless_params),'dimensionless_params')
        SP%DP%Re                      = 100.0_cp
        ! SP%DP%N                       = 5.0_cp*pow(0)
        SP%DP%Q                       = 8.0_cp*pow(-1)
@@ -234,24 +231,24 @@
        call init_IC_BC(SP%VS%phi  ,0    ,0 )
        call init_IC_BC(SP%VS%rho  ,0    ,0 )
 
-       ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,export_convergence,dir,name)
-       call init(SP%VS%T%ISP,  5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy,str(DT%ISP),'ISP_T')
-       call init(SP%VS%U%ISP,  5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy,str(DT%ISP),'ISP_U')
-       call init(SP%VS%P%ISP,  5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy,str(DT%ISP),'ISP_P')
-       call init(SP%VS%B%ISP,  5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy,str(DT%ISP),'ISP_B')
-       call init(SP%VS%B0%ISP, 5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy,str(DT%ISP),'ISP_B0')
-       call init(SP%VS%phi%ISP,5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy,str(DT%ISP),'ISP_phi')
-       call init(SP%VS%rho%ISP,5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy,str(DT%ISP),'ISP_rho')
+       ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,export_convergence)
+       call init(SP%VS%T%ISP,  5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy)
+       call init(SP%VS%U%ISP,  5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy)
+       call init(SP%VS%P%ISP,  5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy)
+       call init(SP%VS%B%ISP,  5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy)
+       call init(SP%VS%B0%ISP, 5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy)
+       call init(SP%VS%phi%ISP,5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy)
+       call init(SP%VS%rho%ISP,5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy)
 
-       ! call init(TMP,RK_n_stages,RK_active,multistep_iter,n_step_stop,dtime,dir,name)
-       call init(SP%coupled,   1,F,1 ,ceiling(time/dtime,li),dtime        ,str(DT%TMP),'TMP_coupled')
-       call init(SP%VS%T%TMP,  1,F,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_T')
-       call init(SP%VS%U%TMP,  1,F,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_U')
-       call init(SP%VS%P%TMP,  1,F,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_P')
-       call init(SP%VS%B%TMP,  1,F,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_B')
-       call init(SP%VS%B0%TMP, 1,F,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_B0')
-       call init(SP%VS%phi%TMP,1,F,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_phi')
-       call init(SP%VS%rho%TMP,1,F,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_rho')
+       ! call init(TMP,RK_n_stages,RK_active,multistep_iter,n_step_stop,dtime)
+       call init(SP%coupled,   1,F,1 ,ceiling(time/dtime,li),dtime        )
+       call init(SP%VS%T%TMP,  1,F,1 ,SP%coupled%n_step_stop,SP%coupled%dt)
+       call init(SP%VS%U%TMP,  1,F,1 ,SP%coupled%n_step_stop,SP%coupled%dt)
+       call init(SP%VS%P%TMP,  1,F,1 ,SP%coupled%n_step_stop,SP%coupled%dt)
+       call init(SP%VS%B%TMP,  1,F,1 ,SP%coupled%n_step_stop,SP%coupled%dt)
+       call init(SP%VS%B0%TMP, 1,F,1 ,SP%coupled%n_step_stop,SP%coupled%dt)
+       call init(SP%VS%phi%TMP,1,F,1 ,SP%coupled%n_step_stop,SP%coupled%dt)
+       call init(SP%VS%rho%TMP,1,F,1 ,SP%coupled%n_step_stop,SP%coupled%dt)
 
        ! Matrix-free parameters:
        ! coeff_natural  = coefficient of terms in non-discretized equation
@@ -305,7 +302,7 @@
        call init(SP%ET%joule_heating      , F,SP%DP%Ec*SP%DP%N  )
        call init(SP%ET%volumetric_heating , F,1.0_cp            )
 
-       call post_process(SP,DT)
+       call post_process(SP)
      end subroutine
 
      end module

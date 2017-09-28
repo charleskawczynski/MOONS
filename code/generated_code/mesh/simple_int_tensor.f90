@@ -146,7 +146,7 @@
 
        subroutine make_restart_dir_simple_int_tensor(this,dir)
          implicit none
-         type(simple_int_tensor),intent(in) :: this
+         type(simple_int_tensor),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)

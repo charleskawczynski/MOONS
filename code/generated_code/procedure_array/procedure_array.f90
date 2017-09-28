@@ -210,7 +210,7 @@
 
        subroutine make_restart_dir_procedure_array(this,dir)
          implicit none
-         type(procedure_array),intent(in) :: this
+         type(procedure_array),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: i_SP
          integer :: s_SP

@@ -137,8 +137,7 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('unsteady_3D','export_frequency_params',priv)
 	g.module[m_name].add_prop('final_solution','export_frequency_params',priv)
 	g.module[m_name].add_prop('restart_files','export_frequency_params',priv)
-	g.module[m_name].add_prop('dir','string',priv)
-	g.module[m_name].add_prop('name','string',priv)
+	g.module[m_name].add_prop(['dir','name'],'string',priv)
 
 	m_name = 'flow_control_logicals'
 	g.add_module(m_name)
@@ -205,8 +204,7 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('L_eta',real,priv)
 	g.module[m_name].add_prop('U_eta',real,priv)
 	g.module[m_name].add_prop('t_eta',real,priv)
-	g.module[m_name].add_prop('dir','string',priv)
-	g.module[m_name].add_prop('name','string',priv)
+	g.module[m_name].add_prop(['dir','name'],'string',priv)
 
 	m_name = 'sim_params'
 	g.add_module(m_name)

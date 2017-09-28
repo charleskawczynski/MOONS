@@ -264,10 +264,12 @@
 
        subroutine make_restart_dir_iter_solver_params(this,dir)
          implicit none
-         type(iter_solver_params),intent(in) :: this
+         type(iter_solver_params),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
+         call init(this%dir,dir)
+         call init(this%name,'primitives')
        end subroutine
 
        subroutine export_restart_iter_solver_params(this,dir)

@@ -236,10 +236,12 @@
 
        subroutine make_restart_dir_export_now(this,dir)
          implicit none
-         type(export_now),intent(in) :: this
+         type(export_now),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
+         call init(this%dir,dir)
+         call init(this%name,'primitives')
          call make_restart_dir(this%U,dir//'U'//fortran_PS)
          call make_restart_dir(this%B,dir//'B'//fortran_PS)
          call make_restart_dir(this%T,dir//'T'//fortran_PS)

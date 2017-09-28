@@ -182,7 +182,7 @@
 
        subroutine make_restart_dir_solver_settings(this,dir)
          implicit none
-         type(solver_settings),intent(in) :: this
+         type(solver_settings),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)

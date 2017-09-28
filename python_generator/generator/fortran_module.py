@@ -592,7 +592,7 @@ class fortran_module:
         # sig = 'make_restart_dir_'
         c = [self.full_sub_signature(sig,'this,dir')]
         c.append(self.spaces[2] + self.implicitNone)
-        c.append(self.spaces[2] + 'type(' + self.name + '),intent(in) :: this' )
+        c.append(self.spaces[2] + 'type(' + self.name + '),intent(inout) :: this' )
         c.append(self.spaces[2] + 'character(len=*),intent(in) :: dir' )
         for key in self.arg_objects:
             L = self.arg_objects[key].get_list_of_local_iterators()
@@ -604,6 +604,9 @@ class fortran_module:
         if suppress_all_warnings:
             c.append(self.spaces[2] + 'call suppress_warnings(this)' )
         c.append(self.spaces[2] + 'call make_dir_quiet(dir)' )
+        if self.has_dir_name:
+            c.append(self.spaces[2] + "call init(this%dir,dir)" )
+            c.append(self.spaces[2] + "call init(this%name,'primitives')" )
         for key in self.prop:
             c.append([self.spaces[2]+x for x in self.prop[key].write_make_restart_dir()])
         c.append(self.end_sub())

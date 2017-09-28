@@ -168,7 +168,7 @@
 
        subroutine make_restart_dir_sparse(this,dir)
          implicit none
-         type(sparse),intent(in) :: this
+         type(sparse),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)

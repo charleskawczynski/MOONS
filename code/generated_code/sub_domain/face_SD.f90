@@ -453,7 +453,7 @@
 
        subroutine make_restart_dir_face_SD(this,dir)
          implicit none
-         type(face_SD),intent(in) :: this
+         type(face_SD),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: i_G
          integer :: i_G_periodic_N

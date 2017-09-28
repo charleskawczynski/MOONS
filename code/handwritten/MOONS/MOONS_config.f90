@@ -48,17 +48,17 @@
        public :: config
        interface config;         module procedure config_MOONS;         end interface
 
-       public :: config_fresh
-       interface config_fresh;   module procedure config_fresh_MOONS;   end interface
-
        contains
 
        subroutine config_MOONS(M)
          implicit none
          type(MOONS),intent(inout) :: M
          write(*,*) ' ************** STARTED CONFIGURING MOONS ************** '
-         call init(M%C%DT,str(M%C%dir_target))  ! Initialize + make directory tree
+         call delete_file('','mesh_generation_error')
+#ifdef fopenmp
+         call omp_set_num_threads(12) ! Set number of openMP threads
 
+#endif
          if (file_exists(str(M%C%DT%restart),'config')) then
            ! Restart is default if files exist!
            call import_restart(M%C,str(M%C%DT%restart))
@@ -68,38 +68,12 @@
            ! call import_TMP(M%C%SP%VS)  ! start from last exported time step
            ! call import(M%C%SP%coupled) ! start from last exported time step
          else
-           call config_fresh(M)
+           call init(M%C%SP)
          endif
-         call make_restart_dir(M%C,str(M%C%DT%restart))
-         call export_restart(M%C,str(M%C%DT%restart))
-         write(*,*) ' ************** FINISHED CONFIGURING MOONS ************** '
-       end subroutine
-
-       subroutine config_fresh_MOONS(M)
-         implicit none
-         type(MOONS),intent(inout) :: M
-         call delete_file('','mesh_generation_error')
-#ifdef fopenmp
-         call omp_set_num_threads(12) ! Set number of openMP threads
-
-#endif
-
-         M%C%SP%FCL%matrix_visualization = .false.
-         if (M%C%SP%FCL%matrix_visualization) then
-           call export_matrix_visualization(M%C%DT)
-         endif
-
-         call init(M%C%SP,M%C%DT)
-
-         call export(M%C%SP,str(M%C%DT%params),'sim_params_raw_exported')
-         call display(M%C%SP,str(M%C%DT%params),'sim_params_initial')
          call display_compiler_info(str(M%C%DT%params),'compiler_info')
-
-         call export(M%C%SP%coupled)
-         call export_TMP(M%C%SP%VS)
-
          call print_version()
          call export_version(str(M%C%DT%LDC))
+         write(*,*) ' ************** FINISHED CONFIGURING MOONS ************** '
        end subroutine
 
        end module

@@ -174,7 +174,7 @@
 
        subroutine make_restart_dir_single_boundary(this,dir)
          implicit none
-         type(single_boundary),intent(in) :: this
+         type(single_boundary),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)

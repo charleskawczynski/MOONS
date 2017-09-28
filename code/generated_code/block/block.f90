@@ -317,7 +317,7 @@
 
        subroutine make_restart_dir_block(this,dir)
          implicit none
-         type(block),intent(in) :: this
+         type(block),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: i_f
          integer :: i_fb

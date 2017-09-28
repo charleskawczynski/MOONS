@@ -164,7 +164,7 @@
 
        subroutine make_restart_dir_VF(this,dir)
          implicit none
-         type(VF),intent(in) :: this
+         type(VF),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)

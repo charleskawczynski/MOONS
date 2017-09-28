@@ -146,7 +146,7 @@
 
        subroutine make_restart_dir_index_2D(this,dir)
          implicit none
-         type(index_2D),intent(in) :: this
+         type(index_2D),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)

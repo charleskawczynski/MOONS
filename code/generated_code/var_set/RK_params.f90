@@ -193,7 +193,7 @@
 
        subroutine make_restart_dir_RK_params(this,dir)
          implicit none
-         type(RK_params),intent(in) :: this
+         type(RK_params),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)

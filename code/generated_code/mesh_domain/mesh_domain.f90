@@ -166,7 +166,7 @@
 
        subroutine make_restart_dir_mesh_domain(this,dir)
          implicit none
-         type(mesh_domain),intent(in) :: this
+         type(mesh_domain),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
