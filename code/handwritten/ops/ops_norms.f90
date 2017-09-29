@@ -49,6 +49,7 @@
          real(cp) :: temp
          integer :: t
          e = 0.0_cp
+         write(*,*) 'vol_ID(u%DL) = ',vol_ID(u%DL)
          do t=1,m%s
           call Ln(temp,u%BF(t)%GF,n,m%B(t)%vol(vol_ID(u%DL)))
           e = e + temp
@@ -65,6 +66,7 @@
          integer :: t
          e = 0.0_cp
          if (is_collocated(u)) then
+           write(*,*) 'vol_ID(u%x%DL) = ',vol_ID(u%x%DL)
            do t=1,m%s;
              call Ln(temp,u%x%BF(t)%GF,&
                           u%y%BF(t)%GF,&
@@ -74,6 +76,9 @@
              e = e + temp
            enddo
          else
+           write(*,*) 'vol_ID(u%x%DL) = ',vol_ID(u%x%DL)
+           write(*,*) 'vol_ID(u%y%DL) = ',vol_ID(u%y%DL)
+           write(*,*) 'vol_ID(u%z%DL) = ',vol_ID(u%z%DL)
            do t=1,m%s;
              call Ln(temp,u%x%BF(t)%GF,n,m%B(t)%vol(vol_ID(u%x%DL))); e = e + temp
              call Ln(temp,u%y%BF(t)%GF,n,m%B(t)%vol(vol_ID(u%y%DL))); e = e + temp

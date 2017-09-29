@@ -21,7 +21,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -41,6 +41,7 @@
        interface export;           module procedure export_wrap_SF;        end interface
        interface import;           module procedure import_wrap_SF;        end interface
        interface set_IO_dir;       module procedure set_IO_dir_SF;         end interface
+       interface make_IO_dir;      module procedure make_IO_dir_SF;        end interface
        interface suppress_warnings;module procedure suppress_warnings_SF;  end interface
 
        type SF
@@ -254,7 +255,6 @@
          integer :: i_BF
          integer :: s_BF
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
          if (allocated(this%BF)) then
            s_BF = size(this%BF)
            do i_BF=1,s_BF
@@ -263,6 +263,24 @@
            enddo
          endif
          call set_IO_dir(this%DL,dir//'DL'//fortran_PS)
+       end subroutine
+
+       subroutine make_IO_dir_SF(this,dir)
+         implicit none
+         type(SF),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_BF
+         integer :: s_BF
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         if (allocated(this%BF)) then
+           s_BF = size(this%BF)
+           do i_BF=1,s_BF
+             call make_IO_dir(this%BF(i_BF),&
+             dir//'BF_'//int2str(i_BF)//fortran_PS)
+           enddo
+         endif
+         call make_IO_dir(this%DL,dir//'DL'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_SF(this,dir)

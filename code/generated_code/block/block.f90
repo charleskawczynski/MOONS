@@ -19,7 +19,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -39,6 +39,7 @@
        interface export;           module procedure export_wrap_block;        end interface
        interface import;           module procedure import_wrap_block;        end interface
        interface set_IO_dir;       module procedure set_IO_dir_block;         end interface
+       interface make_IO_dir;      module procedure make_IO_dir_block;        end interface
        interface suppress_warnings;module procedure suppress_warnings_block;  end interface
 
        type block
@@ -332,7 +333,6 @@
          integer :: s_fb
          integer :: s_vol
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
          call set_IO_dir(this%g,dir//'g'//fortran_PS)
          if (allocated(this%f)) then
            s_f = size(this%f)
@@ -351,6 +351,41 @@
            s_vol = size(this%vol)
            do i_vol=1,s_vol
              call set_IO_dir(this%vol(i_vol),&
+             dir//'vol_'//int2str(i_vol)//fortran_PS)
+           enddo
+         endif
+       end subroutine
+
+       subroutine make_IO_dir_block(this,dir)
+         implicit none
+         type(block),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_f
+         integer :: i_fb
+         integer :: i_vol
+         integer :: s_f
+         integer :: s_fb
+         integer :: s_vol
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_IO_dir(this%g,dir//'g'//fortran_PS)
+         if (allocated(this%f)) then
+           s_f = size(this%f)
+           do i_f=1,s_f
+             call make_IO_dir(this%f(i_f),dir//'f_'//int2str(i_f)//fortran_PS)
+           enddo
+         endif
+         if (allocated(this%fb)) then
+           s_fb = size(this%fb)
+           do i_fb=1,s_fb
+             call make_IO_dir(this%fb(i_fb),&
+             dir//'fb_'//int2str(i_fb)//fortran_PS)
+           enddo
+         endif
+         if (allocated(this%vol)) then
+           s_vol = size(this%vol)
+           do i_vol=1,s_vol
+             call make_IO_dir(this%vol(i_vol),&
              dir//'vol_'//int2str(i_vol)//fortran_PS)
            enddo
          endif

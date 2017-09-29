@@ -24,7 +24,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -44,6 +44,7 @@
        interface export;           module procedure export_wrap_var;        end interface
        interface import;           module procedure import_wrap_var;        end interface
        interface set_IO_dir;       module procedure set_IO_dir_var;         end interface
+       interface make_IO_dir;      module procedure make_IO_dir_var;        end interface
        interface suppress_warnings;module procedure suppress_warnings_var;  end interface
 
        type var
@@ -214,7 +215,6 @@
          type(var),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
          call set_IO_dir(this%SS,dir//'SS'//fortran_PS)
          call set_IO_dir(this%MFP,dir//'MFP'//fortran_PS)
          call set_IO_dir(this%TMP,dir//'TMP'//fortran_PS)
@@ -224,6 +224,24 @@
          call set_IO_dir(this%unsteady_planes,&
          dir//'unsteady_planes'//fortran_PS)
          call set_IO_dir(this%unsteady_field,&
+         dir//'unsteady_field'//fortran_PS)
+       end subroutine
+
+       subroutine make_IO_dir_var(this,dir)
+         implicit none
+         type(var),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_IO_dir(this%SS,dir//'SS'//fortran_PS)
+         call make_IO_dir(this%MFP,dir//'MFP'//fortran_PS)
+         call make_IO_dir(this%TMP,dir//'TMP'//fortran_PS)
+         call make_IO_dir(this%ISP,dir//'ISP'//fortran_PS)
+         call make_IO_dir(this%unsteady_lines,&
+         dir//'unsteady_lines'//fortran_PS)
+         call make_IO_dir(this%unsteady_planes,&
+         dir//'unsteady_planes'//fortran_PS)
+         call make_IO_dir(this%unsteady_field,&
          dir//'unsteady_field'//fortran_PS)
        end subroutine
 

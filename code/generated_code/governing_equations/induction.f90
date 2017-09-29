@@ -25,7 +25,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -45,6 +45,7 @@
        interface export;           module procedure export_wrap_induction;        end interface
        interface import;           module procedure import_wrap_induction;        end interface
        interface set_IO_dir;       module procedure set_IO_dir_induction;         end interface
+       interface make_IO_dir;      module procedure make_IO_dir_induction;        end interface
        interface suppress_warnings;module procedure suppress_warnings_induction;  end interface
 
        type induction
@@ -635,7 +636,6 @@
          integer :: s_probe_dB0dt
          integer :: s_probe_B0
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
          call set_IO_dir(this%m,dir//'m'//fortran_PS)
          call set_IO_dir(this%m_sigma,dir//'m_sigma'//fortran_PS)
          call set_IO_dir(this%PCG_B,dir//'PCG_B'//fortran_PS)
@@ -699,6 +699,87 @@
          enddo
          call set_IO_dir(this%MD_fluid,dir//'MD_fluid'//fortran_PS)
          call set_IO_dir(this%MD_sigma,dir//'MD_sigma'//fortran_PS)
+       end subroutine
+
+       subroutine make_IO_dir_induction(this,dir)
+         implicit none
+         type(induction),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_ME
+         integer :: i_ME_fluid
+         integer :: i_ME_conductor
+         integer :: i_probe_dB0dt
+         integer :: i_probe_B0
+         integer :: s_ME
+         integer :: s_ME_fluid
+         integer :: s_ME_conductor
+         integer :: s_probe_dB0dt
+         integer :: s_probe_B0
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_IO_dir(this%m,dir//'m'//fortran_PS)
+         call make_IO_dir(this%m_sigma,dir//'m_sigma'//fortran_PS)
+         call make_IO_dir(this%PCG_B,dir//'PCG_B'//fortran_PS)
+         call make_IO_dir(this%PCG_cleanB,dir//'PCG_cleanB'//fortran_PS)
+         call make_IO_dir(this%U_E,dir//'U_E'//fortran_PS)
+         call make_IO_dir(this%temp_E_TF,dir//'temp_E_TF'//fortran_PS)
+         call make_IO_dir(this%temp_F1_TF,dir//'temp_F1_TF'//fortran_PS)
+         call make_IO_dir(this%temp_F2_TF,dir//'temp_F2_TF'//fortran_PS)
+         call make_IO_dir(this%sigmaInv_CC,dir//'sigmaInv_CC'//fortran_PS)
+         call make_IO_dir(this%divB,dir//'divB'//fortran_PS)
+         call make_IO_dir(this%divJ,dir//'divJ'//fortran_PS)
+         call make_IO_dir(this%phi,dir//'phi'//fortran_PS)
+         call make_IO_dir(this%temp_CC,dir//'temp_CC'//fortran_PS)
+         call make_IO_dir(this%F,dir//'F'//fortran_PS)
+         call make_IO_dir(this%Fnm1,dir//'Fnm1'//fortran_PS)
+         call make_IO_dir(this%L,dir//'L'//fortran_PS)
+         call make_IO_dir(this%J,dir//'J'//fortran_PS)
+         call make_IO_dir(this%temp_E,dir//'temp_E'//fortran_PS)
+         call make_IO_dir(this%B,dir//'B'//fortran_PS)
+         call make_IO_dir(this%Bnm1,dir//'Bnm1'//fortran_PS)
+         call make_IO_dir(this%B0,dir//'B0'//fortran_PS)
+         call make_IO_dir(this%B_interior,dir//'B_interior'//fortran_PS)
+         call make_IO_dir(this%temp_F1,dir//'temp_F1'//fortran_PS)
+         call make_IO_dir(this%temp_F2,dir//'temp_F2'//fortran_PS)
+         call make_IO_dir(this%Bstar,dir//'Bstar'//fortran_PS)
+         call make_IO_dir(this%dB0dt,dir//'dB0dt'//fortran_PS)
+         call make_IO_dir(this%temp_CC_VF,dir//'temp_CC_VF'//fortran_PS)
+         call make_IO_dir(this%sigmaInv_edge,dir//'sigmaInv_edge'//fortran_PS)
+         call make_IO_dir(this%J_interior,dir//'J_interior'//fortran_PS)
+         call make_IO_dir(this%curlUCrossB,dir//'curlUCrossB'//fortran_PS)
+         call make_IO_dir(this%CC_VF_fluid,dir//'CC_VF_fluid'//fortran_PS)
+         call make_IO_dir(this%CC_VF_sigma,dir//'CC_VF_sigma'//fortran_PS)
+         call make_IO_dir(this%probe_divB,dir//'probe_divB'//fortran_PS)
+         call make_IO_dir(this%probe_divJ,dir//'probe_divJ'//fortran_PS)
+         call make_IO_dir(this%JE,dir//'JE'//fortran_PS)
+         call make_IO_dir(this%JE_fluid,dir//'JE_fluid'//fortran_PS)
+         s_ME = size(this%ME)
+         do i_ME=1,s_ME
+           call make_IO_dir(this%ME(i_ME),&
+           dir//'ME_'//int2str(i_ME)//fortran_PS)
+         enddo
+         s_ME_fluid = size(this%ME_fluid)
+         do i_ME_fluid=1,s_ME_fluid
+           call make_IO_dir(this%ME_fluid(i_ME_fluid),&
+           dir//'ME_fluid_'//int2str(i_ME_fluid)//fortran_PS)
+         enddo
+         s_ME_conductor = size(this%ME_conductor)
+         do i_ME_conductor=1,s_ME_conductor
+           call make_IO_dir(this%ME_conductor(i_ME_conductor),&
+           dir//'ME_conductor_'//int2str(i_ME_conductor)//fortran_PS)
+         enddo
+         s_probe_dB0dt = size(this%probe_dB0dt)
+         do i_probe_dB0dt=1,s_probe_dB0dt
+           call make_IO_dir(this%probe_dB0dt(i_probe_dB0dt),&
+           dir//'probe_dB0dt_'//int2str(i_probe_dB0dt)//fortran_PS)
+         enddo
+         s_probe_B0 = size(this%probe_B0)
+         do i_probe_B0=1,s_probe_B0
+           call make_IO_dir(this%probe_B0(i_probe_B0),&
+           dir//'probe_B0_'//int2str(i_probe_B0)//fortran_PS)
+         enddo
+         call make_IO_dir(this%MD_fluid,dir//'MD_fluid'//fortran_PS)
+         call make_IO_dir(this%MD_sigma,dir//'MD_sigma'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_induction(this,dir)

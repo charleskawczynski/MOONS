@@ -43,6 +43,18 @@ def indent_lines(L):
   L = [x[s_indent:] if any([y in x for y in T_unindent]) else x for x in L]
   return L
 
+class logical_list:
+  def __init__(self):
+    self.string = False
+    self.primitive = False
+    self.object = False
+    self.procedure = False
+  def init(self):
+    self.string = False
+    self.primitive = False
+    self.object = False
+    self.procedure = False
+
 class fortran_property:
   # Additional routines to consider:
   # compare
@@ -64,6 +76,8 @@ class fortran_property:
     self.do_loop_iter = []
     self.do_loop_iter_max = []
     self.spaces = []
+
+    self.LL = logical_list()
 
   def set_do_loop_iter(self):
     self.do_loop_iter = 'i_'+self.name
@@ -511,7 +525,7 @@ class fortran_property:
 
     return indent_lines(L)
 
-  def write_set_IO_dir(self):
+  def write_set_IO_dir(self,fun_name):
     L = []
     f_sep = self.fortran_string_sep
     f_name = "'"+self.name+"'"
@@ -519,7 +533,7 @@ class fortran_property:
     f_name_loop = "dir"+"//'"+self.name+"_'"+suffix_loop+"//"+f_sep
     # f_name = "'"+self.restart_dir_name+"'"
     # f_name = "'"+f_sep+self.restart_dir_name+"'"
-    f_call = 'call set_IO_dir'
+    f_call = 'call '+fun_name
 
     if not self.class_=='string':
       if       self.object_type=='primitive' and     self.allocatable and     self.dimension>1 and     self.rank>1:
@@ -721,6 +735,18 @@ class fortran_property:
 
 
   def set_default_primitives(self):
+    if self.object_type=='primitive':
+      self.LL = logical_list()
+      self.LL.primitive = True
+
+    if self.object_type=='object':
+      self.LL = logical_list()
+      self.LL.object = True
+
+    if self.object_type=='procedure':
+      self.LL = logical_list()
+      self.LL.procedure = True
+
     primitive_list = ['integer','logical','character','real']
     if self.object_type=='primitive' and 'integer' in self.class_.lower():
       self.default_value = '0'

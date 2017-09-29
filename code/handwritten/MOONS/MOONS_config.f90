@@ -18,7 +18,6 @@
        use export_analytic_mod
        use mirror_props_mod
        use export_mesh_aux_mod
-       use restart_file_mod
 
        use iter_solver_params_mod
        use time_marching_params_mod

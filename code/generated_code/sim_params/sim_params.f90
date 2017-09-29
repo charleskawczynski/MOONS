@@ -32,7 +32,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -52,6 +52,7 @@
        interface export;           module procedure export_wrap_sim_params;        end interface
        interface import;           module procedure import_wrap_sim_params;        end interface
        interface set_IO_dir;       module procedure set_IO_dir_sim_params;         end interface
+       interface make_IO_dir;      module procedure make_IO_dir_sim_params;        end interface
        interface suppress_warnings;module procedure suppress_warnings_sim_params;  end interface
 
        type sim_params
@@ -280,7 +281,6 @@
          type(sim_params),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
          call set_IO_dir(this%VS,dir//'VS'//fortran_PS)
          call set_IO_dir(this%MP_mom,dir//'MP_mom'//fortran_PS)
          call set_IO_dir(this%MQP,dir//'MQP'//fortran_PS)
@@ -298,6 +298,31 @@
          call set_IO_dir(this%FCL,dir//'FCL'//fortran_PS)
          call set_IO_dir(this%TSP,dir//'TSP'//fortran_PS)
          call set_IO_dir(this%SCP,dir//'SCP'//fortran_PS)
+       end subroutine
+
+       subroutine make_IO_dir_sim_params(this,dir)
+         implicit none
+         type(sim_params),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_IO_dir(this%VS,dir//'VS'//fortran_PS)
+         call make_IO_dir(this%MP_mom,dir//'MP_mom'//fortran_PS)
+         call make_IO_dir(this%MQP,dir//'MQP'//fortran_PS)
+         call make_IO_dir(this%MP_ind,dir//'MP_ind'//fortran_PS)
+         call make_IO_dir(this%MP_sigma,dir//'MP_sigma'//fortran_PS)
+         call make_IO_dir(this%DP,dir//'DP'//fortran_PS)
+         call make_IO_dir(this%EL,dir//'EL'//fortran_PS)
+         call make_IO_dir(this%EF,dir//'EF'//fortran_PS)
+         call make_IO_dir(this%ET,dir//'ET'//fortran_PS)
+         call make_IO_dir(this%MT,dir//'MT'//fortran_PS)
+         call make_IO_dir(this%IT,dir//'IT'//fortran_PS)
+         call make_IO_dir(this%GP,dir//'GP'//fortran_PS)
+         call make_IO_dir(this%MP,dir//'MP'//fortran_PS)
+         call make_IO_dir(this%coupled,dir//'coupled'//fortran_PS)
+         call make_IO_dir(this%FCL,dir//'FCL'//fortran_PS)
+         call make_IO_dir(this%TSP,dir//'TSP'//fortran_PS)
+         call make_IO_dir(this%SCP,dir//'SCP'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_sim_params(this,dir)

@@ -21,7 +21,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -41,6 +41,7 @@
        interface export;           module procedure export_wrap_time_statistics_VF;         end interface
        interface import;           module procedure import_wrap_time_statistics_VF;         end interface
        interface set_IO_dir;       module procedure set_IO_dir_time_statistics_VF;          end interface
+       interface make_IO_dir;      module procedure make_IO_dir_time_statistics_VF;         end interface
        interface suppress_warnings;module procedure suppress_warnings_time_statistics_VF;   end interface
        interface export;           module procedure export_DN_time_statistics_VF;           end interface
        interface import;           module procedure import_DN_time_statistics_VF;           end interface
@@ -286,7 +287,6 @@
          type(time_statistics_VF),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
          call init(this%dir,dir)
          call init(this%name,'primitives')
          call set_IO_dir(this%U_sum,dir//'U_sum'//fortran_PS)
@@ -297,6 +297,24 @@
          call set_IO_dir(this%stresses_sum,dir//'stresses_sum'//fortran_PS)
          call set_IO_dir(this%L2_stresses,dir//'L2_stresses'//fortran_PS)
          call set_IO_dir(this%TSP,dir//'TSP'//fortran_PS)
+       end subroutine
+
+       subroutine make_IO_dir_time_statistics_VF(this,dir)
+         implicit none
+         type(time_statistics_VF),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call init(this%dir,dir)
+         call init(this%name,'primitives')
+         call make_IO_dir(this%U_sum,dir//'U_sum'//fortran_PS)
+         call make_IO_dir(this%U_ave,dir//'U_ave'//fortran_PS)
+         call make_IO_dir(this%mean_energy,dir//'mean_energy'//fortran_PS)
+         call make_IO_dir(this%RMS,dir//'RMS'//fortran_PS)
+         call make_IO_dir(this%stresses,dir//'stresses'//fortran_PS)
+         call make_IO_dir(this%stresses_sum,dir//'stresses_sum'//fortran_PS)
+         call make_IO_dir(this%L2_stresses,dir//'L2_stresses'//fortran_PS)
+         call make_IO_dir(this%TSP,dir//'TSP'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_time_statistics_VF(this,dir)

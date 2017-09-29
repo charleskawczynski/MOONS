@@ -19,7 +19,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -39,6 +39,7 @@
        interface export;           module procedure export_wrap_mesh_params;        end interface
        interface import;           module procedure import_wrap_mesh_params;        end interface
        interface set_IO_dir;       module procedure set_IO_dir_mesh_params;         end interface
+       interface make_IO_dir;      module procedure make_IO_dir_mesh_params;        end interface
        interface suppress_warnings;module procedure suppress_warnings_mesh_params;  end interface
 
        type mesh_params
@@ -283,7 +284,6 @@
          integer :: s_s_base
          integer :: s_s_ext
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
          call set_IO_dir(this%MQP,dir//'MQP'//fortran_PS)
          if (allocated(this%s_base)) then
            s_s_base = size(this%s_base)
@@ -296,6 +296,33 @@
            s_s_ext = size(this%s_ext)
            do i_s_ext=1,s_s_ext
              call set_IO_dir(this%s_ext(i_s_ext),&
+             dir//'s_ext_'//int2str(i_s_ext)//fortran_PS)
+           enddo
+         endif
+       end subroutine
+
+       subroutine make_IO_dir_mesh_params(this,dir)
+         implicit none
+         type(mesh_params),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_s_base
+         integer :: i_s_ext
+         integer :: s_s_base
+         integer :: s_s_ext
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_IO_dir(this%MQP,dir//'MQP'//fortran_PS)
+         if (allocated(this%s_base)) then
+           s_s_base = size(this%s_base)
+           do i_s_base=1,s_s_base
+             call make_IO_dir(this%s_base(i_s_base),&
+             dir//'s_base_'//int2str(i_s_base)//fortran_PS)
+           enddo
+         endif
+         if (allocated(this%s_ext)) then
+           s_s_ext = size(this%s_ext)
+           do i_s_ext=1,s_s_ext
+             call make_IO_dir(this%s_ext(i_s_ext),&
              dir//'s_ext_'//int2str(i_s_ext)//fortran_PS)
            enddo
          endif

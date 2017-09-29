@@ -20,7 +20,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -40,6 +40,7 @@
        interface export;           module procedure export_wrap_governing_equations;        end interface
        interface import;           module procedure import_wrap_governing_equations;        end interface
        interface set_IO_dir;       module procedure set_IO_dir_governing_equations;         end interface
+       interface make_IO_dir;      module procedure make_IO_dir_governing_equations;        end interface
        interface suppress_warnings;module procedure suppress_warnings_governing_equations;  end interface
 
        type governing_equations
@@ -170,10 +171,20 @@
          type(governing_equations),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
          call set_IO_dir(this%mom,dir//'mom'//fortran_PS)
          call set_IO_dir(this%ind,dir//'ind'//fortran_PS)
          call set_IO_dir(this%nrg,dir//'nrg'//fortran_PS)
+       end subroutine
+
+       subroutine make_IO_dir_governing_equations(this,dir)
+         implicit none
+         type(governing_equations),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_IO_dir(this%mom,dir//'mom'//fortran_PS)
+         call make_IO_dir(this%ind,dir//'ind'//fortran_PS)
+         call make_IO_dir(this%nrg,dir//'nrg'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_governing_equations(this,dir)

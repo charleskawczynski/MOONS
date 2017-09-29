@@ -24,7 +24,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -44,6 +44,7 @@
        interface export;           module procedure export_wrap_energy;        end interface
        interface import;           module procedure import_wrap_energy;        end interface
        interface set_IO_dir;       module procedure set_IO_dir_energy;         end interface
+       interface make_IO_dir;      module procedure make_IO_dir_energy;        end interface
        interface suppress_warnings;module procedure suppress_warnings_energy;  end interface
 
        type energy
@@ -310,7 +311,6 @@
          type(energy),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
          call set_IO_dir(this%m,dir//'m'//fortran_PS)
          call set_IO_dir(this%PCG_T,dir//'PCG_T'//fortran_PS)
          call set_IO_dir(this%T,dir//'T'//fortran_PS)
@@ -333,6 +333,36 @@
          call set_IO_dir(this%temp_F_TF,dir//'temp_F_TF'//fortran_PS)
          call set_IO_dir(this%probe_divQ,dir//'probe_divQ'//fortran_PS)
          call set_IO_dir(this%MD,dir//'MD'//fortran_PS)
+       end subroutine
+
+       subroutine make_IO_dir_energy(this,dir)
+         implicit none
+         type(energy),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_IO_dir(this%m,dir//'m'//fortran_PS)
+         call make_IO_dir(this%PCG_T,dir//'PCG_T'//fortran_PS)
+         call make_IO_dir(this%T,dir//'T'//fortran_PS)
+         call make_IO_dir(this%Tnm1,dir//'Tnm1'//fortran_PS)
+         call make_IO_dir(this%temp_CC1,dir//'temp_CC1'//fortran_PS)
+         call make_IO_dir(this%temp_CC2,dir//'temp_CC2'//fortran_PS)
+         call make_IO_dir(this%F,dir//'F'//fortran_PS)
+         call make_IO_dir(this%Fnm1,dir//'Fnm1'//fortran_PS)
+         call make_IO_dir(this%L,dir//'L'//fortran_PS)
+         call make_IO_dir(this%divQ,dir//'divQ'//fortran_PS)
+         call make_IO_dir(this%Q_source,dir//'Q_source'//fortran_PS)
+         call make_IO_dir(this%temp_F,dir//'temp_F'//fortran_PS)
+         call make_IO_dir(this%k,dir//'k'//fortran_PS)
+         call make_IO_dir(this%U_F,dir//'U_F'//fortran_PS)
+         call make_IO_dir(this%U_CC,dir//'U_CC'//fortran_PS)
+         call make_IO_dir(this%gravity,dir//'gravity'//fortran_PS)
+         call make_IO_dir(this%temp_CC1_VF,dir//'temp_CC1_VF'//fortran_PS)
+         call make_IO_dir(this%temp_CC2_VF,dir//'temp_CC2_VF'//fortran_PS)
+         call make_IO_dir(this%temp_CC_TF,dir//'temp_CC_TF'//fortran_PS)
+         call make_IO_dir(this%temp_F_TF,dir//'temp_F_TF'//fortran_PS)
+         call make_IO_dir(this%probe_divQ,dir//'probe_divQ'//fortran_PS)
+         call make_IO_dir(this%MD,dir//'MD'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_energy(this,dir)

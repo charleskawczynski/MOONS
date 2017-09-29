@@ -18,7 +18,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -38,6 +38,7 @@
        interface export;           module procedure export_wrap_procedure_array_plane_op;        end interface
        interface import;           module procedure import_wrap_procedure_array_plane_op;        end interface
        interface set_IO_dir;       module procedure set_IO_dir_procedure_array_plane_op;         end interface
+       interface make_IO_dir;      module procedure make_IO_dir_procedure_array_plane_op;        end interface
        interface suppress_warnings;module procedure suppress_warnings_procedure_array_plane_op;  end interface
 
        type procedure_array_plane_op
@@ -217,11 +218,27 @@
          integer :: i_SP
          integer :: s_SP
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
          if (allocated(this%SP)) then
            s_SP = size(this%SP)
            do i_SP=1,s_SP
              call set_IO_dir(this%SP(i_SP),&
+             dir//'SP_'//int2str(i_SP)//fortran_PS)
+           enddo
+         endif
+       end subroutine
+
+       subroutine make_IO_dir_procedure_array_plane_op(this,dir)
+         implicit none
+         type(procedure_array_plane_op),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_SP
+         integer :: s_SP
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         if (allocated(this%SP)) then
+           s_SP = size(this%SP)
+           do i_SP=1,s_SP
+             call make_IO_dir(this%SP(i_SP),&
              dir//'SP_'//int2str(i_SP)//fortran_PS)
            enddo
          endif

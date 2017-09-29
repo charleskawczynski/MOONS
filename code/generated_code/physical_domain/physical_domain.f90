@@ -18,7 +18,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -38,6 +38,7 @@
        interface export;           module procedure export_wrap_physical_domain;        end interface
        interface import;           module procedure import_wrap_physical_domain;        end interface
        interface set_IO_dir;       module procedure set_IO_dir_physical_domain;         end interface
+       interface make_IO_dir;      module procedure make_IO_dir_physical_domain;        end interface
        interface suppress_warnings;module procedure suppress_warnings_physical_domain;  end interface
 
        type physical_domain
@@ -217,11 +218,27 @@
          integer :: i_sd
          integer :: s_sd
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
          if (allocated(this%sd)) then
            s_sd = size(this%sd)
            do i_sd=1,s_sd
              call set_IO_dir(this%sd(i_sd),&
+             dir//'sd_'//int2str(i_sd)//fortran_PS)
+           enddo
+         endif
+       end subroutine
+
+       subroutine make_IO_dir_physical_domain(this,dir)
+         implicit none
+         type(physical_domain),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_sd
+         integer :: s_sd
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         if (allocated(this%sd)) then
+           s_sd = size(this%sd)
+           do i_sd=1,s_sd
+             call make_IO_dir(this%sd(i_sd),&
              dir//'sd_'//int2str(i_sd)//fortran_PS)
            enddo
          endif

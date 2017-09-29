@@ -18,7 +18,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -38,6 +38,7 @@
        interface export;           module procedure export_wrap_induction_terms;        end interface
        interface import;           module procedure import_wrap_induction_terms;        end interface
        interface set_IO_dir;       module procedure set_IO_dir_induction_terms;         end interface
+       interface make_IO_dir;      module procedure make_IO_dir_induction_terms;        end interface
        interface suppress_warnings;module procedure suppress_warnings_induction_terms;  end interface
 
        type induction_terms
@@ -189,7 +190,6 @@
          type(induction_terms),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
          call set_IO_dir(this%advection,dir//'advection'//fortran_PS)
          call set_IO_dir(this%diffusion,dir//'diffusion'//fortran_PS)
          call set_IO_dir(this%diffusion_linear,&
@@ -197,6 +197,21 @@
          call set_IO_dir(this%unsteady_B0,dir//'unsteady_B0'//fortran_PS)
          call set_IO_dir(this%current,dir//'current'//fortran_PS)
          call set_IO_dir(this%B_applied,dir//'B_applied'//fortran_PS)
+       end subroutine
+
+       subroutine make_IO_dir_induction_terms(this,dir)
+         implicit none
+         type(induction_terms),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_IO_dir(this%advection,dir//'advection'//fortran_PS)
+         call make_IO_dir(this%diffusion,dir//'diffusion'//fortran_PS)
+         call make_IO_dir(this%diffusion_linear,&
+         dir//'diffusion_linear'//fortran_PS)
+         call make_IO_dir(this%unsteady_B0,dir//'unsteady_B0'//fortran_PS)
+         call make_IO_dir(this%current,dir//'current'//fortran_PS)
+         call make_IO_dir(this%B_applied,dir//'B_applied'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_induction_terms(this,dir)

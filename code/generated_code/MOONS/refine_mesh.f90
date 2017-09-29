@@ -18,7 +18,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -38,6 +38,7 @@
        interface export;           module procedure export_wrap_refine_mesh;         end interface
        interface import;           module procedure import_wrap_refine_mesh;         end interface
        interface set_IO_dir;       module procedure set_IO_dir_refine_mesh;          end interface
+       interface make_IO_dir;      module procedure make_IO_dir_refine_mesh;         end interface
        interface suppress_warnings;module procedure suppress_warnings_refine_mesh;   end interface
        interface export;           module procedure export_DN_refine_mesh;           end interface
        interface import;           module procedure import_DN_refine_mesh;           end interface
@@ -316,7 +317,6 @@
          type(refine_mesh),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
          call init(this%dir,dir)
          call init(this%name,'primitives')
          call set_IO_dir(this%all,dir//'all'//fortran_PS)
@@ -326,6 +326,23 @@
          call set_IO_dir(this%x_plane,dir//'x_plane'//fortran_PS)
          call set_IO_dir(this%y_plane,dir//'y_plane'//fortran_PS)
          call set_IO_dir(this%z_plane,dir//'z_plane'//fortran_PS)
+       end subroutine
+
+       subroutine make_IO_dir_refine_mesh(this,dir)
+         implicit none
+         type(refine_mesh),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call init(this%dir,dir)
+         call init(this%name,'primitives')
+         call make_IO_dir(this%all,dir//'all'//fortran_PS)
+         call make_IO_dir(this%x,dir//'x'//fortran_PS)
+         call make_IO_dir(this%y,dir//'y'//fortran_PS)
+         call make_IO_dir(this%z,dir//'z'//fortran_PS)
+         call make_IO_dir(this%x_plane,dir//'x_plane'//fortran_PS)
+         call make_IO_dir(this%y_plane,dir//'y_plane'//fortran_PS)
+         call make_IO_dir(this%z_plane,dir//'z_plane'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_refine_mesh(this,dir)

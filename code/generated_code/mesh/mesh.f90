@@ -19,7 +19,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -39,6 +39,7 @@
        interface export;           module procedure export_wrap_mesh;        end interface
        interface import;           module procedure import_wrap_mesh;        end interface
        interface set_IO_dir;       module procedure set_IO_dir_mesh;         end interface
+       interface make_IO_dir;      module procedure make_IO_dir_mesh;        end interface
        interface suppress_warnings;module procedure suppress_warnings_mesh;  end interface
 
        type mesh
@@ -225,7 +226,6 @@
          integer :: i_B
          integer :: s_B
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
          if (allocated(this%B)) then
            s_B = size(this%B)
            do i_B=1,s_B
@@ -233,6 +233,23 @@
            enddo
          endif
          call set_IO_dir(this%MP,dir//'MP'//fortran_PS)
+       end subroutine
+
+       subroutine make_IO_dir_mesh(this,dir)
+         implicit none
+         type(mesh),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_B
+         integer :: s_B
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         if (allocated(this%B)) then
+           s_B = size(this%B)
+           do i_B=1,s_B
+             call make_IO_dir(this%B(i_B),dir//'B_'//int2str(i_B)//fortran_PS)
+           enddo
+         endif
+         call make_IO_dir(this%MP,dir//'MP'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_mesh(this,dir)

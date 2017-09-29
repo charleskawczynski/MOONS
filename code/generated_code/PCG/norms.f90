@@ -18,7 +18,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -38,6 +38,7 @@
        interface export;           module procedure export_wrap_norms;        end interface
        interface import;           module procedure import_wrap_norms;        end interface
        interface set_IO_dir;       module procedure set_IO_dir_norms;         end interface
+       interface make_IO_dir;      module procedure make_IO_dir_norms;        end interface
        interface suppress_warnings;module procedure suppress_warnings_norms;  end interface
 
        type norms
@@ -164,6 +165,14 @@
        end subroutine
 
        subroutine set_IO_dir_norms(this,dir)
+         implicit none
+         type(norms),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         if (.false.) write(*,*) dir
+       end subroutine
+
+       subroutine make_IO_dir_norms(this,dir)
          implicit none
          type(norms),intent(inout) :: this
          character(len=*),intent(in) :: dir

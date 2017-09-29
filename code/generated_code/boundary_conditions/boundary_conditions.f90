@@ -23,7 +23,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -43,6 +43,7 @@
        interface export;           module procedure export_wrap_boundary_conditions;        end interface
        interface import;           module procedure import_wrap_boundary_conditions;        end interface
        interface set_IO_dir;       module procedure set_IO_dir_boundary_conditions;         end interface
+       interface make_IO_dir;      module procedure make_IO_dir_boundary_conditions;        end interface
        interface suppress_warnings;module procedure suppress_warnings_boundary_conditions;  end interface
 
        type boundary_conditions
@@ -197,7 +198,6 @@
          type(boundary_conditions),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
          call set_IO_dir(this%BCL,dir//'BCL'//fortran_PS)
          call set_IO_dir(this%DL,dir//'DL'//fortran_PS)
          call set_IO_dir(this%face,dir//'face'//fortran_PS)
@@ -205,6 +205,21 @@
          call set_IO_dir(this%PA_face_implicit_BCs,&
          dir//'PA_face_implicit_BCs'//fortran_PS)
          call set_IO_dir(this%f_BCs,dir//'f_BCs'//fortran_PS)
+       end subroutine
+
+       subroutine make_IO_dir_boundary_conditions(this,dir)
+         implicit none
+         type(boundary_conditions),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_IO_dir(this%BCL,dir//'BCL'//fortran_PS)
+         call make_IO_dir(this%DL,dir//'DL'//fortran_PS)
+         call make_IO_dir(this%face,dir//'face'//fortran_PS)
+         call make_IO_dir(this%PA_face_BCs,dir//'PA_face_BCs'//fortran_PS)
+         call make_IO_dir(this%PA_face_implicit_BCs,&
+         dir//'PA_face_implicit_BCs'//fortran_PS)
+         call make_IO_dir(this%f_BCs,dir//'f_BCs'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_boundary_conditions(this,dir)

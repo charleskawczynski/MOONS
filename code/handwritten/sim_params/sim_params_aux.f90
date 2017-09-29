@@ -53,8 +53,6 @@
        SP%VS%B0%SS%restart   = .true.
        SP%VS%phi%SS%restart  = .true.
        SP%VS%rho%SS%restart  = .true.
-       ! call import(SP%coupled)
-       ! call import_TMP(SP%VS)
      end subroutine
 
      subroutine sanity_check_SP(SP)

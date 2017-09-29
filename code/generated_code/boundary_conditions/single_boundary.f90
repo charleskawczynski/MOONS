@@ -20,7 +20,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -40,6 +40,7 @@
        interface export;           module procedure export_wrap_single_boundary;        end interface
        interface import;           module procedure import_wrap_single_boundary;        end interface
        interface set_IO_dir;       module procedure set_IO_dir_single_boundary;         end interface
+       interface make_IO_dir;      module procedure make_IO_dir_single_boundary;        end interface
        interface suppress_warnings;module procedure suppress_warnings_single_boundary;  end interface
 
        type single_boundary
@@ -177,11 +178,22 @@
          type(single_boundary),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
          call set_IO_dir(this%bct,dir//'bct'//fortran_PS)
          call set_IO_dir(this%b,dir//'b'//fortran_PS)
          call set_IO_dir(this%b_modified,dir//'b_modified'//fortran_PS)
          call set_IO_dir(this%b_total,dir//'b_total'//fortran_PS)
+       end subroutine
+
+       subroutine make_IO_dir_single_boundary(this,dir)
+         implicit none
+         type(single_boundary),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_IO_dir(this%bct,dir//'bct'//fortran_PS)
+         call make_IO_dir(this%b,dir//'b'//fortran_PS)
+         call make_IO_dir(this%b_modified,dir//'b_modified'//fortran_PS)
+         call make_IO_dir(this%b_total,dir//'b_total'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_single_boundary(this,dir)

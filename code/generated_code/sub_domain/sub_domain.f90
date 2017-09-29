@@ -18,7 +18,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -38,6 +38,7 @@
        interface export;           module procedure export_wrap_sub_domain;        end interface
        interface import;           module procedure import_wrap_sub_domain;        end interface
        interface set_IO_dir;       module procedure set_IO_dir_sub_domain;         end interface
+       interface make_IO_dir;      module procedure make_IO_dir_sub_domain;        end interface
        interface suppress_warnings;module procedure suppress_warnings_sub_domain;  end interface
 
        type sub_domain
@@ -294,7 +295,6 @@
          integer :: s_N
          integer :: s_M
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
          s_C = size(this%C)
          do i_C=1,s_C
            call set_IO_dir(this%C(i_C),dir//'C_'//int2str(i_C)//fortran_PS)
@@ -306,6 +306,32 @@
          s_M = size(this%M)
          do i_M=1,s_M
            call set_IO_dir(this%M(i_M),dir//'M_'//int2str(i_M)//fortran_PS)
+         enddo
+       end subroutine
+
+       subroutine make_IO_dir_sub_domain(this,dir)
+         implicit none
+         type(sub_domain),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_C
+         integer :: i_N
+         integer :: i_M
+         integer :: s_C
+         integer :: s_N
+         integer :: s_M
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         s_C = size(this%C)
+         do i_C=1,s_C
+           call make_IO_dir(this%C(i_C),dir//'C_'//int2str(i_C)//fortran_PS)
+         enddo
+         s_N = size(this%N)
+         do i_N=1,s_N
+           call make_IO_dir(this%N(i_N),dir//'N_'//int2str(i_N)//fortran_PS)
+         enddo
+         s_M = size(this%M)
+         do i_M=1,s_M
+           call make_IO_dir(this%M(i_M),dir//'M_'//int2str(i_M)//fortran_PS)
          enddo
        end subroutine
 

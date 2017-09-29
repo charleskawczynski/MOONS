@@ -25,7 +25,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -45,6 +45,7 @@
        interface export;           module procedure export_wrap_momentum;        end interface
        interface import;           module procedure import_wrap_momentum;        end interface
        interface set_IO_dir;       module procedure set_IO_dir_momentum;         end interface
+       interface make_IO_dir;      module procedure make_IO_dir_momentum;        end interface
        interface suppress_warnings;module procedure suppress_warnings_momentum;  end interface
 
        type momentum
@@ -339,7 +340,6 @@
          type(momentum),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
          call set_IO_dir(this%m,dir//'m'//fortran_PS)
          call set_IO_dir(this%PCG_P,dir//'PCG_P'//fortran_PS)
          call set_IO_dir(this%PCG_U,dir//'PCG_U'//fortran_PS)
@@ -366,6 +366,40 @@
          call set_IO_dir(this%probe_KE_2C,dir//'probe_KE_2C'//fortran_PS)
          call set_IO_dir(this%probe_divU,dir//'probe_divU'//fortran_PS)
          call set_IO_dir(this%probe_Q,dir//'probe_Q'//fortran_PS)
+       end subroutine
+
+       subroutine make_IO_dir_momentum(this,dir)
+         implicit none
+         type(momentum),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_IO_dir(this%m,dir//'m'//fortran_PS)
+         call make_IO_dir(this%PCG_P,dir//'PCG_P'//fortran_PS)
+         call make_IO_dir(this%PCG_U,dir//'PCG_U'//fortran_PS)
+         call make_IO_dir(this%TS,dir//'TS'//fortran_PS)
+         call make_IO_dir(this%p,dir//'p'//fortran_PS)
+         call make_IO_dir(this%divU,dir//'divU'//fortran_PS)
+         call make_IO_dir(this%temp_CC,dir//'temp_CC'//fortran_PS)
+         call make_IO_dir(this%U,dir//'U'//fortran_PS)
+         call make_IO_dir(this%Ustar,dir//'Ustar'//fortran_PS)
+         call make_IO_dir(this%Unm1,dir//'Unm1'//fortran_PS)
+         call make_IO_dir(this%U_CC,dir//'U_CC'//fortran_PS)
+         call make_IO_dir(this%F,dir//'F'//fortran_PS)
+         call make_IO_dir(this%Fnm1,dir//'Fnm1'//fortran_PS)
+         call make_IO_dir(this%L,dir//'L'//fortran_PS)
+         call make_IO_dir(this%temp_F1,dir//'temp_F1'//fortran_PS)
+         call make_IO_dir(this%temp_F2,dir//'temp_F2'//fortran_PS)
+         call make_IO_dir(this%temp_F3,dir//'temp_F3'//fortran_PS)
+         call make_IO_dir(this%temp_E,dir//'temp_E'//fortran_PS)
+         call make_IO_dir(this%temp_CC_VF,dir//'temp_CC_VF'//fortran_PS)
+         call make_IO_dir(this%U_E,dir//'U_E'//fortran_PS)
+         call make_IO_dir(this%TF_CC,dir//'TF_CC'//fortran_PS)
+         call make_IO_dir(this%TF_CC_edge,dir//'TF_CC_edge'//fortran_PS)
+         call make_IO_dir(this%probe_KE,dir//'probe_KE'//fortran_PS)
+         call make_IO_dir(this%probe_KE_2C,dir//'probe_KE_2C'//fortran_PS)
+         call make_IO_dir(this%probe_divU,dir//'probe_divU'//fortran_PS)
+         call make_IO_dir(this%probe_Q,dir//'probe_Q'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_momentum(this,dir)

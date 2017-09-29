@@ -17,7 +17,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -37,6 +37,7 @@
        interface export;           module procedure export_wrap_step;        end interface
        interface import;           module procedure import_wrap_step;        end interface
        interface set_IO_dir;       module procedure set_IO_dir_step;         end interface
+       interface make_IO_dir;      module procedure make_IO_dir_step;        end interface
        interface suppress_warnings;module procedure suppress_warnings_step;  end interface
 
        type step
@@ -154,6 +155,14 @@
        end subroutine
 
        subroutine set_IO_dir_step(this,dir)
+         implicit none
+         type(step),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         if (.false.) write(*,*) dir
+       end subroutine
+
+       subroutine make_IO_dir_step(this,dir)
          implicit none
          type(step),intent(inout) :: this
          character(len=*),intent(in) :: dir

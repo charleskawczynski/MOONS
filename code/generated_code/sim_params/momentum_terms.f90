@@ -18,7 +18,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -38,6 +38,7 @@
        interface export;           module procedure export_wrap_momentum_terms;        end interface
        interface import;           module procedure import_wrap_momentum_terms;        end interface
        interface set_IO_dir;       module procedure set_IO_dir_momentum_terms;         end interface
+       interface make_IO_dir;      module procedure make_IO_dir_momentum_terms;        end interface
        interface suppress_warnings;module procedure suppress_warnings_momentum_terms;  end interface
 
        type momentum_terms
@@ -224,7 +225,6 @@
          type(momentum_terms),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
          call set_IO_dir(this%pressure_grad,dir//'pressure_grad'//fortran_PS)
          call set_IO_dir(this%advection_divergence,&
          dir//'advection_divergence'//fortran_PS)
@@ -241,6 +241,30 @@
          call set_IO_dir(this%Q2D_JCrossB,dir//'Q2D_JCrossB'//fortran_PS)
          call set_IO_dir(this%Buoyancy,dir//'Buoyancy'//fortran_PS)
          call set_IO_dir(this%Gravity,dir//'Gravity'//fortran_PS)
+       end subroutine
+
+       subroutine make_IO_dir_momentum_terms(this,dir)
+         implicit none
+         type(momentum_terms),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_IO_dir(this%pressure_grad,dir//'pressure_grad'//fortran_PS)
+         call make_IO_dir(this%advection_divergence,&
+         dir//'advection_divergence'//fortran_PS)
+         call make_IO_dir(this%advection_convection,&
+         dir//'advection_convection'//fortran_PS)
+         call make_IO_dir(this%advection_base_flow,&
+         dir//'advection_base_flow'//fortran_PS)
+         call make_IO_dir(this%diffusion,dir//'diffusion'//fortran_PS)
+         call make_IO_dir(this%diffusion_linear,&
+         dir//'diffusion_linear'//fortran_PS)
+         call make_IO_dir(this%mean_pressure_grad,&
+         dir//'mean_pressure_grad'//fortran_PS)
+         call make_IO_dir(this%JCrossB,dir//'JCrossB'//fortran_PS)
+         call make_IO_dir(this%Q2D_JCrossB,dir//'Q2D_JCrossB'//fortran_PS)
+         call make_IO_dir(this%Buoyancy,dir//'Buoyancy'//fortran_PS)
+         call make_IO_dir(this%Gravity,dir//'Gravity'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_momentum_terms(this,dir)

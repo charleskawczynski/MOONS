@@ -18,7 +18,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -38,6 +38,7 @@
        interface export;           module procedure export_wrap_dimensionless_params;         end interface
        interface import;           module procedure import_wrap_dimensionless_params;         end interface
        interface set_IO_dir;       module procedure set_IO_dir_dimensionless_params;          end interface
+       interface make_IO_dir;      module procedure make_IO_dir_dimensionless_params;         end interface
        interface suppress_warnings;module procedure suppress_warnings_dimensionless_params;   end interface
        interface export;           module procedure export_DN_dimensionless_params;           end interface
        interface import;           module procedure import_DN_dimensionless_params;           end interface
@@ -382,6 +383,16 @@
        end subroutine
 
        subroutine set_IO_dir_dimensionless_params(this,dir)
+         implicit none
+         type(dimensionless_params),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         if (.false.) write(*,*) dir
+         call init(this%dir,dir)
+         call init(this%name,'primitives')
+       end subroutine
+
+       subroutine make_IO_dir_dimensionless_params(this,dir)
          implicit none
          type(dimensionless_params),intent(inout) :: this
          character(len=*),intent(in) :: dir

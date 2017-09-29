@@ -18,7 +18,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -38,6 +38,7 @@
        interface export;           module procedure export_wrap_sparse;        end interface
        interface import;           module procedure import_wrap_sparse;        end interface
        interface set_IO_dir;       module procedure set_IO_dir_sparse;         end interface
+       interface make_IO_dir;      module procedure make_IO_dir_sparse;        end interface
        interface suppress_warnings;module procedure suppress_warnings_sparse;  end interface
 
        type sparse
@@ -171,10 +172,20 @@
          type(sparse),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
          call set_IO_dir(this%L,dir//'L'//fortran_PS)
          call set_IO_dir(this%D,dir//'D'//fortran_PS)
          call set_IO_dir(this%U,dir//'U'//fortran_PS)
+       end subroutine
+
+       subroutine make_IO_dir_sparse(this,dir)
+         implicit none
+         type(sparse),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_IO_dir(this%L,dir//'L'//fortran_PS)
+         call make_IO_dir(this%D,dir//'D'//fortran_PS)
+         call make_IO_dir(this%U,dir//'U'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_sparse(this,dir)

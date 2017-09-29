@@ -18,7 +18,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -38,6 +38,7 @@
        interface export;           module procedure export_wrap_export_lines;        end interface
        interface import;           module procedure import_wrap_export_lines;        end interface
        interface set_IO_dir;       module procedure set_IO_dir_export_lines;         end interface
+       interface make_IO_dir;      module procedure make_IO_dir_export_lines;        end interface
        interface suppress_warnings;module procedure suppress_warnings_export_lines;  end interface
 
        type export_lines
@@ -208,11 +209,27 @@
          integer :: i_EL
          integer :: s_EL
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
          if (allocated(this%EL)) then
            s_EL = size(this%EL)
            do i_EL=1,s_EL
              call set_IO_dir(this%EL(i_EL),&
+             dir//'EL_'//int2str(i_EL)//fortran_PS)
+           enddo
+         endif
+       end subroutine
+
+       subroutine make_IO_dir_export_lines(this,dir)
+         implicit none
+         type(export_lines),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_EL
+         integer :: s_EL
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         if (allocated(this%EL)) then
+           s_EL = size(this%EL)
+           do i_EL=1,s_EL
+             call make_IO_dir(this%EL(i_EL),&
              dir//'EL_'//int2str(i_EL)//fortran_PS)
            enddo
          endif

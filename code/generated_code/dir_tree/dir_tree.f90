@@ -19,7 +19,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -39,6 +39,7 @@
        interface export;           module procedure export_wrap_dir_tree;        end interface
        interface import;           module procedure import_wrap_dir_tree;        end interface
        interface set_IO_dir;       module procedure set_IO_dir_dir_tree;         end interface
+       interface make_IO_dir;      module procedure make_IO_dir_dir_tree;        end interface
        interface suppress_warnings;module procedure suppress_warnings_dir_tree;  end interface
 
        type dir_tree
@@ -400,7 +401,6 @@
          type(dir_tree),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
          call set_IO_dir(this%tar_p,dir//'tar_p'//fortran_PS)
          call set_IO_dir(this%out_dir,dir//'out_dir'//fortran_PS)
          call set_IO_dir(this%LDC,dir//'LDC'//fortran_PS)
@@ -438,6 +438,51 @@
          call set_IO_dir(this%phi,dir//'phi'//fortran_PS)
          call set_IO_dir(this%rho,dir//'rho'//fortran_PS)
          call set_IO_dir(this%test,dir//'test'//fortran_PS)
+       end subroutine
+
+       subroutine make_IO_dir_dir_tree(this,dir)
+         implicit none
+         type(dir_tree),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_IO_dir(this%tar_p,dir//'tar_p'//fortran_PS)
+         call make_IO_dir(this%out_dir,dir//'out_dir'//fortran_PS)
+         call make_IO_dir(this%LDC,dir//'LDC'//fortran_PS)
+         call make_IO_dir(this%mat,dir//'mat'//fortran_PS)
+         call make_IO_dir(this%config,dir//'config'//fortran_PS)
+         call make_IO_dir(this%meshes,dir//'meshes'//fortran_PS)
+         call make_IO_dir(this%BEM,dir//'BEM'//fortran_PS)
+         call make_IO_dir(this%wall_clock,dir//'wall_clock'//fortran_PS)
+         call make_IO_dir(this%matrix_visualization,&
+         dir//'matrix_visualization'//fortran_PS)
+         call make_IO_dir(this%dimensionless_params,&
+         dir//'dimensionless_params'//fortran_PS)
+         call make_IO_dir(this%params,dir//'params'//fortran_PS)
+         call make_IO_dir(this%ISP,dir//'ISP'//fortran_PS)
+         call make_IO_dir(this%TMP,dir//'TMP'//fortran_PS)
+         call make_IO_dir(this%EF,dir//'EF'//fortran_PS)
+         call make_IO_dir(this%export_now,dir//'export_now'//fortran_PS)
+         call make_IO_dir(this%refine_mesh,dir//'refine_mesh'//fortran_PS)
+         call make_IO_dir(this%e_budget,dir//'e_budget'//fortran_PS)
+         call make_IO_dir(this%e_budget_N,dir//'e_budget_N'//fortran_PS)
+         call make_IO_dir(this%e_budget_C,dir//'e_budget_C'//fortran_PS)
+         call make_IO_dir(this%restart_sim,dir//'restart_sim'//fortran_PS)
+         call make_IO_dir(this%restart1,dir//'restart1'//fortran_PS)
+         call make_IO_dir(this%restart2,dir//'restart2'//fortran_PS)
+         call make_IO_dir(this%restart,dir//'restart'//fortran_PS)
+         call make_IO_dir(this%mesh_restart,dir//'mesh_restart'//fortran_PS)
+         call make_IO_dir(this%unknowns,dir//'unknowns'//fortran_PS)
+         call make_IO_dir(this%governing_equations,&
+         dir//'governing_equations'//fortran_PS)
+         call make_IO_dir(this%U,dir//'U'//fortran_PS)
+         call make_IO_dir(this%B,dir//'B'//fortran_PS)
+         call make_IO_dir(this%J,dir//'J'//fortran_PS)
+         call make_IO_dir(this%T,dir//'T'//fortran_PS)
+         call make_IO_dir(this%p,dir//'p'//fortran_PS)
+         call make_IO_dir(this%phi,dir//'phi'//fortran_PS)
+         call make_IO_dir(this%rho,dir//'rho'//fortran_PS)
+         call make_IO_dir(this%test,dir//'test'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_dir_tree(this,dir)

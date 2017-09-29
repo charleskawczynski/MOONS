@@ -59,6 +59,9 @@ class fortran_module:
         self.any_allocatables = False
         self.any_non_primitive_allocatables = False
         self.any_non_primitive_high_dimension = False
+        self.only_primitives = False
+        self.only_primitives_or_strings = False
+        self.primitives_strings_or_procedures = False
         self.no_primitives = False
         self.any_primitive_allocatables = False
         self.spaces = ['' for x in range(50)]
@@ -92,10 +95,16 @@ class fortran_module:
         primitive_allocatables = [self.prop[k].allocatable and self.prop[k].object_type=='primitive' for k in self.prop]
         any_non_primitive_high_dimension = [self.prop[k].dimension>1 and not self.prop[k].object_type=='primitive' for k in self.prop]
         no_primitives = [not self.prop[k].object_type=='primitive' for k in self.prop]
+        only_primitives = [self.prop[k].object_type=='primitive' for k in self.prop]
+        only_primitives_or_strings = [self.prop[k].object_type=='primitive' or (self.prop[k].object_type=='object' and self.prop[k].class_=='string') for k in self.prop]
+        X = self.prop
+        temp = [X[k] for k in X if X[k].object_type=='primitive' or (X[k].object_type=='object' and X[k].class_=='string')]
         self.any_non_primitive_allocatables = any(non_primitive_allocatables)
         self.any_primitive_allocatables = any(primitive_allocatables)
         self.any_non_primitive_high_dimension = any(any_non_primitive_high_dimension)
         self.no_primitives = all(no_primitives)
+        self.only_primitives = all(only_primitives)
+        self.only_primitives_or_strings = all(only_primitives_or_strings)
 
         self.any_allocatables = any([non_primitive_allocatables,primitive_allocatables])
 
@@ -170,7 +179,7 @@ class fortran_module:
         c.append(['public :: display_short,print_short']+[''])
         c.append(['public :: export_primitives,import_primitives']+[''])
         c.append(['public :: export_structured,import_structured']+[''])
-        c.append(['public :: set_IO_dir']+[''])
+        c.append(['public :: set_IO_dir,make_IO_dir']+[''])
         if suppress_all_warnings:
             c.append(['public :: suppress_warnings']+[''])
         c.append(self.write_interfaces()+[''])
@@ -231,6 +240,7 @@ class fortran_module:
         alias = alias+['export'];            sub_name = sub_name+['export_wrap'];
         alias = alias+['import'];            sub_name = sub_name+['import_wrap'];
         alias = alias+['set_IO_dir'];        sub_name = sub_name+['set_IO_dir'];
+        alias = alias+['make_IO_dir'];       sub_name = sub_name+['make_IO_dir'];
 
         if suppress_all_warnings:
             alias = alias+['suppress_warnings']; sub_name = sub_name+['suppress_warnings'];
@@ -281,6 +291,7 @@ class fortran_module:
           c.append(self.import_structured_DN_module()+['']) # import_structured(this,dir), names are determined by data structure
 
         c.append(self.set_IO_dir_module()+[''])
+        c.append(self.make_IO_dir_module()+[''])
         c.append(self.export_structured_D_module()+['']) # export_structured(this), if has (dir,name)
         c.append(self.import_structured_D_module()+['']) # import_structured(this), if has (dir,name)
 
@@ -681,12 +692,38 @@ class fortran_module:
                 if L: c.append(L)
         if suppress_all_warnings:
             c.append(self.spaces[2] + 'call suppress_warnings(this)' )
+        if suppress_all_warnings and self.only_primitives_or_strings:
+            c.append(self.spaces[2] + 'if (.false.) write(*,*) dir' )
+        if self.has_dir_name:
+            c.append(self.spaces[2] + "call init(this%dir,dir)" )
+            c.append(self.spaces[2] + "call init(this%name,'primitives')" )
+        for key in self.prop:
+            c.append([self.spaces[2]+x for x in self.prop[key].write_set_IO_dir('set_IO_dir')])
+        c.append(self.end_sub())
+        return c
+
+    def make_IO_dir_module(self):
+        sig = 'make_IO_dir_' + self.get_suffix()
+        # sig = 'set_IO_dir_'
+        c = [self.full_sub_signature(sig,'this,dir')]
+        c.append(self.spaces[2] + self.implicitNone)
+        c.append(self.spaces[2] + 'type(' + self.name + '),intent(inout) :: this' )
+        c.append(self.spaces[2] + 'character(len=*),intent(in) :: dir' )
+        for key in self.arg_objects:
+            L = self.arg_objects[key].get_list_of_local_iterators()
+            if L: c.append(L)
+        if self.any_non_primitive_high_dimension:
+            for key in self.arg_objects:
+                L = self.arg_objects[key].get_list_of_local_shape()
+                if L: c.append(L)
+        if suppress_all_warnings:
+            c.append(self.spaces[2] + 'call suppress_warnings(this)' )
         c.append(self.spaces[2] + 'call make_dir_quiet(dir)' )
         if self.has_dir_name:
             c.append(self.spaces[2] + "call init(this%dir,dir)" )
             c.append(self.spaces[2] + "call init(this%name,'primitives')" )
         for key in self.prop:
-            c.append([self.spaces[2]+x for x in self.prop[key].write_set_IO_dir()])
+            c.append([self.spaces[2]+x for x in self.prop[key].write_set_IO_dir('make_IO_dir')])
         c.append(self.end_sub())
         return c
 

@@ -18,7 +18,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -38,6 +38,7 @@
        interface export;           module procedure export_wrap_RK_params;        end interface
        interface import;           module procedure import_wrap_RK_params;        end interface
        interface set_IO_dir;       module procedure set_IO_dir_RK_params;         end interface
+       interface make_IO_dir;      module procedure make_IO_dir_RK_params;        end interface
        interface suppress_warnings;module procedure suppress_warnings_RK_params;  end interface
 
        type RK_params
@@ -196,11 +197,22 @@
          type(RK_params),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
          call set_IO_dir(this%gamma,dir//'gamma'//fortran_PS)
          call set_IO_dir(this%zeta,dir//'zeta'//fortran_PS)
          call set_IO_dir(this%alpha,dir//'alpha'//fortran_PS)
          call set_IO_dir(this%beta,dir//'beta'//fortran_PS)
+       end subroutine
+
+       subroutine make_IO_dir_RK_params(this,dir)
+         implicit none
+         type(RK_params),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_IO_dir(this%gamma,dir//'gamma'//fortran_PS)
+         call make_IO_dir(this%zeta,dir//'zeta'//fortran_PS)
+         call make_IO_dir(this%alpha,dir//'alpha'//fortran_PS)
+         call make_IO_dir(this%beta,dir//'beta'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_RK_params(this,dir)

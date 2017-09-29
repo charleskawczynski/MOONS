@@ -121,9 +121,15 @@
              ! oldest_modified_file violates intent, but this
              ! would be better to update outside the solvers,
              ! since it should be updated for all solver variables.
-             ! call oldest_modified_file(M%C%DT%restart,M%C%DT%restart1,M%C%DT%restart2,'p.dat')
+             ! call least_recently_modified(M%C%DT%restart,&
+             !                              str(M%C%DT%restart1),&
+             !                              str(M%C%DT%restart2),'primitives')
+             ! call set_IO_dir(M%C,str(M%C%DT%restart))
+             ! call set_IO_dir(M%C,str(M%C%DT%config))
+
              if (M%C%SP%FCL%export_heavy) then
                call print(M%C%sc,M%C%SP%coupled)
+               write(*,*) 'Working directory = ',str(M%C%DT%tar)
              else
                call print_light(M%C%sc,M%C%SP%coupled)
              endif

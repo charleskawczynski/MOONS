@@ -19,7 +19,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -39,6 +39,7 @@
        interface export;           module procedure export_wrap_mesh_props;        end interface
        interface import;           module procedure import_wrap_mesh_props;        end interface
        interface set_IO_dir;       module procedure set_IO_dir_mesh_props;         end interface
+       interface make_IO_dir;      module procedure make_IO_dir_mesh_props;        end interface
        interface suppress_warnings;module procedure suppress_warnings_mesh_props;  end interface
 
        type mesh_props
@@ -284,10 +285,24 @@
          integer :: i_int_tensor
          integer :: s_int_tensor
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
          s_int_tensor = size(this%int_tensor)
          do i_int_tensor=1,s_int_tensor
            call set_IO_dir(this%int_tensor(i_int_tensor),&
+           dir//'int_tensor_'//int2str(i_int_tensor)//fortran_PS)
+         enddo
+       end subroutine
+
+       subroutine make_IO_dir_mesh_props(this,dir)
+         implicit none
+         type(mesh_props),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_int_tensor
+         integer :: s_int_tensor
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         s_int_tensor = size(this%int_tensor)
+         do i_int_tensor=1,s_int_tensor
+           call make_IO_dir(this%int_tensor(i_int_tensor),&
            dir//'int_tensor_'//int2str(i_int_tensor)//fortran_PS)
          enddo
        end subroutine

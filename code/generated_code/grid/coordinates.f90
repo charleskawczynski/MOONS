@@ -20,7 +20,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -40,6 +40,7 @@
        interface export;           module procedure export_wrap_coordinates;        end interface
        interface import;           module procedure import_wrap_coordinates;        end interface
        interface set_IO_dir;       module procedure set_IO_dir_coordinates;         end interface
+       interface make_IO_dir;      module procedure make_IO_dir_coordinates;        end interface
        interface suppress_warnings;module procedure suppress_warnings_coordinates;  end interface
 
        type coordinates
@@ -481,7 +482,6 @@
          integer :: s_colN
          integer :: s_colCC_centered
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
          call set_IO_dir(this%stagCC2N,dir//'stagCC2N'//fortran_PS)
          call set_IO_dir(this%stagN2CC,dir//'stagN2CC'//fortran_PS)
          call set_IO_dir(this%theta,dir//'theta'//fortran_PS)
@@ -504,6 +504,42 @@
          call set_IO_dir(this%hc,dir//'hc'//fortran_PS)
          call set_IO_dir(this%dhn,dir//'dhn'//fortran_PS)
          call set_IO_dir(this%dhc,dir//'dhc'//fortran_PS)
+       end subroutine
+
+       subroutine make_IO_dir_coordinates(this,dir)
+         implicit none
+         type(coordinates),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_colCC
+         integer :: i_colN
+         integer :: i_colCC_centered
+         integer :: s_colCC
+         integer :: s_colN
+         integer :: s_colCC_centered
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_IO_dir(this%stagCC2N,dir//'stagCC2N'//fortran_PS)
+         call make_IO_dir(this%stagN2CC,dir//'stagN2CC'//fortran_PS)
+         call make_IO_dir(this%theta,dir//'theta'//fortran_PS)
+         s_colCC = size(this%colCC)
+         do i_colCC=1,s_colCC
+           call make_IO_dir(this%colCC(i_colCC),&
+           dir//'colCC_'//int2str(i_colCC)//fortran_PS)
+         enddo
+         s_colN = size(this%colN)
+         do i_colN=1,s_colN
+           call make_IO_dir(this%colN(i_colN),&
+           dir//'colN_'//int2str(i_colN)//fortran_PS)
+         enddo
+         s_colCC_centered = size(this%colCC_centered)
+         do i_colCC_centered=1,s_colCC_centered
+           call make_IO_dir(this%colCC_centered(i_colCC_centered),&
+           dir//'colCC_centered_'//int2str(i_colCC_centered)//fortran_PS)
+         enddo
+         call make_IO_dir(this%hn,dir//'hn'//fortran_PS)
+         call make_IO_dir(this%hc,dir//'hc'//fortran_PS)
+         call make_IO_dir(this%dhn,dir//'dhn'//fortran_PS)
+         call make_IO_dir(this%dhc,dir//'dhc'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_coordinates(this,dir)

@@ -1,5 +1,6 @@
       module dir_manip_mod
       use string_mod
+      use IO_tools_mod
       ! Make a buildDirectory routine:
       ! http://homepages.wmich.edu/~korista/README-fortran.html
       ! Using buff(10) = "last modification time"
@@ -21,13 +22,33 @@
       public :: make_dir_quiet
       public :: remove_dir
 
-      interface least_recently_modified; module procedure least_recently_modified_DM; end interface
-      interface most_recently_modified;  module procedure most_recently_modified_DM;  end interface
-      interface make_dir;                module procedure make_dir_DM;                end interface
-      interface make_dir_quiet;          module procedure make_dir_quiet_DM;          end interface
-      interface remove_dir;              module procedure remove_dir_DM;              end interface
+      interface least_recently_modified; module procedure least_recently_modified_DM;      end interface
+      interface most_recently_modified;  module procedure most_recently_modified_DM;       end interface
+      interface least_recently_modified; module procedure least_recently_modified_DM_wrap; end interface
+      interface most_recently_modified;  module procedure most_recently_modified_DM_wrap;  end interface
+      interface make_dir;                module procedure make_dir_DM;                     end interface
+      interface make_dir_quiet;          module procedure make_dir_quiet_DM;               end interface
+      interface remove_dir;              module procedure remove_dir_DM;                   end interface
 
       contains
+
+      subroutine least_recently_modified_DM_wrap(folder,folder1,folder2,file_name)
+        implicit none
+        type(string),intent(inout) :: folder
+        character(len=*),intent(in) :: folder1,folder2,file_name
+        call least_recently_modified(folder,&
+        folder1//file_name//dot_dat,&
+        folder2//file_name//dot_dat)
+      end subroutine
+
+      subroutine most_recently_modified_DM_wrap(folder,folder1,folder2,file_name)
+        implicit none
+        type(string),intent(inout) :: folder
+        character(len=*),intent(in) :: folder1,folder2,file_name
+        call most_recently_modified(folder,&
+        folder1//file_name//dot_dat,&
+        folder2//file_name//dot_dat)
+      end subroutine
 
       subroutine least_recently_modified_DM(f,f1,f2)
         implicit none

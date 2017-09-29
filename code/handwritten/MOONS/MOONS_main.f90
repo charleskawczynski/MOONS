@@ -25,7 +25,6 @@
        use Taylor_Green_Vortex_test_mod
        use temporal_convergence_test_mod
        use export_mesh_aux_mod
-       use restart_file_mod
 
        use iter_solver_params_mod
        use time_marching_params_mod
@@ -66,8 +65,10 @@
          call init(M%C%dir_target,dir_target)
          call init(M%C%DT,str(M%C%dir_target))  ! Initialize + make directory tree
          call config(M) ! The flow control should be uniquely defined after this line.
-         call set_IO_dir(M%C,str(M%C%DT%config))
+         call make_IO_dir(M%C,str(M%C%DT%restart))
+         call make_IO_dir(M%C,str(M%C%DT%config))
          call export_structured(M%C)
+         call export(M%C,str(M%C%DT%config),'config_DO_NOT_EDIT')
          call init(M)
          if (.not.M%C%SP%FCL%skip_solver_loop) then
            call solve(M)
@@ -98,12 +99,10 @@
            if (M%C%SP%VS%B%SS%initialize) call export_tec(M%GE%ind,M%C%SP,M%C%DT)
          endif
 
-         if (M%C%SP%FCL%export_final_restart) then
-           if (M%C%SP%VS%T%SS%initialize) call export(M%GE%nrg,M%C%SP,M%C%DT)
-           if (M%C%SP%VS%U%SS%initialize) call export(M%GE%mom,M%C%SP,M%C%DT)
-           if (M%C%SP%VS%B%SS%initialize) call export(M%GE%ind,M%C%SP,M%C%DT)
+         if (M%C%SP%VS%T%SS%initialize) call export(M%GE%nrg,M%C%SP,M%C%DT)
+         if (M%C%SP%VS%U%SS%initialize) call export(M%GE%mom,M%C%SP,M%C%DT)
+         if (M%C%SP%VS%B%SS%initialize) call export(M%GE%ind,M%C%SP,M%C%DT)
            ! call export(M,str(DT%restart),'MOONS')
-         endif
        end subroutine
 
        subroutine post_process_MOONS(M)

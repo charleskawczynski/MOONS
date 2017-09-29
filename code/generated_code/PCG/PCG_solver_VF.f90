@@ -24,7 +24,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -44,6 +44,7 @@
        interface export;           module procedure export_wrap_PCG_solver_VF;         end interface
        interface import;           module procedure import_wrap_PCG_solver_VF;         end interface
        interface set_IO_dir;       module procedure set_IO_dir_PCG_solver_VF;          end interface
+       interface make_IO_dir;      module procedure make_IO_dir_PCG_solver_VF;         end interface
        interface suppress_warnings;module procedure suppress_warnings_PCG_solver_VF;   end interface
        interface export;           module procedure export_DN_PCG_solver_VF;           end interface
        interface import;           module procedure import_DN_PCG_solver_VF;           end interface
@@ -347,7 +348,6 @@
          type(PCG_solver_VF),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
          call init(this%dir,dir)
          call init(this%name,'primitives')
          call set_IO_dir(this%MFP,dir//'MFP'//fortran_PS)
@@ -363,6 +363,29 @@
          call set_IO_dir(this%Minv,dir//'Minv'//fortran_PS)
          call set_IO_dir(this%norm,dir//'norm'//fortran_PS)
          call set_IO_dir(this%ISP,dir//'ISP'//fortran_PS)
+       end subroutine
+
+       subroutine make_IO_dir_PCG_solver_VF(this,dir)
+         implicit none
+         type(PCG_solver_VF),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call init(this%dir,dir)
+         call init(this%name,'primitives')
+         call make_IO_dir(this%MFP,dir//'MFP'//fortran_PS)
+         call make_IO_dir(this%tempk,dir//'tempk'//fortran_PS)
+         call make_IO_dir(this%k,dir//'k'//fortran_PS)
+         call make_IO_dir(this%r,dir//'r'//fortran_PS)
+         call make_IO_dir(this%p,dir//'p'//fortran_PS)
+         call make_IO_dir(this%tempx,dir//'tempx'//fortran_PS)
+         call make_IO_dir(this%Ax,dir//'Ax'//fortran_PS)
+         call make_IO_dir(this%x_BC,dir//'x_BC'//fortran_PS)
+         call make_IO_dir(this%vol,dir//'vol'//fortran_PS)
+         call make_IO_dir(this%z,dir//'z'//fortran_PS)
+         call make_IO_dir(this%Minv,dir//'Minv'//fortran_PS)
+         call make_IO_dir(this%norm,dir//'norm'//fortran_PS)
+         call make_IO_dir(this%ISP,dir//'ISP'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_PCG_solver_VF(this,dir)

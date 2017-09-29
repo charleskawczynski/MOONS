@@ -13,6 +13,7 @@
       public :: open_to_read,open_to_write,open_to_read_write
       public :: open_to_append
       public :: safe_read
+      public :: dot_dat
 
       interface safe_read;      module procedure safe_read_int_IO;      end interface
       interface safe_read;      module procedure safe_read_log_IO;      end interface

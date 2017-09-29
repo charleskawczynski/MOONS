@@ -58,13 +58,6 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('mod_period',real,priv)
 	g.module[m_name].add_prop('mod_period_last',real,priv)
 
-	m_name = 'restart_file'
-	g.add_module(m_name)
-	g.module[m_name].set_folder_name(__name__.split('.')[1])
-	g.module[m_name].set_used_modules(['IO_tools_mod'])
-	g.module[m_name].add_prop('restart_input_file','logical',priv)
-	g.module[m_name].add_prop('restart_fields','logical',priv)
-
 	m_name = 'config'
 	g.add_module(m_name)
 	g.module[m_name].set_folder_name(__name__.split('.')[1])
@@ -73,7 +66,6 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('SP'        ,'sim_params',priv)
 	g.module[m_name].add_prop('dir_target','string',priv)
 	g.module[m_name].add_prop('sc'        ,'stop_clock',priv)
-	g.module[m_name].add_prop('RF'        ,'restart_file',priv)
 	g.module[m_name].add_prop('EN'        ,'export_now',priv)
 	g.module[m_name].add_prop('ES'        ,'export_safe',priv)
 	g.module[m_name].add_prop('RM'        ,'refine_mesh',priv)
@@ -95,23 +87,5 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('C'         ,'config',priv)
 	g.module[m_name].add_prop('GE'        ,'governing_equations',priv)
 	g.module[m_name].add_prop('m_temp'    ,'mesh',priv)
-
-	# m_name = 'MOONS'
-	# g.add_module(m_name)
-	# g.module[m_name].set_folder_name(__name__.split('.')[1])
-	# g.module[m_name].set_used_modules(['IO_tools_mod'])
-	# g.module[m_name].add_prop('mom'       ,'momentum',priv)
-	# g.module[m_name].add_prop('ind'       ,'induction',priv)
-	# g.module[m_name].add_prop('nrg'       ,'energy',priv)
-	# g.module[m_name].add_prop('DT'        ,'dir_tree',priv)
-	# g.module[m_name].add_prop('SP'        ,'sim_params',priv)
-	# g.module[m_name].add_prop('dir_target','string',priv)
-	# g.module[m_name].add_prop('m_temp'    ,'mesh',priv)
-	# g.module[m_name].add_prop('sc','stop_clock',priv)
-	# g.module[m_name].add_prop('RF'        ,'restart_file',priv)
-	# g.module[m_name].add_prop('EN','export_now',priv)
-	# g.module[m_name].add_prop('ES','export_safe',priv)
-	# g.module[m_name].add_prop('RM','refine_mesh',priv)
-	# g.module[m_name].add_prop('KS','kill_switch',priv)
 
 	return g

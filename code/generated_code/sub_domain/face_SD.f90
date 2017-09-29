@@ -20,7 +20,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -40,6 +40,7 @@
        interface export;           module procedure export_wrap_face_SD;        end interface
        interface import;           module procedure import_wrap_face_SD;        end interface
        interface set_IO_dir;       module procedure set_IO_dir_face_SD;         end interface
+       interface make_IO_dir;      module procedure make_IO_dir_face_SD;        end interface
        interface suppress_warnings;module procedure suppress_warnings_face_SD;  end interface
 
        type face_SD
@@ -484,7 +485,6 @@
          integer :: s_I_OPP_periodic_N
          integer :: s_i_2D
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
          s_G = size(this%G)
          do i_G=1,s_G
            call set_IO_dir(this%G(i_G),dir//'G_'//int2str(i_G)//fortran_PS)
@@ -515,6 +515,60 @@
          s_i_2D = size(this%i_2D)
          do i_i_2D=1,s_i_2D
            call set_IO_dir(this%i_2D(i_i_2D),&
+           dir//'i_2D_'//int2str(i_i_2D)//fortran_PS)
+         enddo
+       end subroutine
+
+       subroutine make_IO_dir_face_SD(this,dir)
+         implicit none
+         type(face_SD),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_G
+         integer :: i_G_periodic_N
+         integer :: i_B
+         integer :: i_I
+         integer :: i_I_OPP
+         integer :: i_I_OPP_periodic_N
+         integer :: i_i_2D
+         integer :: s_G
+         integer :: s_G_periodic_N
+         integer :: s_B
+         integer :: s_I
+         integer :: s_I_OPP
+         integer :: s_I_OPP_periodic_N
+         integer :: s_i_2D
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         s_G = size(this%G)
+         do i_G=1,s_G
+           call make_IO_dir(this%G(i_G),dir//'G_'//int2str(i_G)//fortran_PS)
+         enddo
+         s_G_periodic_N = size(this%G_periodic_N)
+         do i_G_periodic_N=1,s_G_periodic_N
+           call make_IO_dir(this%G_periodic_N(i_G_periodic_N),&
+           dir//'G_periodic_N_'//int2str(i_G_periodic_N)//fortran_PS)
+         enddo
+         s_B = size(this%B)
+         do i_B=1,s_B
+           call make_IO_dir(this%B(i_B),dir//'B_'//int2str(i_B)//fortran_PS)
+         enddo
+         s_I = size(this%I)
+         do i_I=1,s_I
+           call make_IO_dir(this%I(i_I),dir//'I_'//int2str(i_I)//fortran_PS)
+         enddo
+         s_I_OPP = size(this%I_OPP)
+         do i_I_OPP=1,s_I_OPP
+           call make_IO_dir(this%I_OPP(i_I_OPP),&
+           dir//'I_OPP_'//int2str(i_I_OPP)//fortran_PS)
+         enddo
+         s_I_OPP_periodic_N = size(this%I_OPP_periodic_N)
+         do i_I_OPP_periodic_N=1,s_I_OPP_periodic_N
+           call make_IO_dir(this%I_OPP_periodic_N(i_I_OPP_periodic_N),&
+           dir//'I_OPP_periodic_N_'//int2str(i_I_OPP_periodic_N)//fortran_PS)
+         enddo
+         s_i_2D = size(this%i_2D)
+         do i_i_2D=1,s_i_2D
+           call make_IO_dir(this%i_2D(i_i_2D),&
            dir//'i_2D_'//int2str(i_i_2D)//fortran_PS)
          enddo
        end subroutine

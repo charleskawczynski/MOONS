@@ -18,7 +18,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -38,6 +38,7 @@
        interface export;           module procedure export_wrap_export_frequency;         end interface
        interface import;           module procedure import_wrap_export_frequency;         end interface
        interface set_IO_dir;       module procedure set_IO_dir_export_frequency;          end interface
+       interface make_IO_dir;      module procedure make_IO_dir_export_frequency;         end interface
        interface suppress_warnings;module procedure suppress_warnings_export_frequency;   end interface
        interface export;           module procedure export_DN_export_frequency;           end interface
        interface import;           module procedure import_DN_export_frequency;           end interface
@@ -278,7 +279,6 @@
          type(export_frequency),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
          call init(this%dir,dir)
          call init(this%name,'primitives')
          call set_IO_dir(this%info,dir//'info'//fortran_PS)
@@ -289,6 +289,24 @@
          call set_IO_dir(this%final_solution,&
          dir//'final_solution'//fortran_PS)
          call set_IO_dir(this%restart_files,dir//'restart_files'//fortran_PS)
+       end subroutine
+
+       subroutine make_IO_dir_export_frequency(this,dir)
+         implicit none
+         type(export_frequency),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call init(this%dir,dir)
+         call init(this%name,'primitives')
+         call make_IO_dir(this%info,dir//'info'//fortran_PS)
+         call make_IO_dir(this%unsteady_0D,dir//'unsteady_0D'//fortran_PS)
+         call make_IO_dir(this%unsteady_1D,dir//'unsteady_1D'//fortran_PS)
+         call make_IO_dir(this%unsteady_2D,dir//'unsteady_2D'//fortran_PS)
+         call make_IO_dir(this%unsteady_3D,dir//'unsteady_3D'//fortran_PS)
+         call make_IO_dir(this%final_solution,&
+         dir//'final_solution'//fortran_PS)
+         call make_IO_dir(this%restart_files,dir//'restart_files'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_export_frequency(this,dir)

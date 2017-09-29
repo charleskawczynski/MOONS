@@ -18,7 +18,7 @@
 
        public :: export_structured,import_structured
 
-       public :: set_IO_dir
+       public :: set_IO_dir,make_IO_dir
 
        public :: suppress_warnings
 
@@ -38,6 +38,7 @@
        interface export;           module procedure export_wrap_energy_terms;        end interface
        interface import;           module procedure import_wrap_energy_terms;        end interface
        interface set_IO_dir;       module procedure set_IO_dir_energy_terms;         end interface
+       interface make_IO_dir;      module procedure make_IO_dir_energy_terms;        end interface
        interface suppress_warnings;module procedure suppress_warnings_energy_terms;  end interface
 
        type energy_terms
@@ -196,7 +197,6 @@
          type(energy_terms),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
          call set_IO_dir(this%advection,dir//'advection'//fortran_PS)
          call set_IO_dir(this%diffusion,dir//'diffusion'//fortran_PS)
          call set_IO_dir(this%diffusion_linear,&
@@ -206,6 +206,24 @@
          dir//'viscous_dissipation'//fortran_PS)
          call set_IO_dir(this%joule_heating,dir//'joule_heating'//fortran_PS)
          call set_IO_dir(this%volumetric_heating,&
+         dir//'volumetric_heating'//fortran_PS)
+       end subroutine
+
+       subroutine make_IO_dir_energy_terms(this,dir)
+         implicit none
+         type(energy_terms),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir_quiet(dir)
+         call make_IO_dir(this%advection,dir//'advection'//fortran_PS)
+         call make_IO_dir(this%diffusion,dir//'diffusion'//fortran_PS)
+         call make_IO_dir(this%diffusion_linear,&
+         dir//'diffusion_linear'//fortran_PS)
+         call make_IO_dir(this%KE_diffusion,dir//'KE_diffusion'//fortran_PS)
+         call make_IO_dir(this%viscous_dissipation,&
+         dir//'viscous_dissipation'//fortran_PS)
+         call make_IO_dir(this%joule_heating,dir//'joule_heating'//fortran_PS)
+         call make_IO_dir(this%volumetric_heating,&
          dir//'volumetric_heating'//fortran_PS)
        end subroutine
 
