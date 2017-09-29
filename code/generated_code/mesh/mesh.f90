@@ -259,6 +259,7 @@
          integer :: i_B
          integer :: s_B
          integer :: un
+         write(*,*) 'Exporting mesh structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -279,6 +280,7 @@
          integer :: i_B
          integer :: s_B
          integer :: un
+         write(*,*) 'Importing mesh structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

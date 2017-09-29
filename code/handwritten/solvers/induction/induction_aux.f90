@@ -66,7 +66,7 @@
          real(cp) :: temp
          call extractCC(field_domain,field,MD)
          call assign_ghost_XPeriodic(field_domain,0.0_cp)
-         call Ln(temp,field_domain,2.0_cp,m,MD)
+         call compute_Ln(temp,field_domain,2.0_cp,m,MD)
          temp = scale*0.5_cp*temp
          call export(energy,TMP,temp)
        end subroutine
@@ -80,7 +80,7 @@
          real(cp),intent(in) :: scale
          real(cp) :: temp
          call assign_ghost_XPeriodic(field,0.0_cp) ! norms now includes ghost points
-         call Ln(temp,field,2.0_cp,m)
+         call compute_Ln(temp,field,2.0_cp,m)
          temp = scale*0.5_cp*temp
          call export(energy,TMP,temp)
        end subroutine

@@ -350,6 +350,7 @@
          type(refine_mesh),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
+         write(*,*) 'Exporting refine_mesh structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -367,6 +368,7 @@
          type(refine_mesh),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
+         write(*,*) 'Importing refine_mesh structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

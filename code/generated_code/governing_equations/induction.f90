@@ -797,6 +797,7 @@
          integer :: s_probe_dB0dt
          integer :: s_probe_B0
          integer :: un
+         write(*,*) 'Exporting induction structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -804,10 +805,6 @@
          call export_structured(this%m_sigma,dir//'m_sigma'//fortran_PS)
          call export_structured(this%PCG_B,dir//'PCG_B'//fortran_PS)
          call export_structured(this%PCG_cleanB,dir//'PCG_cleanB'//fortran_PS)
-         call export_structured(this%U_E,dir//'U_E'//fortran_PS)
-         call export_structured(this%temp_E_TF,dir//'temp_E_TF'//fortran_PS)
-         call export_structured(this%temp_F1_TF,dir//'temp_F1_TF'//fortran_PS)
-         call export_structured(this%temp_F2_TF,dir//'temp_F2_TF'//fortran_PS)
          call export_structured(this%sigmaInv_CC,&
          dir//'sigmaInv_CC'//fortran_PS)
          call export_structured(this%divB,dir//'divB'//fortran_PS)
@@ -885,6 +882,7 @@
          integer :: s_probe_dB0dt
          integer :: s_probe_B0
          integer :: un
+         write(*,*) 'Importing induction structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
@@ -892,10 +890,6 @@
          call import_structured(this%m_sigma,dir//'m_sigma'//fortran_PS)
          call import_structured(this%PCG_B,dir//'PCG_B'//fortran_PS)
          call import_structured(this%PCG_cleanB,dir//'PCG_cleanB'//fortran_PS)
-         call import_structured(this%U_E,dir//'U_E'//fortran_PS)
-         call import_structured(this%temp_E_TF,dir//'temp_E_TF'//fortran_PS)
-         call import_structured(this%temp_F1_TF,dir//'temp_F1_TF'//fortran_PS)
-         call import_structured(this%temp_F2_TF,dir//'temp_F2_TF'//fortran_PS)
          call import_structured(this%sigmaInv_CC,&
          dir//'sigmaInv_CC'//fortran_PS)
          call import_structured(this%divB,dir//'divB'//fortran_PS)

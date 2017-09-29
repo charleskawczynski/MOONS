@@ -314,6 +314,7 @@
          integer :: i_int_tensor
          integer :: s_int_tensor
          integer :: un
+         write(*,*) 'Exporting mesh_props structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -331,6 +332,7 @@
          integer :: i_int_tensor
          integer :: s_int_tensor
          integer :: un
+         write(*,*) 'Importing mesh_props structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

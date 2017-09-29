@@ -220,7 +220,7 @@
          call compute_Q(nrg%temp_F,nrg%T,nrg%k,nrg%m)
          call compute_divQ(nrg%divQ,nrg%temp_F,nrg%m)
          call assign_ghost_XPeriodic(nrg%divQ,0.0_cp)
-         call Ln(temp,nrg%divQ,2.0_cp,nrg%m)
+         call compute_Ln(temp,nrg%divQ,2.0_cp,nrg%m)
          temp = temp*scale
          call export(nrg%Probe_divQ,TMP,temp)
        end subroutine
@@ -294,7 +294,7 @@
          if (EF%unsteady_3D%export_now) call export_unsteady_3D(nrg,SP,TMP,DT)
          if (EF%info%export_now) call print(nrg,SP)
          if (EF%final_solution%export_now.or.EN%T%this.or.EN%all%this) then
-           call export(nrg,str(DT%governing_equations),'nrg')
+           ! call export(nrg,str(DT%governing_equations),'nrg')
            call export_tec(nrg,SP,DT)
          endif
        end subroutine

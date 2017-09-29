@@ -65,8 +65,8 @@
          call subtract(P_error,P_analytic,p_actual)
          call export_raw(m,P_error,str(DT%test%field),'P_error_actual',0)
          write(*,*) 't = ',SP%VS%U%TMP%t
-         call Ln(e,U_analytic,2.0_cp,m); write(*,*) 'dt,e(U) = ',dtime,e
-         call Ln(e,P_analytic,2.0_cp,m); write(*,*) 'dt,e(P) = ',dtime,e
+         call compute_Ln(e,U_analytic,2.0_cp,m); write(*,*) 'dt,e(U) = ',dtime,e
+         call compute_Ln(e,P_analytic,2.0_cp,m); write(*,*) 'dt,e(P) = ',dtime,e
          call delete(U_analytic)
          call delete(P_analytic)
          call delete(p_actual)

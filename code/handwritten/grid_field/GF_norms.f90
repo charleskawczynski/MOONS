@@ -7,17 +7,17 @@
        implicit none
 
        private
-       public :: Ln
-       public :: Linf
+       public :: compute_Ln_norm
+       public :: compute_Linf_norm
 
        ! Interfaces:
        ! Ln(e,u,n) = L(n) = ΣΣΣ u(i,j,k)ⁿ
        ! Linf(e,u) = L(∞) = max(abs(u))
 
-       interface Ln;    module procedure Ln_GF_1; end interface
-       interface Ln;    module procedure Ln_GF_3; end interface
-       interface Ln;    module procedure Ln_GF_9; end interface
-       interface Linf;  module procedure Linf_GF; end interface
+       interface compute_Ln_norm;    module procedure Ln_GF_1; end interface
+       interface compute_Ln_norm;    module procedure Ln_GF_3; end interface
+       interface compute_Ln_norm;    module procedure Ln_GF_9; end interface
+       interface compute_Linf_norm;  module procedure Linf_GF; end interface
 
        contains
 

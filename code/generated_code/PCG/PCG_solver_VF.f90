@@ -307,8 +307,6 @@
          call export_primitives(this,un)
          close(un)
          call export_structured(this%MFP,str(this%dir)//'MFP'//fortran_PS)
-         call export_structured(this%tempk,str(this%dir)//'tempk'//fortran_PS)
-         call export_structured(this%k,str(this%dir)//'k'//fortran_PS)
          call export_structured(this%r,str(this%dir)//'r'//fortran_PS)
          call export_structured(this%p,str(this%dir)//'p'//fortran_PS)
          call export_structured(this%tempx,str(this%dir)//'tempx'//fortran_PS)
@@ -329,8 +327,6 @@
          call import_primitives(this,un)
          close(un)
          call import_structured(this%MFP,str(this%dir)//'MFP'//fortran_PS)
-         call import_structured(this%tempk,str(this%dir)//'tempk'//fortran_PS)
-         call import_structured(this%k,str(this%dir)//'k'//fortran_PS)
          call import_structured(this%r,str(this%dir)//'r'//fortran_PS)
          call import_structured(this%p,str(this%dir)//'p'//fortran_PS)
          call import_structured(this%tempx,str(this%dir)//'tempx'//fortran_PS)
@@ -393,12 +389,11 @@
          type(PCG_solver_VF),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
+         write(*,*) 'Exporting PCG_solver_VF structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
          call export_structured(this%MFP,dir//'MFP'//fortran_PS)
-         call export_structured(this%tempk,dir//'tempk'//fortran_PS)
-         call export_structured(this%k,dir//'k'//fortran_PS)
          call export_structured(this%r,dir//'r'//fortran_PS)
          call export_structured(this%p,dir//'p'//fortran_PS)
          call export_structured(this%tempx,dir//'tempx'//fortran_PS)
@@ -416,12 +411,11 @@
          type(PCG_solver_VF),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
+         write(*,*) 'Importing PCG_solver_VF structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
          call import_structured(this%MFP,dir//'MFP'//fortran_PS)
-         call import_structured(this%tempk,dir//'tempk'//fortran_PS)
-         call import_structured(this%k,dir//'k'//fortran_PS)
          call import_structured(this%r,dir//'r'//fortran_PS)
          call import_structured(this%p,dir//'p'//fortran_PS)
          call import_structured(this%tempx,dir//'tempx'//fortran_PS)

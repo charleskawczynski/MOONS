@@ -370,6 +370,7 @@
          type(energy),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
+         write(*,*) 'Exporting energy structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -393,8 +394,6 @@
          dir//'temp_CC1_VF'//fortran_PS)
          call export_structured(this%temp_CC2_VF,&
          dir//'temp_CC2_VF'//fortran_PS)
-         call export_structured(this%temp_CC_TF,dir//'temp_CC_TF'//fortran_PS)
-         call export_structured(this%temp_F_TF,dir//'temp_F_TF'//fortran_PS)
          call export_structured(this%probe_divQ,dir//'probe_divQ'//fortran_PS)
          call export_structured(this%MD,dir//'MD'//fortran_PS)
        end subroutine
@@ -404,6 +403,7 @@
          type(energy),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
+         write(*,*) 'Importing energy structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
@@ -427,8 +427,6 @@
          dir//'temp_CC1_VF'//fortran_PS)
          call import_structured(this%temp_CC2_VF,&
          dir//'temp_CC2_VF'//fortran_PS)
-         call import_structured(this%temp_CC_TF,dir//'temp_CC_TF'//fortran_PS)
-         call import_structured(this%temp_F_TF,dir//'temp_F_TF'//fortran_PS)
          call import_structured(this%probe_divQ,dir//'probe_divQ'//fortran_PS)
          call import_structured(this%MD,dir//'MD'//fortran_PS)
        end subroutine

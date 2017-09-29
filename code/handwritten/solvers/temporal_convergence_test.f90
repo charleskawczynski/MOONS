@@ -43,8 +43,8 @@
          write(*,*) ' *********************************************************** '
          write(*,*) 'DT%params = ',str(DT%params)
          write(*,*) 't = ',SP%VS%U%TMP%t
-         call Ln(e,U,2.0_cp,m); write(*,*) 'dt,e(U) = ',dtime,e
-         call Ln(e,P,2.0_cp,m); write(*,*) 'dt,e(P) = ',dtime,e
+         call compute_Ln(e,U,2.0_cp,m); write(*,*) 'dt,e(U) = ',dtime,e
+         call compute_Ln(e,P,2.0_cp,m); write(*,*) 'dt,e(P) = ',dtime,e
          write(*,*) ' *********************************************************** '
          write(*,*) ' ************** END TEMPORAL CONVERGENCE TEST ************** '
          write(*,*) ' *********************************************************** '

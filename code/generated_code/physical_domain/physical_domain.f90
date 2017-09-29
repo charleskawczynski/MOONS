@@ -251,6 +251,7 @@
          integer :: i_sd
          integer :: s_sd
          integer :: un
+         write(*,*) 'Exporting physical_domain structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -270,6 +271,7 @@
          integer :: i_sd
          integer :: s_sd
          integer :: un
+         write(*,*) 'Importing physical_domain structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

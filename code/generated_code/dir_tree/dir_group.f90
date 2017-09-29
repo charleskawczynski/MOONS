@@ -244,6 +244,7 @@
          type(dir_group),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
+         write(*,*) 'Exporting dir_group structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -263,6 +264,7 @@
          type(dir_group),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
+         write(*,*) 'Importing dir_group structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

@@ -4,6 +4,10 @@ import fortran_property as FP
 from collections import OrderedDict
 
 suppress_all_warnings = True
+# skip_structured_IO = ['TF']
+make_dir_quiet = False
+IO_structured_quiet = False
+skip_structured_IO = ['SF','VF','TF']
 
 def longest_sub_string_match(string1, string2):
     if string1==string2:
@@ -97,6 +101,7 @@ class fortran_module:
         no_primitives = [not self.prop[k].object_type=='primitive' for k in self.prop]
         only_primitives = [self.prop[k].object_type=='primitive' for k in self.prop]
         only_primitives_or_strings = [self.prop[k].object_type=='primitive' or (self.prop[k].object_type=='object' and self.prop[k].class_=='string') for k in self.prop]
+        primitives_strings_or_procedures = [self.prop[k].object_type=='primitive' or (self.prop[k].object_type=='object' and self.prop[k].class_=='string') or self.prop[k].object_type=='procedure' for k in self.prop]
         X = self.prop
         temp = [X[k] for k in X if X[k].object_type=='primitive' or (X[k].object_type=='object' and X[k].class_=='string')]
         self.any_non_primitive_allocatables = any(non_primitive_allocatables)
@@ -105,6 +110,7 @@ class fortran_module:
         self.no_primitives = all(no_primitives)
         self.only_primitives = all(only_primitives)
         self.only_primitives_or_strings = all(only_primitives_or_strings)
+        self.primitives_strings_or_procedures = all(primitives_strings_or_procedures)
 
         self.any_allocatables = any([non_primitive_allocatables,primitive_allocatables])
 
@@ -167,27 +173,27 @@ class fortran_module:
 
     def get_fortran_module(self):
         c = []
-        c.append('! ***************************************************')
-        c.append('! ******* THIS CODE IS GENERATED. DO NOT EDIT *******')
-        c.append('! ***************************************************')
-        c.append('module ' + self.get_name() + '_mod')
-        c.append(self.write_used_modules())
-        c.append([self.implicitNone]+[''])
-        c.append(['private'])
-        c.append(['public :: '+self.name])
-        c.append(['public :: init,delete,display,print,export,import'])
-        c.append(['public :: display_short,print_short']+[''])
-        c.append(['public :: export_primitives,import_primitives']+[''])
-        c.append(['public :: export_structured,import_structured']+[''])
-        c.append(['public :: set_IO_dir,make_IO_dir']+[''])
+        c=c+['! ***************************************************']
+        c=c+['! ******* THIS CODE IS GENERATED. DO NOT EDIT *******']
+        c=c+['! ***************************************************']
+        c=c+['module ' + self.get_name() + '_mod']
+        c=c+[self.write_used_modules()]
+        c=c+[[self.implicitNone]+['']]
+        c=c+[['private']]
+        c=c+[['public :: '+self.name]]
+        c=c+[['public :: init,delete,display,print,export,import']]
+        c=c+[['public :: display_short,print_short']+['']]
+        c=c+[['public :: export_primitives,import_primitives']+['']]
+        c=c+[['public :: export_structured,import_structured']+['']]
+        c=c+[['public :: set_IO_dir,make_IO_dir']+['']]
         if suppress_all_warnings:
-            c.append(['public :: suppress_warnings']+[''])
-        c.append(self.write_interfaces()+[''])
-        c.append(self.class_definition())
-        c.append(['end type']+[''])
-        c.append(['contains'])
-        c.append(self.write_all_functions())
-        c.append('end module')
+            c=c+[['public :: suppress_warnings']+['']]
+        c=c+[self.write_interfaces()+['']]
+        c=c+[self.class_definition()]
+        c=c+[['end type']+['']]
+        c=c+[['contains']]
+        c=c+[self.write_all_functions()]
+        c=c+['end module']
         return c
 
     def post_process(self,c):
@@ -203,7 +209,8 @@ class fortran_module:
         return s
 
     def write_used_modules(self):
-        dependent=[]
+        d=[]
+        d=d
         types = [self.prop[k].get_class() for k in self.prop]
         self.any_cp = any(['cp' in x for x in types])
         c = [self.used_modules]
@@ -211,14 +218,14 @@ class fortran_module:
         if self.any_cp:
             c=['current_precision_mod']+c
         for key in self.prop:
-            dependent.append([x for x in self.class_list if self.prop[key].get_class().lower()==x.lower()])
-            dependent.append([x for x in self.base_modules])
-            dependent.append([x for x in self.base_modules if self.prop[key].get_class().lower()==x.lower()])
+            d=d+[[x for x in self.class_list if self.prop[key].get_class().lower()==x.lower()]]
+            d=d+[[x for x in self.base_modules]]
+            d=d+[[x for x in self.base_modules if self.prop[key].get_class().lower()==x.lower()]]
             for k in self.abstract_interfaces:
-                dependent.append([k for x in self.abstract_interfaces[k] if self.prop[key].get_class().lower()==x.lower()])
-        dependent = list(set([item for sublist in dependent for item in sublist if item]))
-        dependent.sort()
-        c = c+[x+'_mod' for x in dependent]
+                d=d+[[k for x in self.abstract_interfaces[k] if self.prop[key].get_class().lower()==x.lower()]]
+        d = list(set([item for sublist in d for item in sublist if item]))
+        d.sort()
+        c = c+[x+'_mod' for x in d]
         return ['use '+x if x else None for x in c]
 
     def write_interfaces(self):
@@ -264,40 +271,40 @@ class fortran_module:
 
     def write_all_functions(self):
         c = []
-        c.append('')
+        c=c+['']
         self.set_arg_objects()
         self.set_arg_list()
-        c.append(self.init_copy()+[''])
-        c.append(self.init_delete()+[''])
+        c=c+[self.init_copy()+['']]
+        c=c+[self.init_delete()+['']]
 
-        c.append(self.display_module()+[''])
-        c.append(self.display_short_module()+[''])
-        c.append(self.display_wrap_module()+[''])
+        c=c+[self.display_module()+['']]
+        c=c+[self.display_short_module()+['']]
+        c=c+[self.display_wrap_module()+['']]
 
-        c.append(self.print_module()+[''])
-        c.append(self.print_short_module()+[''])
+        c=c+[self.print_module()+['']]
+        c=c+[self.print_short_module()+['']]
 
-        c.append(self.export_module_un(False)+['']) # export(this,un)
-        c.append(self.import_module_un(False)+['']) # import(this,un)
-        c.append(self.export_module_un(True)+[''])  # export_primitives(this,un)
-        c.append(self.import_module_un(True)+[''])  # import_primitives(this,un)
-        c.append(self.export_wrap_module()+[''])    # export(this,dir,name)
-        c.append(self.import_wrap_module()+[''])    # import(this,dir,name)
+        c=c+[self.export_module_un(False)+['']] # export(this,un)
+        c=c+[self.import_module_un(False)+['']] # import(this,un)
+        c=c+[self.export_module_un(True)+['']]  # export_primitives(this,un)
+        c=c+[self.import_module_un(True)+['']]  # import_primitives(this,un)
+        c=c+[self.export_wrap_module()+['']]    # export(this,dir,name)
+        c=c+[self.import_wrap_module()+['']]    # import(this,dir,name)
 
         if self.has_dir_name:
-          c.append(self.export_DN_module()+[''])    # export(this), if has (dir,name)
-          c.append(self.import_DN_module()+[''])    # import(this), if has (dir,name)
-          c.append(self.export_structured_DN_module()+['']) # export_structured(this,dir), names are determined by data structure
-          c.append(self.import_structured_DN_module()+['']) # import_structured(this,dir), names are determined by data structure
+          c=c+[self.export_DN_module()+['']]    # export(this), if has (dir,name)
+          c=c+[self.import_DN_module()+['']]    # import(this), if has (dir,name)
+          c=c+[self.export_structured_DN_module()+['']] # export_structured(this,dir), names are determined by data structure
+          c=c+[self.import_structured_DN_module()+['']] # import_structured(this,dir), names are determined by data structure
 
-        c.append(self.set_IO_dir_module()+[''])
-        c.append(self.make_IO_dir_module()+[''])
-        c.append(self.export_structured_D_module()+['']) # export_structured(this), if has (dir,name)
-        c.append(self.import_structured_D_module()+['']) # import_structured(this), if has (dir,name)
+        c=c+[self.set_IO_dir_module()+['']]
+        c=c+[self.make_IO_dir_module()+['']]
+        c=c+[self.export_structured_D_module()+['']] # export_structured(this), if has (dir,name)
+        c=c+[self.import_structured_D_module()+['']] # import_structured(this), if has (dir,name)
 
 
         if suppress_all_warnings:
-            c.append(self.suppress_fortran_warnings_module()+[''])
+            c=c+[self.suppress_fortran_warnings_module()+['']]
         return c
 
     def class_definition(self):
@@ -306,45 +313,45 @@ class fortran_module:
         self.all_private = all([x=='private' for x in p])
         self.all_public = all([x=='public' for x in p])
         if self.all_private:
-            c=c+[self.spaces[2]+'private']
+          c=c+[self.spaces[2]+'private']
         # if self.all_public:
         #     c=c+[self.spaces[2]+'public']
         for key in self.prop:
-            c.append([self.spaces[2]+x for x in self.prop[key].write_class_definition(self.all_private,self.all_public)])
+          c=c+[[self.spaces[2]+x for x in self.prop[key].write_class_definition(self.all_private,self.all_public)]]
         return c
 
     def init_copy(self):
         sig = 'init_copy_' + self.get_suffix()
         c = [self.full_sub_signature(sig,'this,that')]
-        c.append(self.spaces[2] + self.implicitNone )
-        c.append(self.spaces[2] + 'type(' + self.name + '),intent(inout) :: this' )
-        c.append(self.spaces[2] + 'type(' + self.name + '),intent(in) :: that' )
+        c=c+[self.spaces[2] + self.implicitNone]
+        c=c+[self.spaces[2] + 'type(' + self.name + '),intent(inout) :: this']
+        c=c+[self.spaces[2] + 'type(' + self.name + '),intent(in) :: that']
         for key in self.arg_objects:
             L = self.arg_objects[key].get_list_of_local_iterators()
-            if L: c.append(L)
+            if L: c=c+L
         for key in self.arg_objects:
             L = self.arg_objects[key].get_list_of_local_shape()
-            if L and not self.arg_objects[key].object_type=='primitive': c.append(L)
-        c.append(self.spaces[2] + 'call delete(this)')
+            if L and not self.arg_objects[key].object_type=='primitive': c=c+L
+        c=c+[self.spaces[2] + 'call delete(this)']
         for key in self.arg_objects:
-            c.append([self.spaces[2]+x for x in self.arg_objects[key].write_init_copy()])
-        c.append(self.end_sub())
+            c=c+[self.spaces[2]+x for x in self.arg_objects[key].write_init_copy()]
+        c=c+[self.end_sub()]
         return c
 
     def init_delete(self):
         sig = 'delete_' + self.get_suffix()
         c = [self.full_sub_signature(sig,'this')]
-        c.append(self.spaces[2] + self.implicitNone )
-        c.append(self.spaces[2] + 'type(' + self.name + '),intent(inout) :: this' )
+        c=c+[self.spaces[2] + self.implicitNone ]
+        c=c+[self.spaces[2] + 'type(' + self.name + '),intent(inout) :: this' ]
         for key in self.arg_objects:
             L = self.arg_objects[key].get_list_of_local_iterators()
-            if L: c.append(L)
+            if L: c=c+[L]
         for key in self.arg_objects:
             L = self.arg_objects[key].get_list_of_local_shape()
-            if L and not self.arg_objects[key].object_type=='primitive': c.append(L)
+            if L and not self.arg_objects[key].object_type=='primitive': c=c+[L]
         for key in self.arg_objects:
-            c.append([self.spaces[2]+x for x in self.arg_objects[key].write_delete()])
-        c.append(self.end_sub())
+            c=c+[[self.spaces[2]+x for x in self.arg_objects[key].write_delete()]]
+        c=c+[self.end_sub()]
         return c
 
     def display_module(self):
@@ -352,25 +359,22 @@ class fortran_module:
         c = [self.full_sub_signature(sig,'this,un')]
         self.set_arg_objects()
         self.set_arg_list()
-        c.append(self.spaces[2] + self.implicitNone)
-        c.append(self.spaces[2] + 'type(' + self.name + '),intent(in) :: this' )
-        c.append(self.spaces[2] + 'integer,intent(in) :: un' )
+        c=c+[self.spaces[2] + self.implicitNone]
+        c=c+[self.spaces[2] + 'type(' + self.name + '),intent(in) :: this' ]
+        c=c+[self.spaces[2] + 'integer,intent(in) :: un' ]
         for key in self.arg_objects:
             L = self.arg_objects[key].get_list_of_local_iterators()
-            if L: c.append(L)
+            if L: c=c+[L]
         for key in self.arg_objects:
             L = self.arg_objects[key].get_list_of_local_shape()
-            if L and not self.arg_objects[key].object_type=='primitive': c.append(L)
+            if L and not self.arg_objects[key].object_type=='primitive': c=c+[L]
         st_n = [len(self.prop[key].name) for key in self.prop]
         sp_n = [self.spaces[max(st_n)-x] for x in st_n]
         for key,s in zip(self.prop,sp_n):
             self.prop[key].set_display_spaces(s)
-
-        # pass # temporary
-        # c.append(self.spaces[2] + "write(un,*) ' -------------------- " +self.name+ "'" )
         for key in self.prop:
-            c.append([self.spaces[2]+x for x in self.prop[key].write_display()])
-        c.append(self.end_sub())
+            c=c+[[self.spaces[2]+x for x in self.prop[key].write_display()]]
+        c=c+[self.end_sub()]
         return c
 
     def display_short_module(self):
@@ -378,42 +382,41 @@ class fortran_module:
         c = [self.full_sub_signature(sig,'this,un')]
         self.set_arg_objects()
         self.set_arg_list()
-        c.append(self.spaces[2] + self.implicitNone)
-        c.append(self.spaces[2] + 'type(' + self.name + '),intent(in) :: this' )
-        c.append(self.spaces[2] + 'integer,intent(in) :: un' )
+        c=c+[self.spaces[2] + self.implicitNone]
+        c=c+[self.spaces[2] + 'type(' + self.name + '),intent(in) :: this' ]
+        c=c+[self.spaces[2] + 'integer,intent(in) :: un' ]
         for key in self.arg_objects:
             L = self.arg_objects[key].get_list_of_local_iterators()
-            if L: c.append(L)
+            if L: c=c+[L]
         for key in self.arg_objects:
             L = self.arg_objects[key].get_list_of_local_shape()
-            if L and not self.arg_objects[key].object_type=='primitive': c.append(L)
+            if L and not self.arg_objects[key].object_type=='primitive': c=c+[L]
         st_n = [len(self.prop[key].name) for key in self.prop]
         sp_n = [self.spaces[max(st_n)-x] for x in st_n]
         for key,s in zip(self.prop,sp_n):
             self.prop[key].set_display_spaces(s)
 
-        # c.append(self.spaces[2] + "write(un,*) ' -------------------- " +self.name+ "'" )
         for key in self.prop:
-            c.append([self.spaces[2]+x for x in self.prop[key].write_display_short()])
-        c.append(self.end_sub())
+            c=c+[[self.spaces[2]+x for x in self.prop[key].write_display_short()]]
+        c=c+[self.end_sub()]
         return c
 
     def print_module(self):
         sig = 'print_' + self.get_suffix()
         c = [self.full_sub_signature(sig,'this')]
-        c.append(self.spaces[2] + self.implicitNone)
-        c.append(self.spaces[2] + 'type(' + self.name + '),intent(in) :: this' )
-        c.append(self.spaces[2] + "call display(this,6)")
-        c.append(self.end_sub() )
+        c=c+[self.spaces[2] + self.implicitNone]
+        c=c+[self.spaces[2] + 'type(' + self.name + '),intent(in) :: this' ]
+        c=c+[self.spaces[2] + "call display(this,6)"]
+        c=c+[self.end_sub() ]
         return c
 
     def print_short_module(self):
         sig = 'print_short_' + self.get_suffix()
         c = [self.full_sub_signature(sig,'this')]
-        c.append(self.spaces[2] + self.implicitNone)
-        c.append(self.spaces[2] + 'type(' + self.name + '),intent(in) :: this' )
-        c.append(self.spaces[2] + "call display_short(this,6)")
-        c.append(self.end_sub() )
+        c=c+[self.spaces[2] + self.implicitNone]
+        c=c+[self.spaces[2] + 'type(' + self.name + '),intent(in) :: this' ]
+        c=c+[self.spaces[2] + "call display_short(this,6)"]
+        c=c+[self.end_sub() ]
         return c
 
     def export_module_un(self,primitives_only):
@@ -422,27 +425,27 @@ class fortran_module:
         else:
             sig = 'export_' + self.get_suffix()
         c = [self.full_sub_signature(sig,'this,un')]
-        c.append(self.spaces[2] + self.implicitNone)
-        c.append(self.spaces[2] + 'type(' + self.name + '),intent(in) :: this' )
-        c.append(self.spaces[2] + 'integer,intent(in) :: un' )
+        c=c+[self.spaces[2] + self.implicitNone]
+        c=c+[self.spaces[2] + 'type(' + self.name + '),intent(in) :: this' ]
+        c=c+[self.spaces[2] + 'integer,intent(in) :: un' ]
         if not primitives_only:
             for key in self.arg_objects:
                 L = self.arg_objects[key].get_list_of_local_iterators()
-                if L: c.append(L)
+                if L: c=c+[L]
         if any([not primitives_only,primitives_only and self.any_primitive_allocatables]):
             for key in self.arg_objects:
                 L = self.arg_objects[key].get_list_of_local_shape()
-                if L: c.append(L)
+                if L: c=c+[L]
 
         if suppress_all_warnings:
             if primitives_only and self.no_primitives:
-                c.append(self.spaces[2] + 'integer :: un_suppress_warning' )
-                c.append(self.spaces[2] + 'un_suppress_warning = un' )
-                c.append(self.spaces[2] + 'call suppress_warnings(this)' )
+                c=c+[self.spaces[2] + 'integer :: un_suppress_warning' ]
+                c=c+[self.spaces[2] + 'un_suppress_warning = un' ]
+                c=c+[self.spaces[2] + 'call suppress_warnings(this)' ]
 
         for key in self.prop:
-            c.append([self.spaces[2]+x for x in self.prop[key].write_export(primitives_only)])
-        c.append(self.end_sub())
+            c=c+[[self.spaces[2]+x for x in self.prop[key].write_export(primitives_only)]]
+        c=c+[self.end_sub()]
         return c
 
     def import_module_un(self,primitives_only):
@@ -451,28 +454,28 @@ class fortran_module:
         else:
             sig = 'import_' + self.get_suffix()
         c = [self.full_sub_signature(sig,'this,un')]
-        c.append(self.spaces[2] + self.implicitNone)
-        c.append(self.spaces[2] + 'type(' + self.name + '),intent(inout) :: this' )
-        c.append(self.spaces[2] + 'integer,intent(in) :: un' )
+        c=c+[self.spaces[2] + self.implicitNone]
+        c=c+[self.spaces[2] + 'type(' + self.name + '),intent(inout) :: this' ]
+        c=c+[self.spaces[2] + 'integer,intent(in) :: un' ]
         if not primitives_only:
             for key in self.arg_objects:
                 L = self.arg_objects[key].get_list_of_local_iterators()
-                if L: c.append(L)
+                if L: c=c+[L]
         if any([not primitives_only,primitives_only and self.any_primitive_allocatables]):
             for key in self.arg_objects:
                 L = self.arg_objects[key].get_list_of_local_shape()
-                if L: c.append(L)
+                if L: c=c+[L]
         if suppress_all_warnings:
             if primitives_only and self.no_primitives:
-                c.append(self.spaces[2] + 'integer :: un_suppress_warning' )
-                c.append(self.spaces[2] + 'un_suppress_warning = un' )
-                c.append(self.spaces[2] + 'call suppress_warnings(this)' )
+                c=c+[self.spaces[2] + 'integer :: un_suppress_warning' ]
+                c=c+[self.spaces[2] + 'un_suppress_warning = un' ]
+                c=c+[self.spaces[2] + 'call suppress_warnings(this)' ]
 
         if not primitives_only:
-            c.append(self.spaces[2] + 'call delete(this)' )
+            c=c+[self.spaces[2] + 'call delete(this)' ]
         for key in self.prop:
-            c.append([self.spaces[2]+x for x in self.prop[key].write_import(primitives_only)])
-        c.append(self.end_sub())
+            c=c+[[self.spaces[2]+x for x in self.prop[key].write_import(primitives_only)]]
+        c=c+[self.end_sub()]
         return c
 
     def display_wrap_module(self):
@@ -519,8 +522,8 @@ class fortran_module:
         c=c+[self.spaces[2]+'type('+self.name+'),intent(in) :: this']
         c=c+[self.spaces[2]+'character(len=*),intent(in) :: dir,name']
         for key in self.prop:
-            c.append([self.spaces[2]+x for x in self.prop[key].write_export_wrap_specialized()])
-        c.append(self.end_sub())
+            c=c+[[self.spaces[2]+x for x in self.prop[key].write_export_wrap_specialized()]]
+        c=c+[self.end_sub()]
         return c
 
     def import_wrap_module(self):
@@ -554,8 +557,8 @@ class fortran_module:
         c=c+[self.spaces[2]+'type('+self.name+'),intent(inout) :: this']
         c=c+[self.spaces[2]+'character(len=*),intent(in) :: dir,name']
         for key in self.prop:
-            c.append([self.spaces[2]+x for x in self.prop[key].write_import_wrap_specialized()])
-        c.append(self.end_sub())
+            c=c+[[self.spaces[2]+x for x in self.prop[key].write_import_wrap_specialized()]]
+        c=c+[self.end_sub()]
         return c
 
     def export_DN_module(self):
@@ -589,152 +592,164 @@ class fortran_module:
     def export_structured_D_module(self):
         sig = 'export_structured_D_' + self.get_suffix()
         # sig = 'set_IO_dir_'
-        c = [self.full_sub_signature(sig,'this,dir')]
-        c.append(self.spaces[2] + self.implicitNone)
-        c.append(self.spaces[2] + 'type(' + self.name + '),intent(in) :: this' )
-        c.append(self.spaces[2] + 'character(len=*),intent(in) :: dir' )
+        c = []
+        c=c+[self.full_sub_signature(sig,'this,dir')]
+        c=c+[self.spaces[2] + self.implicitNone]
+        c=c+[self.spaces[2] + 'type(' + self.name + '),intent(in) :: this']
+        c=c+[self.spaces[2] + 'character(len=*),intent(in) :: dir']
         for key in self.arg_objects:
-            L = self.arg_objects[key].get_list_of_local_iterators()
-            if L: c.append(L)
+          L = self.arg_objects[key].get_list_of_local_iterators()
+          if L: c=c+L
         if self.any_non_primitive_high_dimension:
-            for key in self.arg_objects:
-                L = self.arg_objects[key].get_list_of_local_shape()
-                if L: c.append(L)
-        c.append(self.spaces[2] + "integer :: un" )
-        c.append(self.spaces[2] + "un = new_and_open(dir,'primitives')" )
-        c.append(self.spaces[2] + "call export_primitives(this,un)" )
-        c.append(self.spaces[2] + "close(un)" )
+          for key in self.arg_objects:
+            L = self.arg_objects[key].get_list_of_local_shape()
+            if L: c=c+L
+        c=c+[self.spaces[2] + "integer :: un"]
+        if not IO_structured_quiet:
+          c=c+[self.spaces[2] + "write(*,*) 'Exporting "+ self.name +" structured'"]
+        c=c+[self.spaces[2] + "un = new_and_open(dir,'primitives')"]
+        c=c+[self.spaces[2] + "call export_primitives(this,un)"]
+        c=c+[self.spaces[2]+'close(un)']
         for key in self.prop:
-            c.append([self.spaces[2]+x for x in self.prop[key].write_export_structured('dir')])
-        c.append(self.end_sub())
+          if all([not self.prop[key].class_==x for x in skip_structured_IO]):
+            c=c+[self.spaces[2]+x for x in self.prop[key].write_export_structured('dir')]
+        c=c+[self.end_sub()]
         return c
 
     def export_structured_DN_module(self):
         sig = 'export_structured_DN_' + self.get_suffix()
         # sig = 'set_IO_dir_'
         c = [self.full_sub_signature(sig,'this')]
-        c.append(self.spaces[2] + self.implicitNone)
-        c.append(self.spaces[2] + 'type(' + self.name + '),intent(in) :: this' )
+        c=c+[self.spaces[2] + self.implicitNone]
+        c=c+[self.spaces[2] + 'type(' + self.name + '),intent(in) :: this' ]
         for key in self.arg_objects:
-            L = self.arg_objects[key].get_list_of_local_iterators()
-            if L: c.append(L)
+          L = self.arg_objects[key].get_list_of_local_iterators()
+          if L: c=c+[L]
         if self.any_non_primitive_high_dimension:
-            for key in self.arg_objects:
-                L = self.arg_objects[key].get_list_of_local_shape()
-                if L: c.append(L)
-        c.append(self.spaces[2] + "integer :: un" )
-        c.append(self.spaces[2] + "un = new_and_open(str(this%dir),'primitives')" )
-        c.append(self.spaces[2] + "call export_primitives(this,un)" )
-        c.append(self.spaces[2] + "close(un)" )
+          for key in self.arg_objects:
+            L = self.arg_objects[key].get_list_of_local_shape()
+            if L: c=c+[L]
+        c=c+[self.spaces[2] + "integer :: un" ]
+        c=c+[self.spaces[2] + "un = new_and_open(str(this%dir),'primitives')" ]
+        c=c+[self.spaces[2] + "call export_primitives(this,un)" ]
+        c=c+[self.spaces[2]+'close(un)']
         for key in self.prop:
-            c.append([self.spaces[2]+x for x in self.prop[key].write_export_structured('str(this%dir)')])
-        c.append(self.end_sub())
+          if all([not self.prop[key].class_==x for x in skip_structured_IO]):
+            c=c+[[self.spaces[2]+x for x in self.prop[key].write_export_structured('str(this%dir)')]]
+        c=c+[self.end_sub()]
         return c
 
     def import_structured_D_module(self):
         sig = 'import_structured_D_' + self.get_suffix()
         # sig = 'set_IO_dir_'
         c = [self.full_sub_signature(sig,'this,dir')]
-        c.append(self.spaces[2] + self.implicitNone)
-        c.append(self.spaces[2] + 'type(' + self.name + '),intent(inout) :: this' )
-        c.append(self.spaces[2] + 'character(len=*),intent(in) :: dir' )
+        c=c+[self.spaces[2] + self.implicitNone]
+        c=c+[self.spaces[2] + 'type(' + self.name + '),intent(inout) :: this' ]
+        c=c+[self.spaces[2] + 'character(len=*),intent(in) :: dir' ]
         for key in self.arg_objects:
-            L = self.arg_objects[key].get_list_of_local_iterators()
-            if L: c.append(L)
+          L = self.arg_objects[key].get_list_of_local_iterators()
+          if L: c=c+[L]
         if self.any_non_primitive_high_dimension:
-            for key in self.arg_objects:
-                L = self.arg_objects[key].get_list_of_local_shape()
-                if L: c.append(L)
-        c.append(self.spaces[2] + "integer :: un" )
-        c.append(self.spaces[2] + "un = open_to_read(dir,'primitives')" )
-        c.append(self.spaces[2] + "call import_primitives(this,un)" )
-        c.append(self.spaces[2] + "close(un)" )
+          for key in self.arg_objects:
+            L = self.arg_objects[key].get_list_of_local_shape()
+            if L: c=c+[L]
+        c=c+[self.spaces[2] + "integer :: un" ]
+        if not IO_structured_quiet:
+          c=c+[self.spaces[2] + "write(*,*) 'Importing "+ self.name +" structured'"]
+        c=c+[self.spaces[2] + "un = open_to_read(dir,'primitives')" ]
+        c=c+[self.spaces[2] + "call import_primitives(this,un)" ]
+        c=c+[self.spaces[2]+'close(un)']
         for key in self.prop:
-            c.append([self.spaces[2]+x for x in self.prop[key].write_import_structured('dir')])
-        c.append(self.end_sub())
+          if all([not self.prop[key].class_==x for x in skip_structured_IO]):
+            c=c+[[self.spaces[2]+x for x in self.prop[key].write_import_structured('dir')]]
+        c=c+[self.end_sub()]
         return c
 
     def import_structured_DN_module(self):
         sig = 'import_structured_DN_' + self.get_suffix()
         # sig = 'set_IO_dir_'
         c = [self.full_sub_signature(sig,'this')]
-        c.append(self.spaces[2] + self.implicitNone)
-        c.append(self.spaces[2] + 'type(' + self.name + '),intent(inout) :: this' )
+        c=c+[self.spaces[2] + self.implicitNone]
+        c=c+[self.spaces[2] + 'type(' + self.name + '),intent(inout) :: this' ]
         for key in self.arg_objects:
-            L = self.arg_objects[key].get_list_of_local_iterators()
-            if L: c.append(L)
+          L = self.arg_objects[key].get_list_of_local_iterators()
+          if L: c=c+[L]
         if self.any_non_primitive_high_dimension:
-            for key in self.arg_objects:
-                L = self.arg_objects[key].get_list_of_local_shape()
-                if L: c.append(L)
-        c.append(self.spaces[2] + "integer :: un" )
-        c.append(self.spaces[2] + "un = open_to_read(str(this%dir),'primitives')" )
-        c.append(self.spaces[2] + "call import_primitives(this,un)" )
-        c.append(self.spaces[2] + "close(un)" )
+          for key in self.arg_objects:
+            L = self.arg_objects[key].get_list_of_local_shape()
+            if L: c=c+[L]
+        c=c+[self.spaces[2] + "integer :: un" ]
+        c=c+[self.spaces[2] + "un = open_to_read(str(this%dir),'primitives')" ]
+        c=c+[self.spaces[2] + "call import_primitives(this,un)" ]
+        c=c+[self.spaces[2]+'close(un)']
         for key in self.prop:
-            c.append([self.spaces[2]+x for x in self.prop[key].write_import_structured('str(this%dir)')])
-        c.append(self.end_sub())
+          if all([not self.prop[key].class_==x for x in skip_structured_IO]):
+            c=c+[[self.spaces[2]+x for x in self.prop[key].write_import_structured('str(this%dir)')]]
+        c=c+[self.end_sub()]
         return c
 
     def set_IO_dir_module(self):
         sig = 'set_IO_dir_' + self.get_suffix()
         # sig = 'set_IO_dir_'
         c = [self.full_sub_signature(sig,'this,dir')]
-        c.append(self.spaces[2] + self.implicitNone)
-        c.append(self.spaces[2] + 'type(' + self.name + '),intent(inout) :: this' )
-        c.append(self.spaces[2] + 'character(len=*),intent(in) :: dir' )
+        c=c+[self.spaces[2] + self.implicitNone]
+        c=c+[self.spaces[2] + 'type(' + self.name + '),intent(inout) :: this' ]
+        c=c+[self.spaces[2] + 'character(len=*),intent(in) :: dir' ]
         for key in self.arg_objects:
-            L = self.arg_objects[key].get_list_of_local_iterators()
-            if L: c.append(L)
+          L = self.arg_objects[key].get_list_of_local_iterators()
+          if L: c=c+[L]
         if self.any_non_primitive_high_dimension:
-            for key in self.arg_objects:
-                L = self.arg_objects[key].get_list_of_local_shape()
-                if L: c.append(L)
+          for key in self.arg_objects:
+            L = self.arg_objects[key].get_list_of_local_shape()
+            if L: c=c+[L]
         if suppress_all_warnings:
-            c.append(self.spaces[2] + 'call suppress_warnings(this)' )
-        if suppress_all_warnings and self.only_primitives_or_strings:
-            c.append(self.spaces[2] + 'if (.false.) write(*,*) dir' )
+          c=c+[self.spaces[2] + 'call suppress_warnings(this)' ]
+        if suppress_all_warnings and self.primitives_strings_or_procedures:
+          c=c+[self.spaces[2] + 'if (.false.) write(*,*) dir' ]
         if self.has_dir_name:
-            c.append(self.spaces[2] + "call init(this%dir,dir)" )
-            c.append(self.spaces[2] + "call init(this%name,'primitives')" )
+          c=c+[self.spaces[2] + "call init(this%dir,dir)" ]
+          c=c+[self.spaces[2] + "call init(this%name,'primitives')" ]
         for key in self.prop:
-            c.append([self.spaces[2]+x for x in self.prop[key].write_set_IO_dir('set_IO_dir')])
-        c.append(self.end_sub())
+          c=c+[[self.spaces[2]+x for x in self.prop[key].write_set_IO_dir('set_IO_dir')]]
+        c=c+[self.end_sub()]
         return c
 
     def make_IO_dir_module(self):
         sig = 'make_IO_dir_' + self.get_suffix()
         # sig = 'set_IO_dir_'
         c = [self.full_sub_signature(sig,'this,dir')]
-        c.append(self.spaces[2] + self.implicitNone)
-        c.append(self.spaces[2] + 'type(' + self.name + '),intent(inout) :: this' )
-        c.append(self.spaces[2] + 'character(len=*),intent(in) :: dir' )
+        c=c+[self.spaces[2] + self.implicitNone]
+        c=c+[self.spaces[2] + 'type(' + self.name + '),intent(inout) :: this' ]
+        c=c+[self.spaces[2] + 'character(len=*),intent(in) :: dir' ]
         for key in self.arg_objects:
-            L = self.arg_objects[key].get_list_of_local_iterators()
-            if L: c.append(L)
+          L = self.arg_objects[key].get_list_of_local_iterators()
+          if L: c=c+[L]
         if self.any_non_primitive_high_dimension:
-            for key in self.arg_objects:
-                L = self.arg_objects[key].get_list_of_local_shape()
-                if L: c.append(L)
+          for key in self.arg_objects:
+            L = self.arg_objects[key].get_list_of_local_shape()
+            if L: c=c+[L]
         if suppress_all_warnings:
-            c.append(self.spaces[2] + 'call suppress_warnings(this)' )
-        c.append(self.spaces[2] + 'call make_dir_quiet(dir)' )
+          c=c+[self.spaces[2] + 'call suppress_warnings(this)' ]
+        if make_dir_quiet:
+          c=c+[self.spaces[2] + 'call make_dir_quiet(dir)' ]
+        else:
+          c=c+[self.spaces[2] + 'call make_dir(dir)' ]
         if self.has_dir_name:
-            c.append(self.spaces[2] + "call init(this%dir,dir)" )
-            c.append(self.spaces[2] + "call init(this%name,'primitives')" )
+          c=c+[self.spaces[2] + "call init(this%dir,dir)" ]
+          c=c+[self.spaces[2] + "call init(this%name,'primitives')" ]
         for key in self.prop:
-            c.append([self.spaces[2]+x for x in self.prop[key].write_set_IO_dir('make_IO_dir')])
-        c.append(self.end_sub())
+          c=c+[[self.spaces[2]+x for x in self.prop[key].write_set_IO_dir('make_IO_dir')]]
+        c=c+[self.end_sub()]
         return c
 
     def suppress_fortran_warnings_module(self):
         if suppress_all_warnings:
-            sig = 'suppress_warnings_' + self.get_suffix()
-            c = [self.full_sub_signature(sig,'this')]
-            c.append(self.spaces[2] + self.implicitNone)
-            c.append(self.spaces[2] + 'type(' + self.name + '),intent(in) :: this' )
-            c.append(self.spaces[2] + 'if (.false.) call print(this)' )
-            c.append(self.end_sub())
+          sig = 'suppress_warnings_' + self.get_suffix()
+          c = [self.full_sub_signature(sig,'this')]
+          c=c+[self.spaces[2] + self.implicitNone]
+          c=c+[self.spaces[2] + 'type(' + self.name + '),intent(in) :: this' ]
+          c=c+[self.spaces[2] + 'if (.false.) call print(this)' ]
+          c=c+[self.end_sub()]
         return c
 
     ################################################################################*/

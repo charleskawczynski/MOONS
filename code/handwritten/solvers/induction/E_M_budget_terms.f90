@@ -52,7 +52,7 @@
          call Unsteady(e,B,Bnm1,dTime,m,scale,VF_CC1,VF_CC2)
          call export_raw      (m,e,str(DT%e_budget_C),'B_Unsteady',0)
          call export_processed(m,e,str(DT%e_budget_N),'B_Unsteady',1)
-         call Ln(e_integral,e,1.0_cp,m)
+         call compute_Ln(e_integral,e,1.0_cp,m)
        end subroutine
 
        subroutine Joule_Heat(e,J,sigmaInv_CC,m,scale,VF_CC,VF_F)
@@ -83,7 +83,7 @@
          call Joule_Heat(e,J,sigmaInv_CC,m,scale,VF_CC,VF_F)
          call export_raw      (m,e,str(DT%e_budget_C),'Joule_Heat',0)
          call export_processed(m,e,str(DT%e_budget_N),'Joule_Heat',1)
-         call Ln(e_integral,e,1.0_cp,m)
+         call compute_Ln(e_integral,e,1.0_cp,m)
        end subroutine
 
        subroutine Poynting(e,B,J,U,sigmaInv_F,m,scale,SF_CC,VF_F,TF_F1,TF_F2,TF_F3)
@@ -127,7 +127,7 @@
          call Poynting(e,B,J,U,sigmaInv_F,m,scale,SF_CC,VF_F,TF_F1,TF_F2,TF_F3)
          call export_raw      (m,e,str(DT%e_budget_C),'Poynting',0)
          call export_processed(m,e,str(DT%e_budget_N),'Poynting',1)
-         call Ln(e_integral,e,1.0_cp,m)
+         call compute_Ln(e_integral,e,1.0_cp,m)
        end subroutine
 
        end module

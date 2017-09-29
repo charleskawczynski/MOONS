@@ -232,6 +232,7 @@
          type(energy_terms),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
+         write(*,*) 'Exporting energy_terms structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -254,6 +255,7 @@
          type(energy_terms),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
+         write(*,*) 'Importing energy_terms structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

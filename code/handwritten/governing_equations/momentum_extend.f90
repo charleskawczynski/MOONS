@@ -320,7 +320,7 @@
          call export(mom%probe_KE_2C,TMP,temp)
          endif
          call div(mom%divU,mom%U,mom%m)
-         call Ln(temp,mom%divU,2.0_cp,mom%m)
+         call compute_Ln(temp,mom%divU,2.0_cp,mom%m)
          call export(mom%probe_divU,TMP,temp)
        end subroutine
 
@@ -417,7 +417,7 @@
          if (EF%unsteady_3D%export_now) call export_unsteady_3D(mom,SP,TMP,DT)
          if (EF%info%export_now) call print(mom,SP)
          if (EF%final_solution%export_now.or.EN%U%this.or.EN%all%this) then
-           call export(mom,str(DT%governing_equations),'mom')
+           ! call export(mom,str(DT%governing_equations),'mom')
            call export_tec(mom,SP,DT)
          endif
        end subroutine

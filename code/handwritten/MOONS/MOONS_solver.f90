@@ -45,6 +45,7 @@
          implicit none
          type(MOONS),intent(inout) :: M
          integer :: i_RK
+         logical,dimension(6) :: L
          write(*,*) '***************************************************************'
          write(*,*) '****************** ENTERING MAIN LOOP *************************'
          write(*,*) '***************************************************************'
@@ -88,6 +89,16 @@
            if (M%C%SP%VS%B%SS%solve) call iterate_step(M%C%SP%VS%B%TMP)
            call iterate_step(M%C%SP%coupled)
 
+           L(1) = M%C%SP%EF%final_solution%export_now
+           L(2) = M%C%EN%all%this
+           L(3) = M%C%EN%any_now
+           L(4) = M%C%EN%B%this
+           L(5) = M%C%EN%U%this
+           L(6) = M%C%EN%T%this
+           call export_structured(M,str(M%C%DT%restart))
+           stop 'Done in MOONS_solver'
+           ! if (any(L)) call export_structured(M,str(M%C%DT%restart))
+
            if (M%C%SP%VS%T%SS%solve) call export_unsteady(M%GE%nrg,M%C%SP,M%C%SP%VS%T%TMP,M%C%SP%EF,M%C%EN,M%C%DT)
            if (M%C%SP%VS%U%SS%solve) call export_unsteady(M%GE%mom,M%C%SP,M%C%SP%VS%U%TMP,M%C%SP%EF,M%C%EN,M%C%DT)
            if (M%C%SP%VS%B%SS%solve) call export_unsteady(M%GE%ind,M%C%SP,M%C%SP%VS%B%TMP,M%C%SP%EF,M%C%EN,M%C%DT)
@@ -95,9 +106,9 @@
            ! Statistics
            call update(M%GE%mom%TS,M%GE%mom%m,M%GE%mom%U,M%C%SP%VS%U%TMP,M%GE%mom%temp_F1,M%GE%mom%temp_CC_VF,M%GE%mom%TF_CC)
 
-           if (M%C%EN%any_now) then
-             call export_structured(M%C)
-           endif
+           ! if (M%C%EN%any_now) then
+           !   call export_structured(M%C)
+           ! endif
 
            call import_structured(M%C%SP%DP)
            call import_structured(M%GE%mom%PCG_U%ISP%EC)

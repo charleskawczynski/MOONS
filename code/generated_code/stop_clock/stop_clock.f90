@@ -363,6 +363,7 @@
          type(stop_clock),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
+         write(*,*) 'Exporting stop_clock structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -375,6 +376,7 @@
          type(stop_clock),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
+         write(*,*) 'Importing stop_clock structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

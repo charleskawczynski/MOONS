@@ -251,6 +251,7 @@
          integer :: i_SP
          integer :: s_SP
          integer :: un
+         write(*,*) 'Exporting procedure_array structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -270,6 +271,7 @@
          integer :: i_SP
          integer :: s_SP
          integer :: un
+         write(*,*) 'Importing procedure_array structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

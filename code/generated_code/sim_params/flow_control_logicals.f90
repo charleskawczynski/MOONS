@@ -393,6 +393,7 @@
          type(flow_control_logicals),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
+         write(*,*) 'Exporting flow_control_logicals structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -403,6 +404,7 @@
          type(flow_control_logicals),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
+         write(*,*) 'Importing flow_control_logicals structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

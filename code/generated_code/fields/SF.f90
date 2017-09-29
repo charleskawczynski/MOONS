@@ -290,6 +290,7 @@
          integer :: i_BF
          integer :: s_BF
          integer :: un
+         write(*,*) 'Exporting SF structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -310,6 +311,7 @@
          integer :: i_BF
          integer :: s_BF
          integer :: un
+         write(*,*) 'Importing SF structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

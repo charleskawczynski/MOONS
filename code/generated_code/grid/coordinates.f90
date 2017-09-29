@@ -553,6 +553,7 @@
          integer :: s_colN
          integer :: s_colCC_centered
          integer :: un
+         write(*,*) 'Exporting coordinates structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -591,6 +592,7 @@
          integer :: s_colN
          integer :: s_colCC_centered
          integer :: un
+         write(*,*) 'Importing coordinates structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

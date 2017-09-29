@@ -9,7 +9,8 @@
       public :: log2Str
       public :: int2Str
       interface int2Str;      module procedure int2Str_li;       end interface
-      interface int2Str;      module procedure int2Str_reg;      end interface
+      interface int2Str;      module procedure int2Str_dynamic;  end interface
+      ! interface int2Str;      module procedure int2Str_reg;      end interface
 
       public :: int2Str2
       public :: str2int
@@ -30,11 +31,30 @@
         s = trim(adjustl(s))
       end function
 
-      function int2Str_reg(i) result(s)
+      ! function int2Str_reg(i) result(s)
+      !   implicit none
+      !   integer,intent(in) :: i
+      !   character(len=15) :: s
+      !   write(s,'(I15.15)') i
+      !   s = trim(adjustl(s))
+      ! end function
+
+      function int2Str_dynamic(i) result(s)
         implicit none
         integer,intent(in) :: i
-        character(len=15) :: s
-        write(s,'(I15.15)') i
+        real(cp),parameter :: denom = log(10.0_cp)
+        character(len=maxval((/ceiling(log(real(i+1,cp))/denom),1/))) :: s
+        integer :: i_places
+        i_places = maxval((/ceiling(log(real(i+1,cp))/denom),1/))
+        write(s,'(I'//int2Str_dumn(i_places)//')') i
+        s = trim(adjustl(s))
+      end function
+
+      function int2Str_dumn(i) result(s)
+        implicit none
+        integer,intent(in) :: i
+        character(len=50) :: s
+        write(s,'(I50)') i
         s = trim(adjustl(s))
       end function
 

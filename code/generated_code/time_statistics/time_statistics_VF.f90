@@ -252,10 +252,6 @@
          call export_structured(this%mean_energy,&
          str(this%dir)//'mean_energy'//fortran_PS)
          call export_structured(this%RMS,str(this%dir)//'RMS'//fortran_PS)
-         call export_structured(this%stresses,&
-         str(this%dir)//'stresses'//fortran_PS)
-         call export_structured(this%stresses_sum,&
-         str(this%dir)//'stresses_sum'//fortran_PS)
          call export_structured(this%L2_stresses,&
          str(this%dir)//'L2_stresses'//fortran_PS)
          call export_structured(this%TSP,str(this%dir)//'TSP'//fortran_PS)
@@ -273,10 +269,6 @@
          call import_structured(this%mean_energy,&
          str(this%dir)//'mean_energy'//fortran_PS)
          call import_structured(this%RMS,str(this%dir)//'RMS'//fortran_PS)
-         call import_structured(this%stresses,&
-         str(this%dir)//'stresses'//fortran_PS)
-         call import_structured(this%stresses_sum,&
-         str(this%dir)//'stresses_sum'//fortran_PS)
          call import_structured(this%L2_stresses,&
          str(this%dir)//'L2_stresses'//fortran_PS)
          call import_structured(this%TSP,str(this%dir)//'TSP'//fortran_PS)
@@ -322,6 +314,7 @@
          type(time_statistics_VF),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
+         write(*,*) 'Exporting time_statistics_VF structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -330,9 +323,6 @@
          call export_structured(this%mean_energy,&
          dir//'mean_energy'//fortran_PS)
          call export_structured(this%RMS,dir//'RMS'//fortran_PS)
-         call export_structured(this%stresses,dir//'stresses'//fortran_PS)
-         call export_structured(this%stresses_sum,&
-         dir//'stresses_sum'//fortran_PS)
          call export_structured(this%L2_stresses,&
          dir//'L2_stresses'//fortran_PS)
          call export_structured(this%TSP,dir//'TSP'//fortran_PS)
@@ -343,6 +333,7 @@
          type(time_statistics_VF),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
+         write(*,*) 'Importing time_statistics_VF structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
@@ -351,9 +342,6 @@
          call import_structured(this%mean_energy,&
          dir//'mean_energy'//fortran_PS)
          call import_structured(this%RMS,dir//'RMS'//fortran_PS)
-         call import_structured(this%stresses,dir//'stresses'//fortran_PS)
-         call import_structured(this%stresses_sum,&
-         dir//'stresses_sum'//fortran_PS)
          call import_structured(this%L2_stresses,&
          dir//'L2_stresses'//fortran_PS)
          call import_structured(this%TSP,dir//'TSP'//fortran_PS)

@@ -52,30 +52,30 @@
        subroutine init_vol_block(B)
          implicit none
          type(block),intent(inout) :: B
-         type(data_location) :: DL
-         integer :: i
-         if (allocated(B%vol)) then
-         do i=1,8; call delete(B%vol(i)); enddo; deallocate(B%vol)
-         endif
-         allocate(B%vol(8))
-         call init_CC(B%vol(1),B%g)
-         call init_Node(B%vol(2),B%g)
-         call init_Face(B%vol(3),B%g,1)
-         call init_Face(B%vol(4),B%g,2)
-         call init_Face(B%vol(5),B%g,3)
-         call init_Edge(B%vol(6),B%g,1)
-         call init_Edge(B%vol(7),B%g,2)
-         call init_Edge(B%vol(8),B%g,3)
-
-         call init_CC(DL);     call volume(B%vol(1),B%g,DL)
-         call init_Node(DL);   call volume(B%vol(2),B%g,DL)
-         call init_Face(DL,1); call volume(B%vol(3),B%g,DL)
-         call init_Face(DL,2); call volume(B%vol(4),B%g,DL)
-         call init_Face(DL,3); call volume(B%vol(5),B%g,DL)
-         call init_Edge(DL,1); call volume(B%vol(6),B%g,DL)
-         call init_Edge(DL,2); call volume(B%vol(7),B%g,DL)
-         call init_Edge(DL,3); call volume(B%vol(8),B%g,DL)
-         call delete(DL)
+         ! type(data_location) :: DL
+         ! integer :: i
+         ! if (allocated(B%vol)) then
+         ! do i=1,8; call delete(B%vol(i)); enddo; deallocate(B%vol)
+         ! endif
+         ! allocate(B%vol(8))
+         ! call init_CC(B%vol(1),B%g)
+         ! call init_Node(B%vol(2),B%g)
+         ! call init_Face(B%vol(3),B%g,1)
+         ! call init_Face(B%vol(4),B%g,2)
+         ! call init_Face(B%vol(5),B%g,3)
+         ! call init_Edge(B%vol(6),B%g,1)
+         ! call init_Edge(B%vol(7),B%g,2)
+         ! call init_Edge(B%vol(8),B%g,3)
+         ! call init_CC(DL);     call volume(B%vol(1),B%g,DL)
+         ! call init_Node(DL);   call volume(B%vol(2),B%g,DL)
+         ! call init_Face(DL,1); call volume(B%vol(3),B%g,DL)
+         ! call init_Face(DL,2); call volume(B%vol(4),B%g,DL)
+         ! call init_Face(DL,3); call volume(B%vol(5),B%g,DL)
+         ! call init_Edge(DL,1); call volume(B%vol(6),B%g,DL)
+         ! call init_Edge(DL,2); call volume(B%vol(7),B%g,DL)
+         ! call init_Edge(DL,3); call volume(B%vol(8),B%g,DL)
+         ! call delete(DL)
+         call suppress_warnings(B)
        end subroutine
 
        subroutine init_FEC_block(B)

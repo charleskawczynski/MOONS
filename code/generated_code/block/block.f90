@@ -402,6 +402,7 @@
          integer :: s_fb
          integer :: s_vol
          integer :: un
+         write(*,*) 'Exporting block structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -440,6 +441,7 @@
          integer :: s_fb
          integer :: s_vol
          integer :: un
+         write(*,*) 'Importing block structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

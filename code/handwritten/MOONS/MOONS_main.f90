@@ -65,11 +65,12 @@
          call init(M%C%dir_target,dir_target)
          call init(M%C%DT,str(M%C%dir_target))  ! Initialize + make directory tree
          call config(M) ! The flow control should be uniquely defined after this line.
-         call make_IO_dir(M%C,str(M%C%DT%restart))
          call make_IO_dir(M%C,str(M%C%DT%config))
          call export_structured(M%C)
          call export(M%C,str(M%C%DT%config),'config_DO_NOT_EDIT')
          call init(M)
+         call make_IO_dir(M,str(M%C%DT%restart)) ! must come after init so that allocatables in mesh exist
+         call set_IO_dir(M,str(M%C%DT%config))
          if (.not.M%C%SP%FCL%skip_solver_loop) then
            call solve(M)
          endif

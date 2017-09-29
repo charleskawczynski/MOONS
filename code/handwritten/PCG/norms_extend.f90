@@ -111,8 +111,8 @@
          type(norms),intent(inout) :: e
          type(SF),intent(in) :: u,vol
          real(cp),intent(in) :: tot_vol
-         call Ln(e%L1,u,1.0_cp,vol); e%L1 = e%L1/tot_vol
-         call Ln(e%L2,u,2.0_cp,vol); e%L2 = (e%L2**0.5_cp)/tot_vol
+         call compute_Ln(e%L1,u,1.0_cp,vol); e%L1 = e%L1/tot_vol
+         call compute_Ln(e%L2,u,2.0_cp,vol); e%L2 = (e%L2**0.5_cp)/tot_vol
          e%Linf = amax(u)
        end subroutine
 
@@ -121,8 +121,8 @@
          type(norms),intent(inout) :: e
          type(VF),intent(in) :: u,vol
          real(cp),intent(in) :: tot_vol
-         call Ln(e%L1,u,1.0_cp,vol)
-         call Ln(e%L2,u,2.0_cp,vol)
+         call compute_Ln(e%L1,u,1.0_cp,vol)
+         call compute_Ln(e%L2,u,2.0_cp,vol)
          e%L1 = e%L1/tot_vol
          e%L2 = (e%L2**0.5_cp)/tot_vol
          e%Linf = amax(u)
@@ -132,8 +132,8 @@
          implicit none
          type(norms),intent(inout) :: e
          type(SF),intent(in) :: u
-         call Ln(e%L1,u,1.0_cp)
-         call Ln(e%L2,u,2.0_cp)
+         call compute_Ln(e%L1,u,1.0_cp)
+         call compute_Ln(e%L2,u,2.0_cp)
          e%L2 = e%L2**0.5_cp
          e%Linf = amax(u)
        end subroutine
@@ -142,8 +142,8 @@
          implicit none
          type(norms),intent(inout) :: e
          type(VF),intent(in) :: u
-         call Ln(e%L1,u,1.0_cp)
-         call Ln(e%L2,u,2.0_cp)
+         call compute_Ln(e%L1,u,1.0_cp)
+         call compute_Ln(e%L2,u,2.0_cp)
          e%L2 = e%L2**0.5_cp
          e%Linf = amax(u)
        end subroutine

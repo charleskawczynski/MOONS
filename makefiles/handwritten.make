@@ -165,6 +165,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_symmetry$(PS)GF_symmetry_error.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_symmetry$(PS)GF_mirror_about_plane.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_norms_weights.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_norms_weights_light.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_norms.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF.f90\
 	$(SRC_DIR)$(PS)sub_domain$(PS)sub_domain_extend.f90\
@@ -204,7 +205,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)IO$(PS)IO_import.f90\
 	$(SRC_DIR)$(PS)IO$(PS)import_raw.f90\
 	$(SRC_DIR)$(PS)version$(PS)version.f90\
-	$(SRC_DIR)$(PS)ops$(PS)ops_norms.f90\
+	$(SRC_DIR)$(PS)ops$(PS)ops_norms_light.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_fft.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_dct.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_idct.f90\

@@ -242,6 +242,7 @@
          integer :: i_EL
          integer :: s_EL
          integer :: un
+         write(*,*) 'Exporting export_lines structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -261,6 +262,7 @@
          integer :: i_EL
          integer :: s_EL
          integer :: un
+         write(*,*) 'Importing export_lines structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

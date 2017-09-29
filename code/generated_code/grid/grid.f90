@@ -230,6 +230,7 @@
          integer :: i_c
          integer :: s_c
          integer :: un
+         write(*,*) 'Exporting grid structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -247,6 +248,7 @@
          integer :: i_c
          integer :: s_c
          integer :: un
+         write(*,*) 'Importing grid structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

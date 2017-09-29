@@ -272,6 +272,7 @@
          type(momentum_terms),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
+         write(*,*) 'Exporting momentum_terms structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -300,6 +301,7 @@
          type(momentum_terms),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
+         write(*,*) 'Importing momentum_terms structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

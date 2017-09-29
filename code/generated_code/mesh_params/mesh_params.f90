@@ -337,6 +337,7 @@
          integer :: s_s_base
          integer :: s_s_ext
          integer :: un
+         write(*,*) 'Exporting mesh_params structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -366,6 +367,7 @@
          integer :: s_s_base
          integer :: s_s_ext
          integer :: un
+         write(*,*) 'Importing mesh_params structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

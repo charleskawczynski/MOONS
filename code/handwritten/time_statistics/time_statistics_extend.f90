@@ -97,7 +97,7 @@
 
              call assign(TS%U_ave,TS%U_sum)
              call multiply(TS%U_ave,get_coeff(TS%TSP%O1_stats,TMP))
-             call Ln(temp_cp,TS%U_ave,2.0_cp,m)
+             call compute_Ln(temp_cp,TS%U_ave,2.0_cp,m)
              temp_cp = 0.5_cp*temp_cp
              call export(TS%mean_energy,TMP,temp_cp)
 
@@ -138,7 +138,7 @@
              call assign(TS%U_ave,TS%U_sum)
              call multiply(TS%U_ave,get_coeff(TS%TSP%O1_stats,TMP))
              call face2cellcenter(temp_CC,TS%U_ave,m)
-             call Ln(temp_cp,temp_CC,2.0_cp,m)
+             call compute_Ln(temp_cp,temp_CC,2.0_cp,m)
              temp_cp = 0.5_cp*temp_cp
              call export(TS%mean_energy,TMP,temp_cp)
 
@@ -164,7 +164,7 @@
 
              call assign(TS%stresses,TS%stresses_sum)
              call multiply(TS%stresses,get_coeff(TS%TSP%O2_stats,TMP))
-             call Ln(temp_cp,TS%stresses,2.0_cp,m)
+             call compute_Ln(temp_cp,TS%stresses,2.0_cp,m)
              call export(TS%L2_stresses,TMP,temp_cp)
              call add_stat(TS%TSP%O2_stats)
            endif

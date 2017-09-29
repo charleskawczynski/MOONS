@@ -407,6 +407,7 @@
          type(momentum),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
+         write(*,*) 'Exporting momentum structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -429,9 +430,6 @@
          call export_structured(this%temp_F3,dir//'temp_F3'//fortran_PS)
          call export_structured(this%temp_E,dir//'temp_E'//fortran_PS)
          call export_structured(this%temp_CC_VF,dir//'temp_CC_VF'//fortran_PS)
-         call export_structured(this%U_E,dir//'U_E'//fortran_PS)
-         call export_structured(this%TF_CC,dir//'TF_CC'//fortran_PS)
-         call export_structured(this%TF_CC_edge,dir//'TF_CC_edge'//fortran_PS)
          call export_structured(this%probe_KE,dir//'probe_KE'//fortran_PS)
          call export_structured(this%probe_KE_2C,&
          dir//'probe_KE_2C'//fortran_PS)
@@ -444,6 +442,7 @@
          type(momentum),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
+         write(*,*) 'Importing momentum structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
@@ -466,9 +465,6 @@
          call import_structured(this%temp_F3,dir//'temp_F3'//fortran_PS)
          call import_structured(this%temp_E,dir//'temp_E'//fortran_PS)
          call import_structured(this%temp_CC_VF,dir//'temp_CC_VF'//fortran_PS)
-         call import_structured(this%U_E,dir//'U_E'//fortran_PS)
-         call import_structured(this%TF_CC,dir//'TF_CC'//fortran_PS)
-         call import_structured(this%TF_CC_edge,dir//'TF_CC_edge'//fortran_PS)
          call import_structured(this%probe_KE,dir//'probe_KE'//fortran_PS)
          call import_structured(this%probe_KE_2C,&
          dir//'probe_KE_2C'//fortran_PS)

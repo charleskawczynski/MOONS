@@ -27,13 +27,13 @@
            e = 0.0_cp
            call face2CellCenter(temp_CC,temp_F%x,m,1)
            call assign_ghost_XPeriodic(temp_CC,0.0_cp)
-           call Ln(temp,temp_CC,1.0_cp,m); e = temp
+           call compute_Ln(temp,temp_CC,1.0_cp,m); e = temp
            call face2CellCenter(temp_CC,temp_F%y,m,2)
            call assign_ghost_XPeriodic(temp_CC,0.0_cp)
-           call Ln(temp,temp_CC,1.0_cp,m); e = e + temp
+           call compute_Ln(temp,temp_CC,1.0_cp,m); e = e + temp
            call face2CellCenter(temp_CC,temp_F%z,m,3)
            call assign_ghost_XPeriodic(temp_CC,0.0_cp)
-           call Ln(temp,temp_CC,1.0_cp,m); e = e + temp
+           call compute_Ln(temp,temp_CC,1.0_cp,m); e = e + temp
          endif
        end subroutine
 

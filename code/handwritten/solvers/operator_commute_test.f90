@@ -79,7 +79,7 @@
 
          call export_raw(m,temp_GL,str(DT%test%field),'temp_GL',0)
 
-         call Ln(e,temp_GL,2.0_cp,m)
+         call compute_Ln(e,temp_GL,2.0_cp,m)
          write(*,*) 'error grad_laplacian = ',e
          call delete(phi)
          call delete(temp_SF)
@@ -110,7 +110,7 @@
 
          call export_raw(m,temp_E,str(DT%test%field),'temp_E',0)
 
-         call Ln(e,temp_E,2.0_cp,m)
+         call compute_Ln(e,temp_E,2.0_cp,m)
          write(*,*) 'error curl_grad_equal_zero = ',e
          call delete(phi)
          call delete(temp_F)

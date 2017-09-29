@@ -163,6 +163,7 @@
          type(single_procedure_plane_op),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
+         if (.false.) write(*,*) dir
        end subroutine
 
        subroutine make_IO_dir_single_procedure_plane_op(this,dir)
@@ -178,6 +179,7 @@
          type(single_procedure_plane_op),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
+         write(*,*) 'Exporting single_procedure_plane_op structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -188,6 +190,7 @@
          type(single_procedure_plane_op),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
+         write(*,*) 'Importing single_procedure_plane_op structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

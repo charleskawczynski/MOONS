@@ -346,6 +346,7 @@
          integer :: s_N
          integer :: s_M
          integer :: un
+         write(*,*) 'Exporting sub_domain structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -377,6 +378,7 @@
          integer :: s_N
          integer :: s_M
          integer :: un
+         write(*,*) 'Importing sub_domain structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

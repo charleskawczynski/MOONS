@@ -194,6 +194,7 @@
          type(geometry_props),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
+         write(*,*) 'Exporting geometry_props structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -204,6 +205,7 @@
          type(geometry_props),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
+         write(*,*) 'Importing geometry_props structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

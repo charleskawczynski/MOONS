@@ -58,7 +58,7 @@
          call Unsteady(e,U,Unm1,dTime,m,scale,VF_CC1,VF_CC2)
          call export_raw      (m,e,str(DT%e_budget_C),'U_Unsteady',0)
          call export_processed(m,e,str(DT%e_budget_N),'U_Unsteady',1)
-         call Ln(e_integral,e,1.0_cp,m)
+         call compute_Ln(e_integral,e,1.0_cp,m)
        end subroutine
 
        subroutine E_K_Convection(e,U,U_CC,m,scale,VF_F1,VF_F2,VF_CC,SF_CC)
@@ -90,7 +90,7 @@
          call E_K_Convection(e,U,U_CC,m,scale,VF_F1,VF_F2,VF_CC,SF_CC)
          call export_raw      (m,e,str(DT%e_budget_C),'E_K_Convection',0)
          call export_processed(m,e,str(DT%e_budget_N),'E_K_Convection',1)
-         call Ln(e_integral,e,1.0_cp,m)
+         call compute_Ln(e_integral,e,1.0_cp,m)
        end subroutine
 
        subroutine E_K_Diffusion(e,U_CC,m,scale,VF_CC)
@@ -118,7 +118,7 @@
          call E_K_Diffusion(e,U_CC,m,scale,VF_CC)
          call export_raw      (m,e,str(DT%e_budget_C),'E_K_Diffusion',0)
          call export_processed(m,e,str(DT%e_budget_N),'E_K_Diffusion',1)
-         call Ln(e_integral,e,1.0_cp,m)
+         call compute_Ln(e_integral,e,1.0_cp,m)
        end subroutine
 
        subroutine E_K_Pressure(e,U,p,m,scale,VF_F)
@@ -148,7 +148,7 @@
          call E_K_pressure(e,U,p,m,scale,VF_F)
          call export_raw      (m,e,str(DT%e_budget_C),'E_K_Pressure',0)
          call export_processed(m,e,str(DT%e_budget_N),'E_K_Pressure',1)
-         call Ln(e_integral,e,1.0_cp,m)
+         call compute_Ln(e_integral,e,1.0_cp,m)
        end subroutine
 
        subroutine Viscous_Dissipation(e,U_CC,m,scale,TF_CC1,TF_CC2)
@@ -182,7 +182,7 @@
          call Viscous_Dissipation(e,U_CC,m,scale,TF_CC1,TF_CC2)
          call export_raw      (m,e,str(DT%e_budget_C),'Viscous_Dissipation',0)
          call export_processed(m,e,str(DT%e_budget_N),'Viscous_Dissipation',1)
-         call Ln(e_integral,e,1.0_cp,m)
+         call compute_Ln(e_integral,e,1.0_cp,m)
        end subroutine
 
        subroutine Total_Viscous_Dissipation(e,U_CC,m,scale,TF_CC1,TF_CC2)
@@ -213,7 +213,7 @@
          call Total_Viscous_Dissipation(e,U_CC,m,scale,TF_CC1,TF_CC2)
          call export_raw      (m,e,str(DT%e_budget_C),'Total_Viscous_Dissipation',0)
          call export_processed(m,e,str(DT%e_budget_N),'Total_Viscous_Dissipation',1)
-         call Ln(e_integral,e,1.0_cp,m)
+         call compute_Ln(e_integral,e,1.0_cp,m)
        end subroutine
 
        subroutine E_M_Convection(e,B,U,m,scale,VF_CC1,VF_CC2,VF_F)
@@ -244,7 +244,7 @@
          call E_M_Convection(e,B,U,m,scale,VF_CC1,VF_CC2,VF_F)
          call export_raw      (m,e,str(DT%e_budget_C),'E_M_Convection',0)
          call export_processed(m,e,str(DT%e_budget_N),'E_M_Convection',1)
-         call Ln(e_integral,e,1.0_cp,m)
+         call compute_Ln(e_integral,e,1.0_cp,m)
        end subroutine
 
        subroutine E_M_Tension(e,B,U_CC,m,scale,VF_CC1,VF_CC2,VF_CC3,TF_CC)
@@ -278,7 +278,7 @@
          call E_M_Tension(e,B,U_CC,m,scale,VF_CC1,VF_CC2,VF_CC3,TF_CC)
          call export_raw      (m,e,str(DT%e_budget_C),'E_M_Tension',0)
          call export_processed(m,e,str(DT%e_budget_N),'E_M_Tension',1)
-         call Ln(e_integral,e,1.0_cp,m)
+         call compute_Ln(e_integral,e,1.0_cp,m)
        end subroutine
 
        subroutine Lorentz(e,J,B,U_CC,m,scale,VF_CC1,VF_CC2,VF_CC3,VF_F)
@@ -308,7 +308,7 @@
          call Lorentz(e,J,B,U_CC,m,scale,VF_CC1,VF_CC2,VF_CC3,VF_F)
          call export_raw      (m,e,str(DT%e_budget_C),'Lorentz',0)
          call export_processed(m,e,str(DT%e_budget_N),'Lorentz',1)
-         call Ln(e_integral,e,1.0_cp,m)
+         call compute_Ln(e_integral,e,1.0_cp,m)
        end subroutine
 
        end module

@@ -356,8 +356,8 @@
          type(time_marching_params),intent(in) :: TMP
          real(cp) :: temp,scale
          call compute_divBJ(ind%divB,ind%divJ,ind%B,ind%J,ind%m)
-         call Ln(temp,ind%divB,2.0_cp,ind%m); call export(ind%probe_divB,TMP,temp)
-         call Ln(temp,ind%divJ,2.0_cp,ind%m); call export(ind%probe_divJ,TMP,temp)
+         call compute_Ln(temp,ind%divB,2.0_cp,ind%m); call export(ind%probe_divB,TMP,temp)
+         call compute_Ln(temp,ind%divJ,2.0_cp,ind%m); call export(ind%probe_divJ,TMP,temp)
          if (SP%IT%unsteady_B0%add) then
            call export(ind%probe_dB0dt(1),TMP,ind%dB0dt%x%BF(1)%GF%f(1,1,1))
            call export(ind%probe_dB0dt(2),TMP,ind%dB0dt%y%BF(1)%GF%f(1,1,1))
@@ -493,7 +493,7 @@
          if (EF%unsteady_3D%export_now) call export_unsteady_3D(ind,SP,TMP,DT)
          if (EF%info%export_now) call print(ind,SP)
          if (EF%final_solution%export_now.or.EN%B%this.or.EN%all%this) then
-           call export(ind,str(DT%governing_equations),'ind')
+           ! call export(ind,str(DT%governing_equations),'ind')
            call export_tec(ind,SP,DT)
          endif
        end subroutine

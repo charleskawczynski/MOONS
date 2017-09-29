@@ -54,12 +54,20 @@
          type(MOONS),intent(inout) :: M
          call init_meshes_MOONS(M)
          call init_GEs_MOONS(M)
+         call re_init_procedures(M)
+       end subroutine
+
+       subroutine re_init_procedures(M)
+         implicit none
+         type(MOONS),intent(inout) :: M
+         write(*,*) ' ************** STARTED RE-INITIALIZING PROCEDURES ************* '
+         write(*,*) ' ************** FINISHED RE-INITIALIZING PROCEDURES ************ '
        end subroutine
 
        subroutine init_meshes_MOONS(M)
          implicit none
          type(MOONS),intent(inout) :: M
-         write(*,*) ' ************** STARTED INITIALIZING MESHES ************** '
+         write(*,*) ' ***************** STARTED INITIALIZING MESHES ***************** '
          if (M%C%SP%FCL%restart_meshes) then
            call import(M%GE%mom%m,str(M%C%DT%mesh_restart),'m_mom')
            call import(M%GE%ind%m,str(M%C%DT%mesh_restart),'m_ind')
@@ -119,13 +127,13 @@
          if (M%C%SP%FCL%stop_after_mesh_export) then
            stop 'Exported meshes. Turn off stop_after_mesh_export in sim_params.f90 to run sim.'
          endif
-         write(*,*) ' ************** FINISHED INITIALIZING MESHES ************* '
+         write(*,*) ' ***************** FINISHED INITIALIZING MESHES **************** '
        end subroutine
 
        subroutine init_GEs_MOONS(M)
          implicit none
          type(MOONS),intent(inout) :: M
-         write(*,*) ' ************** STARTED INITIALIZING GOVERNING EQUATIONS ************** '
+         write(*,*) ' ********** STARTED INITIALIZING GOVERNING EQUATIONS *********** '
 
          if (M%C%SP%VS%T%SS%initialize) call init(M%GE%nrg,M%C%SP,M%C%DT)
          if (M%C%SP%VS%U%SS%initialize) call init(M%GE%mom,M%C%SP,M%C%DT)
@@ -155,7 +163,7 @@
          if (M%C%SP%FCL%stop_before_solve) then
            stop 'Exported ICs. Turn off stop_before_solve in sim_params.f90 to run sim.'
          endif
-         write(*,*) ' ************** FINISHED INITIALIZING GOVERNING EQUATIONS ************* '
+         write(*,*) ' ********** FINISHED INITIALIZING GOVERNING EQUATIONS ********** '
        end subroutine
 
        end module

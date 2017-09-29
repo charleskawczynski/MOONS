@@ -25,7 +25,7 @@
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: scale
          call assign_ghost_XPeriodic(U_CC,0.0_cp) ! norms now includes ghost points
-         call Ln(K_energy,U_CC,2.0_cp,m)
+         call compute_Ln(K_energy,U_CC,2.0_cp,m)
          K_energy = scale*0.5_cp*K_energy ! KE = 1/2 int(u^2) dV
        end subroutine
 
@@ -38,7 +38,7 @@
          real(cp),intent(in) :: scale
          call add(temp,A,B)
          call assign_ghost_XPeriodic(temp,0.0_cp) ! norms now includes ghost points
-         call Ln(K_energy,temp,2.0_cp,m)
+         call compute_Ln(K_energy,temp,2.0_cp,m)
          K_energy = scale*0.5_cp*K_energy ! KE = 1/2 int(u^2) dV
        end subroutine
 

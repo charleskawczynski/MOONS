@@ -592,6 +592,7 @@
          integer :: s_I_OPP_periodic_N
          integer :: s_i_2D
          integer :: un
+         write(*,*) 'Exporting face_SD structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -651,6 +652,7 @@
          integer :: s_I_OPP_periodic_N
          integer :: s_i_2D
          integer :: un
+         write(*,*) 'Importing face_SD structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
