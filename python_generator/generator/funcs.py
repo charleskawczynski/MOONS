@@ -46,18 +46,15 @@ def make_dot_bat(d,dir_app,source_dir,generated_path,class_list,dir_base,base_fi
 
     L = [x.replace(source_dir,'')+' ' for x in L]
     L = [x.replace(dir_app,'')+' ' for x in L]
-    # print('\n'.join(L))
     object_files = [x.replace('.f90','.o') for x in L]
     object_files_s = ''.join(object_files)
     L = ['-c -o '+ x.replace('.f90','.o')+ x + '\n' for x in L]
     L = [prefix + x for x in L]
-    # print('\n'.join(L))
     L = L + [prefix+' -o output '+generated_path.replace(dir_app,'')+'main_dummy.f90 '+object_files_s]
     L = L + ['\n output.exe']
     L = L + ['\n cd generated_code']
     L = L + ['\n del *.o']
     L = L + ['\n cd ..']
-    # print('\n'.join(L))
     L = [''.join(L)]
     IO.write_list_to_file(dir_app+'run.bat',L)
     return
@@ -109,9 +106,6 @@ def make_generated(d,file_list):
     L = L + ['$(SRC_DIR_GENERATED)'+PS]
     prefix = ''.join(L)
     sorted_file_list = get_sorted_file_list_recent(d,file_list)
-    # print(' ------------------------------- sorted_file_list[0:5]')
-    # print('\n'.join([x.replace(d.common_root,'') for x in sorted_file_list[0:5]]))
-    # print(' -------------------------------')
     L_start = sorted_file_list
     paths_to_replace = [d.dir_app,d.dir_GOOFPY,d.dir_code_generated]
     vpaths_files = [d.vpath_pre_generated,d.vpath_handwritten,d.vpath_generated]
@@ -173,24 +167,17 @@ def get_compiled_files(d,make_src_files):
     compiled_files = [x.replace(d.PS_file_sys+d.PS_file_sys,d.PS_file_sys) for x in compiled_files]
     root_path_replace = [(x,y.replace('..','')) for x,y in root_path_replace]
     root_path_replace = [(x,y.replace(d.PS_make_file,d.PS_file_sys)) for x,y in root_path_replace]
-    # print(' ------------------------------- compiled_files')
-    # print('\n'.join([x.replace(d.common_root,'') for x in compiled_files]))
-    # print(' -------------------------------')
     return (compiled_files,root_path_replace)
 
 def combine_makefile(d):
     L = []
     make_src_files = [d.src_generated,d.src_pre_generated,d.src_handwritten]
     (compiled_files,root_path_replace) = get_compiled_files(d,make_src_files)
-    # print(' ------------------------------- compiled_files')
-    # print('\n'.join([x.replace(d.common_root,'') for x in compiled_files]))
-    # print(' -------------------------------')
     compiled_files = list(set(compiled_files))
 
     sorted_file_list = get_sorted_file_list(d,compiled_files)
     L = sorted_file_list
     for MFV in d.make_file_vpaths:
-        print(MFV)
         L = [x.replace(MFV[0],MFV[1]) for x in L]
     L = [x.replace(d.PS_file_sys,d.PS_make_file) for x in L]
     L = [x+'\\' if x.endswith('.f90') else x for x in L]
@@ -206,8 +193,6 @@ def get_sorted_file_list(d,file_list):
     L = []
     module_names = get_list_of_module_names(file_list)
     sorted_module_list = SORT.sort_files_by_dependency(file_list,d.PS_file_sys)
-    # print('\n'.join(sorted_module_list))
-    # print('\n'.join([x.replace(d.common_root,'') for x in file_list]))
     sorted_file_list = get_file_list_from_module_names(d,file_list,sorted_module_list)
     return sorted_file_list
 
@@ -215,7 +200,6 @@ def get_sorted_file_list_recent(d,file_list):
     L = []
     module_names = get_list_of_module_names(file_list)
     sorted_module_list = SORT_BU.sort_files_by_dependency_recent(file_list,module_names)
-    # print(sorted_module_list)
     sorted_file_list = get_file_list_from_module_names(d,file_list,sorted_module_list)
     return sorted_file_list
 
@@ -240,13 +224,16 @@ def get_module_name(f):
 
 def get_file_list_from_module_names(d,file_list,module_names):
     L = []
+    L_added = []
     for m in module_names:
         for f in file_list:
             m_name = m.replace('_mod','')
             f_name = f.split(d.PS_file_sys)[-1]
             f_name = f_name.replace(d.f_ext,'').replace(d.f_ext,'').replace('_mod','')
-            if f_name==m_name:
+            duplicate = any([f_name==x for x in L_added])
+            if f_name==m_name and not duplicate:
                 L=L+[f]
+                L_added=L_added+[f_name]
             elif f_name in m_name or m_name in f_name:
                 pass
     return L

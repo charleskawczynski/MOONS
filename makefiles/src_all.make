@@ -3,10 +3,6 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)math$(PS)even_odd.f90\
 	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Header.f90\
 	$(SRC_DIR_PRE_GENERATED)$(PS)string.f90\
-	$(SRC_DIR_PRE_GENERATED)$(PS)current_precision.f90\
-	$(SRC_DIR)$(PS)math$(PS)even_odd.f90\
-	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Header.f90\
-	$(SRC_DIR_PRE_GENERATED)$(PS)string.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)direct$(PS)apply_BCs_faces_raw.f90\
 	$(SRC_DIR)$(PS)BCs$(PS)implicit$(PS)apply_BCs_faces_raw_implicit.f90\
 	$(SRC_DIR)$(PS)globals$(PS)constants.f90\
@@ -285,7 +281,6 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)E_M_budget_terms.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)FFT$(PS)FFT_poisson.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)GS$(PS)GS_solver.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)SOR$(PS)SOR.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)curl_curl_B.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)energy_aux.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_aux.f90\
@@ -296,7 +291,6 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)ops$(PS)ops_advect.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)E_K_budget.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)E_M_budget.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)GS$(PS)GS_poisson.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)Jacobi$(PS)Jacobi_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG_aux.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_sources.f90\

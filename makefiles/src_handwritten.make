@@ -162,8 +162,6 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)solvers$(PS)Jacobi$(PS)Jacobi_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)Jacobi$(PS)Jacobi.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)GS$(PS)GS_solver.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)GS$(PS)GS_poisson.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)SOR$(PS)SOR.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG_aux.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG_solver_algorithm.f90\
 	$(SRC_DIR)$(PS)PCG$(PS)PCG_solver_extend.f90\

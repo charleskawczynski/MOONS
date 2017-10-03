@@ -48,7 +48,6 @@ def topological_sort(dict_to_be_sorted):
     # are returned in a string list
     temp = [k for k in remaining_sorted]
     temp = [sort_not_in_place(x.split(' ')) for x in temp] # sort same dependency level
-    # temp = [x.split(' ') for x in temp] # alternatively, don't sort
     temp = [item for sublist in temp for item in sublist]
     L = [k for k in no_dependencies]
     L.sort()
@@ -60,7 +59,7 @@ def separate_non_dependencies(dict_to_be_sorted):
     sorted_dict = OrderedDict()
     remaining = OrderedDict()
     for key in d: # first, sort items with no dependencies:
-        if not d[key] or d[key]=='':
+        if (not d[key]) or d[key]=='':
             sorted_dict[key] = d[key]
         else:
             remaining[key] = d[key]
