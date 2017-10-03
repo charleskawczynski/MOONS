@@ -64,17 +64,17 @@ def add_modules(g,T,F,priv,real):
 	g.add_module(m_name)
 	g.module[m_name].set_folder_name(__name__.split('.')[1])
 	g.module[m_name].set_used_modules(['IO_tools_mod'])
+	g.module[m_name].add_prop('BCL','BC_logicals',priv)
 	g.module[m_name].add_prop('n','integer',priv)
 	g.module[m_name].add_prop('SB','single_boundary',priv,T,1,3)
 	g.module[m_name].add_prop('name','string',priv)
-	g.module[m_name].add_prop('BCL','BC_logicals',priv)
 
 	m_name = 'boundary_conditions'
 	g.add_module(m_name)
 	g.module[m_name].set_folder_name(__name__.split('.')[1])
 	g.module[m_name].set_used_modules(['IO_tools_mod','data_location_mod'])
+	g.module[m_name].add_prop('BCL','BC_logicals',priv) # must be defined first
 	g.module[m_name].add_prop('apply_BC_order','integer',priv,F,1,6)
-	g.module[m_name].add_prop('BCL','BC_logicals',priv)
 	g.module[m_name].add_prop('DL','data_location',priv)
 	g.module[m_name].add_prop('face','boundary',priv)
 	g.module[m_name].add_prop('PA_face_BCs','procedure_array',priv)

@@ -47,8 +47,8 @@
        interface suppress_warnings;module procedure suppress_warnings_boundary_conditions;  end interface
 
        type boundary_conditions
-         integer,dimension(6) :: apply_BC_order = 0
          type(BC_logicals) :: BCL
+         integer,dimension(6) :: apply_BC_order = 0
          type(data_location) :: DL
          type(boundary) :: face
          type(procedure_array) :: PA_face_BCs
@@ -63,8 +63,8 @@
          type(boundary_conditions),intent(inout) :: this
          type(boundary_conditions),intent(in) :: that
          call delete(this)
-         this%apply_BC_order = that%apply_BC_order
          call init(this%BCL,that%BCL)
+         this%apply_BC_order = that%apply_BC_order
          call init(this%DL,that%DL)
          call init(this%face,that%face)
          call init(this%PA_face_BCs,that%PA_face_BCs)
@@ -75,8 +75,8 @@
        subroutine delete_boundary_conditions(this)
          implicit none
          type(boundary_conditions),intent(inout) :: this
-         this%apply_BC_order = 0
          call delete(this%BCL)
+         this%apply_BC_order = 0
          call delete(this%DL)
          call delete(this%face)
          call delete(this%PA_face_BCs)
@@ -88,8 +88,8 @@
          implicit none
          type(boundary_conditions),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'apply_BC_order       = ',this%apply_BC_order
          call display(this%BCL,un)
+         write(un,*) 'apply_BC_order       = ',this%apply_BC_order
          call display(this%DL,un)
          call display(this%face,un)
          call display(this%PA_face_BCs,un)
@@ -101,8 +101,8 @@
          implicit none
          type(boundary_conditions),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'apply_BC_order       = ',this%apply_BC_order
          call display(this%BCL,un)
+         write(un,*) 'apply_BC_order       = ',this%apply_BC_order
          call display(this%DL,un)
          call display(this%face,un)
          call display(this%PA_face_BCs,un)
@@ -136,8 +136,8 @@
          implicit none
          type(boundary_conditions),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'apply_BC_order        = ';write(un,*) this%apply_BC_order
          call export(this%BCL,un)
+         write(un,*) 'apply_BC_order        = ';write(un,*) this%apply_BC_order
          call export(this%DL,un)
          call export(this%face,un)
          call export(this%PA_face_BCs,un)
@@ -150,8 +150,8 @@
          type(boundary_conditions),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%apply_BC_order
          call import(this%BCL,un)
+         read(un,*); read(un,*) this%apply_BC_order
          call import(this%DL,un)
          call import(this%face,un)
          call import(this%PA_face_BCs,un)
@@ -199,12 +199,22 @@
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call set_IO_dir(this%BCL,dir//'BCL'//fortran_PS)
-         call set_IO_dir(this%DL,dir//'DL'//fortran_PS)
-         call set_IO_dir(this%face,dir//'face'//fortran_PS)
-         call set_IO_dir(this%PA_face_BCs,dir//'PA_face_BCs'//fortran_PS)
-         call set_IO_dir(this%PA_face_implicit_BCs,&
-         dir//'PA_face_implicit_BCs'//fortran_PS)
-         call set_IO_dir(this%f_BCs,dir//'f_BCs'//fortran_PS)
+         if (this%BCL%defined) then
+           call set_IO_dir(this%DL,dir//'DL'//fortran_PS)
+         endif
+         if (this%BCL%defined) then
+           call set_IO_dir(this%face,dir//'face'//fortran_PS)
+         endif
+         if (this%BCL%defined) then
+           call set_IO_dir(this%PA_face_BCs,dir//'PA_face_BCs'//fortran_PS)
+         endif
+         if (this%BCL%defined) then
+           call set_IO_dir(this%PA_face_implicit_BCs,&
+           dir//'PA_face_implicit_BCs'//fortran_PS)
+         endif
+         if (this%BCL%defined) then
+           call set_IO_dir(this%f_BCs,dir//'f_BCs'//fortran_PS)
+         endif
        end subroutine
 
        subroutine make_IO_dir_boundary_conditions(this,dir)
@@ -214,12 +224,22 @@
          call suppress_warnings(this)
          call make_dir(dir)
          call make_IO_dir(this%BCL,dir//'BCL'//fortran_PS)
-         call make_IO_dir(this%DL,dir//'DL'//fortran_PS)
-         call make_IO_dir(this%face,dir//'face'//fortran_PS)
-         call make_IO_dir(this%PA_face_BCs,dir//'PA_face_BCs'//fortran_PS)
-         call make_IO_dir(this%PA_face_implicit_BCs,&
-         dir//'PA_face_implicit_BCs'//fortran_PS)
-         call make_IO_dir(this%f_BCs,dir//'f_BCs'//fortran_PS)
+         if (this%BCL%defined) then
+           call make_IO_dir(this%DL,dir//'DL'//fortran_PS)
+         endif
+         if (this%BCL%defined) then
+           call make_IO_dir(this%face,dir//'face'//fortran_PS)
+         endif
+         if (this%BCL%defined) then
+           call make_IO_dir(this%PA_face_BCs,dir//'PA_face_BCs'//fortran_PS)
+         endif
+         if (this%BCL%defined) then
+           call make_IO_dir(this%PA_face_implicit_BCs,&
+           dir//'PA_face_implicit_BCs'//fortran_PS)
+         endif
+         if (this%BCL%defined) then
+           call make_IO_dir(this%f_BCs,dir//'f_BCs'//fortran_PS)
+         endif
        end subroutine
 
        subroutine export_structured_D_boundary_conditions(this,dir)
@@ -232,13 +252,23 @@
          call export_primitives(this,un)
          close(un)
          call export_structured(this%BCL,dir//'BCL'//fortran_PS)
-         call export_structured(this%DL,dir//'DL'//fortran_PS)
-         call export_structured(this%face,dir//'face'//fortran_PS)
-         call export_structured(this%PA_face_BCs,&
-         dir//'PA_face_BCs'//fortran_PS)
-         call export_structured(this%PA_face_implicit_BCs,&
-         dir//'PA_face_implicit_BCs'//fortran_PS)
-         call export_structured(this%f_BCs,dir//'f_BCs'//fortran_PS)
+         if (this%BCL%defined) then
+           call export_structured(this%DL,dir//'DL'//fortran_PS)
+         endif
+         if (this%BCL%defined) then
+           call export_structured(this%face,dir//'face'//fortran_PS)
+         endif
+         if (this%BCL%defined) then
+           call export_structured(this%PA_face_BCs,&
+           dir//'PA_face_BCs'//fortran_PS)
+         endif
+         if (this%BCL%defined) then
+           call export_structured(this%PA_face_implicit_BCs,&
+           dir//'PA_face_implicit_BCs'//fortran_PS)
+         endif
+         if (this%BCL%defined) then
+           call export_structured(this%f_BCs,dir//'f_BCs'//fortran_PS)
+         endif
        end subroutine
 
        subroutine import_structured_D_boundary_conditions(this,dir)
@@ -251,13 +281,23 @@
          call import_primitives(this,un)
          close(un)
          call import_structured(this%BCL,dir//'BCL'//fortran_PS)
-         call import_structured(this%DL,dir//'DL'//fortran_PS)
-         call import_structured(this%face,dir//'face'//fortran_PS)
-         call import_structured(this%PA_face_BCs,&
-         dir//'PA_face_BCs'//fortran_PS)
-         call import_structured(this%PA_face_implicit_BCs,&
-         dir//'PA_face_implicit_BCs'//fortran_PS)
-         call import_structured(this%f_BCs,dir//'f_BCs'//fortran_PS)
+         if (this%BCL%defined) then
+           call import_structured(this%DL,dir//'DL'//fortran_PS)
+         endif
+         if (this%BCL%defined) then
+           call import_structured(this%face,dir//'face'//fortran_PS)
+         endif
+         if (this%BCL%defined) then
+           call import_structured(this%PA_face_BCs,&
+           dir//'PA_face_BCs'//fortran_PS)
+         endif
+         if (this%BCL%defined) then
+           call import_structured(this%PA_face_implicit_BCs,&
+           dir//'PA_face_implicit_BCs'//fortran_PS)
+         endif
+         if (this%BCL%defined) then
+           call import_structured(this%f_BCs,dir//'f_BCs'//fortran_PS)
+         endif
        end subroutine
 
        subroutine suppress_warnings_boundary_conditions(this)

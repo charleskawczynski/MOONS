@@ -46,6 +46,7 @@
        interface suppress_warnings;module procedure suppress_warnings_block_field;  end interface
 
        type block_field
+         logical :: BCs_defined = .false.
          logical :: necessary_for_restart = .false.
          type(boundary_conditions) :: BCs
          type(grid_field) :: GF
@@ -66,6 +67,7 @@
          type(block_field),intent(inout) :: this
          type(block_field),intent(in) :: that
          call delete(this)
+         this%BCs_defined = that%BCs_defined
          this%necessary_for_restart = that%necessary_for_restart
          call init(this%BCs,that%BCs)
          call init(this%GF,that%GF)
@@ -87,6 +89,7 @@
        subroutine delete_block_field(this)
          implicit none
          type(block_field),intent(inout) :: this
+         this%BCs_defined = .false.
          this%necessary_for_restart = .false.
          call delete(this%BCs)
          call delete(this%GF)
@@ -104,6 +107,7 @@
          implicit none
          type(block_field),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'BCs_defined                    = ',this%BCs_defined
          write(un,*) 'necessary_for_restart          = ',&
          this%necessary_for_restart
          call display(this%BCs,un)
@@ -123,6 +127,7 @@
          implicit none
          type(block_field),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'BCs_defined                    = ',this%BCs_defined
          write(un,*) 'necessary_for_restart          = ',&
          this%necessary_for_restart
          call display(this%BCs,un)
@@ -164,6 +169,7 @@
          implicit none
          type(block_field),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'BCs_defined                     = ';write(un,*) this%BCs_defined
          write(un,*) 'necessary_for_restart           = ';write(un,*) this%necessary_for_restart
          call export(this%BCs,un)
          call export(this%GF,un)
@@ -182,6 +188,7 @@
          type(block_field),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
+         read(un,*); read(un,*) this%BCs_defined
          read(un,*); read(un,*) this%necessary_for_restart
          call import(this%BCs,un)
          call import(this%GF,un)
@@ -199,6 +206,7 @@
          implicit none
          type(block_field),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'BCs_defined                     = ';write(un,*) this%BCs_defined
          write(un,*) 'necessary_for_restart           = ';write(un,*) this%necessary_for_restart
          write(un,*) 'many_cell_N_periodic            = ';write(un,*) this%many_cell_N_periodic
          write(un,*) 'many_cell                       = ';write(un,*) this%many_cell
@@ -208,6 +216,7 @@
          implicit none
          type(block_field),intent(inout) :: this
          integer,intent(in) :: un
+         read(un,*); read(un,*) this%BCs_defined
          read(un,*); read(un,*) this%necessary_for_restart
          read(un,*); read(un,*) this%many_cell_N_periodic
          read(un,*); read(un,*) this%many_cell

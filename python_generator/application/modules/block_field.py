@@ -12,6 +12,7 @@ def add_modules(g,T,F,priv,real):
 	g.add_module(m_name)
 	g.module[m_name].set_folder_name(__name__.split('.')[1])
 	g.module[m_name].set_used_modules(['IO_tools_mod','data_location_mod'])
+	g.module[m_name].add_prop('BCs_defined','logical',priv)
 	g.module[m_name].add_prop('necessary_for_restart','logical',priv)
 	g.module[m_name].add_prop('BCs','boundary_conditions',priv)
 	g.module[m_name].add_prop('GF','grid_field',priv)
