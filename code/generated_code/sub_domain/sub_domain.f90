@@ -320,7 +320,7 @@
          integer :: s_N
          integer :: s_M
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
+         call make_dir(dir)
          s_C = size(this%C)
          do i_C=1,s_C
            call make_IO_dir(this%C(i_C),dir//'C_'//int2str(i_C)//fortran_PS)

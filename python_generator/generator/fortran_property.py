@@ -733,6 +733,69 @@ class fortran_property:
 
     return indent_lines(L)
 
+  def write_set_procedures(self):
+    L = []
+    f_sep = self.fortran_string_sep
+    f_name = "'"+self.name+"'"
+    suffix_loop = '//'+'int2str('+self.do_loop_iter+')'
+    f_call = 'call set_procedures'
+
+    if not self.class_=='string':
+      if       self.LL.primitive and     self.allocatable and     self.dimension>1 and     self.rank>1:
+        pass
+      elif     self.LL.primitive and not self.allocatable and     self.dimension>1 and     self.rank>1:
+        pass
+      elif     self.LL.primitive and     self.allocatable and     self.dimension>1 and not self.rank>1:
+        pass
+      elif     self.LL.primitive and not self.allocatable and     self.dimension>1 and not self.rank>1:
+        pass
+      elif     self.LL.primitive and not self.allocatable and not self.dimension>1 and not self.rank>1:
+        pass
+      elif     self.LL.object    and     self.allocatable and     self.dimension>1 and     self.rank>1:
+        suffix = suffix_loop
+        # pass
+        L = L + ['if (allocated(this%'+self.name+')) then']
+        L = L + [self.int_rank_shape_this]
+        L = L + [self.if_sufficient_size]
+        L = L + ['do '+self.do_loop_iter+'=1,'+self.do_loop_iter_max]
+        L = L + [f_call + '(this%' + self.name+'('+self.do_loop_iter+'))']
+        L = L + ['enddo']
+        L = L + ['endif']
+        L = L + ['endif']
+      elif     self.LL.object    and not self.allocatable and     self.dimension>1 and     self.rank>1:
+        suffix = suffix_loop
+        # pass
+        L = L + [self.int_rank_shape_this]
+        L = L + ['do '+self.do_loop_iter+'=1,'+self.do_loop_iter_max]
+        L = L + [f_call + '(this%' + self.name+'('+self.do_loop_iter+'))']
+        L = L + ['enddo']
+      elif     self.LL.object    and     self.allocatable and     self.dimension>1 and not self.rank>1:
+        suffix = suffix_loop
+        # pass
+        L = L + ['if (allocated(this%'+self.name+')) then']
+        L = L + [self.int_rank_shape_this]
+        L = L + ['do '+self.do_loop_iter+'=1,'+self.do_loop_iter_max]
+        L = L + [f_call + '(this%' + self.name+'('+self.do_loop_iter+'))']
+        L = L + ['enddo']
+        L = L + ['endif']
+      elif     self.LL.object    and not self.allocatable and     self.dimension>1 and not self.rank>1:
+        suffix = suffix_loop
+        # pass
+        L = L + [self.int_rank_shape_this]
+        L = L + ['do '+self.do_loop_iter+'=1,'+self.do_loop_iter_max]
+        L = L + [f_call + '(this%' + self.name+'('+self.do_loop_iter+'))']
+        L = L + ['enddo']
+      elif     self.LL.object    and not self.allocatable and not self.dimension>1 and not self.rank>1:
+        L = L + [f_call +  "(this%" + self.name + ")"]
+      elif     self.LL.procedure and     self.allocatable and     self.dimension>1 and     self.rank>1: pass
+      elif     self.LL.procedure and not self.allocatable and     self.dimension>1 and     self.rank>1: pass
+      elif     self.LL.procedure and     self.allocatable and     self.dimension>1 and not self.rank>1: pass
+      elif     self.LL.procedure and not self.allocatable and     self.dimension>1 and not self.rank>1: pass
+      elif     self.LL.procedure and not self.allocatable and not self.dimension>1 and not self.rank>1: pass
+      else: raise NameError('Case not caught!')
+
+    return indent_lines(L)
+
 
   def set_default_primitives(self):
     if self.object_type=='primitive':

@@ -179,26 +179,26 @@
          call compute_J_ind(ind,SP)
 
          if (SP%IT%unsteady_B0%add) then
-           call init(ind%probe_dB0dt(1),str(DT%B%energy),'dB0dt_x',SP%VS%B%SS%restart,.true.,SP%VS%B%TMP)
-           call init(ind%probe_dB0dt(2),str(DT%B%energy),'dB0dt_y',SP%VS%B%SS%restart,.true.,SP%VS%B%TMP)
-           call init(ind%probe_dB0dt(3),str(DT%B%energy),'dB0dt_z',SP%VS%B%SS%restart,.true.,SP%VS%B%TMP)
-           call init(ind%probe_B0(1)   ,str(DT%B%energy),'B0_x',   SP%VS%B%SS%restart,.true.,SP%VS%B%TMP)
-           call init(ind%probe_B0(2)   ,str(DT%B%energy),'B0_y',   SP%VS%B%SS%restart,.true.,SP%VS%B%TMP)
-           call init(ind%probe_B0(3)   ,str(DT%B%energy),'B0_z',   SP%VS%B%SS%restart,.true.,SP%VS%B%TMP)
+           call init(ind%probe_dB0dt(1),str(DT%B%energy),'dB0dt_x',SP%FCL%restart_all,.true.,SP%VS%B%TMP)
+           call init(ind%probe_dB0dt(2),str(DT%B%energy),'dB0dt_y',SP%FCL%restart_all,.true.,SP%VS%B%TMP)
+           call init(ind%probe_dB0dt(3),str(DT%B%energy),'dB0dt_z',SP%FCL%restart_all,.true.,SP%VS%B%TMP)
+           call init(ind%probe_B0(1)   ,str(DT%B%energy),'B0_x',   SP%FCL%restart_all,.true.,SP%VS%B%TMP)
+           call init(ind%probe_B0(2)   ,str(DT%B%energy),'B0_y',   SP%FCL%restart_all,.true.,SP%VS%B%TMP)
+           call init(ind%probe_B0(3)   ,str(DT%B%energy),'B0_z',   SP%FCL%restart_all,.true.,SP%VS%B%TMP)
          endif
-         call init(ind%probe_divB,str(DT%B%residual),'transient_divB',SP%VS%B%SS%restart,.true.,SP%VS%B%TMP)
-         call init(ind%probe_divJ,str(DT%J%residual),'transient_divJ',SP%VS%B%SS%restart,.true.,SP%VS%B%TMP)
-         call init(ind%JE,        str(DT%J%energy),'JE',            SP%VS%B%SS%restart,.true.,SP%VS%B%TMP)
-         call init(ind%JE_fluid,  str(DT%J%energy),'JE_fluid',      SP%VS%B%SS%restart,.true.,SP%VS%B%TMP)
-         call init(ind%ME(1)          ,str(DT%B%energy),'ME',           SP%VS%B%SS%restart,.false.,SP%VS%B%TMP)
-         call init(ind%ME_fluid(1)    ,str(DT%B%energy),'ME_fluid',     SP%VS%B%SS%restart,.false.,SP%VS%B%TMP)
-         call init(ind%ME_conductor(1),str(DT%B%energy),'ME_conductor', SP%VS%B%SS%restart,.false.,SP%VS%B%TMP)
-         call init(ind%ME(2)          ,str(DT%B%energy),'ME0',          SP%VS%B%SS%restart,.false.,SP%VS%B%TMP)
-         call init(ind%ME_fluid(2)    ,str(DT%B%energy),'ME0_fluid',    SP%VS%B%SS%restart,.false.,SP%VS%B%TMP)
-         call init(ind%ME_conductor(2),str(DT%B%energy),'ME0_conductor',SP%VS%B%SS%restart,.false.,SP%VS%B%TMP)
-         call init(ind%ME(3)          ,str(DT%B%energy),'ME1',          SP%VS%B%SS%restart,.false.,SP%VS%B%TMP)
-         call init(ind%ME_fluid(3)    ,str(DT%B%energy),'ME1_fluid',    SP%VS%B%SS%restart,.false.,SP%VS%B%TMP)
-         call init(ind%ME_conductor(3),str(DT%B%energy),'ME1_conductor',SP%VS%B%SS%restart,.false.,SP%VS%B%TMP)
+         call init(ind%probe_divB,str(DT%B%residual),'transient_divB',SP%FCL%restart_all,.true.,SP%VS%B%TMP)
+         call init(ind%probe_divJ,str(DT%J%residual),'transient_divJ',SP%FCL%restart_all,.true.,SP%VS%B%TMP)
+         call init(ind%JE,        str(DT%J%energy),'JE',            SP%FCL%restart_all,.true.,SP%VS%B%TMP)
+         call init(ind%JE_fluid,  str(DT%J%energy),'JE_fluid',      SP%FCL%restart_all,.true.,SP%VS%B%TMP)
+         call init(ind%ME(1)          ,str(DT%B%energy),'ME',           SP%FCL%restart_all,.false.,SP%VS%B%TMP)
+         call init(ind%ME_fluid(1)    ,str(DT%B%energy),'ME_fluid',     SP%FCL%restart_all,.false.,SP%VS%B%TMP)
+         call init(ind%ME_conductor(1),str(DT%B%energy),'ME_conductor', SP%FCL%restart_all,.false.,SP%VS%B%TMP)
+         call init(ind%ME(2)          ,str(DT%B%energy),'ME0',          SP%FCL%restart_all,.false.,SP%VS%B%TMP)
+         call init(ind%ME_fluid(2)    ,str(DT%B%energy),'ME0_fluid',    SP%FCL%restart_all,.false.,SP%VS%B%TMP)
+         call init(ind%ME_conductor(2),str(DT%B%energy),'ME0_conductor',SP%FCL%restart_all,.false.,SP%VS%B%TMP)
+         call init(ind%ME(3)          ,str(DT%B%energy),'ME1',          SP%FCL%restart_all,.false.,SP%VS%B%TMP)
+         call init(ind%ME_fluid(3)    ,str(DT%B%energy),'ME1_fluid',    SP%FCL%restart_all,.false.,SP%VS%B%TMP)
+         call init(ind%ME_conductor(3),str(DT%B%energy),'ME1_conductor',SP%FCL%restart_all,.false.,SP%VS%B%TMP)
 
          write(*,*) '     B/J probes initialized'
 
@@ -225,7 +225,7 @@
          write(*,*) '     PCG Solver initialized for phi'
 
          write(*,*) '     Finished'
-         if (SP%VS%B%SS%restart) call import(ind,SP,DT)
+         if (SP%FCL%restart_all) call import(ind,SP,DT)
        end subroutine
 
        subroutine display_induction(ind,SP,un)
@@ -324,7 +324,7 @@
          type(induction),intent(inout) :: ind
          type(sim_params),intent(in) :: SP
          type(dir_tree),intent(in) :: DT
-         if (SP%VS%B%SS%restart.and.(.not.SP%VS%B%SS%solve)) then
+         if (SP%FCL%restart_all.and.(.not.SP%VS%B%SS%solve)) then
            ! This preserves the initial data
          else
            if (SP%VS%B%SS%solve) then

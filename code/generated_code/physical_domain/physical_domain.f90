@@ -234,7 +234,7 @@
          integer :: i_sd
          integer :: s_sd
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
+         call make_dir(dir)
          if (allocated(this%sd)) then
            s_sd = size(this%sd)
            do i_sd=1,s_sd

@@ -1,9 +1,12 @@
+import GOOFPY_directory as GD
+import file_IO as IO
 import os
 import copy
 import sys
-import shutil
 import glob
 from collections import OrderedDict
+import sorting as SORT
+import sorting_backup as SORT_BU
 import re
 
 def flatten(foo):
@@ -16,46 +19,6 @@ def flatten(foo):
             l.append(x)
     return l
 
-def read_file_to_list(file_name,caller):
-    f = open(file_name,'r+')
-    try:
-        f = open(file_name,'r+')
-        L = f.read().split('\n')
-    except:
-        L = []
-        print(' ********* READ ERROR ********* '+caller)
-        print(' ********* READ ERROR ********* '+caller)
-        print(' ********* READ ERROR ********* '+caller)
-    return L
-
-def read_file_to_string(file_name):
-    return '\n'.join(read_file_to_list(file_name,'read_file_to_string'))
-
-def write_string_to_file(file_name,s):
-    try:
-        f = open(file_name,'w+')
-        f.write(s)
-        f.close()
-    except:
-        print(' ********* WRITE ERROR ********* write_string_to_list ')
-        print(' ********* WRITE ERROR ********* write_string_to_list ')
-        print(' ********* WRITE ERROR ********* write_string_to_list ')
-    return
-
-def write_list_to_file(file_name,L):
-    f = open(file_name,'w+')
-    f.write('\n'.join(L))
-    f.close()
-    return
-
-def make_path(new_path):
-    if not os.path.exists(new_path):
-        os.makedirs(new_path)
-
-def delete_entire_tree_safe(d):
-    if os.path.exists(d):
-        shutil.rmtree(d)
-
 def make_dummy_main(file_name,class_list,base_spaces):
     L =  ['program main']
     for x in class_list: L=L+['use '+x+'_mod']
@@ -63,70 +26,53 @@ def make_dummy_main(file_name,class_list,base_spaces):
     L =L+['write(*,*) "success!"']
     L =L+['end program']
     L = [base_spaces+x for x in L]
-    write_list_to_file(file_name,L)
-
+    IO.write_list_to_file(file_name,L)
 
 # MAKE BATCH FILE***********************************
 
-def make_dot_bat(target_root,source_dir,generated_path,class_list,base_dir,base_files,PS):
+def make_dot_bat(d,dir_app,source_dir,generated_path,class_list,dir_base,base_files,PS):
     L = ['gfortran -fopenmp -g -cpp -fimplicit-none -Wall -Wextra ']
     L = L + ['-Wall -Wextra -pedantic -fbacktrace -fcheck=all -Wuninitialized ']
     L = L + ['-J"bin" ']
     prefix = ''.join(L)
     L = []
     file_list = [generated_path+x+'.f90' for x in class_list]
-    module_names = get_list_of_module_names(file_list)
-    sorted_module_list = sort_files_by_dependency(file_list,module_names)
-    sorted_file_list = get_file_list_from_module_names(file_list,sorted_module_list)
+    sorted_file_list = get_sorted_file_list_recent(d,file_list)
 
-    L = [base_dir+x+' ' for x in base_files]
-    L = ['..'+PS+'source'+PS+base_dir+x+' ' for x in base_files]
+    L = [dir_base+x+' ' for x in base_files]
+    L = ['..'+PS+'source'+PS+dir_base+x+' ' for x in base_files]
 
     L = L + sorted_file_list
 
     L = [x.replace(source_dir,'')+' ' for x in L]
-    L = [x.replace(target_root,'')+' ' for x in L]
+    L = [x.replace(dir_app,'')+' ' for x in L]
     # print('\n'.join(L))
     object_files = [x.replace('.f90','.o') for x in L]
     object_files_s = ''.join(object_files)
     L = ['-c -o '+ x.replace('.f90','.o')+ x + '\n' for x in L]
     L = [prefix + x for x in L]
     # print('\n'.join(L))
-    L = L + [prefix+' -o output '+generated_path.replace(target_root,'')+'main_dummy.f90 '+object_files_s]
+    L = L + [prefix+' -o output '+generated_path.replace(dir_app,'')+'main_dummy.f90 '+object_files_s]
     L = L + ['\n output.exe']
     L = L + ['\n cd generated_code']
     L = L + ['\n del *.o']
     L = L + ['\n cd ..']
     # print('\n'.join(L))
     L = [''.join(L)]
-    write_list_to_file(target_root+'run.bat',L)
+    IO.write_list_to_file(dir_app+'run.bat',L)
     return
 
-def make_makefile(makefile_file,target_root,source_dir,generated_path,class_list,base_dir,base_files,PS):
+def make_makefile(d,makefile_file,vpath_file,file_list,paths_to_replace,PS):
     L = []
     L = L + ['$(SRC_DIR_GENERATED)$(PS)']
     prefix = ''.join(L)
-    # print('\n'.join(class_list))
-    file_list = [generated_path+x+'.f90' for x in class_list]
-    # print('\n'.join(file_list))
-    module_names = get_list_of_module_names(file_list)
-    # print('\n'.join(module_names))
-    sorted_module_list = sort_files_by_dependency(file_list,module_names)
-    # print('\n'.join(sorted_module_list))
-    sorted_file_list = get_file_list_from_module_names(file_list,sorted_module_list)
-    # print('\n'.join(sorted_file_list))
-    # print('\n'.join(sorted_module_list))
-    L = []
-    # L = [base_dir+x+' ' for x in base_files]
-    # L = ['..'+PS+'source'+PS+base_dir+x+' ' for x in base_files]
-    L_start = L + sorted_file_list
+    sorted_file_list = get_sorted_file_list_recent(d,file_list)
+    L_start = sorted_file_list
 
     # Path
     L = L_start
-    L = [x.replace(source_dir,'')+' ' for x in L]
-    L = [x.replace(target_root,'')+' ' for x in L]
-    L = [x.replace(generated_path,'')+' ' for x in L]
-    # L = [x.lower() for x in L]
+    for y in paths_to_replace:
+        L = [x.replace(y,'')+' ' for x in L]
     L = [x.replace('/','$(PS)')+' ' for x in L]
     L = [prefix + x for x in L]
     L = ['\t'+x for x in L]
@@ -139,13 +85,12 @@ def make_makefile(makefile_file,target_root,source_dir,generated_path,class_list
     L = [x+'\\\n' for x in L]
     L = L+['\n']
     L_VPATH = L
+    IO.write_list_to_file(vpath_file,[''.join(L_VPATH)])
 
     # Files
     L = L_start
-    L = [x.replace(source_dir,'')+' ' for x in L]
-    L = [x.replace(target_root,'')+' ' for x in L]
-    L = [x.replace(generated_path,'')+' ' for x in L]
-    # L = [x.lower() for x in L]
+    for y in paths_to_replace:
+        L = [x.replace(y,'')+' ' for x in L]
     L = [x.replace('/','$(PS)')+' ' for x in L]
     L = [prefix + x for x in L]
     L = ['\t'+x for x in L]
@@ -155,11 +100,124 @@ def make_makefile(makefile_file,target_root,source_dir,generated_path,class_list
     L = [x+'\n' for x in L]
     L_FILES = L
 
-    L = [''.join(L_VPATH+L_FILES)]
-    # L[-1] = L[-1][:-1]
-
-    write_list_to_file(makefile_file,L)
+    IO.write_list_to_file(makefile_file,[''.join(L_FILES)])
     return
+
+def make_generated(d,file_list):
+    L = []
+    PS = d.PS_make_file
+    L = L + ['$(SRC_DIR_GENERATED)'+PS]
+    prefix = ''.join(L)
+    sorted_file_list = get_sorted_file_list_recent(d,file_list)
+    # print(' ------------------------------- sorted_file_list[0:5]')
+    # print('\n'.join([x.replace(d.common_root,'') for x in sorted_file_list[0:5]]))
+    # print(' -------------------------------')
+    L_start = sorted_file_list
+    paths_to_replace = [d.dir_app,d.dir_GOOFPY,d.dir_code_generated]
+    vpaths_files = [d.vpath_pre_generated,d.vpath_handwritten,d.vpath_generated]
+    # Path
+    L = L_start
+    for y in paths_to_replace:
+        L = [x.replace(y,'')+' ' for x in L]
+    L = [x.replace('/',PS)+' ' for x in L]
+    L = [prefix + x for x in L]
+    L = ['\t'+x for x in L]
+    L = [x.replace(' ','') for x in L]
+    L = [x+'\\' if x.endswith('.f90') else x for x in L]
+    L = [PS.join(x.split(PS)[0:-1]) if PS in x else x for x in L]
+    L = list(set(L))
+    L.sort()
+    L = ['VPATH +='] + L
+    L = [x+'\\\n' for x in L]
+    L = L+['\n']
+    L_VPATH = L
+    IO.write_list_to_file(d.vpath_generated,[''.join(L_VPATH)])
+
+    # Files
+    L = L_start
+    for y in paths_to_replace:
+        L = [x.replace(y,'')+' ' for x in L]
+    L = [x.replace('/',PS)+' ' for x in L]
+    L = [prefix + x for x in L]
+    L = ['\t'+x for x in L]
+    L = ['SRCS_F +=\\'] + L
+    L = [x.replace(' ','') for x in L]
+    L = [x+'\\' if x.endswith('.f90') else x for x in L]
+    L = [x+'\n' for x in L]
+    L_FILES = L
+
+    IO.write_list_to_file(d.src_generated,[''.join(L_FILES)])
+    return
+
+def get_compiled_files(d,make_src_files):
+    f = ''.join([IO.get_file_contents(x) for x in make_src_files])
+    compiled_files = list(filter(None, f.split('\n')))
+    compiled_files = [x for x in compiled_files if x.endswith('.f90\\') or x.endswith('.f90')]
+    compiled_files = [x[:-1] if x.endswith('\\') else x for x in compiled_files]
+    compiled_files = [x.replace('\t','') for x in compiled_files]
+    compiled_files = [x for x in compiled_files if not x.startswith('#')]
+    root_paths = [x.split(d.PS_make_file)[0] for x in compiled_files]
+    root_paths = list(set(root_paths))
+    root_paths = [x for x in root_paths if not '=' in x]
+    root_paths = [x.replace('(','') for x in root_paths]
+    root_paths = [x.replace(')','') for x in root_paths]
+    root_paths = [x.replace('$','') for x in root_paths]
+    make_file_main = IO.get_file_contents(d.makefile_main)
+    make_file_main = list(filter(None, make_file_main.split('\n')))
+    root_path_replace = [x for x in make_file_main if any([x.startswith(y) for y in root_paths])]
+    root_path_replace = [('$('+x.split('=')[0].replace(' ','')+')',x.split('=')[1].replace(' ','')) for x in root_path_replace]
+    compiled_files = [x.replace(y,z) for x in compiled_files for y,z in root_path_replace if y in x]
+    compiled_files = [x.replace(d.PS_make_file,d.PS_file_sys) for x in compiled_files]
+    compiled_files = [d.common_root+x for x in compiled_files]
+    compiled_files = [x.replace('..','') for x in compiled_files]
+    compiled_files = [x.replace(d.PS_file_sys+d.PS_file_sys,d.PS_file_sys) for x in compiled_files]
+    root_path_replace = [(x,y.replace('..','')) for x,y in root_path_replace]
+    root_path_replace = [(x,y.replace(d.PS_make_file,d.PS_file_sys)) for x,y in root_path_replace]
+    # print(' ------------------------------- compiled_files')
+    # print('\n'.join([x.replace(d.common_root,'') for x in compiled_files]))
+    # print(' -------------------------------')
+    return (compiled_files,root_path_replace)
+
+def combine_makefile(d):
+    L = []
+    make_src_files = [d.src_generated,d.src_pre_generated,d.src_handwritten]
+    (compiled_files,root_path_replace) = get_compiled_files(d,make_src_files)
+    # print(' ------------------------------- compiled_files')
+    # print('\n'.join([x.replace(d.common_root,'') for x in compiled_files]))
+    # print(' -------------------------------')
+    compiled_files = list(set(compiled_files))
+
+    sorted_file_list = get_sorted_file_list(d,compiled_files)
+    L = sorted_file_list
+    for MFV in d.make_file_vpaths:
+        print(MFV)
+        L = [x.replace(MFV[0],MFV[1]) for x in L]
+    L = [x.replace(d.PS_file_sys,d.PS_make_file) for x in L]
+    L = [x+'\\' if x.endswith('.f90') else x for x in L]
+    L = ['\t'+x for x in L]
+    L = [x.replace(' ','') for x in L]
+    L = ['SRCS_F +=\\'] + L
+    L = [x+'\n' for x in L]
+
+    IO.write_list_to_file(d.src_all,[''.join(L)])
+    return
+
+def get_sorted_file_list(d,file_list):
+    L = []
+    module_names = get_list_of_module_names(file_list)
+    sorted_module_list = SORT.sort_files_by_dependency(file_list,d.PS_file_sys)
+    # print('\n'.join(sorted_module_list))
+    # print('\n'.join([x.replace(d.common_root,'') for x in file_list]))
+    sorted_file_list = get_file_list_from_module_names(d,file_list,sorted_module_list)
+    return sorted_file_list
+
+def get_sorted_file_list_recent(d,file_list):
+    L = []
+    module_names = get_list_of_module_names(file_list)
+    sorted_module_list = SORT_BU.sort_files_by_dependency_recent(file_list,module_names)
+    # print(sorted_module_list)
+    sorted_file_list = get_file_list_from_module_names(d,file_list,sorted_module_list)
+    return sorted_file_list
 
 def get_list_of_files_in_dir(path,ext):
     return [f.replace(ext,'') for f in os.listdir(path) if f.endswith(ext)]
@@ -171,33 +229,33 @@ def get_list_of_module_names(file_list):
     return flatten([d[key] for key in d])
 
 def get_module_name(f):
-    # print(f)
-    L = read_file_to_list(f,'get_module_name')
-    # L = [x.lower() for x in L]
+    L = IO.read_file_to_list(f,'get_module_name')
     L = [x.lstrip() for x in L]
     L = [x.rstrip() for x in L]
     L = [x for x in L if not x.startswith('!')]
     L = [x for x in L if not x.startswith('C')]
     L = [x for x in L if x.startswith('module ')]
-    return [x.replace('module ','') for x in L]
+    L = [x.replace('module ','') for x in L]
+    return L
 
-def get_file_list_from_module_names(file_list,module_names):
-    file_list_sorted = []
+def get_file_list_from_module_names(d,file_list,module_names):
+    L = []
     for m in module_names:
         for f in file_list:
-            try:
-                if m==get_module_name(f)[0]: file_list_sorted.append(f)
-            except:
+            m_name = m.replace('_mod','')
+            f_name = f.split(d.PS_file_sys)[-1]
+            f_name = f_name.replace(d.f_ext,'').replace(d.f_ext,'').replace('_mod','')
+            if f_name==m_name:
+                L=L+[f]
+            elif f_name in m_name or m_name in f_name:
                 pass
-                # print('Error: potential name-mismatch')
-    return file_list_sorted
+    return L
 
 def get_main_program(path,FL):
-    fext = '.f90'
+    f_ext = '.f90'
     program_files = []
     for f in FL:
-        L = read_file_to_list(path + f + fext,'get_main_program')
-        # L = [x.lower() for x in L]
+        L = IO.read_file_to_list(path + f + f_ext,'get_main_program')
         L = [x.lstrip() for x in L]
         L = [x.rstrip() for x in L]
         L = [x for x in L if not x.startswith('!')]
@@ -205,71 +263,6 @@ def get_main_program(path,FL):
         L = [x.startswith('program') for x in L]
         if L: program_files.append(f)
     return program_files
-
-def sort_files_by_dependency(file_list,module_names):
-    d = OrderedDict()
-    SL = []
-    for fn,mn in zip(file_list,module_names):
-        L = read_file_to_list(fn,'sort_files_by_dependency')
-        # L = [x.lower() for x in L]
-        L = [x for x in L if not x.startswith('c')]
-        L = [x.lstrip() for x in L]
-        L = [x.rstrip() for x in L]
-        L = [x for x in L if not x.startswith('!')]
-        L = [x for x in L if x.startswith('use ')]
-        L = [x.replace('use ','') for x in L]
-        d[mn] = L
-    return topological_sort(d)
-
-def topological_sort(dict_to_be_sorted):
-    # sort separately
-    (sorted_dict,remaining) = separate_non_dependencies(dict_to_be_sorted)
-    remaining_sorted = sort_remaining(remaining)
-    for key in remaining_sorted:
-        sorted_dict[key] = remaining_sorted[key]
-    return sorted_dict
-
-def separate_non_dependencies(dict_to_be_sorted):
-    d = dict_to_be_sorted
-    sorted_dict = OrderedDict()
-    remaining = OrderedDict()
-    for key in d: # first, sort items with no dependencies:
-        if not d[key] or d[key]=='':
-            sorted_dict[key] = d[key]
-        else:
-            remaining[key] = d[key]
-    return (sorted_dict,remaining)
-
-def sort_remaining(dict_to_be_sorted):
-    sorted_dict = dict_to_be_sorted
-    for key in sorted_dict: k_R_last = key
-    for k_L in sorted_dict:
-        for k_R in reversed(sorted_dict):
-            L1 = any([k_R_last in x for x in sorted_dict[k_R]])
-            L2 = any([k_L in x for x in sorted_dict[k_R_last]])
-            if L1:
-            # if L1 or L2:
-                sorted_dict = swap_dict_by_keys(sorted_dict,k_R,k_R_last)
-            k_R_last = k_R
-    return sorted_dict
-
-def swap_dict_by_keys(d,key1,key2):
-    # d is defined in the following order
-    # d[key1]
-    # d[key2]
-    # and sorted into the following order
-    # d[key2]
-    # d[key1]
-    d_swapped = OrderedDict()
-    for k in d:
-        if k==key1:
-            d_swapped[key2] = d[key2]
-        elif k==key2:
-            d_swapped[key1] = d[key1]
-        else:
-            d_swapped[k] = d[k]
-    d = d_swapped
-    return d
 
 def longest_substring_finder(string1, string2):
     answer = ""

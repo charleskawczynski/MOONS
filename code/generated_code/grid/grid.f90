@@ -216,7 +216,7 @@
          integer :: i_c
          integer :: s_c
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
+         call make_dir(dir)
          s_c = size(this%c)
          do i_c=1,s_c
            call make_IO_dir(this%c(i_c),dir//'c_'//int2str(i_c)//fortran_PS)

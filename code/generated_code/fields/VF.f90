@@ -177,7 +177,7 @@
          type(VF),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
+         call make_dir(dir)
          call make_IO_dir(this%x,dir//'x'//fortran_PS)
          call make_IO_dir(this%y,dir//'y'//fortran_PS)
          call make_IO_dir(this%z,dir//'z'//fortran_PS)
@@ -192,9 +192,6 @@
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
-         call export_structured(this%x,dir//'x'//fortran_PS)
-         call export_structured(this%y,dir//'y'//fortran_PS)
-         call export_structured(this%z,dir//'z'//fortran_PS)
        end subroutine
 
        subroutine import_structured_D_VF(this,dir)
@@ -206,9 +203,6 @@
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         call import_structured(this%x,dir//'x'//fortran_PS)
-         call import_structured(this%y,dir//'y'//fortran_PS)
-         call import_structured(this%z,dir//'z'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_VF(this)

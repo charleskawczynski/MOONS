@@ -171,7 +171,7 @@
          type(single_procedure),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
+         call make_dir(dir)
        end subroutine
 
        subroutine export_structured_D_single_procedure(this,dir)

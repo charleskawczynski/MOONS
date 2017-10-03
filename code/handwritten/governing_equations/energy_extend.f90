@@ -125,7 +125,7 @@
          call delete(k_cc)
          write(*,*) '     Materials initialized'
 
-         call init(nrg%Probe_divQ,str(DT%T%residual),'probe_divQ',SP%VS%T%SS%restart,.true.,SP%VS%T%TMP)
+         call init(nrg%Probe_divQ,str(DT%T%residual),'probe_divQ',SP%FCL%restart_all,.true.,SP%VS%T%TMP)
 
          call init(nrg%PCG_T,nrg_diffusion,nrg_diffusion_explicit,prec_lap_SF,nrg%m,&
          SP%VS%T%ISP,SP%VS%T%MFP,nrg%T,nrg%T,nrg%temp_F_TF,str(DT%T%residual),'T',.false.,.false.)
@@ -134,7 +134,7 @@
          call display(nrg,SP,temp_unit)
          call close_and_message(temp_unit,str(DT%params),'info_nrg')
 
-         if (SP%VS%T%SS%restart) call import(nrg,SP,DT)
+         if (SP%FCL%restart_all) call import(nrg,SP,DT)
          write(*,*) '     probes initialized'
          write(*,*) '     Finished'
        end subroutine

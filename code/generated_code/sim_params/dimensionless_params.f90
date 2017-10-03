@@ -397,7 +397,7 @@
          type(dimensionless_params),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
+         call make_dir(dir)
          call init(this%dir,dir)
          call init(this%name,'primitives')
        end subroutine

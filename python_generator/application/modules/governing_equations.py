@@ -8,6 +8,50 @@ import fortran_property as FP
 
 def add_modules(g,T,F,priv,real):
 
+	# m_name = 'mom_temp_fields'
+	# g.add_module(m_name)
+	# g.module[m_name].set_folder_name(__name__.split('.')[1])
+	# g.module[m_name].set_used_modules(['IO_tools_mod'])
+	# g.module[m_name].add_prop(['SF_CC'],'SF',priv)
+	# g.module[m_name].add_prop(['VF_CC','VF_F1','VF_F2','VF_F3','VF_E'],'VF',priv)
+	# g.module[m_name].add_prop(['TF_CC','TF_E','TF_CC_edge'],'TF',priv)
+
+	# m_name = 'ind_temp_fields'
+	# g.add_module(m_name)
+	# g.module[m_name].set_folder_name(__name__.split('.')[1])
+	# g.module[m_name].set_used_modules(['IO_tools_mod'])
+	# g.module[m_name].add_prop(['SF_CC'],'SF',priv)
+	# g.module[m_name].add_prop(['VF_CC','VF_F1','VF_F2','VF_E'],'VF',priv)
+	# g.module[m_name].add_prop(['TF_F1','TF_F2','TF_E'],'TF',priv)
+
+
+	# m_name = 'momentum_no_temps'
+	# g.add_module(m_name)
+	# g.module[m_name].set_folder_name(__name__.split('.')[1])
+	# g.module[m_name].set_used_modules(['IO_tools_mod'])
+	# g.module[m_name].add_prop('suppress_warning','logical',priv)
+	# g.module[m_name].add_prop('m','mesh',priv)
+	# g.module[m_name].add_prop('PCG_P','PCG_Solver_SF',priv)
+	# g.module[m_name].add_prop('PCG_U','PCG_Solver_VF',priv)
+	# g.module[m_name].add_prop('TS','time_statistics_VF',priv)
+	# g.module[m_name].add_prop(['p','divU'],'SF',priv)
+	# g.module[m_name].add_prop(['U','Ustar','Unm1','U_CC','F','Fnm1','L'],'VF',priv)
+	# g.module[m_name].add_prop(['U_E'],'TF',priv)
+	# g.module[m_name].add_prop(['probe_KE','probe_KE_2C','probe_divU','probe_Q'],'probe',priv)
+
+	# m_name = 'mom_probe_set'
+	# g.add_module(m_name)
+	# g.module[m_name].set_folder_name(__name__.split('.')[1])
+	# g.module[m_name].set_used_modules(['IO_tools_mod'])
+	# g.module[m_name].add_prop(['energy','energy_2D','div','probe_Q'],'probe',priv)
+
+	# m_name = 'ind_probe_set'
+	# g.add_module(m_name)
+	# g.module[m_name].set_folder_name(__name__.split('.')[1])
+	# g.module[m_name].set_used_modules(['IO_tools_mod'])
+	# g.module[m_name].add_prop(['energy','div','probe_Q'],'probe',priv)
+	# g.module[m_name].add_prop(['e_total','e_fluid','e_conductor','dB0dt','B0'],'probe',priv,F,1,3)
+
 	m_name = 'momentum'
 	g.add_module(m_name)
 	g.module[m_name].set_folder_name(__name__.split('.')[1])

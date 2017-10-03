@@ -22,32 +22,28 @@
 
        public :: suppress_warnings
 
-       interface init;             module procedure init_copy_probe;           end interface
-       interface delete;           module procedure delete_probe;              end interface
-       interface display;          module procedure display_probe;             end interface
-       interface display_short;    module procedure display_short_probe;       end interface
-       interface display;          module procedure display_wrap_probe;        end interface
-       interface print;            module procedure print_probe;               end interface
-       interface print_short;      module procedure print_short_probe;         end interface
-       interface export;           module procedure export_probe;              end interface
-       interface export_primitives;module procedure export_primitives_probe;   end interface
-       interface import;           module procedure import_probe;              end interface
-       interface export_structured;module procedure export_structured_D_probe; end interface
-       interface import_structured;module procedure import_structured_D_probe; end interface
-       interface import_primitives;module procedure import_primitives_probe;   end interface
-       interface export;           module procedure export_wrap_probe;         end interface
-       interface import;           module procedure import_wrap_probe;         end interface
-       interface set_IO_dir;       module procedure set_IO_dir_probe;          end interface
-       interface make_IO_dir;      module procedure make_IO_dir_probe;         end interface
-       interface suppress_warnings;module procedure suppress_warnings_probe;   end interface
-       interface export;           module procedure export_DN_probe;           end interface
-       interface import;           module procedure import_DN_probe;           end interface
-       interface export_structured;module procedure export_structured_DN_probe;end interface
-       interface import_structured;module procedure import_structured_DN_probe;end interface
+       interface init;             module procedure init_copy_probe;          end interface
+       interface delete;           module procedure delete_probe;             end interface
+       interface display;          module procedure display_probe;            end interface
+       interface display_short;    module procedure display_short_probe;      end interface
+       interface display;          module procedure display_wrap_probe;       end interface
+       interface print;            module procedure print_probe;              end interface
+       interface print_short;      module procedure print_short_probe;        end interface
+       interface export;           module procedure export_probe;             end interface
+       interface export_primitives;module procedure export_primitives_probe;  end interface
+       interface import;           module procedure import_probe;             end interface
+       interface export_structured;module procedure export_structured_D_probe;end interface
+       interface import_structured;module procedure import_structured_D_probe;end interface
+       interface import_primitives;module procedure import_primitives_probe;  end interface
+       interface export;           module procedure export_wrap_probe;        end interface
+       interface import;           module procedure import_wrap_probe;        end interface
+       interface set_IO_dir;       module procedure set_IO_dir_probe;         end interface
+       interface make_IO_dir;      module procedure make_IO_dir_probe;        end interface
+       interface suppress_warnings;module procedure suppress_warnings_probe;  end interface
 
        type probe
-         type(string) :: dir
-         type(string) :: name
+         type(string) :: tec_dir
+         type(string) :: tec_name
          real(cp) :: d = 0.0_cp
          real(cp) :: d_data_dt = 0.0_cp
          real(cp) :: d_amax = 0.0_cp
@@ -66,8 +62,8 @@
          type(probe),intent(inout) :: this
          type(probe),intent(in) :: that
          call delete(this)
-         call init(this%dir,that%dir)
-         call init(this%name,that%name)
+         call init(this%tec_dir,that%tec_dir)
+         call init(this%tec_name,that%tec_name)
          this%d = that%d
          this%d_data_dt = that%d_data_dt
          this%d_amax = that%d_amax
@@ -82,8 +78,8 @@
        subroutine delete_probe(this)
          implicit none
          type(probe),intent(inout) :: this
-         call delete(this%dir)
-         call delete(this%name)
+         call delete(this%tec_dir)
+         call delete(this%tec_name)
          this%d = 0.0_cp
          this%d_data_dt = 0.0_cp
          this%d_amax = 0.0_cp
@@ -99,8 +95,8 @@
          implicit none
          type(probe),intent(in) :: this
          integer,intent(in) :: un
-         call display(this%dir,un)
-         call display(this%name,un)
+         call display(this%tec_dir,un)
+         call display(this%tec_name,un)
          write(un,*) 'd         = ',this%d
          write(un,*) 'd_data_dt = ',this%d_data_dt
          write(un,*) 'd_amax    = ',this%d_amax
@@ -116,8 +112,8 @@
          implicit none
          type(probe),intent(in) :: this
          integer,intent(in) :: un
-         call display(this%dir,un)
-         call display(this%name,un)
+         call display(this%tec_dir,un)
+         call display(this%tec_name,un)
          write(un,*) 'd         = ',this%d
          write(un,*) 'd_data_dt = ',this%d_data_dt
          write(un,*) 'd_amax    = ',this%d_amax
@@ -155,8 +151,8 @@
          implicit none
          type(probe),intent(in) :: this
          integer,intent(in) :: un
-         call export(this%dir,un)
-         call export(this%name,un)
+         call export(this%tec_dir,un)
+         call export(this%tec_name,un)
          write(un,*) 'd          = ';write(un,*) this%d
          write(un,*) 'd_data_dt  = ';write(un,*) this%d_data_dt
          write(un,*) 'd_amax     = ';write(un,*) this%d_amax
@@ -173,8 +169,8 @@
          type(probe),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         call import(this%dir,un)
-         call import(this%name,un)
+         call import(this%tec_dir,un)
+         call import(this%tec_name,un)
          read(un,*); read(un,*) this%d
          read(un,*); read(un,*) this%d_data_dt
          read(un,*); read(un,*) this%d_amax
@@ -236,52 +232,12 @@
          close(un)
        end subroutine
 
-       subroutine export_DN_probe(this)
-         implicit none
-         type(probe),intent(in) :: this
-         call export(this,str(this%dir),str(this%name))
-       end subroutine
-
-       subroutine import_DN_probe(this)
-         implicit none
-         type(probe),intent(inout) :: this
-         type(string) :: dir,name
-         integer :: un
-         call init(dir,this%dir)
-         call init(name,this%name)
-         un = open_to_read(str(dir),str(name))
-         call import(this,un)
-         call delete(dir)
-         call delete(name)
-         close(un)
-       end subroutine
-
-       subroutine export_structured_DN_probe(this)
-         implicit none
-         type(probe),intent(in) :: this
-         integer :: un
-         un = new_and_open(str(this%dir),'primitives')
-         call export_primitives(this,un)
-         close(un)
-       end subroutine
-
-       subroutine import_structured_DN_probe(this)
-         implicit none
-         type(probe),intent(inout) :: this
-         integer :: un
-         un = open_to_read(str(this%dir),'primitives')
-         call import_primitives(this,un)
-         close(un)
-       end subroutine
-
        subroutine set_IO_dir_probe(this,dir)
          implicit none
          type(probe),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          if (.false.) write(*,*) dir
-         call init(this%dir,dir)
-         call init(this%name,'primitives')
        end subroutine
 
        subroutine make_IO_dir_probe(this,dir)
@@ -289,9 +245,7 @@
          type(probe),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
-         call init(this%dir,dir)
-         call init(this%name,'primitives')
+         call make_dir(dir)
        end subroutine
 
        subroutine export_structured_D_probe(this,dir)

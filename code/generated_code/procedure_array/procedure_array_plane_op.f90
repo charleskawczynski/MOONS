@@ -234,7 +234,7 @@
          integer :: i_SP
          integer :: s_SP
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
+         call make_dir(dir)
          if (allocated(this%SP)) then
            s_SP = size(this%SP)
            do i_SP=1,s_SP

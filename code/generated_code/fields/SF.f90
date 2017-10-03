@@ -6,6 +6,7 @@
        use IO_tools_mod
        use data_location_mod
        use block_field_mod
+       use block_field_extend_mod
        use data_location_mod
        use datatype_conversion_mod
        use dir_manip_mod
@@ -272,7 +273,7 @@
          integer :: i_BF
          integer :: s_BF
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
+         call make_dir(dir)
          if (allocated(this%BF)) then
            s_BF = size(this%BF)
            do i_BF=1,s_BF
@@ -323,6 +324,12 @@
            enddo
          endif
          call import_structured(this%DL,dir//'DL'//fortran_PS)
+         if (allocated(this%BF)) then
+           s_BF = size(this%BF)
+           do i_BF=1,s_BF
+             call set_procedures(this%BF(i_BF))
+           enddo
+         endif
        end subroutine
 
        subroutine suppress_warnings_SF(this)

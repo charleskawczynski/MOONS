@@ -6,11 +6,13 @@
        use export_frequency_params_mod
        use export_frequency_params_extend_mod
        implicit none
+
        private
        public :: update
        interface update;  module procedure update_EF;         end interface
 
        contains
+
        subroutine update_EF(EF,n_step,substep)
          implicit none
          type(export_frequency),intent(inout) :: EF

@@ -517,7 +517,7 @@
          integer :: s_colN
          integer :: s_colCC_centered
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
+         call make_dir(dir)
          call make_IO_dir(this%stagCC2N,dir//'stagCC2N'//fortran_PS)
          call make_IO_dir(this%stagN2CC,dir//'stagN2CC'//fortran_PS)
          call make_IO_dir(this%theta,dir//'theta'//fortran_PS)

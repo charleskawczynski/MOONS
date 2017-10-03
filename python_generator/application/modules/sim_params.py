@@ -165,6 +165,7 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('print_mesh_before_solve'           ,'logical',priv)
 	g.module[m_name].add_prop('fresh_restart_file'                ,'logical',priv)
 	g.module[m_name].add_prop('matrix_visualization'              ,'logical',priv)
+	g.module[m_name].add_prop('restart_all'                       ,'logical',priv)
 
 	m_name = 'sim_config_params'
 	g.add_module(m_name)

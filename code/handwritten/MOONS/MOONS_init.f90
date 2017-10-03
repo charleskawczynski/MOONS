@@ -61,24 +61,6 @@
          implicit none
          type(MOONS),intent(inout) :: M
          write(*,*) ' ************** STARTED RE-INITIALIZING PROCEDURES ************* '
-         write(*,*) ' ************** FINISHED RE-INITIALIZING PROCEDURES ************ '
-       end subroutine
-
-       subroutine init_meshes_MOONS(M)
-         implicit none
-         type(MOONS),intent(inout) :: M
-         write(*,*) ' ***************** STARTED INITIALIZING MESHES ***************** '
-         if (M%C%SP%FCL%restart_meshes) then
-           call import(M%GE%mom%m,str(M%C%DT%mesh_restart),'m_mom')
-           call import(M%GE%ind%m,str(M%C%DT%mesh_restart),'m_ind')
-           call import(M%GE%ind%MD_sigma,str(M%C%DT%mesh_restart),'MD_sigma')
-           call import(M%GE%ind%MD_fluid,str(M%C%DT%mesh_restart),'MD_fluid')
-         else
-           call generate_mesh_generic(M%GE%mom%m,M%C%SP%MP_mom,M%C%SP%DP,'momentum in MOONS.f90')
-           call generate_mesh_generic(M%GE%ind%m_sigma,M%C%SP%MP_sigma,M%C%SP%DP,'sigma in MOONS.f90')
-           call generate_mesh_generic(M%GE%ind%m,M%C%SP%MP_ind,M%C%SP%DP,'induction in MOONS.f90')
-         endif
-
          if (M%C%SP%VS%U%SS%initialize) then; call init_props(M%GE%mom%m); call patch(M%GE%mom%m); endif
          if (M%C%SP%VS%B%SS%initialize) then; call init_props(M%GE%ind%m); call patch(M%GE%ind%m); endif
          if (M%C%SP%VS%U%SS%initialize) then; call init_apply_BC_order(M%GE%mom%m,M%C%SP%GP%apply_BC_order); endif
@@ -92,6 +74,18 @@
            call init_props(M%GE%ind%MD_sigma%m_R1); call patch(M%GE%ind%MD_sigma%m_R1)
            call init_props(M%GE%ind%MD_sigma%m_R2); call patch(M%GE%ind%MD_sigma%m_R2)
          endif
+         write(*,*) ' ************** FINISHED RE-INITIALIZING PROCEDURES ************ '
+       end subroutine
+
+       subroutine init_meshes_MOONS(M)
+         implicit none
+         type(MOONS),intent(inout) :: M
+         write(*,*) ' ***************** STARTED INITIALIZING MESHES ***************** '
+         call generate_mesh_generic(M%GE%mom%m,M%C%SP%MP_mom,M%C%SP%DP,'momentum in MOONS.f90')
+         call generate_mesh_generic(M%GE%ind%m_sigma,M%C%SP%MP_sigma,M%C%SP%DP,'sigma in MOONS.f90')
+         call generate_mesh_generic(M%GE%ind%m,M%C%SP%MP_ind,M%C%SP%DP,'induction in MOONS.f90')
+
+         call re_init_procedures(M)
 
          call export_mesh_aux(M%C%SP,M%C%DT,M%GE%mom%m,M%GE%ind%m)
 
@@ -114,11 +108,6 @@
              call delete(M%m_temp)
            endif
          endif
-
-         call export(M%GE%mom%m,str(M%C%DT%mesh_restart),'m_mom')
-         call export(M%GE%ind%m,str(M%C%DT%mesh_restart),'m_ind')
-         call export(M%GE%ind%MD_sigma,str(M%C%DT%mesh_restart),'MD_sigma')
-         call export(M%GE%ind%MD_fluid,str(M%C%DT%mesh_restart),'MD_fluid')
 
          if (file_exists('','mesh_generation_error')) then
            stop 'Error: non-converged mesh, inspect mesh.'

@@ -367,7 +367,7 @@
          integer :: s_fb
          integer :: s_vol
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
+         call make_dir(dir)
          call make_IO_dir(this%g,dir//'g'//fortran_PS)
          if (allocated(this%f)) then
            s_f = size(this%f)

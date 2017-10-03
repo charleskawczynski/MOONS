@@ -63,6 +63,7 @@
          logical :: print_mesh_before_solve = .false.
          logical :: fresh_restart_file = .false.
          logical :: matrix_visualization = .false.
+         logical :: restart_all = .false.
        end type
 
        contains
@@ -94,6 +95,7 @@
          this%print_mesh_before_solve = that%print_mesh_before_solve
          this%fresh_restart_file = that%fresh_restart_file
          this%matrix_visualization = that%matrix_visualization
+         this%restart_all = that%restart_all
        end subroutine
 
        subroutine delete_flow_control_logicals(this)
@@ -121,6 +123,7 @@
          this%print_mesh_before_solve = .false.
          this%fresh_restart_file = .false.
          this%matrix_visualization = .false.
+         this%restart_all = .false.
        end subroutine
 
        subroutine display_flow_control_logicals(this,un)
@@ -168,6 +171,7 @@
          this%fresh_restart_file
          write(un,*) 'matrix_visualization               = ',&
          this%matrix_visualization
+         write(un,*) 'restart_all                        = ',this%restart_all
        end subroutine
 
        subroutine display_short_flow_control_logicals(this,un)
@@ -215,6 +219,7 @@
          this%fresh_restart_file
          write(un,*) 'matrix_visualization               = ',&
          this%matrix_visualization
+         write(un,*) 'restart_all                        = ',this%restart_all
        end subroutine
 
        subroutine display_wrap_flow_control_logicals(this,dir,name)
@@ -265,6 +270,7 @@
          write(un,*) 'print_mesh_before_solve             = ';write(un,*) this%print_mesh_before_solve
          write(un,*) 'fresh_restart_file                  = ';write(un,*) this%fresh_restart_file
          write(un,*) 'matrix_visualization                = ';write(un,*) this%matrix_visualization
+         write(un,*) 'restart_all                         = ';write(un,*) this%restart_all
        end subroutine
 
        subroutine import_flow_control_logicals(this,un)
@@ -294,6 +300,7 @@
          read(un,*); read(un,*) this%print_mesh_before_solve
          read(un,*); read(un,*) this%fresh_restart_file
          read(un,*); read(un,*) this%matrix_visualization
+         read(un,*); read(un,*) this%restart_all
        end subroutine
 
        subroutine export_primitives_flow_control_logicals(this,un)
@@ -322,6 +329,7 @@
          write(un,*) 'print_mesh_before_solve             = ';write(un,*) this%print_mesh_before_solve
          write(un,*) 'fresh_restart_file                  = ';write(un,*) this%fresh_restart_file
          write(un,*) 'matrix_visualization                = ';write(un,*) this%matrix_visualization
+         write(un,*) 'restart_all                         = ';write(un,*) this%restart_all
        end subroutine
 
        subroutine import_primitives_flow_control_logicals(this,un)
@@ -350,6 +358,7 @@
          read(un,*); read(un,*) this%print_mesh_before_solve
          read(un,*); read(un,*) this%fresh_restart_file
          read(un,*); read(un,*) this%matrix_visualization
+         read(un,*); read(un,*) this%restart_all
        end subroutine
 
        subroutine export_wrap_flow_control_logicals(this,dir,name)
@@ -385,7 +394,7 @@
          type(flow_control_logicals),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
+         call make_dir(dir)
        end subroutine
 
        subroutine export_structured_D_flow_control_logicals(this,dir)

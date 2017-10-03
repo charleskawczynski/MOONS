@@ -152,11 +152,11 @@
          call init_Ustar_field(mom%Ustar,mom%U)
          write(*,*) '     Intermediate field initialized'
 
-         call init(mom%probe_divU,str(DT%U%residual),'probe_divU',SP%VS%U%SS%restart,.true.,SP%VS%U%TMP)
-         call init(mom%probe_KE,str(DT%U%energy),'KE',SP%VS%U%SS%restart,.false.,SP%VS%U%TMP)
-         call init(mom%probe_Q,str(DT%U%energy),'probe_Q',SP%VS%U%SS%restart,.true.,SP%VS%U%TMP)
+         call init(mom%probe_divU,str(DT%U%residual),'probe_divU',SP%FCL%restart_all,.true.,SP%VS%U%TMP)
+         call init(mom%probe_KE,str(DT%U%energy),'KE',SP%FCL%restart_all,.false.,SP%VS%U%TMP)
+         call init(mom%probe_Q,str(DT%U%energy),'probe_Q',SP%FCL%restart_all,.true.,SP%VS%U%TMP)
          if (mom%m%MP%plane_any) then
-          call init(mom%probe_KE_2C,str(DT%U%energy),'KE_2C',SP%VS%U%SS%restart,.true.,SP%VS%U%TMP)
+          call init(mom%probe_KE_2C,str(DT%U%energy),'KE_2C',SP%FCL%restart_all,.true.,SP%VS%U%TMP)
          endif
          write(*,*) '     momentum probes initialized'
          call init(mom%TS,mom%m,mom%U,SP%TSP,SP%VS%U%TMP,str(DT%U%stats),'U')
@@ -177,7 +177,7 @@
          temp_unit = new_and_open(str(DT%params),'info_mom')
          call display(mom,SP,temp_unit)
          call close_and_message(temp_unit,str(DT%params),'info_mom')
-         if (SP%VS%U%SS%restart) call import(mom,SP,DT)
+         if (SP%FCL%restart_all) call import(mom,SP,DT)
          call face2CellCenter(mom%U_CC,mom%U,mom%m)  ! Needed after import
          call face2edge_no_diag(mom%U_E,mom%U,mom%m) ! Needed after import
          write(*,*) '     Solver settings initialized'
@@ -273,7 +273,7 @@
          type(momentum),intent(inout) :: mom
          type(sim_params),intent(in) :: SP
          type(dir_tree),intent(in) :: DT
-         if (SP%VS%U%SS%restart.and.(.not.SP%VS%U%SS%solve)) then
+         if (SP%FCL%restart_all.and.(.not.SP%VS%U%SS%solve)) then
            ! This preserves the initial data
          else
            write(*,*) 'export_tec_momentum at n_step = ',SP%VS%U%TMP%n_step

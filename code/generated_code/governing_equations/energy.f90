@@ -340,7 +340,7 @@
          type(energy),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
+         call make_dir(dir)
          call make_IO_dir(this%m,dir//'m'//fortran_PS)
          call make_IO_dir(this%PCG_T,dir//'PCG_T'//fortran_PS)
          call make_IO_dir(this%T,dir//'T'//fortran_PS)
@@ -376,24 +376,6 @@
          close(un)
          call export_structured(this%m,dir//'m'//fortran_PS)
          call export_structured(this%PCG_T,dir//'PCG_T'//fortran_PS)
-         call export_structured(this%T,dir//'T'//fortran_PS)
-         call export_structured(this%Tnm1,dir//'Tnm1'//fortran_PS)
-         call export_structured(this%temp_CC1,dir//'temp_CC1'//fortran_PS)
-         call export_structured(this%temp_CC2,dir//'temp_CC2'//fortran_PS)
-         call export_structured(this%F,dir//'F'//fortran_PS)
-         call export_structured(this%Fnm1,dir//'Fnm1'//fortran_PS)
-         call export_structured(this%L,dir//'L'//fortran_PS)
-         call export_structured(this%divQ,dir//'divQ'//fortran_PS)
-         call export_structured(this%Q_source,dir//'Q_source'//fortran_PS)
-         call export_structured(this%temp_F,dir//'temp_F'//fortran_PS)
-         call export_structured(this%k,dir//'k'//fortran_PS)
-         call export_structured(this%U_F,dir//'U_F'//fortran_PS)
-         call export_structured(this%U_CC,dir//'U_CC'//fortran_PS)
-         call export_structured(this%gravity,dir//'gravity'//fortran_PS)
-         call export_structured(this%temp_CC1_VF,&
-         dir//'temp_CC1_VF'//fortran_PS)
-         call export_structured(this%temp_CC2_VF,&
-         dir//'temp_CC2_VF'//fortran_PS)
          call export_structured(this%probe_divQ,dir//'probe_divQ'//fortran_PS)
          call export_structured(this%MD,dir//'MD'//fortran_PS)
        end subroutine
@@ -409,24 +391,6 @@
          close(un)
          call import_structured(this%m,dir//'m'//fortran_PS)
          call import_structured(this%PCG_T,dir//'PCG_T'//fortran_PS)
-         call import_structured(this%T,dir//'T'//fortran_PS)
-         call import_structured(this%Tnm1,dir//'Tnm1'//fortran_PS)
-         call import_structured(this%temp_CC1,dir//'temp_CC1'//fortran_PS)
-         call import_structured(this%temp_CC2,dir//'temp_CC2'//fortran_PS)
-         call import_structured(this%F,dir//'F'//fortran_PS)
-         call import_structured(this%Fnm1,dir//'Fnm1'//fortran_PS)
-         call import_structured(this%L,dir//'L'//fortran_PS)
-         call import_structured(this%divQ,dir//'divQ'//fortran_PS)
-         call import_structured(this%Q_source,dir//'Q_source'//fortran_PS)
-         call import_structured(this%temp_F,dir//'temp_F'//fortran_PS)
-         call import_structured(this%k,dir//'k'//fortran_PS)
-         call import_structured(this%U_F,dir//'U_F'//fortran_PS)
-         call import_structured(this%U_CC,dir//'U_CC'//fortran_PS)
-         call import_structured(this%gravity,dir//'gravity'//fortran_PS)
-         call import_structured(this%temp_CC1_VF,&
-         dir//'temp_CC1_VF'//fortran_PS)
-         call import_structured(this%temp_CC2_VF,&
-         dir//'temp_CC2_VF'//fortran_PS)
          call import_structured(this%probe_divQ,dir//'probe_divQ'//fortran_PS)
          call import_structured(this%MD,dir//'MD'//fortran_PS)
        end subroutine

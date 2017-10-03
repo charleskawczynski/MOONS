@@ -1,6 +1,6 @@
       module block_field_extend_mod
-        use block_field_mod
         ! Compiler flags: (_PARALLELIZE_BF_PLANE_)
+        use block_field_mod
         use current_precision_mod
         use grid_mod
         use block_mod
@@ -25,7 +25,9 @@
         public :: init_Edge
         public :: init_Node
 
-        public :: init_BCs,init_BC_props
+        public :: init_BCs
+        public :: init_BC_props
+        public :: set_procedures
 
         public :: volume
         public :: cosine_waves
@@ -99,6 +101,7 @@
        interface init_BCs;                    module procedure init_BC_val;                     end interface
        interface init_BCs;                    module procedure init_BC_block_DL;                end interface
        interface init_BC_props;               module procedure init_BC_props_BF;                end interface
+       interface set_procedures;              module procedure set_procedures_BF;               end interface
 
        interface volume;                      module procedure volume_DL_BF;                    end interface
        interface volume;                      module procedure volume_BF;                       end interface
@@ -189,10 +192,7 @@
          type(block),intent(in) :: B
          call init_CC(BF%GF,B%g)
          call init_CC(BF%DL)
-         call set_assign_ghost_all_faces(BF)
-         call set_assign_wall_Dirichlet(BF)
-         call set_multiply_wall_Neumann(BF)
-         call set_assign_wall_Periodic_single_BF(BF)
+         call set_procedures(BF)
        end subroutine
 
        subroutine init_Face_BF(BF,B,dir)
@@ -202,10 +202,7 @@
          integer,intent(in) :: dir
          call init_Face(BF%GF,B%g,dir)
          call init_Face(BF%DL,dir)
-         call set_assign_ghost_all_faces(BF)
-         call set_assign_wall_Dirichlet(BF)
-         call set_multiply_wall_Neumann(BF)
-         call set_assign_wall_Periodic_single_BF(BF)
+         call set_procedures(BF)
        end subroutine
 
        subroutine init_Edge_BF(BF,B,dir)
@@ -215,10 +212,7 @@
          integer,intent(in) :: dir
          call init_Edge(BF%GF,B%g,dir)
          call init_Edge(BF%DL,dir)
-         call set_assign_ghost_all_faces(BF)
-         call set_assign_wall_Dirichlet(BF)
-         call set_multiply_wall_Neumann(BF)
-         call set_assign_wall_Periodic_single_BF(BF)
+         call set_procedures(BF)
        end subroutine
 
        subroutine init_Node_BF(BF,B)
@@ -227,10 +221,7 @@
          type(block),intent(in) :: B
          call init_Node(BF%GF,B%g)
          call init_Node(BF%DL)
-         call set_assign_ghost_all_faces(BF)
-         call set_assign_wall_Dirichlet(BF)
-         call set_multiply_wall_Neumann(BF)
-         call set_assign_wall_Periodic_single_BF(BF)
+         call set_procedures(BF)
        end subroutine
 
        subroutine set_assign_ghost_all_faces(BF)
@@ -400,6 +391,12 @@
          type(block_field),intent(inout) :: BF
          real(cp),dimension(6),intent(in) :: c_w,Robin_coeff
          call init_props(BF%BCs,c_w,Robin_coeff)
+         call set_procedures(BF)
+       end subroutine
+
+       subroutine set_procedures_BF(BF)
+         implicit none
+         type(block_field),intent(inout) :: BF
          call set_assign_ghost_all_faces(BF)
          call set_assign_wall_Dirichlet(BF)
          call set_multiply_wall_Neumann(BF)

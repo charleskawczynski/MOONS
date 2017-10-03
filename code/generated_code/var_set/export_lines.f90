@@ -225,7 +225,7 @@
          integer :: i_EL
          integer :: s_EL
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
+         call make_dir(dir)
          if (allocated(this%EL)) then
            s_EL = size(this%EL)
            do i_EL=1,s_EL

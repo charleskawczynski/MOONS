@@ -63,7 +63,8 @@
            call import_structured(M%C,str(M%C%DT%config))
            ! call import_restart(M%C,str(M%C%DT%restart),'config')
            ! Need to make sure init knows to restart:
-           call set_restart(M%C%SP)
+           ! call set_restart(M%C%SP)
+           M%C%SP%FCL%restart_all = .true.
            ! call import_TMP(M%C%SP%VS)  ! start from last exported time step
            ! call import(M%C%SP%coupled) ! start from last exported time step
          else

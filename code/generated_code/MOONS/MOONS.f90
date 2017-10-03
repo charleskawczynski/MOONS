@@ -181,7 +181,7 @@
          type(MOONS),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
+         call make_dir(dir)
          call make_IO_dir(this%C,dir//'C'//fortran_PS)
          call make_IO_dir(this%GE,dir//'GE'//fortran_PS)
          call make_IO_dir(this%m_temp,dir//'m_temp'//fortran_PS)

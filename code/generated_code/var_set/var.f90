@@ -232,7 +232,7 @@
          type(var),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
+         call make_dir(dir)
          call make_IO_dir(this%SS,dir//'SS'//fortran_PS)
          call make_IO_dir(this%MFP,dir//'MFP'//fortran_PS)
          call make_IO_dir(this%TMP,dir//'TMP'//fortran_PS)

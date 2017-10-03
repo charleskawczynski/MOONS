@@ -538,7 +538,7 @@
          integer :: s_I_OPP_periodic_N
          integer :: s_i_2D
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
+         call make_dir(dir)
          s_G = size(this%G)
          do i_G=1,s_G
            call make_IO_dir(this%G(i_G),dir//'G_'//int2str(i_G)//fortran_PS)

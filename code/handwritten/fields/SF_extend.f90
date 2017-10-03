@@ -73,7 +73,9 @@
         public :: get_any_Robin
         public :: get_any_Prescribed
 
-        public :: init_BCs,init_BC_Dirichlet,init_BC_props,init_BC_mesh
+        public :: init_BCs,init_BC_Dirichlet,init_BC_mesh
+        public :: init_BC_props
+        public :: set_procedures
         public :: dot_product
         public :: cross_product_x
         public :: cross_product_y
@@ -128,6 +130,7 @@
         interface init_BCs;                 module procedure init_BC_val_SF;               end interface
         interface init_BC_mesh;             module procedure init_BC_mesh_SF;              end interface
         interface init_BC_props;            module procedure init_BC_props_SF;             end interface
+        interface set_procedures;           module procedure set_procedures_SF;            end interface
 
         interface print_BCs;                module procedure print_BCs_SF;                 end interface
         interface export_BCs;               module procedure export_BCs_SF;                end interface
@@ -496,6 +499,15 @@
           integer :: i
           do i=1,f%s
             call init_BC_props(f%BF(i),c_w,Robin_coeff)
+          enddo
+        end subroutine
+
+        subroutine set_procedures_SF(f)
+          implicit none
+          type(SF),intent(inout) :: f
+          integer :: i
+          do i=1,f%s
+            call set_procedures(f%BF(i))
           enddo
         end subroutine
 

@@ -2,7 +2,7 @@
        use probe_mod
        ! Implementation:
        !       type(probe) :: p
-       !       call init(p,dir,name,restart)
+       !       call init(p,tec_dir,tec_name,restart)
        !       do i=1,1000
        !         call export(p,n,t,d)      ! sets data to be exported
        !       enddo
@@ -31,36 +31,36 @@
 
        contains
 
-       subroutine init_probe(p,dir,name,restart,simple,TMP)
+       subroutine init_probe(p,tec_dir,tec_name,restart,simple,TMP)
          implicit none
          type(probe),intent(inout) :: p
-         character(len=*),intent(in) :: dir,name
+         character(len=*),intent(in) :: tec_dir,tec_name
          logical,intent(in) :: restart,simple
          type(time_marching_params),intent(in) :: TMP
          call delete(p)
-         call init(p%dir,dir)
-         call init(p%name,name)
+         call init(p%tec_dir,tec_dir)
+         call init(p%tec_name,tec_name)
          p%simple = simple
-         if (.not.restart) then; call init(p,dir,name)
-         else;                   call init(p,dir,name,TMP)
+         if (restart) then; call init(p,tec_dir,tec_name,TMP)
+         else;              call init(p,tec_dir,tec_name)
          endif
        end subroutine
 
-       subroutine init_probe_fresh(p,dir,name)
+       subroutine init_probe_fresh(p,tec_dir,tec_name)
          implicit none
          type(probe),intent(inout) :: p
-         character(len=*),intent(in) :: dir,name
+         character(len=*),intent(in) :: tec_dir,tec_name
          type(string) :: s
          p%restart = .false.
-         p%un = new_and_open(dir,name)
-         write(p%un,*) 'TITLE = "'//name//' probe"'
+         p%un = new_and_open(tec_dir,tec_name)
+         write(p%un,*) 'TITLE = "'//tec_name//' probe"'
          call init(s,'VARIABLES = t')
-         call append(s,','//name)
+         call append(s,','//tec_name)
          p%cols = 2
          if (.not.p%simple) then
-           p%cols = p%cols+1;call append(s,',d('//name//')/dt')
-           p%cols = p%cols+1;call append(s,',|d('//name//')/dt|')
-           p%cols = p%cols+1;call append(s,',|d('//name//')/dt|/max(d)_used')
+           p%cols = p%cols+1;call append(s,',d('//tec_name//')/dt')
+           p%cols = p%cols+1;call append(s,',|d('//tec_name//')/dt|')
+           p%cols = p%cols+1;call append(s,',|d('//tec_name//')/dt|/max(d)_used')
            p%cols = p%cols+1;call append(s,',max(d)')
          endif
          write(p%un,*) str(s)
@@ -71,17 +71,17 @@
          p%d_amax = 0.0_cp
        end subroutine
 
-       subroutine init_probe_restart(p,dir,name,TMP)
+       subroutine init_probe_restart(p,tec_dir,tec_name,TMP)
          implicit none
          type(probe),intent(inout) :: p
-         character(len=*),intent(in) :: dir,name
+         character(len=*),intent(in) :: tec_dir,tec_name
          type(time_marching_params),intent(in) :: TMP
          integer :: i_last
          p%restart = .true.
-         call truncate_data_in_open_file(p,TMP,dir,name,i_last)
-         i_last = get_last_data_point_location(dir,name)
-         ! p%un = open_to_append(dir,name,i_last) ! Does not work yet.
-         p%un = open_to_append(dir,name)
+         call truncate_data_in_open_file(p,TMP,tec_dir,tec_name,i_last)
+         i_last = get_last_data_point_location(tec_dir,tec_name)
+         ! p%un = open_to_append(tec_dir,tec_name,i_last) ! Does not work yet.
+         p%un = open_to_append(tec_dir,tec_name)
        end subroutine
 
        subroutine delete_probe_many(p)
@@ -93,23 +93,23 @@
          endif
        end subroutine
 
-       subroutine export_probe_wrapper_dim(p,dir,name)
+       subroutine export_probe_wrapper_dim(p,tec_dir,tec_name)
          implicit none
          type(probe),dimension(:),intent(in) :: p
-         character(len=*),intent(in) :: dir,name
+         character(len=*),intent(in) :: tec_dir,tec_name
          integer :: i
          if (size(p).gt.0) then
-           do i=1,size(p); call export(p(i),dir,name); enddo
+           do i=1,size(p); call export(p(i),tec_dir,tec_name); enddo
          endif
        end subroutine
 
-       subroutine import_probe_wrapper_dim(p,dir,name)
+       subroutine import_probe_wrapper_dim(p,tec_dir,tec_name)
          implicit none
          type(probe),dimension(:),intent(inout) :: p
-         character(len=*),intent(in) :: dir,name
+         character(len=*),intent(in) :: tec_dir,tec_name
          integer :: i
          if (size(p).gt.0) then
-         do i=1,size(p); call import(p(i),dir,name); enddo
+         do i=1,size(p); call import(p(i),tec_dir,tec_name); enddo
          endif
        end subroutine
 
@@ -130,7 +130,7 @@
          abs_d_data_dt_by_dmax = abs_d_data_dt/p%d_amax
          if (p%d_amax.lt.10.0_cp**(-10.0_cp)) abs_d_data_dt_by_dmax = abs_d_data_dt
          if (p%n_step.eq.TMP%n_step.and.(TMP%n_step.gt.0)) then
-          write(*,*) 'Error: cannot export probe '//str(p%name)//' consecutively.'
+          write(*,*) 'Error: cannot export probe '//str(p%tec_name)//' consecutively.'
           write(*,*) 'TMP%n_step = ',TMP%n_step
           write(*,*) 'p%n_step = ',p%n_step
           stop 'Done'
@@ -148,7 +148,7 @@
          implicit none
          type(probe),intent(in) :: p
          if (is_nan(p%d)) then
-           write(*,*) 'Error: NaN in data in probe: ',str(p%name)
+           write(*,*) 'Error: NaN in data in probe: ',str(p%tec_name)
            write(*,*) 'data = ',p%d
            stop 'Divergence error. Sorry!'
          endif
@@ -161,16 +161,16 @@
          d = p%d
        end function
 
-       subroutine truncate_data_in_open_file(p,TMP,dir,name,i_last)
+       subroutine truncate_data_in_open_file(p,TMP,tec_dir,tec_name,i_last)
          implicit none
          type(probe),intent(in) :: p
          type(time_marching_params),intent(in) :: TMP
-         character(len=*),intent(in) :: dir,name
+         character(len=*),intent(in) :: tec_dir,tec_name
          integer,intent(inout) :: i_last
          real(cp),dimension(:),allocatable :: d
          integer(li) :: i,i_first_to_delete,i_EOF
          integer :: un,stat
-         un = open_to_read(dir,name)
+         un = open_to_read(tec_dir,tec_name)
          read(un,*); read(un,*); read(un,*)
          allocate(d(p%cols))
          i_first_to_delete = 1
@@ -181,7 +181,7 @@
            if (stat .lt. 0) then; i_EOF = i; exit; endif
          enddo
          close(un)
-         un = open_to_read_write(dir,name)
+         un = open_to_read_write(tec_dir,tec_name)
          read(un,*); read(un,*); read(un,*)
          if (i_first_to_delete.ne.TMP%n_step) then
            do i=1,i_first_to_delete; read(un,*); enddo
@@ -192,14 +192,14 @@
          i_last = int(i_first_to_delete)+3
        end subroutine
 
-       function get_last_data_point_location(dir,name) result(i_last)
+       function get_last_data_point_location(tec_dir,tec_name) result(i_last)
          implicit none
-         character(len=*),intent(in) :: dir,name
+         character(len=*),intent(in) :: tec_dir,tec_name
          integer(li) :: i,i_EOF
          integer :: i_last
          integer :: un,stat
          logical :: L
-         un = open_to_read(dir,name)
+         un = open_to_read(tec_dir,tec_name)
          i_EOF = 1
          i = 1
          L = .true.

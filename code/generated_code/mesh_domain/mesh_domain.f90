@@ -180,7 +180,7 @@
          type(mesh_domain),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
+         call make_dir(dir)
          call make_IO_dir(this%D,dir//'D'//fortran_PS)
          call make_IO_dir(this%m_R1,dir//'m_R1'//fortran_PS)
          call make_IO_dir(this%m_R2,dir//'m_R2'//fortran_PS)

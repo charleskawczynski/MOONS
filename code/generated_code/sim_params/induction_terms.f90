@@ -204,7 +204,7 @@
          type(induction_terms),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
+         call make_dir(dir)
          call make_IO_dir(this%advection,dir//'advection'//fortran_PS)
          call make_IO_dir(this%diffusion,dir//'diffusion'//fortran_PS)
          call make_IO_dir(this%diffusion_linear,&

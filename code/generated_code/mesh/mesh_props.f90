@@ -299,7 +299,7 @@
          integer :: i_int_tensor
          integer :: s_int_tensor
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
+         call make_dir(dir)
          s_int_tensor = size(this%int_tensor)
          do i_int_tensor=1,s_int_tensor
            call make_IO_dir(this%int_tensor(i_int_tensor),&

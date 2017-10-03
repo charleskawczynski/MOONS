@@ -172,7 +172,7 @@
          type(mesh_block),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
+         call make_dir(dir)
          call make_IO_dir(this%m,dir//'m'//fortran_PS)
          call make_IO_dir(this%B,dir//'B'//fortran_PS)
        end subroutine

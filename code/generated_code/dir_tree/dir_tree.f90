@@ -445,7 +445,7 @@
          type(dir_tree),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
+         call make_dir(dir)
          call make_IO_dir(this%tar_p,dir//'tar_p'//fortran_PS)
          call make_IO_dir(this%out_dir,dir//'out_dir'//fortran_PS)
          call make_IO_dir(this%LDC,dir//'LDC'//fortran_PS)

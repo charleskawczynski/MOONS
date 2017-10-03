@@ -225,7 +225,7 @@
          integer :: i_EP
          integer :: s_EP
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
+         call make_dir(dir)
          if (allocated(this%EP)) then
            s_EP = size(this%EP)
            do i_EP=1,s_EP

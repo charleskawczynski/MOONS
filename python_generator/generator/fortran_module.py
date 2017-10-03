@@ -1,3 +1,4 @@
+import file_IO as IO
 import os
 import funcs as func
 import fortran_property as FP
@@ -8,6 +9,9 @@ suppress_all_warnings = True
 make_dir_quiet = False
 IO_structured_quiet = False
 skip_structured_IO = ['SF','VF','TF']
+use_procedures = True
+parent_to_reset_procedures = ['SF']
+child_to_reset_procedures = ['block_field']
 
 def longest_sub_string_match(string1, string2):
     if string1==string2:
@@ -125,7 +129,7 @@ class fortran_module:
     def get_used_modules(self): return self.used_modules
 
     def read_raw_lines(self,file_name):
-        self.raw_lines = func.read_file_to_list(file_name,'read_raw_lines')
+        self.raw_lines = IO.read_file_to_list(file_name,'read_raw_lines')
         temp = self.raw_lines
         temp = [x for x in temp if x.startswith('public ::')]
         temp = [x.replace('public ::','') for x in temp]
@@ -158,18 +162,22 @@ class fortran_module:
         # self.int_name = self.name[0:2]
         self.has_dir = []
         self.has_name = []
+        X = self.prop
+        self.has_name = any([X[key].name.lower()=='name' and X[key].class_.lower()=='string' for key in X])
+        self.has_dir  = any([X[key].name.lower()=='dir'  and X[key].class_.lower()=='string' for key in X])
+        self.has_dir_name = self.has_dir and self.has_name
         for key in self.prop:
           self.prop[key].set_do_loop_iter()
           self.prop[key].set_spaces(self.spaces)
-        for key in self.prop:
-          L = ['dir' in self.prop[key].name.lower()]
-          L = L + ['string' in self.prop[key].class_.lower()]
-          self.has_dir = self.has_dir + [all(L)]
-        for key in self.prop:
-          L = ['name' in self.prop[key].name.lower()]
-          L = L + ['string' in self.prop[key].class_.lower()]
-          self.has_name = self.has_name + [all(L)]
-        self.has_dir_name = any(self.has_dir) and any(self.has_name)
+        # for key in self.prop:
+        #   L = ['dir' in self.prop[key].name.lower()]
+        #   L = L + ['string' in self.prop[key].class_.lower()]
+        #   self.has_dir = self.has_dir + [all(L)]
+        # for key in self.prop:
+        #   L = ['name' in self.prop[key].name.lower()]
+        #   L = L + ['string' in self.prop[key].class_.lower()]
+        #   self.has_name = self.has_name + [all(L)]
+        # self.has_dir_name = any(self.has_dir) and any(self.has_name)
 
     def get_fortran_module(self):
         c = []
@@ -223,6 +231,13 @@ class fortran_module:
             d=d+[[x for x in self.base_modules if self.prop[key].get_class().lower()==x.lower()]]
             for k in self.abstract_interfaces:
                 d=d+[[k for x in self.abstract_interfaces[k] if self.prop[key].get_class().lower()==x.lower()]]
+
+        if use_procedures:
+          if any([x==self.name for x in parent_to_reset_procedures]):
+            for key in self.prop:
+              if any([x==self.prop[key].class_ for x in child_to_reset_procedures]):
+                d=d+[[self.prop[key].class_+'_extend']]
+
         d = list(set([item for sublist in d for item in sublist if item]))
         d.sort()
         c = c+[x+'_mod' for x in d]
@@ -662,6 +677,14 @@ class fortran_module:
         for key in self.prop:
           if all([not self.prop[key].class_==x for x in skip_structured_IO]):
             c=c+[[self.spaces[2]+x for x in self.prop[key].write_import_structured('dir')]]
+
+        # Custom, implementation detail for procedures:
+        if use_procedures:
+          if any([x==self.name for x in parent_to_reset_procedures]):
+            for key in self.prop:
+              if any([x==self.prop[key].class_ for x in child_to_reset_procedures]):
+                c=c+[[self.spaces[2]+x for x in self.prop[key].write_set_procedures()]]
+
         c=c+[self.end_sub()]
         return c
 

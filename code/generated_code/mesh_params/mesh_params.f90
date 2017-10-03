@@ -310,7 +310,7 @@
          integer :: s_s_base
          integer :: s_s_ext
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
+         call make_dir(dir)
          call make_IO_dir(this%MQP,dir//'MQP'//fortran_PS)
          if (allocated(this%s_base)) then
            s_s_base = size(this%s_base)

@@ -1,5 +1,6 @@
 import os
 import sys
+import file_IO as IO
 from collections import OrderedDict
 import collections
 import GOOFPY_directory as GD
@@ -21,9 +22,9 @@ class generator:
 
 	def set_directories(self,d):
 		self.d = d
-		func.delete_entire_tree_safe(self.d.target_dir)
-		func.make_path(self.d.target_dir)
-		func.make_path(self.d.bin_dir)
+		IO.delete_entire_tree_safe(self.d.dir_code_generated)
+		IO.make_path(self.d.dir_code_generated)
+		IO.make_path(self.d.dir_bin)
 		return self
 
 	def set_default_real(self,default_real): self.default_real = default_real
@@ -56,10 +57,10 @@ class generator:
 	def generate_code(self):
 		N_tot = 0
 		PS = self.d.PS
-		print(' ----------------------------- module_list ----------------------------- ')
-		# print(','.join(self.module_list))
-		print('\n'.join(self.module_list))
-		print(' ----------------------------------------------------------------------- ')
+		# print(' ----------------------------- module_list ----------------------------- ')
+		# # print(','.join(self.module_list))
+		# print('\n'.join(self.module_list))
+		# print(' ----------------------------------------------------------------------- ')
 
 		# module_list_temp = [self.module[key].folder_name+PS+self.module[key].name for key in self.module]
 		module_list_temp = []
@@ -68,7 +69,7 @@ class generator:
 
 		self.module_list = self.remove_duplicates_preserve_order(self.module_list)
 
-		print(' ----------------------------- module_list post ----------------------------- ')
+		print(' ----------------------------- module_list ----------------------------- ')
 		# print(','.join(self.module_list))
 		print('\n'.join(self.module_list))
 		print(' ----------------------------------------------------------------------- ')
@@ -91,17 +92,27 @@ class generator:
 			raise ValueError('Error: Duplicate classes: '+','.join(duplicates_full))
 
 		for key in self.module:
-			func.make_path(self.d.target_dir + self.module[key].folder_name + PS)
+			IO.make_path(self.d.dir_code_generated + self.module[key].folder_name + PS)
 
 		self.base_spaces = self.module[key].base_spaces
 
 		for key in self.module:
 			L = self.module[key].contruct_fortran_module(self.module_list,self.abstract_interfaces,self.base_modules)
-			path = self.d.target_dir+self.module[key].folder_name+PS+key+self.d.fext
-			func.write_string_to_file(path,'\n'.join(L))
+			path = self.d.dir_code_generated+self.module[key].folder_name+PS+key+self.d.f_ext
+			IO.write_string_to_file(path,'\n'.join(L))
 			N_tot = N_tot+len(L)
 
-		# func.make_dot_bat(self.d.target_root,self.d.GOOFPY_dir,self.d.target_dir,module_list_temp,self.d.base_dir,self.base_files,self.d.PS)
-		func.make_makefile(self.d.makefile_file,self.d.target_root,self.d.GOOFPY_dir,self.d.target_dir,module_list_temp,self.d.base_dir,self.base_files,'$(PS)')
-		# func.make_dummy_main(self.d.target_dir+'main_dummy.f90',self.module_list,self.base_spaces)
+		# func.make_dot_bat(self.d.dir_app,self.d.dir_GOOFPY,self.d.dir_code_generated,module_list_temp,self.d.dir_base,self.base_files,self.d.PS)
+		# func.make_makefile(self.d.src_generated,self.d.vpath_generated,self.d.dir_app,self.d.dir_GOOFPY,self.d.dir_code_generated,module_list_temp,self.d.dir_base,self.base_files,'$(PS)')
+
+		paths_to_replace = [self.d.dir_app,self.d.dir_GOOFPY,self.d.dir_code_generated]
+		file_list = [self.d.dir_code_generated+x+'.f90' for x in module_list_temp]
+		# func.make_makefile(self.d,self.d.src_generated,self.d.vpath_generated,file_list,paths_to_replace,'$(PS)')
+
+		func.make_generated(self.d,file_list)
+
+		func.combine_makefile(self.d)
+
+		# func.make_makefile(self.d.src_generated,self.d.vpath_generated,file_list,paths_to_replace,'$(PS)')
+		# func.make_dummy_main(self.d.dir_code_generated+'main_dummy.f90',self.module_list,self.base_spaces)
 		print('Number of lines generated (Total): ' + str(N_tot))

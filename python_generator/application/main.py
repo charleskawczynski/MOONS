@@ -57,39 +57,69 @@ def dir_name(d): return os.path.dirname(d)
 def full_path(f): return os.path.abspath(f)
 
 MOONS_dir = up_dir(dir_name(full_path(__file__)),1)+PS
-makefile_dir = MOONS_dir+'makefiles'+PS
-makefile_file = makefile_dir+'generated.make'
-this_file = full_path(__file__)
-app_folder = dir_name(this_file)+PS
-code_folder = up_dir(app_folder,1)+PS+'code'+PS
-handwritten_code_folder = code_folder+'handwritten'+PS
-generated_code_folder = code_folder+'generated_code'+PS
-generator_folder = up_dir(app_folder,0)+PS+'generator'+PS
-interface_folder = app_folder+'abstract_interfaces'+PS
-abstract_interfaces_path = handwritten_code_folder+'abstract_interfaces'+PS
+MOONS_dir = MOONS_dir.replace('/',PS).replace('\\',PS)
+dir_makefile = MOONS_dir+'makefiles'+PS
+makefile_main = dir_makefile+'makefile'
+
+src_pre_generated = dir_makefile+'src_pre_generated.make'
+src_generated     = dir_makefile+'src_generated.make'
+src_handwritten   = dir_makefile+'src_handwritten.make'
+src_all           = dir_makefile+'src_all.make'
+
+vpath_pre_generated = dir_makefile+'vpath_pre_generated.make'
+vpath_handwritten   = dir_makefile+'vpath_handwritten.make'
+vpath_generated     = dir_makefile+'vpath_generated.make'
+vpath_all           = dir_makefile+'vpath_all.make'
+
+PS_make_file     = '$(PS)'
+PS_file_sys     = PS
+f_ext     = '.f90'
+
+file_main = full_path(__file__)
+dir_app = dir_name(file_main)+PS
+dir_bin = dir_app+'bin'+PS
+dir_code = up_dir(dir_app,1)+PS+'code'+PS
+dir_code_handwritten = dir_code+'handwritten'+PS
+dir_code_generated = dir_code+'generated_code'+PS
+dir_code_pre_generated = dir_code+'pre_generated'+PS
+dir_GOOFPY = up_dir(dir_app,0)+PS+'generator'+PS
+dir_interface = dir_app+'abstract_interfaces'+PS
+abstract_interfaces_path = dir_code_handwritten+'abstract_interfaces'+PS
 
 d = GD.GOOFPY_directory(PS)
-d.set_main(this_file)
-d.set_target_root(app_folder)
-d.set_bin_dir(app_folder+'bin'+PS)
-d.set_interface_dir(interface_folder)
-d.set_target_dir(generated_code_folder)
-d.set_GOOFPY_dir(generator_folder)
-d.set_makefile_dir(makefile_dir)
-d.set_makefile_file(makefile_file)
-# d.set_main(main)
-# d.set_bin_dir(bin_dir)
-# d.set_base_dir(base_dir)
+d.set_f_ext(f_ext)
+d.set_file_main(file_main)
+d.set_dir_app(dir_app)
+d.set_dir_bin(dir_bin)
+d.set_dir_interface(dir_interface)
+d.set_dir_code_pre_generated(dir_code_pre_generated)
+d.set_dir_code_generated(dir_code_generated)
+d.set_dir_code_handwritten(dir_code_handwritten)
+d.set_dir_code(dir_code)
+d.set_dir_GOOFPY(dir_GOOFPY)
+d.set_dir_makefile(dir_makefile)
+d.set_makefile_main(makefile_main)
+d.set_src_generated(src_generated)
+d.set_src_pre_generated(src_pre_generated)
+d.set_src_handwritten(src_handwritten)
+d.set_src_all(src_all)
+d.set_vpath_pre_generated(vpath_pre_generated)
+d.set_vpath_handwritten(vpath_handwritten)
+d.set_vpath_generated(vpath_generated)
+d.set_vpath_all(vpath_all)
+d.set_PS_make_file(PS_make_file)
+d.set_PS_file_sys(PS_file_sys)
+
+d.unify_path_separator()
+
+make_file_vpaths = []
+make_file_vpaths.append((d.dir_code_pre_generated,'$(SRC_DIR_PRE_GENERATED)'+d.PS_make_file))
+make_file_vpaths.append((d.dir_code_generated,'$(SRC_DIR_GENERATED)'+d.PS_make_file))
+make_file_vpaths.append((d.dir_code_handwritten,'$(SRC_DIR)'+d.PS_make_file))
+d.set_make_file_vpaths(make_file_vpaths)
+
 d.compute_common_root()
 d.print_local()
-
-# GOOFPY_dir = os.path.dirname(os.path.abspath(__file__))
-# target_root = os.getcwd()
-# d.set_dir(GOOFPY_dir,target_root,main,abstract_interfaces_path,PS)
-# func.delete_entire_tree_safe(d.target_dir)
-# func.make_path(d.target_dir)
-# func.make_path(d.bin)
-
 
 g = g.generator()
 g.set_directories(d)

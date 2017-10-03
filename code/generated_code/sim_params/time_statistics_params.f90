@@ -174,7 +174,7 @@
          type(time_statistics_params),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
+         call make_dir(dir)
          call make_IO_dir(this%O1_stats,dir//'O1_stats'//fortran_PS)
          call make_IO_dir(this%O2_stats,dir//'O2_stats'//fortran_PS)
        end subroutine

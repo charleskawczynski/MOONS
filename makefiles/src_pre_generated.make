@@ -1,6 +1,3 @@
-VPATH =\
-	$(SRC_DIR_PRE_GENERATED)\
-
 SRCS_F=\
 	$(SRC_DIR_PRE_GENERATED)$(PS)current_precision.f90\
 	$(SRC_DIR_PRE_GENERATED)$(PS)string.f90\

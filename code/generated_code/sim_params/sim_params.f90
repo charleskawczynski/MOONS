@@ -305,7 +305,7 @@
          type(sim_params),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
+         call make_dir(dir)
          call make_IO_dir(this%VS,dir//'VS'//fortran_PS)
          call make_IO_dir(this%MP_mom,dir//'MP_mom'//fortran_PS)
          call make_IO_dir(this%MQP,dir//'MQP'//fortran_PS)

@@ -39,6 +39,7 @@
         public :: init_BC_mesh
         public :: init_BC_Dirichlet
         public :: init_BC_props
+        public :: set_procedures
         public :: multiply_volume
 
         public :: get_any_Dirichlet
@@ -197,6 +198,7 @@
         interface init_BC_Dirichlet;        module procedure init_BC_Dirichlet_VF;          end interface
         interface export_BCs;               module procedure export_BCs_VF;                 end interface
         interface init_BC_props;            module procedure init_BC_props_VF;              end interface
+        interface set_procedures;           module procedure set_procedures_VF;             end interface
 
         interface get_any_Dirichlet;        module procedure get_any_Dirichlet_VF;          end interface
         interface get_any_Neumann;          module procedure get_any_Neumann_VF;            end interface
@@ -339,6 +341,14 @@
           call init_BC_props(f%x,c_w,Robin_coeff)
           call init_BC_props(f%y,c_w,Robin_coeff)
           call init_BC_props(f%z,c_w,Robin_coeff)
+        end subroutine
+
+        subroutine set_procedures_VF(f)
+          implicit none
+          type(VF),intent(inout) :: f
+          call set_procedures(f%x)
+          call set_procedures(f%y)
+          call set_procedures(f%z)
         end subroutine
 
         function get_any_Dirichlet_VF(f) result(L)

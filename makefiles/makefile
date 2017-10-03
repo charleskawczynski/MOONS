@@ -246,9 +246,19 @@ endif
 
 TARGET = $(TARGET_DIR)$(PS)MOONS.exe
 
-include pre_generated.make
-include generated.make
-include handwritten.make
+# include vpath_all.make
+include vpath_pre_generated.make
+include vpath_generated.make
+include vpath_handwritten.make
+
+# include sorted_makefile.make
+include src_all.make
+
+SRCS_F += $(TARGET_DIR)$(PS)parametricStudy.f90
+
+# include src_pre_generated.make
+# include src_generated.make
+# include src_handwritten.make
 
 # **************** DO NOT EDIT BELOW HERE *********************
 # **************** DO NOT EDIT BELOW HERE *********************

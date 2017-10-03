@@ -296,7 +296,7 @@
          type(config),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir_quiet(dir)
+         call make_dir(dir)
          call init(this%dir,dir)
          call init(this%name,'primitives')
          call make_IO_dir(this%DT,dir//'DT'//fortran_PS)
