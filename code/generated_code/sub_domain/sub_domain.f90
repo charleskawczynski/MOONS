@@ -402,7 +402,9 @@
        subroutine suppress_warnings_sub_domain(this)
          implicit none
          type(sub_domain),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

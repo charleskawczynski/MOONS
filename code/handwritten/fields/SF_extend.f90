@@ -46,7 +46,8 @@
         public :: mirror_about_hmin,mirror_about_hmax
 
         public :: multiply_volume
-        public :: mean_along_dir,subtract_mean_along_dir
+        public :: mean_along_dir
+        public :: subtract_mean_along_dir
 
         public :: assign_BCs
         public :: assign_BC_vals
@@ -76,6 +77,7 @@
         public :: init_BCs,init_BC_Dirichlet,init_BC_mesh
         public :: init_BC_props
         public :: set_procedures
+        public :: set_necessary_for_restart
         public :: dot_product
         public :: cross_product_x
         public :: cross_product_y
@@ -131,6 +133,7 @@
         interface init_BC_mesh;             module procedure init_BC_mesh_SF;              end interface
         interface init_BC_props;            module procedure init_BC_props_SF;             end interface
         interface set_procedures;           module procedure set_procedures_SF;            end interface
+        interface set_necessary_for_restart;module procedure set_necessary_for_restart_SF; end interface
 
         interface print_BCs;                module procedure print_BCs_SF;                 end interface
         interface export_BCs;               module procedure export_BCs_SF;                end interface
@@ -510,6 +513,14 @@
             call set_procedures(f%BF(i))
           enddo
         end subroutine
+
+        subroutine set_necessary_for_restart_SF(f)
+          implicit none
+          type(SF),intent(inout) :: f
+          integer :: i
+          do i=1,f%s; call set_necessary_for_restart(f%BF(i)); enddo
+        end subroutine
+
 
         ! ***********************************************************
         ! ***********************************************************

@@ -346,7 +346,9 @@
        subroutine suppress_warnings_mesh_props(this)
          implicit none
          type(mesh_props),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

@@ -278,7 +278,9 @@
        subroutine suppress_warnings_export_planes(this)
          implicit none
          type(export_planes),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

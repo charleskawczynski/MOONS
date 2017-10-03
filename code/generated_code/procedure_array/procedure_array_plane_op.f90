@@ -287,7 +287,9 @@
        subroutine suppress_warnings_procedure_array_plane_op(this)
          implicit none
          type(procedure_array_plane_op),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

@@ -288,7 +288,8 @@
          call set_IO_dir(this%unsteady_3D,dir//'unsteady_3D'//fortran_PS)
          call set_IO_dir(this%final_solution,&
          dir//'final_solution'//fortran_PS)
-         call set_IO_dir(this%restart_files,dir//'restart_files'//fortran_PS)
+         call set_IO_dir(this%restart_files,&
+         dir//'restart_files'//fortran_PS)
        end subroutine
 
        subroutine make_IO_dir_export_frequency(this,dir)
@@ -306,7 +307,8 @@
          call make_IO_dir(this%unsteady_3D,dir//'unsteady_3D'//fortran_PS)
          call make_IO_dir(this%final_solution,&
          dir//'final_solution'//fortran_PS)
-         call make_IO_dir(this%restart_files,dir//'restart_files'//fortran_PS)
+         call make_IO_dir(this%restart_files,&
+         dir//'restart_files'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_export_frequency(this,dir)
@@ -360,7 +362,9 @@
        subroutine suppress_warnings_export_frequency(this)
          implicit none
          type(export_frequency),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

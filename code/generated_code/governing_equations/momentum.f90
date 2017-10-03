@@ -418,7 +418,8 @@
          call export_structured(this%probe_KE,dir//'probe_KE'//fortran_PS)
          call export_structured(this%probe_KE_2C,&
          dir//'probe_KE_2C'//fortran_PS)
-         call export_structured(this%probe_divU,dir//'probe_divU'//fortran_PS)
+         call export_structured(this%probe_divU,&
+         dir//'probe_divU'//fortran_PS)
          call export_structured(this%probe_Q,dir//'probe_Q'//fortran_PS)
        end subroutine
 
@@ -438,14 +439,17 @@
          call import_structured(this%probe_KE,dir//'probe_KE'//fortran_PS)
          call import_structured(this%probe_KE_2C,&
          dir//'probe_KE_2C'//fortran_PS)
-         call import_structured(this%probe_divU,dir//'probe_divU'//fortran_PS)
+         call import_structured(this%probe_divU,&
+         dir//'probe_divU'//fortran_PS)
          call import_structured(this%probe_Q,dir//'probe_Q'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_momentum(this)
          implicit none
          type(momentum),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

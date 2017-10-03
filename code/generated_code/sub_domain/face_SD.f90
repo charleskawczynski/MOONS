@@ -696,7 +696,9 @@
        subroutine suppress_warnings_face_SD(this)
          implicit none
          type(face_SD),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

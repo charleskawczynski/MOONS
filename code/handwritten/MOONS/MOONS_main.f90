@@ -69,6 +69,9 @@
          call export_structured(M%C)
          call export(M%C,str(M%C%DT%config),'config_DO_NOT_EDIT')
          call init(M)
+         if (M%C%SP%VS%T%SS%initialize) call set_necessary_for_restart(M%GE%nrg)
+         if (M%C%SP%VS%U%SS%initialize) call set_necessary_for_restart(M%GE%mom)
+         if (M%C%SP%VS%B%SS%initialize) call set_necessary_for_restart(M%GE%ind)
          call make_IO_dir(M,str(M%C%DT%restart)) ! must come after init so that allocatables in mesh exist
          call set_IO_dir(M,str(M%C%DT%config))
          if (.not.M%C%SP%FCL%skip_solver_loop) then

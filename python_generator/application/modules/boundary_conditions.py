@@ -43,6 +43,14 @@ def add_modules(g,T,F,priv,real):
 	# g.module[m_name].add_prop('meanVal',real,priv)
 	# g.module[m_name].add_prop('BCT','character(len=1)',priv)
 
+	m_name = 'bctype'
+	g.add_module(m_name)
+	g.module[m_name].set_folder_name(__name__.split('.')[1])
+	g.module[m_name].set_used_modules(['IO_tools_mod'])
+	g.module[m_name].add_prop(['Dirichlet','Neumann','Robin','Periodic','symmetric','antisymmetric','prescribed','defined'],'logical',priv)
+	g.module[m_name].add_prop('meanVal',real,priv)
+	g.module[m_name].add_prop('BCT','character(len=1)',priv)
+
 	m_name = 'single_boundary'
 	g.add_module(m_name)
 	g.module[m_name].set_folder_name(__name__.split('.')[1])

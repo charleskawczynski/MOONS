@@ -219,7 +219,9 @@
        subroutine suppress_warnings_sparse(this)
          implicit none
          type(sparse),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

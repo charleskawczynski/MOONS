@@ -206,7 +206,9 @@
        subroutine suppress_warnings_mesh_block(this)
          implicit none
          type(mesh_block),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

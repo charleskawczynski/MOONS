@@ -216,7 +216,9 @@
          type(time_step),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         if (.false.) write(*,*) dir
+         if (.false.) then
+           write(*,*) dir
+         endif
          call init(this%dir,dir)
          call init(this%name,'primitives')
        end subroutine
@@ -256,7 +258,9 @@
        subroutine suppress_warnings_time_step(this)
          implicit none
          type(time_step),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

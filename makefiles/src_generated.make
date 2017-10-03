@@ -1,6 +1,4 @@
 SRCS_F+=\
-	$(SRC_DIR_GENERATED)$(PS)pre_compiled$(PS)bctype.f90\
-	$(SRC_DIR_GENERATED)$(PS)pre_compiled$(PS)data_location.f90\
 	$(SRC_DIR_GENERATED)$(PS)stitches$(PS)stitch.f90\
 	$(SRC_DIR_GENERATED)$(PS)stitches$(PS)stitch_face.f90\
 	$(SRC_DIR_GENERATED)$(PS)dir_tree$(PS)path.f90\
@@ -60,6 +58,7 @@ SRCS_F+=\
 	$(SRC_DIR_GENERATED)$(PS)procedure_array$(PS)procedure_array.f90\
 	$(SRC_DIR_GENERATED)$(PS)procedure_array$(PS)procedure_array_plane_op.f90\
 	$(SRC_DIR_GENERATED)$(PS)boundary_conditions$(PS)BC_logicals.f90\
+	$(SRC_DIR_GENERATED)$(PS)boundary_conditions$(PS)bctype.f90\
 	$(SRC_DIR_GENERATED)$(PS)boundary_conditions$(PS)single_boundary.f90\
 	$(SRC_DIR_GENERATED)$(PS)boundary_conditions$(PS)boundary.f90\
 	$(SRC_DIR_GENERATED)$(PS)boundary_conditions$(PS)boundary_conditions.f90\
@@ -69,6 +68,7 @@ SRCS_F+=\
 	$(SRC_DIR_GENERATED)$(PS)mesh$(PS)mesh_props.f90\
 	$(SRC_DIR_GENERATED)$(PS)mesh$(PS)mesh.f90\
 	$(SRC_DIR_GENERATED)$(PS)mesh$(PS)mesh_block.f90\
+	$(SRC_DIR_GENERATED)$(PS)fields$(PS)data_location.f90\
 	$(SRC_DIR_GENERATED)$(PS)fields$(PS)SF.f90\
 	$(SRC_DIR_GENERATED)$(PS)fields$(PS)VF.f90\
 	$(SRC_DIR_GENERATED)$(PS)fields$(PS)TF.f90\

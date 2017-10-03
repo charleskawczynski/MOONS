@@ -337,7 +337,8 @@
          if (allocated(this%f)) then
            s_f = size(this%f)
            do i_f=1,s_f
-             call set_IO_dir(this%f(i_f),dir//'f_'//int2str(i_f)//fortran_PS)
+             call set_IO_dir(this%f(i_f),&
+             dir//'f_'//int2str(i_f)//fortran_PS)
            enddo
          endif
          if (allocated(this%fb)) then
@@ -372,7 +373,8 @@
          if (allocated(this%f)) then
            s_f = size(this%f)
            do i_f=1,s_f
-             call make_IO_dir(this%f(i_f),dir//'f_'//int2str(i_f)//fortran_PS)
+             call make_IO_dir(this%f(i_f),&
+             dir//'f_'//int2str(i_f)//fortran_PS)
            enddo
          endif
          if (allocated(this%fb)) then
@@ -472,7 +474,9 @@
        subroutine suppress_warnings_block(this)
          implicit none
          type(block),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

@@ -1,47 +1,4 @@
-def break_single_line(s_0):
-  s = s_0
-  n_max_characters = 70
-  result = [s]
-  if not type(s_0)==str:
-    raise NameError('Bad input to break_single_line')
-  if (len(s) >= n_max_characters and not ';' in s_0):
-    potential_break_locations = [',']
-    # potential_break_locations = [')','(',',']
-    PBL = potential_break_locations
-    n_spaces = len(s) - len(s.lstrip(' '))
-    spaces = n_spaces*' '
-    s_max = s[0:n_max_characters]
-    if any(x in s_max for x in PBL):
-      cutoff = [s_max.rfind(x)+1 for x in PBL]
-      cutoff = min([x for x in cutoff if not x==0])
-      s_cut = s_max[0:cutoff] + '&'
-      s_remain = s[cutoff:]
-      result = [s_cut]
-      if not (len(s_remain.replace(' ','')) <= 0):
-          result = result + break_single_line(spaces + s_remain)
-  else:
-    result = [s]
-  return result
-
-def indent_lines(L):
-  indent = '  '
-  T_up = ('if','do')
-  T_dn = ('endif','enddo')
-  T_unindent = ['else','elseif']
-  indent_cumulative = ''
-  s_indent = len(indent)
-  temp = ['' for x in L]
-  for i,x in enumerate(L):
-    if x.startswith(T_dn):
-      indent_cumulative = indent_cumulative[s_indent:]
-    temp[i]=indent_cumulative+temp[i]
-    if x.startswith(T_up):
-      indent_cumulative = indent_cumulative + indent
-  L = [s+x for (s,x) in zip(temp,L)]
-  L = [break_single_line(x) for x in L]
-  L = [item for sublist in L for item in sublist]
-  L = [x[s_indent:] if any([y in x for y in T_unindent]) else x for x in L]
-  return L
+import code_formatting as CF
 
 class logical_list:
   def __init__(self):
@@ -192,7 +149,7 @@ class fortran_property:
       L = L + ['this%'+self.name+' => that%' + self.name]
     else: raise NameError('Case not caught!')
 
-    return indent_lines(L)
+    return CF.indent_lines(L)
 
   def write_delete(self):
     L = []
@@ -254,7 +211,7 @@ class fortran_property:
       L = L + ['nullify(this%'+self.name+')']
     else: raise NameError('Case not caught!')
 
-    return indent_lines(L)
+    return CF.indent_lines(L)
 
   def write_export(self,primitives_only):
     L = []
@@ -331,21 +288,21 @@ class fortran_property:
     elif     self.LL.procedure and not self.allocatable and not self.dimension>1 and not self.rank>1: pass
     else: raise NameError('Case not caught!')
 
-    return indent_lines(L)
+    return CF.indent_lines(L)
 
   def write_export_wrap_specialized(self):
     L = []
     if     self.LL.object    and not self.allocatable and not self.dimension>1 and not self.rank>1:
       L = L + ["call export(this%" + self.name + ",dir,name//'_" + self.name + "')"]
     else: raise NameError('Case not caught!')
-    return indent_lines(L)
+    return CF.indent_lines(L)
 
   def write_import_wrap_specialized(self):
     L = []
     if     self.LL.object    and not self.allocatable and not self.dimension>1 and not self.rank>1:
       L = L + ["call import(this%" + self.name + ",dir,name//'_" + self.name + "')"]
     else: raise NameError('Case not caught!')
-    return indent_lines(L)
+    return CF.indent_lines(L)
 
   def write_import(self,primitives_only):
     L = []
@@ -412,7 +369,7 @@ class fortran_property:
     elif     self.LL.procedure and not self.allocatable and not self.dimension>1 and not self.rank>1: pass
     else: raise NameError('Case not caught!')
 
-    return indent_lines(L)
+    return CF.indent_lines(L)
 
   def write_display(self):
     L = []
@@ -472,7 +429,7 @@ class fortran_property:
     elif     self.LL.procedure and not self.allocatable and not self.dimension>1 and not self.rank>1: pass
     else: raise NameError('Case not caught!')
 
-    return indent_lines(L)
+    return CF.indent_lines(L)
 
   def write_display_short(self):
     L = []
@@ -523,7 +480,7 @@ class fortran_property:
     elif     self.LL.procedure and not self.allocatable and not self.dimension>1 and not self.rank>1: pass
     else: raise NameError('Case not caught!')
 
-    return indent_lines(L)
+    return CF.indent_lines(L)
 
   def write_set_IO_dir(self,fun_name):
     L = []
@@ -591,7 +548,7 @@ class fortran_property:
       elif     self.LL.procedure and not self.allocatable and not self.dimension>1 and not self.rank>1: pass
       else: raise NameError('Case not caught!')
 
-    return indent_lines(L)
+    return CF.indent_lines(L)
 
   def write_export_structured(self,directory):
     L = []
@@ -661,7 +618,7 @@ class fortran_property:
       elif     self.LL.procedure and not self.allocatable and not self.dimension>1 and not self.rank>1: pass
       else: raise NameError('Case not caught!')
 
-    return indent_lines(L)
+    return CF.indent_lines(L)
 
   def write_import_structured(self,directory):
     L = []
@@ -731,7 +688,7 @@ class fortran_property:
       elif     self.LL.procedure and not self.allocatable and not self.dimension>1 and not self.rank>1: pass
       else: raise NameError('Case not caught!')
 
-    return indent_lines(L)
+    return CF.indent_lines(L)
 
   def write_set_procedures(self):
     L = []
@@ -794,7 +751,7 @@ class fortran_property:
       elif     self.LL.procedure and not self.allocatable and not self.dimension>1 and not self.rank>1: pass
       else: raise NameError('Case not caught!')
 
-    return indent_lines(L)
+    return CF.indent_lines(L)
 
 
   def set_default_primitives(self):

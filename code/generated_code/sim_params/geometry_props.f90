@@ -178,7 +178,9 @@
          type(geometry_props),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         if (.false.) write(*,*) dir
+         if (.false.) then
+           write(*,*) dir
+         endif
        end subroutine
 
        subroutine make_IO_dir_geometry_props(this,dir)
@@ -214,7 +216,9 @@
        subroutine suppress_warnings_geometry_props(this)
          implicit none
          type(geometry_props),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

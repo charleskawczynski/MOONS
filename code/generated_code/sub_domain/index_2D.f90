@@ -150,7 +150,9 @@
          type(index_2D),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         if (.false.) write(*,*) dir
+         if (.false.) then
+           write(*,*) dir
+         endif
        end subroutine
 
        subroutine make_IO_dir_index_2D(this,dir)
@@ -186,7 +188,9 @@
        subroutine suppress_warnings_index_2D(this)
          implicit none
          type(index_2D),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

@@ -225,7 +225,9 @@
          type(exit_criteria),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         if (.false.) write(*,*) dir
+         if (.false.) then
+           write(*,*) dir
+         endif
          call init(this%dir,dir)
          call init(this%name,'primitives')
        end subroutine
@@ -265,7 +267,9 @@
        subroutine suppress_warnings_exit_criteria(this)
          implicit none
          type(exit_criteria),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

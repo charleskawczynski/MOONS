@@ -218,7 +218,9 @@
        subroutine suppress_warnings_governing_equations(this)
          implicit none
          type(governing_equations),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

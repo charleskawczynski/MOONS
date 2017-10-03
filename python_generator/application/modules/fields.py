@@ -8,6 +8,15 @@ import fortran_property as FP
 
 def add_modules(g,T,F,priv,real):
 
+	m_name = 'data_location'
+	g.add_module(m_name)
+	g.module[m_name].set_folder_name(__name__.split('.')[1])
+	g.module[m_name].set_used_modules(['IO_tools_mod'])
+	g.module[m_name].add_prop(['C','N','E','F','defined'],'logical',priv)
+	g.module[m_name].add_prop(['face','edge','volume_ID'],'integer',priv)
+	g.module[m_name].add_prop(['CC_along','N_along'],'logical',priv,F,1,3)
+	g.module[m_name].add_prop(['CC_eye','N_eye'],'integer',priv,F,1,3)
+
 	m_name = 'SF'
 	g.add_module(m_name)
 	g.module[m_name].set_folder_name(__name__.split('.')[1])

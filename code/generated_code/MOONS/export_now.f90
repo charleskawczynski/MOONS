@@ -329,7 +329,9 @@
        subroutine suppress_warnings_export_now(this)
          implicit none
          type(export_now),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

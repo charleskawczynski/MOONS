@@ -376,7 +376,8 @@
          close(un)
          call export_structured(this%m,dir//'m'//fortran_PS)
          call export_structured(this%PCG_T,dir//'PCG_T'//fortran_PS)
-         call export_structured(this%probe_divQ,dir//'probe_divQ'//fortran_PS)
+         call export_structured(this%probe_divQ,&
+         dir//'probe_divQ'//fortran_PS)
          call export_structured(this%MD,dir//'MD'//fortran_PS)
        end subroutine
 
@@ -391,14 +392,17 @@
          close(un)
          call import_structured(this%m,dir//'m'//fortran_PS)
          call import_structured(this%PCG_T,dir//'PCG_T'//fortran_PS)
-         call import_structured(this%probe_divQ,dir//'probe_divQ'//fortran_PS)
+         call import_structured(this%probe_divQ,&
+         dir//'probe_divQ'//fortran_PS)
          call import_structured(this%MD,dir//'MD'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_energy(this)
          implicit none
          type(energy),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

@@ -387,7 +387,9 @@
        subroutine suppress_warnings_stop_clock(this)
          implicit none
          type(stop_clock),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

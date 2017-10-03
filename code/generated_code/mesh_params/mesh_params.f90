@@ -391,7 +391,9 @@
        subroutine suppress_warnings_mesh_params(this)
          implicit none
          type(mesh_params),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

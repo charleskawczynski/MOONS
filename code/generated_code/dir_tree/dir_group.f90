@@ -282,7 +282,9 @@
        subroutine suppress_warnings_dir_group(this)
          implicit none
          type(dir_group),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

@@ -663,7 +663,8 @@
          call set_IO_dir(this%Bstar,dir//'Bstar'//fortran_PS)
          call set_IO_dir(this%dB0dt,dir//'dB0dt'//fortran_PS)
          call set_IO_dir(this%temp_CC_VF,dir//'temp_CC_VF'//fortran_PS)
-         call set_IO_dir(this%sigmaInv_edge,dir//'sigmaInv_edge'//fortran_PS)
+         call set_IO_dir(this%sigmaInv_edge,&
+         dir//'sigmaInv_edge'//fortran_PS)
          call set_IO_dir(this%J_interior,dir//'J_interior'//fortran_PS)
          call set_IO_dir(this%curlUCrossB,dir//'curlUCrossB'//fortran_PS)
          call set_IO_dir(this%CC_VF_fluid,dir//'CC_VF_fluid'//fortran_PS)
@@ -744,7 +745,8 @@
          call make_IO_dir(this%Bstar,dir//'Bstar'//fortran_PS)
          call make_IO_dir(this%dB0dt,dir//'dB0dt'//fortran_PS)
          call make_IO_dir(this%temp_CC_VF,dir//'temp_CC_VF'//fortran_PS)
-         call make_IO_dir(this%sigmaInv_edge,dir//'sigmaInv_edge'//fortran_PS)
+         call make_IO_dir(this%sigmaInv_edge,&
+         dir//'sigmaInv_edge'//fortran_PS)
          call make_IO_dir(this%J_interior,dir//'J_interior'//fortran_PS)
          call make_IO_dir(this%curlUCrossB,dir//'curlUCrossB'//fortran_PS)
          call make_IO_dir(this%CC_VF_fluid,dir//'CC_VF_fluid'//fortran_PS)
@@ -804,9 +806,12 @@
          call export_structured(this%m,dir//'m'//fortran_PS)
          call export_structured(this%m_sigma,dir//'m_sigma'//fortran_PS)
          call export_structured(this%PCG_B,dir//'PCG_B'//fortran_PS)
-         call export_structured(this%PCG_cleanB,dir//'PCG_cleanB'//fortran_PS)
-         call export_structured(this%probe_divB,dir//'probe_divB'//fortran_PS)
-         call export_structured(this%probe_divJ,dir//'probe_divJ'//fortran_PS)
+         call export_structured(this%PCG_cleanB,&
+         dir//'PCG_cleanB'//fortran_PS)
+         call export_structured(this%probe_divB,&
+         dir//'probe_divB'//fortran_PS)
+         call export_structured(this%probe_divJ,&
+         dir//'probe_divJ'//fortran_PS)
          call export_structured(this%JE,dir//'JE'//fortran_PS)
          call export_structured(this%JE_fluid,dir//'JE_fluid'//fortran_PS)
          s_ME = size(this%ME)
@@ -860,9 +865,12 @@
          call import_structured(this%m,dir//'m'//fortran_PS)
          call import_structured(this%m_sigma,dir//'m_sigma'//fortran_PS)
          call import_structured(this%PCG_B,dir//'PCG_B'//fortran_PS)
-         call import_structured(this%PCG_cleanB,dir//'PCG_cleanB'//fortran_PS)
-         call import_structured(this%probe_divB,dir//'probe_divB'//fortran_PS)
-         call import_structured(this%probe_divJ,dir//'probe_divJ'//fortran_PS)
+         call import_structured(this%PCG_cleanB,&
+         dir//'PCG_cleanB'//fortran_PS)
+         call import_structured(this%probe_divB,&
+         dir//'probe_divB'//fortran_PS)
+         call import_structured(this%probe_divJ,&
+         dir//'probe_divJ'//fortran_PS)
          call import_structured(this%JE,dir//'JE'//fortran_PS)
          call import_structured(this%JE_fluid,dir//'JE_fluid'//fortran_PS)
          s_ME = size(this%ME)
@@ -897,7 +905,9 @@
        subroutine suppress_warnings_induction(this)
          implicit none
          type(induction),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

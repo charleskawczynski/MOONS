@@ -313,7 +313,9 @@
        subroutine suppress_warnings_iter_solver_params(this)
          implicit none
          type(iter_solver_params),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

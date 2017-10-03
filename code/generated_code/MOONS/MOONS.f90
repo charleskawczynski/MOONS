@@ -218,7 +218,9 @@
        subroutine suppress_warnings_MOONS(this)
          implicit none
          type(MOONS),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

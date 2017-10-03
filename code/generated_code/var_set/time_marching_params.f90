@@ -264,7 +264,9 @@
        subroutine suppress_warnings_time_marching_params(this)
          implicit none
          type(time_marching_params),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

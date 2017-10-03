@@ -56,20 +56,23 @@
        public :: init,delete,display,print,export,import ! Essentials
        public :: solve,export_tec
        public :: export_unsteady
+       public :: set_necessary_for_restart
 
-       interface init;               module procedure init_energy;            end interface
-       interface display;            module procedure display_energy;         end interface
-       interface print;              module procedure print_energy;           end interface
-       interface export;             module procedure export_energy;          end interface
-       interface import;             module procedure import_energy;          end interface
+       interface init;                      module procedure init_energy;                   end interface
+       interface display;                   module procedure display_energy;                end interface
+       interface print;                     module procedure print_energy;                  end interface
+       interface export;                    module procedure export_energy;                 end interface
+       interface import;                    module procedure import_energy;                 end interface
 
-       interface solve;              module procedure solve_energy;           end interface
-       interface export_unsteady;    module procedure export_unsteady_nrg;    end interface
-       interface export_unsteady_0D; module procedure export_unsteady_0D_nrg; end interface
-       interface export_unsteady_1D; module procedure export_unsteady_1D_nrg; end interface
-       interface export_unsteady_2D; module procedure export_unsteady_2D_nrg; end interface
-       interface export_unsteady_3D; module procedure export_unsteady_3D_nrg; end interface
-       interface export_tec;         module procedure export_tec_energy;      end interface
+       interface set_necessary_for_restart; module procedure set_necessary_for_restart_nrg; end interface
+
+       interface solve;                     module procedure solve_energy;                  end interface
+       interface export_unsteady;           module procedure export_unsteady_nrg;           end interface
+       interface export_unsteady_0D;        module procedure export_unsteady_0D_nrg;        end interface
+       interface export_unsteady_1D;        module procedure export_unsteady_1D_nrg;        end interface
+       interface export_unsteady_2D;        module procedure export_unsteady_2D_nrg;        end interface
+       interface export_unsteady_3D;        module procedure export_unsteady_3D_nrg;        end interface
+       interface export_tec;                module procedure export_tec_energy;             end interface
 
        contains
 
@@ -165,6 +168,16 @@
          type(energy),intent(in) :: nrg
          type(sim_params),intent(in) :: SP
          call display(nrg,SP,6)
+       end subroutine
+
+       subroutine set_necessary_for_restart_nrg(nrg)
+         implicit none
+         type(energy),intent(inout) :: nrg
+         call set_necessary_for_restart(nrg%T)
+         call set_necessary_for_restart(nrg%Tnm1)
+         call set_necessary_for_restart(nrg%F)
+         call set_necessary_for_restart(nrg%Fnm1)
+         call set_necessary_for_restart(nrg%L)
        end subroutine
 
        subroutine export_energy(nrg,SP,DT)

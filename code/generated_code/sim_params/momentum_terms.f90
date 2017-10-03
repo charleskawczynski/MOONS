@@ -225,7 +225,8 @@
          type(momentum_terms),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call set_IO_dir(this%pressure_grad,dir//'pressure_grad'//fortran_PS)
+         call set_IO_dir(this%pressure_grad,&
+         dir//'pressure_grad'//fortran_PS)
          call set_IO_dir(this%advection_divergence,&
          dir//'advection_divergence'//fortran_PS)
          call set_IO_dir(this%advection_convection,&
@@ -249,7 +250,8 @@
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir(dir)
-         call make_IO_dir(this%pressure_grad,dir//'pressure_grad'//fortran_PS)
+         call make_IO_dir(this%pressure_grad,&
+         dir//'pressure_grad'//fortran_PS)
          call make_IO_dir(this%advection_divergence,&
          dir//'advection_divergence'//fortran_PS)
          call make_IO_dir(this%advection_convection,&
@@ -328,7 +330,9 @@
        subroutine suppress_warnings_momentum_terms(this)
          implicit none
          type(momentum_terms),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

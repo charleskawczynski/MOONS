@@ -178,7 +178,9 @@
          type(export_safe),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         if (.false.) write(*,*) dir
+         if (.false.) then
+           write(*,*) dir
+         endif
        end subroutine
 
        subroutine make_IO_dir_export_safe(this,dir)
@@ -214,7 +216,9 @@
        subroutine suppress_warnings_export_safe(this)
          implicit none
          type(export_safe),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

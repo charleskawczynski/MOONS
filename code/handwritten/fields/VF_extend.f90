@@ -40,6 +40,7 @@
         public :: init_BC_Dirichlet
         public :: init_BC_props
         public :: set_procedures
+        public :: set_necessary_for_restart
         public :: multiply_volume
 
         public :: get_any_Dirichlet
@@ -199,6 +200,7 @@
         interface export_BCs;               module procedure export_BCs_VF;                 end interface
         interface init_BC_props;            module procedure init_BC_props_VF;              end interface
         interface set_procedures;           module procedure set_procedures_VF;             end interface
+        interface set_necessary_for_restart;module procedure set_necessary_for_restart_VF;    end interface
 
         interface get_any_Dirichlet;        module procedure get_any_Dirichlet_VF;          end interface
         interface get_any_Neumann;          module procedure get_any_Neumann_VF;            end interface
@@ -349,6 +351,14 @@
           call set_procedures(f%x)
           call set_procedures(f%y)
           call set_procedures(f%z)
+        end subroutine
+
+        subroutine set_necessary_for_restart_VF(f)
+          implicit none
+          type(VF),intent(inout) :: f
+          call set_necessary_for_restart(f%x)
+          call set_necessary_for_restart(f%y)
+          call set_necessary_for_restart(f%z)
         end subroutine
 
         function get_any_Dirichlet_VF(f) result(L)

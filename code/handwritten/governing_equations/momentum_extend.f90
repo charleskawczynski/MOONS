@@ -71,21 +71,23 @@
 
        public :: solve,export_tec,compute_export_E_K_Budget
        public :: export_unsteady
+       public :: set_necessary_for_restart
 
-       interface init;                 module procedure init_mom;                   end interface
-       interface display;              module procedure display_momentum;           end interface
-       interface print;                module procedure print_momentum;             end interface
-       interface export;               module procedure export_momentum;            end interface
-       interface import;               module procedure import_momentum;            end interface
+       interface init;                      module procedure init_mom;                      end interface
+       interface display;                   module procedure display_momentum;              end interface
+       interface print;                     module procedure print_momentum;                end interface
+       interface export;                    module procedure export_momentum;               end interface
+       interface import;                    module procedure import_momentum;               end interface
 
-       interface export_tec;           module procedure export_tec_momentum;        end interface
-       interface solve;                module procedure solve_momentum;             end interface
+       interface export_tec;                module procedure export_tec_momentum;           end interface
+       interface solve;                     module procedure solve_momentum;                end interface
 
-       interface export_unsteady;       module procedure export_unsteady_mom;        end interface
-       interface export_unsteady_0D;    module procedure export_unsteady_0D_mom;      end interface
-       interface export_unsteady_1D;    module procedure export_unsteady_1D_mom;      end interface
-       interface export_unsteady_2D;    module procedure export_unsteady_2D_mom;      end interface
-       interface export_unsteady_3D;    module procedure export_unsteady_3D_mom;      end interface
+       interface export_unsteady;           module procedure export_unsteady_mom;           end interface
+       interface export_unsteady_0D;        module procedure export_unsteady_0D_mom;        end interface
+       interface export_unsteady_1D;        module procedure export_unsteady_1D_mom;        end interface
+       interface export_unsteady_2D;        module procedure export_unsteady_2D_mom;        end interface
+       interface export_unsteady_3D;        module procedure export_unsteady_3D_mom;        end interface
+       interface set_necessary_for_restart; module procedure set_necessary_for_restart_mom; end interface
 
        contains
 
@@ -216,6 +218,22 @@
          type(momentum),intent(in) :: mom
          type(sim_params),intent(in) :: SP
          call display(mom,SP,6)
+       end subroutine
+
+       subroutine set_necessary_for_restart_mom(mom)
+         implicit none
+         type(momentum),intent(inout) :: mom
+         call set_necessary_for_restart(mom%U)
+         call set_necessary_for_restart(mom%Ustar)
+         call set_necessary_for_restart(mom%Unm1)
+         call set_necessary_for_restart(mom%p)
+         call set_necessary_for_restart(mom%F)
+         call set_necessary_for_restart(mom%Fnm1)
+         call set_necessary_for_restart(mom%L)
+         call set_necessary_for_restart(mom%PCG_U%r)
+         call set_necessary_for_restart(mom%PCG_P%r)
+         call set_necessary_for_restart(mom%PCG_U%x_BC)
+         call set_necessary_for_restart(mom%PCG_P%x_BC)
        end subroutine
 
        subroutine export_momentum(mom,SP,DT)

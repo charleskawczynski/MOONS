@@ -623,7 +623,9 @@
        subroutine suppress_warnings_coordinates(this)
          implicit none
          type(coordinates),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

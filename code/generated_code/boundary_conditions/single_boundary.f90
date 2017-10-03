@@ -207,7 +207,8 @@
          close(un)
          call export_structured(this%bct,dir//'bct'//fortran_PS)
          call export_structured(this%b,dir//'b'//fortran_PS)
-         call export_structured(this%b_modified,dir//'b_modified'//fortran_PS)
+         call export_structured(this%b_modified,&
+         dir//'b_modified'//fortran_PS)
          call export_structured(this%b_total,dir//'b_total'//fortran_PS)
        end subroutine
 
@@ -222,14 +223,17 @@
          close(un)
          call import_structured(this%bct,dir//'bct'//fortran_PS)
          call import_structured(this%b,dir//'b'//fortran_PS)
-         call import_structured(this%b_modified,dir//'b_modified'//fortran_PS)
+         call import_structured(this%b_modified,&
+         dir//'b_modified'//fortran_PS)
          call import_structured(this%b_total,dir//'b_total'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_single_boundary(this)
          implicit none
          type(single_boundary),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

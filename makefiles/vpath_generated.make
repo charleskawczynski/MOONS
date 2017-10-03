@@ -14,7 +14,6 @@ VPATH +=\
 	$(SRC_DIR_GENERATED)$(PS)mesh_domain\
 	$(SRC_DIR_GENERATED)$(PS)mesh_params\
 	$(SRC_DIR_GENERATED)$(PS)physical_domain\
-	$(SRC_DIR_GENERATED)$(PS)pre_compiled\
 	$(SRC_DIR_GENERATED)$(PS)probe\
 	$(SRC_DIR_GENERATED)$(PS)procedure_array\
 	$(SRC_DIR_GENERATED)$(PS)sim_params\

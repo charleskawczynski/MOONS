@@ -501,7 +501,8 @@
          call export_structured(this%config,dir//'config'//fortran_PS)
          call export_structured(this%meshes,dir//'meshes'//fortran_PS)
          call export_structured(this%BEM,dir//'BEM'//fortran_PS)
-         call export_structured(this%wall_clock,dir//'wall_clock'//fortran_PS)
+         call export_structured(this%wall_clock,&
+         dir//'wall_clock'//fortran_PS)
          call export_structured(this%matrix_visualization,&
          dir//'matrix_visualization'//fortran_PS)
          call export_structured(this%dimensionless_params,&
@@ -510,12 +511,15 @@
          call export_structured(this%ISP,dir//'ISP'//fortran_PS)
          call export_structured(this%TMP,dir//'TMP'//fortran_PS)
          call export_structured(this%EF,dir//'EF'//fortran_PS)
-         call export_structured(this%export_now,dir//'export_now'//fortran_PS)
+         call export_structured(this%export_now,&
+         dir//'export_now'//fortran_PS)
          call export_structured(this%refine_mesh,&
          dir//'refine_mesh'//fortran_PS)
          call export_structured(this%e_budget,dir//'e_budget'//fortran_PS)
-         call export_structured(this%e_budget_N,dir//'e_budget_N'//fortran_PS)
-         call export_structured(this%e_budget_C,dir//'e_budget_C'//fortran_PS)
+         call export_structured(this%e_budget_N,&
+         dir//'e_budget_N'//fortran_PS)
+         call export_structured(this%e_budget_C,&
+         dir//'e_budget_C'//fortran_PS)
          call export_structured(this%restart_sim,&
          dir//'restart_sim'//fortran_PS)
          call export_structured(this%restart1,dir//'restart1'//fortran_PS)
@@ -552,7 +556,8 @@
          call import_structured(this%config,dir//'config'//fortran_PS)
          call import_structured(this%meshes,dir//'meshes'//fortran_PS)
          call import_structured(this%BEM,dir//'BEM'//fortran_PS)
-         call import_structured(this%wall_clock,dir//'wall_clock'//fortran_PS)
+         call import_structured(this%wall_clock,&
+         dir//'wall_clock'//fortran_PS)
          call import_structured(this%matrix_visualization,&
          dir//'matrix_visualization'//fortran_PS)
          call import_structured(this%dimensionless_params,&
@@ -561,12 +566,15 @@
          call import_structured(this%ISP,dir//'ISP'//fortran_PS)
          call import_structured(this%TMP,dir//'TMP'//fortran_PS)
          call import_structured(this%EF,dir//'EF'//fortran_PS)
-         call import_structured(this%export_now,dir//'export_now'//fortran_PS)
+         call import_structured(this%export_now,&
+         dir//'export_now'//fortran_PS)
          call import_structured(this%refine_mesh,&
          dir//'refine_mesh'//fortran_PS)
          call import_structured(this%e_budget,dir//'e_budget'//fortran_PS)
-         call import_structured(this%e_budget_N,dir//'e_budget_N'//fortran_PS)
-         call import_structured(this%e_budget_C,dir//'e_budget_C'//fortran_PS)
+         call import_structured(this%e_budget_N,&
+         dir//'e_budget_N'//fortran_PS)
+         call import_structured(this%e_budget_C,&
+         dir//'e_budget_C'//fortran_PS)
          call import_structured(this%restart_sim,&
          dir//'restart_sim'//fortran_PS)
          call import_structured(this%restart1,dir//'restart1'//fortran_PS)
@@ -590,7 +598,9 @@
        subroutine suppress_warnings_dir_tree(this)
          implicit none
          type(dir_tree),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

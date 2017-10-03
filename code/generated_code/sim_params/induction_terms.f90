@@ -255,7 +255,9 @@
        subroutine suppress_warnings_induction_terms(this)
          implicit none
          type(induction_terms),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

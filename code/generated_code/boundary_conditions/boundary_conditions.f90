@@ -263,7 +263,9 @@
        subroutine suppress_warnings_boundary_conditions(this)
          implicit none
          type(boundary_conditions),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

@@ -399,7 +399,9 @@
        subroutine suppress_warnings_PCG_solver_SF(this)
          implicit none
          type(PCG_solver_SF),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

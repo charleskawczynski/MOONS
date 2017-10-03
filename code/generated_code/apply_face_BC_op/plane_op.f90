@@ -7,12 +7,12 @@
       public :: plane_op
 
       abstract interface
-        subroutine plane_op(GF,val)
-          import grid_field,cp
-          implicit none
-          type(grid_field),intent(inout) :: GF
-          real(cp),intent(in) :: val
-        end subroutine
+      subroutine plane_op(GF,val)
+        import grid_field,cp
+        implicit none
+        type(grid_field),intent(inout) :: GF
+        real(cp),intent(in) :: val
+      end subroutine
       end interface
 
       end module

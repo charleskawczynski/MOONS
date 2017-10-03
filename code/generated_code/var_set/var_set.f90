@@ -260,7 +260,9 @@
        subroutine suppress_warnings_var_set(this)
          implicit none
          type(var_set),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

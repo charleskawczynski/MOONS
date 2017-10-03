@@ -72,23 +72,25 @@
        public :: init,delete,display,print,export,import ! Essentials
        public :: solve,export_tec,compute_export_E_M_budget
        public :: export_unsteady
+       public :: set_necessary_for_restart
 
-       interface init;                 module procedure init_induction;                end interface
-       interface display;              module procedure display_induction;             end interface
-       interface print;                module procedure print_induction;               end interface
-       interface export;               module procedure export_induction;              end interface
-       interface import;               module procedure import_induction;              end interface
+       interface init;                      module procedure init_induction;                end interface
+       interface display;                   module procedure display_induction;             end interface
+       interface print;                     module procedure print_induction;               end interface
+       interface export;                    module procedure export_induction;              end interface
+       interface import;                    module procedure import_induction;              end interface
+       interface set_necessary_for_restart; module procedure set_necessary_for_restart_ind; end interface
 
-       interface solve;                module procedure solve_induction;               end interface
-       interface export_tec;           module procedure export_tec_induction;          end interface
+       interface solve;                     module procedure solve_induction;               end interface
+       interface export_tec;                module procedure export_tec_induction;          end interface
 
-       interface set_sigma_inv;        module procedure set_sigma_inv_ind;             end interface
+       interface set_sigma_inv;             module procedure set_sigma_inv_ind;             end interface
 
-       interface export_unsteady;      module procedure export_unsteady_ind;           end interface
-       interface export_unsteady_0D;   module procedure export_unsteady_0D_ind;        end interface
-       interface export_unsteady_1D;   module procedure export_unsteady_1D_ind;        end interface
-       interface export_unsteady_2D;   module procedure export_unsteady_2D_ind;        end interface
-       interface export_unsteady_3D;   module procedure export_unsteady_3D_ind;        end interface
+       interface export_unsteady;           module procedure export_unsteady_ind;           end interface
+       interface export_unsteady_0D;        module procedure export_unsteady_0D_ind;        end interface
+       interface export_unsteady_1D;        module procedure export_unsteady_1D_ind;        end interface
+       interface export_unsteady_2D;        module procedure export_unsteady_2D_ind;        end interface
+       interface export_unsteady_3D;        module procedure export_unsteady_3D_ind;        end interface
 
        contains
 
@@ -257,6 +259,20 @@
          type(induction),intent(in) :: ind
          type(sim_params),intent(in) :: SP
          call display(ind,SP,6)
+       end subroutine
+
+       subroutine set_necessary_for_restart_ind(ind)
+         implicit none
+         type(induction),intent(inout) :: ind
+         call set_necessary_for_restart(ind%B)
+         call set_necessary_for_restart(ind%Bnm1)
+         call set_necessary_for_restart(ind%B0)
+         call set_necessary_for_restart(ind%F)
+         call set_necessary_for_restart(ind%Fnm1)
+         call set_necessary_for_restart(ind%L)
+         call set_necessary_for_restart(ind%Bstar)
+         call set_necessary_for_restart(ind%phi)
+         call set_necessary_for_restart(ind%J)
        end subroutine
 
        subroutine export_induction(ind,SP,DT)

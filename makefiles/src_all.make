@@ -22,9 +22,9 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)version$(PS)version.f90\
 	$(SRC_DIR_GENERATED)$(PS)boundary_conditions$(PS)BC_logicals.f90\
 	$(SRC_DIR_GENERATED)$(PS)grid$(PS)array.f90\
-	$(SRC_DIR_GENERATED)$(PS)pre_compiled$(PS)bctype.f90\
+	$(SRC_DIR_GENERATED)$(PS)boundary_conditions$(PS)bctype.f90\
 	$(SRC_DIR_GENERATED)$(PS)stop_clock$(PS)clock.f90\
-	$(SRC_DIR_GENERATED)$(PS)pre_compiled$(PS)data_location.f90\
+	$(SRC_DIR_GENERATED)$(PS)fields$(PS)data_location.f90\
 	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)dimensionless_params.f90\
 	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)equation_term.f90\
 	$(SRC_DIR_GENERATED)$(PS)var_set$(PS)exit_criteria.f90\

@@ -208,7 +208,9 @@
        subroutine suppress_warnings_TF(this)
          implicit none
          type(TF),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

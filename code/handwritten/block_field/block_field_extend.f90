@@ -90,6 +90,8 @@
         public :: get_any_Robin
         public :: get_any_Prescribed
 
+        public :: set_necessary_for_restart
+
         public :: restrict
         public :: prolongate
 
@@ -102,6 +104,7 @@
        interface init_BCs;                    module procedure init_BC_block_DL;                end interface
        interface init_BC_props;               module procedure init_BC_props_BF;                end interface
        interface set_procedures;              module procedure set_procedures_BF;               end interface
+       interface set_necessary_for_restart;   module procedure set_necessary_for_restart_BF;    end interface
 
        interface volume;                      module procedure volume_DL_BF;                    end interface
        interface volume;                      module procedure volume_BF;                       end interface
@@ -122,6 +125,7 @@
        interface get_any_Neumann;             module procedure get_any_Neumann_BF;              end interface
        interface get_any_Robin;               module procedure get_any_Robin_BF;                end interface
        interface get_any_Prescribed;          module procedure get_any_Prescribed_BF;           end interface
+
 
        interface square;                      module procedure square_BF;                       end interface
        interface square_root;                 module procedure square_root_BF;                  end interface
@@ -530,6 +534,12 @@
          logical :: L
          L = get_any_Prescribed(BF%BCs)
        end function
+
+       subroutine set_necessary_for_restart_BF(u)
+         implicit none
+         type(block_field),intent(inout) :: u
+         u%necessary_for_restart = .true.
+       end subroutine
 
        subroutine square_BF(u)
          implicit none

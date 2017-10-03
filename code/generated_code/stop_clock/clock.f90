@@ -90,7 +90,8 @@
          type(clock),intent(in) :: this
          integer,intent(in) :: un
          write(un,*) 't_elapsed               = ',this%t_elapsed
-         write(un,*) 't_elapsed_computational = ',this%t_elapsed_computational
+         write(un,*) 't_elapsed_computational = ',&
+         this%t_elapsed_computational
          write(un,*) 't_start_computational   = ',this%t_start_computational
          write(un,*) 't_stop_computational    = ',this%t_stop_computational
          write(un,*) 't_start                 = ',this%t_start
@@ -105,7 +106,8 @@
          type(clock),intent(in) :: this
          integer,intent(in) :: un
          write(un,*) 't_elapsed               = ',this%t_elapsed
-         write(un,*) 't_elapsed_computational = ',this%t_elapsed_computational
+         write(un,*) 't_elapsed_computational = ',&
+         this%t_elapsed_computational
          write(un,*) 't_start_computational   = ',this%t_start_computational
          write(un,*) 't_stop_computational    = ',this%t_stop_computational
          write(un,*) 't_start                 = ',this%t_start
@@ -223,7 +225,9 @@
          type(clock),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         if (.false.) write(*,*) dir
+         if (.false.) then
+           write(*,*) dir
+         endif
        end subroutine
 
        subroutine make_IO_dir_clock(this,dir)
@@ -259,7 +263,9 @@
        subroutine suppress_warnings_clock(this)
          implicit none
          type(clock),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

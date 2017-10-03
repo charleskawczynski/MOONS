@@ -46,8 +46,9 @@
        interface suppress_warnings;module procedure suppress_warnings_block_field;  end interface
 
        type block_field
-         type(grid_field) :: GF
+         logical :: necessary_for_restart = .false.
          type(boundary_conditions) :: BCs
+         type(grid_field) :: GF
          type(data_location) :: DL
          logical,dimension(3) :: many_cell_N_periodic = .false.
          logical,dimension(3) :: many_cell = .false.
@@ -65,8 +66,9 @@
          type(block_field),intent(inout) :: this
          type(block_field),intent(in) :: that
          call delete(this)
-         call init(this%GF,that%GF)
+         this%necessary_for_restart = that%necessary_for_restart
          call init(this%BCs,that%BCs)
+         call init(this%GF,that%GF)
          call init(this%DL,that%DL)
          this%many_cell_N_periodic = that%many_cell_N_periodic
          this%many_cell = that%many_cell
@@ -85,8 +87,9 @@
        subroutine delete_block_field(this)
          implicit none
          type(block_field),intent(inout) :: this
-         call delete(this%GF)
+         this%necessary_for_restart = .false.
          call delete(this%BCs)
+         call delete(this%GF)
          call delete(this%DL)
          this%many_cell_N_periodic = .false.
          this%many_cell = .false.
@@ -101,8 +104,10 @@
          implicit none
          type(block_field),intent(in) :: this
          integer,intent(in) :: un
-         call display(this%GF,un)
+         write(un,*) 'necessary_for_restart          = ',&
+         this%necessary_for_restart
          call display(this%BCs,un)
+         call display(this%GF,un)
          call display(this%DL,un)
          write(un,*) 'many_cell_N_periodic           = ',&
          this%many_cell_N_periodic
@@ -118,8 +123,10 @@
          implicit none
          type(block_field),intent(in) :: this
          integer,intent(in) :: un
-         call display(this%GF,un)
+         write(un,*) 'necessary_for_restart          = ',&
+         this%necessary_for_restart
          call display(this%BCs,un)
+         call display(this%GF,un)
          call display(this%DL,un)
          write(un,*) 'many_cell_N_periodic           = ',&
          this%many_cell_N_periodic
@@ -157,8 +164,9 @@
          implicit none
          type(block_field),intent(in) :: this
          integer,intent(in) :: un
-         call export(this%GF,un)
+         write(un,*) 'necessary_for_restart           = ';write(un,*) this%necessary_for_restart
          call export(this%BCs,un)
+         call export(this%GF,un)
          call export(this%DL,un)
          write(un,*) 'many_cell_N_periodic            = ';write(un,*) this%many_cell_N_periodic
          write(un,*) 'many_cell                       = ';write(un,*) this%many_cell
@@ -174,8 +182,9 @@
          type(block_field),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         call import(this%GF,un)
+         read(un,*); read(un,*) this%necessary_for_restart
          call import(this%BCs,un)
+         call import(this%GF,un)
          call import(this%DL,un)
          read(un,*); read(un,*) this%many_cell_N_periodic
          read(un,*); read(un,*) this%many_cell
@@ -190,6 +199,7 @@
          implicit none
          type(block_field),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'necessary_for_restart           = ';write(un,*) this%necessary_for_restart
          write(un,*) 'many_cell_N_periodic            = ';write(un,*) this%many_cell_N_periodic
          write(un,*) 'many_cell                       = ';write(un,*) this%many_cell
        end subroutine
@@ -198,6 +208,7 @@
          implicit none
          type(block_field),intent(inout) :: this
          integer,intent(in) :: un
+         read(un,*); read(un,*) this%necessary_for_restart
          read(un,*); read(un,*) this%many_cell_N_periodic
          read(un,*); read(un,*) this%many_cell
        end subroutine
@@ -227,8 +238,8 @@
          type(block_field),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call set_IO_dir(this%GF,dir//'GF'//fortran_PS)
          call set_IO_dir(this%BCs,dir//'BCs'//fortran_PS)
+         call set_IO_dir(this%GF,dir//'GF'//fortran_PS)
          call set_IO_dir(this%DL,dir//'DL'//fortran_PS)
          call set_IO_dir(this%PA_assign_ghost_XPeriodic,&
          dir//'PA_assign_ghost_XPeriodic'//fortran_PS)
@@ -248,8 +259,8 @@
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir(dir)
-         call make_IO_dir(this%GF,dir//'GF'//fortran_PS)
          call make_IO_dir(this%BCs,dir//'BCs'//fortran_PS)
+         call make_IO_dir(this%GF,dir//'GF'//fortran_PS)
          call make_IO_dir(this%DL,dir//'DL'//fortran_PS)
          call make_IO_dir(this%PA_assign_ghost_XPeriodic,&
          dir//'PA_assign_ghost_XPeriodic'//fortran_PS)
@@ -272,8 +283,10 @@
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
-         call export_structured(this%GF,dir//'GF'//fortran_PS)
          call export_structured(this%BCs,dir//'BCs'//fortran_PS)
+         if (this%necessary_for_restart) then
+           call export_structured(this%GF,dir//'GF'//fortran_PS)
+         endif
          call export_structured(this%DL,dir//'DL'//fortran_PS)
          call export_structured(this%PA_assign_ghost_XPeriodic,&
          dir//'PA_assign_ghost_XPeriodic'//fortran_PS)
@@ -296,8 +309,10 @@
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         call import_structured(this%GF,dir//'GF'//fortran_PS)
          call import_structured(this%BCs,dir//'BCs'//fortran_PS)
+         if (this%necessary_for_restart) then
+           call import_structured(this%GF,dir//'GF'//fortran_PS)
+         endif
          call import_structured(this%DL,dir//'DL'//fortran_PS)
          call import_structured(this%PA_assign_ghost_XPeriodic,&
          dir//'PA_assign_ghost_XPeriodic'//fortran_PS)
@@ -314,7 +329,9 @@
        subroutine suppress_warnings_block_field(this)
          implicit none
          type(block_field),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

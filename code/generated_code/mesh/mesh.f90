@@ -229,7 +229,8 @@
          if (allocated(this%B)) then
            s_B = size(this%B)
            do i_B=1,s_B
-             call set_IO_dir(this%B(i_B),dir//'B_'//int2str(i_B)//fortran_PS)
+             call set_IO_dir(this%B(i_B),&
+             dir//'B_'//int2str(i_B)//fortran_PS)
            enddo
          endif
          call set_IO_dir(this%MP,dir//'MP'//fortran_PS)
@@ -246,7 +247,8 @@
          if (allocated(this%B)) then
            s_B = size(this%B)
            do i_B=1,s_B
-             call make_IO_dir(this%B(i_B),dir//'B_'//int2str(i_B)//fortran_PS)
+             call make_IO_dir(this%B(i_B),&
+             dir//'B_'//int2str(i_B)//fortran_PS)
            enddo
          endif
          call make_IO_dir(this%MP,dir//'MP'//fortran_PS)
@@ -297,7 +299,9 @@
        subroutine suppress_warnings_mesh(this)
          implicit none
          type(mesh),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

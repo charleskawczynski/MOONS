@@ -204,7 +204,8 @@
          call set_IO_dir(this%KE_diffusion,dir//'KE_diffusion'//fortran_PS)
          call set_IO_dir(this%viscous_dissipation,&
          dir//'viscous_dissipation'//fortran_PS)
-         call set_IO_dir(this%joule_heating,dir//'joule_heating'//fortran_PS)
+         call set_IO_dir(this%joule_heating,&
+         dir//'joule_heating'//fortran_PS)
          call set_IO_dir(this%volumetric_heating,&
          dir//'volumetric_heating'//fortran_PS)
        end subroutine
@@ -222,7 +223,8 @@
          call make_IO_dir(this%KE_diffusion,dir//'KE_diffusion'//fortran_PS)
          call make_IO_dir(this%viscous_dissipation,&
          dir//'viscous_dissipation'//fortran_PS)
-         call make_IO_dir(this%joule_heating,dir//'joule_heating'//fortran_PS)
+         call make_IO_dir(this%joule_heating,&
+         dir//'joule_heating'//fortran_PS)
          call make_IO_dir(this%volumetric_heating,&
          dir//'volumetric_heating'//fortran_PS)
        end subroutine
@@ -276,7 +278,9 @@
        subroutine suppress_warnings_energy_terms(this)
          implicit none
          type(energy_terms),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

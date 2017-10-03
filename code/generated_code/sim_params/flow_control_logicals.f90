@@ -130,14 +130,16 @@
          implicit none
          type(flow_control_logicals),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'post_process                       = ',this%post_process
+         write(un,*) 'post_process                       = ',&
+         this%post_process
          write(un,*) 'skip_solver_loop                   = ',&
          this%skip_solver_loop
          write(un,*) 'stop_before_solve                  = ',&
          this%stop_before_solve
          write(un,*) 'stop_after_mesh_export             = ',&
          this%stop_after_mesh_export
-         write(un,*) 'Poisson_test                       = ',this%Poisson_test
+         write(un,*) 'Poisson_test                       = ',&
+         this%Poisson_test
          write(un,*) 'Taylor_Green_Vortex_test           = ',&
          this%Taylor_Green_Vortex_test
          write(un,*) 'temporal_convergence_test          = ',&
@@ -160,7 +162,8 @@
          this%export_final_restart
          write(un,*) 'restart_meshes                     = ',&
          this%restart_meshes
-         write(un,*) 'export_heavy                       = ',this%export_heavy
+         write(un,*) 'export_heavy                       = ',&
+         this%export_heavy
          write(un,*) 'print_every_MHD_step               = ',&
          this%print_every_MHD_step
          write(un,*) 'compute_surface_power              = ',&
@@ -171,21 +174,24 @@
          this%fresh_restart_file
          write(un,*) 'matrix_visualization               = ',&
          this%matrix_visualization
-         write(un,*) 'restart_all                        = ',this%restart_all
+         write(un,*) 'restart_all                        = ',&
+         this%restart_all
        end subroutine
 
        subroutine display_short_flow_control_logicals(this,un)
          implicit none
          type(flow_control_logicals),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'post_process                       = ',this%post_process
+         write(un,*) 'post_process                       = ',&
+         this%post_process
          write(un,*) 'skip_solver_loop                   = ',&
          this%skip_solver_loop
          write(un,*) 'stop_before_solve                  = ',&
          this%stop_before_solve
          write(un,*) 'stop_after_mesh_export             = ',&
          this%stop_after_mesh_export
-         write(un,*) 'Poisson_test                       = ',this%Poisson_test
+         write(un,*) 'Poisson_test                       = ',&
+         this%Poisson_test
          write(un,*) 'Taylor_Green_Vortex_test           = ',&
          this%Taylor_Green_Vortex_test
          write(un,*) 'temporal_convergence_test          = ',&
@@ -208,7 +214,8 @@
          this%export_final_restart
          write(un,*) 'restart_meshes                     = ',&
          this%restart_meshes
-         write(un,*) 'export_heavy                       = ',this%export_heavy
+         write(un,*) 'export_heavy                       = ',&
+         this%export_heavy
          write(un,*) 'print_every_MHD_step               = ',&
          this%print_every_MHD_step
          write(un,*) 'compute_surface_power              = ',&
@@ -219,7 +226,8 @@
          this%fresh_restart_file
          write(un,*) 'matrix_visualization               = ',&
          this%matrix_visualization
-         write(un,*) 'restart_all                        = ',this%restart_all
+         write(un,*) 'restart_all                        = ',&
+         this%restart_all
        end subroutine
 
        subroutine display_wrap_flow_control_logicals(this,dir,name)
@@ -386,7 +394,9 @@
          type(flow_control_logicals),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         if (.false.) write(*,*) dir
+         if (.false.) then
+           write(*,*) dir
+         endif
        end subroutine
 
        subroutine make_IO_dir_flow_control_logicals(this,dir)
@@ -422,7 +432,9 @@
        subroutine suppress_warnings_flow_control_logicals(this)
          implicit none
          type(flow_control_logicals),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

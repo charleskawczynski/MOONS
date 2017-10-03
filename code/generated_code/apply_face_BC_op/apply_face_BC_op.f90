@@ -8,14 +8,14 @@
       public :: apply_face_BC_op
 
       abstract interface
-        subroutine apply_face_BC_op(GF,surf,FSD,face)
-          import grid_field,face_SD
-          implicit none
-          type(grid_field),intent(inout) :: GF
-          type(grid_field),intent(in) :: surf
-          type(face_SD),intent(in) :: FSD
-          integer,intent(in) :: face
-        end subroutine
+      subroutine apply_face_BC_op(GF,surf,FSD,face)
+        import grid_field,face_SD
+        implicit none
+        type(grid_field),intent(inout) :: GF
+        type(grid_field),intent(in) :: surf
+        type(face_SD),intent(in) :: FSD
+        integer,intent(in) :: face
+      end subroutine
       end interface
 
       end module

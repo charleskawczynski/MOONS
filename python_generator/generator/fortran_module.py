@@ -1,3 +1,4 @@
+import code_formatting as CF
 import file_IO as IO
 import os
 import funcs as func
@@ -9,6 +10,11 @@ suppress_all_warnings = True
 make_dir_quiet = False
 IO_structured_quiet = False
 skip_structured_IO = ['SF','VF','TF']
+
+use_necessary_for_restart = True
+parent_necessary_for_restart = ['block_field']
+child_necessary_for_restart = ['grid_field']
+
 use_procedures = True
 parent_to_reset_procedures = ['SF']
 child_to_reset_procedures = ['block_field']
@@ -34,23 +40,6 @@ def longest_sub_string_match_list(L):
     for x in L[1:]: s = longest_sub_string_match(s,x)
     return s
 
-def indent_lines(L):
-  indent = '  '
-  T_up = ('if','do')
-  T_dn = ('endif','enddo')
-  T_unindent = ['else','elseif']
-  indent_cumulative = ''
-  s_indent = len(indent)
-  temp = ['' for x in L]
-  for i,x in enumerate(L):
-    if x.startswith(T_dn):
-      indent_cumulative = indent_cumulative[s_indent:]
-    temp[i]=indent_cumulative+temp[i]
-    if x.startswith(T_up):
-      indent_cumulative = indent_cumulative + indent
-  L = [s+x for (s,x) in zip(temp,L)]
-  L = [x[s_indent:] for x in L if any([y in x for y in T_unindent])]
-  return L
 
 class fortran_module:
 
@@ -204,17 +193,18 @@ class fortran_module:
         c=c+['end module']
         return c
 
-    def post_process(self,c):
-        l = func.flatten(c)
-        l = [x for x in l if not x==None]
+    def post_process(self,L):
+        L = func.flatten(L)
+        L = [x for x in L if not x==None]
         if self.raw_lines_used:
-          l = self.raw_lines
+          L = self.raw_lines
         else:
-          l = [self.base_spaces+x if not (x=='' or x.startswith('#')) else x for x in l]
-        # l = [self.base_spaces+x for x in l]
-        s = [self.breakLine(k,[]) for k in l]
-        s = l
-        return s
+          L = [self.base_spaces+x if not (x=='' or x.startswith('#')) else x for x in L]
+        # L = [self.base_spaces+x for x in L]
+        # L = [CF.indent_lines(k) for k in L]
+        L = CF.indent_lines(L)
+        # L = [self.breakLine(k,[]) for k in L]
+        return L
 
     def write_used_modules(self):
         d=[]
@@ -627,7 +617,13 @@ class fortran_module:
         c=c+[self.spaces[2]+'close(un)']
         for key in self.prop:
           if all([not self.prop[key].class_==x for x in skip_structured_IO]):
+            temp1 = any([self.name==x for x in parent_necessary_for_restart])
+            temp2 = any([self.prop[key].class_==x for x in child_necessary_for_restart])
+            if temp1 and temp2 and use_necessary_for_restart:
+              c=c+[self.spaces[2] + "if (this%necessary_for_restart) then" ]
             c=c+[self.spaces[2]+x for x in self.prop[key].write_export_structured('dir')]
+            if temp1 and temp2 and use_necessary_for_restart:
+              c=c+[self.spaces[2] + "endif" ]
         c=c+[self.end_sub()]
         return c
 
@@ -676,7 +672,13 @@ class fortran_module:
         c=c+[self.spaces[2]+'close(un)']
         for key in self.prop:
           if all([not self.prop[key].class_==x for x in skip_structured_IO]):
+            temp1 = any([self.name==x for x in parent_necessary_for_restart])
+            temp2 = any([self.prop[key].class_==x for x in child_necessary_for_restart])
+            if temp1 and temp2 and use_necessary_for_restart:
+              c=c+[self.spaces[2] + "if (this%necessary_for_restart) then" ]
             c=c+[[self.spaces[2]+x for x in self.prop[key].write_import_structured('dir')]]
+            if temp1 and temp2 and use_necessary_for_restart:
+              c=c+[self.spaces[2] + "endif" ]
 
         # Custom, implementation detail for procedures:
         if use_procedures:
@@ -728,7 +730,9 @@ class fortran_module:
         if suppress_all_warnings:
           c=c+[self.spaces[2] + 'call suppress_warnings(this)' ]
         if suppress_all_warnings and self.primitives_strings_or_procedures:
-          c=c+[self.spaces[2] + 'if (.false.) write(*,*) dir' ]
+          c=c+[self.spaces[2] + 'if (.false.) then' ]
+          c=c+[self.spaces[2] + 'write(*,*) dir' ]
+          c=c+[self.spaces[2] + 'endif' ]
         if self.has_dir_name:
           c=c+[self.spaces[2] + "call init(this%dir,dir)" ]
           c=c+[self.spaces[2] + "call init(this%name,'primitives')" ]
@@ -771,7 +775,9 @@ class fortran_module:
           c = [self.full_sub_signature(sig,'this')]
           c=c+[self.spaces[2] + self.implicitNone]
           c=c+[self.spaces[2] + 'type(' + self.name + '),intent(in) :: this' ]
-          c=c+[self.spaces[2] + 'if (.false.) call print(this)' ]
+          c=c+[self.spaces[2] + 'if (.false.) then' ]
+          c=c+[self.spaces[2] + 'call print(this)' ]
+          c=c+[self.spaces[2] + 'endif' ]
           c=c+[self.end_sub()]
         return c
 

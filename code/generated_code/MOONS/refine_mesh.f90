@@ -384,7 +384,9 @@
        subroutine suppress_warnings_refine_mesh(this)
          implicit none
          type(refine_mesh),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module

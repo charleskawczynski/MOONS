@@ -287,7 +287,9 @@
        subroutine suppress_warnings_physical_domain(this)
          implicit none
          type(physical_domain),intent(in) :: this
-         if (.false.) call print(this)
+         if (.false.) then
+           call print(this)
+         endif
        end subroutine
 
        end module
