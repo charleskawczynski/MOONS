@@ -241,7 +241,6 @@
          integer :: un
          un = new_and_open(str(this%dir),'primitives')
          call export_primitives(this,un)
-         close(un)
          call export_structured(this%DT,str(this%dir)//'DT'//fortran_PS)
          call export_structured(this%SP,str(this%dir)//'SP'//fortran_PS)
          call export_structured(this%dir_target,&
@@ -252,6 +251,7 @@
          call export_structured(this%KS,str(this%dir)//'KS'//fortran_PS)
          call export_structured(this%dir,str(this%dir)//'dir'//fortran_PS)
          call export_structured(this%name,str(this%dir)//'name'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine import_structured_DN_config(this)
@@ -260,7 +260,6 @@
          integer :: un
          un = open_to_read(str(this%dir),'primitives')
          call import_primitives(this,un)
-         close(un)
          call import_structured(this%DT,str(this%dir)//'DT'//fortran_PS)
          call import_structured(this%SP,str(this%dir)//'SP'//fortran_PS)
          call import_structured(this%dir_target,&
@@ -271,6 +270,7 @@
          call import_structured(this%KS,str(this%dir)//'KS'//fortran_PS)
          call import_structured(this%dir,str(this%dir)//'dir'//fortran_PS)
          call import_structured(this%name,str(this%dir)//'name'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine set_IO_dir_config(this,dir)
@@ -317,7 +317,6 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
-         close(un)
          call export_structured(this%DT,dir//'DT'//fortran_PS)
          call export_structured(this%SP,dir//'SP'//fortran_PS)
          call export_structured(this%dir_target,&
@@ -328,6 +327,7 @@
          call export_structured(this%KS,dir//'KS'//fortran_PS)
          call export_structured(this%dir,dir//'dir'//fortran_PS)
          call export_structured(this%name,dir//'name'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine import_structured_D_config(this,dir)
@@ -337,7 +337,6 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
-         close(un)
          call import_structured(this%DT,dir//'DT'//fortran_PS)
          call import_structured(this%SP,dir//'SP'//fortran_PS)
          call import_structured(this%dir_target,&
@@ -348,6 +347,7 @@
          call import_structured(this%KS,dir//'KS'//fortran_PS)
          call import_structured(this%dir,dir//'dir'//fortran_PS)
          call import_structured(this%name,dir//'name'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_config(this)

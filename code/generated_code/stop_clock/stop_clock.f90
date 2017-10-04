@@ -319,7 +319,6 @@
          integer :: un
          un = new_and_open(str(this%dir),'primitives')
          call export_primitives(this,un)
-         close(un)
          call export_structured(this%dir,str(this%dir)//'dir'//fortran_PS)
          call export_structured(this%name,str(this%dir)//'name'//fortran_PS)
          call export_structured(this%dir_tec,&
@@ -328,6 +327,7 @@
          str(this%dir)//'name_tec'//fortran_PS)
          call export_structured(this%c,str(this%dir)//'c'//fortran_PS)
          call export_structured(this%uc,str(this%dir)//'uc'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine import_structured_DN_stop_clock(this)
@@ -336,7 +336,6 @@
          integer :: un
          un = open_to_read(str(this%dir),'primitives')
          call import_primitives(this,un)
-         close(un)
          call import_structured(this%dir,str(this%dir)//'dir'//fortran_PS)
          call import_structured(this%name,str(this%dir)//'name'//fortran_PS)
          call import_structured(this%dir_tec,&
@@ -345,6 +344,7 @@
          str(this%dir)//'name_tec'//fortran_PS)
          call import_structured(this%c,str(this%dir)//'c'//fortran_PS)
          call import_structured(this%uc,str(this%dir)//'uc'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine set_IO_dir_stop_clock(this,dir)
@@ -385,13 +385,13 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
-         close(un)
          call export_structured(this%dir,dir//'dir'//fortran_PS)
          call export_structured(this%name,dir//'name'//fortran_PS)
          call export_structured(this%dir_tec,dir//'dir_tec'//fortran_PS)
          call export_structured(this%name_tec,dir//'name_tec'//fortran_PS)
          call export_structured(this%c,dir//'c'//fortran_PS)
          call export_structured(this%uc,dir//'uc'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine import_structured_D_stop_clock(this,dir)
@@ -401,13 +401,13 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
-         close(un)
          call import_structured(this%dir,dir//'dir'//fortran_PS)
          call import_structured(this%name,dir//'name'//fortran_PS)
          call import_structured(this%dir_tec,dir//'dir_tec'//fortran_PS)
          call import_structured(this%name_tec,dir//'name_tec'//fortran_PS)
          call import_structured(this%c,dir//'c'//fortran_PS)
          call import_structured(this%uc,dir//'uc'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_stop_clock(this)

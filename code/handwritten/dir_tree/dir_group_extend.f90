@@ -23,7 +23,6 @@
         call init(temp,root)
         call init(DG%base    ,temp   ,name      ,PS)
         call init(DG%field   ,DG%base,'field'   ,PS)
-        call init(DG%restart ,DG%base,'restart' ,PS)
         call init(DG%debug   ,DG%base,'debug'   ,PS)
         call init(DG%energy  ,DG%base,'energy'  ,PS)
         call init(DG%residual,DG%base,'residual',PS)
@@ -38,7 +37,6 @@
         type(dir_group),intent(in) :: DG
         call make_dir(str(DG%base))
         call make_dir(str(DG%field))
-        call make_dir(str(DG%restart))
         call make_dir(str(DG%debug))
         call make_dir(str(DG%energy))
         call make_dir(str(DG%residual))

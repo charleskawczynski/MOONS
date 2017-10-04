@@ -345,7 +345,6 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
-         close(un)
          call export_structured(this%MQP,dir//'MQP'//fortran_PS)
          if (allocated(this%s_base)) then
            s_s_base = size(this%s_base)
@@ -367,6 +366,7 @@
          else
            write(un,*) 0
          endif
+         close(un)
        end subroutine
 
        subroutine import_structured_D_mesh_params(this,dir)
@@ -380,7 +380,6 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
-         close(un)
          call import_structured(this%MQP,dir//'MQP'//fortran_PS)
          read(un,*) s_s_base
          if (s_s_base.gt.0) then
@@ -400,6 +399,7 @@
              dir//'s_ext_'//int2str(i_s_ext)//fortran_PS)
            enddo
          endif
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_mesh_params(this)

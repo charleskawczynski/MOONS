@@ -17,17 +17,17 @@
 
       contains
 
-      subroutine init_DT(DT,dir_tar)
+      subroutine init_DT(DT,dir_target)
         implicit none
         type(dir_tree),intent(inout) :: DT
-        character(len=*),intent(in) :: dir_tar
+        character(len=*),intent(in) :: dir_target
 #ifdef _OS_LINUX_
        character(len=1),parameter :: PS = '/'
 #else
        character(len=1),parameter :: PS = '\'
 #endif
         call init(DT%PS,PS)
-        call init(DT%tar,dir_tar)
+        call init(DT%tar,dir_target)
         call compress(DT%tar)
         call draw_DT()
         call append(DT%tar,str(DT%PS))
@@ -40,7 +40,7 @@
         call init(DT%mat         ,DT%LDC         ,'material'   ,str(DT%PS))
         call init(DT%meshes      ,DT%LDC         ,'meshes'     ,str(DT%PS))
         call init(DT%config      ,DT%LDC         ,'config'     ,str(DT%PS))
-        call init(DT%matrix_visualization,DT%LDC,'matrix_visualization',str(DT%PS))
+        call init(DT%matrix_visualization,DT%LDC ,'matrix_visualization',str(DT%PS))
         call init(DT%params      ,DT%LDC         ,'parameters' ,str(DT%PS))
         call init(DT%wall_clock  ,DT%LDC         ,'wall_clock' ,str(DT%PS))
         call init(DT%TMP         ,DT%params      ,'TMP'        ,str(DT%PS))
@@ -48,15 +48,13 @@
         call init(DT%dimensionless_params,DT%params,'dimensionless_params',str(DT%PS))
         call init(DT%EF          ,DT%params      ,'EF'         ,str(DT%PS))
         call init(DT%export_now  ,DT%params      ,'export_now' ,str(DT%PS))
-        call init(DT%refine_mesh ,DT%params      ,'refine_mesh',str(DT%PS))
         call init(DT%BEM         ,DT%LDC         ,'BEM'        ,str(DT%PS))
-        call init(DT%restart_sim ,DT%LDC         ,'restart'    ,str(DT%PS))
+        call init(DT%restart_root,DT%LDC         ,'restart'    ,str(DT%PS))
 
-        call init(DT%mesh_restart,DT%meshes      ,'restart'    ,str(DT%PS))
+        call init(DT%restart1    ,DT%restart_root,'restart1'   ,str(DT%PS))
+        call init(DT%restart2    ,DT%restart_root,'restart2'   ,str(DT%PS))
         call init(DT%e_budget_N  ,DT%e_budget    ,'e_budget_N' ,str(DT%PS))
         call init(DT%e_budget_C  ,DT%e_budget    ,'e_budget_C' ,str(DT%PS))
-        call init(DT%restart1    ,DT%restart_sim ,'restart1'   ,str(DT%PS))
-        call init(DT%restart2    ,DT%restart_sim ,'restart2'   ,str(DT%PS))
 
         call init(DT%restart,DT%restart1)
 
@@ -86,7 +84,6 @@
         call make_dir(str(DT%TMP))
         call make_dir(str(DT%EF))
         call make_dir(str(DT%export_now))
-        call make_dir(str(DT%refine_mesh))
         call make_dir(str(DT%e_budget))
         call make_dir(str(DT%e_budget_C))
         call make_dir(str(DT%e_budget_N))
@@ -95,9 +92,8 @@
         call make_dir(str(DT%config))
         call make_dir(str(DT%matrix_visualization))
         call make_dir(str(DT%dimensionless_params))
-        call make_dir(str(DT%mesh_restart))
         call make_dir(str(DT%BEM))
-        call make_dir(str(DT%restart_sim))
+        call make_dir(str(DT%restart_root))
         call make_dir(str(DT%restart))
         call make_dir(str(DT%restart1))
         call make_dir(str(DT%restart2))

@@ -371,7 +371,6 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
-         close(un)
          call export_structured(this%PCG_P,dir//'PCG_P'//fortran_PS)
          call export_structured(this%PCG_U,dir//'PCG_U'//fortran_PS)
          call export_structured(this%TS,dir//'TS'//fortran_PS)
@@ -381,6 +380,7 @@
          call export_structured(this%probe_divU,&
          dir//'probe_divU'//fortran_PS)
          call export_structured(this%probe_Q,dir//'probe_Q'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine import_structured_D_momentum(this,dir)
@@ -390,7 +390,6 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
-         close(un)
          call import_structured(this%PCG_P,dir//'PCG_P'//fortran_PS)
          call import_structured(this%PCG_U,dir//'PCG_U'//fortran_PS)
          call import_structured(this%TS,dir//'TS'//fortran_PS)
@@ -400,6 +399,7 @@
          call import_structured(this%probe_divU,&
          dir//'probe_divU'//fortran_PS)
          call import_structured(this%probe_Q,dir//'probe_Q'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_momentum(this)

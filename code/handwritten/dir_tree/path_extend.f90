@@ -6,7 +6,8 @@
 
       private
       public :: path
-      public :: init,make,str,rel,full
+      public :: init,str,rel,full
+      public :: make
 
       interface init;          module procedure init_P;            end interface
       interface init;          module procedure init_ext_rel_str;  end interface
@@ -22,8 +23,8 @@
         implicit none
         type(path),intent(inout) :: P
         character(len=*),intent(in) :: root,rel,PS
-        call init(P%a,root)
-        call init(P%r,rel//PS)
+        call init(P%absolute,root)
+        call init(P%relative,rel//PS)
       end subroutine
 
       subroutine init_ext_rel_str(P,ext,PS)
@@ -47,28 +48,28 @@
       subroutine make_P(P)
         implicit none
         type(path),intent(in) :: P
-        call make_dir(str(P%a))
+        call make_dir(str(P%absolute))
       end subroutine
 
       function str_P(P) result (s)
         implicit none
         type(path),intent(in) :: P
-        character(len=len(P%r)) :: s
-        s = str(P%r)
+        character(len=len(P%relative)) :: s
+        s = str(P%relative)
       end function
 
       function rel_P(P) result (s)
         implicit none
         type(path),intent(in) :: P
-        character(len=len(P%r)) :: s
-        s = str(P%r)
+        character(len=len(P%relative)) :: s
+        s = str(P%relative)
       end function
 
       function full_P(P) result (s)
         implicit none
         type(path),intent(in) :: P
-        character(len=len(P%a)) :: s
-        s = str(P%a)
+        character(len=len(P%absolute)) :: s
+        s = str(P%absolute)
       end function
 
       end module

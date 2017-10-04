@@ -5,6 +5,7 @@
        use IO_export_mod
        use inquire_funcs_mod
        use matrix_visualization_mod
+       use dir_manip_mod
 
        use version_mod
        use mesh_extend_mod
@@ -57,12 +58,10 @@
          call omp_set_num_threads(12) ! Set number of openMP threads
 
 #endif
-         if (file_exists(str(M%C%DT%config),'primitives')) then
+         if (file_exists(str(M%C%DT%restart),'primitives')) then
            ! Restart is default if files exist!
-           call import_structured(M%C,str(M%C%DT%config))
-           ! call import_restart(M%C,str(M%C%DT%restart),'config')
-           ! Need to make sure init knows to restart:
-           ! call set_restart(M%C%SP)
+           ! call import_structured(M%C) ! Cannot, dir,name not defined yet.
+           call import_structured(M%C,str(M%C%DT%restart))
            M%C%SP%FCL%restart_all = .true.
          else
            call init(M%C%SP)

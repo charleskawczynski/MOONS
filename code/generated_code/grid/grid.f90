@@ -232,13 +232,13 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
-         close(un)
          s_c = size(this%c)
          write(un,*) s_c
          do i_c=1,s_c
            call export_structured(this%c(i_c),&
            dir//'c_'//int2str(i_c)//fortran_PS)
          enddo
+         close(un)
        end subroutine
 
        subroutine import_structured_D_grid(this,dir)
@@ -250,12 +250,12 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
-         close(un)
          s_c = size(this%c)
          do i_c=1,s_c
            call import_structured(this%c(i_c),&
            dir//'c_'//int2str(i_c)//fortran_PS)
          enddo
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_grid(this)

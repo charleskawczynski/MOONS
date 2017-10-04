@@ -61,8 +61,6 @@
        interface init;                      module procedure init_energy;                   end interface
        interface display;                   module procedure display_energy;                end interface
        interface print;                     module procedure print_energy;                  end interface
-       interface export;                    module procedure export_energy;                 end interface
-       interface import;                    module procedure import_energy;                 end interface
 
        interface set_necessary_for_restart; module procedure set_necessary_for_restart_nrg; end interface
 
@@ -137,7 +135,6 @@
          call display(nrg,SP,temp_unit)
          call close_and_message(temp_unit,str(DT%params),'info_nrg')
 
-         if (SP%FCL%restart_all) call import(nrg,SP,DT)
          write(*,*) '     probes initialized'
          write(*,*) '     Finished'
        end subroutine
@@ -178,32 +175,6 @@
          call set_necessary_for_restart(nrg%F)
          call set_necessary_for_restart(nrg%Fnm1)
          call set_necessary_for_restart(nrg%L)
-       end subroutine
-
-       subroutine export_energy(nrg,SP,DT)
-         implicit none
-         type(energy),intent(in) :: nrg
-         type(sim_params),intent(in) :: SP
-         type(dir_tree),intent(in) :: DT
-         write(*,*) 'export_energy at n_step = ',SP%VS%T%TMP%n_step
-         call export_raw(nrg%m,nrg%T,str(DT%T%field),'T',0)
-         call export_raw(nrg%m,nrg%Tnm1,str(DT%T%field),'Tnm1',0)
-         call export_raw(nrg%m,nrg%F,str(DT%T%field),'F',0)
-         call export_raw(nrg%m,nrg%Fnm1,str(DT%T%field),'Fnm1',0)
-         call export_raw(nrg%m,nrg%L,str(DT%T%field),'L',0)
-       end subroutine
-
-       subroutine import_energy(nrg,SP,DT)
-         implicit none
-         type(energy),intent(inout) :: nrg
-         type(sim_params),intent(in) :: SP
-         type(dir_tree),intent(in) :: DT
-         write(*,*) 'import_energy at n_step = ',SP%VS%T%TMP%n_step
-         call import_raw(nrg%m,nrg%T,str(DT%T%field),'T',0)
-         call import_raw(nrg%m,nrg%Tnm1,str(DT%T%field),'Tnm1',0)
-         call import_raw(nrg%m,nrg%F,str(DT%T%field),'F',0)
-         call import_raw(nrg%m,nrg%Fnm1,str(DT%T%field),'Fnm1',0)
-         call import_raw(nrg%m,nrg%L,str(DT%T%field),'L',0)
        end subroutine
 
        ! **********************************************************

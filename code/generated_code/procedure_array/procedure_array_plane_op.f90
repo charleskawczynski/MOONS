@@ -256,7 +256,6 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
-         close(un)
          if (allocated(this%SP)) then
            s_SP = size(this%SP)
            write(un,*) s_SP
@@ -267,6 +266,7 @@
          else
            write(un,*) 0
          endif
+         close(un)
        end subroutine
 
        subroutine import_structured_D_procedure_array_plane_op(this,dir)
@@ -278,7 +278,6 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
-         close(un)
          read(un,*) s_SP
          if (s_SP.gt.0) then
            allocate(this%SP(s_SP))
@@ -288,6 +287,7 @@
              dir//'SP_'//int2str(i_SP)//fortran_PS)
            enddo
          endif
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_procedure_array_plane_op(this)

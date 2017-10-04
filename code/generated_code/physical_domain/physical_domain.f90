@@ -256,7 +256,6 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
-         close(un)
          if (allocated(this%sd)) then
            s_sd = size(this%sd)
            write(un,*) s_sd
@@ -267,6 +266,7 @@
          else
            write(un,*) 0
          endif
+         close(un)
        end subroutine
 
        subroutine import_structured_D_physical_domain(this,dir)
@@ -278,7 +278,6 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
-         close(un)
          read(un,*) s_sd
          if (s_sd.gt.0) then
            allocate(this%sd(s_sd))
@@ -288,6 +287,7 @@
              dir//'sd_'//int2str(i_sd)//fortran_PS)
            enddo
          endif
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_physical_domain(this)

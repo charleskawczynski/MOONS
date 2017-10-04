@@ -296,7 +296,6 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
-         close(un)
          if (allocated(this%BF)) then
            s_BF = size(this%BF)
            write(un,*) s_BF
@@ -308,6 +307,7 @@
            write(un,*) 0
          endif
          call export_structured(this%DL,dir//'DL'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine import_structured_D_SF(this,dir)
@@ -319,7 +319,6 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
-         close(un)
          read(un,*) s_BF
          if (s_BF.gt.0) then
            allocate(this%BF(s_BF))
@@ -336,6 +335,7 @@
              call set_procedures(this%BF(i_BF))
            enddo
          endif
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_SF(this)

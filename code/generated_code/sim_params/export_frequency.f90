@@ -236,7 +236,6 @@
          integer :: un
          un = new_and_open(str(this%dir),'primitives')
          call export_primitives(this,un)
-         close(un)
          call export_structured(this%info,str(this%dir)//'info'//fortran_PS)
          call export_structured(this%unsteady_0D,&
          str(this%dir)//'unsteady_0D'//fortran_PS)
@@ -252,6 +251,7 @@
          str(this%dir)//'restart_files'//fortran_PS)
          call export_structured(this%dir,str(this%dir)//'dir'//fortran_PS)
          call export_structured(this%name,str(this%dir)//'name'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine import_structured_DN_export_frequency(this)
@@ -260,7 +260,6 @@
          integer :: un
          un = open_to_read(str(this%dir),'primitives')
          call import_primitives(this,un)
-         close(un)
          call import_structured(this%info,str(this%dir)//'info'//fortran_PS)
          call import_structured(this%unsteady_0D,&
          str(this%dir)//'unsteady_0D'//fortran_PS)
@@ -276,6 +275,7 @@
          str(this%dir)//'restart_files'//fortran_PS)
          call import_structured(this%dir,str(this%dir)//'dir'//fortran_PS)
          call import_structured(this%name,str(this%dir)//'name'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine set_IO_dir_export_frequency(this,dir)
@@ -326,7 +326,6 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
-         close(un)
          call export_structured(this%info,dir//'info'//fortran_PS)
          call export_structured(this%unsteady_0D,&
          dir//'unsteady_0D'//fortran_PS)
@@ -342,6 +341,7 @@
          dir//'restart_files'//fortran_PS)
          call export_structured(this%dir,dir//'dir'//fortran_PS)
          call export_structured(this%name,dir//'name'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine import_structured_D_export_frequency(this,dir)
@@ -351,7 +351,6 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
-         close(un)
          call import_structured(this%info,dir//'info'//fortran_PS)
          call import_structured(this%unsteady_0D,&
          dir//'unsteady_0D'//fortran_PS)
@@ -367,6 +366,7 @@
          dir//'restart_files'//fortran_PS)
          call import_structured(this%dir,dir//'dir'//fortran_PS)
          call import_structured(this%name,dir//'name'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_export_frequency(this)

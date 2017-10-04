@@ -316,13 +316,13 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
-         close(un)
          s_int_tensor = size(this%int_tensor)
          write(un,*) s_int_tensor
          do i_int_tensor=1,s_int_tensor
            call export_structured(this%int_tensor(i_int_tensor),&
            dir//'int_tensor_'//int2str(i_int_tensor)//fortran_PS)
          enddo
+         close(un)
        end subroutine
 
        subroutine import_structured_D_mesh_props(this,dir)
@@ -334,12 +334,12 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
-         close(un)
          s_int_tensor = size(this%int_tensor)
          do i_int_tensor=1,s_int_tensor
            call import_structured(this%int_tensor(i_int_tensor),&
            dir//'int_tensor_'//int2str(i_int_tensor)//fortran_PS)
          enddo
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_mesh_props(this)

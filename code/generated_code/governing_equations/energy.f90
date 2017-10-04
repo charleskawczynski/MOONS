@@ -334,11 +334,11 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
-         close(un)
          call export_structured(this%PCG_T,dir//'PCG_T'//fortran_PS)
          call export_structured(this%probe_divQ,&
          dir//'probe_divQ'//fortran_PS)
          call export_structured(this%MD,dir//'MD'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine import_structured_D_energy(this,dir)
@@ -348,11 +348,11 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
-         close(un)
          call import_structured(this%PCG_T,dir//'PCG_T'//fortran_PS)
          call import_structured(this%probe_divQ,&
          dir//'probe_divQ'//fortran_PS)
          call import_structured(this%MD,dir//'MD'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_energy(this)

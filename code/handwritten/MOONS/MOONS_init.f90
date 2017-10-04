@@ -52,8 +52,8 @@
          implicit none
          type(MOONS),intent(inout) :: M
          call init_meshes_MOONS(M)
-         call init_GEs_MOONS(M)
          call re_init_procedures(M)
+         call init_GEs_MOONS(M)
        end subroutine
 
        subroutine re_init_procedures(M)
@@ -80,7 +80,7 @@
          implicit none
          type(MOONS),intent(inout) :: M
          write(*,*) ' ***************** STARTED INITIALIZING MESHES ***************** '
-         call print(M%C%SP%MP_mom)
+
          call generate_mesh_generic(M%GE%mom%m,M%C%SP%MP_mom,M%C%SP%DP,'momentum in MOONS.f90')
          call generate_mesh_generic(M%GE%ind%m_sigma,M%C%SP%MP_sigma,M%C%SP%DP,'sigma in MOONS.f90')
          call generate_mesh_generic(M%GE%ind%m,M%C%SP%MP_ind,M%C%SP%DP,'induction in MOONS.f90')

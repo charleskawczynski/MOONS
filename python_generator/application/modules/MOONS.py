@@ -68,7 +68,6 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('sc'        ,'stop_clock',priv)
 	g.module[m_name].add_prop('EN'        ,'export_now',priv)
 	g.module[m_name].add_prop('ES'        ,'export_safe',priv)
-	# g.module[m_name].add_prop('RM'        ,'refine_mesh',priv)
 	g.module[m_name].add_prop('KS'        ,'kill_switch',priv)
 	g.module[m_name].add_prop(['dir','name'],'string',priv)
 
@@ -79,6 +78,7 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('mom'       ,'momentum',priv)
 	g.module[m_name].add_prop('ind'       ,'induction',priv)
 	g.module[m_name].add_prop('nrg'       ,'energy',priv)
+	g.module[m_name].add_prop(['dir','name'],'string',priv)
 
 	m_name = 'MOONS'
 	g.add_module(m_name)
@@ -87,5 +87,6 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('C'         ,'config',priv)
 	g.module[m_name].add_prop('GE'        ,'governing_equations',priv)
 	g.module[m_name].add_prop('m_temp'    ,'mesh',priv)
+	g.module[m_name].add_prop(['dir','name'],'string',priv)
 
 	return g

@@ -195,10 +195,10 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
-         close(un)
          call export_structured(this%L,dir//'L'//fortran_PS)
          call export_structured(this%D,dir//'D'//fortran_PS)
          call export_structured(this%U,dir//'U'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine import_structured_D_sparse(this,dir)
@@ -208,10 +208,10 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
-         close(un)
          call import_structured(this%L,dir//'L'//fortran_PS)
          call import_structured(this%D,dir//'D'//fortran_PS)
          call import_structured(this%U,dir//'U'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_sparse(this)

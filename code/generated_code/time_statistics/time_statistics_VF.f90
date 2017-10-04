@@ -246,7 +246,6 @@
          integer :: un
          un = new_and_open(str(this%dir),'primitives')
          call export_primitives(this,un)
-         close(un)
          call export_structured(this%dir,str(this%dir)//'dir'//fortran_PS)
          call export_structured(this%name,str(this%dir)//'name'//fortran_PS)
          call export_structured(this%mean_energy,&
@@ -254,6 +253,7 @@
          call export_structured(this%L2_stresses,&
          str(this%dir)//'L2_stresses'//fortran_PS)
          call export_structured(this%TSP,str(this%dir)//'TSP'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine import_structured_DN_time_statistics_VF(this)
@@ -262,7 +262,6 @@
          integer :: un
          un = open_to_read(str(this%dir),'primitives')
          call import_primitives(this,un)
-         close(un)
          call import_structured(this%dir,str(this%dir)//'dir'//fortran_PS)
          call import_structured(this%name,str(this%dir)//'name'//fortran_PS)
          call import_structured(this%mean_energy,&
@@ -270,6 +269,7 @@
          call import_structured(this%L2_stresses,&
          str(this%dir)//'L2_stresses'//fortran_PS)
          call import_structured(this%TSP,str(this%dir)//'TSP'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine set_IO_dir_time_statistics_VF(this,dir)
@@ -308,7 +308,6 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
-         close(un)
          call export_structured(this%dir,dir//'dir'//fortran_PS)
          call export_structured(this%name,dir//'name'//fortran_PS)
          call export_structured(this%mean_energy,&
@@ -316,6 +315,7 @@
          call export_structured(this%L2_stresses,&
          dir//'L2_stresses'//fortran_PS)
          call export_structured(this%TSP,dir//'TSP'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine import_structured_D_time_statistics_VF(this,dir)
@@ -325,7 +325,6 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
-         close(un)
          call import_structured(this%dir,dir//'dir'//fortran_PS)
          call import_structured(this%name,dir//'name'//fortran_PS)
          call import_structured(this%mean_energy,&
@@ -333,6 +332,7 @@
          call import_structured(this%L2_stresses,&
          dir//'L2_stresses'//fortran_PS)
          call import_structured(this%TSP,dir//'TSP'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_time_statistics_VF(this)

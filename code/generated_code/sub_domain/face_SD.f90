@@ -594,7 +594,6 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
-         close(un)
          s_G = size(this%G)
          write(un,*) s_G
          do i_G=1,s_G
@@ -637,6 +636,7 @@
            call export_structured(this%i_2D(i_i_2D),&
            dir//'i_2D_'//int2str(i_i_2D)//fortran_PS)
          enddo
+         close(un)
        end subroutine
 
        subroutine import_structured_D_face_SD(this,dir)
@@ -660,7 +660,6 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
-         close(un)
          s_G = size(this%G)
          do i_G=1,s_G
            call import_structured(this%G(i_G),&
@@ -696,6 +695,7 @@
            call import_structured(this%i_2D(i_i_2D),&
            dir//'i_2D_'//int2str(i_i_2D)//fortran_PS)
          enddo
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_face_SD(this)

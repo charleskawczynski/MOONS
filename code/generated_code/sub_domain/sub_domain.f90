@@ -348,7 +348,6 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
-         close(un)
          s_C = size(this%C)
          write(un,*) s_C
          do i_C=1,s_C
@@ -367,6 +366,7 @@
            call export_structured(this%M(i_M),&
            dir//'M_'//int2str(i_M)//fortran_PS)
          enddo
+         close(un)
        end subroutine
 
        subroutine import_structured_D_sub_domain(this,dir)
@@ -382,7 +382,6 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
-         close(un)
          s_C = size(this%C)
          do i_C=1,s_C
            call import_structured(this%C(i_C),&
@@ -398,6 +397,7 @@
            call import_structured(this%M(i_M),&
            dir//'M_'//int2str(i_M)//fortran_PS)
          enddo
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_sub_domain(this)

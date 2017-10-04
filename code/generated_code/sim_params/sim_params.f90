@@ -332,7 +332,6 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
-         close(un)
          call export_structured(this%VS,dir//'VS'//fortran_PS)
          call export_structured(this%MP_mom,dir//'MP_mom'//fortran_PS)
          call export_structured(this%MQP,dir//'MQP'//fortran_PS)
@@ -350,6 +349,7 @@
          call export_structured(this%FCL,dir//'FCL'//fortran_PS)
          call export_structured(this%TSP,dir//'TSP'//fortran_PS)
          call export_structured(this%SCP,dir//'SCP'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine import_structured_D_sim_params(this,dir)
@@ -359,7 +359,6 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
-         close(un)
          call import_structured(this%VS,dir//'VS'//fortran_PS)
          call import_structured(this%MP_mom,dir//'MP_mom'//fortran_PS)
          call import_structured(this%MQP,dir//'MQP'//fortran_PS)
@@ -377,6 +376,7 @@
          call import_structured(this%FCL,dir//'FCL'//fortran_PS)
          call import_structured(this%TSP,dir//'TSP'//fortran_PS)
          call import_structured(this%SCP,dir//'SCP'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_sim_params(this)

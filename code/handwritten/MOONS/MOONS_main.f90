@@ -65,15 +65,18 @@
          call init(M%C%dir_target,dir_target)
          call init(M%C%DT,str(M%C%dir_target))  ! Initialize + make directory tree
          call config(M) ! The flow control should be uniquely defined after this line.
-         call make_IO_dir(M%C,str(M%C%DT%config))
+         call make_IO_dir(M%C,str(M%C%DT%restart))
+         call make_IO_dir(M%GE,str(M%C%DT%restart))
          call export_structured(M%C)
-         call export(M%C,str(M%C%DT%config),'config_DO_NOT_EDIT')
+         call export(M%C,str(M%C%DT%config),'config_original_DO_NOT_EDIT')
          call init(M)
          if (M%C%SP%VS%T%SS%initialize) call set_necessary_for_restart(M%GE%nrg)
          if (M%C%SP%VS%U%SS%initialize) call set_necessary_for_restart(M%GE%mom)
          if (M%C%SP%VS%B%SS%initialize) call set_necessary_for_restart(M%GE%ind)
-         call make_IO_dir(M,str(M%C%DT%restart)) ! must come after init so that allocatables in mesh exist
-         call set_IO_dir(M,str(M%C%DT%config))
+         ! call make_IO_dir(M%C,str(M%C%DT%restart))  ! repeat after init so that allocatables populate directory
+         call make_IO_dir(M%GE,str(M%C%DT%restart)) ! repeat after init so that allocatables populate directory
+         call export_structured(M%C)
+         call export_structured(M%GE)
          if (.not.M%C%SP%FCL%skip_solver_loop) then
            call solve(M)
          endif
@@ -90,23 +93,14 @@
          implicit none
          type(MOONS),intent(inout) :: M
          call print(M%C%sc,M%C%SP%coupled)
-         ! call export(M%C%sc,M%C%SP%coupled)
 
-         call export_structured(M%C)
-         ! call export_ISP(M%C%SP%VS)
-         ! call export_TMP(M%C%SP%VS)
-         ! call export(M%C%SP%coupled)
+         call export_structured(M,str(M%C%DT%restart))
 
          if (M%C%SP%FCL%export_final_tec) then
            if (M%C%SP%VS%T%SS%initialize) call export_tec(M%GE%nrg,M%C%SP,M%C%DT)
            if (M%C%SP%VS%U%SS%initialize) call export_tec(M%GE%mom,M%C%SP,M%C%DT)
            if (M%C%SP%VS%B%SS%initialize) call export_tec(M%GE%ind,M%C%SP,M%C%DT)
          endif
-
-         if (M%C%SP%VS%T%SS%initialize) call export(M%GE%nrg,M%C%SP,M%C%DT)
-         if (M%C%SP%VS%U%SS%initialize) call export(M%GE%mom,M%C%SP,M%C%DT)
-         if (M%C%SP%VS%B%SS%initialize) call export(M%GE%ind,M%C%SP,M%C%DT)
-           ! call export(M,str(DT%restart),'MOONS')
        end subroutine
 
        subroutine post_process_MOONS(M)

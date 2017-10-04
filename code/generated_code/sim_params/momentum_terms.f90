@@ -276,7 +276,6 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
-         close(un)
          call export_structured(this%pressure_grad,&
          dir//'pressure_grad'//fortran_PS)
          call export_structured(this%advection_divergence,&
@@ -295,6 +294,7 @@
          dir//'Q2D_JCrossB'//fortran_PS)
          call export_structured(this%Buoyancy,dir//'Buoyancy'//fortran_PS)
          call export_structured(this%Gravity,dir//'Gravity'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine import_structured_D_momentum_terms(this,dir)
@@ -304,7 +304,6 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
-         close(un)
          call import_structured(this%pressure_grad,&
          dir//'pressure_grad'//fortran_PS)
          call import_structured(this%advection_divergence,&
@@ -323,6 +322,7 @@
          dir//'Q2D_JCrossB'//fortran_PS)
          call import_structured(this%Buoyancy,dir//'Buoyancy'//fortran_PS)
          call import_structured(this%Gravity,dir//'Gravity'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_momentum_terms(this)

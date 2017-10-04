@@ -131,7 +131,7 @@
        t_final                          = 30.0_cp
        ! dtime                         = 1.0_cp*pow(-2)
        ! dtime                         = 1.0_cp*pow(-4)*0.5_cp**(4.0_cp)
-       dtime                         = 1.0_cp*pow(-1)
+       dtime                         = 2.0_cp*pow(-2)
 
        SP%GP%tw                      = 0.05_cp
        SP%GP%geometry                = 7

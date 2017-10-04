@@ -228,7 +228,6 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
-         close(un)
          call export_structured(this%T,dir//'T'//fortran_PS)
          call export_structured(this%U,dir//'U'//fortran_PS)
          call export_structured(this%p,dir//'p'//fortran_PS)
@@ -236,6 +235,7 @@
          call export_structured(this%B0,dir//'B0'//fortran_PS)
          call export_structured(this%phi,dir//'phi'//fortran_PS)
          call export_structured(this%rho,dir//'rho'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine import_structured_D_var_set(this,dir)
@@ -245,7 +245,6 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
-         close(un)
          call import_structured(this%T,dir//'T'//fortran_PS)
          call import_structured(this%U,dir//'U'//fortran_PS)
          call import_structured(this%p,dir//'p'//fortran_PS)
@@ -253,6 +252,7 @@
          call import_structured(this%B0,dir//'B0'//fortran_PS)
          call import_structured(this%phi,dir//'phi'//fortran_PS)
          call import_structured(this%rho,dir//'rho'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_var_set(this)

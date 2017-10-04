@@ -415,7 +415,6 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
-         close(un)
          call export_structured(this%g,dir//'g'//fortran_PS)
          if (allocated(this%f)) then
            s_f = size(this%f)
@@ -447,6 +446,7 @@
          else
            write(un,*) 0
          endif
+         close(un)
        end subroutine
 
        subroutine import_structured_D_block(this,dir)
@@ -462,7 +462,6 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
-         close(un)
          call import_structured(this%g,dir//'g'//fortran_PS)
          read(un,*) s_f
          if (s_f.gt.0) then
@@ -491,6 +490,7 @@
              dir//'vol_'//int2str(i_vol)//fortran_PS)
            enddo
          endif
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_block(this)

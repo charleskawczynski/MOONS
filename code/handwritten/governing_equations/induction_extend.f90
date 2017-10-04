@@ -77,8 +77,6 @@
        interface init;                      module procedure init_induction;                end interface
        interface display;                   module procedure display_induction;             end interface
        interface print;                     module procedure print_induction;               end interface
-       interface export;                    module procedure export_induction;              end interface
-       interface import;                    module procedure import_induction;              end interface
        interface set_necessary_for_restart; module procedure set_necessary_for_restart_ind; end interface
 
        interface solve;                     module procedure solve_induction;               end interface
@@ -227,7 +225,6 @@
          write(*,*) '     PCG Solver initialized for phi'
 
          write(*,*) '     Finished'
-         if (SP%FCL%restart_all) call import(ind,SP,DT)
        end subroutine
 
        subroutine display_induction(ind,SP,un)
@@ -275,62 +272,6 @@
          call set_necessary_for_restart(ind%J)
        end subroutine
 
-       subroutine export_induction(ind,SP,DT)
-         implicit none
-         type(induction),intent(in) :: ind
-         type(sim_params),intent(in) :: SP
-         type(dir_tree),intent(in) :: DT
-         write(*,*) 'export_induction at n_step = ',SP%VS%B%TMP%n_step
-         call export_raw(ind%m,ind%B,str(DT%B%restart),'B',0)
-         call export_raw(ind%m,ind%Bnm1,str(DT%B%restart),'Bnm1',0)
-         call export_raw(ind%m,ind%B0,str(DT%B%restart),'B0',0)
-         call export_raw(ind%m,ind%F,str(DT%B%restart),'F',0)
-         call export_raw(ind%m,ind%Fnm1,str(DT%B%restart),'Fnm1',0)
-         call export_raw(ind%m,ind%L,str(DT%B%restart),'L',0)
-         call export_raw(ind%m,ind%Bstar,str(DT%B%restart),'Bstar',0)
-         call export_raw(ind%m,ind%phi,str(DT%phi%restart),'phi',0)
-         call export_raw(ind%m,ind%J,str(DT%J%restart),'J',0)
-         if (SP%IT%unsteady_B0%add) then
-           call export(ind%probe_dB0dt,str(DT%B%restart),'probe_dB0dt')
-           call export(ind%probe_B0   ,str(DT%B%restart),'probe_B0')
-         endif
-         call export(ind%probe_divB,str(DT%B%restart),'probe_divB')
-         call export(ind%probe_divJ,str(DT%J%restart),'probe_divJ')
-         call export(ind%JE,        str(DT%J%restart),'JE')
-         call export(ind%JE_fluid,  str(DT%J%restart),'JE_fluid')
-         call export(ind%ME          ,str(DT%B%restart),'ME')
-         call export(ind%ME_fluid    ,str(DT%B%restart),'ME_fluid')
-         call export(ind%ME_conductor,str(DT%B%restart),'ME_conductor')
-       end subroutine
-
-       subroutine import_induction(ind,SP,DT)
-         implicit none
-         type(induction),intent(inout) :: ind
-         type(sim_params),intent(in) :: SP
-         type(dir_tree),intent(in) :: DT
-         write(*,*) 'import_induction at n_step = ',SP%VS%B%TMP%n_step
-         call import_raw(ind%m,ind%B,str(DT%B%restart),'B',0)
-         call import_raw(ind%m,ind%Bnm1,str(DT%B%restart),'Bnm1',0)
-         call import_raw(ind%m,ind%B0,str(DT%B%restart),'B0',0)
-         call import_raw(ind%m,ind%F,str(DT%B%restart),'F',0)
-         call import_raw(ind%m,ind%Fnm1,str(DT%B%restart),'Fnm1',0)
-         call import_raw(ind%m,ind%L,str(DT%B%restart),'L',0)
-         call import_raw(ind%m,ind%Bstar,str(DT%B%restart),'Bstar',0)
-         call import_raw(ind%m,ind%phi,str(DT%phi%restart),'phi',0)
-         call import_raw(ind%m,ind%J,str(DT%J%restart),'J',0)
-         if (SP%IT%unsteady_B0%add) then
-           call import(ind%probe_dB0dt,str(DT%B%restart),'probe_dB0dt')
-           call import(ind%probe_B0   ,str(DT%B%restart),'probe_B0')
-         endif
-         call import(ind%probe_divB,str(DT%B%restart),'probe_divB')
-         call import(ind%probe_divJ,str(DT%J%restart),'probe_divJ')
-         call import(ind%JE,        str(DT%J%restart),'JE')
-         call import(ind%JE_fluid,  str(DT%J%restart),'JE_fluid')
-         call import(ind%ME          ,str(DT%B%restart),'ME')
-         call import(ind%ME_fluid    ,str(DT%B%restart),'ME_fluid')
-         call import(ind%ME_conductor,str(DT%B%restart),'ME_conductor')
-       end subroutine
-
        ! **********************************************************
        ! **********************************************************
        ! **********************************************************
@@ -351,14 +292,9 @@
              call export_processed(ind%m,ind%J ,str(DT%J%field),'J',1)
              call export_raw(ind%m,ind%divB ,str(DT%B%field),'divB',0)
 
-             if (.not.SP%EL%export_soln_only) then
              if (SP%EL%export_symmetric) then
              call export_processed(ind%m,ind%B,str(DT%B%field),'B',1,anti_mirror(SP%MP))
              call export_processed(ind%m,ind%J,str(DT%J%field),'J',1,SP%MP)
-             endif
-             call export_raw(ind%m,ind%U_E%x  ,str(DT%B%restart),'U_E_x',0)
-             call export_raw(ind%m,ind%U_E%y  ,str(DT%B%restart),'U_E_y',0)
-             call export_raw(ind%m,ind%U_E%z  ,str(DT%B%restart),'U_E_z',0)
              endif
              write(*,*) '     finished'
            endif

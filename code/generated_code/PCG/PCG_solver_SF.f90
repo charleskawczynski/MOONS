@@ -305,12 +305,12 @@
          integer :: un
          un = new_and_open(str(this%dir),'primitives')
          call export_primitives(this,un)
-         close(un)
          call export_structured(this%MFP,str(this%dir)//'MFP'//fortran_PS)
          call export_structured(this%norm,str(this%dir)//'norm'//fortran_PS)
          call export_structured(this%ISP,str(this%dir)//'ISP'//fortran_PS)
          call export_structured(this%dir,str(this%dir)//'dir'//fortran_PS)
          call export_structured(this%name,str(this%dir)//'name'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine import_structured_DN_PCG_solver_SF(this)
@@ -319,12 +319,12 @@
          integer :: un
          un = open_to_read(str(this%dir),'primitives')
          call import_primitives(this,un)
-         close(un)
          call import_structured(this%MFP,str(this%dir)//'MFP'//fortran_PS)
          call import_structured(this%norm,str(this%dir)//'norm'//fortran_PS)
          call import_structured(this%ISP,str(this%dir)//'ISP'//fortran_PS)
          call import_structured(this%dir,str(this%dir)//'dir'//fortran_PS)
          call import_structured(this%name,str(this%dir)//'name'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine set_IO_dir_PCG_solver_SF(this,dir)
@@ -363,12 +363,12 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
-         close(un)
          call export_structured(this%MFP,dir//'MFP'//fortran_PS)
          call export_structured(this%norm,dir//'norm'//fortran_PS)
          call export_structured(this%ISP,dir//'ISP'//fortran_PS)
          call export_structured(this%dir,dir//'dir'//fortran_PS)
          call export_structured(this%name,dir//'name'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine import_structured_D_PCG_solver_SF(this,dir)
@@ -378,12 +378,12 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
-         close(un)
          call import_structured(this%MFP,dir//'MFP'//fortran_PS)
          call import_structured(this%norm,dir//'norm'//fortran_PS)
          call import_structured(this%ISP,dir//'ISP'//fortran_PS)
          call import_structured(this%dir,dir//'dir'//fortran_PS)
          call import_structured(this%name,dir//'name'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_PCG_solver_SF(this)

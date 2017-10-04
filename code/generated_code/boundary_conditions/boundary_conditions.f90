@@ -249,7 +249,6 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
-         close(un)
          call export_structured(this%BCL,dir//'BCL'//fortran_PS)
          if (this%BCL%defined) then
            call export_structured(this%DL,dir//'DL'//fortran_PS)
@@ -268,6 +267,7 @@
          if (this%BCL%defined) then
            call export_structured(this%f_BCs,dir//'f_BCs'//fortran_PS)
          endif
+         close(un)
        end subroutine
 
        subroutine import_structured_D_boundary_conditions(this,dir)
@@ -277,7 +277,6 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
-         close(un)
          call import_structured(this%BCL,dir//'BCL'//fortran_PS)
          if (this%BCL%defined) then
            call import_structured(this%DL,dir//'DL'//fortran_PS)
@@ -296,6 +295,7 @@
          if (this%BCL%defined) then
            call import_structured(this%f_BCs,dir//'f_BCs'//fortran_PS)
          endif
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_boundary_conditions(this)

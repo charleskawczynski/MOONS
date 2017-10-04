@@ -236,7 +236,6 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
-         close(un)
          call export_structured(this%advection,dir//'advection'//fortran_PS)
          call export_structured(this%diffusion,dir//'diffusion'//fortran_PS)
          call export_structured(this%diffusion_linear,&
@@ -249,6 +248,7 @@
          dir//'joule_heating'//fortran_PS)
          call export_structured(this%volumetric_heating,&
          dir//'volumetric_heating'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine import_structured_D_energy_terms(this,dir)
@@ -258,7 +258,6 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
-         close(un)
          call import_structured(this%advection,dir//'advection'//fortran_PS)
          call import_structured(this%diffusion,dir//'diffusion'//fortran_PS)
          call import_structured(this%diffusion_linear,&
@@ -271,6 +270,7 @@
          dir//'joule_heating'//fortran_PS)
          call import_structured(this%volumetric_heating,&
          dir//'volumetric_heating'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_energy_terms(this)

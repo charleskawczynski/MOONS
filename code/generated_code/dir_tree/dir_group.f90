@@ -44,7 +44,6 @@
        type dir_group
          type(path) :: base
          type(path) :: field
-         type(path) :: restart
          type(path) :: debug
          type(path) :: energy
          type(path) :: residual
@@ -62,7 +61,6 @@
          call delete(this)
          call init(this%base,that%base)
          call init(this%field,that%field)
-         call init(this%restart,that%restart)
          call init(this%debug,that%debug)
          call init(this%energy,that%energy)
          call init(this%residual,that%residual)
@@ -76,7 +74,6 @@
          type(dir_group),intent(inout) :: this
          call delete(this%base)
          call delete(this%field)
-         call delete(this%restart)
          call delete(this%debug)
          call delete(this%energy)
          call delete(this%residual)
@@ -91,7 +88,6 @@
          integer,intent(in) :: un
          call display(this%base,un)
          call display(this%field,un)
-         call display(this%restart,un)
          call display(this%debug,un)
          call display(this%energy,un)
          call display(this%residual,un)
@@ -106,7 +102,6 @@
          integer,intent(in) :: un
          call display(this%base,un)
          call display(this%field,un)
-         call display(this%restart,un)
          call display(this%debug,un)
          call display(this%energy,un)
          call display(this%residual,un)
@@ -143,7 +138,6 @@
          integer,intent(in) :: un
          call export(this%base,un)
          call export(this%field,un)
-         call export(this%restart,un)
          call export(this%debug,un)
          call export(this%energy,un)
          call export(this%residual,un)
@@ -159,7 +153,6 @@
          call delete(this)
          call import(this%base,un)
          call import(this%field,un)
-         call import(this%restart,un)
          call import(this%debug,un)
          call import(this%energy,un)
          call import(this%residual,un)
@@ -213,7 +206,6 @@
          call suppress_warnings(this)
          call set_IO_dir(this%base,dir//'base'//fortran_PS)
          call set_IO_dir(this%field,dir//'field'//fortran_PS)
-         call set_IO_dir(this%restart,dir//'restart'//fortran_PS)
          call set_IO_dir(this%debug,dir//'debug'//fortran_PS)
          call set_IO_dir(this%energy,dir//'energy'//fortran_PS)
          call set_IO_dir(this%residual,dir//'residual'//fortran_PS)
@@ -230,7 +222,6 @@
          call make_dir_quiet(dir)
          call make_IO_dir(this%base,dir//'base'//fortran_PS)
          call make_IO_dir(this%field,dir//'field'//fortran_PS)
-         call make_IO_dir(this%restart,dir//'restart'//fortran_PS)
          call make_IO_dir(this%debug,dir//'debug'//fortran_PS)
          call make_IO_dir(this%energy,dir//'energy'//fortran_PS)
          call make_IO_dir(this%residual,dir//'residual'//fortran_PS)
@@ -246,16 +237,15 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
-         close(un)
          call export_structured(this%base,dir//'base'//fortran_PS)
          call export_structured(this%field,dir//'field'//fortran_PS)
-         call export_structured(this%restart,dir//'restart'//fortran_PS)
          call export_structured(this%debug,dir//'debug'//fortran_PS)
          call export_structured(this%energy,dir//'energy'//fortran_PS)
          call export_structured(this%residual,dir//'residual'//fortran_PS)
          call export_structured(this%unsteady,dir//'unsteady'//fortran_PS)
          call export_structured(this%stats,dir//'stats'//fortran_PS)
          call export_structured(this%BCs,dir//'BCs'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine import_structured_D_dir_group(this,dir)
@@ -265,16 +255,15 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
-         close(un)
          call import_structured(this%base,dir//'base'//fortran_PS)
          call import_structured(this%field,dir//'field'//fortran_PS)
-         call import_structured(this%restart,dir//'restart'//fortran_PS)
          call import_structured(this%debug,dir//'debug'//fortran_PS)
          call import_structured(this%energy,dir//'energy'//fortran_PS)
          call import_structured(this%residual,dir//'residual'//fortran_PS)
          call import_structured(this%unsteady,dir//'unsteady'//fortran_PS)
          call import_structured(this%stats,dir//'stats'//fortran_PS)
          call import_structured(this%BCs,dir//'BCs'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_dir_group(this)

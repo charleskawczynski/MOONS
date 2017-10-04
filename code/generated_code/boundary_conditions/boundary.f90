@@ -266,7 +266,6 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
-         close(un)
          call export_structured(this%BCL,dir//'BCL'//fortran_PS)
          if (allocated(this%SB)) then
            s_SB = size(this%SB)
@@ -279,6 +278,7 @@
            write(un,*) 0
          endif
          call export_structured(this%name,dir//'name'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine import_structured_D_boundary(this,dir)
@@ -290,7 +290,6 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
-         close(un)
          call import_structured(this%BCL,dir//'BCL'//fortran_PS)
          read(un,*) s_SB
          if (s_SB.gt.0) then
@@ -302,6 +301,7 @@
            enddo
          endif
          call import_structured(this%name,dir//'name'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_boundary(this)

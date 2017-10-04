@@ -555,7 +555,6 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
-         close(un)
          call export_structured(this%stagCC2N,dir//'stagCC2N'//fortran_PS)
          call export_structured(this%stagN2CC,dir//'stagN2CC'//fortran_PS)
          call export_structured(this%theta,dir//'theta'//fortran_PS)
@@ -581,6 +580,7 @@
          call export_structured(this%hc,dir//'hc'//fortran_PS)
          call export_structured(this%dhn,dir//'dhn'//fortran_PS)
          call export_structured(this%dhc,dir//'dhc'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine import_structured_D_coordinates(this,dir)
@@ -596,7 +596,6 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
-         close(un)
          call import_structured(this%stagCC2N,dir//'stagCC2N'//fortran_PS)
          call import_structured(this%stagN2CC,dir//'stagN2CC'//fortran_PS)
          call import_structured(this%theta,dir//'theta'//fortran_PS)
@@ -619,6 +618,7 @@
          call import_structured(this%hc,dir//'hc'//fortran_PS)
          call import_structured(this%dhn,dir//'dhn'//fortran_PS)
          call import_structured(this%dhc,dir//'dhc'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_coordinates(this)

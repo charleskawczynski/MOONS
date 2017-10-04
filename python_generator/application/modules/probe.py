@@ -23,5 +23,6 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('n_step'   ,'integer(li)',priv)
 	g.module[m_name].add_prop('restart'  ,'logical',priv)
 	g.module[m_name].add_prop('simple'   ,'logical',priv)
+	g.module[m_name].add_prop(['dir','name'],'string',priv)
 
 	return g

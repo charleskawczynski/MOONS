@@ -9,8 +9,14 @@ suppress_all_warnings = True
 make_dir_quiet = True
 IO_structured_quiet = True
 
-# skip_structured_IO_child = ['SF','VF','TF']
-skip_structured_IO_child = ['mesh','SF','VF','TF']
+# skip_structured_IO_child_class = ['SF','VF','TF']
+make_dir_also_sets_dir = True
+
+use_structured_condition = True
+
+skip_structured_IO_child_class = ['mesh','SF','VF','TF']
+
+skip_structured_IO_child_name = ['absolute']
 
 use_necessary_for_restart = True
 parent_necessary_for_restart = ['block_field']
@@ -56,7 +62,6 @@ class fortran_module:
         self.maxLineLength = 71
         self.implicitNone = 'implicit none'
         self.base_spaces = ' '*7
-        # self.base_spaces = ''
         self.raw_lines = []
         self.raw_lines_used = False
         self.abstract_interfaces = []
@@ -141,7 +146,6 @@ class fortran_module:
         self.raw_lines_used = True
 
     def get_suffix(self): return self.name
-    # def get_suffix(self): return self.int_name
     # def get_suffix(self): return 'class'
 
     ################################################################################*/
@@ -155,8 +159,6 @@ class fortran_module:
         return self.post_process(L)
 
     def pre_process(self):
-        self.int_name = self.name
-        # self.int_name = self.name[0:2]
         self.has_dir = []
         self.has_name = []
         X = self.prop
@@ -199,8 +201,6 @@ class fortran_module:
           L = self.raw_lines
         else:
           L = [self.base_spaces+x if not (x=='' or x.startswith('#')) else x for x in L]
-        # L = [self.base_spaces+x for x in L]
-        # L = [CF.indent_lines(k) for k in L]
         L = CF.indent_lines(L)
         return L
 
@@ -265,7 +265,6 @@ class fortran_module:
         sp_al = [self.spaces[max(st_al)-x] for x in st_al]
         sp_sn = [self.spaces[max(st_sn)-x] for x in st_sn]
         c = ['interface '+x+';'+s for x,s in zip(alias,sp_al)]
-        # c = [x+'module procedure '+sn+'_'+self.name+';' for x,sn in zip(c,sub_name)]
         c = [x+'module procedure '+sn+'_'+self.get_suffix()+';' for x,sn in zip(c,sub_name)]
         c = [x+s+'end interface' for x,s in zip(c,sp_sn)]
         return c
@@ -593,7 +592,6 @@ class fortran_module:
 
     def export_structured_D_module(self):
         sig = 'export_structured_D_' + self.get_suffix()
-        # sig = 'set_IO_dir_'
         c = []
         c=c+[self.full_sub_signature(sig,'this,dir')]
         c=c+[self.implicitNone]
@@ -611,9 +609,8 @@ class fortran_module:
           c=c+["write(*,*) 'Exporting "+ self.name +" structured'"]
         c=c+["un = new_and_open(dir,'primitives')"]
         c=c+["call export_primitives(this,un)"]
-        c=c+['close(un)']
         for key in self.prop:
-          if all([not self.prop[key].class_==x for x in skip_structured_IO_child]):
+          if self.get_structured_condition(self.prop[key]):
             if self.get_restart_condition(self.prop[key]):
               c=c+["if (this%necessary_for_restart) then" ]
             if self.get_BC_condition(self.prop[key]):
@@ -624,12 +621,12 @@ class fortran_module:
             if self.get_BC_condition(self.prop[key]): c=c+["endif" ]
             if self.get_restart_condition(self.prop[key]): c=c+["endif" ]
 
+        c=c+['close(un)']
         c=c+[self.end_sub()]
         return c
 
     def export_structured_DN_module(self):
         sig = 'export_structured_DN_' + self.get_suffix()
-        # sig = 'set_IO_dir_'
         c = [self.full_sub_signature(sig,'this')]
         c=c+[self.implicitNone]
         c=c+['type(' + self.name + '),intent(in) :: this' ]
@@ -643,16 +640,15 @@ class fortran_module:
         c=c+["integer :: un" ]
         c=c+["un = new_and_open(str(this%dir),'primitives')" ]
         c=c+["call export_primitives(this,un)" ]
-        c=c+['close(un)']
         for key in self.prop:
-          if all([not self.prop[key].class_==x for x in skip_structured_IO_child]):
+          if self.get_structured_condition(self.prop[key]):
             c=c+[[x for x in self.prop[key].write_export_structured('str(this%dir)')]]
+        c=c+['close(un)']
         c=c+[self.end_sub()]
         return c
 
     def import_structured_D_module(self):
         sig = 'import_structured_D_' + self.get_suffix()
-        # sig = 'set_IO_dir_'
         c = [self.full_sub_signature(sig,'this,dir')]
         c=c+[self.implicitNone]
         c=c+['type(' + self.name + '),intent(inout) :: this' ]
@@ -669,9 +665,8 @@ class fortran_module:
           c=c+["write(*,*) 'Importing "+ self.name +" structured'"]
         c=c+["un = open_to_read(dir,'primitives')" ]
         c=c+["call import_primitives(this,un)" ]
-        c=c+['close(un)']
         for key in self.prop:
-          if all([not self.prop[key].class_==x for x in skip_structured_IO_child]):
+          if self.get_structured_condition(self.prop[key]):
             if self.get_restart_condition(self.prop[key]):
               c=c+["if (this%necessary_for_restart) then" ]
 
@@ -690,12 +685,12 @@ class fortran_module:
               if any([x==self.prop[key].class_ for x in child_to_reset_procedures]):
                 c=c+[[x for x in self.prop[key].write_set_procedures()]]
 
+        c=c+['close(un)']
         c=c+[self.end_sub()]
         return c
 
     def import_structured_DN_module(self):
         sig = 'import_structured_DN_' + self.get_suffix()
-        # sig = 'set_IO_dir_'
         c = [self.full_sub_signature(sig,'this')]
         c=c+[self.implicitNone]
         c=c+['type(' + self.name + '),intent(inout) :: this' ]
@@ -709,16 +704,15 @@ class fortran_module:
         c=c+["integer :: un" ]
         c=c+["un = open_to_read(str(this%dir),'primitives')" ]
         c=c+["call import_primitives(this,un)" ]
-        c=c+['close(un)']
         for key in self.prop:
-          if all([not self.prop[key].class_==x for x in skip_structured_IO_child]):
+          if self.get_structured_condition(self.prop[key]):
             c=c+[[x for x in self.prop[key].write_import_structured('str(this%dir)')]]
+        c=c+['close(un)']
         c=c+[self.end_sub()]
         return c
 
     def set_IO_dir_module(self):
         sig = 'set_IO_dir_' + self.get_suffix()
-        # sig = 'set_IO_dir_'
         c = [self.full_sub_signature(sig,'this,dir')]
         c=c+[self.implicitNone]
         c=c+['type(' + self.name + '),intent(inout) :: this' ]
@@ -732,7 +726,9 @@ class fortran_module:
             if L: c=c+[L]
         if suppress_all_warnings:
           c=c+['call suppress_warnings(this)' ]
-        if suppress_all_warnings and self.primitives_strings_or_procedures:
+
+        L = all([any([self.prop[key].class_==x for x in skip_structured_IO_child_class]) for key in self.prop])
+        if suppress_all_warnings and self.primitives_strings_or_procedures or L:
           c=c+['if (.false.) then' ]
           c=c+['write(*,*) dir' ]
           c=c+['endif' ]
@@ -740,7 +736,7 @@ class fortran_module:
           c=c+["call init(this%dir,dir)" ]
           c=c+["call init(this%name,'primitives')" ]
         for key in self.prop:
-          if all([not self.prop[key].class_==x for x in skip_structured_IO_child]):
+          if self.get_structured_condition(self.prop[key]):
             if self.get_BC_condition(self.prop[key]):
               c=c+["if (this%BCL%defined) then" ]
             c=c+[[x for x in self.prop[key].write_set_IO_dir('set_IO_dir')]]
@@ -751,7 +747,6 @@ class fortran_module:
 
     def make_IO_dir_module(self):
         sig = 'make_IO_dir_' + self.get_suffix()
-        # sig = 'set_IO_dir_'
         c = [self.full_sub_signature(sig,'this,dir')]
         c=c+[self.implicitNone]
         c=c+['type(' + self.name + '),intent(inout) :: this' ]
@@ -769,11 +764,11 @@ class fortran_module:
           c=c+['call make_dir_quiet(dir)' ]
         else:
           c=c+['call make_dir(dir)' ]
-        if self.has_dir_name:
+        if self.has_dir_name and make_dir_also_sets_dir:
           c=c+["call init(this%dir,dir)" ]
           c=c+["call init(this%name,'primitives')" ]
         for key in self.prop:
-          if all([not self.prop[key].class_==x for x in skip_structured_IO_child]):
+          if self.get_structured_condition(self.prop[key]):
             if self.get_BC_condition(self.prop[key]):
               c=c+["if (this%BCL%defined) then" ]
             c=c+[[x for x in self.prop[key].write_set_IO_dir('make_IO_dir')]]
@@ -793,6 +788,12 @@ class fortran_module:
           c=c+['endif' ]
           c=c+[self.end_sub()]
         return c
+
+    def get_structured_condition(self,prop):
+        temp1 = all([not prop.class_==x for x in skip_structured_IO_child_class])
+        temp2 = all([not prop.name==x for x in skip_structured_IO_child_name])
+        L = temp1 and temp2 and use_structured_condition
+        return L
 
     def get_BC_condition(self,prop):
         temp1 = any([self.name==x for x in parent_skip_BCs_unless_defined])

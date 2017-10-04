@@ -20,8 +20,6 @@
        public :: get_data
 
        interface init;     module procedure init_probe;               end interface
-       interface init;     module procedure init_probe_fresh;         end interface
-       interface init;     module procedure init_probe_restart;       end interface
        interface delete;   module procedure delete_probe_many;        end interface
        interface export;   module procedure export_probe_wrapper_dim; end interface
        interface import;   module procedure import_probe_wrapper_dim; end interface
@@ -38,19 +36,23 @@
          logical,intent(in) :: restart,simple
          type(time_marching_params),intent(in) :: TMP
          call delete(p)
-         call init(p%tec_dir,tec_dir)
-         call init(p%tec_name,tec_name)
-         p%simple = simple
-         if (restart) then; call init(p,tec_dir,tec_name,TMP)
-         else;              call init(p,tec_dir,tec_name)
+         if (restart) then
+           call import(p)
+           call init_probe_restart(p,TMP)
+         else
+           call init_probe_fresh(p,tec_dir,tec_name,simple)
          endif
        end subroutine
 
-       subroutine init_probe_fresh(p,tec_dir,tec_name)
+       subroutine init_probe_fresh(p,tec_dir,tec_name,simple)
          implicit none
          type(probe),intent(inout) :: p
          character(len=*),intent(in) :: tec_dir,tec_name
+         logical,intent(in) :: simple
          type(string) :: s
+         call init(p%tec_dir,tec_dir)
+         call init(p%tec_name,tec_name)
+         p%simple = simple
          p%restart = .false.
          p%un = new_and_open(tec_dir,tec_name)
          write(p%un,*) 'TITLE = "'//tec_name//' probe"'
@@ -71,17 +73,17 @@
          p%d_amax = 0.0_cp
        end subroutine
 
-       subroutine init_probe_restart(p,tec_dir,tec_name,TMP)
+       subroutine init_probe_restart(p,TMP)
          implicit none
          type(probe),intent(inout) :: p
-         character(len=*),intent(in) :: tec_dir,tec_name
          type(time_marching_params),intent(in) :: TMP
          integer :: i_last
          p%restart = .true.
-         call truncate_data_in_open_file(p,TMP,tec_dir,tec_name,i_last)
-         i_last = get_last_data_point_location(tec_dir,tec_name)
-         ! p%un = open_to_append(tec_dir,tec_name,i_last) ! Does not work yet.
-         p%un = open_to_append(tec_dir,tec_name)
+         call truncate_data_in_open_file(p,TMP,i_last)
+         i_last = get_last_data_point_location(str(p%tec_dir),str(p%tec_name))
+         ! p%un = open_to_append(p%tec_dir,p%tec_name,i_last) ! Does not work yet.
+         p%un = open_to_append(str(p%tec_dir),str(p%tec_name))
+         call export(p) ! So that restart is passed to next sim.
        end subroutine
 
        subroutine delete_probe_many(p)
@@ -161,16 +163,19 @@
          d = p%d
        end function
 
-       subroutine truncate_data_in_open_file(p,TMP,tec_dir,tec_name,i_last)
+       subroutine truncate_data_in_open_file(p,TMP,i_last)
          implicit none
          type(probe),intent(in) :: p
          type(time_marching_params),intent(in) :: TMP
-         character(len=*),intent(in) :: tec_dir,tec_name
          integer,intent(inout) :: i_last
          real(cp),dimension(:),allocatable :: d
          integer(li) :: i,i_first_to_delete,i_EOF
          integer :: un,stat
-         un = open_to_read(tec_dir,tec_name)
+         un = open_to_read(str(p%tec_dir),str(p%tec_name))
+         write(*,*) 'truncate_data_in_open_file: '
+         call print(p%tec_dir)
+         call print(p%tec_name)
+         write(*,*) 'p%cols = ',p%cols
          read(un,*); read(un,*); read(un,*)
          allocate(d(p%cols))
          i_first_to_delete = 1
@@ -181,7 +186,7 @@
            if (stat .lt. 0) then; i_EOF = i; exit; endif
          enddo
          close(un)
-         un = open_to_read_write(tec_dir,tec_name)
+         un = open_to_read_write(str(p%tec_dir),str(p%tec_name))
          read(un,*); read(un,*); read(un,*)
          if (i_first_to_delete.ne.TMP%n_step) then
            do i=1,i_first_to_delete; read(un,*); enddo

@@ -41,8 +41,8 @@
        interface suppress_warnings;module procedure suppress_warnings_path;  end interface
 
        type path
-         type(string) :: a
-         type(string) :: r
+         type(string) :: absolute
+         type(string) :: relative
        end type
 
        contains
@@ -52,31 +52,31 @@
          type(path),intent(inout) :: this
          type(path),intent(in) :: that
          call delete(this)
-         call init(this%a,that%a)
-         call init(this%r,that%r)
+         call init(this%absolute,that%absolute)
+         call init(this%relative,that%relative)
        end subroutine
 
        subroutine delete_path(this)
          implicit none
          type(path),intent(inout) :: this
-         call delete(this%a)
-         call delete(this%r)
+         call delete(this%absolute)
+         call delete(this%relative)
        end subroutine
 
        subroutine display_path(this,un)
          implicit none
          type(path),intent(in) :: this
          integer,intent(in) :: un
-         call display(this%a,un)
-         call display(this%r,un)
+         call display(this%absolute,un)
+         call display(this%relative,un)
        end subroutine
 
        subroutine display_short_path(this,un)
          implicit none
          type(path),intent(in) :: this
          integer,intent(in) :: un
-         call display(this%a,un)
-         call display(this%r,un)
+         call display(this%absolute,un)
+         call display(this%relative,un)
        end subroutine
 
        subroutine display_wrap_path(this,dir,name)
@@ -105,8 +105,8 @@
          implicit none
          type(path),intent(in) :: this
          integer,intent(in) :: un
-         call export(this%a,un)
-         call export(this%r,un)
+         call export(this%absolute,un)
+         call export(this%relative,un)
        end subroutine
 
        subroutine import_path(this,un)
@@ -114,8 +114,8 @@
          type(path),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         call import(this%a,un)
-         call import(this%r,un)
+         call import(this%absolute,un)
+         call import(this%relative,un)
        end subroutine
 
        subroutine export_primitives_path(this,un)
@@ -164,8 +164,7 @@
          if (.false.) then
            write(*,*) dir
          endif
-         call set_IO_dir(this%a,dir//'a'//fortran_PS)
-         call set_IO_dir(this%r,dir//'r'//fortran_PS)
+         call set_IO_dir(this%relative,dir//'relative'//fortran_PS)
        end subroutine
 
        subroutine make_IO_dir_path(this,dir)
@@ -174,8 +173,7 @@
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
-         call make_IO_dir(this%a,dir//'a'//fortran_PS)
-         call make_IO_dir(this%r,dir//'r'//fortran_PS)
+         call make_IO_dir(this%relative,dir//'relative'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_path(this,dir)
@@ -185,9 +183,8 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
+         call export_structured(this%relative,dir//'relative'//fortran_PS)
          close(un)
-         call export_structured(this%a,dir//'a'//fortran_PS)
-         call export_structured(this%r,dir//'r'//fortran_PS)
        end subroutine
 
        subroutine import_structured_D_path(this,dir)
@@ -197,9 +194,8 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
+         call import_structured(this%relative,dir//'relative'//fortran_PS)
          close(un)
-         call import_structured(this%a,dir//'a'//fortran_PS)
-         call import_structured(this%r,dir//'r'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_path(this)

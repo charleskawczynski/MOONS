@@ -247,7 +247,6 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
-         close(un)
          if (allocated(this%EL)) then
            s_EL = size(this%EL)
            write(un,*) s_EL
@@ -258,6 +257,7 @@
          else
            write(un,*) 0
          endif
+         close(un)
        end subroutine
 
        subroutine import_structured_D_export_lines(this,dir)
@@ -269,7 +269,6 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
-         close(un)
          read(un,*) s_EL
          if (s_EL.gt.0) then
            allocate(this%EL(s_EL))
@@ -279,6 +278,7 @@
              dir//'EL_'//int2str(i_EL)//fortran_PS)
            enddo
          endif
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_export_lines(this)

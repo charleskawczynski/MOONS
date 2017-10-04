@@ -252,7 +252,6 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
-         close(un)
          call export_structured(this%SS,dir//'SS'//fortran_PS)
          call export_structured(this%MFP,dir//'MFP'//fortran_PS)
          call export_structured(this%TMP,dir//'TMP'//fortran_PS)
@@ -263,6 +262,7 @@
          dir//'unsteady_planes'//fortran_PS)
          call export_structured(this%unsteady_field,&
          dir//'unsteady_field'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine import_structured_D_var(this,dir)
@@ -272,7 +272,6 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
-         close(un)
          call import_structured(this%SS,dir//'SS'//fortran_PS)
          call import_structured(this%MFP,dir//'MFP'//fortran_PS)
          call import_structured(this%TMP,dir//'TMP'//fortran_PS)
@@ -283,6 +282,7 @@
          dir//'unsteady_planes'//fortran_PS)
          call import_structured(this%unsteady_field,&
          dir//'unsteady_field'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_var(this)

@@ -266,7 +266,6 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
-         close(un)
          if (allocated(this%B)) then
            s_B = size(this%B)
            write(un,*) s_B
@@ -278,6 +277,7 @@
            write(un,*) 0
          endif
          call export_structured(this%MP,dir//'MP'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine import_structured_D_mesh(this,dir)
@@ -289,7 +289,6 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
-         close(un)
          read(un,*) s_B
          if (s_B.gt.0) then
            allocate(this%B(s_B))
@@ -300,6 +299,7 @@
            enddo
          endif
          call import_structured(this%MP,dir//'MP'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_mesh(this)

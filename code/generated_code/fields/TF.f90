@@ -167,6 +167,9 @@
          type(TF),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
+         if (.false.) then
+           write(*,*) dir
+         endif
        end subroutine
 
        subroutine make_IO_dir_TF(this,dir)

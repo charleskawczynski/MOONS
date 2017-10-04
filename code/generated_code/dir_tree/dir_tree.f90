@@ -58,15 +58,13 @@
          type(path) :: TMP
          type(path) :: EF
          type(path) :: export_now
-         type(path) :: refine_mesh
          type(path) :: e_budget
          type(path) :: e_budget_N
          type(path) :: e_budget_C
-         type(path) :: restart_sim
+         type(path) :: restart_root
          type(path) :: restart1
          type(path) :: restart2
          type(path) :: restart
-         type(path) :: mesh_restart
          type(path) :: unknowns
          type(path) :: governing_equations
          type(string) :: PS
@@ -103,15 +101,13 @@
          call init(this%TMP,that%TMP)
          call init(this%EF,that%EF)
          call init(this%export_now,that%export_now)
-         call init(this%refine_mesh,that%refine_mesh)
          call init(this%e_budget,that%e_budget)
          call init(this%e_budget_N,that%e_budget_N)
          call init(this%e_budget_C,that%e_budget_C)
-         call init(this%restart_sim,that%restart_sim)
+         call init(this%restart_root,that%restart_root)
          call init(this%restart1,that%restart1)
          call init(this%restart2,that%restart2)
          call init(this%restart,that%restart)
-         call init(this%mesh_restart,that%mesh_restart)
          call init(this%unknowns,that%unknowns)
          call init(this%governing_equations,that%governing_equations)
          call init(this%PS,that%PS)
@@ -144,15 +140,13 @@
          call delete(this%TMP)
          call delete(this%EF)
          call delete(this%export_now)
-         call delete(this%refine_mesh)
          call delete(this%e_budget)
          call delete(this%e_budget_N)
          call delete(this%e_budget_C)
-         call delete(this%restart_sim)
+         call delete(this%restart_root)
          call delete(this%restart1)
          call delete(this%restart2)
          call delete(this%restart)
-         call delete(this%mesh_restart)
          call delete(this%unknowns)
          call delete(this%governing_equations)
          call delete(this%PS)
@@ -186,15 +180,13 @@
          call display(this%TMP,un)
          call display(this%EF,un)
          call display(this%export_now,un)
-         call display(this%refine_mesh,un)
          call display(this%e_budget,un)
          call display(this%e_budget_N,un)
          call display(this%e_budget_C,un)
-         call display(this%restart_sim,un)
+         call display(this%restart_root,un)
          call display(this%restart1,un)
          call display(this%restart2,un)
          call display(this%restart,un)
-         call display(this%mesh_restart,un)
          call display(this%unknowns,un)
          call display(this%governing_equations,un)
          call display(this%PS,un)
@@ -228,15 +220,13 @@
          call display(this%TMP,un)
          call display(this%EF,un)
          call display(this%export_now,un)
-         call display(this%refine_mesh,un)
          call display(this%e_budget,un)
          call display(this%e_budget_N,un)
          call display(this%e_budget_C,un)
-         call display(this%restart_sim,un)
+         call display(this%restart_root,un)
          call display(this%restart1,un)
          call display(this%restart2,un)
          call display(this%restart,un)
-         call display(this%mesh_restart,un)
          call display(this%unknowns,un)
          call display(this%governing_equations,un)
          call display(this%PS,un)
@@ -292,15 +282,13 @@
          call export(this%TMP,un)
          call export(this%EF,un)
          call export(this%export_now,un)
-         call export(this%refine_mesh,un)
          call export(this%e_budget,un)
          call export(this%e_budget_N,un)
          call export(this%e_budget_C,un)
-         call export(this%restart_sim,un)
+         call export(this%restart_root,un)
          call export(this%restart1,un)
          call export(this%restart2,un)
          call export(this%restart,un)
-         call export(this%mesh_restart,un)
          call export(this%unknowns,un)
          call export(this%governing_equations,un)
          call export(this%PS,un)
@@ -335,15 +323,13 @@
          call import(this%TMP,un)
          call import(this%EF,un)
          call import(this%export_now,un)
-         call import(this%refine_mesh,un)
          call import(this%e_budget,un)
          call import(this%e_budget_N,un)
          call import(this%e_budget_C,un)
-         call import(this%restart_sim,un)
+         call import(this%restart_root,un)
          call import(this%restart1,un)
          call import(this%restart2,un)
          call import(this%restart,un)
-         call import(this%mesh_restart,un)
          call import(this%unknowns,un)
          call import(this%governing_equations,un)
          call import(this%PS,un)
@@ -418,15 +404,13 @@
          call set_IO_dir(this%TMP,dir//'TMP'//fortran_PS)
          call set_IO_dir(this%EF,dir//'EF'//fortran_PS)
          call set_IO_dir(this%export_now,dir//'export_now'//fortran_PS)
-         call set_IO_dir(this%refine_mesh,dir//'refine_mesh'//fortran_PS)
          call set_IO_dir(this%e_budget,dir//'e_budget'//fortran_PS)
          call set_IO_dir(this%e_budget_N,dir//'e_budget_N'//fortran_PS)
          call set_IO_dir(this%e_budget_C,dir//'e_budget_C'//fortran_PS)
-         call set_IO_dir(this%restart_sim,dir//'restart_sim'//fortran_PS)
+         call set_IO_dir(this%restart_root,dir//'restart_root'//fortran_PS)
          call set_IO_dir(this%restart1,dir//'restart1'//fortran_PS)
          call set_IO_dir(this%restart2,dir//'restart2'//fortran_PS)
          call set_IO_dir(this%restart,dir//'restart'//fortran_PS)
-         call set_IO_dir(this%mesh_restart,dir//'mesh_restart'//fortran_PS)
          call set_IO_dir(this%unknowns,dir//'unknowns'//fortran_PS)
          call set_IO_dir(this%governing_equations,&
          dir//'governing_equations'//fortran_PS)
@@ -465,15 +449,13 @@
          call make_IO_dir(this%TMP,dir//'TMP'//fortran_PS)
          call make_IO_dir(this%EF,dir//'EF'//fortran_PS)
          call make_IO_dir(this%export_now,dir//'export_now'//fortran_PS)
-         call make_IO_dir(this%refine_mesh,dir//'refine_mesh'//fortran_PS)
          call make_IO_dir(this%e_budget,dir//'e_budget'//fortran_PS)
          call make_IO_dir(this%e_budget_N,dir//'e_budget_N'//fortran_PS)
          call make_IO_dir(this%e_budget_C,dir//'e_budget_C'//fortran_PS)
-         call make_IO_dir(this%restart_sim,dir//'restart_sim'//fortran_PS)
+         call make_IO_dir(this%restart_root,dir//'restart_root'//fortran_PS)
          call make_IO_dir(this%restart1,dir//'restart1'//fortran_PS)
          call make_IO_dir(this%restart2,dir//'restart2'//fortran_PS)
          call make_IO_dir(this%restart,dir//'restart'//fortran_PS)
-         call make_IO_dir(this%mesh_restart,dir//'mesh_restart'//fortran_PS)
          call make_IO_dir(this%unknowns,dir//'unknowns'//fortran_PS)
          call make_IO_dir(this%governing_equations,&
          dir//'governing_equations'//fortran_PS)
@@ -496,7 +478,6 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
-         close(un)
          call export_structured(this%tar_p,dir//'tar_p'//fortran_PS)
          call export_structured(this%out_dir,dir//'out_dir'//fortran_PS)
          call export_structured(this%LDC,dir//'LDC'//fortran_PS)
@@ -516,20 +497,16 @@
          call export_structured(this%EF,dir//'EF'//fortran_PS)
          call export_structured(this%export_now,&
          dir//'export_now'//fortran_PS)
-         call export_structured(this%refine_mesh,&
-         dir//'refine_mesh'//fortran_PS)
          call export_structured(this%e_budget,dir//'e_budget'//fortran_PS)
          call export_structured(this%e_budget_N,&
          dir//'e_budget_N'//fortran_PS)
          call export_structured(this%e_budget_C,&
          dir//'e_budget_C'//fortran_PS)
-         call export_structured(this%restart_sim,&
-         dir//'restart_sim'//fortran_PS)
+         call export_structured(this%restart_root,&
+         dir//'restart_root'//fortran_PS)
          call export_structured(this%restart1,dir//'restart1'//fortran_PS)
          call export_structured(this%restart2,dir//'restart2'//fortran_PS)
          call export_structured(this%restart,dir//'restart'//fortran_PS)
-         call export_structured(this%mesh_restart,&
-         dir//'mesh_restart'//fortran_PS)
          call export_structured(this%unknowns,dir//'unknowns'//fortran_PS)
          call export_structured(this%governing_equations,&
          dir//'governing_equations'//fortran_PS)
@@ -543,6 +520,7 @@
          call export_structured(this%phi,dir//'phi'//fortran_PS)
          call export_structured(this%rho,dir//'rho'//fortran_PS)
          call export_structured(this%test,dir//'test'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine import_structured_D_dir_tree(this,dir)
@@ -552,7 +530,6 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
-         close(un)
          call import_structured(this%tar_p,dir//'tar_p'//fortran_PS)
          call import_structured(this%out_dir,dir//'out_dir'//fortran_PS)
          call import_structured(this%LDC,dir//'LDC'//fortran_PS)
@@ -572,20 +549,16 @@
          call import_structured(this%EF,dir//'EF'//fortran_PS)
          call import_structured(this%export_now,&
          dir//'export_now'//fortran_PS)
-         call import_structured(this%refine_mesh,&
-         dir//'refine_mesh'//fortran_PS)
          call import_structured(this%e_budget,dir//'e_budget'//fortran_PS)
          call import_structured(this%e_budget_N,&
          dir//'e_budget_N'//fortran_PS)
          call import_structured(this%e_budget_C,&
          dir//'e_budget_C'//fortran_PS)
-         call import_structured(this%restart_sim,&
-         dir//'restart_sim'//fortran_PS)
+         call import_structured(this%restart_root,&
+         dir//'restart_root'//fortran_PS)
          call import_structured(this%restart1,dir//'restart1'//fortran_PS)
          call import_structured(this%restart2,dir//'restart2'//fortran_PS)
          call import_structured(this%restart,dir//'restart'//fortran_PS)
-         call import_structured(this%mesh_restart,&
-         dir//'mesh_restart'//fortran_PS)
          call import_structured(this%unknowns,dir//'unknowns'//fortran_PS)
          call import_structured(this%governing_equations,&
          dir//'governing_equations'//fortran_PS)
@@ -599,6 +572,7 @@
          call import_structured(this%phi,dir//'phi'//fortran_PS)
          call import_structured(this%rho,dir//'rho'//fortran_PS)
          call import_structured(this%test,dir//'test'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_dir_tree(this)

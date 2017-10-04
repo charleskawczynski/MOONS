@@ -186,9 +186,9 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
-         close(un)
          call export_structured(this%total,dir//'total'//fortran_PS)
          call export_structured(this%physical,dir//'physical'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine import_structured_D_physical_sub_domain(this,dir)
@@ -198,9 +198,9 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
-         close(un)
          call import_structured(this%total,dir//'total'//fortran_PS)
          call import_structured(this%physical,dir//'physical'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_physical_sub_domain(this)

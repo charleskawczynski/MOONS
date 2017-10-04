@@ -290,7 +290,6 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
-         close(un)
          call export_structured(this%BCs,dir//'BCs'//fortran_PS)
          if (this%necessary_for_restart) then
            call export_structured(this%GF,dir//'GF'//fortran_PS)
@@ -306,6 +305,7 @@
          dir//'PA_assign_wall_Periodic_single'//fortran_PS)
          call export_structured(this%PA_multiply_wall_Neumann,&
          dir//'PA_multiply_wall_Neumann'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine import_structured_D_block_field(this,dir)
@@ -315,7 +315,6 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
-         close(un)
          call import_structured(this%BCs,dir//'BCs'//fortran_PS)
          if (this%necessary_for_restart) then
            call import_structured(this%GF,dir//'GF'//fortran_PS)
@@ -331,6 +330,7 @@
          dir//'PA_assign_wall_Periodic_single'//fortran_PS)
          call import_structured(this%PA_multiply_wall_Neumann,&
          dir//'PA_multiply_wall_Neumann'//fortran_PS)
+         close(un)
        end subroutine
 
        subroutine suppress_warnings_block_field(this)

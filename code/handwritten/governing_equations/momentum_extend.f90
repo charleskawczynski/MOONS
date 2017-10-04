@@ -76,8 +76,6 @@
        interface init;                      module procedure init_mom;                      end interface
        interface display;                   module procedure display_momentum;              end interface
        interface print;                     module procedure print_momentum;                end interface
-       interface export;                    module procedure export_momentum;               end interface
-       interface import;                    module procedure import_momentum;               end interface
 
        interface export_tec;                module procedure export_tec_momentum;           end interface
        interface solve;                     module procedure solve_momentum;                end interface
@@ -179,7 +177,6 @@
          temp_unit = new_and_open(str(DT%params),'info_mom')
          call display(mom,SP,temp_unit)
          call close_and_message(temp_unit,str(DT%params),'info_mom')
-         if (SP%FCL%restart_all) call import(mom,SP,DT)
          call face2CellCenter(mom%U_CC,mom%U,mom%m)  ! Needed after import
          call face2edge_no_diag(mom%U_E,mom%U,mom%m) ! Needed after import
          write(*,*) '     Solver settings initialized'
@@ -234,52 +231,6 @@
          call set_necessary_for_restart(mom%PCG_P%r)
          call set_necessary_for_restart(mom%PCG_U%x_BC)
          call set_necessary_for_restart(mom%PCG_P%x_BC)
-       end subroutine
-
-       subroutine export_momentum(mom,SP,DT)
-         implicit none
-         type(momentum),intent(in) :: mom
-         type(sim_params),intent(in) :: SP
-         type(dir_tree),intent(in) :: DT
-         write(*,*) 'export_momentum at n_step = ',SP%VS%U%TMP%n_step
-         call export_raw(mom%m,mom%U    ,str(DT%U%restart),'U',0)
-         call export_raw(mom%m,mom%Ustar,str(DT%U%restart),'Ustar',0)
-         call export_raw(mom%m,mom%Unm1 ,str(DT%U%restart),'Unm1',0)
-         call export_raw(mom%m,mom%p    ,str(DT%p%restart),'p',0)
-         call export_raw(mom%m,mom%F    ,str(DT%U%restart),'F_external',0)
-         call export_raw(mom%m,mom%Fnm1 ,str(DT%U%restart),'Fnm1_external',0)
-         call export_raw(mom%m,mom%L    ,str(DT%U%restart),'L_external',0)
-         call export_raw(mom%m,mom%PCG_U%r,str(DT%U%restart),'r_PCG_U',0)
-         call export_raw(mom%m,mom%PCG_P%r,str(DT%P%restart),'r_PCG_P',0)
-         call export(mom%PCG_U,str(DT%U%restart),'PCG_U')
-         call export(mom%PCG_P,str(DT%P%restart),'PCG_P')
-         call export(mom%probe_divU,str(DT%U%restart),'probe_divU')
-         call export(mom%probe_KE,str(DT%U%restart),'probe_KE')
-         call export(mom%probe_Q,str(DT%U%restart),'probe_Q')
-         if (mom%m%MP%plane_any) call export(mom%probe_KE_2C,str(DT%U%restart),'probe_KE_2C')
-       end subroutine
-
-       subroutine import_momentum(mom,SP,DT)
-         implicit none
-         type(momentum),intent(inout) :: mom
-         type(sim_params),intent(in) :: SP
-         type(dir_tree),intent(in) :: DT
-         write(*,*) 'import_momentum at n_step = ',SP%VS%U%TMP%n_step
-         call import_raw(mom%m,mom%U    ,str(DT%U%restart),'U',0)
-         call import_raw(mom%m,mom%Ustar,str(DT%U%restart),'Ustar',0)
-         call import_raw(mom%m,mom%Unm1 ,str(DT%U%restart),'Unm1',0)
-         call import_raw(mom%m,mom%p    ,str(DT%p%restart),'p',0)
-         call import_raw(mom%m,mom%F    ,str(DT%U%restart),'F_external',0)
-         call import_raw(mom%m,mom%Fnm1 ,str(DT%U%restart),'Fnm1_external',0)
-         call import_raw(mom%m,mom%L    ,str(DT%U%restart),'L_external',0)
-         call import_raw(mom%m,mom%PCG_U%r,str(DT%U%restart),'r_PCG_U',0)
-         call import_raw(mom%m,mom%PCG_P%r,str(DT%P%restart),'r_PCG_P',0)
-         call import(mom%PCG_U,str(DT%U%restart),'PCG_U')
-         call import(mom%PCG_P,str(DT%P%restart),'PCG_P')
-         call import(mom%probe_divU,str(DT%U%restart),'probe_divU')
-         call import(mom%probe_KE,str(DT%U%restart),'probe_KE')
-         call import(mom%probe_Q,str(DT%U%restart),'probe_Q')
-         if (mom%m%MP%plane_any) call import(mom%probe_KE_2C,str(DT%U%restart),'probe_KE_2C')
        end subroutine
 
        ! **********************************************************
@@ -435,7 +386,6 @@
          if (EF%unsteady_3D%export_now) call export_unsteady_3D(mom,SP,TMP,DT)
          if (EF%info%export_now) call print(mom,SP)
          if (EF%final_solution%export_now.or.EN%U%this.or.EN%all%this) then
-           ! call export(mom,str(DT%governing_equations),'mom')
            call export_tec(mom,SP,DT)
          endif
        end subroutine
