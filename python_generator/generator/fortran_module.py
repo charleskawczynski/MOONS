@@ -6,10 +6,11 @@ import fortran_property as FP
 from collections import OrderedDict
 
 suppress_all_warnings = True
-# skip_structured_IO = ['TF']
-make_dir_quiet = False
-IO_structured_quiet = False
-skip_structured_IO = ['SF','VF','TF']
+make_dir_quiet = True
+IO_structured_quiet = True
+
+# skip_structured_IO_child = ['SF','VF','TF']
+skip_structured_IO_child = ['mesh','SF','VF','TF']
 
 use_necessary_for_restart = True
 parent_necessary_for_restart = ['block_field']
@@ -20,9 +21,11 @@ parent_to_reset_procedures = ['SF']
 child_to_reset_procedures = ['block_field']
 
 use_skip_BCs_unless_defined = True
-# parent_skip_BCs_unless_defined = ['block_field']
 parent_skip_BCs_unless_defined = ['boundary_conditions']
 child_skip_BCs_unless_defined = ['BC_logicals']
+
+use_skip_mesh = True
+parent_skip_mesh = ['mesh']
 
 def longest_sub_string_match(string1, string2):
     if string1==string2:
@@ -163,15 +166,6 @@ class fortran_module:
         for key in self.prop:
           self.prop[key].set_do_loop_iter()
           self.prop[key].set_spaces(self.spaces)
-        # for key in self.prop:
-        #   L = ['dir' in self.prop[key].name.lower()]
-        #   L = L + ['string' in self.prop[key].class_.lower()]
-        #   self.has_dir = self.has_dir + [all(L)]
-        # for key in self.prop:
-        #   L = ['name' in self.prop[key].name.lower()]
-        #   L = L + ['string' in self.prop[key].class_.lower()]
-        #   self.has_name = self.has_name + [all(L)]
-        # self.has_dir_name = any(self.has_dir) and any(self.has_name)
 
     def get_fortran_module(self):
         c = []
@@ -310,7 +304,6 @@ class fortran_module:
         c=c+[self.make_IO_dir_module()+['']]
         c=c+[self.export_structured_D_module()+['']] # export_structured(this), if has (dir,name)
         c=c+[self.import_structured_D_module()+['']] # import_structured(this), if has (dir,name)
-
 
         if suppress_all_warnings:
             c=c+[self.suppress_fortran_warnings_module()+['']]
@@ -620,7 +613,7 @@ class fortran_module:
         c=c+["call export_primitives(this,un)"]
         c=c+['close(un)']
         for key in self.prop:
-          if all([not self.prop[key].class_==x for x in skip_structured_IO]):
+          if all([not self.prop[key].class_==x for x in skip_structured_IO_child]):
             if self.get_restart_condition(self.prop[key]):
               c=c+["if (this%necessary_for_restart) then" ]
             if self.get_BC_condition(self.prop[key]):
@@ -652,7 +645,7 @@ class fortran_module:
         c=c+["call export_primitives(this,un)" ]
         c=c+['close(un)']
         for key in self.prop:
-          if all([not self.prop[key].class_==x for x in skip_structured_IO]):
+          if all([not self.prop[key].class_==x for x in skip_structured_IO_child]):
             c=c+[[x for x in self.prop[key].write_export_structured('str(this%dir)')]]
         c=c+[self.end_sub()]
         return c
@@ -678,7 +671,7 @@ class fortran_module:
         c=c+["call import_primitives(this,un)" ]
         c=c+['close(un)']
         for key in self.prop:
-          if all([not self.prop[key].class_==x for x in skip_structured_IO]):
+          if all([not self.prop[key].class_==x for x in skip_structured_IO_child]):
             if self.get_restart_condition(self.prop[key]):
               c=c+["if (this%necessary_for_restart) then" ]
 
@@ -718,7 +711,7 @@ class fortran_module:
         c=c+["call import_primitives(this,un)" ]
         c=c+['close(un)']
         for key in self.prop:
-          if all([not self.prop[key].class_==x for x in skip_structured_IO]):
+          if all([not self.prop[key].class_==x for x in skip_structured_IO_child]):
             c=c+[[x for x in self.prop[key].write_import_structured('str(this%dir)')]]
         c=c+[self.end_sub()]
         return c
@@ -747,11 +740,12 @@ class fortran_module:
           c=c+["call init(this%dir,dir)" ]
           c=c+["call init(this%name,'primitives')" ]
         for key in self.prop:
-          if self.get_BC_condition(self.prop[key]):
-            c=c+["if (this%BCL%defined) then" ]
-          c=c+[[x for x in self.prop[key].write_set_IO_dir('set_IO_dir')]]
-          if self.get_BC_condition(self.prop[key]):
-            c=c+["endif" ]
+          if all([not self.prop[key].class_==x for x in skip_structured_IO_child]):
+            if self.get_BC_condition(self.prop[key]):
+              c=c+["if (this%BCL%defined) then" ]
+            c=c+[[x for x in self.prop[key].write_set_IO_dir('set_IO_dir')]]
+            if self.get_BC_condition(self.prop[key]):
+              c=c+["endif" ]
         c=c+[self.end_sub()]
         return c
 
@@ -779,11 +773,12 @@ class fortran_module:
           c=c+["call init(this%dir,dir)" ]
           c=c+["call init(this%name,'primitives')" ]
         for key in self.prop:
-          if self.get_BC_condition(self.prop[key]):
-            c=c+["if (this%BCL%defined) then" ]
-          c=c+[[x for x in self.prop[key].write_set_IO_dir('make_IO_dir')]]
-          if self.get_BC_condition(self.prop[key]):
-            c=c+["endif" ]
+          if all([not self.prop[key].class_==x for x in skip_structured_IO_child]):
+            if self.get_BC_condition(self.prop[key]):
+              c=c+["if (this%BCL%defined) then" ]
+            c=c+[[x for x in self.prop[key].write_set_IO_dir('make_IO_dir')]]
+            if self.get_BC_condition(self.prop[key]):
+              c=c+["endif" ]
         c=c+[self.end_sub()]
         return c
 
@@ -804,6 +799,11 @@ class fortran_module:
         temp2 = not any([prop.class_==x for x in child_skip_BCs_unless_defined])
         temp3 = not prop.LL.primitive
         L = temp1 and temp2 and temp3 and use_skip_BCs_unless_defined
+        return L
+
+    def get_mesh_condition(self,prop):
+        temp = any([self.name==x for x in parent_skip_mesh])
+        L = temp and use_skip_mesh
         return L
 
     def get_restart_condition(self,prop):

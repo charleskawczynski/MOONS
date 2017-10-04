@@ -164,6 +164,8 @@
          if (.false.) then
            write(*,*) dir
          endif
+         call set_IO_dir(this%a,dir//'a'//fortran_PS)
+         call set_IO_dir(this%r,dir//'r'//fortran_PS)
        end subroutine
 
        subroutine make_IO_dir_path(this,dir)
@@ -171,7 +173,9 @@
          type(path),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
+         call make_IO_dir(this%a,dir//'a'//fortran_PS)
+         call make_IO_dir(this%r,dir//'r'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_path(this,dir)
@@ -179,10 +183,11 @@
          type(path),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Exporting path structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
+         call export_structured(this%a,dir//'a'//fortran_PS)
+         call export_structured(this%r,dir//'r'//fortran_PS)
        end subroutine
 
        subroutine import_structured_D_path(this,dir)
@@ -190,10 +195,11 @@
          type(path),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Importing path structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
+         call import_structured(this%a,dir//'a'//fortran_PS)
+         call import_structured(this%r,dir//'r'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_path(this)

@@ -250,6 +250,8 @@
          str(this%dir)//'final_solution'//fortran_PS)
          call export_structured(this%restart_files,&
          str(this%dir)//'restart_files'//fortran_PS)
+         call export_structured(this%dir,str(this%dir)//'dir'//fortran_PS)
+         call export_structured(this%name,str(this%dir)//'name'//fortran_PS)
        end subroutine
 
        subroutine import_structured_DN_export_frequency(this)
@@ -272,6 +274,8 @@
          str(this%dir)//'final_solution'//fortran_PS)
          call import_structured(this%restart_files,&
          str(this%dir)//'restart_files'//fortran_PS)
+         call import_structured(this%dir,str(this%dir)//'dir'//fortran_PS)
+         call import_structured(this%name,str(this%dir)//'name'//fortran_PS)
        end subroutine
 
        subroutine set_IO_dir_export_frequency(this,dir)
@@ -290,6 +294,8 @@
          dir//'final_solution'//fortran_PS)
          call set_IO_dir(this%restart_files,&
          dir//'restart_files'//fortran_PS)
+         call set_IO_dir(this%dir,dir//'dir'//fortran_PS)
+         call set_IO_dir(this%name,dir//'name'//fortran_PS)
        end subroutine
 
        subroutine make_IO_dir_export_frequency(this,dir)
@@ -297,7 +303,7 @@
          type(export_frequency),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
          call init(this%dir,dir)
          call init(this%name,'primitives')
          call make_IO_dir(this%info,dir//'info'//fortran_PS)
@@ -309,6 +315,8 @@
          dir//'final_solution'//fortran_PS)
          call make_IO_dir(this%restart_files,&
          dir//'restart_files'//fortran_PS)
+         call make_IO_dir(this%dir,dir//'dir'//fortran_PS)
+         call make_IO_dir(this%name,dir//'name'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_export_frequency(this,dir)
@@ -316,7 +324,6 @@
          type(export_frequency),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Exporting export_frequency structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -333,6 +340,8 @@
          dir//'final_solution'//fortran_PS)
          call export_structured(this%restart_files,&
          dir//'restart_files'//fortran_PS)
+         call export_structured(this%dir,dir//'dir'//fortran_PS)
+         call export_structured(this%name,dir//'name'//fortran_PS)
        end subroutine
 
        subroutine import_structured_D_export_frequency(this,dir)
@@ -340,7 +349,6 @@
          type(export_frequency),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Importing export_frequency structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
@@ -357,6 +365,8 @@
          dir//'final_solution'//fortran_PS)
          call import_structured(this%restart_files,&
          dir//'restart_files'//fortran_PS)
+         call import_structured(this%dir,dir//'dir'//fortran_PS)
+         call import_structured(this%name,dir//'name'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_export_frequency(this)

@@ -156,9 +156,13 @@
          if (allocated(this%SB)) then
            s_SB = size(this%SB)
            write(un,*) s_SB
-           do i_SB=1,s_SB
-             call export(this%SB(i_SB),un)
-           enddo
+           if (s_SB.gt.0) then
+             do i_SB=1,s_SB
+               call export(this%SB(i_SB),un)
+             enddo
+           else
+             write(un,*) 0
+           endif
          endif
          call export(this%name,un)
        end subroutine
@@ -172,13 +176,12 @@
          call delete(this)
          call import(this%BCL,un)
          read(un,*); read(un,*) this%n
-         if (allocated(this%SB)) then
-           read(un,*) s_SB
-           if (s_SB.gt.0) then
-             do i_SB=1,s_SB
-               call import(this%SB(i_SB),un)
-             enddo
-           endif
+         read(un,*) s_SB
+         if (s_SB.gt.0) then
+           allocate(this%SB(s_SB))
+           do i_SB=1,s_SB
+             call import(this%SB(i_SB),un)
+           enddo
          endif
          call import(this%name,un)
        end subroutine
@@ -232,6 +235,7 @@
              dir//'SB_'//int2str(i_SB)//fortran_PS)
            enddo
          endif
+         call set_IO_dir(this%name,dir//'name'//fortran_PS)
        end subroutine
 
        subroutine make_IO_dir_boundary(this,dir)
@@ -241,7 +245,7 @@
          integer :: i_SB
          integer :: s_SB
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
          call make_IO_dir(this%BCL,dir//'BCL'//fortran_PS)
          if (allocated(this%SB)) then
            s_SB = size(this%SB)
@@ -250,6 +254,7 @@
              dir//'SB_'//int2str(i_SB)//fortran_PS)
            enddo
          endif
+         call make_IO_dir(this%name,dir//'name'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_boundary(this,dir)
@@ -259,18 +264,21 @@
          integer :: i_SB
          integer :: s_SB
          integer :: un
-         write(*,*) 'Exporting boundary structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
          call export_structured(this%BCL,dir//'BCL'//fortran_PS)
          if (allocated(this%SB)) then
            s_SB = size(this%SB)
+           write(un,*) s_SB
            do i_SB=1,s_SB
              call export_structured(this%SB(i_SB),&
              dir//'SB_'//int2str(i_SB)//fortran_PS)
            enddo
+         else
+           write(un,*) 0
          endif
+         call export_structured(this%name,dir//'name'//fortran_PS)
        end subroutine
 
        subroutine import_structured_D_boundary(this,dir)
@@ -280,18 +288,20 @@
          integer :: i_SB
          integer :: s_SB
          integer :: un
-         write(*,*) 'Importing boundary structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
          call import_structured(this%BCL,dir//'BCL'//fortran_PS)
-         if (allocated(this%SB)) then
+         read(un,*) s_SB
+         if (s_SB.gt.0) then
+           allocate(this%SB(s_SB))
            s_SB = size(this%SB)
            do i_SB=1,s_SB
              call import_structured(this%SB(i_SB),&
              dir//'SB_'//int2str(i_SB)//fortran_PS)
            enddo
          endif
+         call import_structured(this%name,dir//'name'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_boundary(this)

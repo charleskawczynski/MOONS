@@ -517,7 +517,7 @@
          integer :: s_colN
          integer :: s_colCC_centered
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
          call make_IO_dir(this%stagCC2N,dir//'stagCC2N'//fortran_PS)
          call make_IO_dir(this%stagN2CC,dir//'stagN2CC'//fortran_PS)
          call make_IO_dir(this%theta,dir//'theta'//fortran_PS)
@@ -553,7 +553,6 @@
          integer :: s_colN
          integer :: s_colCC_centered
          integer :: un
-         write(*,*) 'Exporting coordinates structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -561,16 +560,19 @@
          call export_structured(this%stagN2CC,dir//'stagN2CC'//fortran_PS)
          call export_structured(this%theta,dir//'theta'//fortran_PS)
          s_colCC = size(this%colCC)
+         write(un,*) s_colCC
          do i_colCC=1,s_colCC
            call export_structured(this%colCC(i_colCC),&
            dir//'colCC_'//int2str(i_colCC)//fortran_PS)
          enddo
          s_colN = size(this%colN)
+         write(un,*) s_colN
          do i_colN=1,s_colN
            call export_structured(this%colN(i_colN),&
            dir//'colN_'//int2str(i_colN)//fortran_PS)
          enddo
          s_colCC_centered = size(this%colCC_centered)
+         write(un,*) s_colCC_centered
          do i_colCC_centered=1,s_colCC_centered
            call export_structured(this%colCC_centered(i_colCC_centered),&
            dir//'colCC_centered_'//int2str(i_colCC_centered)//fortran_PS)
@@ -592,7 +594,6 @@
          integer :: s_colN
          integer :: s_colCC_centered
          integer :: un
-         write(*,*) 'Importing coordinates structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

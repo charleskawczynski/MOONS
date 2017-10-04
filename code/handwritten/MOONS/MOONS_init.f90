@@ -34,7 +34,6 @@
        use export_frequency_extend_mod
        use export_now_extend_mod
        use export_safe_extend_mod
-       use refine_mesh_extend_mod
 
        use energy_extend_mod
        use momentum_extend_mod
@@ -81,6 +80,7 @@
          implicit none
          type(MOONS),intent(inout) :: M
          write(*,*) ' ***************** STARTED INITIALIZING MESHES ***************** '
+         call print(M%C%SP%MP_mom)
          call generate_mesh_generic(M%GE%mom%m,M%C%SP%MP_mom,M%C%SP%DP,'momentum in MOONS.f90')
          call generate_mesh_generic(M%GE%ind%m_sigma,M%C%SP%MP_sigma,M%C%SP%DP,'sigma in MOONS.f90')
          call generate_mesh_generic(M%GE%ind%m,M%C%SP%MP_ind,M%C%SP%DP,'induction in MOONS.f90')
@@ -143,7 +143,6 @@
          ! ******************** PREP TIME START/STOP ********************
 
          call init(M%C%ES,M%C%SP%SCP%export_safe_period)
-         call init(M%C%sc,str(M%C%DT%wall_clock),'WALL_CLOCK_TIME_INFO')
 
          if (M%C%SP%FCL%export_heavy) then
            write(*,*) 'Working directory = ',str(M%C%DT%tar)

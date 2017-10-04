@@ -299,7 +299,7 @@
          integer :: i_int_tensor
          integer :: s_int_tensor
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
          s_int_tensor = size(this%int_tensor)
          do i_int_tensor=1,s_int_tensor
            call make_IO_dir(this%int_tensor(i_int_tensor),&
@@ -314,11 +314,11 @@
          integer :: i_int_tensor
          integer :: s_int_tensor
          integer :: un
-         write(*,*) 'Exporting mesh_props structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
          s_int_tensor = size(this%int_tensor)
+         write(un,*) s_int_tensor
          do i_int_tensor=1,s_int_tensor
            call export_structured(this%int_tensor(i_int_tensor),&
            dir//'int_tensor_'//int2str(i_int_tensor)//fortran_PS)
@@ -332,7 +332,6 @@
          integer :: i_int_tensor
          integer :: s_int_tensor
          integer :: un
-         write(*,*) 'Importing mesh_props structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

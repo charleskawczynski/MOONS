@@ -86,7 +86,6 @@ SRCS_F+=\
 	$(SRC_DIR_GENERATED)$(PS)MOONS$(PS)kill_switch.f90\
 	$(SRC_DIR_GENERATED)$(PS)MOONS$(PS)step.f90\
 	$(SRC_DIR_GENERATED)$(PS)MOONS$(PS)export_now.f90\
-	$(SRC_DIR_GENERATED)$(PS)MOONS$(PS)refine_mesh.f90\
 	$(SRC_DIR_GENERATED)$(PS)MOONS$(PS)export_safe.f90\
 	$(SRC_DIR_GENERATED)$(PS)MOONS$(PS)config.f90\
 	$(SRC_DIR_GENERATED)$(PS)MOONS$(PS)governing_equations.f90\

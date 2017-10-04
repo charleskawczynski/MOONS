@@ -154,9 +154,13 @@
          if (allocated(this%B)) then
            s_B = size(this%B)
            write(un,*) s_B
-           do i_B=1,s_B
-             call export(this%B(i_B),un)
-           enddo
+           if (s_B.gt.0) then
+             do i_B=1,s_B
+               call export(this%B(i_B),un)
+             enddo
+           else
+             write(un,*) 0
+           endif
          endif
          call export(this%MP,un)
          write(un,*) 'defined  = ';write(un,*) this%defined
@@ -170,13 +174,12 @@
          integer :: i_B
          integer :: s_B
          call delete(this)
-         if (allocated(this%B)) then
-           read(un,*) s_B
-           if (s_B.gt.0) then
-             do i_B=1,s_B
-               call import(this%B(i_B),un)
-             enddo
-           endif
+         read(un,*) s_B
+         if (s_B.gt.0) then
+           allocate(this%B(s_B))
+           do i_B=1,s_B
+             call import(this%B(i_B),un)
+           enddo
          endif
          call import(this%MP,un)
          read(un,*); read(un,*) this%defined
@@ -243,7 +246,7 @@
          integer :: i_B
          integer :: s_B
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
          if (allocated(this%B)) then
            s_B = size(this%B)
            do i_B=1,s_B
@@ -261,16 +264,18 @@
          integer :: i_B
          integer :: s_B
          integer :: un
-         write(*,*) 'Exporting mesh structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
          if (allocated(this%B)) then
            s_B = size(this%B)
+           write(un,*) s_B
            do i_B=1,s_B
              call export_structured(this%B(i_B),&
              dir//'B_'//int2str(i_B)//fortran_PS)
            enddo
+         else
+           write(un,*) 0
          endif
          call export_structured(this%MP,dir//'MP'//fortran_PS)
        end subroutine
@@ -282,11 +287,12 @@
          integer :: i_B
          integer :: s_B
          integer :: un
-         write(*,*) 'Importing mesh structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         if (allocated(this%B)) then
+         read(un,*) s_B
+         if (s_B.gt.0) then
+           allocate(this%B(s_B))
            s_B = size(this%B)
            do i_B=1,s_B
              call import_structured(this%B(i_B),&

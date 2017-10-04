@@ -371,6 +371,8 @@
          un = new_and_open(str(this%dir),'primitives')
          call export_primitives(this,un)
          close(un)
+         call export_structured(this%dir,str(this%dir)//'dir'//fortran_PS)
+         call export_structured(this%name,str(this%dir)//'name'//fortran_PS)
        end subroutine
 
        subroutine import_structured_DN_dimensionless_params(this)
@@ -380,6 +382,8 @@
          un = open_to_read(str(this%dir),'primitives')
          call import_primitives(this,un)
          close(un)
+         call import_structured(this%dir,str(this%dir)//'dir'//fortran_PS)
+         call import_structured(this%name,str(this%dir)//'name'//fortran_PS)
        end subroutine
 
        subroutine set_IO_dir_dimensionless_params(this,dir)
@@ -392,6 +396,8 @@
          endif
          call init(this%dir,dir)
          call init(this%name,'primitives')
+         call set_IO_dir(this%dir,dir//'dir'//fortran_PS)
+         call set_IO_dir(this%name,dir//'name'//fortran_PS)
        end subroutine
 
        subroutine make_IO_dir_dimensionless_params(this,dir)
@@ -399,9 +405,11 @@
          type(dimensionless_params),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
          call init(this%dir,dir)
          call init(this%name,'primitives')
+         call make_IO_dir(this%dir,dir//'dir'//fortran_PS)
+         call make_IO_dir(this%name,dir//'name'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_dimensionless_params(this,dir)
@@ -409,10 +417,11 @@
          type(dimensionless_params),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Exporting dimensionless_params structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
+         call export_structured(this%dir,dir//'dir'//fortran_PS)
+         call export_structured(this%name,dir//'name'//fortran_PS)
        end subroutine
 
        subroutine import_structured_D_dimensionless_params(this,dir)
@@ -420,10 +429,11 @@
          type(dimensionless_params),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Importing dimensionless_params structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
+         call import_structured(this%dir,dir//'dir'//fortran_PS)
+         call import_structured(this%name,dir//'name'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_dimensionless_params(this)

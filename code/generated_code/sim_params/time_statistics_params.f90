@@ -174,7 +174,7 @@
          type(time_statistics_params),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
          call make_IO_dir(this%O1_stats,dir//'O1_stats'//fortran_PS)
          call make_IO_dir(this%O2_stats,dir//'O2_stats'//fortran_PS)
        end subroutine
@@ -184,7 +184,6 @@
          type(time_statistics_params),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Exporting time_statistics_params structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -197,7 +196,6 @@
          type(time_statistics_params),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Importing time_statistics_params structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

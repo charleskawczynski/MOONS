@@ -311,26 +311,7 @@
          type(energy),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call set_IO_dir(this%m,dir//'m'//fortran_PS)
          call set_IO_dir(this%PCG_T,dir//'PCG_T'//fortran_PS)
-         call set_IO_dir(this%T,dir//'T'//fortran_PS)
-         call set_IO_dir(this%Tnm1,dir//'Tnm1'//fortran_PS)
-         call set_IO_dir(this%temp_CC1,dir//'temp_CC1'//fortran_PS)
-         call set_IO_dir(this%temp_CC2,dir//'temp_CC2'//fortran_PS)
-         call set_IO_dir(this%F,dir//'F'//fortran_PS)
-         call set_IO_dir(this%Fnm1,dir//'Fnm1'//fortran_PS)
-         call set_IO_dir(this%L,dir//'L'//fortran_PS)
-         call set_IO_dir(this%divQ,dir//'divQ'//fortran_PS)
-         call set_IO_dir(this%Q_source,dir//'Q_source'//fortran_PS)
-         call set_IO_dir(this%temp_F,dir//'temp_F'//fortran_PS)
-         call set_IO_dir(this%k,dir//'k'//fortran_PS)
-         call set_IO_dir(this%U_F,dir//'U_F'//fortran_PS)
-         call set_IO_dir(this%U_CC,dir//'U_CC'//fortran_PS)
-         call set_IO_dir(this%gravity,dir//'gravity'//fortran_PS)
-         call set_IO_dir(this%temp_CC1_VF,dir//'temp_CC1_VF'//fortran_PS)
-         call set_IO_dir(this%temp_CC2_VF,dir//'temp_CC2_VF'//fortran_PS)
-         call set_IO_dir(this%temp_CC_TF,dir//'temp_CC_TF'//fortran_PS)
-         call set_IO_dir(this%temp_F_TF,dir//'temp_F_TF'//fortran_PS)
          call set_IO_dir(this%probe_divQ,dir//'probe_divQ'//fortran_PS)
          call set_IO_dir(this%MD,dir//'MD'//fortran_PS)
        end subroutine
@@ -340,27 +321,8 @@
          type(energy),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir(dir)
-         call make_IO_dir(this%m,dir//'m'//fortran_PS)
+         call make_dir_quiet(dir)
          call make_IO_dir(this%PCG_T,dir//'PCG_T'//fortran_PS)
-         call make_IO_dir(this%T,dir//'T'//fortran_PS)
-         call make_IO_dir(this%Tnm1,dir//'Tnm1'//fortran_PS)
-         call make_IO_dir(this%temp_CC1,dir//'temp_CC1'//fortran_PS)
-         call make_IO_dir(this%temp_CC2,dir//'temp_CC2'//fortran_PS)
-         call make_IO_dir(this%F,dir//'F'//fortran_PS)
-         call make_IO_dir(this%Fnm1,dir//'Fnm1'//fortran_PS)
-         call make_IO_dir(this%L,dir//'L'//fortran_PS)
-         call make_IO_dir(this%divQ,dir//'divQ'//fortran_PS)
-         call make_IO_dir(this%Q_source,dir//'Q_source'//fortran_PS)
-         call make_IO_dir(this%temp_F,dir//'temp_F'//fortran_PS)
-         call make_IO_dir(this%k,dir//'k'//fortran_PS)
-         call make_IO_dir(this%U_F,dir//'U_F'//fortran_PS)
-         call make_IO_dir(this%U_CC,dir//'U_CC'//fortran_PS)
-         call make_IO_dir(this%gravity,dir//'gravity'//fortran_PS)
-         call make_IO_dir(this%temp_CC1_VF,dir//'temp_CC1_VF'//fortran_PS)
-         call make_IO_dir(this%temp_CC2_VF,dir//'temp_CC2_VF'//fortran_PS)
-         call make_IO_dir(this%temp_CC_TF,dir//'temp_CC_TF'//fortran_PS)
-         call make_IO_dir(this%temp_F_TF,dir//'temp_F_TF'//fortran_PS)
          call make_IO_dir(this%probe_divQ,dir//'probe_divQ'//fortran_PS)
          call make_IO_dir(this%MD,dir//'MD'//fortran_PS)
        end subroutine
@@ -370,11 +332,9 @@
          type(energy),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Exporting energy structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
-         call export_structured(this%m,dir//'m'//fortran_PS)
          call export_structured(this%PCG_T,dir//'PCG_T'//fortran_PS)
          call export_structured(this%probe_divQ,&
          dir//'probe_divQ'//fortran_PS)
@@ -386,11 +346,9 @@
          type(energy),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Importing energy structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         call import_structured(this%m,dir//'m'//fortran_PS)
          call import_structured(this%PCG_T,dir//'PCG_T'//fortran_PS)
          call import_structured(this%probe_divQ,&
          dir//'probe_divQ'//fortran_PS)

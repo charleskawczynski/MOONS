@@ -253,6 +253,8 @@
          call export_primitives(this,un)
          close(un)
          call export_structured(this%EC,str(this%dir)//'EC'//fortran_PS)
+         call export_structured(this%dir,str(this%dir)//'dir'//fortran_PS)
+         call export_structured(this%name,str(this%dir)//'name'//fortran_PS)
        end subroutine
 
        subroutine import_structured_DN_iter_solver_params(this)
@@ -263,6 +265,8 @@
          call import_primitives(this,un)
          close(un)
          call import_structured(this%EC,str(this%dir)//'EC'//fortran_PS)
+         call import_structured(this%dir,str(this%dir)//'dir'//fortran_PS)
+         call import_structured(this%name,str(this%dir)//'name'//fortran_PS)
        end subroutine
 
        subroutine set_IO_dir_iter_solver_params(this,dir)
@@ -273,6 +277,8 @@
          call init(this%dir,dir)
          call init(this%name,'primitives')
          call set_IO_dir(this%EC,dir//'EC'//fortran_PS)
+         call set_IO_dir(this%dir,dir//'dir'//fortran_PS)
+         call set_IO_dir(this%name,dir//'name'//fortran_PS)
        end subroutine
 
        subroutine make_IO_dir_iter_solver_params(this,dir)
@@ -280,10 +286,12 @@
          type(iter_solver_params),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
          call init(this%dir,dir)
          call init(this%name,'primitives')
          call make_IO_dir(this%EC,dir//'EC'//fortran_PS)
+         call make_IO_dir(this%dir,dir//'dir'//fortran_PS)
+         call make_IO_dir(this%name,dir//'name'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_iter_solver_params(this,dir)
@@ -291,11 +299,12 @@
          type(iter_solver_params),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Exporting iter_solver_params structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
          call export_structured(this%EC,dir//'EC'//fortran_PS)
+         call export_structured(this%dir,dir//'dir'//fortran_PS)
+         call export_structured(this%name,dir//'name'//fortran_PS)
        end subroutine
 
        subroutine import_structured_D_iter_solver_params(this,dir)
@@ -303,11 +312,12 @@
          type(iter_solver_params),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Importing iter_solver_params structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
          call import_structured(this%EC,dir//'EC'//fortran_PS)
+         call import_structured(this%dir,dir//'dir'//fortran_PS)
+         call import_structured(this%name,dir//'name'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_iter_solver_params(this)

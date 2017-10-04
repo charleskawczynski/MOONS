@@ -16,6 +16,7 @@ import GOOFPY_directory as GD
 import generator as g
 import fortran_property as FP
 
+import modules.temp as temp
 import modules.sim_params as sim_params
 import modules.var_set as var_set
 import modules.stop_clock as stop_clock
@@ -139,6 +140,7 @@ T = True
 F = False
 g.set_default_real('0.0_cp')
 
+g = temp.add_modules(g,T,F,priv,real)
 # --------------- Small data structures
 g = stitches.add_modules(g,T,F,priv,real)
 g = dir_tree.add_modules(g,T,F,priv,real)

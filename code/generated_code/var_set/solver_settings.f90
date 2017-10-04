@@ -196,7 +196,7 @@
          type(solver_settings),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
        end subroutine
 
        subroutine export_structured_D_solver_settings(this,dir)
@@ -204,7 +204,6 @@
          type(solver_settings),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Exporting solver_settings structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -215,7 +214,6 @@
          type(solver_settings),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Importing solver_settings structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

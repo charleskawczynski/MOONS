@@ -320,7 +320,7 @@
          integer :: s_N
          integer :: s_M
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
          s_C = size(this%C)
          do i_C=1,s_C
            call make_IO_dir(this%C(i_C),dir//'C_'//int2str(i_C)//fortran_PS)
@@ -346,21 +346,23 @@
          integer :: s_N
          integer :: s_M
          integer :: un
-         write(*,*) 'Exporting sub_domain structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
          s_C = size(this%C)
+         write(un,*) s_C
          do i_C=1,s_C
            call export_structured(this%C(i_C),&
            dir//'C_'//int2str(i_C)//fortran_PS)
          enddo
          s_N = size(this%N)
+         write(un,*) s_N
          do i_N=1,s_N
            call export_structured(this%N(i_N),&
            dir//'N_'//int2str(i_N)//fortran_PS)
          enddo
          s_M = size(this%M)
+         write(un,*) s_M
          do i_M=1,s_M
            call export_structured(this%M(i_M),&
            dir//'M_'//int2str(i_M)//fortran_PS)
@@ -378,7 +380,6 @@
          integer :: s_N
          integer :: s_M
          integer :: un
-         write(*,*) 'Importing sub_domain structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

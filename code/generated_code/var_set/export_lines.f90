@@ -143,9 +143,13 @@
          if (allocated(this%EL)) then
            s_EL = size(this%EL)
            write(un,*) s_EL
-           do i_EL=1,s_EL
-             call export(this%EL(i_EL),un)
-           enddo
+           if (s_EL.gt.0) then
+             do i_EL=1,s_EL
+               call export(this%EL(i_EL),un)
+             enddo
+           else
+             write(un,*) 0
+           endif
          endif
          write(un,*) 'N   = ';write(un,*) this%N
        end subroutine
@@ -157,13 +161,12 @@
          integer :: i_EL
          integer :: s_EL
          call delete(this)
-         if (allocated(this%EL)) then
-           read(un,*) s_EL
-           if (s_EL.gt.0) then
-             do i_EL=1,s_EL
-               call import(this%EL(i_EL),un)
-             enddo
-           endif
+         read(un,*) s_EL
+         if (s_EL.gt.0) then
+           allocate(this%EL(s_EL))
+           do i_EL=1,s_EL
+             call import(this%EL(i_EL),un)
+           enddo
          endif
          read(un,*); read(un,*) this%N
        end subroutine
@@ -225,7 +228,7 @@
          integer :: i_EL
          integer :: s_EL
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
          if (allocated(this%EL)) then
            s_EL = size(this%EL)
            do i_EL=1,s_EL
@@ -242,16 +245,18 @@
          integer :: i_EL
          integer :: s_EL
          integer :: un
-         write(*,*) 'Exporting export_lines structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
          if (allocated(this%EL)) then
            s_EL = size(this%EL)
+           write(un,*) s_EL
            do i_EL=1,s_EL
              call export_structured(this%EL(i_EL),&
              dir//'EL_'//int2str(i_EL)//fortran_PS)
            enddo
+         else
+           write(un,*) 0
          endif
        end subroutine
 
@@ -262,11 +267,12 @@
          integer :: i_EL
          integer :: s_EL
          integer :: un
-         write(*,*) 'Importing export_lines structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         if (allocated(this%EL)) then
+         read(un,*) s_EL
+         if (s_EL.gt.0) then
+           allocate(this%EL(s_EL))
            s_EL = size(this%EL)
            do i_EL=1,s_EL
              call import_structured(this%EL(i_EL),&

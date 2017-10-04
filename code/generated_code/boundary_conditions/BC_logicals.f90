@@ -286,7 +286,7 @@
          type(BC_logicals),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
        end subroutine
 
        subroutine export_structured_D_BC_logicals(this,dir)
@@ -294,7 +294,6 @@
          type(BC_logicals),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Exporting BC_logicals structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -305,7 +304,6 @@
          type(BC_logicals),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Importing BC_logicals structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

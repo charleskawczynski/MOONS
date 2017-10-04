@@ -194,16 +194,24 @@
          if (allocated(this%s_base)) then
            s_s_base = size(this%s_base)
            write(un,*) s_s_base
-           do i_s_base=1,s_s_base
-             call export(this%s_base(i_s_base),un)
-           enddo
+           if (s_s_base.gt.0) then
+             do i_s_base=1,s_s_base
+               call export(this%s_base(i_s_base),un)
+             enddo
+           else
+             write(un,*) 0
+           endif
          endif
          if (allocated(this%s_ext)) then
            s_s_ext = size(this%s_ext)
            write(un,*) s_s_ext
-           do i_s_ext=1,s_s_ext
-             call export(this%s_ext(i_s_ext),un)
-           enddo
+           if (s_s_ext.gt.0) then
+             do i_s_ext=1,s_s_ext
+               call export(this%s_ext(i_s_ext),un)
+             enddo
+           else
+             write(un,*) 0
+           endif
          endif
          write(un,*) 'N_base  = ';write(un,*) this%N_base
          write(un,*) 'N_ext   = ';write(un,*) this%N_ext
@@ -219,21 +227,19 @@
          integer :: s_s_ext
          call delete(this)
          call import(this%MQP,un)
-         if (allocated(this%s_base)) then
-           read(un,*) s_s_base
-           if (s_s_base.gt.0) then
-             do i_s_base=1,s_s_base
-               call import(this%s_base(i_s_base),un)
-             enddo
-           endif
+         read(un,*) s_s_base
+         if (s_s_base.gt.0) then
+           allocate(this%s_base(s_s_base))
+           do i_s_base=1,s_s_base
+             call import(this%s_base(i_s_base),un)
+           enddo
          endif
-         if (allocated(this%s_ext)) then
-           read(un,*) s_s_ext
-           if (s_s_ext.gt.0) then
-             do i_s_ext=1,s_s_ext
-               call import(this%s_ext(i_s_ext),un)
-             enddo
-           endif
+         read(un,*) s_s_ext
+         if (s_s_ext.gt.0) then
+           allocate(this%s_ext(s_s_ext))
+           do i_s_ext=1,s_s_ext
+             call import(this%s_ext(i_s_ext),un)
+           enddo
          endif
          read(un,*); read(un,*) this%N_base
          read(un,*); read(un,*) this%N_ext
@@ -310,7 +316,7 @@
          integer :: s_s_base
          integer :: s_s_ext
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
          call make_IO_dir(this%MQP,dir//'MQP'//fortran_PS)
          if (allocated(this%s_base)) then
            s_s_base = size(this%s_base)
@@ -337,24 +343,29 @@
          integer :: s_s_base
          integer :: s_s_ext
          integer :: un
-         write(*,*) 'Exporting mesh_params structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
          call export_structured(this%MQP,dir//'MQP'//fortran_PS)
          if (allocated(this%s_base)) then
            s_s_base = size(this%s_base)
+           write(un,*) s_s_base
            do i_s_base=1,s_s_base
              call export_structured(this%s_base(i_s_base),&
              dir//'s_base_'//int2str(i_s_base)//fortran_PS)
            enddo
+         else
+           write(un,*) 0
          endif
          if (allocated(this%s_ext)) then
            s_s_ext = size(this%s_ext)
+           write(un,*) s_s_ext
            do i_s_ext=1,s_s_ext
              call export_structured(this%s_ext(i_s_ext),&
              dir//'s_ext_'//int2str(i_s_ext)//fortran_PS)
            enddo
+         else
+           write(un,*) 0
          endif
        end subroutine
 
@@ -367,19 +378,22 @@
          integer :: s_s_base
          integer :: s_s_ext
          integer :: un
-         write(*,*) 'Importing mesh_params structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
          call import_structured(this%MQP,dir//'MQP'//fortran_PS)
-         if (allocated(this%s_base)) then
+         read(un,*) s_s_base
+         if (s_s_base.gt.0) then
+           allocate(this%s_base(s_s_base))
            s_s_base = size(this%s_base)
            do i_s_base=1,s_s_base
              call import_structured(this%s_base(i_s_base),&
              dir//'s_base_'//int2str(i_s_base)//fortran_PS)
            enddo
          endif
-         if (allocated(this%s_ext)) then
+         read(un,*) s_s_ext
+         if (s_s_ext.gt.0) then
+           allocate(this%s_ext(s_s_ext))
            s_s_ext = size(this%s_ext)
            do i_s_ext=1,s_s_ext
              call import_structured(this%s_ext(i_s_ext),&

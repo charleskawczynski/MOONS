@@ -430,6 +430,8 @@
          call set_IO_dir(this%unknowns,dir//'unknowns'//fortran_PS)
          call set_IO_dir(this%governing_equations,&
          dir//'governing_equations'//fortran_PS)
+         call set_IO_dir(this%PS,dir//'PS'//fortran_PS)
+         call set_IO_dir(this%tar,dir//'tar'//fortran_PS)
          call set_IO_dir(this%U,dir//'U'//fortran_PS)
          call set_IO_dir(this%B,dir//'B'//fortran_PS)
          call set_IO_dir(this%J,dir//'J'//fortran_PS)
@@ -445,7 +447,7 @@
          type(dir_tree),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
          call make_IO_dir(this%tar_p,dir//'tar_p'//fortran_PS)
          call make_IO_dir(this%out_dir,dir//'out_dir'//fortran_PS)
          call make_IO_dir(this%LDC,dir//'LDC'//fortran_PS)
@@ -475,6 +477,8 @@
          call make_IO_dir(this%unknowns,dir//'unknowns'//fortran_PS)
          call make_IO_dir(this%governing_equations,&
          dir//'governing_equations'//fortran_PS)
+         call make_IO_dir(this%PS,dir//'PS'//fortran_PS)
+         call make_IO_dir(this%tar,dir//'tar'//fortran_PS)
          call make_IO_dir(this%U,dir//'U'//fortran_PS)
          call make_IO_dir(this%B,dir//'B'//fortran_PS)
          call make_IO_dir(this%J,dir//'J'//fortran_PS)
@@ -490,7 +494,6 @@
          type(dir_tree),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Exporting dir_tree structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -530,6 +533,8 @@
          call export_structured(this%unknowns,dir//'unknowns'//fortran_PS)
          call export_structured(this%governing_equations,&
          dir//'governing_equations'//fortran_PS)
+         call export_structured(this%PS,dir//'PS'//fortran_PS)
+         call export_structured(this%tar,dir//'tar'//fortran_PS)
          call export_structured(this%U,dir//'U'//fortran_PS)
          call export_structured(this%B,dir//'B'//fortran_PS)
          call export_structured(this%J,dir//'J'//fortran_PS)
@@ -545,7 +550,6 @@
          type(dir_tree),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Importing dir_tree structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
@@ -585,6 +589,8 @@
          call import_structured(this%unknowns,dir//'unknowns'//fortran_PS)
          call import_structured(this%governing_equations,&
          dir//'governing_equations'//fortran_PS)
+         call import_structured(this%PS,dir//'PS'//fortran_PS)
+         call import_structured(this%tar,dir//'tar'//fortran_PS)
          call import_structured(this%U,dir//'U'//fortran_PS)
          call import_structured(this%B,dir//'B'//fortran_PS)
          call import_structured(this%J,dir//'J'//fortran_PS)

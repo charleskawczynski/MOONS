@@ -215,7 +215,7 @@
          type(energy_terms),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
          call make_IO_dir(this%advection,dir//'advection'//fortran_PS)
          call make_IO_dir(this%diffusion,dir//'diffusion'//fortran_PS)
          call make_IO_dir(this%diffusion_linear,&
@@ -234,7 +234,6 @@
          type(energy_terms),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Exporting energy_terms structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -257,7 +256,6 @@
          type(energy_terms),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Importing energy_terms structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

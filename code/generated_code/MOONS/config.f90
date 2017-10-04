@@ -9,7 +9,6 @@
        use export_now_mod
        use export_safe_mod
        use kill_switch_mod
-       use refine_mesh_mod
        use sim_params_mod
        use stop_clock_mod
        use string_mod
@@ -58,7 +57,6 @@
          type(stop_clock) :: sc
          type(export_now) :: EN
          type(export_safe) :: ES
-         type(refine_mesh) :: RM
          type(kill_switch) :: KS
          type(string) :: dir
          type(string) :: name
@@ -77,7 +75,6 @@
          call init(this%sc,that%sc)
          call init(this%EN,that%EN)
          call init(this%ES,that%ES)
-         call init(this%RM,that%RM)
          call init(this%KS,that%KS)
          call init(this%dir,that%dir)
          call init(this%name,that%name)
@@ -92,7 +89,6 @@
          call delete(this%sc)
          call delete(this%EN)
          call delete(this%ES)
-         call delete(this%RM)
          call delete(this%KS)
          call delete(this%dir)
          call delete(this%name)
@@ -108,7 +104,6 @@
          call display(this%sc,un)
          call display(this%EN,un)
          call display(this%ES,un)
-         call display(this%RM,un)
          call display(this%KS,un)
          call display(this%dir,un)
          call display(this%name,un)
@@ -124,7 +119,6 @@
          call display(this%sc,un)
          call display(this%EN,un)
          call display(this%ES,un)
-         call display(this%RM,un)
          call display(this%KS,un)
          call display(this%dir,un)
          call display(this%name,un)
@@ -162,7 +156,6 @@
          call export(this%sc,un)
          call export(this%EN,un)
          call export(this%ES,un)
-         call export(this%RM,un)
          call export(this%KS,un)
          call export(this%dir,un)
          call export(this%name,un)
@@ -179,7 +172,6 @@
          call import(this%sc,un)
          call import(this%EN,un)
          call import(this%ES,un)
-         call import(this%RM,un)
          call import(this%KS,un)
          call import(this%dir,un)
          call import(this%name,un)
@@ -252,11 +244,14 @@
          close(un)
          call export_structured(this%DT,str(this%dir)//'DT'//fortran_PS)
          call export_structured(this%SP,str(this%dir)//'SP'//fortran_PS)
+         call export_structured(this%dir_target,&
+         str(this%dir)//'dir_target'//fortran_PS)
          call export_structured(this%sc,str(this%dir)//'sc'//fortran_PS)
          call export_structured(this%EN,str(this%dir)//'EN'//fortran_PS)
          call export_structured(this%ES,str(this%dir)//'ES'//fortran_PS)
-         call export_structured(this%RM,str(this%dir)//'RM'//fortran_PS)
          call export_structured(this%KS,str(this%dir)//'KS'//fortran_PS)
+         call export_structured(this%dir,str(this%dir)//'dir'//fortran_PS)
+         call export_structured(this%name,str(this%dir)//'name'//fortran_PS)
        end subroutine
 
        subroutine import_structured_DN_config(this)
@@ -268,11 +263,14 @@
          close(un)
          call import_structured(this%DT,str(this%dir)//'DT'//fortran_PS)
          call import_structured(this%SP,str(this%dir)//'SP'//fortran_PS)
+         call import_structured(this%dir_target,&
+         str(this%dir)//'dir_target'//fortran_PS)
          call import_structured(this%sc,str(this%dir)//'sc'//fortran_PS)
          call import_structured(this%EN,str(this%dir)//'EN'//fortran_PS)
          call import_structured(this%ES,str(this%dir)//'ES'//fortran_PS)
-         call import_structured(this%RM,str(this%dir)//'RM'//fortran_PS)
          call import_structured(this%KS,str(this%dir)//'KS'//fortran_PS)
+         call import_structured(this%dir,str(this%dir)//'dir'//fortran_PS)
+         call import_structured(this%name,str(this%dir)//'name'//fortran_PS)
        end subroutine
 
        subroutine set_IO_dir_config(this,dir)
@@ -284,11 +282,13 @@
          call init(this%name,'primitives')
          call set_IO_dir(this%DT,dir//'DT'//fortran_PS)
          call set_IO_dir(this%SP,dir//'SP'//fortran_PS)
+         call set_IO_dir(this%dir_target,dir//'dir_target'//fortran_PS)
          call set_IO_dir(this%sc,dir//'sc'//fortran_PS)
          call set_IO_dir(this%EN,dir//'EN'//fortran_PS)
          call set_IO_dir(this%ES,dir//'ES'//fortran_PS)
-         call set_IO_dir(this%RM,dir//'RM'//fortran_PS)
          call set_IO_dir(this%KS,dir//'KS'//fortran_PS)
+         call set_IO_dir(this%dir,dir//'dir'//fortran_PS)
+         call set_IO_dir(this%name,dir//'name'//fortran_PS)
        end subroutine
 
        subroutine make_IO_dir_config(this,dir)
@@ -296,16 +296,18 @@
          type(config),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
          call init(this%dir,dir)
          call init(this%name,'primitives')
          call make_IO_dir(this%DT,dir//'DT'//fortran_PS)
          call make_IO_dir(this%SP,dir//'SP'//fortran_PS)
+         call make_IO_dir(this%dir_target,dir//'dir_target'//fortran_PS)
          call make_IO_dir(this%sc,dir//'sc'//fortran_PS)
          call make_IO_dir(this%EN,dir//'EN'//fortran_PS)
          call make_IO_dir(this%ES,dir//'ES'//fortran_PS)
-         call make_IO_dir(this%RM,dir//'RM'//fortran_PS)
          call make_IO_dir(this%KS,dir//'KS'//fortran_PS)
+         call make_IO_dir(this%dir,dir//'dir'//fortran_PS)
+         call make_IO_dir(this%name,dir//'name'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_config(this,dir)
@@ -313,17 +315,19 @@
          type(config),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Exporting config structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
          call export_structured(this%DT,dir//'DT'//fortran_PS)
          call export_structured(this%SP,dir//'SP'//fortran_PS)
+         call export_structured(this%dir_target,&
+         dir//'dir_target'//fortran_PS)
          call export_structured(this%sc,dir//'sc'//fortran_PS)
          call export_structured(this%EN,dir//'EN'//fortran_PS)
          call export_structured(this%ES,dir//'ES'//fortran_PS)
-         call export_structured(this%RM,dir//'RM'//fortran_PS)
          call export_structured(this%KS,dir//'KS'//fortran_PS)
+         call export_structured(this%dir,dir//'dir'//fortran_PS)
+         call export_structured(this%name,dir//'name'//fortran_PS)
        end subroutine
 
        subroutine import_structured_D_config(this,dir)
@@ -331,17 +335,19 @@
          type(config),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Importing config structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
          call import_structured(this%DT,dir//'DT'//fortran_PS)
          call import_structured(this%SP,dir//'SP'//fortran_PS)
+         call import_structured(this%dir_target,&
+         dir//'dir_target'//fortran_PS)
          call import_structured(this%sc,dir//'sc'//fortran_PS)
          call import_structured(this%EN,dir//'EN'//fortran_PS)
          call import_structured(this%ES,dir//'ES'//fortran_PS)
-         call import_structured(this%RM,dir//'RM'//fortran_PS)
          call import_structured(this%KS,dir//'KS'//fortran_PS)
+         call import_structured(this%dir,dir//'dir'//fortran_PS)
+         call import_structured(this%name,dir//'name'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_config(this)

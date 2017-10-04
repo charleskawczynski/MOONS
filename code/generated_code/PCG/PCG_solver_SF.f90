@@ -309,6 +309,8 @@
          call export_structured(this%MFP,str(this%dir)//'MFP'//fortran_PS)
          call export_structured(this%norm,str(this%dir)//'norm'//fortran_PS)
          call export_structured(this%ISP,str(this%dir)//'ISP'//fortran_PS)
+         call export_structured(this%dir,str(this%dir)//'dir'//fortran_PS)
+         call export_structured(this%name,str(this%dir)//'name'//fortran_PS)
        end subroutine
 
        subroutine import_structured_DN_PCG_solver_SF(this)
@@ -321,6 +323,8 @@
          call import_structured(this%MFP,str(this%dir)//'MFP'//fortran_PS)
          call import_structured(this%norm,str(this%dir)//'norm'//fortran_PS)
          call import_structured(this%ISP,str(this%dir)//'ISP'//fortran_PS)
+         call import_structured(this%dir,str(this%dir)//'dir'//fortran_PS)
+         call import_structured(this%name,str(this%dir)//'name'//fortran_PS)
        end subroutine
 
        subroutine set_IO_dir_PCG_solver_SF(this,dir)
@@ -331,18 +335,10 @@
          call init(this%dir,dir)
          call init(this%name,'primitives')
          call set_IO_dir(this%MFP,dir//'MFP'//fortran_PS)
-         call set_IO_dir(this%tempk,dir//'tempk'//fortran_PS)
-         call set_IO_dir(this%k,dir//'k'//fortran_PS)
-         call set_IO_dir(this%r,dir//'r'//fortran_PS)
-         call set_IO_dir(this%p,dir//'p'//fortran_PS)
-         call set_IO_dir(this%tempx,dir//'tempx'//fortran_PS)
-         call set_IO_dir(this%Ax,dir//'Ax'//fortran_PS)
-         call set_IO_dir(this%x_BC,dir//'x_BC'//fortran_PS)
-         call set_IO_dir(this%vol,dir//'vol'//fortran_PS)
-         call set_IO_dir(this%z,dir//'z'//fortran_PS)
-         call set_IO_dir(this%Minv,dir//'Minv'//fortran_PS)
          call set_IO_dir(this%norm,dir//'norm'//fortran_PS)
          call set_IO_dir(this%ISP,dir//'ISP'//fortran_PS)
+         call set_IO_dir(this%dir,dir//'dir'//fortran_PS)
+         call set_IO_dir(this%name,dir//'name'//fortran_PS)
        end subroutine
 
        subroutine make_IO_dir_PCG_solver_SF(this,dir)
@@ -350,22 +346,14 @@
          type(PCG_solver_SF),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
          call init(this%dir,dir)
          call init(this%name,'primitives')
          call make_IO_dir(this%MFP,dir//'MFP'//fortran_PS)
-         call make_IO_dir(this%tempk,dir//'tempk'//fortran_PS)
-         call make_IO_dir(this%k,dir//'k'//fortran_PS)
-         call make_IO_dir(this%r,dir//'r'//fortran_PS)
-         call make_IO_dir(this%p,dir//'p'//fortran_PS)
-         call make_IO_dir(this%tempx,dir//'tempx'//fortran_PS)
-         call make_IO_dir(this%Ax,dir//'Ax'//fortran_PS)
-         call make_IO_dir(this%x_BC,dir//'x_BC'//fortran_PS)
-         call make_IO_dir(this%vol,dir//'vol'//fortran_PS)
-         call make_IO_dir(this%z,dir//'z'//fortran_PS)
-         call make_IO_dir(this%Minv,dir//'Minv'//fortran_PS)
          call make_IO_dir(this%norm,dir//'norm'//fortran_PS)
          call make_IO_dir(this%ISP,dir//'ISP'//fortran_PS)
+         call make_IO_dir(this%dir,dir//'dir'//fortran_PS)
+         call make_IO_dir(this%name,dir//'name'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_PCG_solver_SF(this,dir)
@@ -373,13 +361,14 @@
          type(PCG_solver_SF),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Exporting PCG_solver_SF structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
          call export_structured(this%MFP,dir//'MFP'//fortran_PS)
          call export_structured(this%norm,dir//'norm'//fortran_PS)
          call export_structured(this%ISP,dir//'ISP'//fortran_PS)
+         call export_structured(this%dir,dir//'dir'//fortran_PS)
+         call export_structured(this%name,dir//'name'//fortran_PS)
        end subroutine
 
        subroutine import_structured_D_PCG_solver_SF(this,dir)
@@ -387,13 +376,14 @@
          type(PCG_solver_SF),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Importing PCG_solver_SF structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
          call import_structured(this%MFP,dir//'MFP'//fortran_PS)
          call import_structured(this%norm,dir//'norm'//fortran_PS)
          call import_structured(this%ISP,dir//'ISP'//fortran_PS)
+         call import_structured(this%dir,dir//'dir'//fortran_PS)
+         call import_structured(this%name,dir//'name'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_PCG_solver_SF(this)

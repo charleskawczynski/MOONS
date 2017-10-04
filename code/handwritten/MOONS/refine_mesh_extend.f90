@@ -1,7 +1,6 @@
        module refine_mesh_extend_mod
        use step_mod
        use step_extend_mod
-       use refine_mesh_mod
        use datatype_conversion_mod
        use string_mod
        use string_aux_mod

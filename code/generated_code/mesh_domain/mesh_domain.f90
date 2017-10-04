@@ -171,8 +171,6 @@
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call set_IO_dir(this%D,dir//'D'//fortran_PS)
-         call set_IO_dir(this%m_R1,dir//'m_R1'//fortran_PS)
-         call set_IO_dir(this%m_R2,dir//'m_R2'//fortran_PS)
        end subroutine
 
        subroutine make_IO_dir_mesh_domain(this,dir)
@@ -180,10 +178,8 @@
          type(mesh_domain),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
          call make_IO_dir(this%D,dir//'D'//fortran_PS)
-         call make_IO_dir(this%m_R1,dir//'m_R1'//fortran_PS)
-         call make_IO_dir(this%m_R2,dir//'m_R2'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_mesh_domain(this,dir)
@@ -191,13 +187,10 @@
          type(mesh_domain),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Exporting mesh_domain structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
          call export_structured(this%D,dir//'D'//fortran_PS)
-         call export_structured(this%m_R1,dir//'m_R1'//fortran_PS)
-         call export_structured(this%m_R2,dir//'m_R2'//fortran_PS)
        end subroutine
 
        subroutine import_structured_D_mesh_domain(this,dir)
@@ -205,13 +198,10 @@
          type(mesh_domain),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Importing mesh_domain structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
          call import_structured(this%D,dir//'D'//fortran_PS)
-         call import_structured(this%m_R1,dir//'m_R1'//fortran_PS)
-         call import_structured(this%m_R2,dir//'m_R2'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_mesh_domain(this)

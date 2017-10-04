@@ -167,9 +167,6 @@
          type(TF),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call set_IO_dir(this%x,dir//'x'//fortran_PS)
-         call set_IO_dir(this%y,dir//'y'//fortran_PS)
-         call set_IO_dir(this%z,dir//'z'//fortran_PS)
        end subroutine
 
        subroutine make_IO_dir_TF(this,dir)
@@ -177,10 +174,7 @@
          type(TF),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir(dir)
-         call make_IO_dir(this%x,dir//'x'//fortran_PS)
-         call make_IO_dir(this%y,dir//'y'//fortran_PS)
-         call make_IO_dir(this%z,dir//'z'//fortran_PS)
+         call make_dir_quiet(dir)
        end subroutine
 
        subroutine export_structured_D_TF(this,dir)
@@ -188,7 +182,6 @@
          type(TF),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Exporting TF structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -199,7 +192,6 @@
          type(TF),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Importing TF structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

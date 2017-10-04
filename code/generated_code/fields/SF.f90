@@ -173,9 +173,13 @@
          if (allocated(this%BF)) then
            s_BF = size(this%BF)
            write(un,*) s_BF
-           do i_BF=1,s_BF
-             call export(this%BF(i_BF),un)
-           enddo
+           if (s_BF.gt.0) then
+             do i_BF=1,s_BF
+               call export(this%BF(i_BF),un)
+             enddo
+           else
+             write(un,*) 0
+           endif
          endif
          write(un,*) 'all_neumann  = ';write(un,*) this%all_neumann
          write(un,*) 'numEl        = ';write(un,*) this%numEl
@@ -192,13 +196,12 @@
          integer :: s_BF
          call delete(this)
          read(un,*); read(un,*) this%s
-         if (allocated(this%BF)) then
-           read(un,*) s_BF
-           if (s_BF.gt.0) then
-             do i_BF=1,s_BF
-               call import(this%BF(i_BF),un)
-             enddo
-           endif
+         read(un,*) s_BF
+         if (s_BF.gt.0) then
+           allocate(this%BF(s_BF))
+           do i_BF=1,s_BF
+             call import(this%BF(i_BF),un)
+           enddo
          endif
          read(un,*); read(un,*) this%all_neumann
          read(un,*); read(un,*) this%numEl
@@ -273,7 +276,7 @@
          integer :: i_BF
          integer :: s_BF
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
          if (allocated(this%BF)) then
            s_BF = size(this%BF)
            do i_BF=1,s_BF
@@ -291,16 +294,18 @@
          integer :: i_BF
          integer :: s_BF
          integer :: un
-         write(*,*) 'Exporting SF structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
          if (allocated(this%BF)) then
            s_BF = size(this%BF)
+           write(un,*) s_BF
            do i_BF=1,s_BF
              call export_structured(this%BF(i_BF),&
              dir//'BF_'//int2str(i_BF)//fortran_PS)
            enddo
+         else
+           write(un,*) 0
          endif
          call export_structured(this%DL,dir//'DL'//fortran_PS)
        end subroutine
@@ -312,11 +317,12 @@
          integer :: i_BF
          integer :: s_BF
          integer :: un
-         write(*,*) 'Importing SF structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         if (allocated(this%BF)) then
+         read(un,*) s_BF
+         if (s_BF.gt.0) then
+           allocate(this%BF(s_BF))
            s_BF = size(this%BF)
            do i_BF=1,s_BF
              call import_structured(this%BF(i_BF),&

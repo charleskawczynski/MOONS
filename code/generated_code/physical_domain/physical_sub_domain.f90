@@ -174,7 +174,7 @@
          type(physical_sub_domain),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
          call make_IO_dir(this%total,dir//'total'//fortran_PS)
          call make_IO_dir(this%physical,dir//'physical'//fortran_PS)
        end subroutine
@@ -184,7 +184,6 @@
          type(physical_sub_domain),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Exporting physical_sub_domain structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -197,7 +196,6 @@
          type(physical_sub_domain),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Importing physical_sub_domain structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

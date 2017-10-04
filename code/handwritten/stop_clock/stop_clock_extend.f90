@@ -34,17 +34,17 @@
 
        contains
 
-      subroutine init_sc(sc,dir_out,name_out)
+      subroutine init_sc(sc,dir_tec,name_tec)
         implicit none
         type(stop_clock),intent(inout) :: sc
-        character(len=*),intent(in) :: dir_out,name_out
+        character(len=*),intent(in) :: dir_tec,name_tec
         type(string) :: vars
         call delete(sc)
         call init(sc%c)
-        call init(sc%dir_out,dir_out)
-        call init(sc%name_out,name_out)
+        call init(sc%dir_tec,dir_tec)
+        call init(sc%name_tec,name_tec)
 
-        sc%un_plot = new_and_open(dir_out,name_out//'_plot')
+        sc%un_plot = new_and_open(dir_tec,name_tec//'_plot')
 
         call init(vars,'VARIABLES = ')
         call append(vars,'t,')
@@ -101,9 +101,9 @@
         type(stop_clock),intent(in) :: sc
         type(time_marching_params),intent(in) :: TMP
         integer :: un
-        un = new_and_open(str(sc%dir_out),str(sc%name_out))
+        un = new_and_open(str(sc%dir_tec),str(sc%name_tec))
         call export(sc,TMP,un)
-        call close_and_message(un,str(sc%dir_out),str(sc%name_out))
+        call close_and_message(un,str(sc%dir_tec),str(sc%name_tec))
       end subroutine
 
       subroutine print_sc(sc,TMP)

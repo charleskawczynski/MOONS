@@ -181,7 +181,7 @@
          type(governing_equations),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
          call make_IO_dir(this%mom,dir//'mom'//fortran_PS)
          call make_IO_dir(this%ind,dir//'ind'//fortran_PS)
          call make_IO_dir(this%nrg,dir//'nrg'//fortran_PS)
@@ -192,7 +192,6 @@
          type(governing_equations),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Exporting governing_equations structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -206,7 +205,6 @@
          type(governing_equations),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Importing governing_equations structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

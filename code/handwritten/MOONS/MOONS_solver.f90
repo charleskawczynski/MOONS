@@ -13,7 +13,6 @@
        use export_now_mod
        use export_now_extend_mod
        use export_safe_extend_mod
-       use refine_mesh_extend_mod
        use kill_switch_mod
        use kill_switch_extend_mod
        use probe_extend_mod
@@ -95,6 +94,7 @@
            L(4) = M%C%EN%B%this
            L(5) = M%C%EN%U%this
            L(6) = M%C%EN%T%this
+           write(*,*) 'about to export in MOONS_solver'
            call export_structured(M,str(M%C%DT%restart))
            stop 'Done in MOONS_solver'
            ! if (any(L)) call export_structured(M,str(M%C%DT%restart))

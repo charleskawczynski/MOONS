@@ -538,7 +538,7 @@
          integer :: s_I_OPP_periodic_N
          integer :: s_i_2D
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
          s_G = size(this%G)
          do i_G=1,s_G
            call make_IO_dir(this%G(i_G),dir//'G_'//int2str(i_G)//fortran_PS)
@@ -592,41 +592,47 @@
          integer :: s_I_OPP_periodic_N
          integer :: s_i_2D
          integer :: un
-         write(*,*) 'Exporting face_SD structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
          s_G = size(this%G)
+         write(un,*) s_G
          do i_G=1,s_G
            call export_structured(this%G(i_G),&
            dir//'G_'//int2str(i_G)//fortran_PS)
          enddo
          s_G_periodic_N = size(this%G_periodic_N)
+         write(un,*) s_G_periodic_N
          do i_G_periodic_N=1,s_G_periodic_N
            call export_structured(this%G_periodic_N(i_G_periodic_N),&
            dir//'G_periodic_N_'//int2str(i_G_periodic_N)//fortran_PS)
          enddo
          s_B = size(this%B)
+         write(un,*) s_B
          do i_B=1,s_B
            call export_structured(this%B(i_B),&
            dir//'B_'//int2str(i_B)//fortran_PS)
          enddo
          s_I = size(this%I)
+         write(un,*) s_I
          do i_I=1,s_I
            call export_structured(this%I(i_I),&
            dir//'I_'//int2str(i_I)//fortran_PS)
          enddo
          s_I_OPP = size(this%I_OPP)
+         write(un,*) s_I_OPP
          do i_I_OPP=1,s_I_OPP
            call export_structured(this%I_OPP(i_I_OPP),&
            dir//'I_OPP_'//int2str(i_I_OPP)//fortran_PS)
          enddo
          s_I_OPP_periodic_N = size(this%I_OPP_periodic_N)
+         write(un,*) s_I_OPP_periodic_N
          do i_I_OPP_periodic_N=1,s_I_OPP_periodic_N
            call export_structured(this%I_OPP_periodic_N(i_I_OPP_periodic_N),&
            dir//'I_OPP_periodic_N_'//int2str(i_I_OPP_periodic_N)//fortran_PS)
          enddo
          s_i_2D = size(this%i_2D)
+         write(un,*) s_i_2D
          do i_i_2D=1,s_i_2D
            call export_structured(this%i_2D(i_i_2D),&
            dir//'i_2D_'//int2str(i_i_2D)//fortran_PS)
@@ -652,7 +658,6 @@
          integer :: s_I_OPP_periodic_N
          integer :: s_i_2D
          integer :: un
-         write(*,*) 'Importing face_SD structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

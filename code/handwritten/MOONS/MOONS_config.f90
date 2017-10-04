@@ -34,7 +34,6 @@
        use export_frequency_extend_mod
        use export_now_extend_mod
        use export_safe_extend_mod
-       use refine_mesh_extend_mod
 
        use energy_extend_mod
        use momentum_extend_mod
@@ -65,14 +64,13 @@
            ! Need to make sure init knows to restart:
            ! call set_restart(M%C%SP)
            M%C%SP%FCL%restart_all = .true.
-           ! call import_TMP(M%C%SP%VS)  ! start from last exported time step
-           ! call import(M%C%SP%coupled) ! start from last exported time step
          else
            call init(M%C%SP)
          endif
          call display_compiler_info(str(M%C%DT%params),'compiler_info')
          call print_version()
          call export_version(str(M%C%DT%LDC))
+         call init(M%C%sc,str(M%C%DT%wall_clock),'WALL_CLOCK_TIME_INFO')
          write(*,*) ' ************** FINISHED CONFIGURING MOONS ************** '
        end subroutine
 

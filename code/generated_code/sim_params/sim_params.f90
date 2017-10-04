@@ -305,7 +305,7 @@
          type(sim_params),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
          call make_IO_dir(this%VS,dir//'VS'//fortran_PS)
          call make_IO_dir(this%MP_mom,dir//'MP_mom'//fortran_PS)
          call make_IO_dir(this%MQP,dir//'MQP'//fortran_PS)
@@ -330,7 +330,6 @@
          type(sim_params),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Exporting sim_params structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -358,7 +357,6 @@
          type(sim_params),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Importing sim_params structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

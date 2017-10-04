@@ -228,23 +228,35 @@
          if (allocated(this%f)) then
            s_f = size(this%f)
            write(un,*) s_f
-           do i_f=1,s_f
-             call export(this%f(i_f),un)
-           enddo
+           if (s_f.gt.0) then
+             do i_f=1,s_f
+               call export(this%f(i_f),un)
+             enddo
+           else
+             write(un,*) 0
+           endif
          endif
          if (allocated(this%fb)) then
            s_fb = size(this%fb)
            write(un,*) s_fb
-           do i_fb=1,s_fb
-             call export(this%fb(i_fb),un)
-           enddo
+           if (s_fb.gt.0) then
+             do i_fb=1,s_fb
+               call export(this%fb(i_fb),un)
+             enddo
+           else
+             write(un,*) 0
+           endif
          endif
          if (allocated(this%vol)) then
            s_vol = size(this%vol)
            write(un,*) s_vol
-           do i_vol=1,s_vol
-             call export(this%vol(i_vol),un)
-           enddo
+           if (s_vol.gt.0) then
+             do i_vol=1,s_vol
+               call export(this%vol(i_vol),un)
+             enddo
+           else
+             write(un,*) 0
+           endif
          endif
          write(un,*) 'apply_BC_order  = ';write(un,*) this%apply_BC_order
        end subroutine
@@ -261,29 +273,26 @@
          integer :: s_vol
          call delete(this)
          call import(this%g,un)
-         if (allocated(this%f)) then
-           read(un,*) s_f
-           if (s_f.gt.0) then
-             do i_f=1,s_f
-               call import(this%f(i_f),un)
-             enddo
-           endif
+         read(un,*) s_f
+         if (s_f.gt.0) then
+           allocate(this%f(s_f))
+           do i_f=1,s_f
+             call import(this%f(i_f),un)
+           enddo
          endif
-         if (allocated(this%fb)) then
-           read(un,*) s_fb
-           if (s_fb.gt.0) then
-             do i_fb=1,s_fb
-               call import(this%fb(i_fb),un)
-             enddo
-           endif
+         read(un,*) s_fb
+         if (s_fb.gt.0) then
+           allocate(this%fb(s_fb))
+           do i_fb=1,s_fb
+             call import(this%fb(i_fb),un)
+           enddo
          endif
-         if (allocated(this%vol)) then
-           read(un,*) s_vol
-           if (s_vol.gt.0) then
-             do i_vol=1,s_vol
-               call import(this%vol(i_vol),un)
-             enddo
-           endif
+         read(un,*) s_vol
+         if (s_vol.gt.0) then
+           allocate(this%vol(s_vol))
+           do i_vol=1,s_vol
+             call import(this%vol(i_vol),un)
+           enddo
          endif
          read(un,*); read(un,*) this%apply_BC_order
        end subroutine
@@ -368,7 +377,7 @@
          integer :: s_fb
          integer :: s_vol
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
          call make_IO_dir(this%g,dir//'g'//fortran_PS)
          if (allocated(this%f)) then
            s_f = size(this%f)
@@ -404,31 +413,39 @@
          integer :: s_fb
          integer :: s_vol
          integer :: un
-         write(*,*) 'Exporting block structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
          call export_structured(this%g,dir//'g'//fortran_PS)
          if (allocated(this%f)) then
            s_f = size(this%f)
+           write(un,*) s_f
            do i_f=1,s_f
              call export_structured(this%f(i_f),&
              dir//'f_'//int2str(i_f)//fortran_PS)
            enddo
+         else
+           write(un,*) 0
          endif
          if (allocated(this%fb)) then
            s_fb = size(this%fb)
+           write(un,*) s_fb
            do i_fb=1,s_fb
              call export_structured(this%fb(i_fb),&
              dir//'fb_'//int2str(i_fb)//fortran_PS)
            enddo
+         else
+           write(un,*) 0
          endif
          if (allocated(this%vol)) then
            s_vol = size(this%vol)
+           write(un,*) s_vol
            do i_vol=1,s_vol
              call export_structured(this%vol(i_vol),&
              dir//'vol_'//int2str(i_vol)//fortran_PS)
            enddo
+         else
+           write(un,*) 0
          endif
        end subroutine
 
@@ -443,26 +460,31 @@
          integer :: s_fb
          integer :: s_vol
          integer :: un
-         write(*,*) 'Importing block structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
          call import_structured(this%g,dir//'g'//fortran_PS)
-         if (allocated(this%f)) then
+         read(un,*) s_f
+         if (s_f.gt.0) then
+           allocate(this%f(s_f))
            s_f = size(this%f)
            do i_f=1,s_f
              call import_structured(this%f(i_f),&
              dir//'f_'//int2str(i_f)//fortran_PS)
            enddo
          endif
-         if (allocated(this%fb)) then
+         read(un,*) s_fb
+         if (s_fb.gt.0) then
+           allocate(this%fb(s_fb))
            s_fb = size(this%fb)
            do i_fb=1,s_fb
              call import_structured(this%fb(i_fb),&
              dir//'fb_'//int2str(i_fb)//fortran_PS)
            enddo
          endif
-         if (allocated(this%vol)) then
+         read(un,*) s_vol
+         if (s_vol.gt.0) then
+           allocate(this%vol(s_vol))
            s_vol = size(this%vol)
            do i_vol=1,s_vol
              call import_structured(this%vol(i_vol),&

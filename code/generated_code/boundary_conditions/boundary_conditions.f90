@@ -222,7 +222,7 @@
          type(boundary_conditions),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
          call make_IO_dir(this%BCL,dir//'BCL'//fortran_PS)
          if (this%BCL%defined) then
            call make_IO_dir(this%DL,dir//'DL'//fortran_PS)
@@ -247,7 +247,6 @@
          type(boundary_conditions),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Exporting boundary_conditions structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -276,7 +275,6 @@
          type(boundary_conditions),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Importing boundary_conditions structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

@@ -34,7 +34,6 @@
        use export_frequency_extend_mod
        use export_now_extend_mod
        use export_safe_extend_mod
-       use refine_mesh_extend_mod
 
        use energy_extend_mod
        use momentum_extend_mod

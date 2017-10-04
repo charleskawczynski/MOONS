@@ -240,6 +240,8 @@
          if (.false.) then
            write(*,*) dir
          endif
+         call set_IO_dir(this%tec_dir,dir//'tec_dir'//fortran_PS)
+         call set_IO_dir(this%tec_name,dir//'tec_name'//fortran_PS)
        end subroutine
 
        subroutine make_IO_dir_probe(this,dir)
@@ -247,7 +249,9 @@
          type(probe),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
+         call make_IO_dir(this%tec_dir,dir//'tec_dir'//fortran_PS)
+         call make_IO_dir(this%tec_name,dir//'tec_name'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_probe(this,dir)
@@ -255,10 +259,11 @@
          type(probe),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Exporting probe structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
+         call export_structured(this%tec_dir,dir//'tec_dir'//fortran_PS)
+         call export_structured(this%tec_name,dir//'tec_name'//fortran_PS)
        end subroutine
 
        subroutine import_structured_D_probe(this,dir)
@@ -266,10 +271,11 @@
          type(probe),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Importing probe structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
+         call import_structured(this%tec_dir,dir//'tec_dir'//fortran_PS)
+         call import_structured(this%tec_name,dir//'tec_name'//fortran_PS)
        end subroutine
 
        subroutine suppress_warnings_probe(this)

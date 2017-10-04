@@ -143,9 +143,13 @@
          if (allocated(this%EP)) then
            s_EP = size(this%EP)
            write(un,*) s_EP
-           do i_EP=1,s_EP
-             call export(this%EP(i_EP),un)
-           enddo
+           if (s_EP.gt.0) then
+             do i_EP=1,s_EP
+               call export(this%EP(i_EP),un)
+             enddo
+           else
+             write(un,*) 0
+           endif
          endif
          write(un,*) 'N   = ';write(un,*) this%N
        end subroutine
@@ -157,13 +161,12 @@
          integer :: i_EP
          integer :: s_EP
          call delete(this)
-         if (allocated(this%EP)) then
-           read(un,*) s_EP
-           if (s_EP.gt.0) then
-             do i_EP=1,s_EP
-               call import(this%EP(i_EP),un)
-             enddo
-           endif
+         read(un,*) s_EP
+         if (s_EP.gt.0) then
+           allocate(this%EP(s_EP))
+           do i_EP=1,s_EP
+             call import(this%EP(i_EP),un)
+           enddo
          endif
          read(un,*); read(un,*) this%N
        end subroutine
@@ -225,7 +228,7 @@
          integer :: i_EP
          integer :: s_EP
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
          if (allocated(this%EP)) then
            s_EP = size(this%EP)
            do i_EP=1,s_EP
@@ -242,16 +245,18 @@
          integer :: i_EP
          integer :: s_EP
          integer :: un
-         write(*,*) 'Exporting export_planes structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
          if (allocated(this%EP)) then
            s_EP = size(this%EP)
+           write(un,*) s_EP
            do i_EP=1,s_EP
              call export_structured(this%EP(i_EP),&
              dir//'EP_'//int2str(i_EP)//fortran_PS)
            enddo
+         else
+           write(un,*) 0
          endif
        end subroutine
 
@@ -262,11 +267,12 @@
          integer :: i_EP
          integer :: s_EP
          integer :: un
-         write(*,*) 'Importing export_planes structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         if (allocated(this%EP)) then
+         read(un,*) s_EP
+         if (s_EP.gt.0) then
+           allocate(this%EP(s_EP))
            s_EP = size(this%EP)
            do i_EP=1,s_EP
              call import_structured(this%EP(i_EP),&

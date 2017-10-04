@@ -149,9 +149,13 @@
          if (allocated(this%sd)) then
            s_sd = size(this%sd)
            write(un,*) s_sd
-           do i_sd=1,s_sd
-             call export(this%sd(i_sd),un)
-           enddo
+           if (s_sd.gt.0) then
+             do i_sd=1,s_sd
+               call export(this%sd(i_sd),un)
+             enddo
+           else
+             write(un,*) 0
+           endif
          endif
          write(un,*) 'defined  = ';write(un,*) this%defined
        end subroutine
@@ -164,13 +168,12 @@
          integer :: s_sd
          call delete(this)
          read(un,*); read(un,*) this%s
-         if (allocated(this%sd)) then
-           read(un,*) s_sd
-           if (s_sd.gt.0) then
-             do i_sd=1,s_sd
-               call import(this%sd(i_sd),un)
-             enddo
-           endif
+         read(un,*) s_sd
+         if (s_sd.gt.0) then
+           allocate(this%sd(s_sd))
+           do i_sd=1,s_sd
+             call import(this%sd(i_sd),un)
+           enddo
          endif
          read(un,*); read(un,*) this%defined
        end subroutine
@@ -234,7 +237,7 @@
          integer :: i_sd
          integer :: s_sd
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
          if (allocated(this%sd)) then
            s_sd = size(this%sd)
            do i_sd=1,s_sd
@@ -251,16 +254,18 @@
          integer :: i_sd
          integer :: s_sd
          integer :: un
-         write(*,*) 'Exporting physical_domain structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
          if (allocated(this%sd)) then
            s_sd = size(this%sd)
+           write(un,*) s_sd
            do i_sd=1,s_sd
              call export_structured(this%sd(i_sd),&
              dir//'sd_'//int2str(i_sd)//fortran_PS)
            enddo
+         else
+           write(un,*) 0
          endif
        end subroutine
 
@@ -271,11 +276,12 @@
          integer :: i_sd
          integer :: s_sd
          integer :: un
-         write(*,*) 'Importing physical_domain structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         if (allocated(this%sd)) then
+         read(un,*) s_sd
+         if (s_sd.gt.0) then
+           allocate(this%sd(s_sd))
            s_sd = size(this%sd)
            do i_sd=1,s_sd
              call import_structured(this%sd(i_sd),&

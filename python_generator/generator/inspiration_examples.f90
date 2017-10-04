@@ -1,5 +1,25 @@
 SF and array need a more protected IO:
 
+can show percentage_complete when traversing through data structures:
+       subroutine export_structured_D_bctype(this,dir,counter,total_count)
+         implicit none
+         type(bctype),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer,intent(inout),optional :: counter,total_count
+         integer :: un
+         if( present(counter) )
+         counter = counter+1
+         else
+         counter = 0
+         total_count = get_total_count(this)
+         endif
+         write(*,*) 'percentage_complete = ',real(counter,cp)/real(total_count,cp)*100_cp
+         write(*,*) 'Exporting bctype structured'
+         un = new_and_open(dir,'primitives')
+         call export_primitives(this,un)
+         close(un)
+       end subroutine
+
        subroutine export_array(this,un)
          implicit none
          type(array),intent(in) :: this

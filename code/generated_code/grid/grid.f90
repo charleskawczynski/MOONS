@@ -216,7 +216,7 @@
          integer :: i_c
          integer :: s_c
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
          s_c = size(this%c)
          do i_c=1,s_c
            call make_IO_dir(this%c(i_c),dir//'c_'//int2str(i_c)//fortran_PS)
@@ -230,11 +230,11 @@
          integer :: i_c
          integer :: s_c
          integer :: un
-         write(*,*) 'Exporting grid structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
          s_c = size(this%c)
+         write(un,*) s_c
          do i_c=1,s_c
            call export_structured(this%c(i_c),&
            dir//'c_'//int2str(i_c)//fortran_PS)
@@ -248,7 +248,6 @@
          integer :: i_c
          integer :: s_c
          integer :: un
-         write(*,*) 'Importing grid structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

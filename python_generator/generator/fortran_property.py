@@ -266,9 +266,13 @@ class fortran_property:
         L = L + ['if (allocated(this%'+self.name+')) then']
         L = L + [self.int_rank_shape_this]
         L = L + [self.export_rank_shape]
+        L = L + [self.if_sufficient_size]
         L = L + [x for x in ['do '+self.do_loop_iter+'=1,'+self.do_loop_iter_max]]
         L = L + ['call export(this%' + self.name+'('+self.do_loop_iter+'),un)']
         L = L + ['enddo']
+        L = L + ['else']
+        L = L + [self.export_zero_shape]
+        L = L + ['endif']
         L = L + ['endif']
     elif     self.LL.object    and not self.allocatable and     self.dimension>1 and not self.rank>1:
       if not primitives_only:
@@ -288,20 +292,6 @@ class fortran_property:
     elif     self.LL.procedure and not self.allocatable and not self.dimension>1 and not self.rank>1: pass
     else: raise NameError('Case not caught!')
 
-    return CF.indent_lines(L)
-
-  def write_export_wrap_specialized(self):
-    L = []
-    if     self.LL.object    and not self.allocatable and not self.dimension>1 and not self.rank>1:
-      L = L + ["call export(this%" + self.name + ",dir,name//'_" + self.name + "')"]
-    else: raise NameError('Case not caught!')
-    return CF.indent_lines(L)
-
-  def write_import_wrap_specialized(self):
-    L = []
-    if     self.LL.object    and not self.allocatable and not self.dimension>1 and not self.rank>1:
-      L = L + ["call import(this%" + self.name + ",dir,name//'_" + self.name + "')"]
-    else: raise NameError('Case not caught!')
     return CF.indent_lines(L)
 
   def write_import(self,primitives_only):
@@ -329,26 +319,24 @@ class fortran_property:
 
     elif     self.LL.object    and     self.allocatable and     self.dimension>1 and     self.rank>1:
       if not primitives_only:
-        L = L + ['if (allocated(this%'+self.name+')) then']
         L = L + [self.import_rank_shape]
         L = L + [self.if_sufficient_size]
+        L = L + ['allocate(this%'+self.name+'('+self.int_rank_list+'))']
         L = L + ['do '+self.do_loop_iter+'=1,'+self.do_loop_iter_max]
         L = L + ['call import(this%' + self.name+'('+self.do_loop_iter+'),un)']
         L = L + ['enddo']
-        L = L + ['endif']
         L = L + ['endif']
     elif     self.LL.object    and not self.allocatable and     self.dimension>1 and     self.rank>1:
       if not primitives_only:
         L = L + ['call import(this%' + self.name + ',un)']
     elif     self.LL.object    and     self.allocatable and     self.dimension>1 and not self.rank>1:
       if not primitives_only:
-        L = L + ['if (allocated(this%'+self.name+')) then']
         L = L + [self.import_rank_shape]
         L = L + [self.if_sufficient_size]
+        L = L + ['allocate(this%'+self.name+'('+self.do_loop_iter_max+'))']
         L = L + ['do '+self.do_loop_iter+'=1,'+self.do_loop_iter_max]
         L = L + ['call import(this%' + self.name+'('+self.do_loop_iter+'),un)']
         L = L + ['enddo']
-        L = L + ['endif']
         L = L + ['endif']
     elif     self.LL.object    and not self.allocatable and     self.dimension>1 and not self.rank>1:
       if not primitives_only:
@@ -369,6 +357,21 @@ class fortran_property:
     elif     self.LL.procedure and not self.allocatable and not self.dimension>1 and not self.rank>1: pass
     else: raise NameError('Case not caught!')
 
+    return CF.indent_lines(L)
+
+
+  def write_export_wrap_specialized(self):
+    L = []
+    if     self.LL.object    and not self.allocatable and not self.dimension>1 and not self.rank>1:
+      L = L + ["call export(this%" + self.name + ",dir,name//'_" + self.name + "')"]
+    else: raise NameError('Case not caught!')
+    return CF.indent_lines(L)
+
+  def write_import_wrap_specialized(self):
+    L = []
+    if     self.LL.object    and not self.allocatable and not self.dimension>1 and not self.rank>1:
+      L = L + ["call import(this%" + self.name + ",dir,name//'_" + self.name + "')"]
+    else: raise NameError('Case not caught!')
     return CF.indent_lines(L)
 
   def write_display(self):
@@ -492,7 +495,8 @@ class fortran_property:
     # f_name = "'"+f_sep+self.restart_dir_name+"'"
     f_call = 'call '+fun_name
 
-    if not self.class_=='string':
+    # if not self.class_=='string':
+    if True:
       if       self.LL.primitive and     self.allocatable and     self.dimension>1 and     self.rank>1:
         pass
       elif     self.LL.primitive and not self.allocatable and     self.dimension>1 and     self.rank>1:
@@ -558,7 +562,8 @@ class fortran_property:
     f_name_loop = directory+"//'"+self.name+"_'"+suffix_loop+"//"+f_sep
     f_call = 'call export_structured'
 
-    if not self.class_=='string':
+    # if not self.class_=='string':
+    if True:
       if       self.LL.primitive and     self.allocatable and     self.dimension>1 and     self.rank>1:
         pass
       elif     self.LL.primitive and not self.allocatable and     self.dimension>1 and     self.rank>1:
@@ -575,10 +580,13 @@ class fortran_property:
         # pass
         L = L + ['if (allocated(this%'+self.name+')) then']
         L = L + [self.int_rank_shape_this]
+        L = L + [self.export_rank_shape]
         L = L + [self.if_sufficient_size]
         L = L + ['do '+self.do_loop_iter+'=1,'+self.do_loop_iter_max]
         L = L + [f_call + '(this%' + self.name+'('+self.do_loop_iter+'),'+f_name+')']
         L = L + ['enddo']
+        L = L + ['else']
+        L = L + ['write(un,*) 0']
         L = L + ['endif']
         L = L + ['else']
         L = L + ['write(un,*) '+self.do_loop_iter_max]
@@ -588,6 +596,7 @@ class fortran_property:
         f_name = f_name_loop
         # pass
         L = L + [self.int_rank_shape_this]
+        L = L + [self.export_rank_shape]
         L = L + ['do '+self.do_loop_iter+'=1,'+self.do_loop_iter_max]
         L = L + [f_call + '(this%' + self.name+'('+self.do_loop_iter+'),'+f_name+')']
         L = L + ['enddo']
@@ -597,15 +606,19 @@ class fortran_property:
         # pass
         L = L + ['if (allocated(this%'+self.name+')) then']
         L = L + [self.int_rank_shape_this]
+        L = L + [self.export_rank_shape]
         L = L + ['do '+self.do_loop_iter+'=1,'+self.do_loop_iter_max]
         L = L + [f_call + '(this%' + self.name+'('+self.do_loop_iter+'),'+f_name+')']
         L = L + ['enddo']
+        L = L + ['else']
+        L = L + ['write(un,*) 0']
         L = L + ['endif']
       elif     self.LL.object    and not self.allocatable and     self.dimension>1 and not self.rank>1:
         suffix = suffix_loop
         f_name = f_name_loop
         # pass
         L = L + [self.int_rank_shape_this]
+        L = L + [self.export_rank_shape]
         L = L + ['do '+self.do_loop_iter+'=1,'+self.do_loop_iter_max]
         L = L + [f_call + '(this%' + self.name+'('+self.do_loop_iter+'),'+f_name+')']
         L = L + ['enddo']
@@ -628,7 +641,8 @@ class fortran_property:
     f_name_loop = directory+"//'"+self.name+"_'"+suffix_loop+"//"+f_sep
     f_call = 'call import_structured'
 
-    if not self.class_=='string':
+    # if not self.class_=='string':
+    if True:
       if       self.LL.primitive and     self.allocatable and     self.dimension>1 and     self.rank>1:
         pass
       elif     self.LL.primitive and not self.allocatable and     self.dimension>1 and     self.rank>1:
@@ -643,7 +657,9 @@ class fortran_property:
         suffix = suffix_loop
         f_name = f_name_loop
         # pass
-        L = L + ['if (allocated(this%'+self.name+')) then']
+        L = L + [self.import_rank_shape]
+        L = L + [self.if_sufficient_size]
+        L = L + ['allocate(this%'+self.name+'('+self.int_rank_list+'))']
         L = L + [self.int_rank_shape_this]
         L = L + [self.if_sufficient_size]
         L = L + ['do '+self.do_loop_iter+'=1,'+self.do_loop_iter_max]
@@ -665,7 +681,9 @@ class fortran_property:
         suffix = suffix_loop
         f_name = f_name_loop
         # pass
-        L = L + ['if (allocated(this%'+self.name+')) then']
+        L = L + [self.import_rank_shape]
+        L = L + [self.if_sufficient_size]
+        L = L + ['allocate(this%'+self.name+'('+self.do_loop_iter_max+'))']
         L = L + [self.int_rank_shape_this]
         L = L + ['do '+self.do_loop_iter+'=1,'+self.do_loop_iter_max]
         L = L + [f_call + '(this%' + self.name+'('+self.do_loop_iter+'),'+f_name+')']

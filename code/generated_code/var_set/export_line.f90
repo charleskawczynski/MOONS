@@ -187,7 +187,7 @@
          type(export_line),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
        end subroutine
 
        subroutine export_structured_D_export_line(this,dir)
@@ -195,7 +195,6 @@
          type(export_line),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Exporting export_line structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -206,7 +205,6 @@
          type(export_line),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Importing export_line structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)

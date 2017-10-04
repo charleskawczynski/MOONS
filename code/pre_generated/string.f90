@@ -14,6 +14,9 @@
       ! end program
 
       private
+
+      character(len=4),parameter :: dot_dat = '.dat'
+
       public :: string
       public :: init,delete,display,print,export,import ! Essentials
 
@@ -25,6 +28,13 @@
       public :: get_char,set_char
       public :: remove_element
       public :: identical
+
+      public :: set_IO_dir
+      public :: make_IO_dir
+      public :: export_structured
+      public :: import_structured
+      public :: export_primitives
+      public :: import_primitives
 
       interface init;                 module procedure init_size;                      end interface
       interface init;                 module procedure init_string;                    end interface
@@ -55,6 +65,16 @@
       interface identical;            module procedure identical_string_char;          end interface
 
       interface insist_allocated;     module procedure insist_allocated_string;        end interface
+
+      ! Copied from generated code:
+
+      interface set_IO_dir;           module procedure set_IO_dir_string;              end interface
+      interface make_IO_dir;          module procedure make_IO_dir_string;             end interface
+      interface export_structured;    module procedure export_structured_D_string;     end interface
+      interface import_structured;    module procedure import_structured_D_string;     end interface
+      interface export_primitives;    module procedure export_primitives_string;       end interface
+      interface import_primitives;    module procedure import_primitives_string;       end interface
+      interface suppress_warnings;    module procedure suppress_warnings_string;       end interface
 
       type char
         private
@@ -421,5 +441,154 @@
           stop 'Done'
         endif
       end subroutine
+
+      ! --------------------------------------------------------------------------------
+      ! ----------------------------- COPIED FROM IO TOOLS -----------------------------
+      ! --------------------------------------------------------------------------------
+
+      function open_to_read(dir,name) result(un)
+        implicit none
+        character(len=*),intent(in) :: dir,name
+        integer :: un
+        type(string) :: s
+        call init(s,dir//name//dot_dat)
+        un = new_unit()
+        open(un,file=str(s),status = 'old',action = 'read')
+        call delete(s)
+      end function
+
+      function new_and_open(dir,name) result(un)
+        implicit none
+        character(len=*),intent(in) :: dir,name
+        integer :: un
+        type(string) :: s
+        call init(s,dir//name//dot_dat)
+        un = new_unit()
+        call attempt_to_open_to_write(un,s,dir,name)
+        call delete(s)
+      end function
+
+      function new_unit() result(nu)
+        implicit none
+        integer,parameter :: lun_min=10,lun_max=1000
+        integer :: lun,nu
+        nu=-1
+        do lun=lun_min,lun_max
+          if (.not.unit_open(lun)) then; nu=lun; exit; endif
+        enddo
+      end function
+
+      subroutine attempt_to_open_to_write(un,s,dir,name)
+        implicit none
+        integer,intent(in) :: un
+        type(string),intent(in) :: s
+        character(len=*),intent(in) :: dir,name
+        integer :: n,i
+        logical :: failed
+        failed = .true.
+        do n=1,100000
+          open(un,file=str(s),pad='YES',action='readwrite',iostat=i)
+          if (i.eq.0) then; failed = .false.; exit; endif
+        enddo
+        if (failed) then
+          write(*,*) 'Error: tried to open file but failed!!'
+          write(*,*) 'File = ',str(s)
+          write(*,*) 'dir = ',dir
+          write(*,*) 'name = ',name
+          stop 'Done in attempt_to_open_to_write in IO_tools.f90'
+        endif
+      end subroutine
+
+      function unit_open(un) result(op)
+        implicit none
+        integer,intent(in) :: un
+        logical :: op
+        inquire(unit=un,opened=op)
+      end function
+
+      subroutine make_dir(d)
+        implicit none
+        character(len=*),intent(in) :: d
+        logical :: ex
+        inquire (file=d, EXIST=ex)
+        if (.not.ex) then
+          call system('mkdir ' // d )
+          write(*,*) 'Directory ' // d // ' created.'
+        else
+          write(*,*) 'Directory ' // d // ' already exists.'
+        endif
+      end subroutine
+
+      subroutine make_dir_quiet(d)
+        implicit none
+        character(len=*),intent(in) :: d
+        logical :: ex
+        inquire (file=d, EXIST=ex)
+        if (.not.ex) call system('mkdir ' // d )
+      end subroutine
+
+      ! --------------------------------------------------------------------------------
+      ! -------------------------- COPIED FROM GENERATED CODE --------------------------
+      ! --------------------------------------------------------------------------------
+
+       subroutine set_IO_dir_string(this,dir)
+         implicit none
+         type(string),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         if (.false.) then
+           write(*,*) dir
+         endif
+       end subroutine
+
+       subroutine make_IO_dir_string(this,dir)
+         implicit none
+         type(string),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         call suppress_warnings(this)
+         call make_dir(dir)
+       end subroutine
+
+       subroutine export_structured_D_string(this,dir)
+         implicit none
+         type(string),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = new_and_open(dir,'primitives')
+         call export(this,un)
+         close(un)
+       end subroutine
+
+       subroutine import_structured_D_string(this,dir)
+         implicit none
+         type(string),intent(inout) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         un = open_to_read(dir,'primitives')
+         call import(this,un)
+         close(un)
+       end subroutine
+
+       subroutine export_primitives_string(this,un)
+         implicit none
+         type(string),intent(in) :: this
+         integer,intent(in) :: un
+         call export(this,un)
+       end subroutine
+
+       subroutine import_primitives_string(this,un)
+         implicit none
+         type(string),intent(inout) :: this
+         integer,intent(in) :: un
+         call import(this,un)
+       end subroutine
+
+       subroutine suppress_warnings_string(this)
+         implicit none
+         type(string),intent(in) :: this
+         if (.false.) then
+           call print(this)
+         endif
+       end subroutine
 
       end module

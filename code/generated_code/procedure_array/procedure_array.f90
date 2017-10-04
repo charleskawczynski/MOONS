@@ -149,9 +149,13 @@
          if (allocated(this%SP)) then
            s_SP = size(this%SP)
            write(un,*) s_SP
-           do i_SP=1,s_SP
-             call export(this%SP(i_SP),un)
-           enddo
+           if (s_SP.gt.0) then
+             do i_SP=1,s_SP
+               call export(this%SP(i_SP),un)
+             enddo
+           else
+             write(un,*) 0
+           endif
          endif
          write(un,*) 'defined  = ';write(un,*) this%defined
        end subroutine
@@ -164,13 +168,12 @@
          integer :: s_SP
          call delete(this)
          read(un,*); read(un,*) this%N
-         if (allocated(this%SP)) then
-           read(un,*) s_SP
-           if (s_SP.gt.0) then
-             do i_SP=1,s_SP
-               call import(this%SP(i_SP),un)
-             enddo
-           endif
+         read(un,*) s_SP
+         if (s_SP.gt.0) then
+           allocate(this%SP(s_SP))
+           do i_SP=1,s_SP
+             call import(this%SP(i_SP),un)
+           enddo
          endif
          read(un,*); read(un,*) this%defined
        end subroutine
@@ -234,7 +237,7 @@
          integer :: i_SP
          integer :: s_SP
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
          if (allocated(this%SP)) then
            s_SP = size(this%SP)
            do i_SP=1,s_SP
@@ -251,16 +254,18 @@
          integer :: i_SP
          integer :: s_SP
          integer :: un
-         write(*,*) 'Exporting procedure_array structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
          if (allocated(this%SP)) then
            s_SP = size(this%SP)
+           write(un,*) s_SP
            do i_SP=1,s_SP
              call export_structured(this%SP(i_SP),&
              dir//'SP_'//int2str(i_SP)//fortran_PS)
            enddo
+         else
+           write(un,*) 0
          endif
        end subroutine
 
@@ -271,11 +276,12 @@
          integer :: i_SP
          integer :: s_SP
          integer :: un
-         write(*,*) 'Importing procedure_array structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         if (allocated(this%SP)) then
+         read(un,*) s_SP
+         if (s_SP.gt.0) then
+           allocate(this%SP(s_SP))
            s_SP = size(this%SP)
            do i_SP=1,s_SP
              call import_structured(this%SP(i_SP),&

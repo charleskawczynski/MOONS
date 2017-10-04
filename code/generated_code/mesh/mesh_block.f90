@@ -163,7 +163,6 @@
          type(mesh_block),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call set_IO_dir(this%m,dir//'m'//fortran_PS)
          call set_IO_dir(this%B,dir//'B'//fortran_PS)
        end subroutine
 
@@ -172,8 +171,7 @@
          type(mesh_block),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir(dir)
-         call make_IO_dir(this%m,dir//'m'//fortran_PS)
+         call make_dir_quiet(dir)
          call make_IO_dir(this%B,dir//'B'//fortran_PS)
        end subroutine
 
@@ -182,11 +180,9 @@
          type(mesh_block),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Exporting mesh_block structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
-         call export_structured(this%m,dir//'m'//fortran_PS)
          call export_structured(this%B,dir//'B'//fortran_PS)
        end subroutine
 
@@ -195,11 +191,9 @@
          type(mesh_block),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Importing mesh_block structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
-         call import_structured(this%m,dir//'m'//fortran_PS)
          call import_structured(this%B,dir//'B'//fortran_PS)
        end subroutine
 

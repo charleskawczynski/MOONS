@@ -117,7 +117,6 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)MOONS$(PS)step_extend.f90\
 	$(SRC_DIR)$(PS)MOONS$(PS)export_now_extend.f90\
 	$(SRC_DIR)$(PS)MOONS$(PS)export_safe_extend.f90\
-	$(SRC_DIR)$(PS)MOONS$(PS)refine_mesh_extend.f90\
 	$(SRC_DIR)$(PS)mesh_domain$(PS)mesh_domain_extend.f90\
 	$(SRC_DIR)$(PS)mesh$(PS)generate_mesh_generic.f90\
 	$(SRC_DIR)$(PS)fields$(PS)SF_extend.f90\

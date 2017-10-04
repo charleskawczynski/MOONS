@@ -50,8 +50,8 @@
        type stop_clock
          type(string) :: dir
          type(string) :: name
-         type(string) :: dir_out
-         type(string) :: name_out
+         type(string) :: dir_tec
+         type(string) :: name_tec
          type(clock) :: c
          type(unit_conversion) :: uc
          real(cp) :: percentage_complete_RB = 0.0_cp
@@ -77,8 +77,8 @@
          call delete(this)
          call init(this%dir,that%dir)
          call init(this%name,that%name)
-         call init(this%dir_out,that%dir_out)
-         call init(this%name_out,that%name_out)
+         call init(this%dir_tec,that%dir_tec)
+         call init(this%name_tec,that%name_tec)
          call init(this%c,that%c)
          call init(this%uc,that%uc)
          this%percentage_complete_RB = that%percentage_complete_RB
@@ -100,8 +100,8 @@
          type(stop_clock),intent(inout) :: this
          call delete(this%dir)
          call delete(this%name)
-         call delete(this%dir_out)
-         call delete(this%name_out)
+         call delete(this%dir_tec)
+         call delete(this%name_tec)
          call delete(this%c)
          call delete(this%uc)
          this%percentage_complete_RB = 0.0_cp
@@ -124,8 +124,8 @@
          integer,intent(in) :: un
          call display(this%dir,un)
          call display(this%name,un)
-         call display(this%dir_out,un)
-         call display(this%name_out,un)
+         call display(this%dir_tec,un)
+         call display(this%name_tec,un)
          call display(this%c,un)
          call display(this%uc,un)
          write(un,*) 'percentage_complete_RB = ',this%percentage_complete_RB
@@ -148,8 +148,8 @@
          integer,intent(in) :: un
          call display(this%dir,un)
          call display(this%name,un)
-         call display(this%dir_out,un)
-         call display(this%name_out,un)
+         call display(this%dir_tec,un)
+         call display(this%name_tec,un)
          call display(this%c,un)
          call display(this%uc,un)
          write(un,*) 'percentage_complete_RB = ',this%percentage_complete_RB
@@ -194,8 +194,8 @@
          integer,intent(in) :: un
          call export(this%dir,un)
          call export(this%name,un)
-         call export(this%dir_out,un)
-         call export(this%name_out,un)
+         call export(this%dir_tec,un)
+         call export(this%name_tec,un)
          call export(this%c,un)
          call export(this%uc,un)
          write(un,*) 'percentage_complete_RB  = ';write(un,*) this%percentage_complete_RB
@@ -219,8 +219,8 @@
          call delete(this)
          call import(this%dir,un)
          call import(this%name,un)
-         call import(this%dir_out,un)
-         call import(this%name_out,un)
+         call import(this%dir_tec,un)
+         call import(this%name_tec,un)
          call import(this%c,un)
          call import(this%uc,un)
          read(un,*); read(un,*) this%percentage_complete_RB
@@ -320,6 +320,12 @@
          un = new_and_open(str(this%dir),'primitives')
          call export_primitives(this,un)
          close(un)
+         call export_structured(this%dir,str(this%dir)//'dir'//fortran_PS)
+         call export_structured(this%name,str(this%dir)//'name'//fortran_PS)
+         call export_structured(this%dir_tec,&
+         str(this%dir)//'dir_tec'//fortran_PS)
+         call export_structured(this%name_tec,&
+         str(this%dir)//'name_tec'//fortran_PS)
          call export_structured(this%c,str(this%dir)//'c'//fortran_PS)
          call export_structured(this%uc,str(this%dir)//'uc'//fortran_PS)
        end subroutine
@@ -331,6 +337,12 @@
          un = open_to_read(str(this%dir),'primitives')
          call import_primitives(this,un)
          close(un)
+         call import_structured(this%dir,str(this%dir)//'dir'//fortran_PS)
+         call import_structured(this%name,str(this%dir)//'name'//fortran_PS)
+         call import_structured(this%dir_tec,&
+         str(this%dir)//'dir_tec'//fortran_PS)
+         call import_structured(this%name_tec,&
+         str(this%dir)//'name_tec'//fortran_PS)
          call import_structured(this%c,str(this%dir)//'c'//fortran_PS)
          call import_structured(this%uc,str(this%dir)//'uc'//fortran_PS)
        end subroutine
@@ -342,6 +354,10 @@
          call suppress_warnings(this)
          call init(this%dir,dir)
          call init(this%name,'primitives')
+         call set_IO_dir(this%dir,dir//'dir'//fortran_PS)
+         call set_IO_dir(this%name,dir//'name'//fortran_PS)
+         call set_IO_dir(this%dir_tec,dir//'dir_tec'//fortran_PS)
+         call set_IO_dir(this%name_tec,dir//'name_tec'//fortran_PS)
          call set_IO_dir(this%c,dir//'c'//fortran_PS)
          call set_IO_dir(this%uc,dir//'uc'//fortran_PS)
        end subroutine
@@ -351,9 +367,13 @@
          type(stop_clock),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
          call init(this%dir,dir)
          call init(this%name,'primitives')
+         call make_IO_dir(this%dir,dir//'dir'//fortran_PS)
+         call make_IO_dir(this%name,dir//'name'//fortran_PS)
+         call make_IO_dir(this%dir_tec,dir//'dir_tec'//fortran_PS)
+         call make_IO_dir(this%name_tec,dir//'name_tec'//fortran_PS)
          call make_IO_dir(this%c,dir//'c'//fortran_PS)
          call make_IO_dir(this%uc,dir//'uc'//fortran_PS)
        end subroutine
@@ -363,10 +383,13 @@
          type(stop_clock),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Exporting stop_clock structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
+         call export_structured(this%dir,dir//'dir'//fortran_PS)
+         call export_structured(this%name,dir//'name'//fortran_PS)
+         call export_structured(this%dir_tec,dir//'dir_tec'//fortran_PS)
+         call export_structured(this%name_tec,dir//'name_tec'//fortran_PS)
          call export_structured(this%c,dir//'c'//fortran_PS)
          call export_structured(this%uc,dir//'uc'//fortran_PS)
        end subroutine
@@ -376,10 +399,13 @@
          type(stop_clock),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Importing stop_clock structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
+         call import_structured(this%dir,dir//'dir'//fortran_PS)
+         call import_structured(this%name,dir//'name'//fortran_PS)
+         call import_structured(this%dir_tec,dir//'dir_tec'//fortran_PS)
+         call import_structured(this%name_tec,dir//'name_tec'//fortran_PS)
          call import_structured(this%c,dir//'c'//fortran_PS)
          call import_structured(this%uc,dir//'uc'//fortran_PS)
        end subroutine

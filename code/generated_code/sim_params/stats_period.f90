@@ -242,7 +242,7 @@
          type(stats_period),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         call make_dir(dir)
+         call make_dir_quiet(dir)
        end subroutine
 
        subroutine export_structured_D_stats_period(this,dir)
@@ -250,7 +250,6 @@
          type(stats_period),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Exporting stats_period structured'
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          close(un)
@@ -261,7 +260,6 @@
          type(stats_period),intent(inout) :: this
          character(len=*),intent(in) :: dir
          integer :: un
-         write(*,*) 'Importing stats_period structured'
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          close(un)
