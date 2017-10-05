@@ -224,6 +224,7 @@
          integer :: s_f
          integer :: s_fb
          integer :: s_vol
+         call export_primitives(this,un)
          call export(this%g,un)
          if (allocated(this%f)) then
            s_f = size(this%f)
@@ -258,7 +259,6 @@
              write(un,*) 0
            endif
          endif
-         write(un,*) 'apply_BC_order  = ';write(un,*) this%apply_BC_order
        end subroutine
 
        subroutine import_block(this,un)
@@ -272,6 +272,7 @@
          integer :: s_fb
          integer :: s_vol
          call delete(this)
+         call import_primitives(this,un)
          call import(this%g,un)
          read(un,*) s_f
          if (s_f.gt.0) then
@@ -294,7 +295,6 @@
              call import(this%vol(i_vol),un)
            enddo
          endif
-         read(un,*); read(un,*) this%apply_BC_order
        end subroutine
 
        subroutine export_primitives_block(this,un)

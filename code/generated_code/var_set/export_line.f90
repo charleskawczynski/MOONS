@@ -115,10 +115,7 @@
          implicit none
          type(export_line),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'export_ever  = ';write(un,*) this%export_ever
-         write(un,*) 'dir          = ';write(un,*) this%dir
-         write(un,*) 'line         = ';write(un,*) this%line
-         write(un,*) 'suffix       = ';write(un,*) this%suffix
+         call export_primitives(this,un)
        end subroutine
 
        subroutine import_export_line(this,un)
@@ -126,10 +123,7 @@
          type(export_line),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%export_ever
-         read(un,*); read(un,*) this%dir
-         read(un,*); read(un,*) this%line
-         read(un,*); read(un,*) this%suffix
+         call import_primitives(this,un)
        end subroutine
 
        subroutine export_primitives_export_line(this,un)

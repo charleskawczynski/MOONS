@@ -25,6 +25,7 @@
        interface import;   module procedure import_probe_wrapper_dim; end interface
 
        interface export;   module procedure export_probe_data;        end interface
+
        interface get_data; module procedure get_data_probe;           end interface
 
        contains
@@ -113,22 +114,21 @@
          endif
        end subroutine
 
-       subroutine export_probe_data(p,TMP,d)
+       subroutine update_probe_data(p,TMP,d)
          implicit none
          type(probe),intent(inout) :: p
          type(time_marching_params),intent(in) :: TMP
          real(cp),intent(in) :: d
-         real(cp) :: abs_d_data_dt,abs_d_data_dt_by_dmax
          ! Breaks if double exported data (TMP%t = p%t)
          p%d_data_dt = (d - p%d)/(TMP%t - p%t)
          if (TMP%n_step.eq.0) p%d_data_dt = 0.0_cp
          if (p%t.lt.10.0_cp**(-10.0_cp)) p%d_data_dt = 0.0_cp
-         abs_d_data_dt = abs(p%d_data_dt)
+         p%abs_d_data_dt = abs(p%d_data_dt)
          p%t = TMP%t
          p%d = d
          p%d_amax = maxval((/p%d_amax,p%d,abs(d)/))
-         abs_d_data_dt_by_dmax = abs_d_data_dt/p%d_amax
-         if (p%d_amax.lt.10.0_cp**(-10.0_cp)) abs_d_data_dt_by_dmax = abs_d_data_dt
+         p%abs_d_data_dt_by_dmax = p%abs_d_data_dt/p%d_amax
+         if (p%d_amax.lt.10.0_cp**(-10.0_cp)) p%abs_d_data_dt_by_dmax = p%abs_d_data_dt
          if (p%n_step.eq.TMP%n_step.and.(TMP%n_step.gt.0)) then
           write(*,*) 'Error: cannot export probe '//str(p%tec_name)//' consecutively.'
           write(*,*) 'TMP%n_step = ',TMP%n_step
@@ -136,9 +136,17 @@
           stop 'Done'
          endif
          p%n_step = TMP%n_step
+       end subroutine
+
+       subroutine export_probe_data(p,TMP,d)
+         implicit none
+         type(probe),intent(inout) :: p
+         type(time_marching_params),intent(in) :: TMP
+         real(cp),intent(in) :: d
+         call update_probe_data(p,TMP,d)
          call check_nans_probe(p)
          if (.not.p%simple) then
-         write(p%un,*) p%t,p%d,p%d_data_dt,abs_d_data_dt,abs_d_data_dt_by_dmax,p%d_amax
+         write(p%un,*) p%t,p%d,p%d_data_dt,p%abs_d_data_dt,p%abs_d_data_dt_by_dmax,p%d_amax
          else; write(p%un,*) p%t,p%d
          endif
          flush(p%un)

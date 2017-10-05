@@ -120,11 +120,7 @@
          implicit none
          type(solver_settings),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'solve_method    = ';write(un,*) this%solve_method
-         write(un,*) 'initialize      = ';write(un,*) this%initialize
-         write(un,*) 'solve           = ';write(un,*) this%solve
-         write(un,*) 'restart         = ';write(un,*) this%restart
-         write(un,*) 'prescribed_BCs  = ';write(un,*) this%prescribed_BCs
+         call export_primitives(this,un)
        end subroutine
 
        subroutine import_solver_settings(this,un)
@@ -132,11 +128,7 @@
          type(solver_settings),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%solve_method
-         read(un,*); read(un,*) this%initialize
-         read(un,*); read(un,*) this%solve
-         read(un,*); read(un,*) this%restart
-         read(un,*); read(un,*) this%prescribed_BCs
+         call import_primitives(this,un)
        end subroutine
 
        subroutine export_primitives_solver_settings(this,un)

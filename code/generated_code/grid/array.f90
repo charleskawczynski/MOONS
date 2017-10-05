@@ -109,31 +109,15 @@
          implicit none
          type(array),intent(in) :: this
          integer,intent(in) :: un
-         integer :: s_f
-         if (allocated(this%f)) then
-           s_f = size(this%f)
-           write(un,*) s_f
-           if (s_f.gt.0) then
-             write(un,*) 'f  = ';write(un,*) this%f
-           endif
-         else
-           write(un,*) 0
-         endif
-         write(un,*) 'N  = ';write(un,*) this%N
+         call export_primitives(this,un)
        end subroutine
 
        subroutine import_array(this,un)
          implicit none
          type(array),intent(inout) :: this
          integer,intent(in) :: un
-         integer :: s_f
          call delete(this)
-         read(un,*) s_f
-         if (s_f.gt.0) then
-           allocate(this%f(s_f))
-           read(un,*); read(un,*) this%f
-         endif
-         read(un,*); read(un,*) this%N
+         call import_primitives(this,un)
        end subroutine
 
        subroutine export_primitives_array(this,un)

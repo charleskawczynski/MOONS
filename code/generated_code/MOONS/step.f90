@@ -105,8 +105,7 @@
          implicit none
          type(step),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'this  = ';write(un,*) this%this
-         write(un,*) 'next  = ';write(un,*) this%next
+         call export_primitives(this,un)
        end subroutine
 
        subroutine import_step(this,un)
@@ -114,8 +113,7 @@
          type(step),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%this
-         read(un,*); read(un,*) this%next
+         call import_primitives(this,un)
        end subroutine
 
        subroutine export_primitives_step(this,un)

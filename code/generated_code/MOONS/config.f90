@@ -239,6 +239,10 @@
          implicit none
          type(config),intent(in) :: this
          integer :: un
+         integer :: un_indicate
+         un_indicate = new_and_open(str(this%dir),&
+         'delete_primitives_to_bypass_restart')
+         close(un_indicate)
          un = new_and_open(str(this%dir),'primitives')
          call export_primitives(this,un)
          call export_structured(this%DT,str(this%dir)//'DT'//fortran_PS)
@@ -315,6 +319,10 @@
          type(config),intent(in) :: this
          character(len=*),intent(in) :: dir
          integer :: un
+         integer :: un_indicate
+         un_indicate = new_and_open(dir,&
+         'delete_primitives_to_bypass_restart')
+         close(un_indicate)
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          call export_structured(this%DT,dir//'DT'//fortran_PS)

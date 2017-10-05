@@ -143,15 +143,7 @@
          implicit none
          type(clock),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 't_elapsed                = ';write(un,*) this%t_elapsed
-         write(un,*) 't_elapsed_computational  = ';write(un,*) this%t_elapsed_computational
-         write(un,*) 't_start_computational    = ';write(un,*) this%t_start_computational
-         write(un,*) 't_stop_computational     = ';write(un,*) this%t_stop_computational
-         write(un,*) 't_start                  = ';write(un,*) this%t_start
-         write(un,*) 't_stop                   = ';write(un,*) this%t_stop
-         write(un,*) 'i_start                  = ';write(un,*) this%i_start
-         write(un,*) 'i_stop                   = ';write(un,*) this%i_stop
-         write(un,*) 'count_rate               = ';write(un,*) this%count_rate
+         call export_primitives(this,un)
        end subroutine
 
        subroutine import_clock(this,un)
@@ -159,15 +151,7 @@
          type(clock),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%t_elapsed
-         read(un,*); read(un,*) this%t_elapsed_computational
-         read(un,*); read(un,*) this%t_start_computational
-         read(un,*); read(un,*) this%t_stop_computational
-         read(un,*); read(un,*) this%t_start
-         read(un,*); read(un,*) this%t_stop
-         read(un,*); read(un,*) this%i_start
-         read(un,*); read(un,*) this%i_stop
-         read(un,*); read(un,*) this%count_rate
+         call import_primitives(this,un)
        end subroutine
 
        subroutine export_primitives_clock(this,un)

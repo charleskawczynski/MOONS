@@ -115,10 +115,7 @@
          implicit none
          type(overlap),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'i1       = ';write(un,*) this%i1
-         write(un,*) 'i2       = ';write(un,*) this%i2
-         write(un,*) 'iR       = ';write(un,*) this%iR
-         write(un,*) 'success  = ';write(un,*) this%success
+         call export_primitives(this,un)
        end subroutine
 
        subroutine import_overlap(this,un)
@@ -126,10 +123,7 @@
          type(overlap),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%i1
-         read(un,*); read(un,*) this%i2
-         read(un,*); read(un,*) this%iR
-         read(un,*); read(un,*) this%success
+         call import_primitives(this,un)
        end subroutine
 
        subroutine export_primitives_overlap(this,un)

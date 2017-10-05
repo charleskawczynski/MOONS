@@ -30,6 +30,7 @@
      public :: init
 
      real(cp),parameter :: seconds_per_day = 60.0_cp*60.0_cp*24.0_cp
+     real(cp),parameter :: minutes = 60.0_cp
 
      interface init;         module procedure init_SP;            end interface
      interface define_mesh;  module procedure define_mesh_SP;     end interface
@@ -81,7 +82,7 @@
        SP%FCL%export_heavy                       = T
        SP%FCL%export_final_tec                   = T
        SP%FCL%export_final_restart               = T
-       SP%FCL%print_every_MHD_step               = F
+       SP%FCL%print_every_MHD_step               = T
        SP%FCL%print_mesh_before_solve            = F
        SP%FCL%compute_surface_power              = T
 
@@ -96,7 +97,7 @@
        SP%EL%export_mesh_block       = F
        SP%EL%export_soln_only        = F
 
-       SP%SCP%export_safe_period         = 1.0_cp*seconds_per_day
+       SP%SCP%export_safe_period         = 1.0_cp*minutes
        SP%SCP%uniform_gravity_dir        = 1
        SP%SCP%uniform_B0_dir             = 3
        SP%SCP%mpg_dir                    = 1

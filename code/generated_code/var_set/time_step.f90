@@ -120,8 +120,7 @@
          implicit none
          type(time_step),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'dt       = ';write(un,*) this%dt
-         write(un,*) 't_final  = ';write(un,*) this%t_final
+         call export_primitives(this,un)
          call export(this%dir,un)
          call export(this%name,un)
        end subroutine
@@ -131,8 +130,7 @@
          type(time_step),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%dt
-         read(un,*); read(un,*) this%t_final
+         call import_primitives(this,un)
          call import(this%dir,un)
          call import(this%name,un)
        end subroutine

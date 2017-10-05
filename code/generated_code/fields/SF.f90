@@ -169,7 +169,7 @@
          integer,intent(in) :: un
          integer :: i_BF
          integer :: s_BF
-         write(un,*) 's            = ';write(un,*) this%s
+         call export_primitives(this,un)
          if (allocated(this%BF)) then
            s_BF = size(this%BF)
            write(un,*) s_BF
@@ -181,10 +181,6 @@
              write(un,*) 0
            endif
          endif
-         write(un,*) 'all_neumann  = ';write(un,*) this%all_neumann
-         write(un,*) 'numEl        = ';write(un,*) this%numEl
-         write(un,*) 'numPhysEl    = ';write(un,*) this%numPhysEl
-         write(un,*) 'vol          = ';write(un,*) this%vol
          call export(this%DL,un)
        end subroutine
 
@@ -195,7 +191,7 @@
          integer :: i_BF
          integer :: s_BF
          call delete(this)
-         read(un,*); read(un,*) this%s
+         call import_primitives(this,un)
          read(un,*) s_BF
          if (s_BF.gt.0) then
            allocate(this%BF(s_BF))
@@ -203,10 +199,6 @@
              call import(this%BF(i_BF),un)
            enddo
          endif
-         read(un,*); read(un,*) this%all_neumann
-         read(un,*); read(un,*) this%numEl
-         read(un,*); read(un,*) this%numPhysEl
-         read(un,*); read(un,*) this%vol
          call import(this%DL,un)
        end subroutine
 

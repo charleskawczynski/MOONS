@@ -506,18 +506,18 @@
         inquire(unit=un,opened=op)
       end function
 
-      subroutine make_dir(d)
-        implicit none
-        character(len=*),intent(in) :: d
-        logical :: ex
-        inquire (file=d, EXIST=ex)
-        if (.not.ex) then
-          call system('mkdir ' // d )
-          write(*,*) 'Directory ' // d // ' created.'
-        else
-          write(*,*) 'Directory ' // d // ' already exists.'
-        endif
-      end subroutine
+      ! subroutine make_dir(d)
+      !   implicit none
+      !   character(len=*),intent(in) :: d
+      !   logical :: ex
+      !   inquire (file=d, EXIST=ex)
+      !   if (.not.ex) then
+      !     call system('mkdir ' // d )
+      !     write(*,*) 'Directory ' // d // ' created.'
+      !   else
+      !     write(*,*) 'Directory ' // d // ' already exists.'
+      !   endif
+      ! end subroutine
 
       subroutine make_dir_quiet(d)
         implicit none

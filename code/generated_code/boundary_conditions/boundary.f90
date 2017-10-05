@@ -151,8 +151,8 @@
          integer,intent(in) :: un
          integer :: i_SB
          integer :: s_SB
+         call export_primitives(this,un)
          call export(this%BCL,un)
-         write(un,*) 'n     = ';write(un,*) this%n
          if (allocated(this%SB)) then
            s_SB = size(this%SB)
            write(un,*) s_SB
@@ -174,8 +174,8 @@
          integer :: i_SB
          integer :: s_SB
          call delete(this)
+         call import_primitives(this,un)
          call import(this%BCL,un)
-         read(un,*); read(un,*) this%n
          read(un,*) s_SB
          if (s_SB.gt.0) then
            allocate(this%SB(s_SB))

@@ -170,21 +170,7 @@
          implicit none
          type(BC_logicals),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'defined            = ';write(un,*) this%defined
-         write(un,*) 'GFs_defined        = ';write(un,*) this%GFs_defined
-         write(un,*) 'BCT_defined        = ';write(un,*) this%BCT_defined
-         write(un,*) 'vals_defined       = ';write(un,*) this%vals_defined
-         write(un,*) 'all_Dirichlet      = ';write(un,*) this%all_Dirichlet
-         write(un,*) 'all_Neumann        = ';write(un,*) this%all_Neumann
-         write(un,*) 'all_Robin          = ';write(un,*) this%all_Robin
-         write(un,*) 'all_symmetric      = ';write(un,*) this%all_symmetric
-         write(un,*) 'all_antisymmetric  = ';write(un,*) this%all_antisymmetric
-         write(un,*) 'any_Dirichlet      = ';write(un,*) this%any_Dirichlet
-         write(un,*) 'any_Neumann        = ';write(un,*) this%any_Neumann
-         write(un,*) 'any_Robin          = ';write(un,*) this%any_Robin
-         write(un,*) 'any_symmetric      = ';write(un,*) this%any_symmetric
-         write(un,*) 'any_antisymmetric  = ';write(un,*) this%any_antisymmetric
-         write(un,*) 'any_prescribed     = ';write(un,*) this%any_prescribed
+         call export_primitives(this,un)
        end subroutine
 
        subroutine import_BC_logicals(this,un)
@@ -192,21 +178,7 @@
          type(BC_logicals),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%defined
-         read(un,*); read(un,*) this%GFs_defined
-         read(un,*); read(un,*) this%BCT_defined
-         read(un,*); read(un,*) this%vals_defined
-         read(un,*); read(un,*) this%all_Dirichlet
-         read(un,*); read(un,*) this%all_Neumann
-         read(un,*); read(un,*) this%all_Robin
-         read(un,*); read(un,*) this%all_symmetric
-         read(un,*); read(un,*) this%all_antisymmetric
-         read(un,*); read(un,*) this%any_Dirichlet
-         read(un,*); read(un,*) this%any_Neumann
-         read(un,*); read(un,*) this%any_Robin
-         read(un,*); read(un,*) this%any_symmetric
-         read(un,*); read(un,*) this%any_antisymmetric
-         read(un,*); read(un,*) this%any_prescribed
+         call import_primitives(this,un)
        end subroutine
 
        subroutine export_primitives_BC_logicals(this,un)

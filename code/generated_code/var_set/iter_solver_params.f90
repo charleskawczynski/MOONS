@@ -150,16 +150,10 @@
          implicit none
          type(iter_solver_params),intent(in) :: this
          integer,intent(in) :: un
+         call export_primitives(this,un)
          call export(this%EC,un)
-         write(un,*) 'exit_loop           = ';write(un,*) this%exit_loop
-         write(un,*) 'un                  = ';write(un,*) this%un
          call export(this%dir,un)
          call export(this%name,un)
-         write(un,*) 'iter_total          = ';write(un,*) this%iter_total
-         write(un,*) 'iter_per_call       = ';write(un,*) this%iter_per_call
-         write(un,*) 'n_skip_check_res    = ';write(un,*) this%n_skip_check_res
-         write(un,*) 'export_convergence  = ';write(un,*) this%export_convergence
-         write(un,*) 'export_heavy        = ';write(un,*) this%export_heavy
        end subroutine
 
        subroutine import_iter_solver_params(this,un)
@@ -167,16 +161,10 @@
          type(iter_solver_params),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
+         call import_primitives(this,un)
          call import(this%EC,un)
-         read(un,*); read(un,*) this%exit_loop
-         read(un,*); read(un,*) this%un
          call import(this%dir,un)
          call import(this%name,un)
-         read(un,*); read(un,*) this%iter_total
-         read(un,*); read(un,*) this%iter_per_call
-         read(un,*); read(un,*) this%n_skip_check_res
-         read(un,*); read(un,*) this%export_convergence
-         read(un,*); read(un,*) this%export_heavy
        end subroutine
 
        subroutine export_primitives_iter_solver_params(this,un)

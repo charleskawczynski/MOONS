@@ -106,8 +106,7 @@
          implicit none
          type(equation_term),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'add    = ';write(un,*) this%add
-         write(un,*) 'scale  = ';write(un,*) this%scale
+         call export_primitives(this,un)
        end subroutine
 
        subroutine import_equation_term(this,un)
@@ -115,8 +114,7 @@
          type(equation_term),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%add
-         read(un,*); read(un,*) this%scale
+         call import_primitives(this,un)
        end subroutine
 
        subroutine export_primitives_equation_term(this,un)

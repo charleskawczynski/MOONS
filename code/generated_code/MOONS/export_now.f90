@@ -150,14 +150,12 @@
          implicit none
          type(export_now),intent(in) :: this
          integer,intent(in) :: un
+         call export_primitives(this,un)
          call export(this%U,un)
          call export(this%B,un)
          call export(this%T,un)
          call export(this%rho,un)
          call export(this%all,un)
-         write(un,*) 'any_next  = ';write(un,*) this%any_next
-         write(un,*) 'any_now   = ';write(un,*) this%any_now
-         write(un,*) 'un        = ';write(un,*) this%un
          call export(this%dir,un)
          call export(this%name,un)
        end subroutine
@@ -167,14 +165,12 @@
          type(export_now),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
+         call import_primitives(this,un)
          call import(this%U,un)
          call import(this%B,un)
          call import(this%T,un)
          call import(this%rho,un)
          call import(this%all,un)
-         read(un,*); read(un,*) this%any_next
-         read(un,*); read(un,*) this%any_now
-         read(un,*); read(un,*) this%un
          call import(this%dir,un)
          call import(this%name,un)
        end subroutine

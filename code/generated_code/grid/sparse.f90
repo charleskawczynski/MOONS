@@ -116,10 +116,10 @@
          implicit none
          type(sparse),intent(in) :: this
          integer,intent(in) :: un
+         call export_primitives(this,un)
          call export(this%L,un)
          call export(this%D,un)
          call export(this%U,un)
-         write(un,*) 'staggered  = ';write(un,*) this%staggered
        end subroutine
 
        subroutine import_sparse(this,un)
@@ -127,10 +127,10 @@
          type(sparse),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
+         call import_primitives(this,un)
          call import(this%L,un)
          call import(this%D,un)
          call import(this%U,un)
-         read(un,*); read(un,*) this%staggered
        end subroutine
 
        subroutine export_primitives_sparse(this,un)

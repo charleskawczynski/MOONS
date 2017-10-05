@@ -9,18 +9,24 @@ suppress_all_warnings = True
 make_dir_quiet = True
 IO_structured_quiet = True
 
+
 # skip_structured_IO_child_class = ['SF','VF','TF']
 make_dir_also_sets_dir = True
 
 use_structured_condition = True
 
 skip_structured_IO_child_class = ['mesh','SF','VF','TF']
-
 skip_structured_IO_child_name = ['absolute']
+
+use_restart_file_indicator = True
+parent_restart_file_indicator = ['config','governing_equations']
 
 use_necessary_for_restart = True
 parent_necessary_for_restart = ['block_field']
 child_necessary_for_restart = ['grid_field']
+parent_get_necessary_for_restart_primitive = ['block_field']
+parent_get_necessary_for_restart_collective = ['SF']
+child_get_necessary_for_restart = ['SF']
 
 use_procedures = True
 parent_to_reset_procedures = ['SF']
@@ -73,6 +79,7 @@ class fortran_module:
         self.only_primitives_or_strings = False
         self.primitives_strings_or_procedures = False
         self.no_primitives = False
+        self.any_primitives = False
         self.any_primitive_allocatables = False
         self.spaces = ['' for x in range(50)]
         for i in range(len(self.spaces)):
@@ -105,6 +112,7 @@ class fortran_module:
         primitive_allocatables = [self.prop[k].allocatable and self.prop[k].object_type=='primitive' for k in self.prop]
         any_non_primitive_high_dimension = [self.prop[k].dimension>1 and not self.prop[k].object_type=='primitive' for k in self.prop]
         no_primitives = [not self.prop[k].object_type=='primitive' for k in self.prop]
+        any_primitives = [self.prop[k].object_type=='primitive' for k in self.prop]
         only_primitives = [self.prop[k].object_type=='primitive' for k in self.prop]
         only_primitives_or_strings = [self.prop[k].object_type=='primitive' or (self.prop[k].object_type=='object' and self.prop[k].class_=='string') for k in self.prop]
         primitives_strings_or_procedures = [self.prop[k].object_type=='primitive' or (self.prop[k].object_type=='object' and self.prop[k].class_=='string') or self.prop[k].object_type=='procedure' for k in self.prop]
@@ -114,6 +122,7 @@ class fortran_module:
         self.any_primitive_allocatables = any(primitive_allocatables)
         self.any_non_primitive_high_dimension = any(any_non_primitive_high_dimension)
         self.no_primitives = all(no_primitives)
+        self.any_primitives = any(any_primitives)
         self.only_primitives = all(only_primitives)
         self.only_primitives_or_strings = all(only_primitives_or_strings)
         self.primitives_strings_or_procedures = all(primitives_strings_or_procedures)
@@ -421,6 +430,8 @@ class fortran_module:
         return c
 
     def export_module_un(self,primitives_only):
+        non_primitives_only = not primitives_only
+
         if primitives_only:
             sig = 'export_primitives_' + self.get_suffix()
         else:
@@ -429,11 +440,14 @@ class fortran_module:
         c=c+[self.implicitNone]
         c=c+['type(' + self.name + '),intent(in) :: this' ]
         c=c+['integer,intent(in) :: un' ]
-        if not primitives_only:
+        if non_primitives_only:
             for key in self.arg_objects:
                 L = self.arg_objects[key].get_list_of_local_iterators()
                 if L: c=c+[L]
-        if any([not primitives_only,primitives_only and self.any_primitive_allocatables]):
+        # if any([non_primitives_only,primitives_only and self.any_primitive_allocatables]):
+        if any([non_primitives_only and self.any_non_primitive_allocatables,
+                non_primitives_only and self.any_non_primitive_high_dimension,
+                primitives_only and self.any_primitive_allocatables]):
             for key in self.arg_objects:
                 L = self.arg_objects[key].get_list_of_local_shape()
                 if L: c=c+[L]
@@ -444,12 +458,16 @@ class fortran_module:
                 c=c+['un_suppress_warning = un' ]
                 c=c+['call suppress_warnings(this)' ]
 
+        if non_primitives_only and self.any_primitives:
+          c=c+['call export_primitives(this,un)']
+
         for key in self.prop:
-            c=c+[[x for x in self.prop[key].write_export(primitives_only)]]
+            c=c+[[x for x in self.prop[key].write_export(primitives_only,non_primitives_only)]]
         c=c+[self.end_sub()]
         return c
 
     def import_module_un(self,primitives_only):
+        non_primitives_only = not primitives_only
         if primitives_only:
             sig = 'import_primitives_' + self.get_suffix()
         else:
@@ -458,11 +476,13 @@ class fortran_module:
         c=c+[self.implicitNone]
         c=c+['type(' + self.name + '),intent(inout) :: this' ]
         c=c+['integer,intent(in) :: un' ]
-        if not primitives_only:
+        if non_primitives_only:
             for key in self.arg_objects:
                 L = self.arg_objects[key].get_list_of_local_iterators()
                 if L: c=c+[L]
-        if any([not primitives_only,primitives_only and self.any_primitive_allocatables]):
+        if any([non_primitives_only and self.any_non_primitive_allocatables,
+                non_primitives_only and self.any_non_primitive_high_dimension,
+                primitives_only and self.any_primitive_allocatables]):
             for key in self.arg_objects:
                 L = self.arg_objects[key].get_list_of_local_shape()
                 if L: c=c+[L]
@@ -472,10 +492,14 @@ class fortran_module:
                 c=c+['un_suppress_warning = un' ]
                 c=c+['call suppress_warnings(this)' ]
 
-        if not primitives_only:
+        if non_primitives_only:
             c=c+['call delete(this)' ]
+
+        if non_primitives_only and self.any_primitives:
+          c=c+['call import_primitives(this,un)']
+
         for key in self.prop:
-            c=c+[[x for x in self.prop[key].write_import(primitives_only)]]
+            c=c+[[x for x in self.prop[key].write_import(primitives_only,non_primitives_only)]]
         c=c+[self.end_sub()]
         return c
 
@@ -605,8 +629,15 @@ class fortran_module:
             L = self.arg_objects[key].get_list_of_local_shape()
             if L: c=c+L
         c=c+["integer :: un"]
+
+        if any([self.name==x for x in parent_restart_file_indicator]) and use_restart_file_indicator:
+          c=c+["integer :: un_indicate"]
+          c=c+["un_indicate = new_and_open(dir,'delete_primitives_to_bypass_restart')"]
+          c=c+["close(un_indicate)"]
+
         if not IO_structured_quiet:
           c=c+["write(*,*) 'Exporting "+ self.name +" structured'"]
+
         c=c+["un = new_and_open(dir,'primitives')"]
         c=c+["call export_primitives(this,un)"]
         for key in self.prop:
@@ -638,6 +669,12 @@ class fortran_module:
             L = self.arg_objects[key].get_list_of_local_shape()
             if L: c=c+[L]
         c=c+["integer :: un" ]
+
+        if any([self.name==x for x in parent_restart_file_indicator]) and use_restart_file_indicator:
+          c=c+["integer :: un_indicate"]
+          c=c+["un_indicate = new_and_open(str(this%dir),'delete_primitives_to_bypass_restart')"]
+          c=c+["close(un_indicate)"]
+
         c=c+["un = new_and_open(str(this%dir),'primitives')" ]
         c=c+["call export_primitives(this,un)" ]
         for key in self.prop:
@@ -709,6 +746,31 @@ class fortran_module:
             c=c+[[x for x in self.prop[key].write_import_structured('str(this%dir)')]]
         c=c+['close(un)']
         c=c+[self.end_sub()]
+        return c
+
+    def get_necessary_for_restart_block_module(self):
+        if self.name=='block_field':
+          sig = 'get_necessary_for_restart_' + self.get_suffix()
+          c = [self.full_func_signature(sig,'this')]
+          c=c+[self.implicitNone]
+          c=c+['type(' + self.name + '),intent(in) :: this' ]
+          c=c+['logical :: L' ]
+          c=c+['L = this%necessary_for_restart' ]
+          c=c+[self.end_function()]
+        return c
+
+    def get_necessary_for_restart_SF_module(self):
+        if self.name=='SF':
+          sig = 'get_necessary_for_restart_' + self.get_suffix()
+          c = [self.full_func_signature(sig,'this')]
+          c=c+[self.implicitNone]
+          c=c+['type(' + self.name + '),intent(in) :: this' ]
+          c=c+['logical :: L' ]
+          for key in self.arg_objects:
+            L = self.arg_objects[key].get_list_of_local_iterators()
+            if L: c=c+[L]
+          c=c+['L = this%necessary_for_restart' ]
+          c=c+[self.end_function()]
         return c
 
     def set_IO_dir_module(self):

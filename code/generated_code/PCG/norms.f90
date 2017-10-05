@@ -111,9 +111,7 @@
          implicit none
          type(norms),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'L1    = ';write(un,*) this%L1
-         write(un,*) 'L2    = ';write(un,*) this%L2
-         write(un,*) 'Linf  = ';write(un,*) this%Linf
+         call export_primitives(this,un)
        end subroutine
 
        subroutine import_norms(this,un)
@@ -121,9 +119,7 @@
          type(norms),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%L1
-         read(un,*); read(un,*) this%L2
-         read(un,*); read(un,*) this%Linf
+         call import_primitives(this,un)
        end subroutine
 
        subroutine export_primitives_norms(this,un)

@@ -150,17 +150,7 @@
          implicit none
          type(export_logicals),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'export_analytic     = ';write(un,*) this%export_analytic
-         write(un,*) 'export_meshes       = ';write(un,*) this%export_meshes
-         write(un,*) 'export_vort_SF      = ';write(un,*) this%export_vort_SF
-         write(un,*) 'export_mat_props    = ';write(un,*) this%export_mat_props
-         write(un,*) 'export_cell_volume  = ';write(un,*) this%export_cell_volume
-         write(un,*) 'export_ICs          = ';write(un,*) this%export_ICs
-         write(un,*) 'export_planar       = ';write(un,*) this%export_planar
-         write(un,*) 'export_symmetric    = ';write(un,*) this%export_symmetric
-         write(un,*) 'export_mesh_block   = ';write(un,*) this%export_mesh_block
-         write(un,*) 'export_soln_only    = ';write(un,*) this%export_soln_only
-         write(un,*) 'defined             = ';write(un,*) this%defined
+         call export_primitives(this,un)
        end subroutine
 
        subroutine import_export_logicals(this,un)
@@ -168,17 +158,7 @@
          type(export_logicals),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%export_analytic
-         read(un,*); read(un,*) this%export_meshes
-         read(un,*); read(un,*) this%export_vort_SF
-         read(un,*); read(un,*) this%export_mat_props
-         read(un,*); read(un,*) this%export_cell_volume
-         read(un,*); read(un,*) this%export_ICs
-         read(un,*); read(un,*) this%export_planar
-         read(un,*); read(un,*) this%export_symmetric
-         read(un,*); read(un,*) this%export_mesh_block
-         read(un,*); read(un,*) this%export_soln_only
-         read(un,*); read(un,*) this%defined
+         call import_primitives(this,un)
        end subroutine
 
        subroutine export_primitives_export_logicals(this,un)

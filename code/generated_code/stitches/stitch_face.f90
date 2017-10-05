@@ -115,10 +115,7 @@
          implicit none
          type(stitch_face),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'hmin     = ';write(un,*) this%hmin
-         write(un,*) 'hmax     = ';write(un,*) this%hmax
-         write(un,*) 'hmin_id  = ';write(un,*) this%hmin_id
-         write(un,*) 'hmax_id  = ';write(un,*) this%hmax_id
+         call export_primitives(this,un)
        end subroutine
 
        subroutine import_stitch_face(this,un)
@@ -126,10 +123,7 @@
          type(stitch_face),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%hmin
-         read(un,*); read(un,*) this%hmax
-         read(un,*); read(un,*) this%hmin_id
-         read(un,*); read(un,*) this%hmax_id
+         call import_primitives(this,un)
        end subroutine
 
        subroutine export_primitives_stitch_face(this,un)

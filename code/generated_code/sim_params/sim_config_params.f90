@@ -136,14 +136,7 @@
          implicit none
          type(sim_config_params),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'export_safe_period   = ';write(un,*) this%export_safe_period
-         write(un,*) 'embed_b_interior     = ';write(un,*) this%embed_b_interior
-         write(un,*) 'couple_time_steps    = ';write(un,*) this%couple_time_steps
-         write(un,*) 'finite_rem           = ';write(un,*) this%finite_rem
-         write(un,*) 'include_vacuum       = ';write(un,*) this%include_vacuum
-         write(un,*) 'mpg_dir              = ';write(un,*) this%mpg_dir
-         write(un,*) 'uniform_b0_dir       = ';write(un,*) this%uniform_b0_dir
-         write(un,*) 'uniform_gravity_dir  = ';write(un,*) this%uniform_gravity_dir
+         call export_primitives(this,un)
        end subroutine
 
        subroutine import_sim_config_params(this,un)
@@ -151,14 +144,7 @@
          type(sim_config_params),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%export_safe_period
-         read(un,*); read(un,*) this%embed_b_interior
-         read(un,*); read(un,*) this%couple_time_steps
-         read(un,*); read(un,*) this%finite_rem
-         read(un,*); read(un,*) this%include_vacuum
-         read(un,*); read(un,*) this%mpg_dir
-         read(un,*); read(un,*) this%uniform_b0_dir
-         read(un,*); read(un,*) this%uniform_gravity_dir
+         call import_primitives(this,un)
        end subroutine
 
        subroutine export_primitives_sim_config_params(this,un)

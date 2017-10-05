@@ -116,10 +116,7 @@
          implicit none
          type(mesh_quality_params),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'max_mesh_stretch_ratio  = ';write(un,*) this%max_mesh_stretch_ratio
-         write(un,*) 'N_max_points_add        = ';write(un,*) this%N_max_points_add
-         write(un,*) 'N_iter                  = ';write(un,*) this%N_iter
-         write(un,*) 'auto_find_N             = ';write(un,*) this%auto_find_N
+         call export_primitives(this,un)
        end subroutine
 
        subroutine import_mesh_quality_params(this,un)
@@ -127,10 +124,7 @@
          type(mesh_quality_params),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%max_mesh_stretch_ratio
-         read(un,*); read(un,*) this%N_max_points_add
-         read(un,*); read(un,*) this%N_iter
-         read(un,*); read(un,*) this%auto_find_N
+         call import_primitives(this,un)
        end subroutine
 
        subroutine export_primitives_mesh_quality_params(this,un)

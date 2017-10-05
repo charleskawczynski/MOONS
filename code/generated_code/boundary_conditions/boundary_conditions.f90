@@ -136,8 +136,8 @@
          implicit none
          type(boundary_conditions),intent(in) :: this
          integer,intent(in) :: un
+         call export_primitives(this,un)
          call export(this%BCL,un)
-         write(un,*) 'apply_BC_order        = ';write(un,*) this%apply_BC_order
          call export(this%DL,un)
          call export(this%face,un)
          call export(this%PA_face_BCs,un)
@@ -150,8 +150,8 @@
          type(boundary_conditions),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
+         call import_primitives(this,un)
          call import(this%BCL,un)
-         read(un,*); read(un,*) this%apply_BC_order
          call import(this%DL,un)
          call import(this%face,un)
          call import(this%PA_face_BCs,un)

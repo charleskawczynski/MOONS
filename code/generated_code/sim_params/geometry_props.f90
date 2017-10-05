@@ -116,10 +116,7 @@
          implicit none
          type(geometry_props),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'geometry        = ';write(un,*) this%geometry
-         write(un,*) 'tw              = ';write(un,*) this%tw
-         write(un,*) 'periodic_dir    = ';write(un,*) this%periodic_dir
-         write(un,*) 'apply_BC_order  = ';write(un,*) this%apply_BC_order
+         call export_primitives(this,un)
        end subroutine
 
        subroutine import_geometry_props(this,un)
@@ -127,10 +124,7 @@
          type(geometry_props),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%geometry
-         read(un,*); read(un,*) this%tw
-         read(un,*); read(un,*) this%periodic_dir
-         read(un,*); read(un,*) this%apply_BC_order
+         call import_primitives(this,un)
        end subroutine
 
        subroutine export_primitives_geometry_props(this,un)

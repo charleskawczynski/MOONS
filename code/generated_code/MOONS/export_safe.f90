@@ -116,10 +116,7 @@
          implicit none
          type(export_safe),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'export_now         = ';write(un,*) this%export_now
-         write(un,*) 'export_period_sec  = ';write(un,*) this%export_period_sec
-         write(un,*) 'mod_period         = ';write(un,*) this%mod_period
-         write(un,*) 'mod_period_last    = ';write(un,*) this%mod_period_last
+         call export_primitives(this,un)
        end subroutine
 
        subroutine import_export_safe(this,un)
@@ -127,10 +124,7 @@
          type(export_safe),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%export_now
-         read(un,*); read(un,*) this%export_period_sec
-         read(un,*); read(un,*) this%mod_period
-         read(un,*); read(un,*) this%mod_period_last
+         call import_primitives(this,un)
        end subroutine
 
        subroutine export_primitives_export_safe(this,un)

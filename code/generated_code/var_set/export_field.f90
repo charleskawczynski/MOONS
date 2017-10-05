@@ -100,7 +100,7 @@
          implicit none
          type(export_field),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'export_ever  = ';write(un,*) this%export_ever
+         call export_primitives(this,un)
        end subroutine
 
        subroutine import_export_field(this,un)
@@ -108,7 +108,7 @@
          type(export_field),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%export_ever
+         call import_primitives(this,un)
        end subroutine
 
        subroutine export_primitives_export_field(this,un)

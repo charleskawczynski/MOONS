@@ -119,8 +119,7 @@
          implicit none
          type(kill_switch),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'un              = ';write(un,*) this%un
-         write(un,*) 'terminate_loop  = ';write(un,*) this%terminate_loop
+         call export_primitives(this,un)
          call export(this%dir,un)
          call export(this%name,un)
        end subroutine
@@ -130,8 +129,7 @@
          type(kill_switch),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%un
-         read(un,*); read(un,*) this%terminate_loop
+         call import_primitives(this,un)
          call import(this%dir,un)
          call import(this%name,un)
        end subroutine

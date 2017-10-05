@@ -147,8 +147,7 @@
          implicit none
          type(var),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'IC               = ';write(un,*) this%IC
-         write(un,*) 'BC               = ';write(un,*) this%BC
+         call export_primitives(this,un)
          call export(this%SS,un)
          call export(this%MFP,un)
          call export(this%TMP,un)
@@ -163,8 +162,7 @@
          type(var),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%IC
-         read(un,*); read(un,*) this%BC
+         call import_primitives(this,un)
          call import(this%SS,un)
          call import(this%MFP,un)
          call import(this%TMP,un)

@@ -81,13 +81,14 @@
          call assign(TS%stresses,0.0_cp)
        end subroutine
 
-       subroutine update_TS_SF(TS,m,U,TMP,temp)
+       subroutine update_TS_SF(TS,m,U,TMP,temp,compute_export_norms)
          implicit none
          type(time_statistics_SF),intent(inout) :: TS
          type(time_marching_params),intent(in) :: TMP
          type(mesh),intent(in) :: m
          type(SF),intent(in) :: U
          type(SF),intent(inout) :: temp
+         logical,intent(in) :: compute_export_norms
          real(cp) :: temp_cp
          if (TS%TSP%collect) then
            call update(TS%TSP,TMP)
@@ -97,9 +98,12 @@
 
              call assign(TS%U_ave,TS%U_sum)
              call multiply(TS%U_ave,get_coeff(TS%TSP%O1_stats,TMP))
-             call compute_Ln(temp_cp,TS%U_ave,2.0_cp,m)
-             temp_cp = 0.5_cp*temp_cp
-             call export(TS%mean_energy,TMP,temp_cp)
+
+             if (compute_export_norms) then
+               call compute_Ln(temp_cp,TS%U_ave,2.0_cp,m)
+               temp_cp = 0.5_cp*temp_cp
+               call export(TS%mean_energy,TMP,temp_cp)
+             endif
 
              call assign(temp,U)
              call square(temp)
@@ -118,7 +122,7 @@
          endif
        end subroutine
 
-       subroutine update_TS_VF(TS,m,U,TMP,temp_VF,temp_CC,TF_CC)
+       subroutine update_TS_VF(TS,m,U,TMP,temp_VF,temp_CC,TF_CC,compute_export_norms)
          implicit none
          type(time_statistics_VF),intent(inout) :: TS
          type(time_marching_params),intent(in) :: TMP
@@ -126,6 +130,7 @@
          type(VF),intent(in) :: U
          type(VF),intent(inout) :: temp_VF,temp_CC
          type(TF),intent(inout) :: TF_CC
+         logical,intent(in) :: compute_export_norms
          real(cp) :: temp_cp
          if (TS%TSP%collect) then
 
@@ -137,10 +142,13 @@
              call multiply(TS%U_ave,get_coeff(TS%TSP%O1_stats,TMP))
              call assign(TS%U_ave,TS%U_sum)
              call multiply(TS%U_ave,get_coeff(TS%TSP%O1_stats,TMP))
-             call face2cellcenter(temp_CC,TS%U_ave,m)
-             call compute_Ln(temp_cp,temp_CC,2.0_cp,m)
-             temp_cp = 0.5_cp*temp_cp
-             call export(TS%mean_energy,TMP,temp_cp)
+
+             if (compute_export_norms) then
+               call face2cellcenter(temp_CC,TS%U_ave,m)
+               call compute_Ln(temp_cp,temp_CC,2.0_cp,m)
+               temp_cp = 0.5_cp*temp_cp
+               call export(TS%mean_energy,TMP,temp_cp)
+             endif
 
              call assign(temp_VF,U)
              call square(temp_VF)
@@ -164,8 +172,12 @@
 
              call assign(TS%stresses,TS%stresses_sum)
              call multiply(TS%stresses,get_coeff(TS%TSP%O2_stats,TMP))
-             call compute_Ln(temp_cp,TS%stresses,2.0_cp,m)
-             call export(TS%L2_stresses,TMP,temp_cp)
+
+             if (compute_export_norms) then
+               call compute_Ln(temp_cp,TS%stresses,2.0_cp,m)
+               call export(TS%L2_stresses,TMP,temp_cp)
+             endif
+
              call add_stat(TS%TSP%O2_stats)
            endif
 

@@ -133,13 +133,7 @@
          implicit none
          type(matrix_free_params),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'suppress_warning           = ';write(un,*) this%suppress_warning
-         write(un,*) 'alpha                      = ';write(un,*) this%alpha
-         write(un,*) 'beta                       = ';write(un,*) this%beta
-         write(un,*) 'coeff_natural              = ';write(un,*) this%coeff_natural
-         write(un,*) 'coeff_explicit             = ';write(un,*) this%coeff_explicit
-         write(un,*) 'coeff_implicit             = ';write(un,*) this%coeff_implicit
-         write(un,*) 'coeff_implicit_time_split  = ';write(un,*) this%coeff_implicit_time_split
+         call export_primitives(this,un)
        end subroutine
 
        subroutine import_matrix_free_params(this,un)
@@ -147,13 +141,7 @@
          type(matrix_free_params),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%suppress_warning
-         read(un,*); read(un,*) this%alpha
-         read(un,*); read(un,*) this%beta
-         read(un,*); read(un,*) this%coeff_natural
-         read(un,*); read(un,*) this%coeff_explicit
-         read(un,*); read(un,*) this%coeff_implicit
-         read(un,*); read(un,*) this%coeff_implicit_time_split
+         call import_primitives(this,un)
        end subroutine
 
        subroutine export_primitives_matrix_free_params(this,un)

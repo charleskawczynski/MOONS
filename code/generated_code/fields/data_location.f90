@@ -155,18 +155,7 @@
          implicit none
          type(data_location),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'C          = ';write(un,*) this%C
-         write(un,*) 'N          = ';write(un,*) this%N
-         write(un,*) 'E          = ';write(un,*) this%E
-         write(un,*) 'F          = ';write(un,*) this%F
-         write(un,*) 'defined    = ';write(un,*) this%defined
-         write(un,*) 'face       = ';write(un,*) this%face
-         write(un,*) 'edge       = ';write(un,*) this%edge
-         write(un,*) 'volume_ID  = ';write(un,*) this%volume_ID
-         write(un,*) 'CC_along   = ';write(un,*) this%CC_along
-         write(un,*) 'N_along    = ';write(un,*) this%N_along
-         write(un,*) 'CC_eye     = ';write(un,*) this%CC_eye
-         write(un,*) 'N_eye      = ';write(un,*) this%N_eye
+         call export_primitives(this,un)
        end subroutine
 
        subroutine import_data_location(this,un)
@@ -174,18 +163,7 @@
          type(data_location),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%C
-         read(un,*); read(un,*) this%N
-         read(un,*); read(un,*) this%E
-         read(un,*); read(un,*) this%F
-         read(un,*); read(un,*) this%defined
-         read(un,*); read(un,*) this%face
-         read(un,*); read(un,*) this%edge
-         read(un,*); read(un,*) this%volume_ID
-         read(un,*); read(un,*) this%CC_along
-         read(un,*); read(un,*) this%N_along
-         read(un,*); read(un,*) this%CC_eye
-         read(un,*); read(un,*) this%N_eye
+         call import_primitives(this,un)
        end subroutine
 
        subroutine export_primitives_data_location(this,un)

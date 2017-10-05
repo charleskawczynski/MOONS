@@ -151,6 +151,7 @@
          integer,intent(in) :: un
          integer :: i_B
          integer :: s_B
+         call export_primitives(this,un)
          if (allocated(this%B)) then
            s_B = size(this%B)
            write(un,*) s_B
@@ -163,8 +164,6 @@
            endif
          endif
          call export(this%MP,un)
-         write(un,*) 'defined  = ';write(un,*) this%defined
-         write(un,*) 's        = ';write(un,*) this%s
        end subroutine
 
        subroutine import_mesh(this,un)
@@ -174,6 +173,7 @@
          integer :: i_B
          integer :: s_B
          call delete(this)
+         call import_primitives(this,un)
          read(un,*) s_B
          if (s_B.gt.0) then
            allocate(this%B(s_B))
@@ -182,8 +182,6 @@
            enddo
          endif
          call import(this%MP,un)
-         read(un,*); read(un,*) this%defined
-         read(un,*); read(un,*) this%s
        end subroutine
 
        subroutine export_primitives_mesh(this,un)

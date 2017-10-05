@@ -131,9 +131,7 @@
          implicit none
          type(RK_params),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'n_stages   = ';write(un,*) this%n_stages
-         write(un,*) 'n          = ';write(un,*) this%n
-         write(un,*) 'RK_active  = ';write(un,*) this%RK_active
+         call export_primitives(this,un)
          call export(this%gamma,un)
          call export(this%zeta,un)
          call export(this%alpha,un)
@@ -145,9 +143,7 @@
          type(RK_params),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%n_stages
-         read(un,*); read(un,*) this%n
-         read(un,*); read(un,*) this%RK_active
+         call import_primitives(this,un)
          call import(this%gamma,un)
          call import(this%zeta,un)
          call import(this%alpha,un)

@@ -116,10 +116,7 @@
          implicit none
          type(mirror_props),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'mirror         = ';write(un,*) this%mirror
-         write(un,*) 'mirror_face    = ';write(un,*) this%mirror_face
-         write(un,*) 'mirror_sign    = ';write(un,*) this%mirror_sign
-         write(un,*) 'mirror_sign_a  = ';write(un,*) this%mirror_sign_a
+         call export_primitives(this,un)
        end subroutine
 
        subroutine import_mirror_props(this,un)
@@ -127,10 +124,7 @@
          type(mirror_props),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%mirror
-         read(un,*); read(un,*) this%mirror_face
-         read(un,*); read(un,*) this%mirror_sign
-         read(un,*); read(un,*) this%mirror_sign_a
+         call import_primitives(this,un)
        end subroutine
 
        subroutine export_primitives_mirror_props(this,un)

@@ -52,6 +52,8 @@
          real(cp) :: d_data_dt = 0.0_cp
          real(cp) :: d_amax = 0.0_cp
          real(cp) :: t = 0.0_cp
+         real(cp) :: abs_d_data_dt = 0.0_cp
+         real(cp) :: abs_d_data_dt_by_dmax = 0.0_cp
          integer :: un = 0
          integer :: cols = 0
          integer(li) :: n_step = 0
@@ -74,6 +76,8 @@
          this%d_data_dt = that%d_data_dt
          this%d_amax = that%d_amax
          this%t = that%t
+         this%abs_d_data_dt = that%abs_d_data_dt
+         this%abs_d_data_dt_by_dmax = that%abs_d_data_dt_by_dmax
          this%un = that%un
          this%cols = that%cols
          this%n_step = that%n_step
@@ -92,6 +96,8 @@
          this%d_data_dt = 0.0_cp
          this%d_amax = 0.0_cp
          this%t = 0.0_cp
+         this%abs_d_data_dt = 0.0_cp
+         this%abs_d_data_dt_by_dmax = 0.0_cp
          this%un = 0
          this%cols = 0
          this%n_step = 0
@@ -107,15 +113,17 @@
          integer,intent(in) :: un
          call display(this%tec_dir,un)
          call display(this%tec_name,un)
-         write(un,*) 'd         = ',this%d
-         write(un,*) 'd_data_dt = ',this%d_data_dt
-         write(un,*) 'd_amax    = ',this%d_amax
-         write(un,*) 't         = ',this%t
-         write(un,*) 'un        = ',this%un
-         write(un,*) 'cols      = ',this%cols
-         write(un,*) 'n_step    = ',this%n_step
-         write(un,*) 'restart   = ',this%restart
-         write(un,*) 'simple    = ',this%simple
+         write(un,*) 'd                     = ',this%d
+         write(un,*) 'd_data_dt             = ',this%d_data_dt
+         write(un,*) 'd_amax                = ',this%d_amax
+         write(un,*) 't                     = ',this%t
+         write(un,*) 'abs_d_data_dt         = ',this%abs_d_data_dt
+         write(un,*) 'abs_d_data_dt_by_dmax = ',this%abs_d_data_dt_by_dmax
+         write(un,*) 'un                    = ',this%un
+         write(un,*) 'cols                  = ',this%cols
+         write(un,*) 'n_step                = ',this%n_step
+         write(un,*) 'restart               = ',this%restart
+         write(un,*) 'simple                = ',this%simple
          call display(this%dir,un)
          call display(this%name,un)
        end subroutine
@@ -126,15 +134,17 @@
          integer,intent(in) :: un
          call display(this%tec_dir,un)
          call display(this%tec_name,un)
-         write(un,*) 'd         = ',this%d
-         write(un,*) 'd_data_dt = ',this%d_data_dt
-         write(un,*) 'd_amax    = ',this%d_amax
-         write(un,*) 't         = ',this%t
-         write(un,*) 'un        = ',this%un
-         write(un,*) 'cols      = ',this%cols
-         write(un,*) 'n_step    = ',this%n_step
-         write(un,*) 'restart   = ',this%restart
-         write(un,*) 'simple    = ',this%simple
+         write(un,*) 'd                     = ',this%d
+         write(un,*) 'd_data_dt             = ',this%d_data_dt
+         write(un,*) 'd_amax                = ',this%d_amax
+         write(un,*) 't                     = ',this%t
+         write(un,*) 'abs_d_data_dt         = ',this%abs_d_data_dt
+         write(un,*) 'abs_d_data_dt_by_dmax = ',this%abs_d_data_dt_by_dmax
+         write(un,*) 'un                    = ',this%un
+         write(un,*) 'cols                  = ',this%cols
+         write(un,*) 'n_step                = ',this%n_step
+         write(un,*) 'restart               = ',this%restart
+         write(un,*) 'simple                = ',this%simple
          call display(this%dir,un)
          call display(this%name,un)
        end subroutine
@@ -165,17 +175,9 @@
          implicit none
          type(probe),intent(in) :: this
          integer,intent(in) :: un
+         call export_primitives(this,un)
          call export(this%tec_dir,un)
          call export(this%tec_name,un)
-         write(un,*) 'd          = ';write(un,*) this%d
-         write(un,*) 'd_data_dt  = ';write(un,*) this%d_data_dt
-         write(un,*) 'd_amax     = ';write(un,*) this%d_amax
-         write(un,*) 't          = ';write(un,*) this%t
-         write(un,*) 'un         = ';write(un,*) this%un
-         write(un,*) 'cols       = ';write(un,*) this%cols
-         write(un,*) 'n_step     = ';write(un,*) this%n_step
-         write(un,*) 'restart    = ';write(un,*) this%restart
-         write(un,*) 'simple     = ';write(un,*) this%simple
          call export(this%dir,un)
          call export(this%name,un)
        end subroutine
@@ -185,17 +187,9 @@
          type(probe),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
+         call import_primitives(this,un)
          call import(this%tec_dir,un)
          call import(this%tec_name,un)
-         read(un,*); read(un,*) this%d
-         read(un,*); read(un,*) this%d_data_dt
-         read(un,*); read(un,*) this%d_amax
-         read(un,*); read(un,*) this%t
-         read(un,*); read(un,*) this%un
-         read(un,*); read(un,*) this%cols
-         read(un,*); read(un,*) this%n_step
-         read(un,*); read(un,*) this%restart
-         read(un,*); read(un,*) this%simple
          call import(this%dir,un)
          call import(this%name,un)
        end subroutine
@@ -204,15 +198,17 @@
          implicit none
          type(probe),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'd          = ';write(un,*) this%d
-         write(un,*) 'd_data_dt  = ';write(un,*) this%d_data_dt
-         write(un,*) 'd_amax     = ';write(un,*) this%d_amax
-         write(un,*) 't          = ';write(un,*) this%t
-         write(un,*) 'un         = ';write(un,*) this%un
-         write(un,*) 'cols       = ';write(un,*) this%cols
-         write(un,*) 'n_step     = ';write(un,*) this%n_step
-         write(un,*) 'restart    = ';write(un,*) this%restart
-         write(un,*) 'simple     = ';write(un,*) this%simple
+         write(un,*) 'd                      = ';write(un,*) this%d
+         write(un,*) 'd_data_dt              = ';write(un,*) this%d_data_dt
+         write(un,*) 'd_amax                 = ';write(un,*) this%d_amax
+         write(un,*) 't                      = ';write(un,*) this%t
+         write(un,*) 'abs_d_data_dt          = ';write(un,*) this%abs_d_data_dt
+         write(un,*) 'abs_d_data_dt_by_dmax  = ';write(un,*) this%abs_d_data_dt_by_dmax
+         write(un,*) 'un                     = ';write(un,*) this%un
+         write(un,*) 'cols                   = ';write(un,*) this%cols
+         write(un,*) 'n_step                 = ';write(un,*) this%n_step
+         write(un,*) 'restart                = ';write(un,*) this%restart
+         write(un,*) 'simple                 = ';write(un,*) this%simple
        end subroutine
 
        subroutine import_primitives_probe(this,un)
@@ -223,6 +219,8 @@
          read(un,*); read(un,*) this%d_data_dt
          read(un,*); read(un,*) this%d_amax
          read(un,*); read(un,*) this%t
+         read(un,*); read(un,*) this%abs_d_data_dt
+         read(un,*); read(un,*) this%abs_d_data_dt_by_dmax
          read(un,*); read(un,*) this%un
          read(un,*); read(un,*) this%cols
          read(un,*); read(un,*) this%n_step

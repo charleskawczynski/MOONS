@@ -200,8 +200,7 @@
          implicit none
          type(PCG_solver_VF),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'un                 = ';write(un,*) this%un
-         write(un,*) 'un_convergence     = ';write(un,*) this%un_convergence
+         call export_primitives(this,un)
          call export(this%MFP,un)
          call export(this%tempk,un)
          call export(this%k,un)
@@ -224,8 +223,7 @@
          type(PCG_solver_VF),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%un
-         read(un,*); read(un,*) this%un_convergence
+         call import_primitives(this,un)
          call import(this%MFP,un)
          call import(this%tempk,un)
          call import(this%k,un)

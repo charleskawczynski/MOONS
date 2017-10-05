@@ -105,8 +105,7 @@
          implicit none
          type(stitch),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'L   = ';write(un,*) this%L
-         write(un,*) 'ID  = ';write(un,*) this%ID
+         call export_primitives(this,un)
        end subroutine
 
        subroutine import_stitch(this,un)
@@ -114,8 +113,7 @@
          type(stitch),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%L
-         read(un,*); read(un,*) this%ID
+         call import_primitives(this,un)
        end subroutine
 
        subroutine export_primitives_stitch(this,un)

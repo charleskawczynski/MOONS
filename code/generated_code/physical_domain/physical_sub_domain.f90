@@ -111,9 +111,9 @@
          implicit none
          type(physical_sub_domain),intent(in) :: this
          integer,intent(in) :: un
+         call export_primitives(this,un)
          call export(this%total,un)
          call export(this%physical,un)
-         write(un,*) 'defined   = ';write(un,*) this%defined
        end subroutine
 
        subroutine import_physical_sub_domain(this,un)
@@ -121,9 +121,9 @@
          type(physical_sub_domain),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
+         call import_primitives(this,un)
          call import(this%total,un)
          call import(this%physical,un)
-         read(un,*); read(un,*) this%defined
        end subroutine
 
        subroutine export_primitives_physical_sub_domain(this,un)

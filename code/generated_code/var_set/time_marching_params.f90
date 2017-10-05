@@ -143,15 +143,9 @@
          implicit none
          type(time_marching_params),intent(in) :: this
          integer,intent(in) :: un
+         call export_primitives(this,un)
          call export(this%RKP,un)
          call export(this%TS,un)
-         write(un,*) 'multistep_iter  = ';write(un,*) this%multistep_iter
-         write(un,*) 'un              = ';write(un,*) this%un
-         write(un,*) 'n_step          = ';write(un,*) this%n_step
-         write(un,*) 'n_step_stop     = ';write(un,*) this%n_step_stop
-         write(un,*) 'n_step_start    = ';write(un,*) this%n_step_start
-         write(un,*) 't               = ';write(un,*) this%t
-         write(un,*) 'C_max           = ';write(un,*) this%C_max
        end subroutine
 
        subroutine import_time_marching_params(this,un)
@@ -159,15 +153,9 @@
          type(time_marching_params),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
+         call import_primitives(this,un)
          call import(this%RKP,un)
          call import(this%TS,un)
-         read(un,*); read(un,*) this%multistep_iter
-         read(un,*); read(un,*) this%un
-         read(un,*); read(un,*) this%n_step
-         read(un,*); read(un,*) this%n_step_stop
-         read(un,*); read(un,*) this%n_step_start
-         read(un,*); read(un,*) this%t
-         read(un,*); read(un,*) this%C_max
        end subroutine
 
        subroutine export_primitives_time_marching_params(this,un)

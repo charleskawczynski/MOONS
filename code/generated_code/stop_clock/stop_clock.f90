@@ -192,24 +192,13 @@
          implicit none
          type(stop_clock),intent(in) :: this
          integer,intent(in) :: un
+         call export_primitives(this,un)
          call export(this%dir,un)
          call export(this%name,un)
          call export(this%dir_tec,un)
          call export(this%name_tec,un)
          call export(this%c,un)
          call export(this%uc,un)
-         write(un,*) 'percentage_complete_RB  = ';write(un,*) this%percentage_complete_RB
-         write(un,*) 'percentage_complete_SB  = ';write(un,*) this%percentage_complete_SB
-         write(un,*) 'seconds_per_step        = ';write(un,*) this%seconds_per_step
-         write(un,*) 'sim_time_per_sec        = ';write(un,*) this%sim_time_per_sec
-         write(un,*) 't_passed                = ';write(un,*) this%t_passed
-         write(un,*) 'estimated_total         = ';write(un,*) this%estimated_total
-         write(un,*) 'estimated_remaining     = ';write(un,*) this%estimated_remaining
-         write(un,*) 'percentage_complete     = ';write(un,*) this%percentage_complete
-         write(un,*) 'percentage_complete_wc  = ';write(un,*) this%percentage_complete_wc
-         write(un,*) 't_elapsed               = ';write(un,*) this%t_elapsed
-         write(un,*) 'frozen_elapsed          = ';write(un,*) this%frozen_elapsed
-         write(un,*) 'un_plot                 = ';write(un,*) this%un_plot
        end subroutine
 
        subroutine import_stop_clock(this,un)
@@ -217,24 +206,13 @@
          type(stop_clock),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
+         call import_primitives(this,un)
          call import(this%dir,un)
          call import(this%name,un)
          call import(this%dir_tec,un)
          call import(this%name_tec,un)
          call import(this%c,un)
          call import(this%uc,un)
-         read(un,*); read(un,*) this%percentage_complete_RB
-         read(un,*); read(un,*) this%percentage_complete_SB
-         read(un,*); read(un,*) this%seconds_per_step
-         read(un,*); read(un,*) this%sim_time_per_sec
-         read(un,*); read(un,*) this%t_passed
-         read(un,*); read(un,*) this%estimated_total
-         read(un,*); read(un,*) this%estimated_remaining
-         read(un,*); read(un,*) this%percentage_complete
-         read(un,*); read(un,*) this%percentage_complete_wc
-         read(un,*); read(un,*) this%t_elapsed
-         read(un,*); read(un,*) this%frozen_elapsed
-         read(un,*); read(un,*) this%un_plot
        end subroutine
 
        subroutine export_primitives_stop_clock(this,un)

@@ -140,6 +140,7 @@
          integer,intent(in) :: un
          integer :: i_EP
          integer :: s_EP
+         call export_primitives(this,un)
          if (allocated(this%EP)) then
            s_EP = size(this%EP)
            write(un,*) s_EP
@@ -151,7 +152,6 @@
              write(un,*) 0
            endif
          endif
-         write(un,*) 'N   = ';write(un,*) this%N
        end subroutine
 
        subroutine import_export_planes(this,un)
@@ -161,6 +161,7 @@
          integer :: i_EP
          integer :: s_EP
          call delete(this)
+         call import_primitives(this,un)
          read(un,*) s_EP
          if (s_EP.gt.0) then
            allocate(this%EP(s_EP))
@@ -168,7 +169,6 @@
              call import(this%EP(i_EP),un)
            enddo
          endif
-         read(un,*); read(un,*) this%N
        end subroutine
 
        subroutine export_primitives_export_planes(this,un)

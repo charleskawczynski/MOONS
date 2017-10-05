@@ -256,29 +256,7 @@
          implicit none
          type(flow_control_logicals),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'post_process                        = ';write(un,*) this%post_process
-         write(un,*) 'skip_solver_loop                    = ';write(un,*) this%skip_solver_loop
-         write(un,*) 'stop_before_solve                   = ';write(un,*) this%stop_before_solve
-         write(un,*) 'stop_after_mesh_export              = ';write(un,*) this%stop_after_mesh_export
-         write(un,*) 'Poisson_test                        = ';write(un,*) this%Poisson_test
-         write(un,*) 'Taylor_Green_Vortex_test            = ';write(un,*) this%Taylor_Green_Vortex_test
-         write(un,*) 'temporal_convergence_test           = ';write(un,*) this%temporal_convergence_test
-         write(un,*) 'export_numerical_flow_rate          = ';write(un,*) this%export_numerical_flow_rate
-         write(un,*) 'export_Shercliff_Hunt_analytic_sol  = ';write(un,*) this%export_Shercliff_Hunt_analytic_sol
-         write(un,*) 'export_vorticity_streamfunction     = ';write(un,*) this%export_vorticity_streamfunction
-         write(un,*) 'compute_export_E_K_Budget           = ';write(un,*) this%compute_export_E_K_Budget
-         write(un,*) 'compute_export_E_M_budget           = ';write(un,*) this%compute_export_E_M_budget
-         write(un,*) 'operator_commute_test               = ';write(un,*) this%operator_commute_test
-         write(un,*) 'export_final_tec                    = ';write(un,*) this%export_final_tec
-         write(un,*) 'export_final_restart                = ';write(un,*) this%export_final_restart
-         write(un,*) 'restart_meshes                      = ';write(un,*) this%restart_meshes
-         write(un,*) 'export_heavy                        = ';write(un,*) this%export_heavy
-         write(un,*) 'print_every_MHD_step                = ';write(un,*) this%print_every_MHD_step
-         write(un,*) 'compute_surface_power               = ';write(un,*) this%compute_surface_power
-         write(un,*) 'print_mesh_before_solve             = ';write(un,*) this%print_mesh_before_solve
-         write(un,*) 'fresh_restart_file                  = ';write(un,*) this%fresh_restart_file
-         write(un,*) 'matrix_visualization                = ';write(un,*) this%matrix_visualization
-         write(un,*) 'restart_all                         = ';write(un,*) this%restart_all
+         call export_primitives(this,un)
        end subroutine
 
        subroutine import_flow_control_logicals(this,un)
@@ -286,29 +264,7 @@
          type(flow_control_logicals),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%post_process
-         read(un,*); read(un,*) this%skip_solver_loop
-         read(un,*); read(un,*) this%stop_before_solve
-         read(un,*); read(un,*) this%stop_after_mesh_export
-         read(un,*); read(un,*) this%Poisson_test
-         read(un,*); read(un,*) this%Taylor_Green_Vortex_test
-         read(un,*); read(un,*) this%temporal_convergence_test
-         read(un,*); read(un,*) this%export_numerical_flow_rate
-         read(un,*); read(un,*) this%export_Shercliff_Hunt_analytic_sol
-         read(un,*); read(un,*) this%export_vorticity_streamfunction
-         read(un,*); read(un,*) this%compute_export_E_K_Budget
-         read(un,*); read(un,*) this%compute_export_E_M_budget
-         read(un,*); read(un,*) this%operator_commute_test
-         read(un,*); read(un,*) this%export_final_tec
-         read(un,*); read(un,*) this%export_final_restart
-         read(un,*); read(un,*) this%restart_meshes
-         read(un,*); read(un,*) this%export_heavy
-         read(un,*); read(un,*) this%print_every_MHD_step
-         read(un,*); read(un,*) this%compute_surface_power
-         read(un,*); read(un,*) this%print_mesh_before_solve
-         read(un,*); read(un,*) this%fresh_restart_file
-         read(un,*); read(un,*) this%matrix_visualization
-         read(un,*); read(un,*) this%restart_all
+         call import_primitives(this,un)
        end subroutine
 
        subroutine export_primitives_flow_control_logicals(this,un)

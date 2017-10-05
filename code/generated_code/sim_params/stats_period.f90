@@ -146,16 +146,7 @@
          implicit none
          type(stats_period),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 't_start                 = ';write(un,*) this%t_start
-         write(un,*) 't_start_actual          = ';write(un,*) this%t_start_actual
-         write(un,*) 't_stop                  = ';write(un,*) this%t_stop
-         write(un,*) 'period                  = ';write(un,*) this%period
-         write(un,*) 'N_stats_collected       = ';write(un,*) this%N_stats_collected
-         write(un,*) 'compute_stats           = ';write(un,*) this%compute_stats
-         write(un,*) 'define_t_start_actual   = ';write(un,*) this%define_t_start_actual
-         write(un,*) 't_start_actual_defined  = ';write(un,*) this%t_start_actual_defined
-         write(un,*) 'export_stats            = ';write(un,*) this%export_stats
-         write(un,*) 'exported_stats          = ';write(un,*) this%exported_stats
+         call export_primitives(this,un)
        end subroutine
 
        subroutine import_stats_period(this,un)
@@ -163,16 +154,7 @@
          type(stats_period),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%t_start
-         read(un,*); read(un,*) this%t_start_actual
-         read(un,*); read(un,*) this%t_stop
-         read(un,*); read(un,*) this%period
-         read(un,*); read(un,*) this%N_stats_collected
-         read(un,*); read(un,*) this%compute_stats
-         read(un,*); read(un,*) this%define_t_start_actual
-         read(un,*); read(un,*) this%t_start_actual_defined
-         read(un,*); read(un,*) this%export_stats
-         read(un,*); read(un,*) this%exported_stats
+         call import_primitives(this,un)
        end subroutine
 
        subroutine export_primitives_stats_period(this,un)

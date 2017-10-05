@@ -146,16 +146,7 @@
          implicit none
          type(bctype),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'Dirichlet      = ';write(un,*) this%Dirichlet
-         write(un,*) 'Neumann        = ';write(un,*) this%Neumann
-         write(un,*) 'Robin          = ';write(un,*) this%Robin
-         write(un,*) 'Periodic       = ';write(un,*) this%Periodic
-         write(un,*) 'symmetric      = ';write(un,*) this%symmetric
-         write(un,*) 'antisymmetric  = ';write(un,*) this%antisymmetric
-         write(un,*) 'prescribed     = ';write(un,*) this%prescribed
-         write(un,*) 'defined        = ';write(un,*) this%defined
-         write(un,*) 'meanVal        = ';write(un,*) this%meanVal
-         write(un,*) 'BCT            = ';write(un,*) this%BCT
+         call export_primitives(this,un)
        end subroutine
 
        subroutine import_bctype(this,un)
@@ -163,16 +154,7 @@
          type(bctype),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%Dirichlet
-         read(un,*); read(un,*) this%Neumann
-         read(un,*); read(un,*) this%Robin
-         read(un,*); read(un,*) this%Periodic
-         read(un,*); read(un,*) this%symmetric
-         read(un,*); read(un,*) this%antisymmetric
-         read(un,*); read(un,*) this%prescribed
-         read(un,*); read(un,*) this%defined
-         read(un,*); read(un,*) this%meanVal
-         read(un,*); read(un,*) this%BCT
+         call import_primitives(this,un)
        end subroutine
 
        subroutine export_primitives_bctype(this,un)

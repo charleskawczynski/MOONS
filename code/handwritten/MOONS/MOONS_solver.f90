@@ -51,6 +51,8 @@
 
            call tic(M%C%sc)
 
+           call update(M%C%ES,M%C%sc%t_passed)
+
            if (M%C%SP%FCL%print_every_MHD_step) then
              write(*,*) 'M%C%SP%coupled%n_step = ',M%C%SP%coupled%n_step
            endif
@@ -87,22 +89,25 @@
            if (M%C%SP%VS%B%SS%solve) call iterate_step(M%C%SP%VS%B%TMP)
            call iterate_step(M%C%SP%coupled)
 
-           if (M%C%SP%coupled%n_step.eq.200) then
-             write(*,*) 'about to export in MOONS_solver'
-             call export_structured(M%C)
-             call export_structured(M%GE)
+           if (M%C%ES%export_now) then ! Sync probes with export_structured.
+             M%C%SP%EF%unsteady_0D%export_now = .true.
            endif
 
            if (M%C%SP%VS%T%SS%solve) call export_unsteady(M%GE%nrg,M%C%SP,M%C%SP%VS%T%TMP,M%C%SP%EF,M%C%EN,M%C%DT)
            if (M%C%SP%VS%U%SS%solve) call export_unsteady(M%GE%mom,M%C%SP,M%C%SP%VS%U%TMP,M%C%SP%EF,M%C%EN,M%C%DT)
            if (M%C%SP%VS%B%SS%solve) call export_unsteady(M%GE%ind,M%C%SP,M%C%SP%VS%B%TMP,M%C%SP%EF,M%C%EN,M%C%DT)
 
-           if (M%C%SP%coupled%n_step.eq.447) then
-             stop 'Done in MOONS_solver'
-           endif
-
            ! Statistics
-           call update(M%GE%mom%TS,M%GE%mom%m,M%GE%mom%U,M%C%SP%VS%U%TMP,M%GE%mom%temp_F1,M%GE%mom%temp_CC_VF,M%GE%mom%TF_CC)
+           call update(M%GE%mom%TS,M%GE%mom%m,M%GE%mom%U,M%C%SP%VS%U%TMP,M%GE%mom%temp_F1,&
+           M%GE%mom%temp_CC_VF,M%GE%mom%TF_CC,M%C%SP%EF%unsteady_0D%export_now)
+
+           call toc(M%C%sc,M%C%SP%coupled)
+
+           if (M%C%ES%export_now) then
+             write(*,*) 'about to export in MOONS_solver'
+             call export_structured(M%C)
+             call export_structured(M%GE)
+           endif
 
            call import_structured(M%C%SP%DP)
            call import_structured(M%GE%mom%PCG_U%ISP%EC)
@@ -114,14 +119,15 @@
            call import_TMP_dt(M%C%SP%VS)
            call import_structured(M%C%SP%coupled%TS)
            if (M%C%SP%SCP%couple_time_steps) call couple_time_step(M%C%SP%VS,M%C%SP%coupled)
-
-           call update(M%C%ES,M%C%sc%t_passed)
-
            call import_structured(M%C%EN)
+
            call update(M%C%EN,M%C%ES%export_now)
            if (M%C%EN%any_next) call export_structured(M%C%EN) ! May be needed to avoid constant exporting
 
-           call toc(M%C%sc,M%C%SP%coupled)
+           if (M%C%SP%coupled%n_step.eq.447) then
+             stop 'Done in MOONS_solver'
+           endif
+
            if (M%C%SP%EF%info%export_now) then
              ! oldest_modified_file violates intent, but this
              ! would be better to update outside the solvers,
@@ -139,7 +145,6 @@
              call export(M%C%sc,M%C%SP%coupled%t)
              call import_structured(M%C%KS)
            endif
-           ! call import_structured(M%C%SP%EF)
          enddo
          write(*,*) '***************************************************************'
          write(*,*) '******************* EXITING MAIN LOOP *************************'

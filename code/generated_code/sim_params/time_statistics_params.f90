@@ -111,7 +111,7 @@
          implicit none
          type(time_statistics_params),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'collect   = ';write(un,*) this%collect
+         call export_primitives(this,un)
          call export(this%O1_stats,un)
          call export(this%O2_stats,un)
        end subroutine
@@ -121,7 +121,7 @@
          type(time_statistics_params),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%collect
+         call import_primitives(this,un)
          call import(this%O1_stats,un)
          call import(this%O2_stats,un)
        end subroutine

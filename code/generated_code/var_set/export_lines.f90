@@ -140,6 +140,7 @@
          integer,intent(in) :: un
          integer :: i_EL
          integer :: s_EL
+         call export_primitives(this,un)
          if (allocated(this%EL)) then
            s_EL = size(this%EL)
            write(un,*) s_EL
@@ -151,7 +152,6 @@
              write(un,*) 0
            endif
          endif
-         write(un,*) 'N   = ';write(un,*) this%N
        end subroutine
 
        subroutine import_export_lines(this,un)
@@ -161,6 +161,7 @@
          integer :: i_EL
          integer :: s_EL
          call delete(this)
+         call import_primitives(this,un)
          read(un,*) s_EL
          if (s_EL.gt.0) then
            allocate(this%EL(s_EL))
@@ -168,7 +169,6 @@
              call import(this%EL(i_EL),un)
            enddo
          endif
-         read(un,*); read(un,*) this%N
        end subroutine
 
        subroutine export_primitives_export_lines(this,un)

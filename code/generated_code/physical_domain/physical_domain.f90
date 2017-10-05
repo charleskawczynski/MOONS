@@ -145,7 +145,7 @@
          integer,intent(in) :: un
          integer :: i_sd
          integer :: s_sd
-         write(un,*) 's        = ';write(un,*) this%s
+         call export_primitives(this,un)
          if (allocated(this%sd)) then
            s_sd = size(this%sd)
            write(un,*) s_sd
@@ -157,7 +157,6 @@
              write(un,*) 0
            endif
          endif
-         write(un,*) 'defined  = ';write(un,*) this%defined
        end subroutine
 
        subroutine import_physical_domain(this,un)
@@ -167,7 +166,7 @@
          integer :: i_sd
          integer :: s_sd
          call delete(this)
-         read(un,*); read(un,*) this%s
+         call import_primitives(this,un)
          read(un,*) s_sd
          if (s_sd.gt.0) then
            allocate(this%sd(s_sd))
@@ -175,7 +174,6 @@
              call import(this%sd(i_sd),un)
            enddo
          endif
-         read(un,*); read(un,*) this%defined
        end subroutine
 
        subroutine export_primitives_physical_domain(this,un)

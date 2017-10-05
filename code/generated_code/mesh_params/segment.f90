@@ -136,14 +136,8 @@
          implicit none
          type(segment),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'N_cells       = ';write(un,*) this%N_cells
+         call export_primitives(this,un)
          call export(this%distribution,un)
-         write(un,*) 'hmax          = ';write(un,*) this%hmax
-         write(un,*) 'hmin          = ';write(un,*) this%hmin
-         write(un,*) 'L             = ';write(un,*) this%L
-         write(un,*) 'tau           = ';write(un,*) this%tau
-         write(un,*) 'yc            = ';write(un,*) this%yc
-         write(un,*) 'dir           = ';write(un,*) this%dir
        end subroutine
 
        subroutine import_segment(this,un)
@@ -151,14 +145,8 @@
          type(segment),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%N_cells
+         call import_primitives(this,un)
          call import(this%distribution,un)
-         read(un,*); read(un,*) this%hmax
-         read(un,*); read(un,*) this%hmin
-         read(un,*); read(un,*) this%L
-         read(un,*); read(un,*) this%tau
-         read(un,*); read(un,*) this%yc
-         read(un,*); read(un,*) this%dir
        end subroutine
 
        subroutine export_primitives_segment(this,un)

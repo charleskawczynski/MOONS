@@ -125,11 +125,9 @@
          implicit none
          type(exit_criteria),intent(in) :: this
          integer,intent(in) :: un
+         call export_primitives(this,un)
          call export(this%dir,un)
          call export(this%name,un)
-         write(un,*) 'iter_max  = ';write(un,*) this%iter_max
-         write(un,*) 'tol_abs   = ';write(un,*) this%tol_abs
-         write(un,*) 'tol_rel   = ';write(un,*) this%tol_rel
        end subroutine
 
        subroutine import_exit_criteria(this,un)
@@ -137,11 +135,9 @@
          type(exit_criteria),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
+         call import_primitives(this,un)
          call import(this%dir,un)
          call import(this%name,un)
-         read(un,*); read(un,*) this%iter_max
-         read(un,*); read(un,*) this%tol_abs
-         read(un,*); read(un,*) this%tol_rel
        end subroutine
 
        subroutine export_primitives_exit_criteria(this,un)

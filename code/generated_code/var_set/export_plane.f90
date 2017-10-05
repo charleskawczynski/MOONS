@@ -115,10 +115,7 @@
          implicit none
          type(export_plane),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'export_ever  = ';write(un,*) this%export_ever
-         write(un,*) 'dir          = ';write(un,*) this%dir
-         write(un,*) 'plane        = ';write(un,*) this%plane
-         write(un,*) 'suffix       = ';write(un,*) this%suffix
+         call export_primitives(this,un)
        end subroutine
 
        subroutine import_export_plane(this,un)
@@ -126,10 +123,7 @@
          type(export_plane),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%export_ever
-         read(un,*); read(un,*) this%dir
-         read(un,*); read(un,*) this%plane
-         read(un,*); read(un,*) this%suffix
+         call import_primitives(this,un)
        end subroutine
 
        subroutine export_primitives_export_plane(this,un)

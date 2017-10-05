@@ -100,7 +100,7 @@
          implicit none
          type(simple_int_tensor),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'eye  = ';write(un,*) this%eye
+         call export_primitives(this,un)
        end subroutine
 
        subroutine import_simple_int_tensor(this,un)
@@ -108,7 +108,7 @@
          type(simple_int_tensor),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%eye
+         call import_primitives(this,un)
        end subroutine
 
        subroutine export_primitives_simple_int_tensor(this,un)

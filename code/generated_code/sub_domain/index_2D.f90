@@ -100,7 +100,7 @@
          implicit none
          type(index_2D),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'i  = ';write(un,*) this%i
+         call export_primitives(this,un)
        end subroutine
 
        subroutine import_index_2D(this,un)
@@ -108,7 +108,7 @@
          type(index_2D),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%i
+         call import_primitives(this,un)
        end subroutine
 
        subroutine export_primitives_index_2D(this,un)

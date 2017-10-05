@@ -180,22 +180,12 @@
          integer,intent(in) :: un
          integer :: i_int_tensor
          integer :: s_int_tensor
+         call export_primitives(this,un)
          s_int_tensor = size(this%int_tensor)
          write(un,*) s_int_tensor
          do i_int_tensor=1,s_int_tensor
            call export(this%int_tensor(i_int_tensor),un)
          enddo
-         write(un,*) 'plane        = ';write(un,*) this%plane
-         write(un,*) 'N_cells      = ';write(un,*) this%N_cells
-         write(un,*) 'plane_any    = ';write(un,*) this%plane_any
-         write(un,*) 'N_cells_tot  = ';write(un,*) this%N_cells_tot
-         write(un,*) 'volume       = ';write(un,*) this%volume
-         write(un,*) 'hmax         = ';write(un,*) this%hmax
-         write(un,*) 'hmin         = ';write(un,*) this%hmin
-         write(un,*) 'dhmax        = ';write(un,*) this%dhmax
-         write(un,*) 'dhmin        = ';write(un,*) this%dhmin
-         write(un,*) 'dhmax_max    = ';write(un,*) this%dhmax_max
-         write(un,*) 'dhmin_min    = ';write(un,*) this%dhmin_min
        end subroutine
 
        subroutine import_mesh_props(this,un)
@@ -205,23 +195,13 @@
          integer :: i_int_tensor
          integer :: s_int_tensor
          call delete(this)
+         call import_primitives(this,un)
          read(un,*) s_int_tensor
          if (s_int_tensor.gt.0) then
            do i_int_tensor=1,s_int_tensor
              call import(this%int_tensor(i_int_tensor),un)
            enddo
          endif
-         read(un,*); read(un,*) this%plane
-         read(un,*); read(un,*) this%N_cells
-         read(un,*); read(un,*) this%plane_any
-         read(un,*); read(un,*) this%N_cells_tot
-         read(un,*); read(un,*) this%volume
-         read(un,*); read(un,*) this%hmax
-         read(un,*); read(un,*) this%hmin
-         read(un,*); read(un,*) this%dhmax
-         read(un,*); read(un,*) this%dhmin
-         read(un,*); read(un,*) this%dhmax_max
-         read(un,*); read(un,*) this%dhmin_min
        end subroutine
 
        subroutine export_primitives_mesh_props(this,un)

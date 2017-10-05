@@ -215,27 +215,7 @@
          implicit none
          type(dimensionless_params),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'Re                    = ';write(un,*) this%Re
-         write(un,*) 'Al                    = ';write(un,*) this%Al
-         write(un,*) 'N                     = ';write(un,*) this%N
-         write(un,*) 'Ha                    = ';write(un,*) this%Ha
-         write(un,*) 'tau                   = ';write(un,*) this%tau
-         write(un,*) 'Gr                    = ';write(un,*) this%Gr
-         write(un,*) 'Fr                    = ';write(un,*) this%Fr
-         write(un,*) 'Pr                    = ';write(un,*) this%Pr
-         write(un,*) 'Pe                    = ';write(un,*) this%Pe
-         write(un,*) 'Ec                    = ';write(un,*) this%Ec
-         write(un,*) 'Rem                   = ';write(un,*) this%Rem
-         write(un,*) 'c_w                   = ';write(un,*) this%c_w
-         write(un,*) 'Robin_coeff           = ';write(un,*) this%Robin_coeff
-         write(un,*) 'Q                     = ';write(un,*) this%Q
-         write(un,*) 'sig_local_over_sig_f  = ';write(un,*) this%sig_local_over_sig_f
-         write(un,*) 'KE_scale              = ';write(un,*) this%KE_scale
-         write(un,*) 'ME_scale              = ';write(un,*) this%ME_scale
-         write(un,*) 'JE_scale              = ';write(un,*) this%JE_scale
-         write(un,*) 'L_eta                 = ';write(un,*) this%L_eta
-         write(un,*) 'U_eta                 = ';write(un,*) this%U_eta
-         write(un,*) 't_eta                 = ';write(un,*) this%t_eta
+         call export_primitives(this,un)
          call export(this%dir,un)
          call export(this%name,un)
        end subroutine
@@ -245,27 +225,7 @@
          type(dimensionless_params),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%Re
-         read(un,*); read(un,*) this%Al
-         read(un,*); read(un,*) this%N
-         read(un,*); read(un,*) this%Ha
-         read(un,*); read(un,*) this%tau
-         read(un,*); read(un,*) this%Gr
-         read(un,*); read(un,*) this%Fr
-         read(un,*); read(un,*) this%Pr
-         read(un,*); read(un,*) this%Pe
-         read(un,*); read(un,*) this%Ec
-         read(un,*); read(un,*) this%Rem
-         read(un,*); read(un,*) this%c_w
-         read(un,*); read(un,*) this%Robin_coeff
-         read(un,*); read(un,*) this%Q
-         read(un,*); read(un,*) this%sig_local_over_sig_f
-         read(un,*); read(un,*) this%KE_scale
-         read(un,*); read(un,*) this%ME_scale
-         read(un,*); read(un,*) this%JE_scale
-         read(un,*); read(un,*) this%L_eta
-         read(un,*); read(un,*) this%U_eta
-         read(un,*); read(un,*) this%t_eta
+         call import_primitives(this,un)
          call import(this%dir,un)
          call import(this%name,un)
        end subroutine

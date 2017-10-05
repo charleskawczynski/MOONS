@@ -217,7 +217,7 @@
          implicit none
          type(momentum),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'suppress_warning  = ';write(un,*) this%suppress_warning
+         call export_primitives(this,un)
          call export(this%m,un)
          call export(this%PCG_P,un)
          call export(this%PCG_U,un)
@@ -247,7 +247,7 @@
          type(momentum),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%suppress_warning
+         call import_primitives(this,un)
          call import(this%m,un)
          call import(this%PCG_P,un)
          call import(this%PCG_U,un)

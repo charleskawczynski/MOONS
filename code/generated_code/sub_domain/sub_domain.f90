@@ -192,6 +192,7 @@
          integer :: s_C
          integer :: s_N
          integer :: s_M
+         call export_primitives(this,un)
          s_C = size(this%C)
          write(un,*) s_C
          do i_C=1,s_C
@@ -207,9 +208,6 @@
          do i_M=1,s_M
            call export(this%M(i_M),un)
          enddo
-         write(un,*) 'defined  = ';write(un,*) this%defined
-         write(un,*) 'g_R1_id  = ';write(un,*) this%g_R1_id
-         write(un,*) 'g_R2_id  = ';write(un,*) this%g_R2_id
        end subroutine
 
        subroutine import_sub_domain(this,un)
@@ -223,6 +221,7 @@
          integer :: s_N
          integer :: s_M
          call delete(this)
+         call import_primitives(this,un)
          read(un,*) s_C
          if (s_C.gt.0) then
            do i_C=1,s_C
@@ -241,9 +240,6 @@
              call import(this%M(i_M),un)
            enddo
          endif
-         read(un,*); read(un,*) this%defined
-         read(un,*); read(un,*) this%g_R1_id
-         read(un,*); read(un,*) this%g_R2_id
        end subroutine
 
        subroutine export_primitives_sub_domain(this,un)

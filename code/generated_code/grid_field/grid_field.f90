@@ -114,33 +114,15 @@
          implicit none
          type(grid_field),intent(in) :: this
          integer,intent(in) :: un
-         integer,dimension(3) :: s_f
-         if (allocated(this%f)) then
-           s_f = shape(this%f)
-           write(un,*) s_f
-           if (all((/s_f(1).gt.0,s_f(2).gt.0,s_f(3).gt.0/))) then
-             write(un,*) 'f     = ';write(un,*) this%f
-           endif
-         else
-           write(un,*) 0
-         endif
-         write(un,*) 's     = ';write(un,*) this%s
-         write(un,*) 's_1D  = ';write(un,*) this%s_1D
+         call export_primitives(this,un)
        end subroutine
 
        subroutine import_grid_field(this,un)
          implicit none
          type(grid_field),intent(inout) :: this
          integer,intent(in) :: un
-         integer,dimension(3) :: s_f
          call delete(this)
-         read(un,*) s_f
-         if (all((/s_f(1).gt.0,s_f(2).gt.0,s_f(3).gt.0/))) then
-           allocate(this%f(s_f(1),s_f(2),s_f(3)))
-           read(un,*); read(un,*) this%f
-         endif
-         read(un,*); read(un,*) this%s
-         read(un,*); read(un,*) this%s_1D
+         call import_primitives(this,un)
        end subroutine
 
        subroutine export_primitives_grid_field(this,un)

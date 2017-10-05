@@ -134,13 +134,12 @@
          integer,intent(in) :: un
          integer :: i_c
          integer :: s_c
+         call export_primitives(this,un)
          s_c = size(this%c)
          write(un,*) s_c
          do i_c=1,s_c
            call export(this%c(i_c),un)
          enddo
-         write(un,*) 'volume   = ';write(un,*) this%volume
-         write(un,*) 'defined  = ';write(un,*) this%defined
        end subroutine
 
        subroutine import_grid(this,un)
@@ -150,14 +149,13 @@
          integer :: i_c
          integer :: s_c
          call delete(this)
+         call import_primitives(this,un)
          read(un,*) s_c
          if (s_c.gt.0) then
            do i_c=1,s_c
              call import(this%c(i_c),un)
            enddo
          endif
-         read(un,*); read(un,*) this%volume
-         read(un,*); read(un,*) this%defined
        end subroutine
 
        subroutine export_primitives_grid(this,un)

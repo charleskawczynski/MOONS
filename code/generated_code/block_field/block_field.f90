@@ -169,13 +169,10 @@
          implicit none
          type(block_field),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'BCs_defined                     = ';write(un,*) this%BCs_defined
-         write(un,*) 'necessary_for_restart           = ';write(un,*) this%necessary_for_restart
+         call export_primitives(this,un)
          call export(this%BCs,un)
          call export(this%GF,un)
          call export(this%DL,un)
-         write(un,*) 'many_cell_N_periodic            = ';write(un,*) this%many_cell_N_periodic
-         write(un,*) 'many_cell                       = ';write(un,*) this%many_cell
          call export(this%PA_assign_ghost_XPeriodic,un)
          call export(this%PA_assign_ghost_N_XPeriodic,un)
          call export(this%PA_assign_wall_Dirichlet,un)
@@ -188,13 +185,10 @@
          type(block_field),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%BCs_defined
-         read(un,*); read(un,*) this%necessary_for_restart
+         call import_primitives(this,un)
          call import(this%BCs,un)
          call import(this%GF,un)
          call import(this%DL,un)
-         read(un,*); read(un,*) this%many_cell_N_periodic
-         read(un,*); read(un,*) this%many_cell
          call import(this%PA_assign_ghost_XPeriodic,un)
          call import(this%PA_assign_ghost_N_XPeriodic,un)
          call import(this%PA_assign_wall_Dirichlet,un)

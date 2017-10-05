@@ -314,7 +314,7 @@
          integer :: s_I_OPP
          integer :: s_I_OPP_periodic_N
          integer :: s_i_2D
-         write(un,*) 's                 = ';write(un,*) this%s
+         call export_primitives(this,un)
          s_G = size(this%G)
          write(un,*) s_G
          do i_G=1,s_G
@@ -350,10 +350,6 @@
          do i_i_2D=1,s_i_2D
            call export(this%i_2D(i_i_2D),un)
          enddo
-         write(un,*) 'dh                = ';write(un,*) this%dh
-         write(un,*) 'nhat              = ';write(un,*) this%nhat
-         write(un,*) 'c_w               = ';write(un,*) this%c_w
-         write(un,*) 'Robin_coeff       = ';write(un,*) this%Robin_coeff
        end subroutine
 
        subroutine import_face_SD(this,un)
@@ -375,7 +371,7 @@
          integer :: s_I_OPP_periodic_N
          integer :: s_i_2D
          call delete(this)
-         read(un,*); read(un,*) this%s
+         call import_primitives(this,un)
          read(un,*) s_G
          if (s_G.gt.0) then
            do i_G=1,s_G
@@ -418,10 +414,6 @@
              call import(this%i_2D(i_i_2D),un)
            enddo
          endif
-         read(un,*); read(un,*) this%dh
-         read(un,*); read(un,*) this%nhat
-         read(un,*); read(un,*) this%c_w
-         read(un,*); read(un,*) this%Robin_coeff
        end subroutine
 
        subroutine export_primitives_face_SD(this,un)

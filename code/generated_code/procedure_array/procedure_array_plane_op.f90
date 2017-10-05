@@ -145,7 +145,7 @@
          integer,intent(in) :: un
          integer :: i_SP
          integer :: s_SP
-         write(un,*) 'N        = ';write(un,*) this%N
+         call export_primitives(this,un)
          if (allocated(this%SP)) then
            s_SP = size(this%SP)
            write(un,*) s_SP
@@ -157,7 +157,6 @@
              write(un,*) 0
            endif
          endif
-         write(un,*) 'defined  = ';write(un,*) this%defined
        end subroutine
 
        subroutine import_procedure_array_plane_op(this,un)
@@ -167,7 +166,7 @@
          integer :: i_SP
          integer :: s_SP
          call delete(this)
-         read(un,*); read(un,*) this%N
+         call import_primitives(this,un)
          read(un,*) s_SP
          if (s_SP.gt.0) then
            allocate(this%SP(s_SP))
@@ -175,7 +174,6 @@
              call import(this%SP(i_SP),un)
            enddo
          endif
-         read(un,*); read(un,*) this%defined
        end subroutine
 
        subroutine export_primitives_procedure_array_plane_op(this,un)

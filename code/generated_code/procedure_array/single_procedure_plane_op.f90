@@ -109,8 +109,7 @@
          implicit none
          type(single_procedure_plane_op),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'defined  = ';write(un,*) this%defined
-         write(un,*) 'ID       = ';write(un,*) this%ID
+         call export_primitives(this,un)
        end subroutine
 
        subroutine import_single_procedure_plane_op(this,un)
@@ -118,8 +117,7 @@
          type(single_procedure_plane_op),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%defined
-         read(un,*); read(un,*) this%ID
+         call import_primitives(this,un)
        end subroutine
 
        subroutine export_primitives_single_procedure_plane_op(this,un)

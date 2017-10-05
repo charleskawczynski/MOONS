@@ -305,24 +305,7 @@
          integer :: s_colCC
          integer :: s_colN
          integer :: s_colCC_centered
-         write(un,*) 'hmin               = ';write(un,*) this%hmin
-         write(un,*) 'hmax               = ';write(un,*) this%hmax
-         write(un,*) 'amin               = ';write(un,*) this%amin
-         write(un,*) 'amax               = ';write(un,*) this%amax
-         write(un,*) 'maxRange           = ';write(un,*) this%maxRange
-         write(un,*) 'dhMin              = ';write(un,*) this%dhMin
-         write(un,*) 'dhMax              = ';write(un,*) this%dhMax
-         write(un,*) 'dhc_e              = ';write(un,*) this%dhc_e
-         write(un,*) 'dhn_e              = ';write(un,*) this%dhn_e
-         write(un,*) 'hc_e               = ';write(un,*) this%hc_e
-         write(un,*) 'hn_e               = ';write(un,*) this%hn_e
-         write(un,*) 'sc                 = ';write(un,*) this%sc
-         write(un,*) 'sn                 = ';write(un,*) this%sn
-         write(un,*) 'N                  = ';write(un,*) this%N
-         write(un,*) 'defined            = ';write(un,*) this%defined
-         write(un,*) 'i_midplane         = ';write(un,*) this%i_midplane
-         write(un,*) 'stencils_defined   = ';write(un,*) this%stencils_defined
-         write(un,*) 'stencils_modified  = ';write(un,*) this%stencils_modified
+         call export_primitives(this,un)
          call export(this%stagCC2N,un)
          call export(this%stagN2CC,un)
          call export(this%theta,un)
@@ -358,24 +341,7 @@
          integer :: s_colN
          integer :: s_colCC_centered
          call delete(this)
-         read(un,*); read(un,*) this%hmin
-         read(un,*); read(un,*) this%hmax
-         read(un,*); read(un,*) this%amin
-         read(un,*); read(un,*) this%amax
-         read(un,*); read(un,*) this%maxRange
-         read(un,*); read(un,*) this%dhMin
-         read(un,*); read(un,*) this%dhMax
-         read(un,*); read(un,*) this%dhc_e
-         read(un,*); read(un,*) this%dhn_e
-         read(un,*); read(un,*) this%hc_e
-         read(un,*); read(un,*) this%hn_e
-         read(un,*); read(un,*) this%sc
-         read(un,*); read(un,*) this%sn
-         read(un,*); read(un,*) this%N
-         read(un,*); read(un,*) this%defined
-         read(un,*); read(un,*) this%i_midplane
-         read(un,*); read(un,*) this%stencils_defined
-         read(un,*); read(un,*) this%stencils_modified
+         call import_primitives(this,un)
          call import(this%stagCC2N,un)
          call import(this%stagN2CC,un)
          call import(this%theta,un)

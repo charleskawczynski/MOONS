@@ -125,12 +125,7 @@
          implicit none
          type(export_frequency_params),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'export_ever        = ';write(un,*) this%export_ever
-         write(un,*) 'export_first_step  = ';write(un,*) this%export_first_step
-         write(un,*) 'export_now         = ';write(un,*) this%export_now
-         write(un,*) 'frequency_coeff    = ';write(un,*) this%frequency_coeff
-         write(un,*) 'frequency_base     = ';write(un,*) this%frequency_base
-         write(un,*) 'frequency_exp      = ';write(un,*) this%frequency_exp
+         call export_primitives(this,un)
        end subroutine
 
        subroutine import_export_frequency_params(this,un)
@@ -138,12 +133,7 @@
          type(export_frequency_params),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%export_ever
-         read(un,*); read(un,*) this%export_first_step
-         read(un,*); read(un,*) this%export_now
-         read(un,*); read(un,*) this%frequency_coeff
-         read(un,*); read(un,*) this%frequency_base
-         read(un,*); read(un,*) this%frequency_exp
+         call import_primitives(this,un)
        end subroutine
 
        subroutine export_primitives_export_frequency_params(this,un)

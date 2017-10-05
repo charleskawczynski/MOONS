@@ -213,38 +213,42 @@ class fortran_property:
 
     return CF.indent_lines(L)
 
-  def write_export(self,primitives_only):
+  def write_export(self,primitives_only,non_primitives_only):
     L = []
     p = "write(un,*) '"+self.name+" "+self.display_spaces+" = ';"
     # p = ""
     if       self.LL.primitive and     self.allocatable and     self.dimension>1 and     self.rank>1:
-      L = L + ['if (allocated(this%'+self.name+')) then']
-      L = L + [self.int_rank_shape_this]
-      L = L + [self.export_rank_shape]
-      L = L + [self.if_sufficient_size]
-      L = L + [p+'write(un,*) this%'  +self.name]
-      L = L + ['endif']
-      L = L + ['else']
-      L = L + [self.export_zero_shape]
-      L = L + ['endif']
+      if not non_primitives_only:
+        L = L + ['if (allocated(this%'+self.name+')) then']
+        L = L + [self.int_rank_shape_this]
+        L = L + [self.export_rank_shape]
+        L = L + [self.if_sufficient_size]
+        L = L + [p+'write(un,*) this%'  +self.name]
+        L = L + ['endif']
+        L = L + ['else']
+        L = L + [self.export_zero_shape]
+        L = L + ['endif']
     elif     self.LL.primitive and not self.allocatable and     self.dimension>1 and     self.rank>1: pass
     elif     self.LL.primitive and     self.allocatable and     self.dimension>1 and not self.rank>1:
-      L = L + ['if (allocated(this%'+self.name+')) then']
-      L = L + [self.int_rank_shape_this]
-      L = L + [self.export_rank_shape]
-      L = L + [self.if_sufficient_size]
-      L = L + [p+'write(un,*) this%'  +self.name]
-      L = L + ['endif']
-      L = L + ['else']
-      L = L + [self.export_zero_shape]
-      L = L + ['endif']
+      if not non_primitives_only:
+        L = L + ['if (allocated(this%'+self.name+')) then']
+        L = L + [self.int_rank_shape_this]
+        L = L + [self.export_rank_shape]
+        L = L + [self.if_sufficient_size]
+        L = L + [p+'write(un,*) this%'  +self.name]
+        L = L + ['endif']
+        L = L + ['else']
+        L = L + [self.export_zero_shape]
+        L = L + ['endif']
     elif     self.LL.primitive and not self.allocatable and     self.dimension>1 and not self.rank>1:
-      L = L + [p+'write(un,*) this%'  +self.name]
+      if not non_primitives_only:
+        L = L + [p+'write(un,*) this%'  +self.name]
     elif     self.LL.primitive and not self.allocatable and not self.dimension>1 and not self.rank>1:
-      L = L + [p+'write(un,*) this%'  +self.name]
+      if not non_primitives_only:
+        L = L + [p+'write(un,*) this%'  +self.name]
 
     elif     self.LL.object    and     self.allocatable and     self.dimension>1 and     self.rank>1:
-      if not primitives_only:
+      if not primitives_only or non_primitives_only:
         L = L + ['if (allocated(this%'+self.name+')) then']
         L = L + [self.int_rank_shape_this]
         L = L + [self.export_rank_shape]
@@ -255,14 +259,14 @@ class fortran_property:
         L = L + [self.export_zero_shape]
         L = L + ['endif']
     elif     self.LL.object    and not self.allocatable and     self.dimension>1 and     self.rank>1:
-      if not primitives_only:
+      if not primitives_only or non_primitives_only:
         L = L + [self.int_rank_shape_this]
         L = L + [self.export_rank_shape]
         L = L + [x for x in ['do '+self.do_loop_iter+'=1,'+self.do_loop_iter_max]]
         L = L + ['call export(this%' + self.name+'('+self.do_loop_iter+'),un)']
         L = L + ['enddo']
     elif     self.LL.object    and     self.allocatable and     self.dimension>1 and not self.rank>1:
-      if not primitives_only:
+      if not primitives_only or non_primitives_only:
         L = L + ['if (allocated(this%'+self.name+')) then']
         L = L + [self.int_rank_shape_this]
         L = L + [self.export_rank_shape]
@@ -275,14 +279,14 @@ class fortran_property:
         L = L + ['endif']
         L = L + ['endif']
     elif     self.LL.object    and not self.allocatable and     self.dimension>1 and not self.rank>1:
-      if not primitives_only:
+      if not primitives_only or non_primitives_only:
         L = L + [self.int_rank_shape_this]
         L = L + [self.export_rank_shape]
         L = L + [x for x in ['do '+self.do_loop_iter+'=1,'+self.do_loop_iter_max]]
         L = L + ['call export(this%' + self.name+'('+self.do_loop_iter+'),un)']
         L = L + ['enddo']
     elif     self.LL.object    and not self.allocatable and not self.dimension>1 and not self.rank>1:
-      if not primitives_only:
+      if not primitives_only or non_primitives_only:
         L = L + ['call export(this%' + self.name + ',un)']
 
     elif     self.LL.procedure and     self.allocatable and     self.dimension>1 and     self.rank>1: pass
@@ -294,31 +298,36 @@ class fortran_property:
 
     return CF.indent_lines(L)
 
-  def write_import(self,primitives_only):
+  def write_import(self,primitives_only,non_primitives_only):
     L = []
     p = "read(un,*); "
     # p = ""
     if       self.LL.primitive and     self.allocatable and     self.dimension>1 and     self.rank>1:
-      L = L + [self.import_rank_shape]
-      L = L + [self.if_sufficient_size]
-      L = L + ['allocate(this%'+self.name+'('+self.int_rank_list+'))']
-      L = L + [p+'read(un,*) this%'  +self.name]
-      L = L + ['endif']
+      if not non_primitives_only:
+        L = L + [self.import_rank_shape]
+        L = L + [self.if_sufficient_size]
+        L = L + ['allocate(this%'+self.name+'('+self.int_rank_list+'))']
+        L = L + [p+'read(un,*) this%'  +self.name]
+        L = L + ['endif']
     elif     self.LL.primitive and not self.allocatable and     self.dimension>1 and     self.rank>1:
-      L = L + [p+'read(un,*) this%'  +self.name]
+      if not non_primitives_only:
+        L = L + [p+'read(un,*) this%'  +self.name]
     elif     self.LL.primitive and     self.allocatable and     self.dimension>1 and not self.rank>1:
-      L = L + [self.import_rank_shape]
-      L = L + [self.if_sufficient_size]
-      L = L + ['allocate(this%'+self.name+'('+self.do_loop_iter_max+'))']
-      L = L + [p+'read(un,*) this%'  +self.name]
-      L = L + ['endif']
+      if not non_primitives_only:
+        L = L + [self.import_rank_shape]
+        L = L + [self.if_sufficient_size]
+        L = L + ['allocate(this%'+self.name+'('+self.do_loop_iter_max+'))']
+        L = L + [p+'read(un,*) this%'  +self.name]
+        L = L + ['endif']
     elif     self.LL.primitive and not self.allocatable and     self.dimension>1 and not self.rank>1:
-      L = L + [p+'read(un,*) this%'  +self.name]
+      if not non_primitives_only:
+        L = L + [p+'read(un,*) this%'  +self.name]
     elif     self.LL.primitive and not self.allocatable and not self.dimension>1 and not self.rank>1:
-      L = L + [p+'read(un,*) this%'  +self.name]
+      if not non_primitives_only:
+        L = L + [p+'read(un,*) this%'  +self.name]
 
     elif     self.LL.object    and     self.allocatable and     self.dimension>1 and     self.rank>1:
-      if not primitives_only:
+      if not primitives_only or non_primitives_only:
         L = L + [self.import_rank_shape]
         L = L + [self.if_sufficient_size]
         L = L + ['allocate(this%'+self.name+'('+self.int_rank_list+'))']
@@ -327,10 +336,10 @@ class fortran_property:
         L = L + ['enddo']
         L = L + ['endif']
     elif     self.LL.object    and not self.allocatable and     self.dimension>1 and     self.rank>1:
-      if not primitives_only:
+      if not primitives_only or non_primitives_only:
         L = L + ['call import(this%' + self.name + ',un)']
     elif     self.LL.object    and     self.allocatable and     self.dimension>1 and not self.rank>1:
-      if not primitives_only:
+      if not primitives_only or non_primitives_only:
         L = L + [self.import_rank_shape]
         L = L + [self.if_sufficient_size]
         L = L + ['allocate(this%'+self.name+'('+self.do_loop_iter_max+'))']
@@ -339,7 +348,7 @@ class fortran_property:
         L = L + ['enddo']
         L = L + ['endif']
     elif     self.LL.object    and not self.allocatable and     self.dimension>1 and not self.rank>1:
-      if not primitives_only:
+      if not primitives_only or non_primitives_only:
         L = L + [self.import_rank_shape]
         L = L + [self.if_sufficient_size]
         L = L + ['do '+self.do_loop_iter+'=1,'+self.do_loop_iter_max]
@@ -347,7 +356,7 @@ class fortran_property:
         L = L + ['enddo']
         L = L + ['endif']
     elif     self.LL.object    and not self.allocatable and not self.dimension>1 and not self.rank>1:
-      if not primitives_only:
+      if not primitives_only or non_primitives_only:
         L = L + ['call import(this%' + self.name+',un)']
 
     elif     self.LL.procedure and     self.allocatable and     self.dimension>1 and     self.rank>1: pass

@@ -146,16 +146,7 @@
          implicit none
          type(unit_conversion),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'days_per_year       = ';write(un,*) this%days_per_year
-         write(un,*) 'seconds_per_second  = ';write(un,*) this%seconds_per_second
-         write(un,*) 'seconds_per_minute  = ';write(un,*) this%seconds_per_minute
-         write(un,*) 'seconds_per_hour    = ';write(un,*) this%seconds_per_hour
-         write(un,*) 'seconds_per_day     = ';write(un,*) this%seconds_per_day
-         write(un,*) 'seconds_per_year    = ';write(un,*) this%seconds_per_year
-         write(un,*) 'minute_per_seconds  = ';write(un,*) this%minute_per_seconds
-         write(un,*) 'hour_per_seconds    = ';write(un,*) this%hour_per_seconds
-         write(un,*) 'day_per_seconds     = ';write(un,*) this%day_per_seconds
-         write(un,*) 'year_per_seconds    = ';write(un,*) this%year_per_seconds
+         call export_primitives(this,un)
        end subroutine
 
        subroutine import_unit_conversion(this,un)
@@ -163,16 +154,7 @@
          type(unit_conversion),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
-         read(un,*); read(un,*) this%days_per_year
-         read(un,*); read(un,*) this%seconds_per_second
-         read(un,*); read(un,*) this%seconds_per_minute
-         read(un,*); read(un,*) this%seconds_per_hour
-         read(un,*); read(un,*) this%seconds_per_day
-         read(un,*); read(un,*) this%seconds_per_year
-         read(un,*); read(un,*) this%minute_per_seconds
-         read(un,*); read(un,*) this%hour_per_seconds
-         read(un,*); read(un,*) this%day_per_seconds
-         read(un,*); read(un,*) this%year_per_seconds
+         call import_primitives(this,un)
        end subroutine
 
        subroutine export_primitives_unit_conversion(this,un)

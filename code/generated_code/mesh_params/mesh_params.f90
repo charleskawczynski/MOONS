@@ -190,6 +190,7 @@
          integer :: i_s_ext
          integer :: s_s_base
          integer :: s_s_ext
+         call export_primitives(this,un)
          call export(this%MQP,un)
          if (allocated(this%s_base)) then
            s_s_base = size(this%s_base)
@@ -213,8 +214,6 @@
              write(un,*) 0
            endif
          endif
-         write(un,*) 'N_base  = ';write(un,*) this%N_base
-         write(un,*) 'N_ext   = ';write(un,*) this%N_ext
        end subroutine
 
        subroutine import_mesh_params(this,un)
@@ -226,6 +225,7 @@
          integer :: s_s_base
          integer :: s_s_ext
          call delete(this)
+         call import_primitives(this,un)
          call import(this%MQP,un)
          read(un,*) s_s_base
          if (s_s_base.gt.0) then
@@ -241,8 +241,6 @@
              call import(this%s_ext(i_s_ext),un)
            enddo
          endif
-         read(un,*); read(un,*) this%N_base
-         read(un,*); read(un,*) this%N_ext
        end subroutine
 
        subroutine export_primitives_mesh_params(this,un)
