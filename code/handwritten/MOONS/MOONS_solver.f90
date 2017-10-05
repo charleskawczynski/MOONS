@@ -87,39 +87,42 @@
            if (M%C%SP%VS%B%SS%solve) call iterate_step(M%C%SP%VS%B%TMP)
            call iterate_step(M%C%SP%coupled)
 
-           if (M%C%SP%coupled%n_step.eq.100) then
+           if (M%C%SP%coupled%n_step.eq.200) then
              write(*,*) 'about to export in MOONS_solver'
              call export_structured(M%C)
              call export_structured(M%GE)
-             stop 'Done in MOONS_solver'
            endif
 
            if (M%C%SP%VS%T%SS%solve) call export_unsteady(M%GE%nrg,M%C%SP,M%C%SP%VS%T%TMP,M%C%SP%EF,M%C%EN,M%C%DT)
            if (M%C%SP%VS%U%SS%solve) call export_unsteady(M%GE%mom,M%C%SP,M%C%SP%VS%U%TMP,M%C%SP%EF,M%C%EN,M%C%DT)
            if (M%C%SP%VS%B%SS%solve) call export_unsteady(M%GE%ind,M%C%SP,M%C%SP%VS%B%TMP,M%C%SP%EF,M%C%EN,M%C%DT)
 
+           if (M%C%SP%coupled%n_step.eq.447) then
+             stop 'Done in MOONS_solver'
+           endif
+
            ! Statistics
            call update(M%GE%mom%TS,M%GE%mom%m,M%GE%mom%U,M%C%SP%VS%U%TMP,M%GE%mom%temp_F1,M%GE%mom%temp_CC_VF,M%GE%mom%TF_CC)
 
-           write(*,*) 'GH 1.1';call import_structured(M%C%SP%DP)
-           write(*,*) 'GH 1.2';call import_structured(M%GE%mom%PCG_U%ISP%EC)
-           write(*,*) 'GH 1.3';call import_structured(M%GE%mom%PCG_P%ISP%EC)
-           write(*,*) 'GH 1.4';call import_structured(M%GE%ind%PCG_B%ISP%EC)
-           write(*,*) 'GH 1.5';call import_structured(M%GE%ind%PCG_B%ISP%EC)
-           write(*,*) 'GH 1.6';call import_structured(M%GE%ind%PCG_cleanB%ISP%EC)
-           write(*,*) 'GH 1.7';call import_exit_criteria(M%C%SP%VS)
-           write(*,*) 'GH 1.8';call import_TMP_dt(M%C%SP%VS)
-           write(*,*) 'GH 1.9';call import_structured(M%C%SP%coupled%TS)
-           write(*,*) 'GH 1.10';if (M%C%SP%SCP%couple_time_steps) call couple_time_step(M%C%SP%VS,M%C%SP%coupled)
+           call import_structured(M%C%SP%DP)
+           call import_structured(M%GE%mom%PCG_U%ISP%EC)
+           call import_structured(M%GE%mom%PCG_P%ISP%EC)
+           call import_structured(M%GE%ind%PCG_B%ISP%EC)
+           call import_structured(M%GE%ind%PCG_B%ISP%EC)
+           call import_structured(M%GE%ind%PCG_cleanB%ISP%EC)
+           call import_exit_criteria(M%C%SP%VS)
+           call import_TMP_dt(M%C%SP%VS)
+           call import_structured(M%C%SP%coupled%TS)
+           if (M%C%SP%SCP%couple_time_steps) call couple_time_step(M%C%SP%VS,M%C%SP%coupled)
 
-           write(*,*) 'GH 2.1';call update(M%C%ES,M%C%sc%t_passed)
+           call update(M%C%ES,M%C%sc%t_passed)
 
-           write(*,*) 'GH 2.2';call import_structured(M%C%EN)
-           write(*,*) 'GH 2.3';call update(M%C%EN,M%C%ES%export_now)
-           write(*,*) 'GH 2.4';if (M%C%EN%any_next) call export_structured(M%C%EN) ! May be needed to avoid constant exporting
+           call import_structured(M%C%EN)
+           call update(M%C%EN,M%C%ES%export_now)
+           if (M%C%EN%any_next) call export_structured(M%C%EN) ! May be needed to avoid constant exporting
 
-           write(*,*) 'GH 2.5';call toc(M%C%sc,M%C%SP%coupled)
-           write(*,*) 'GH 2.6';if (M%C%SP%EF%info%export_now) then
+           call toc(M%C%sc,M%C%SP%coupled)
+           if (M%C%SP%EF%info%export_now) then
              ! oldest_modified_file violates intent, but this
              ! would be better to update outside the solvers,
              ! since it should be updated for all solver variables.
@@ -127,14 +130,14 @@
              !                              str(M%C%DT%restart1),&
              !                              str(M%C%DT%restart2),'primitives')
 
-             write(*,*) 'GH 2.7';if (M%C%SP%FCL%export_heavy) then
-               write(*,*) 'GH 2.8';call print(M%C%sc,M%C%SP%coupled)
+             if (M%C%SP%FCL%export_heavy) then
+               call print(M%C%sc,M%C%SP%coupled)
                write(*,*) 'Working directory = ',str(M%C%DT%tar)
              else
-               write(*,*) 'GH 2.9';call print_light(M%C%sc,M%C%SP%coupled)
+               call print_light(M%C%sc,M%C%SP%coupled)
              endif
-             write(*,*) 'GH 2.10';call export(M%C%sc,M%C%SP%coupled%t)
-             write(*,*) 'GH 2.11';call import_structured(M%C%KS)
+             call export(M%C%sc,M%C%SP%coupled%t)
+             call import_structured(M%C%KS)
            endif
            ! call import_structured(M%C%SP%EF)
          enddo

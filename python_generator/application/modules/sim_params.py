@@ -207,10 +207,32 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('t_eta',real,priv)
 	g.module[m_name].add_prop(['dir','name'],'string',priv)
 
+	m_name = 'probe_set_mom'
+	g.add_module(m_name)
+	g.module[m_name].set_folder_name(__name__.split('.')[1])
+	g.module[m_name].set_used_modules(['IO_tools_mod'])
+	g.module[m_name].add_prop(['probe_KE','probe_KE_2C','probe_divU','probe_Q'],'probe',priv)
+
+	m_name = 'probe_set_ind'
+	g.add_module(m_name)
+	g.module[m_name].set_folder_name(__name__.split('.')[1])
+	g.module[m_name].set_used_modules(['IO_tools_mod'])
+	g.module[m_name].add_prop(['probe_divB','probe_divJ','JE','JE_fluid'],'probe',priv)
+	g.module[m_name].add_prop(['ME','ME_fluid','ME_conductor','probe_dB0dt','probe_B0'],'probe',priv,F,1,3)
+
+	m_name = 'probe_set_nrg'
+	g.add_module(m_name)
+	g.module[m_name].set_folder_name(__name__.split('.')[1])
+	g.module[m_name].set_used_modules(['IO_tools_mod'])
+	g.module[m_name].add_prop('probe_divQ','probe',priv,F)
+
 	m_name = 'sim_params'
 	g.add_module(m_name)
 	g.module[m_name].set_folder_name(__name__.split('.')[1])
 	g.module[m_name].set_used_modules(['IO_tools_mod'])
+	g.module[m_name].add_prop('PS_mom'      ,'probe_set_mom',priv)
+	g.module[m_name].add_prop('PS_ind'      ,'probe_set_ind',priv)
+	g.module[m_name].add_prop('PS_nrg'      ,'probe_set_nrg',priv)
 	g.module[m_name].add_prop('VS'          ,'var_set',priv)
 	g.module[m_name].add_prop('MP_mom'      ,'mesh_params',priv)
 	g.module[m_name].add_prop('MQP'         ,'mesh_quality_params',priv)

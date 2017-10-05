@@ -77,7 +77,7 @@
        subroutine init_energy(nrg,SP,DT)
          implicit none
          type(energy),intent(inout) :: nrg
-         type(sim_params),intent(in) :: SP
+         type(sim_params),intent(inout) :: SP
          type(dir_tree),intent(in) :: DT
          integer :: temp_unit
          type(SF) :: k_cc
@@ -126,8 +126,6 @@
          call delete(k_cc)
          write(*,*) '     Materials initialized'
 
-         call init(nrg%Probe_divQ,str(DT%T%residual),'probe_divQ',SP%FCL%restart_all,.true.,SP%VS%T%TMP)
-
          call init(nrg%PCG_T,nrg_diffusion,nrg_diffusion_explicit,prec_lap_SF,nrg%m,&
          SP%VS%T%ISP,SP%VS%T%MFP,nrg%T,nrg%T,nrg%temp_F_TF,str(DT%T%residual),'T',.false.,.false.)
 
@@ -135,7 +133,6 @@
          call display(nrg,SP,temp_unit)
          call close_and_message(temp_unit,str(DT%params),'info_nrg')
 
-         write(*,*) '     probes initialized'
          write(*,*) '     Finished'
        end subroutine
 
@@ -197,7 +194,7 @@
        subroutine export_unsteady_0D_nrg(nrg,SP,TMP)
          implicit none
          type(energy),intent(inout) :: nrg
-         type(sim_params),intent(in) :: SP
+         type(sim_params),intent(inout) :: SP
          type(time_marching_params),intent(in) :: TMP
          real(cp) :: temp,scale
          scale = SP%DP%KE_scale
@@ -206,7 +203,7 @@
          call assign_ghost_XPeriodic(nrg%divQ,0.0_cp)
          call compute_Ln(temp,nrg%divQ,2.0_cp,nrg%m)
          temp = temp*scale
-         call export(nrg%Probe_divQ,TMP,temp)
+         call export(SP%PS_nrg%probe_divQ,TMP,temp)
        end subroutine
 
        subroutine export_unsteady_1D_nrg(nrg,SP,TMP,DT)
@@ -267,7 +264,7 @@
        subroutine export_unsteady_nrg(nrg,SP,TMP,EF,EN,DT)
          implicit none
          type(energy),intent(inout) :: nrg
-         type(sim_params),intent(in) :: SP
+         type(sim_params),intent(inout) :: SP
          type(time_marching_params),intent(inout) :: TMP
          type(export_frequency),intent(in) :: EF
          type(export_now),intent(in) :: EN

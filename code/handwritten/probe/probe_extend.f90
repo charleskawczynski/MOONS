@@ -35,9 +35,7 @@
          character(len=*),intent(in) :: tec_dir,tec_name
          logical,intent(in) :: restart,simple
          type(time_marching_params),intent(in) :: TMP
-         call delete(p)
          if (restart) then
-           call import(p)
            call init_probe_restart(p,TMP)
          else
            call init_probe_fresh(p,tec_dir,tec_name,simple)
@@ -180,11 +178,24 @@
          allocate(d(p%cols))
          i_first_to_delete = 1
          i_EOF = 1
+         write(*,*) 'TMP%t = ',TMP%t
          do i=1,TMP%n_step
+           write(*,*) '---------------- i = ',i
            read(un,*,iostat=stat) d
-           if (TMP%t.gt.d(1)) then; i_first_to_delete = i; endif
-           if (stat .lt. 0) then; i_EOF = i; exit; endif
+           write(*,*) 'stat = ',stat
+           write(*,*) 'TMP%n_step = ',TMP%n_step
+           write(*,*) 'd = ',d
+           write(*,*) 'd = ',i_EOF
+           if (TMP%t.gt.d(1)) then
+             i_first_to_delete = i
+           endif
+           if (stat .lt. 0) then
+             i_EOF = i
+             exit
+           endif
          enddo
+         write(*,*) 'i_first_to_delete = ',i_first_to_delete
+         write(*,*) 'i_EOF = ',i_EOF
          close(un)
          un = open_to_read_write(str(p%tec_dir),str(p%tec_name))
          read(un,*); read(un,*); read(un,*)

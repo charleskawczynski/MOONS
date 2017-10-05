@@ -70,7 +70,49 @@
          call print_version()
          call export_version(str(M%C%DT%LDC))
          call init(M%C%sc,str(M%C%DT%wall_clock),'WALL_CLOCK_TIME_INFO')
-         write(*,*) ' ************** FINISHED CONFIGURING MOONS ************** '
+         call config_probes(M)
+         write(*,*) ' ************** FINISHED CONFIGURING MOONS ************* '
+       end subroutine
+
+       subroutine config_probes(M)
+         implicit none
+         type(MOONS),intent(inout) :: M
+         logical :: L
+         write(*,*) ' ************* STARTED CONFIGURING PROBES ************** '
+         L = M%C%SP%FCL%restart_all
+
+         call init(M%C%SP%PS_mom%probe_divU ,str(M%C%DT%U%residual),'probe_divU',L,.true. ,M%C%SP%VS%U%TMP)
+         call init(M%C%SP%PS_mom%probe_KE   ,str(M%C%DT%U%energy)  ,'KE'        ,L,.false.,M%C%SP%VS%U%TMP)
+         call init(M%C%SP%PS_mom%probe_Q    ,str(M%C%DT%U%energy)  ,'probe_Q'   ,L,.true. ,M%C%SP%VS%U%TMP)
+         write(*,*) '     Momentum probes initialized'
+
+         if (M%C%SP%IT%unsteady_B0%add) then
+           call init(M%C%SP%PS_ind%probe_dB0dt(1),str(M%C%DT%B%energy),'dB0dt_x',L,.true.,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%probe_dB0dt(2),str(M%C%DT%B%energy),'dB0dt_y',L,.true.,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%probe_dB0dt(3),str(M%C%DT%B%energy),'dB0dt_z',L,.true.,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%probe_B0(1)   ,str(M%C%DT%B%energy),'B0_x',   L,.true.,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%probe_B0(2)   ,str(M%C%DT%B%energy),'B0_y',   L,.true.,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%probe_B0(3)   ,str(M%C%DT%B%energy),'B0_z',   L,.true.,M%C%SP%VS%B%TMP)
+         endif
+         call init(M%C%SP%PS_ind%probe_divB     ,str(M%C%DT%B%residual),'transient_divB',L,.true.,M%C%SP%VS%B%TMP)
+         call init(M%C%SP%PS_ind%probe_divJ     ,str(M%C%DT%J%residual),'transient_divJ',L,.true.,M%C%SP%VS%B%TMP)
+         call init(M%C%SP%PS_ind%JE             ,str(M%C%DT%J%energy),'JE',            L,.true.,M%C%SP%VS%B%TMP)
+         call init(M%C%SP%PS_ind%JE_fluid       ,str(M%C%DT%J%energy),'JE_fluid',      L,.true.,M%C%SP%VS%B%TMP)
+         call init(M%C%SP%PS_ind%ME(1)          ,str(M%C%DT%B%energy),'ME',           L,.false.,M%C%SP%VS%B%TMP)
+         call init(M%C%SP%PS_ind%ME_fluid(1)    ,str(M%C%DT%B%energy),'ME_fluid',     L,.false.,M%C%SP%VS%B%TMP)
+         call init(M%C%SP%PS_ind%ME_conductor(1),str(M%C%DT%B%energy),'ME_conductor', L,.false.,M%C%SP%VS%B%TMP)
+         call init(M%C%SP%PS_ind%ME(2)          ,str(M%C%DT%B%energy),'ME0',          L,.false.,M%C%SP%VS%B%TMP)
+         call init(M%C%SP%PS_ind%ME_fluid(2)    ,str(M%C%DT%B%energy),'ME0_fluid',    L,.false.,M%C%SP%VS%B%TMP)
+         call init(M%C%SP%PS_ind%ME_conductor(2),str(M%C%DT%B%energy),'ME0_conductor',L,.false.,M%C%SP%VS%B%TMP)
+         call init(M%C%SP%PS_ind%ME(3)          ,str(M%C%DT%B%energy),'ME1',          L,.false.,M%C%SP%VS%B%TMP)
+         call init(M%C%SP%PS_ind%ME_fluid(3)    ,str(M%C%DT%B%energy),'ME1_fluid',    L,.false.,M%C%SP%VS%B%TMP)
+         call init(M%C%SP%PS_ind%ME_conductor(3),str(M%C%DT%B%energy),'ME1_conductor',L,.false.,M%C%SP%VS%B%TMP)
+         write(*,*) '     Induction probes initialized'
+
+         call init(M%C%SP%PS_nrg%probe_divQ,str(M%C%DT%T%residual),'probe_divQ',L,.true.,M%C%SP%VS%T%TMP)
+         write(*,*) '     Energy probes initialized'
+
+         write(*,*) ' ************* FINISHED CONFIGURING PROBES ************* '
        end subroutine
 
        end module

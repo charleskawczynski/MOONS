@@ -16,6 +16,9 @@
        use mesh_quality_params_mod
        use mirror_props_mod
        use momentum_terms_mod
+       use probe_set_ind_mod
+       use probe_set_mom_mod
+       use probe_set_nrg_mod
        use sim_config_params_mod
        use string_mod
        use time_marching_params_mod
@@ -56,6 +59,9 @@
        interface suppress_warnings;module procedure suppress_warnings_sim_params;  end interface
 
        type sim_params
+         type(probe_set_mom) :: PS_mom
+         type(probe_set_ind) :: PS_ind
+         type(probe_set_nrg) :: PS_nrg
          type(var_set) :: VS
          type(mesh_params) :: MP_mom
          type(mesh_quality_params) :: MQP
@@ -82,6 +88,9 @@
          type(sim_params),intent(inout) :: this
          type(sim_params),intent(in) :: that
          call delete(this)
+         call init(this%PS_mom,that%PS_mom)
+         call init(this%PS_ind,that%PS_ind)
+         call init(this%PS_nrg,that%PS_nrg)
          call init(this%VS,that%VS)
          call init(this%MP_mom,that%MP_mom)
          call init(this%MQP,that%MQP)
@@ -104,6 +113,9 @@
        subroutine delete_sim_params(this)
          implicit none
          type(sim_params),intent(inout) :: this
+         call delete(this%PS_mom)
+         call delete(this%PS_ind)
+         call delete(this%PS_nrg)
          call delete(this%VS)
          call delete(this%MP_mom)
          call delete(this%MQP)
@@ -127,6 +139,9 @@
          implicit none
          type(sim_params),intent(in) :: this
          integer,intent(in) :: un
+         call display(this%PS_mom,un)
+         call display(this%PS_ind,un)
+         call display(this%PS_nrg,un)
          call display(this%VS,un)
          call display(this%MP_mom,un)
          call display(this%MQP,un)
@@ -150,6 +165,9 @@
          implicit none
          type(sim_params),intent(in) :: this
          integer,intent(in) :: un
+         call display(this%PS_mom,un)
+         call display(this%PS_ind,un)
+         call display(this%PS_nrg,un)
          call display(this%VS,un)
          call display(this%MP_mom,un)
          call display(this%MQP,un)
@@ -195,6 +213,9 @@
          implicit none
          type(sim_params),intent(in) :: this
          integer,intent(in) :: un
+         call export(this%PS_mom,un)
+         call export(this%PS_ind,un)
+         call export(this%PS_nrg,un)
          call export(this%VS,un)
          call export(this%MP_mom,un)
          call export(this%MQP,un)
@@ -219,6 +240,9 @@
          type(sim_params),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
+         call import(this%PS_mom,un)
+         call import(this%PS_ind,un)
+         call import(this%PS_nrg,un)
          call import(this%VS,un)
          call import(this%MP_mom,un)
          call import(this%MQP,un)
@@ -281,6 +305,9 @@
          type(sim_params),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
+         call set_IO_dir(this%PS_mom,dir//'PS_mom'//fortran_PS)
+         call set_IO_dir(this%PS_ind,dir//'PS_ind'//fortran_PS)
+         call set_IO_dir(this%PS_nrg,dir//'PS_nrg'//fortran_PS)
          call set_IO_dir(this%VS,dir//'VS'//fortran_PS)
          call set_IO_dir(this%MP_mom,dir//'MP_mom'//fortran_PS)
          call set_IO_dir(this%MQP,dir//'MQP'//fortran_PS)
@@ -306,6 +333,9 @@
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
+         call make_IO_dir(this%PS_mom,dir//'PS_mom'//fortran_PS)
+         call make_IO_dir(this%PS_ind,dir//'PS_ind'//fortran_PS)
+         call make_IO_dir(this%PS_nrg,dir//'PS_nrg'//fortran_PS)
          call make_IO_dir(this%VS,dir//'VS'//fortran_PS)
          call make_IO_dir(this%MP_mom,dir//'MP_mom'//fortran_PS)
          call make_IO_dir(this%MQP,dir//'MQP'//fortran_PS)
@@ -332,6 +362,9 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
+         call export_structured(this%PS_mom,dir//'PS_mom'//fortran_PS)
+         call export_structured(this%PS_ind,dir//'PS_ind'//fortran_PS)
+         call export_structured(this%PS_nrg,dir//'PS_nrg'//fortran_PS)
          call export_structured(this%VS,dir//'VS'//fortran_PS)
          call export_structured(this%MP_mom,dir//'MP_mom'//fortran_PS)
          call export_structured(this%MQP,dir//'MQP'//fortran_PS)
@@ -359,6 +392,9 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
+         call import_structured(this%PS_mom,dir//'PS_mom'//fortran_PS)
+         call import_structured(this%PS_ind,dir//'PS_ind'//fortran_PS)
+         call import_structured(this%PS_nrg,dir//'PS_nrg'//fortran_PS)
          call import_structured(this%VS,dir//'VS'//fortran_PS)
          call import_structured(this%MP_mom,dir//'MP_mom'//fortran_PS)
          call import_structured(this%MQP,dir//'MQP'//fortran_PS)

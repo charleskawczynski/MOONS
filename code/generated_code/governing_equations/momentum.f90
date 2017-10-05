@@ -11,7 +11,6 @@
        use datatype_conversion_mod
        use dir_manip_mod
        use mesh_mod
-       use probe_mod
        use string_mod
        use time_statistics_VF_mod
        implicit none
@@ -72,10 +71,6 @@
          type(TF) :: U_E
          type(TF) :: TF_CC
          type(TF) :: TF_CC_edge
-         type(probe) :: probe_KE
-         type(probe) :: probe_KE_2C
-         type(probe) :: probe_divU
-         type(probe) :: probe_Q
        end type
 
        contains
@@ -108,10 +103,6 @@
          call init(this%U_E,that%U_E)
          call init(this%TF_CC,that%TF_CC)
          call init(this%TF_CC_edge,that%TF_CC_edge)
-         call init(this%probe_KE,that%probe_KE)
-         call init(this%probe_KE_2C,that%probe_KE_2C)
-         call init(this%probe_divU,that%probe_divU)
-         call init(this%probe_Q,that%probe_Q)
        end subroutine
 
        subroutine delete_momentum(this)
@@ -140,10 +131,6 @@
          call delete(this%U_E)
          call delete(this%TF_CC)
          call delete(this%TF_CC_edge)
-         call delete(this%probe_KE)
-         call delete(this%probe_KE_2C)
-         call delete(this%probe_divU)
-         call delete(this%probe_Q)
        end subroutine
 
        subroutine display_momentum(this,un)
@@ -173,10 +160,6 @@
          call display(this%U_E,un)
          call display(this%TF_CC,un)
          call display(this%TF_CC_edge,un)
-         call display(this%probe_KE,un)
-         call display(this%probe_KE_2C,un)
-         call display(this%probe_divU,un)
-         call display(this%probe_Q,un)
        end subroutine
 
        subroutine display_short_momentum(this,un)
@@ -206,10 +189,6 @@
          call display(this%U_E,un)
          call display(this%TF_CC,un)
          call display(this%TF_CC_edge,un)
-         call display(this%probe_KE,un)
-         call display(this%probe_KE_2C,un)
-         call display(this%probe_divU,un)
-         call display(this%probe_Q,un)
        end subroutine
 
        subroutine display_wrap_momentum(this,dir,name)
@@ -261,10 +240,6 @@
          call export(this%U_E,un)
          call export(this%TF_CC,un)
          call export(this%TF_CC_edge,un)
-         call export(this%probe_KE,un)
-         call export(this%probe_KE_2C,un)
-         call export(this%probe_divU,un)
-         call export(this%probe_Q,un)
        end subroutine
 
        subroutine import_momentum(this,un)
@@ -295,10 +270,6 @@
          call import(this%U_E,un)
          call import(this%TF_CC,un)
          call import(this%TF_CC_edge,un)
-         call import(this%probe_KE,un)
-         call import(this%probe_KE_2C,un)
-         call import(this%probe_divU,un)
-         call import(this%probe_Q,un)
        end subroutine
 
        subroutine export_primitives_momentum(this,un)
@@ -343,10 +314,6 @@
          call set_IO_dir(this%PCG_P,dir//'PCG_P'//fortran_PS)
          call set_IO_dir(this%PCG_U,dir//'PCG_U'//fortran_PS)
          call set_IO_dir(this%TS,dir//'TS'//fortran_PS)
-         call set_IO_dir(this%probe_KE,dir//'probe_KE'//fortran_PS)
-         call set_IO_dir(this%probe_KE_2C,dir//'probe_KE_2C'//fortran_PS)
-         call set_IO_dir(this%probe_divU,dir//'probe_divU'//fortran_PS)
-         call set_IO_dir(this%probe_Q,dir//'probe_Q'//fortran_PS)
        end subroutine
 
        subroutine make_IO_dir_momentum(this,dir)
@@ -358,10 +325,6 @@
          call make_IO_dir(this%PCG_P,dir//'PCG_P'//fortran_PS)
          call make_IO_dir(this%PCG_U,dir//'PCG_U'//fortran_PS)
          call make_IO_dir(this%TS,dir//'TS'//fortran_PS)
-         call make_IO_dir(this%probe_KE,dir//'probe_KE'//fortran_PS)
-         call make_IO_dir(this%probe_KE_2C,dir//'probe_KE_2C'//fortran_PS)
-         call make_IO_dir(this%probe_divU,dir//'probe_divU'//fortran_PS)
-         call make_IO_dir(this%probe_Q,dir//'probe_Q'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_momentum(this,dir)
@@ -374,12 +337,6 @@
          call export_structured(this%PCG_P,dir//'PCG_P'//fortran_PS)
          call export_structured(this%PCG_U,dir//'PCG_U'//fortran_PS)
          call export_structured(this%TS,dir//'TS'//fortran_PS)
-         call export_structured(this%probe_KE,dir//'probe_KE'//fortran_PS)
-         call export_structured(this%probe_KE_2C,&
-         dir//'probe_KE_2C'//fortran_PS)
-         call export_structured(this%probe_divU,&
-         dir//'probe_divU'//fortran_PS)
-         call export_structured(this%probe_Q,dir//'probe_Q'//fortran_PS)
          close(un)
        end subroutine
 
@@ -393,12 +350,6 @@
          call import_structured(this%PCG_P,dir//'PCG_P'//fortran_PS)
          call import_structured(this%PCG_U,dir//'PCG_U'//fortran_PS)
          call import_structured(this%TS,dir//'TS'//fortran_PS)
-         call import_structured(this%probe_KE,dir//'probe_KE'//fortran_PS)
-         call import_structured(this%probe_KE_2C,&
-         dir//'probe_KE_2C'//fortran_PS)
-         call import_structured(this%probe_divU,&
-         dir//'probe_divU'//fortran_PS)
-         call import_structured(this%probe_Q,dir//'probe_Q'//fortran_PS)
          close(un)
        end subroutine
 

@@ -11,7 +11,6 @@
        use dir_manip_mod
        use mesh_mod
        use mesh_domain_mod
-       use probe_mod
        use string_mod
        implicit none
 
@@ -69,7 +68,6 @@
          type(VF) :: temp_CC2_VF
          type(TF) :: temp_CC_TF
          type(TF) :: temp_F_TF
-         type(probe) :: probe_divQ
          type(mesh_domain) :: MD
        end type
 
@@ -101,7 +99,6 @@
          call init(this%temp_CC2_VF,that%temp_CC2_VF)
          call init(this%temp_CC_TF,that%temp_CC_TF)
          call init(this%temp_F_TF,that%temp_F_TF)
-         call init(this%probe_divQ,that%probe_divQ)
          call init(this%MD,that%MD)
        end subroutine
 
@@ -129,7 +126,6 @@
          call delete(this%temp_CC2_VF)
          call delete(this%temp_CC_TF)
          call delete(this%temp_F_TF)
-         call delete(this%probe_divQ)
          call delete(this%MD)
        end subroutine
 
@@ -158,7 +154,6 @@
          call display(this%temp_CC2_VF,un)
          call display(this%temp_CC_TF,un)
          call display(this%temp_F_TF,un)
-         call display(this%probe_divQ,un)
          call display(this%MD,un)
        end subroutine
 
@@ -187,7 +182,6 @@
          call display(this%temp_CC2_VF,un)
          call display(this%temp_CC_TF,un)
          call display(this%temp_F_TF,un)
-         call display(this%probe_divQ,un)
          call display(this%MD,un)
        end subroutine
 
@@ -238,7 +232,6 @@
          call export(this%temp_CC2_VF,un)
          call export(this%temp_CC_TF,un)
          call export(this%temp_F_TF,un)
-         call export(this%probe_divQ,un)
          call export(this%MD,un)
        end subroutine
 
@@ -268,7 +261,6 @@
          call import(this%temp_CC2_VF,un)
          call import(this%temp_CC_TF,un)
          call import(this%temp_F_TF,un)
-         call import(this%probe_divQ,un)
          call import(this%MD,un)
        end subroutine
 
@@ -312,7 +304,6 @@
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call set_IO_dir(this%PCG_T,dir//'PCG_T'//fortran_PS)
-         call set_IO_dir(this%probe_divQ,dir//'probe_divQ'//fortran_PS)
          call set_IO_dir(this%MD,dir//'MD'//fortran_PS)
        end subroutine
 
@@ -323,7 +314,6 @@
          call suppress_warnings(this)
          call make_dir_quiet(dir)
          call make_IO_dir(this%PCG_T,dir//'PCG_T'//fortran_PS)
-         call make_IO_dir(this%probe_divQ,dir//'probe_divQ'//fortran_PS)
          call make_IO_dir(this%MD,dir//'MD'//fortran_PS)
        end subroutine
 
@@ -335,8 +325,6 @@
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          call export_structured(this%PCG_T,dir//'PCG_T'//fortran_PS)
-         call export_structured(this%probe_divQ,&
-         dir//'probe_divQ'//fortran_PS)
          call export_structured(this%MD,dir//'MD'//fortran_PS)
          close(un)
        end subroutine
@@ -349,8 +337,6 @@
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
          call import_structured(this%PCG_T,dir//'PCG_T'//fortran_PS)
-         call import_structured(this%probe_divQ,&
-         dir//'probe_divQ'//fortran_PS)
          call import_structured(this%MD,dir//'MD'//fortran_PS)
          close(un)
        end subroutine

@@ -96,7 +96,7 @@
        subroutine init_mom(mom,SP,DT)
          implicit none
          type(momentum),intent(inout) :: mom
-         type(sim_params),intent(in) :: SP
+         type(sim_params),intent(inout) :: SP
          type(dir_tree),intent(in) :: DT
          type(TF) :: TF_Face
          integer :: temp_unit
@@ -152,13 +152,6 @@
          call init_Ustar_field(mom%Ustar,mom%U)
          write(*,*) '     Intermediate field initialized'
 
-         call init(mom%probe_divU,str(DT%U%residual),'probe_divU',SP%FCL%restart_all,.true.,SP%VS%U%TMP)
-         call init(mom%probe_KE,str(DT%U%energy),'KE',SP%FCL%restart_all,.false.,SP%VS%U%TMP)
-         call init(mom%probe_Q,str(DT%U%energy),'probe_Q',SP%FCL%restart_all,.true.,SP%VS%U%TMP)
-         if (mom%m%MP%plane_any) then
-          call init(mom%probe_KE_2C,str(DT%U%energy),'KE_2C',SP%FCL%restart_all,.true.,SP%VS%U%TMP)
-         endif
-         write(*,*) '     momentum probes initialized'
          call init(mom%TS,mom%m,mom%U,SP%TSP,SP%VS%U%TMP,str(DT%U%stats),'U')
          write(*,*) '     momentum time statistics initialized'
 
@@ -200,7 +193,7 @@
            write(un,*) 'solveUMethod,N_mom,N_PPE = ',SP%VS%U%SS%solve_method,&
            SP%VS%U%ISP%EC%iter_max,SP%VS%P%ISP%EC%iter_max
            write(un,*) 'tol_mom,tol_PPE = ',SP%VS%U%ISP%EC%tol_rel,SP%VS%P%ISP%EC%tol_rel
-           write(un,*) 'nstep,KE = ',SP%VS%U%TMP%n_step,get_data(mom%probe_KE)
+           write(un,*) 'nstep,KE = ',SP%VS%U%TMP%n_step,get_data(SP%PS_mom%probe_KE)
            if (mom%TS%TSP%collect) call display(mom%TS%TSP,un)
            ! call displayPhysicalMinMax(mom%U,'U',un)
            call displayPhysicalMinMax(mom%divU,'divU',un)
@@ -268,29 +261,29 @@
        subroutine export_unsteady_0D_mom(mom,SP,TMP)
          implicit none
          type(momentum),intent(inout) :: mom
-         type(sim_params),intent(in) :: SP
+         type(sim_params),intent(inout) :: SP
          type(time_marching_params),intent(in) :: TMP
          real(cp) :: temp,scale
          scale = SP%DP%KE_scale
 
          call compute_TKE(temp,mom%U_CC,mom%m,scale)
-         call export(mom%probe_KE,TMP,temp)
+         call export(SP%PS_mom%probe_KE,TMP,temp)
 
          if (SP%FCL%compute_surface_power) then
          call surface_power(temp,mom%U,mom%m,mom%temp_F1,mom%temp_F2,mom%temp_CC_VF,mom%TF_CC)
          temp = scale*temp/SP%DP%Re
-         call export(mom%probe_Q,TMP,temp)
+         call export(SP%PS_mom%probe_Q,TMP,temp)
          endif
 
          if (mom%m%MP%plane_any) then
          if (mom%m%MP%plane(1)) call compute_TKE_2C(temp,mom%U_CC%y,mom%U_CC%z,mom%m,scale,mom%temp_CC)
          if (mom%m%MP%plane(2)) call compute_TKE_2C(temp,mom%U_CC%x,mom%U_CC%z,mom%m,scale,mom%temp_CC)
          if (mom%m%MP%plane(3)) call compute_TKE_2C(temp,mom%U_CC%x,mom%U_CC%y,mom%m,scale,mom%temp_CC)
-         call export(mom%probe_KE_2C,TMP,temp)
+         call export(SP%PS_mom%probe_KE_2C,TMP,temp)
          endif
          call div(mom%divU,mom%U,mom%m)
          call compute_Ln(temp,mom%divU,2.0_cp,mom%m)
-         call export(mom%probe_divU,TMP,temp)
+         call export(SP%PS_mom%probe_divU,TMP,temp)
        end subroutine
 
        subroutine export_unsteady_1D_mom(mom,SP,TMP,DT)
@@ -375,7 +368,7 @@
        subroutine export_unsteady_mom(mom,SP,TMP,EF,EN,DT)
          implicit none
          type(momentum),intent(inout) :: mom
-         type(sim_params),intent(in) :: SP
+         type(sim_params),intent(inout) :: SP
          type(export_frequency),intent(in) :: EF
          type(export_now),intent(in) :: EN
          type(dir_tree),intent(in) :: DT

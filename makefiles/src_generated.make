@@ -43,6 +43,9 @@ SRCS_F+=\
 	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)flow_control_logicals.f90\
 	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)sim_config_params.f90\
 	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)dimensionless_params.f90\
+	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)probe_set_mom.f90\
+	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)probe_set_ind.f90\
+	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)probe_set_nrg.f90\
 	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)sim_params.f90\
 	$(SRC_DIR_GENERATED)$(PS)grid_field$(PS)grid_field.f90\
 	$(SRC_DIR_GENERATED)$(PS)sub_domain$(PS)overlap.f90\

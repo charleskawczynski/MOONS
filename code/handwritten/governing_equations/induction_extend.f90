@@ -99,7 +99,7 @@
        subroutine init_induction(ind,SP,DT)
          implicit none
          type(induction),intent(inout) :: ind
-         type(sim_params),intent(in) :: SP
+         type(sim_params),intent(inout) :: SP
          type(dir_tree),intent(in) :: DT
          type(TF) :: TF_face,sigmaInv_edge_TF
          integer :: temp_unit
@@ -178,29 +178,6 @@
 
          call compute_J_ind(ind,SP)
 
-         if (SP%IT%unsteady_B0%add) then
-           call init(ind%probe_dB0dt(1),str(DT%B%energy),'dB0dt_x',SP%FCL%restart_all,.true.,SP%VS%B%TMP)
-           call init(ind%probe_dB0dt(2),str(DT%B%energy),'dB0dt_y',SP%FCL%restart_all,.true.,SP%VS%B%TMP)
-           call init(ind%probe_dB0dt(3),str(DT%B%energy),'dB0dt_z',SP%FCL%restart_all,.true.,SP%VS%B%TMP)
-           call init(ind%probe_B0(1)   ,str(DT%B%energy),'B0_x',   SP%FCL%restart_all,.true.,SP%VS%B%TMP)
-           call init(ind%probe_B0(2)   ,str(DT%B%energy),'B0_y',   SP%FCL%restart_all,.true.,SP%VS%B%TMP)
-           call init(ind%probe_B0(3)   ,str(DT%B%energy),'B0_z',   SP%FCL%restart_all,.true.,SP%VS%B%TMP)
-         endif
-         call init(ind%probe_divB,str(DT%B%residual),'transient_divB',SP%FCL%restart_all,.true.,SP%VS%B%TMP)
-         call init(ind%probe_divJ,str(DT%J%residual),'transient_divJ',SP%FCL%restart_all,.true.,SP%VS%B%TMP)
-         call init(ind%JE,        str(DT%J%energy),'JE',            SP%FCL%restart_all,.true.,SP%VS%B%TMP)
-         call init(ind%JE_fluid,  str(DT%J%energy),'JE_fluid',      SP%FCL%restart_all,.true.,SP%VS%B%TMP)
-         call init(ind%ME(1)          ,str(DT%B%energy),'ME',           SP%FCL%restart_all,.false.,SP%VS%B%TMP)
-         call init(ind%ME_fluid(1)    ,str(DT%B%energy),'ME_fluid',     SP%FCL%restart_all,.false.,SP%VS%B%TMP)
-         call init(ind%ME_conductor(1),str(DT%B%energy),'ME_conductor', SP%FCL%restart_all,.false.,SP%VS%B%TMP)
-         call init(ind%ME(2)          ,str(DT%B%energy),'ME0',          SP%FCL%restart_all,.false.,SP%VS%B%TMP)
-         call init(ind%ME_fluid(2)    ,str(DT%B%energy),'ME0_fluid',    SP%FCL%restart_all,.false.,SP%VS%B%TMP)
-         call init(ind%ME_conductor(2),str(DT%B%energy),'ME0_conductor',SP%FCL%restart_all,.false.,SP%VS%B%TMP)
-         call init(ind%ME(3)          ,str(DT%B%energy),'ME1',          SP%FCL%restart_all,.false.,SP%VS%B%TMP)
-         call init(ind%ME_fluid(3)    ,str(DT%B%energy),'ME1_fluid',    SP%FCL%restart_all,.false.,SP%VS%B%TMP)
-         call init(ind%ME_conductor(3),str(DT%B%energy),'ME1_conductor',SP%FCL%restart_all,.false.,SP%VS%B%TMP)
-
-         write(*,*) '     B/J probes initialized'
 
          ! ********** SET CLEANING PROCEDURE SOLVER SETTINGS *************
 
@@ -241,7 +218,7 @@
            write(un,*) 'solveBMethod,N_ind,N_cleanB = ',SP%VS%B%SS%solve_method,&
            SP%VS%B%ISP%EC%iter_max,SP%VS%phi%ISP%EC%iter_max
            write(un,*) 'tol_ind,tol_cleanB = ',SP%VS%B%ISP%EC%tol_rel,SP%VS%phi%ISP%EC%tol_rel
-           write(un,*) 'nstep,ME = ',SP%VS%B%TMP%n_step,get_data(ind%ME(1))
+           write(un,*) 'nstep,ME = ',SP%VS%B%TMP%n_step,get_data(SP%PS_ind%ME(1))
            ! call displayPhysicalMinMax(ind%dB0dt,'dB0dt',un)
            ! call displayPhysicalMinMax(ind%B0,'B0',un)
            call displayPhysicalMinMax(ind%divB,'divB',un)
@@ -304,40 +281,40 @@
        subroutine export_unsteady_0D_ind(ind,SP,TMP)
          implicit none
          type(induction),intent(inout) :: ind
-         type(sim_params),intent(in) :: SP
+         type(sim_params),intent(inout) :: SP
          type(time_marching_params),intent(in) :: TMP
          real(cp) :: temp,scale
          call compute_divBJ(ind%divB,ind%divJ,ind%B,ind%J,ind%m)
-         call compute_Ln(temp,ind%divB,2.0_cp,ind%m); call export(ind%probe_divB,TMP,temp)
-         call compute_Ln(temp,ind%divJ,2.0_cp,ind%m); call export(ind%probe_divJ,TMP,temp)
+         call compute_Ln(temp,ind%divB,2.0_cp,ind%m); call export(SP%PS_ind%probe_divB,TMP,temp)
+         call compute_Ln(temp,ind%divJ,2.0_cp,ind%m); call export(SP%PS_ind%probe_divJ,TMP,temp)
          if (SP%IT%unsteady_B0%add) then
-           call export(ind%probe_dB0dt(1),TMP,ind%dB0dt%x%BF(1)%GF%f(1,1,1))
-           call export(ind%probe_dB0dt(2),TMP,ind%dB0dt%y%BF(1)%GF%f(1,1,1))
-           call export(ind%probe_dB0dt(3),TMP,ind%dB0dt%z%BF(1)%GF%f(1,1,1))
-           call export(ind%probe_B0(1),TMP,ind%B0%x%BF(1)%GF%f(1,1,1))
-           call export(ind%probe_B0(2),TMP,ind%B0%y%BF(1)%GF%f(1,1,1))
-           call export(ind%probe_B0(3),TMP,ind%B0%z%BF(1)%GF%f(1,1,1))
+           call export(SP%PS_ind%probe_dB0dt(1),TMP,ind%dB0dt%x%BF(1)%GF%f(1,1,1))
+           call export(SP%PS_ind%probe_dB0dt(2),TMP,ind%dB0dt%y%BF(1)%GF%f(1,1,1))
+           call export(SP%PS_ind%probe_dB0dt(3),TMP,ind%dB0dt%z%BF(1)%GF%f(1,1,1))
+           call export(SP%PS_ind%probe_B0(1),TMP,ind%B0%x%BF(1)%GF%f(1,1,1))
+           call export(SP%PS_ind%probe_B0(2),TMP,ind%B0%y%BF(1)%GF%f(1,1,1))
+           call export(SP%PS_ind%probe_B0(3),TMP,ind%B0%z%BF(1)%GF%f(1,1,1))
          endif
 
          scale = SP%DP%ME_scale
          call add(ind%temp_F1,ind%B,ind%B0)
          call face2cellCenter(ind%temp_CC_VF,ind%temp_F1,ind%m)
-         call compute_Total_Energy(ind%ME(1),ind%temp_CC_VF,TMP,ind%m,scale)
-         call compute_Total_Energy_Domain(ind%ME_fluid(1),ind%temp_CC_VF,ind%CC_VF_fluid,TMP,ind%m,scale,ind%MD_fluid)
-         call compute_Total_Energy_Domain(ind%ME_conductor(1),ind%temp_CC_VF,ind%CC_VF_sigma,TMP,ind%m,scale,ind%MD_sigma)
+         call compute_Total_Energy(SP%PS_ind%ME(1),ind%temp_CC_VF,TMP,ind%m,scale)
+         call compute_Total_Energy_Domain(SP%PS_ind%ME_fluid(1),ind%temp_CC_VF,ind%CC_VF_fluid,TMP,ind%m,scale,ind%MD_fluid)
+         call compute_Total_Energy_Domain(SP%PS_ind%ME_conductor(1),ind%temp_CC_VF,ind%CC_VF_sigma,TMP,ind%m,scale,ind%MD_sigma)
          call face2cellCenter(ind%temp_CC_VF,ind%B0,ind%m)
-         call compute_Total_Energy(ind%ME(2),ind%temp_CC_VF,TMP,ind%m,scale)
-         call compute_Total_Energy_Domain(ind%ME_fluid(2),ind%temp_CC_VF,ind%CC_VF_fluid,TMP,ind%m,scale,ind%MD_fluid)
-         call compute_Total_Energy_Domain(ind%ME_conductor(2),ind%temp_CC_VF,ind%CC_VF_sigma,TMP,ind%m,scale,ind%MD_sigma)
+         call compute_Total_Energy(SP%PS_ind%ME(2),ind%temp_CC_VF,TMP,ind%m,scale)
+         call compute_Total_Energy_Domain(SP%PS_ind%ME_fluid(2),ind%temp_CC_VF,ind%CC_VF_fluid,TMP,ind%m,scale,ind%MD_fluid)
+         call compute_Total_Energy_Domain(SP%PS_ind%ME_conductor(2),ind%temp_CC_VF,ind%CC_VF_sigma,TMP,ind%m,scale,ind%MD_sigma)
          call face2cellCenter(ind%temp_CC_VF,ind%B,ind%m)
-         call compute_Total_Energy(ind%ME(3),ind%temp_CC_VF,TMP,ind%m,scale)
-         call compute_Total_Energy_Domain(ind%ME_fluid(3),ind%temp_CC_VF,ind%CC_VF_fluid,TMP,ind%m,scale,ind%MD_fluid)
-         call compute_Total_Energy_Domain(ind%ME_conductor(3),ind%temp_CC_VF,ind%CC_VF_sigma,TMP,ind%m,scale,ind%MD_sigma)
+         call compute_Total_Energy(SP%PS_ind%ME(3),ind%temp_CC_VF,TMP,ind%m,scale)
+         call compute_Total_Energy_Domain(SP%PS_ind%ME_fluid(3),ind%temp_CC_VF,ind%CC_VF_fluid,TMP,ind%m,scale,ind%MD_fluid)
+         call compute_Total_Energy_Domain(SP%PS_ind%ME_conductor(3),ind%temp_CC_VF,ind%CC_VF_sigma,TMP,ind%m,scale,ind%MD_sigma)
 
          scale = SP%DP%JE_scale
          call edge2cellCenter(ind%temp_CC_VF,ind%J,ind%m,ind%temp_F1)
-         call compute_Total_Energy(ind%JE,ind%temp_CC_VF,TMP,ind%m,scale)
-         call compute_Total_Energy_Domain(ind%JE_fluid,ind%temp_CC_VF,ind%CC_VF_fluid,TMP,ind%m,scale,ind%MD_fluid)
+         call compute_Total_Energy(SP%PS_ind%JE,ind%temp_CC_VF,TMP,ind%m,scale)
+         call compute_Total_Energy_Domain(SP%PS_ind%JE_fluid,ind%temp_CC_VF,ind%CC_VF_fluid,TMP,ind%m,scale,ind%MD_fluid)
        end subroutine
 
        subroutine export_unsteady_1D_ind(ind,SP,TMP,DT)
@@ -434,7 +411,7 @@
        subroutine export_unsteady_ind(ind,SP,TMP,EF,EN,DT)
          implicit none
          type(induction),intent(inout) :: ind
-         type(sim_params),intent(in) :: SP
+         type(sim_params),intent(inout) :: SP
          type(time_marching_params),intent(inout) :: TMP
          type(export_frequency),intent(in) :: EF
          type(export_now),intent(in) :: EN
