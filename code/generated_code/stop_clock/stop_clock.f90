@@ -13,16 +13,10 @@
 
        private
        public :: stop_clock
-       public :: init,delete,display,print,export,import
-       public :: display_short,print_short
-
-       public :: export_primitives,import_primitives
-
-       public :: export_structured,import_structured
-
-       public :: set_IO_dir,make_IO_dir
-
-       public :: suppress_warnings
+       public :: init,delete,display,display_short,display,print,print_short,&
+       export,export_primitives,import,export_structured,import_structured,&
+       import_primitives,export,import,set_IO_dir,make_IO_dir,&
+       suppress_warnings,export,import,export_structured,import_structured
 
        interface init;             module procedure init_copy_stop_clock;           end interface
        interface delete;           module procedure delete_stop_clock;              end interface
@@ -378,6 +372,7 @@
          character(len=*),intent(in) :: dir
          integer :: un
          un = open_to_read(dir,'primitives')
+         call delete(this)
          call import_primitives(this,un)
          call import_structured(this%dir,dir//'dir'//fortran_PS)
          call import_structured(this%name,dir//'name'//fortran_PS)

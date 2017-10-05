@@ -14,8 +14,10 @@ IO_structured_quiet = True
 make_dir_also_sets_dir = True
 
 use_structured_condition = True
-
-skip_structured_IO_child_class = ['mesh','SF','VF','TF']
+# skip_structured_IO_child_class = ['mesh','SF','VF','TF']
+skip_structured_IO_child_class = ['mesh','TF']
+skip_structured_IO_child_class_conditional = ['SF','VF']
+skip_structured_IO_parent_class_conditional = ['SF','VF']
 skip_structured_IO_child_name = ['absolute']
 
 use_restart_file_indicator = True
@@ -187,14 +189,6 @@ class fortran_module:
         c=c+[self.write_used_modules()]
         c=c+[[self.implicitNone]+['']]
         c=c+[['private']]
-        c=c+[['public :: '+self.name]]
-        c=c+[['public :: init,delete,display,print,export,import']]
-        c=c+[['public :: display_short,print_short']+['']]
-        c=c+[['public :: export_primitives,import_primitives']+['']]
-        c=c+[['public :: export_structured,import_structured']+['']]
-        c=c+[['public :: set_IO_dir,make_IO_dir']+['']]
-        if suppress_all_warnings:
-            c=c+[['public :: suppress_warnings']+['']]
         c=c+[self.write_interfaces()+['']]
         c=c+[self.class_definition()]
         c=c+[['end type']+['']]
@@ -204,8 +198,11 @@ class fortran_module:
         return c
 
     def post_process(self,L):
-        L = func.flatten(L)
-        L = [x for x in L if not x==None]
+        L = func.flatten(L) # flatten list
+        L = [x for x in L if not x==None] # remove empty list items
+        L = '\n'.join(L).replace('\n\n\n','\n\n').split('\n') # remove double newlines
+        L = '\n'.join(L).replace('\n\n\n','\n\n').split('\n') # remove double newlines
+        L = '\n'.join(L).replace('\n\n\n','\n\n').split('\n') # remove double newlines
         if self.raw_lines_used:
           L = self.raw_lines
         else:
@@ -261,6 +258,9 @@ class fortran_module:
         alias = alias+['set_IO_dir'];        sub_name = sub_name+['set_IO_dir'];
         alias = alias+['make_IO_dir'];       sub_name = sub_name+['make_IO_dir'];
 
+        if self.name=='VF' or self.name=='SF' or self.name=='block_field':
+          alias = alias+['get_necessary_for_restart'];       sub_name = sub_name+['get_necessary_for_restart'];
+
         if suppress_all_warnings:
             alias = alias+['suppress_warnings']; sub_name = sub_name+['suppress_warnings'];
 
@@ -276,6 +276,10 @@ class fortran_module:
         c = ['interface '+x+';'+s for x,s in zip(alias,sp_al)]
         c = [x+'module procedure '+sn+'_'+self.get_suffix()+';' for x,sn in zip(c,sub_name)]
         c = [x+s+'end interface' for x,s in zip(c,sp_sn)]
+        # privacy = ['public :: '+x for x in alias]
+        privacy = ['public :: '+self.name]
+        privacy = privacy+['public :: '+','.join(alias)]
+        c = privacy + [''] + [''] + c
         return c
 
     ################################################################################*/
@@ -283,7 +287,6 @@ class fortran_module:
     def write_all_functions(self):
         c = []
         c=c+['']
-        self.set_arg_objects()
         self.set_arg_list()
         c=c+[self.init_copy()+['']]
         c=c+[self.init_delete()+['']]
@@ -307,6 +310,10 @@ class fortran_module:
           c=c+[self.import_DN_module()+['']]    # import(this), if has (dir,name)
           c=c+[self.export_structured_DN_module()+['']] # export_structured(this,dir), names are determined by data structure
           c=c+[self.import_structured_DN_module()+['']] # import_structured(this,dir), names are determined by data structure
+
+        c=c+[self.get_necessary_for_restart_block_module()+['']]
+        c=c+[self.get_necessary_for_restart_SF_module()+['']]
+        c=c+[self.get_necessary_for_restart_VF_module()+['']]
 
         c=c+[self.set_IO_dir_module()+['']]
         c=c+[self.make_IO_dir_module()+['']]
@@ -336,15 +343,15 @@ class fortran_module:
         c=c+[self.implicitNone]
         c=c+['type(' + self.name + '),intent(inout) :: this']
         c=c+['type(' + self.name + '),intent(in) :: that']
-        for key in self.arg_objects:
-            L = self.arg_objects[key].get_list_of_local_iterators()
+        for key in self.prop:
+            L = self.prop[key].get_list_of_local_iterators()
             if L: c=c+L
-        for key in self.arg_objects:
-            L = self.arg_objects[key].get_list_of_local_shape()
-            if L and not self.arg_objects[key].object_type=='primitive': c=c+L
+        for key in self.prop:
+            L = self.prop[key].get_list_of_local_shape()
+            if L and not self.prop[key].object_type=='primitive': c=c+L
         c=c+['call delete(this)']
-        for key in self.arg_objects:
-            c=c+[x for x in self.arg_objects[key].write_init_copy()]
+        for key in self.prop:
+            c=c+[x for x in self.prop[key].write_init_copy()]
         c=c+[self.end_sub()]
         return c
 
@@ -353,31 +360,30 @@ class fortran_module:
         c = [self.full_sub_signature(sig,'this')]
         c=c+[self.implicitNone ]
         c=c+['type(' + self.name + '),intent(inout) :: this' ]
-        for key in self.arg_objects:
-            L = self.arg_objects[key].get_list_of_local_iterators()
+        for key in self.prop:
+            L = self.prop[key].get_list_of_local_iterators()
             if L: c=c+[L]
-        for key in self.arg_objects:
-            L = self.arg_objects[key].get_list_of_local_shape()
-            if L and not self.arg_objects[key].object_type=='primitive': c=c+[L]
-        for key in self.arg_objects:
-            c=c+[[x for x in self.arg_objects[key].write_delete()]]
+        for key in self.prop:
+            L = self.prop[key].get_list_of_local_shape()
+            if L and not self.prop[key].object_type=='primitive': c=c+[L]
+        for key in self.prop:
+            c=c+[[x for x in self.prop[key].write_delete()]]
         c=c+[self.end_sub()]
         return c
 
     def display_module(self):
         sig = 'display_' + self.get_suffix()
         c = [self.full_sub_signature(sig,'this,un')]
-        self.set_arg_objects()
         self.set_arg_list()
         c=c+[self.implicitNone]
         c=c+['type(' + self.name + '),intent(in) :: this' ]
         c=c+['integer,intent(in) :: un' ]
-        for key in self.arg_objects:
-            L = self.arg_objects[key].get_list_of_local_iterators()
+        for key in self.prop:
+            L = self.prop[key].get_list_of_local_iterators()
             if L: c=c+[L]
-        for key in self.arg_objects:
-            L = self.arg_objects[key].get_list_of_local_shape()
-            if L and not self.arg_objects[key].object_type=='primitive': c=c+[L]
+        for key in self.prop:
+            L = self.prop[key].get_list_of_local_shape()
+            if L and not self.prop[key].object_type=='primitive': c=c+[L]
         st_n = [len(self.prop[key].name) for key in self.prop]
         sp_n = [self.spaces[max(st_n)-x] for x in st_n]
         for key,s in zip(self.prop,sp_n):
@@ -390,17 +396,16 @@ class fortran_module:
     def display_short_module(self):
         sig = 'display_short_' + self.get_suffix()
         c = [self.full_sub_signature(sig,'this,un')]
-        self.set_arg_objects()
         self.set_arg_list()
         c=c+[self.implicitNone]
         c=c+['type(' + self.name + '),intent(in) :: this' ]
         c=c+['integer,intent(in) :: un' ]
-        for key in self.arg_objects:
-            L = self.arg_objects[key].get_list_of_local_iterators()
+        for key in self.prop:
+            L = self.prop[key].get_list_of_local_iterators()
             if L: c=c+[L]
-        for key in self.arg_objects:
-            L = self.arg_objects[key].get_list_of_local_shape()
-            if L and not self.arg_objects[key].object_type=='primitive': c=c+[L]
+        for key in self.prop:
+            L = self.prop[key].get_list_of_local_shape()
+            if L and not self.prop[key].object_type=='primitive': c=c+[L]
         st_n = [len(self.prop[key].name) for key in self.prop]
         sp_n = [self.spaces[max(st_n)-x] for x in st_n]
         for key,s in zip(self.prop,sp_n):
@@ -441,15 +446,15 @@ class fortran_module:
         c=c+['type(' + self.name + '),intent(in) :: this' ]
         c=c+['integer,intent(in) :: un' ]
         if non_primitives_only:
-            for key in self.arg_objects:
-                L = self.arg_objects[key].get_list_of_local_iterators()
+            for key in self.prop:
+                L = self.prop[key].get_list_of_local_iterators()
                 if L: c=c+[L]
         # if any([non_primitives_only,primitives_only and self.any_primitive_allocatables]):
         if any([non_primitives_only and self.any_non_primitive_allocatables,
                 non_primitives_only and self.any_non_primitive_high_dimension,
                 primitives_only and self.any_primitive_allocatables]):
-            for key in self.arg_objects:
-                L = self.arg_objects[key].get_list_of_local_shape()
+            for key in self.prop:
+                L = self.prop[key].get_list_of_local_shape()
                 if L: c=c+[L]
 
         if suppress_all_warnings:
@@ -477,14 +482,14 @@ class fortran_module:
         c=c+['type(' + self.name + '),intent(inout) :: this' ]
         c=c+['integer,intent(in) :: un' ]
         if non_primitives_only:
-            for key in self.arg_objects:
-                L = self.arg_objects[key].get_list_of_local_iterators()
+            for key in self.prop:
+                L = self.prop[key].get_list_of_local_iterators()
                 if L: c=c+[L]
         if any([non_primitives_only and self.any_non_primitive_allocatables,
                 non_primitives_only and self.any_non_primitive_high_dimension,
                 primitives_only and self.any_primitive_allocatables]):
-            for key in self.arg_objects:
-                L = self.arg_objects[key].get_list_of_local_shape()
+            for key in self.prop:
+                L = self.prop[key].get_list_of_local_shape()
                 if L: c=c+[L]
         if suppress_all_warnings:
             if primitives_only and self.no_primitives:
@@ -621,12 +626,12 @@ class fortran_module:
         c=c+[self.implicitNone]
         c=c+['type(' + self.name + '),intent(in) :: this']
         c=c+['character(len=*),intent(in) :: dir']
-        for key in self.arg_objects:
-          L = self.arg_objects[key].get_list_of_local_iterators()
+        for key in self.prop:
+          L = self.prop[key].get_list_of_local_iterators()
           if L: c=c+L
         if self.any_non_primitive_high_dimension:
-          for key in self.arg_objects:
-            L = self.arg_objects[key].get_list_of_local_shape()
+          for key in self.prop:
+            L = self.prop[key].get_list_of_local_shape()
             if L: c=c+L
         c=c+["integer :: un"]
 
@@ -642,6 +647,9 @@ class fortran_module:
         c=c+["call export_primitives(this,un)"]
         for key in self.prop:
           if self.get_structured_condition(self.prop[key]):
+            if self.get_structured_condition_GNR(self.prop[key]):
+              c=c+["if (get_necessary_for_restart(this%"+self.prop[key].name+")) then" ]
+
             if self.get_restart_condition(self.prop[key]):
               c=c+["if (this%necessary_for_restart) then" ]
             if self.get_BC_condition(self.prop[key]):
@@ -649,6 +657,7 @@ class fortran_module:
 
             c=c+[x for x in self.prop[key].write_export_structured('dir')]
 
+            if self.get_structured_condition_GNR(self.prop[key]): c=c+["endif" ]
             if self.get_BC_condition(self.prop[key]): c=c+["endif" ]
             if self.get_restart_condition(self.prop[key]): c=c+["endif" ]
 
@@ -661,12 +670,12 @@ class fortran_module:
         c = [self.full_sub_signature(sig,'this')]
         c=c+[self.implicitNone]
         c=c+['type(' + self.name + '),intent(in) :: this' ]
-        for key in self.arg_objects:
-          L = self.arg_objects[key].get_list_of_local_iterators()
+        for key in self.prop:
+          L = self.prop[key].get_list_of_local_iterators()
           if L: c=c+[L]
         if self.any_non_primitive_high_dimension:
-          for key in self.arg_objects:
-            L = self.arg_objects[key].get_list_of_local_shape()
+          for key in self.prop:
+            L = self.prop[key].get_list_of_local_shape()
             if L: c=c+[L]
         c=c+["integer :: un" ]
 
@@ -690,20 +699,23 @@ class fortran_module:
         c=c+[self.implicitNone]
         c=c+['type(' + self.name + '),intent(inout) :: this' ]
         c=c+['character(len=*),intent(in) :: dir' ]
-        for key in self.arg_objects:
-          L = self.arg_objects[key].get_list_of_local_iterators()
+        for key in self.prop:
+          L = self.prop[key].get_list_of_local_iterators()
           if L: c=c+[L]
         if self.any_non_primitive_high_dimension:
-          for key in self.arg_objects:
-            L = self.arg_objects[key].get_list_of_local_shape()
+          for key in self.prop:
+            L = self.prop[key].get_list_of_local_shape()
             if L: c=c+[L]
         c=c+["integer :: un" ]
         if not IO_structured_quiet:
           c=c+["write(*,*) 'Importing "+ self.name +" structured'"]
         c=c+["un = open_to_read(dir,'primitives')" ]
+        c=c+["call delete(this)" ]
         c=c+["call import_primitives(this,un)" ]
         for key in self.prop:
           if self.get_structured_condition(self.prop[key]):
+            if self.get_structured_condition_GNR(self.prop[key]):
+              c=c+["if (get_necessary_for_restart(this%"+self.prop[key].name+")) then" ]
             if self.get_restart_condition(self.prop[key]):
               c=c+["if (this%necessary_for_restart) then" ]
 
@@ -712,6 +724,7 @@ class fortran_module:
 
             c=c+[[x for x in self.prop[key].write_import_structured('dir')]]
 
+            if self.get_structured_condition_GNR(self.prop[key]): c=c+["endif" ]
             if self.get_BC_condition(self.prop[key]): c=c+["endif" ]
             if self.get_restart_condition(self.prop[key]): c=c+["endif" ]
 
@@ -731,12 +744,12 @@ class fortran_module:
         c = [self.full_sub_signature(sig,'this')]
         c=c+[self.implicitNone]
         c=c+['type(' + self.name + '),intent(inout) :: this' ]
-        for key in self.arg_objects:
-          L = self.arg_objects[key].get_list_of_local_iterators()
+        for key in self.prop:
+          L = self.prop[key].get_list_of_local_iterators()
           if L: c=c+[L]
         if self.any_non_primitive_high_dimension:
-          for key in self.arg_objects:
-            L = self.arg_objects[key].get_list_of_local_shape()
+          for key in self.prop:
+            L = self.prop[key].get_list_of_local_shape()
             if L: c=c+[L]
         c=c+["integer :: un" ]
         c=c+["un = open_to_read(str(this%dir),'primitives')" ]
@@ -749,9 +762,10 @@ class fortran_module:
         return c
 
     def get_necessary_for_restart_block_module(self):
+        c = []
         if self.name=='block_field':
           sig = 'get_necessary_for_restart_' + self.get_suffix()
-          c = [self.full_func_signature(sig,'this')]
+          c=c+[self.full_func_signature(sig,'this','L')]
           c=c+[self.implicitNone]
           c=c+['type(' + self.name + '),intent(in) :: this' ]
           c=c+['logical :: L' ]
@@ -760,16 +774,34 @@ class fortran_module:
         return c
 
     def get_necessary_for_restart_SF_module(self):
+        c = []
         if self.name=='SF':
           sig = 'get_necessary_for_restart_' + self.get_suffix()
-          c = [self.full_func_signature(sig,'this')]
+          c=c+[self.full_func_signature(sig,'this','L')]
           c=c+[self.implicitNone]
           c=c+['type(' + self.name + '),intent(in) :: this' ]
           c=c+['logical :: L' ]
-          for key in self.arg_objects:
-            L = self.arg_objects[key].get_list_of_local_iterators()
-            if L: c=c+[L]
-          c=c+['L = this%necessary_for_restart' ]
+          for key in self.prop:
+            if self.prop[key].class_=='block_field':
+              L = self.prop[key].get_list_of_local_iterators()
+              if L: c=c+[L]
+              L = self.prop[key].get_list_of_local_shape()
+              if L: c=c+[L]
+          for key in self.prop:
+            if self.prop[key].class_=='block_field':
+              c=c+[[x for x in self.prop[key].write_get_necessary_for_restart_SF()]]
+          c=c+[self.end_function()]
+        return c
+
+    def get_necessary_for_restart_VF_module(self):
+        c = []
+        if self.name=='VF':
+          sig = 'get_necessary_for_restart_' + self.get_suffix()
+          c=c+[self.full_func_signature(sig,'this','L')]
+          c=c+[self.implicitNone]
+          c=c+['type(' + self.name + '),intent(in) :: this' ]
+          c=c+['logical :: L' ]
+          c=c+['L = all((/get_necessary_for_restart(this%x),get_necessary_for_restart(this%y),get_necessary_for_restart(this%z)/))' ]
           c=c+[self.end_function()]
         return c
 
@@ -779,12 +811,12 @@ class fortran_module:
         c=c+[self.implicitNone]
         c=c+['type(' + self.name + '),intent(inout) :: this' ]
         c=c+['character(len=*),intent(in) :: dir' ]
-        for key in self.arg_objects:
-          L = self.arg_objects[key].get_list_of_local_iterators()
+        for key in self.prop:
+          L = self.prop[key].get_list_of_local_iterators()
           if L: c=c+[L]
         if self.any_non_primitive_high_dimension:
-          for key in self.arg_objects:
-            L = self.arg_objects[key].get_list_of_local_shape()
+          for key in self.prop:
+            L = self.prop[key].get_list_of_local_shape()
             if L: c=c+[L]
         if suppress_all_warnings:
           c=c+['call suppress_warnings(this)' ]
@@ -813,12 +845,12 @@ class fortran_module:
         c=c+[self.implicitNone]
         c=c+['type(' + self.name + '),intent(inout) :: this' ]
         c=c+['character(len=*),intent(in) :: dir' ]
-        for key in self.arg_objects:
-          L = self.arg_objects[key].get_list_of_local_iterators()
+        for key in self.prop:
+          L = self.prop[key].get_list_of_local_iterators()
           if L: c=c+[L]
         if self.any_non_primitive_high_dimension:
-          for key in self.arg_objects:
-            L = self.arg_objects[key].get_list_of_local_shape()
+          for key in self.prop:
+            L = self.prop[key].get_list_of_local_shape()
             if L: c=c+[L]
         if suppress_all_warnings:
           c=c+['call suppress_warnings(this)' ]
@@ -831,11 +863,13 @@ class fortran_module:
           c=c+["call init(this%name,'primitives')" ]
         for key in self.prop:
           if self.get_structured_condition(self.prop[key]):
+            if self.get_structured_condition_GNR(self.prop[key]):
+              c=c+["if (get_necessary_for_restart(this%"+self.prop[key].name+")) then" ]
             if self.get_BC_condition(self.prop[key]):
               c=c+["if (this%BCL%defined) then" ]
             c=c+[[x for x in self.prop[key].write_set_IO_dir('make_IO_dir')]]
-            if self.get_BC_condition(self.prop[key]):
-              c=c+["endif" ]
+            if self.get_BC_condition(self.prop[key]): c=c+["endif" ]
+            if self.get_structured_condition_GNR(self.prop[key]): c=c+["endif" ]
         c=c+[self.end_sub()]
         return c
 
@@ -855,6 +889,13 @@ class fortran_module:
         temp1 = all([not prop.class_==x for x in skip_structured_IO_child_class])
         temp2 = all([not prop.name==x for x in skip_structured_IO_child_name])
         L = temp1 and temp2 and use_structured_condition
+        return L
+
+    def get_structured_condition_GNR(self,prop):
+        temp1 = any([prop.class_==x for x in skip_structured_IO_child_class_conditional])
+        temp2 = any([self.name==x for x in skip_structured_IO_parent_class_conditional])
+        temp3 = any([prop.class_==x for x in skip_structured_IO_parent_class_conditional])
+        L = ((temp1 and temp2) or temp3) and use_structured_condition
         return L
 
     def get_BC_condition(self,prop):
@@ -881,5 +922,4 @@ class fortran_module:
     def full_sub_signature(self,sig,args): return 'subroutine ' + sig + '(' + args + ')'
     def end_function(self,function = False): return 'end function'
     def end_sub(self,function = False): return 'end subroutine'
-    def set_arg_objects(self): self.arg_objects = self.prop
     def set_arg_list(self): self.arg_list = [key for key in self.prop]

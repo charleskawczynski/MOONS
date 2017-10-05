@@ -11,16 +11,10 @@
 
        private
        public :: TF
-       public :: init,delete,display,print,export,import
-       public :: display_short,print_short
-
-       public :: export_primitives,import_primitives
-
-       public :: export_structured,import_structured
-
-       public :: set_IO_dir,make_IO_dir
-
-       public :: suppress_warnings
+       public :: init,delete,display,display_short,display,print,print_short,&
+       export,export_primitives,import,export_structured,import_structured,&
+       import_primitives,export,import,set_IO_dir,make_IO_dir,&
+       suppress_warnings
 
        interface init;             module procedure init_copy_TF;          end interface
        interface delete;           module procedure delete_TF;             end interface
@@ -167,9 +161,9 @@
          type(TF),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
-         if (.false.) then
-           write(*,*) dir
-         endif
+         call set_IO_dir(this%x,dir//'x'//fortran_PS)
+         call set_IO_dir(this%y,dir//'y'//fortran_PS)
+         call set_IO_dir(this%z,dir//'z'//fortran_PS)
        end subroutine
 
        subroutine make_IO_dir_TF(this,dir)
@@ -178,6 +172,15 @@
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
+         if (get_necessary_for_restart(this%x)) then
+           call make_IO_dir(this%x,dir//'x'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%y)) then
+           call make_IO_dir(this%y,dir//'y'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%z)) then
+           call make_IO_dir(this%z,dir//'z'//fortran_PS)
+         endif
        end subroutine
 
        subroutine export_structured_D_TF(this,dir)
@@ -187,6 +190,15 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
+         if (get_necessary_for_restart(this%x)) then
+           call export_structured(this%x,dir//'x'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%y)) then
+           call export_structured(this%y,dir//'y'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%z)) then
+           call export_structured(this%z,dir//'z'//fortran_PS)
+         endif
          close(un)
        end subroutine
 
@@ -196,7 +208,17 @@
          character(len=*),intent(in) :: dir
          integer :: un
          un = open_to_read(dir,'primitives')
+         call delete(this)
          call import_primitives(this,un)
+         if (get_necessary_for_restart(this%x)) then
+           call import_structured(this%x,dir//'x'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%y)) then
+           call import_structured(this%y,dir//'y'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%z)) then
+           call import_structured(this%z,dir//'z'//fortran_PS)
+         endif
          close(un)
        end subroutine
 

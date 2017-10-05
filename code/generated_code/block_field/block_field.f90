@@ -15,35 +15,30 @@
 
        private
        public :: block_field
-       public :: init,delete,display,print,export,import
-       public :: display_short,print_short
+       public :: init,delete,display,display_short,display,print,print_short,&
+       export,export_primitives,import,export_structured,import_structured,&
+       import_primitives,export,import,set_IO_dir,make_IO_dir,&
+       get_necessary_for_restart,suppress_warnings
 
-       public :: export_primitives,import_primitives
-
-       public :: export_structured,import_structured
-
-       public :: set_IO_dir,make_IO_dir
-
-       public :: suppress_warnings
-
-       interface init;             module procedure init_copy_block_field;          end interface
-       interface delete;           module procedure delete_block_field;             end interface
-       interface display;          module procedure display_block_field;            end interface
-       interface display_short;    module procedure display_short_block_field;      end interface
-       interface display;          module procedure display_wrap_block_field;       end interface
-       interface print;            module procedure print_block_field;              end interface
-       interface print_short;      module procedure print_short_block_field;        end interface
-       interface export;           module procedure export_block_field;             end interface
-       interface export_primitives;module procedure export_primitives_block_field;  end interface
-       interface import;           module procedure import_block_field;             end interface
-       interface export_structured;module procedure export_structured_D_block_field;end interface
-       interface import_structured;module procedure import_structured_D_block_field;end interface
-       interface import_primitives;module procedure import_primitives_block_field;  end interface
-       interface export;           module procedure export_wrap_block_field;        end interface
-       interface import;           module procedure import_wrap_block_field;        end interface
-       interface set_IO_dir;       module procedure set_IO_dir_block_field;         end interface
-       interface make_IO_dir;      module procedure make_IO_dir_block_field;        end interface
-       interface suppress_warnings;module procedure suppress_warnings_block_field;  end interface
+       interface init;                     module procedure init_copy_block_field;                end interface
+       interface delete;                   module procedure delete_block_field;                   end interface
+       interface display;                  module procedure display_block_field;                  end interface
+       interface display_short;            module procedure display_short_block_field;            end interface
+       interface display;                  module procedure display_wrap_block_field;             end interface
+       interface print;                    module procedure print_block_field;                    end interface
+       interface print_short;              module procedure print_short_block_field;              end interface
+       interface export;                   module procedure export_block_field;                   end interface
+       interface export_primitives;        module procedure export_primitives_block_field;        end interface
+       interface import;                   module procedure import_block_field;                   end interface
+       interface export_structured;        module procedure export_structured_D_block_field;      end interface
+       interface import_structured;        module procedure import_structured_D_block_field;      end interface
+       interface import_primitives;        module procedure import_primitives_block_field;        end interface
+       interface export;                   module procedure export_wrap_block_field;              end interface
+       interface import;                   module procedure import_wrap_block_field;              end interface
+       interface set_IO_dir;               module procedure set_IO_dir_block_field;               end interface
+       interface make_IO_dir;              module procedure make_IO_dir_block_field;              end interface
+       interface get_necessary_for_restart;module procedure get_necessary_for_restart_block_field;end interface
+       interface suppress_warnings;        module procedure suppress_warnings_block_field;        end interface
 
        type block_field
          logical :: BCs_defined = .false.
@@ -236,6 +231,13 @@
          close(un)
        end subroutine
 
+       function get_necessary_for_restart_block_field(this) result(L)
+         implicit none
+         type(block_field),intent(in) :: this
+         logical :: L
+         L = this%necessary_for_restart
+       end function
+
        subroutine set_IO_dir_block_field(this,dir)
          implicit none
          type(block_field),intent(inout) :: this
@@ -308,6 +310,7 @@
          character(len=*),intent(in) :: dir
          integer :: un
          un = open_to_read(dir,'primitives')
+         call delete(this)
          call import_primitives(this,un)
          call import_structured(this%BCs,dir//'BCs'//fortran_PS)
          if (this%necessary_for_restart) then

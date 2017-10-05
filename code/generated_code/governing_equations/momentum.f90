@@ -17,16 +17,10 @@
 
        private
        public :: momentum
-       public :: init,delete,display,print,export,import
-       public :: display_short,print_short
-
-       public :: export_primitives,import_primitives
-
-       public :: export_structured,import_structured
-
-       public :: set_IO_dir,make_IO_dir
-
-       public :: suppress_warnings
+       public :: init,delete,display,display_short,display,print,print_short,&
+       export,export_primitives,import,export_structured,import_structured,&
+       import_primitives,export,import,set_IO_dir,make_IO_dir,&
+       suppress_warnings
 
        interface init;             module procedure init_copy_momentum;          end interface
        interface delete;           module procedure delete_momentum;             end interface
@@ -314,6 +308,21 @@
          call set_IO_dir(this%PCG_P,dir//'PCG_P'//fortran_PS)
          call set_IO_dir(this%PCG_U,dir//'PCG_U'//fortran_PS)
          call set_IO_dir(this%TS,dir//'TS'//fortran_PS)
+         call set_IO_dir(this%p,dir//'p'//fortran_PS)
+         call set_IO_dir(this%divU,dir//'divU'//fortran_PS)
+         call set_IO_dir(this%temp_CC,dir//'temp_CC'//fortran_PS)
+         call set_IO_dir(this%U,dir//'U'//fortran_PS)
+         call set_IO_dir(this%Ustar,dir//'Ustar'//fortran_PS)
+         call set_IO_dir(this%Unm1,dir//'Unm1'//fortran_PS)
+         call set_IO_dir(this%U_CC,dir//'U_CC'//fortran_PS)
+         call set_IO_dir(this%F,dir//'F'//fortran_PS)
+         call set_IO_dir(this%Fnm1,dir//'Fnm1'//fortran_PS)
+         call set_IO_dir(this%L,dir//'L'//fortran_PS)
+         call set_IO_dir(this%temp_F1,dir//'temp_F1'//fortran_PS)
+         call set_IO_dir(this%temp_F2,dir//'temp_F2'//fortran_PS)
+         call set_IO_dir(this%temp_F3,dir//'temp_F3'//fortran_PS)
+         call set_IO_dir(this%temp_E,dir//'temp_E'//fortran_PS)
+         call set_IO_dir(this%temp_CC_VF,dir//'temp_CC_VF'//fortran_PS)
        end subroutine
 
        subroutine make_IO_dir_momentum(this,dir)
@@ -325,6 +334,51 @@
          call make_IO_dir(this%PCG_P,dir//'PCG_P'//fortran_PS)
          call make_IO_dir(this%PCG_U,dir//'PCG_U'//fortran_PS)
          call make_IO_dir(this%TS,dir//'TS'//fortran_PS)
+         if (get_necessary_for_restart(this%p)) then
+           call make_IO_dir(this%p,dir//'p'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%divU)) then
+           call make_IO_dir(this%divU,dir//'divU'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_CC)) then
+           call make_IO_dir(this%temp_CC,dir//'temp_CC'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%U)) then
+           call make_IO_dir(this%U,dir//'U'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%Ustar)) then
+           call make_IO_dir(this%Ustar,dir//'Ustar'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%Unm1)) then
+           call make_IO_dir(this%Unm1,dir//'Unm1'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%U_CC)) then
+           call make_IO_dir(this%U_CC,dir//'U_CC'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%F)) then
+           call make_IO_dir(this%F,dir//'F'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%Fnm1)) then
+           call make_IO_dir(this%Fnm1,dir//'Fnm1'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%L)) then
+           call make_IO_dir(this%L,dir//'L'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_F1)) then
+           call make_IO_dir(this%temp_F1,dir//'temp_F1'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_F2)) then
+           call make_IO_dir(this%temp_F2,dir//'temp_F2'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_F3)) then
+           call make_IO_dir(this%temp_F3,dir//'temp_F3'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_E)) then
+           call make_IO_dir(this%temp_E,dir//'temp_E'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_CC_VF)) then
+           call make_IO_dir(this%temp_CC_VF,dir//'temp_CC_VF'//fortran_PS)
+         endif
        end subroutine
 
        subroutine export_structured_D_momentum(this,dir)
@@ -337,6 +391,52 @@
          call export_structured(this%PCG_P,dir//'PCG_P'//fortran_PS)
          call export_structured(this%PCG_U,dir//'PCG_U'//fortran_PS)
          call export_structured(this%TS,dir//'TS'//fortran_PS)
+         if (get_necessary_for_restart(this%p)) then
+           call export_structured(this%p,dir//'p'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%divU)) then
+           call export_structured(this%divU,dir//'divU'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_CC)) then
+           call export_structured(this%temp_CC,dir//'temp_CC'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%U)) then
+           call export_structured(this%U,dir//'U'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%Ustar)) then
+           call export_structured(this%Ustar,dir//'Ustar'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%Unm1)) then
+           call export_structured(this%Unm1,dir//'Unm1'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%U_CC)) then
+           call export_structured(this%U_CC,dir//'U_CC'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%F)) then
+           call export_structured(this%F,dir//'F'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%Fnm1)) then
+           call export_structured(this%Fnm1,dir//'Fnm1'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%L)) then
+           call export_structured(this%L,dir//'L'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_F1)) then
+           call export_structured(this%temp_F1,dir//'temp_F1'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_F2)) then
+           call export_structured(this%temp_F2,dir//'temp_F2'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_F3)) then
+           call export_structured(this%temp_F3,dir//'temp_F3'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_E)) then
+           call export_structured(this%temp_E,dir//'temp_E'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_CC_VF)) then
+           call export_structured(this%temp_CC_VF,&
+           dir//'temp_CC_VF'//fortran_PS)
+         endif
          close(un)
        end subroutine
 
@@ -346,10 +446,57 @@
          character(len=*),intent(in) :: dir
          integer :: un
          un = open_to_read(dir,'primitives')
+         call delete(this)
          call import_primitives(this,un)
          call import_structured(this%PCG_P,dir//'PCG_P'//fortran_PS)
          call import_structured(this%PCG_U,dir//'PCG_U'//fortran_PS)
          call import_structured(this%TS,dir//'TS'//fortran_PS)
+         if (get_necessary_for_restart(this%p)) then
+           call import_structured(this%p,dir//'p'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%divU)) then
+           call import_structured(this%divU,dir//'divU'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_CC)) then
+           call import_structured(this%temp_CC,dir//'temp_CC'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%U)) then
+           call import_structured(this%U,dir//'U'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%Ustar)) then
+           call import_structured(this%Ustar,dir//'Ustar'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%Unm1)) then
+           call import_structured(this%Unm1,dir//'Unm1'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%U_CC)) then
+           call import_structured(this%U_CC,dir//'U_CC'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%F)) then
+           call import_structured(this%F,dir//'F'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%Fnm1)) then
+           call import_structured(this%Fnm1,dir//'Fnm1'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%L)) then
+           call import_structured(this%L,dir//'L'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_F1)) then
+           call import_structured(this%temp_F1,dir//'temp_F1'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_F2)) then
+           call import_structured(this%temp_F2,dir//'temp_F2'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_F3)) then
+           call import_structured(this%temp_F3,dir//'temp_F3'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_E)) then
+           call import_structured(this%temp_E,dir//'temp_E'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_CC_VF)) then
+           call import_structured(this%temp_CC_VF,&
+           dir//'temp_CC_VF'//fortran_PS)
+         endif
          close(un)
        end subroutine
 

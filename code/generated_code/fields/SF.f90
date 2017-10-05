@@ -15,35 +15,30 @@
 
        private
        public :: SF
-       public :: init,delete,display,print,export,import
-       public :: display_short,print_short
+       public :: init,delete,display,display_short,display,print,print_short,&
+       export,export_primitives,import,export_structured,import_structured,&
+       import_primitives,export,import,set_IO_dir,make_IO_dir,&
+       get_necessary_for_restart,suppress_warnings
 
-       public :: export_primitives,import_primitives
-
-       public :: export_structured,import_structured
-
-       public :: set_IO_dir,make_IO_dir
-
-       public :: suppress_warnings
-
-       interface init;             module procedure init_copy_SF;          end interface
-       interface delete;           module procedure delete_SF;             end interface
-       interface display;          module procedure display_SF;            end interface
-       interface display_short;    module procedure display_short_SF;      end interface
-       interface display;          module procedure display_wrap_SF;       end interface
-       interface print;            module procedure print_SF;              end interface
-       interface print_short;      module procedure print_short_SF;        end interface
-       interface export;           module procedure export_SF;             end interface
-       interface export_primitives;module procedure export_primitives_SF;  end interface
-       interface import;           module procedure import_SF;             end interface
-       interface export_structured;module procedure export_structured_D_SF;end interface
-       interface import_structured;module procedure import_structured_D_SF;end interface
-       interface import_primitives;module procedure import_primitives_SF;  end interface
-       interface export;           module procedure export_wrap_SF;        end interface
-       interface import;           module procedure import_wrap_SF;        end interface
-       interface set_IO_dir;       module procedure set_IO_dir_SF;         end interface
-       interface make_IO_dir;      module procedure make_IO_dir_SF;        end interface
-       interface suppress_warnings;module procedure suppress_warnings_SF;  end interface
+       interface init;                     module procedure init_copy_SF;                end interface
+       interface delete;                   module procedure delete_SF;                   end interface
+       interface display;                  module procedure display_SF;                  end interface
+       interface display_short;            module procedure display_short_SF;            end interface
+       interface display;                  module procedure display_wrap_SF;             end interface
+       interface print;                    module procedure print_SF;                    end interface
+       interface print_short;              module procedure print_short_SF;              end interface
+       interface export;                   module procedure export_SF;                   end interface
+       interface export_primitives;        module procedure export_primitives_SF;        end interface
+       interface import;                   module procedure import_SF;                   end interface
+       interface export_structured;        module procedure export_structured_D_SF;      end interface
+       interface import_structured;        module procedure import_structured_D_SF;      end interface
+       interface import_primitives;        module procedure import_primitives_SF;        end interface
+       interface export;                   module procedure export_wrap_SF;              end interface
+       interface import;                   module procedure import_wrap_SF;              end interface
+       interface set_IO_dir;               module procedure set_IO_dir_SF;               end interface
+       interface make_IO_dir;              module procedure make_IO_dir_SF;              end interface
+       interface get_necessary_for_restart;module procedure get_necessary_for_restart_SF;end interface
+       interface suppress_warnings;        module procedure suppress_warnings_SF;        end interface
 
        type SF
          integer :: s = 0
@@ -244,6 +239,21 @@
          close(un)
        end subroutine
 
+       function get_necessary_for_restart_SF(this) result(L)
+         implicit none
+         type(SF),intent(in) :: this
+         logical :: L
+         integer :: i_BF
+         integer :: s_BF
+         if (allocated(this%BF)) then
+           s_BF = size(this%BF)
+           L = all((/(get_necessary_for_restart(this%BF(i_BF)),i_BF=1,&
+           s_BF)/))
+         else
+           L = .false.
+         endif
+       end function
+
        subroutine set_IO_dir_SF(this,dir)
          implicit none
          type(SF),intent(inout) :: this
@@ -310,6 +320,7 @@
          integer :: s_BF
          integer :: un
          un = open_to_read(dir,'primitives')
+         call delete(this)
          call import_primitives(this,un)
          read(un,*) s_BF
          if (s_BF.gt.0) then

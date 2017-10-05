@@ -41,8 +41,8 @@ def indent_lines(L):
   n_leading_white_space = get_n_leading_white_spaces(L)
   L = [x.lstrip() for x in L]
   indent = '  '
-  T_up = ('if ','type ','subroutine ','do ')
-  T_dn = ('endif','end type','end subroutine','enddo','end module')
+  T_up = ('if ','type ','subroutine ','function ','do ')
+  T_dn = ('endif','end type','end subroutine','end function','enddo','end module')
   T_unindent = ['else','elseif']
   indent_cumulative = ''
   s_indent = len(indent)

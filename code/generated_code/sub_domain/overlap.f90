@@ -10,16 +10,10 @@
 
        private
        public :: overlap
-       public :: init,delete,display,print,export,import
-       public :: display_short,print_short
-
-       public :: export_primitives,import_primitives
-
-       public :: export_structured,import_structured
-
-       public :: set_IO_dir,make_IO_dir
-
-       public :: suppress_warnings
+       public :: init,delete,display,display_short,display,print,print_short,&
+       export,export_primitives,import,export_structured,import_structured,&
+       import_primitives,export,import,set_IO_dir,make_IO_dir,&
+       suppress_warnings
 
        interface init;             module procedure init_copy_overlap;          end interface
        interface delete;           module procedure delete_overlap;             end interface
@@ -200,6 +194,7 @@
          character(len=*),intent(in) :: dir
          integer :: un
          un = open_to_read(dir,'primitives')
+         call delete(this)
          call import_primitives(this,un)
          close(un)
        end subroutine

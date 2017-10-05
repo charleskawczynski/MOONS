@@ -52,8 +52,8 @@
          implicit none
          type(MOONS),intent(inout) :: M
          call init_meshes_MOONS(M)
-         call re_init_procedures(M)
          call init_GEs_MOONS(M)
+         call re_init_procedures(M) ! Applied inside init_meshes_MOONS also.
        end subroutine
 
        subroutine re_init_procedures(M)

@@ -14,16 +14,10 @@
 
        private
        public :: time_statistics_VF
-       public :: init,delete,display,print,export,import
-       public :: display_short,print_short
-
-       public :: export_primitives,import_primitives
-
-       public :: export_structured,import_structured
-
-       public :: set_IO_dir,make_IO_dir
-
-       public :: suppress_warnings
+       public :: init,delete,display,display_short,display,print,print_short,&
+       export,export_primitives,import,export_structured,import_structured,&
+       import_primitives,export,import,set_IO_dir,make_IO_dir,&
+       suppress_warnings,export,import,export_structured,import_structured
 
        interface init;             module procedure init_copy_time_statistics_VF;           end interface
        interface delete;           module procedure delete_time_statistics_VF;              end interface
@@ -248,8 +242,13 @@
          call export_primitives(this,un)
          call export_structured(this%dir,str(this%dir)//'dir'//fortran_PS)
          call export_structured(this%name,str(this%dir)//'name'//fortran_PS)
+         call export_structured(this%U_sum,&
+         str(this%dir)//'U_sum'//fortran_PS)
+         call export_structured(this%U_ave,&
+         str(this%dir)//'U_ave'//fortran_PS)
          call export_structured(this%mean_energy,&
          str(this%dir)//'mean_energy'//fortran_PS)
+         call export_structured(this%RMS,str(this%dir)//'RMS'//fortran_PS)
          call export_structured(this%L2_stresses,&
          str(this%dir)//'L2_stresses'//fortran_PS)
          call export_structured(this%TSP,str(this%dir)//'TSP'//fortran_PS)
@@ -264,8 +263,13 @@
          call import_primitives(this,un)
          call import_structured(this%dir,str(this%dir)//'dir'//fortran_PS)
          call import_structured(this%name,str(this%dir)//'name'//fortran_PS)
+         call import_structured(this%U_sum,&
+         str(this%dir)//'U_sum'//fortran_PS)
+         call import_structured(this%U_ave,&
+         str(this%dir)//'U_ave'//fortran_PS)
          call import_structured(this%mean_energy,&
          str(this%dir)//'mean_energy'//fortran_PS)
+         call import_structured(this%RMS,str(this%dir)//'RMS'//fortran_PS)
          call import_structured(this%L2_stresses,&
          str(this%dir)//'L2_stresses'//fortran_PS)
          call import_structured(this%TSP,str(this%dir)//'TSP'//fortran_PS)
@@ -281,7 +285,10 @@
          call init(this%name,'primitives')
          call set_IO_dir(this%dir,dir//'dir'//fortran_PS)
          call set_IO_dir(this%name,dir//'name'//fortran_PS)
+         call set_IO_dir(this%U_sum,dir//'U_sum'//fortran_PS)
+         call set_IO_dir(this%U_ave,dir//'U_ave'//fortran_PS)
          call set_IO_dir(this%mean_energy,dir//'mean_energy'//fortran_PS)
+         call set_IO_dir(this%RMS,dir//'RMS'//fortran_PS)
          call set_IO_dir(this%L2_stresses,dir//'L2_stresses'//fortran_PS)
          call set_IO_dir(this%TSP,dir//'TSP'//fortran_PS)
        end subroutine
@@ -296,7 +303,16 @@
          call init(this%name,'primitives')
          call make_IO_dir(this%dir,dir//'dir'//fortran_PS)
          call make_IO_dir(this%name,dir//'name'//fortran_PS)
+         if (get_necessary_for_restart(this%U_sum)) then
+           call make_IO_dir(this%U_sum,dir//'U_sum'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%U_ave)) then
+           call make_IO_dir(this%U_ave,dir//'U_ave'//fortran_PS)
+         endif
          call make_IO_dir(this%mean_energy,dir//'mean_energy'//fortran_PS)
+         if (get_necessary_for_restart(this%RMS)) then
+           call make_IO_dir(this%RMS,dir//'RMS'//fortran_PS)
+         endif
          call make_IO_dir(this%L2_stresses,dir//'L2_stresses'//fortran_PS)
          call make_IO_dir(this%TSP,dir//'TSP'//fortran_PS)
        end subroutine
@@ -310,8 +326,17 @@
          call export_primitives(this,un)
          call export_structured(this%dir,dir//'dir'//fortran_PS)
          call export_structured(this%name,dir//'name'//fortran_PS)
+         if (get_necessary_for_restart(this%U_sum)) then
+           call export_structured(this%U_sum,dir//'U_sum'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%U_ave)) then
+           call export_structured(this%U_ave,dir//'U_ave'//fortran_PS)
+         endif
          call export_structured(this%mean_energy,&
          dir//'mean_energy'//fortran_PS)
+         if (get_necessary_for_restart(this%RMS)) then
+           call export_structured(this%RMS,dir//'RMS'//fortran_PS)
+         endif
          call export_structured(this%L2_stresses,&
          dir//'L2_stresses'//fortran_PS)
          call export_structured(this%TSP,dir//'TSP'//fortran_PS)
@@ -324,11 +349,21 @@
          character(len=*),intent(in) :: dir
          integer :: un
          un = open_to_read(dir,'primitives')
+         call delete(this)
          call import_primitives(this,un)
          call import_structured(this%dir,dir//'dir'//fortran_PS)
          call import_structured(this%name,dir//'name'//fortran_PS)
+         if (get_necessary_for_restart(this%U_sum)) then
+           call import_structured(this%U_sum,dir//'U_sum'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%U_ave)) then
+           call import_structured(this%U_ave,dir//'U_ave'//fortran_PS)
+         endif
          call import_structured(this%mean_energy,&
          dir//'mean_energy'//fortran_PS)
+         if (get_necessary_for_restart(this%RMS)) then
+           call import_structured(this%RMS,dir//'RMS'//fortran_PS)
+         endif
          call import_structured(this%L2_stresses,&
          dir//'L2_stresses'//fortran_PS)
          call import_structured(this%TSP,dir//'TSP'//fortran_PS)

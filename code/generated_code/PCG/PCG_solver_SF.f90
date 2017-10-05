@@ -17,16 +17,10 @@
 
        private
        public :: PCG_solver_SF
-       public :: init,delete,display,print,export,import
-       public :: display_short,print_short
-
-       public :: export_primitives,import_primitives
-
-       public :: export_structured,import_structured
-
-       public :: set_IO_dir,make_IO_dir
-
-       public :: suppress_warnings
+       public :: init,delete,display,display_short,display,print,print_short,&
+       export,export_primitives,import,export_structured,import_structured,&
+       import_primitives,export,import,set_IO_dir,make_IO_dir,&
+       suppress_warnings,export,import,export_structured,import_structured
 
        interface init;             module procedure init_copy_PCG_solver_SF;           end interface
        interface delete;           module procedure delete_PCG_solver_SF;              end interface
@@ -304,6 +298,15 @@
          un = new_and_open(str(this%dir),'primitives')
          call export_primitives(this,un)
          call export_structured(this%MFP,str(this%dir)//'MFP'//fortran_PS)
+         call export_structured(this%r,str(this%dir)//'r'//fortran_PS)
+         call export_structured(this%p,str(this%dir)//'p'//fortran_PS)
+         call export_structured(this%tempx,&
+         str(this%dir)//'tempx'//fortran_PS)
+         call export_structured(this%Ax,str(this%dir)//'Ax'//fortran_PS)
+         call export_structured(this%x_BC,str(this%dir)//'x_BC'//fortran_PS)
+         call export_structured(this%vol,str(this%dir)//'vol'//fortran_PS)
+         call export_structured(this%z,str(this%dir)//'z'//fortran_PS)
+         call export_structured(this%Minv,str(this%dir)//'Minv'//fortran_PS)
          call export_structured(this%norm,str(this%dir)//'norm'//fortran_PS)
          call export_structured(this%ISP,str(this%dir)//'ISP'//fortran_PS)
          call export_structured(this%dir,str(this%dir)//'dir'//fortran_PS)
@@ -318,6 +321,15 @@
          un = open_to_read(str(this%dir),'primitives')
          call import_primitives(this,un)
          call import_structured(this%MFP,str(this%dir)//'MFP'//fortran_PS)
+         call import_structured(this%r,str(this%dir)//'r'//fortran_PS)
+         call import_structured(this%p,str(this%dir)//'p'//fortran_PS)
+         call import_structured(this%tempx,&
+         str(this%dir)//'tempx'//fortran_PS)
+         call import_structured(this%Ax,str(this%dir)//'Ax'//fortran_PS)
+         call import_structured(this%x_BC,str(this%dir)//'x_BC'//fortran_PS)
+         call import_structured(this%vol,str(this%dir)//'vol'//fortran_PS)
+         call import_structured(this%z,str(this%dir)//'z'//fortran_PS)
+         call import_structured(this%Minv,str(this%dir)//'Minv'//fortran_PS)
          call import_structured(this%norm,str(this%dir)//'norm'//fortran_PS)
          call import_structured(this%ISP,str(this%dir)//'ISP'//fortran_PS)
          call import_structured(this%dir,str(this%dir)//'dir'//fortran_PS)
@@ -333,6 +345,14 @@
          call init(this%dir,dir)
          call init(this%name,'primitives')
          call set_IO_dir(this%MFP,dir//'MFP'//fortran_PS)
+         call set_IO_dir(this%r,dir//'r'//fortran_PS)
+         call set_IO_dir(this%p,dir//'p'//fortran_PS)
+         call set_IO_dir(this%tempx,dir//'tempx'//fortran_PS)
+         call set_IO_dir(this%Ax,dir//'Ax'//fortran_PS)
+         call set_IO_dir(this%x_BC,dir//'x_BC'//fortran_PS)
+         call set_IO_dir(this%vol,dir//'vol'//fortran_PS)
+         call set_IO_dir(this%z,dir//'z'//fortran_PS)
+         call set_IO_dir(this%Minv,dir//'Minv'//fortran_PS)
          call set_IO_dir(this%norm,dir//'norm'//fortran_PS)
          call set_IO_dir(this%ISP,dir//'ISP'//fortran_PS)
          call set_IO_dir(this%dir,dir//'dir'//fortran_PS)
@@ -348,6 +368,30 @@
          call init(this%dir,dir)
          call init(this%name,'primitives')
          call make_IO_dir(this%MFP,dir//'MFP'//fortran_PS)
+         if (get_necessary_for_restart(this%r)) then
+           call make_IO_dir(this%r,dir//'r'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%p)) then
+           call make_IO_dir(this%p,dir//'p'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%tempx)) then
+           call make_IO_dir(this%tempx,dir//'tempx'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%Ax)) then
+           call make_IO_dir(this%Ax,dir//'Ax'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%x_BC)) then
+           call make_IO_dir(this%x_BC,dir//'x_BC'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%vol)) then
+           call make_IO_dir(this%vol,dir//'vol'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%z)) then
+           call make_IO_dir(this%z,dir//'z'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%Minv)) then
+           call make_IO_dir(this%Minv,dir//'Minv'//fortran_PS)
+         endif
          call make_IO_dir(this%norm,dir//'norm'//fortran_PS)
          call make_IO_dir(this%ISP,dir//'ISP'//fortran_PS)
          call make_IO_dir(this%dir,dir//'dir'//fortran_PS)
@@ -362,6 +406,30 @@
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
          call export_structured(this%MFP,dir//'MFP'//fortran_PS)
+         if (get_necessary_for_restart(this%r)) then
+           call export_structured(this%r,dir//'r'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%p)) then
+           call export_structured(this%p,dir//'p'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%tempx)) then
+           call export_structured(this%tempx,dir//'tempx'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%Ax)) then
+           call export_structured(this%Ax,dir//'Ax'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%x_BC)) then
+           call export_structured(this%x_BC,dir//'x_BC'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%vol)) then
+           call export_structured(this%vol,dir//'vol'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%z)) then
+           call export_structured(this%z,dir//'z'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%Minv)) then
+           call export_structured(this%Minv,dir//'Minv'//fortran_PS)
+         endif
          call export_structured(this%norm,dir//'norm'//fortran_PS)
          call export_structured(this%ISP,dir//'ISP'//fortran_PS)
          call export_structured(this%dir,dir//'dir'//fortran_PS)
@@ -375,8 +443,33 @@
          character(len=*),intent(in) :: dir
          integer :: un
          un = open_to_read(dir,'primitives')
+         call delete(this)
          call import_primitives(this,un)
          call import_structured(this%MFP,dir//'MFP'//fortran_PS)
+         if (get_necessary_for_restart(this%r)) then
+           call import_structured(this%r,dir//'r'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%p)) then
+           call import_structured(this%p,dir//'p'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%tempx)) then
+           call import_structured(this%tempx,dir//'tempx'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%Ax)) then
+           call import_structured(this%Ax,dir//'Ax'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%x_BC)) then
+           call import_structured(this%x_BC,dir//'x_BC'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%vol)) then
+           call import_structured(this%vol,dir//'vol'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%z)) then
+           call import_structured(this%z,dir//'z'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%Minv)) then
+           call import_structured(this%Minv,dir//'Minv'//fortran_PS)
+         endif
          call import_structured(this%norm,dir//'norm'//fortran_PS)
          call import_structured(this%ISP,dir//'ISP'//fortran_PS)
          call import_structured(this%dir,dir//'dir'//fortran_PS)

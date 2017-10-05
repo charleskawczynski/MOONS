@@ -66,17 +66,21 @@
          call init(M%C%DT,str(M%C%dir_target))  ! Initialize + make directory tree
          call config(M) ! The flow control should be uniquely defined after this line.
          call make_IO_dir(M%C,str(M%C%DT%restart))
-         call make_IO_dir(M%GE,str(M%C%DT%restart))
          call export_structured(M%C)
          call export(M%C,str(M%C%DT%config),'config_original_DO_NOT_EDIT')
          call init(M)
          if (M%C%SP%VS%T%SS%initialize) call set_necessary_for_restart(M%GE%nrg)
          if (M%C%SP%VS%U%SS%initialize) call set_necessary_for_restart(M%GE%mom)
          if (M%C%SP%VS%B%SS%initialize) call set_necessary_for_restart(M%GE%ind)
-         ! call make_IO_dir(M%C,str(M%C%DT%restart))  ! repeat after init so that allocatables populate directory
+         if (M%C%SP%FCL%restart_all) then
+           call set_IO_dir(M%GE,str(M%C%DT%restart))
+           call import_structured(M%GE,str(M%C%DT%restart))
+         endif
          call make_IO_dir(M%GE,str(M%C%DT%restart)) ! repeat after init so that allocatables populate directory
          call export_structured(M%C)
-         call export_structured(M%GE)
+         if (.not.M%C%SP%FCL%restart_all) then
+           call export_structured(M%GE)
+         endif
          if (.not.M%C%SP%FCL%skip_solver_loop) then
            call solve(M)
          endif
@@ -94,7 +98,8 @@
          type(MOONS),intent(inout) :: M
          call print(M%C%sc,M%C%SP%coupled)
 
-         call export_structured(M,str(M%C%DT%restart))
+         call export_structured(M%C)
+         call export_structured(M%GE)
 
          if (M%C%SP%FCL%export_final_tec) then
            if (M%C%SP%VS%T%SS%initialize) call export_tec(M%GE%nrg,M%C%SP,M%C%DT)
