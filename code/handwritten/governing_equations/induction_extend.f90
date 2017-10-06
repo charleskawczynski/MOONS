@@ -241,12 +241,19 @@
          call set_necessary_for_restart(ind%B)
          call set_necessary_for_restart(ind%Bnm1)
          call set_necessary_for_restart(ind%B0)
+         call set_necessary_for_restart(ind%dB0dt)
          call set_necessary_for_restart(ind%F)
          call set_necessary_for_restart(ind%Fnm1)
          call set_necessary_for_restart(ind%L)
          call set_necessary_for_restart(ind%Bstar)
          call set_necessary_for_restart(ind%phi)
          call set_necessary_for_restart(ind%J)
+         call set_necessary_for_restart(ind%PCG_B%r)
+         call set_necessary_for_restart(ind%PCG_cleanB%r)
+         call set_necessary_for_restart(ind%PCG_B%p)
+         call set_necessary_for_restart(ind%PCG_cleanB%p)
+         call set_necessary_for_restart(ind%PCG_B%x_BC)
+         call set_necessary_for_restart(ind%PCG_cleanB%x_BC)
        end subroutine
 
        ! **********************************************************

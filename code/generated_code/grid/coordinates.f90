@@ -555,7 +555,6 @@
          integer :: s_colCC_centered
          integer :: un
          un = open_to_read(dir,'primitives')
-         call delete(this)
          call import_primitives(this,un)
          call import_structured(this%stagCC2N,dir//'stagCC2N'//fortran_PS)
          call import_structured(this%stagN2CC,dir//'stagN2CC'//fortran_PS)

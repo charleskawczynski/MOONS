@@ -94,7 +94,8 @@
             rhok = rhokp1
             call update_exit_loop(ISP)
           enddo
-        else; call apply_BCs(x); call update_iter(ISP)
+        else
+          call apply_BCs(x); call update_iter(ISP)
         endif
 
         call check_nans(res_norm0,res_norm,ISP,'check_nans after loop for '//name)
@@ -165,7 +166,8 @@
             rhok = rhokp1
             call update_exit_loop(ISP)
           enddo
-        else; call apply_BCs(x); call update_iter(ISP)
+        else
+          call apply_BCs(x); call update_iter(ISP)
         endif
 
         call check_nans(res_norm0,res_norm,ISP,'check_nans after loop for '//name)

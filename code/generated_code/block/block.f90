@@ -455,13 +455,13 @@
          integer :: s_vol
          integer :: un
          un = open_to_read(dir,'primitives')
-         call delete(this)
          call import_primitives(this,un)
          call import_structured(this%g,dir//'g'//fortran_PS)
          read(un,*) s_f
          if (s_f.gt.0) then
-           allocate(this%f(s_f))
-           s_f = size(this%f)
+           if (.not.allocated(this%f)) then
+             allocate(this%f(s_f))
+           endif
            do i_f=1,s_f
              call import_structured(this%f(i_f),&
              dir//'f_'//int2str(i_f)//fortran_PS)
@@ -469,8 +469,9 @@
          endif
          read(un,*) s_fb
          if (s_fb.gt.0) then
-           allocate(this%fb(s_fb))
-           s_fb = size(this%fb)
+           if (.not.allocated(this%fb)) then
+             allocate(this%fb(s_fb))
+           endif
            do i_fb=1,s_fb
              call import_structured(this%fb(i_fb),&
              dir//'fb_'//int2str(i_fb)//fortran_PS)
@@ -478,8 +479,9 @@
          endif
          read(un,*) s_vol
          if (s_vol.gt.0) then
-           allocate(this%vol(s_vol))
-           s_vol = size(this%vol)
+           if (.not.allocated(this%vol)) then
+             allocate(this%vol(s_vol))
+           endif
            do i_vol=1,s_vol
              call import_structured(this%vol(i_vol),&
              dir//'vol_'//int2str(i_vol)//fortran_PS)

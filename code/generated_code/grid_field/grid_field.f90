@@ -144,6 +144,9 @@
          integer,dimension(3) :: s_f
          read(un,*) s_f
          if (all((/s_f(1).gt.0,s_f(2).gt.0,s_f(3).gt.0/))) then
+           if (allocated(this%f)) then
+             deallocate(this%f)
+           endif
            allocate(this%f(s_f(1),s_f(2),s_f(3)))
            read(un,*); read(un,*) this%f
          endif
@@ -205,7 +208,6 @@
          character(len=*),intent(in) :: dir
          integer :: un
          un = open_to_read(dir,'primitives')
-         call delete(this)
          call import_primitives(this,un)
          close(un)
        end subroutine

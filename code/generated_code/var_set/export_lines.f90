@@ -262,12 +262,12 @@
          integer :: s_EL
          integer :: un
          un = open_to_read(dir,'primitives')
-         call delete(this)
          call import_primitives(this,un)
          read(un,*) s_EL
          if (s_EL.gt.0) then
-           allocate(this%EL(s_EL))
-           s_EL = size(this%EL)
+           if (.not.allocated(this%EL)) then
+             allocate(this%EL(s_EL))
+           endif
            do i_EL=1,s_EL
              call import_structured(this%EL(i_EL),&
              dir//'EL_'//int2str(i_EL)//fortran_PS)

@@ -371,13 +371,13 @@
          integer :: s_s_ext
          integer :: un
          un = open_to_read(dir,'primitives')
-         call delete(this)
          call import_primitives(this,un)
          call import_structured(this%MQP,dir//'MQP'//fortran_PS)
          read(un,*) s_s_base
          if (s_s_base.gt.0) then
-           allocate(this%s_base(s_s_base))
-           s_s_base = size(this%s_base)
+           if (.not.allocated(this%s_base)) then
+             allocate(this%s_base(s_s_base))
+           endif
            do i_s_base=1,s_s_base
              call import_structured(this%s_base(i_s_base),&
              dir//'s_base_'//int2str(i_s_base)//fortran_PS)
@@ -385,8 +385,9 @@
          endif
          read(un,*) s_s_ext
          if (s_s_ext.gt.0) then
-           allocate(this%s_ext(s_s_ext))
-           s_s_ext = size(this%s_ext)
+           if (.not.allocated(this%s_ext)) then
+             allocate(this%s_ext(s_s_ext))
+           endif
            do i_s_ext=1,s_s_ext
              call import_structured(this%s_ext(i_s_ext),&
              dir//'s_ext_'//int2str(i_s_ext)//fortran_PS)

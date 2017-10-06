@@ -269,12 +269,12 @@
          integer :: s_SP
          integer :: un
          un = open_to_read(dir,'primitives')
-         call delete(this)
          call import_primitives(this,un)
          read(un,*) s_SP
          if (s_SP.gt.0) then
-           allocate(this%SP(s_SP))
-           s_SP = size(this%SP)
+           if (.not.allocated(this%SP)) then
+             allocate(this%SP(s_SP))
+           endif
            do i_SP=1,s_SP
              call import_structured(this%SP(i_SP),&
              dir//'SP_'//int2str(i_SP)//fortran_PS)

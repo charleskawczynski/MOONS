@@ -1,6 +1,8 @@
 # **************** RUN CONFIGURATION *******************
-RELEASE = 'DEBUG'
-# RELEASE = 'OPTIMIZE'
+# Using windows command prompt periodically results in
+# Sporadic filename errors. To circumvent this, use the git powershell
+# RELEASE = 'DEBUG'
+RELEASE = 'OPTIMIZE'
 # RELEASE = 'PROFILE'
 USE_OPEN_MP = 'TRUE'
 PARALLELIZE_3D_OPS = 'TRUE'
@@ -24,22 +26,27 @@ else
 	OS_USED = 'OS_LINUX'
 endif
 
-ifeq ($(OS_USED),'OS_WINDOWS')
-	RM = del
-	PS = $(strip /)
-	# BEWARE: The double back-slash has caused an issue with compilation on windows gcc 4.9.2
-	# PS = $(strip \\)
-else
-	PS = $(strip /)
-	RM = rm
-endif
+# The following commented code was abandoned because
+# windows command prompt resulted in errors.
+# ifeq ($(OS_USED),'OS_WINDOWS')
+# 	RM = del
+# 	PS = $(strip /)
+# 	# BEWARE: The double back-slash has caused an issue with compilation on windows gcc 4.9.2
+# 	# PS = $(strip \\)
+# else
+# 	PS = $(strip /)
+# 	RM = rm
+# endif
+# ifeq ($(CLUSTER),$(filter $(CLUSTER),'Workstation_CK' 'PC_CK'))
+# 	PS_clean = $(strip \)
+# endif
+# ifeq ($(CLUSTER),$(filter $(CLUSTER),'Hoffman2'))
+# 	PS_clean = $(strip /)
+# endif
 
-ifeq ($(CLUSTER),$(filter $(CLUSTER),'Workstation_CK' 'PC_CK'))
-	PS_clean = $(strip \)
-endif
-ifeq ($(CLUSTER),$(filter $(CLUSTER),'Hoffman2'))
-	PS_clean = $(strip /)
-endif
+PS = $(strip /)
+RM = rm
+PS_clean = $(strip /)
 
 # ************* DIRECTORY SETTINGS ******************
 SRC_DIR = ..$(PS)code$(PS)handwritten
@@ -157,23 +164,23 @@ endif
 # FC_DEBUG += -D_DEBUG_COORDINATE_STRETCH_PARAM_MATCH_
 # FC_DEBUG += -D_DEBUG_RK_PARAMS_
 
-# FC_DEBUG += -D_DEBUG_IO_EXPORT_
-# FC_DEBUG += -D_DEBUG_EMBEDEXTRACT_
-# FC_DEBUG += -D_DEBUG_DATA_LOCATION_
-# FC_DEBUG += -D_DEBUG_ARRAY_
-# FC_DEBUG += -D_DEBUG_GF_
-# FC_DEBUG += -D_DEBUG_BF_
-# FC_DEBUG += -D_DEBUG_OPS_NORMS_
-# FC_DEBUG += -D_DEBUG_SF_
-# FC_DEBUG += -D_DEBUG_VF_
-# FC_DEBUG += -D_DEBUG_TF_
-# FC_DEBUG += -D_DEBUG_DEL_
-# FC_DEBUG += -D_DEBUG_DISCRETE_OPS_
-# FC_DEBUG += -D_DEBUG_INTERP_
-# FC_DEBUG += -D_DEBUG_BOUNDARY_CONDITIONS_
-# FC_DEBUG += -D_DEBUG_APPLY_BCS_
-# FC_DEBUG += -D_DEBUG_IO_TOOLS_
-# FC_DEBUG += -D_DEBUG_GF_NORMS_
+FC_DEBUG += -D_DEBUG_IO_EXPORT_
+FC_DEBUG += -D_DEBUG_EMBEDEXTRACT_
+FC_DEBUG += -D_DEBUG_DATA_LOCATION_
+FC_DEBUG += -D_DEBUG_ARRAY_
+FC_DEBUG += -D_DEBUG_GF_
+FC_DEBUG += -D_DEBUG_BF_
+FC_DEBUG += -D_DEBUG_OPS_NORMS_
+FC_DEBUG += -D_DEBUG_SF_
+FC_DEBUG += -D_DEBUG_VF_
+FC_DEBUG += -D_DEBUG_TF_
+FC_DEBUG += -D_DEBUG_DEL_
+FC_DEBUG += -D_DEBUG_DISCRETE_OPS_
+FC_DEBUG += -D_DEBUG_INTERP_
+FC_DEBUG += -D_DEBUG_BOUNDARY_CONDITIONS_
+FC_DEBUG += -D_DEBUG_APPLY_BCS_
+FC_DEBUG += -D_DEBUG_IO_TOOLS_
+FC_DEBUG += -D_DEBUG_GF_NORMS_
 
 # **************** OPTIMIZE/PARALLELIZE *********************
 ifeq ($(USE_OPEN_MP),'TRUE')

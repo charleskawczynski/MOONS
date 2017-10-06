@@ -218,7 +218,6 @@
          character(len=*),intent(in) :: dir
          integer :: un
          un = open_to_read(dir,'primitives')
-         call delete(this)
          call import_primitives(this,un)
          if (get_necessary_for_restart(this%x)) then
            call import_structured(this%x,dir//'x'//fortran_PS)

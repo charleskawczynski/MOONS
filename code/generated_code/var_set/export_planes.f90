@@ -262,12 +262,12 @@
          integer :: s_EP
          integer :: un
          un = open_to_read(dir,'primitives')
-         call delete(this)
          call import_primitives(this,un)
          read(un,*) s_EP
          if (s_EP.gt.0) then
-           allocate(this%EP(s_EP))
-           s_EP = size(this%EP)
+           if (.not.allocated(this%EP)) then
+             allocate(this%EP(s_EP))
+           endif
            do i_EP=1,s_EP
              call import_structured(this%EP(i_EP),&
              dir//'EP_'//int2str(i_EP)//fortran_PS)

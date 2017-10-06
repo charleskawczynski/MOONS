@@ -307,7 +307,6 @@
          integer :: s_int_tensor
          integer :: un
          un = open_to_read(dir,'primitives')
-         call delete(this)
          call import_primitives(this,un)
          s_int_tensor = size(this%int_tensor)
          do i_int_tensor=1,s_int_tensor

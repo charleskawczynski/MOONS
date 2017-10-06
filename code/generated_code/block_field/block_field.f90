@@ -310,7 +310,6 @@
          character(len=*),intent(in) :: dir
          integer :: un
          un = open_to_read(dir,'primitives')
-         call delete(this)
          call import_primitives(this,un)
          call import_structured(this%BCs,dir//'BCs'//fortran_PS)
          if (this%necessary_for_restart) then

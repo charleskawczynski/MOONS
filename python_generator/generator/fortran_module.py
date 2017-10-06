@@ -710,7 +710,6 @@ class fortran_module:
         if not IO_structured_quiet:
           c=c+["write(*,*) 'Importing "+ self.name +" structured'"]
         c=c+["un = open_to_read(dir,'primitives')" ]
-        c=c+["call delete(this)" ]
         c=c+["call import_primitives(this,un)" ]
         for key in self.prop:
           if self.get_structured_condition(self.prop[key]):

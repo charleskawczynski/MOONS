@@ -320,12 +320,12 @@
          integer :: s_BF
          integer :: un
          un = open_to_read(dir,'primitives')
-         call delete(this)
          call import_primitives(this,un)
          read(un,*) s_BF
          if (s_BF.gt.0) then
-           allocate(this%BF(s_BF))
-           s_BF = size(this%BF)
+           if (.not.allocated(this%BF)) then
+             allocate(this%BF(s_BF))
+           endif
            do i_BF=1,s_BF
              call import_structured(this%BF(i_BF),&
              dir//'BF_'//int2str(i_BF)//fortran_PS)

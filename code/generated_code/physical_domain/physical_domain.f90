@@ -269,12 +269,12 @@
          integer :: s_sd
          integer :: un
          un = open_to_read(dir,'primitives')
-         call delete(this)
          call import_primitives(this,un)
          read(un,*) s_sd
          if (s_sd.gt.0) then
-           allocate(this%sd(s_sd))
-           s_sd = size(this%sd)
+           if (.not.allocated(this%sd)) then
+             allocate(this%sd(s_sd))
+           endif
            do i_sd=1,s_sd
              call import_structured(this%sd(i_sd),&
              dir//'sd_'//int2str(i_sd)//fortran_PS)

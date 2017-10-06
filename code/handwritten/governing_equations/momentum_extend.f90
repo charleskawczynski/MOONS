@@ -222,6 +222,8 @@
          call set_necessary_for_restart(mom%L)
          call set_necessary_for_restart(mom%PCG_U%r)
          call set_necessary_for_restart(mom%PCG_P%r)
+         call set_necessary_for_restart(mom%PCG_U%p)
+         call set_necessary_for_restart(mom%PCG_P%p)
          call set_necessary_for_restart(mom%PCG_U%x_BC)
          call set_necessary_for_restart(mom%PCG_P%x_BC)
        end subroutine
@@ -326,7 +328,6 @@
          type(export_frequency),intent(in) :: EF
          type(time_marching_params),intent(inout) :: TMP
          integer :: i
-
          do i=1,TMP%multistep_iter
          select case(SP%VS%U%SS%solve_method)
          case (1)

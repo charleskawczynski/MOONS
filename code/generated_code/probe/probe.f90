@@ -342,7 +342,6 @@
          character(len=*),intent(in) :: dir
          integer :: un
          un = open_to_read(dir,'primitives')
-         call delete(this)
          call import_primitives(this,un)
          call import_structured(this%tec_dir,dir//'tec_dir'//fortran_PS)
          call import_structured(this%tec_name,dir//'tec_name'//fortran_PS)

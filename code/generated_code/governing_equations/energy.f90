@@ -443,7 +443,6 @@
          character(len=*),intent(in) :: dir
          integer :: un
          un = open_to_read(dir,'primitives')
-         call delete(this)
          call import_primitives(this,un)
          call import_structured(this%PCG_T,dir//'PCG_T'//fortran_PS)
          if (get_necessary_for_restart(this%T)) then

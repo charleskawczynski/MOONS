@@ -123,7 +123,7 @@
          call face2Face(temp_F2%z,        U%y,m,temp_CC,2,3)
          call multiply( temp_F1%z,temp_F2%z)
          call add(div%z,temp_F1%z)
-         ! write(*,*) 'GH 25'; call assign_ghost_XPeriodic(div,0.0_cp)
+         ! call assign_ghost_XPeriodic(div,0.0_cp)
        end subroutine
 
        subroutine advect_U_convection2(div,U_adv,U,U_E,m,temp_F1,temp_F2,temp_CC)

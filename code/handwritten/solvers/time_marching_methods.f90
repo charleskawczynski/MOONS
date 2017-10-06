@@ -142,7 +142,6 @@
          call assign_wall_Dirichlet(temp_F1,0.0_cp,X)
          call add(temp_F1,X)
          call assign(Xnm1,X)
-         ! call update_MFP(PCG_VF,m,TMP%TS%dt*1.0_cp*PCG_VF%MFP%coeff_implicit,TMP%n_step.le.2)
          call update_MFP(PCG_VF,m,TMP%TS%dt*1.0_cp*PCG_VF%MFP%coeff_implicit,.true.)
          call solve(PCG_VF,Xstar,temp_F1,m,compute_norms) ! Solve for X*
          call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%TS%dt,m,temp_F1,temp_CC,compute_norms)

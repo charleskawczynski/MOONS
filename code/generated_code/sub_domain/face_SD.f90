@@ -645,7 +645,6 @@
          integer :: s_i_2D
          integer :: un
          un = open_to_read(dir,'primitives')
-         call delete(this)
          call import_primitives(this,un)
          s_G = size(this%G)
          do i_G=1,s_G
