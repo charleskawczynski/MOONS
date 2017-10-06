@@ -27,6 +27,7 @@
        use momentum_sources_mod
        use induction_sources_mod
        use induction_aux_mod
+       use ops_interp_mod
        use energy_extend_mod
        use momentum_extend_mod
        use induction_extend_mod
@@ -44,6 +45,9 @@
          implicit none
          type(MOONS),intent(inout) :: M
          integer :: i_RK
+         call compute_J_ind(M%GE%ind,M%C%SP)
+         call face2CellCenter(M%GE%mom%U_CC,M%GE%mom%U,M%GE%mom%m)
+         call face2edge_no_diag(M%GE%mom%U_E,M%GE%mom%U,M%GE%mom%m)
          write(*,*) '***************************************************************'
          write(*,*) '****************** ENTERING MAIN LOOP *************************'
          write(*,*) '***************************************************************'
@@ -104,7 +108,7 @@
            call toc(M%C%sc,M%C%SP%coupled)
 
            if (M%C%ES%export_now) then
-             write(*,*) 'about to export in MOONS_solver'
+             write(*,*) 'Exporting restart in MOONS_solver, this may take a few minutes...'
              call export_structured(M%C)
              call export_structured(M%GE)
            endif
@@ -123,10 +127,6 @@
 
            call update(M%C%EN,M%C%ES%export_now)
            if (M%C%EN%any_next) call export_structured(M%C%EN) ! May be needed to avoid constant exporting
-
-           if (M%C%SP%coupled%n_step.eq.447) then
-             stop 'Done in MOONS_solver'
-           endif
 
            if (M%C%SP%EF%info%export_now) then
              ! oldest_modified_file violates intent, but this

@@ -74,12 +74,16 @@
          if (M%C%SP%VS%B%SS%initialize) call set_necessary_for_restart(M%GE%ind)
          if (M%C%SP%FCL%restart_all) then
            call set_IO_dir(M%GE,str(M%C%DT%restart))
+           write(*,*) ' ************** STARTED IMPORTING MOONS **************** may take some time...'
            call import_structured(M%GE,str(M%C%DT%restart))
+           write(*,*) ' ************** FINISHED IMPORTING MOONS *************** '
          endif
          call make_IO_dir(M%GE,str(M%C%DT%restart)) ! repeat after init so that allocatables populate directory
          call export_structured(M%C)
          if (.not.M%C%SP%FCL%restart_all) then
+           write(*,*) ' ************** STARTED EXPORTING MOONS **************** may take some time...'
            call export_structured(M%GE)
+           write(*,*) ' ************** FINISHED EXPORTING MOONS *************** '
          endif
          if (.not.M%C%SP%FCL%skip_solver_loop) then
            call solve(M)

@@ -72,6 +72,7 @@
        public :: init,delete,display,print,export,import ! Essentials
        public :: solve,export_tec,compute_export_E_M_budget
        public :: export_unsteady
+       public :: compute_J_ind
        public :: set_necessary_for_restart
 
        interface init;                      module procedure init_induction;                end interface
@@ -177,7 +178,6 @@
          ! *************************************************************
 
          call compute_J_ind(ind,SP)
-
 
          ! ********** SET CLEANING PROCEDURE SOLVER SETTINGS *************
 
