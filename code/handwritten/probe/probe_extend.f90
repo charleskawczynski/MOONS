@@ -178,22 +178,13 @@
          integer(li) :: i,i_first_to_delete,i_EOF
          integer :: un,stat
          un = open_to_read(str(p%tec_dir),str(p%tec_name))
-         write(*,*) 'truncate_data_in_open_file: '
-         call print(p%tec_dir)
-         call print(p%tec_name)
-         write(*,*) 'p%cols = ',p%cols
          read(un,*); read(un,*); read(un,*)
          allocate(d(p%cols))
          i_first_to_delete = 1
          i_EOF = 1
-         write(*,*) 'TMP%t = ',TMP%t
          do i=1,TMP%n_step
            write(*,*) '---------------- i = ',i
            read(un,*,iostat=stat) d
-           write(*,*) 'stat = ',stat
-           write(*,*) 'TMP%n_step = ',TMP%n_step
-           write(*,*) 'd = ',d
-           write(*,*) 'd = ',i_EOF
            if (TMP%t.gt.d(1)) then
              i_first_to_delete = i
            endif
@@ -202,8 +193,6 @@
              exit
            endif
          enddo
-         write(*,*) 'i_first_to_delete = ',i_first_to_delete
-         write(*,*) 'i_EOF = ',i_EOF
          close(un)
          un = open_to_read_write(str(p%tec_dir),str(p%tec_name))
          read(un,*); read(un,*); read(un,*)

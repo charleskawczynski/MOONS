@@ -216,6 +216,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)solvers$(PS)operator_commute_test.f90\
 	$(SRC_DIR)$(PS)MOONS$(PS)export_mesh_aux.f90\
 	$(SRC_DIR)$(PS)matrix_vis$(PS)matrix_vis.f90\
+	$(SRC_DIR)$(PS)MOONS$(PS)MOONS_export_full_restart.f90\
 	$(SRC_DIR)$(PS)MOONS$(PS)MOONS_init.f90\
 	$(SRC_DIR)$(PS)MOONS$(PS)MOONS_config.f90\
 	$(SRC_DIR)$(PS)MOONS$(PS)MOONS_solver.f90\

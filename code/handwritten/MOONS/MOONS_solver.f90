@@ -32,6 +32,7 @@
        use momentum_extend_mod
        use induction_extend_mod
        use momentum_sources_mod
+       use MOONS_export_full_restart_mod
        use MOONS_mod
        implicit none
 
@@ -108,9 +109,7 @@
            call toc(M%C%sc,M%C%SP%coupled)
 
            if (M%C%ES%export_now) then
-             write(*,*) 'Exporting restart in MOONS_solver, this may take a few minutes...'
-             call export_structured(M%C)
-             call export_structured(M%GE)
+             call MOONS_export_full_restart(M)
            endif
 
            call import_structured(M%C%SP%DP)

@@ -82,7 +82,7 @@
        SP%FCL%export_heavy                       = T
        SP%FCL%export_final_tec                   = T
        SP%FCL%export_final_restart               = T
-       SP%FCL%print_every_MHD_step               = T
+       SP%FCL%print_every_MHD_step               = F
        SP%FCL%print_mesh_before_solve            = F
        SP%FCL%compute_surface_power              = T
 
@@ -97,7 +97,7 @@
        SP%EL%export_mesh_block       = F
        SP%EL%export_soln_only        = F
 
-       SP%SCP%export_safe_period         = 1.0_cp*minutes
+       SP%SCP%export_safe_period         = 1.0_cp*seconds_per_day
        SP%SCP%uniform_gravity_dir        = 1
        SP%SCP%uniform_B0_dir             = 3
        SP%SCP%mpg_dir                    = 1
@@ -129,14 +129,14 @@
        ! call init(SP%TSP,T,30.0_cp,60.0_cp)
        call init(SP%TSP,F,700.0_cp,800.0_cp)
 
-       t_final                          = 30.0_cp
+       t_final                          = 60.0_cp
        ! dtime                         = 1.0_cp*pow(-2)
        ! dtime                         = 1.0_cp*pow(-4)*0.5_cp**(4.0_cp)
-       dtime                         = 2.0_cp*pow(-2)
+       dtime                         = 1.0_cp*pow(-1)
 
        SP%GP%tw                      = 0.05_cp
        SP%GP%geometry                = 7
-       SP%GP%periodic_dir            = (/0,0,1/)
+       SP%GP%periodic_dir            = (/0,0,0/)
        ! SP%GP%apply_BC_order          = (/3,4,5,6,1,2/) ! good for LDC
        ! SP%GP%apply_BC_order       = (/3,4,5,6,1,2/) ! good for periodic in y?
        SP%GP%apply_BC_order       = (/5,6,1,2,3,4/) ! good for periodic in y?

@@ -39,6 +39,7 @@
        use energy_extend_mod
        use momentum_extend_mod
        use induction_extend_mod
+       use MOONS_export_full_restart_mod
        use MOONS_solver_mod
        use MOONS_mod
        use MOONS_config_mod
@@ -102,8 +103,7 @@
          type(MOONS),intent(inout) :: M
          call print(M%C%sc,M%C%SP%coupled)
 
-         call export_structured(M%C)
-         call export_structured(M%GE)
+         call MOONS_export_full_restart(M)
 
          if (M%C%SP%FCL%export_final_tec) then
            if (M%C%SP%VS%T%SS%initialize) call export_tec(M%GE%nrg,M%C%SP,M%C%DT)

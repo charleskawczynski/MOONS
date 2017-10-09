@@ -275,6 +275,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)IO$(PS)export_raw_processed_symmetry.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_aux.f90\
 	$(SRC_DIR)$(PS)time_statistics$(PS)time_statistics_extend.f90\
+	$(SRC_DIR)$(PS)MOONS$(PS)MOONS_export_full_restart.f90\
 	$(SRC_DIR)$(PS)MOONS$(PS)export_mesh_aux.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)preconditioners$(PS)preconditioners.f90\
