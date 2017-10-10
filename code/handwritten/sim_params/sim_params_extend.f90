@@ -76,6 +76,8 @@
        SP%FCL%compute_export_E_M_budget          = F
        SP%FCL%restart_meshes                     = F
 
+       SP%FCL%simulate_crash                     = F
+       SP%FCL%restart_simulated_crash            = F
        SP%FCL%export_numerical_flow_rate         = F
        SP%FCL%export_Shercliff_Hunt_analytic_sol = F
        SP%FCL%export_vorticity_streamfunction    = F
@@ -98,6 +100,7 @@
        SP%EL%export_soln_only        = F
 
        SP%SCP%export_safe_period         = 1.0_cp*seconds_per_day
+       ! SP%SCP%export_safe_period         = 1.0_cp*minutes
        SP%SCP%uniform_gravity_dir        = 1
        SP%SCP%uniform_B0_dir             = 3
        SP%SCP%mpg_dir                    = 1
@@ -132,7 +135,7 @@
        t_final                          = 60.0_cp
        ! dtime                         = 1.0_cp*pow(-2)
        ! dtime                         = 1.0_cp*pow(-4)*0.5_cp**(4.0_cp)
-       dtime                         = 1.0_cp*pow(-1)
+       dtime                         = 1.0_cp*pow(-2)
 
        SP%GP%tw                      = 0.05_cp
        SP%GP%geometry                = 7

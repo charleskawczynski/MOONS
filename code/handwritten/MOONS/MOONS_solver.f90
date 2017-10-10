@@ -112,6 +112,17 @@
              call MOONS_export_full_restart(M)
            endif
 
+           if (M%C%SP%FCL%simulate_crash) then
+           if (M%C%SP%coupled%n_step.eq.447) then ! crash simulator
+             stop 'Done in MOONS_solver'
+           endif
+           endif
+           if (M%C%SP%FCL%restart_simulated_crash) then
+           if (M%C%SP%coupled%n_step.eq.947) then ! after crash simulator
+             stop 'Done in MOONS_solver'
+           endif
+           endif
+
            call import_structured(M%C%SP%DP)
            call import_structured(M%GE%mom%PCG_U%ISP%EC)
            call import_structured(M%GE%mom%PCG_P%ISP%EC)
@@ -128,13 +139,6 @@
            if (M%C%EN%any_next) call export_structured(M%C%EN) ! May be needed to avoid constant exporting
 
            if (M%C%SP%EF%info%export_now) then
-             ! oldest_modified_file violates intent, but this
-             ! would be better to update outside the solvers,
-             ! since it should be updated for all solver variables.
-             ! call least_recently_modified(M%C%DT%restart,&
-             !                              str(M%C%DT%restart1),&
-             !                              str(M%C%DT%restart2),'primitives')
-
              if (M%C%SP%FCL%export_heavy) then
                call print(M%C%sc,M%C%SP%coupled)
                write(*,*) 'Working directory = ',str(M%C%DT%tar)

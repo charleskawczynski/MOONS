@@ -100,7 +100,7 @@
        subroutine init_induction(ind,SP,DT)
          implicit none
          type(induction),intent(inout) :: ind
-         type(sim_params),intent(inout) :: SP
+         type(sim_params),intent(in) :: SP
          type(dir_tree),intent(in) :: DT
          type(TF) :: TF_face,sigmaInv_edge_TF
          integer :: temp_unit

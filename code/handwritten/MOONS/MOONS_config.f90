@@ -58,10 +58,15 @@
          call omp_set_num_threads(12) ! Set number of openMP threads
 
 #endif
-         if (file_exists(str(M%C%DT%restart),'primitives')) then
-           ! Restart is default if files exist!
-           ! call import_structured(M%C) ! Cannot, dir,name not defined yet.
-           call import_structured(M%C,str(M%C%DT%restart))
+         if (file_exists(str(M%C%DT%restart1),'primitives')) then
+           write(*,*) 'Restarting from ',str(M%C%DT%restart1)
+           call import_structured(M%C,str(M%C%DT%restart1))
+           call init(M%C%DT%restart,M%C%DT%restart1)
+           M%C%SP%FCL%restart_all = .true.
+         elseif (file_exists(str(M%C%DT%restart2),'primitives')) then
+           write(*,*) 'Restarting from ',str(M%C%DT%restart2)
+           call import_structured(M%C,str(M%C%DT%restart2))
+           call init(M%C%DT%restart,M%C%DT%restart2)
            M%C%SP%FCL%restart_all = .true.
          else
            call init(M%C%SP)

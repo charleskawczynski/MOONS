@@ -35,6 +35,8 @@
        interface suppress_warnings;module procedure suppress_warnings_flow_control_logicals;  end interface
 
        type flow_control_logicals
+         logical :: simulate_crash = .false.
+         logical :: restart_simulated_crash = .false.
          logical :: post_process = .false.
          logical :: skip_solver_loop = .false.
          logical :: stop_before_solve = .false.
@@ -67,6 +69,8 @@
          type(flow_control_logicals),intent(inout) :: this
          type(flow_control_logicals),intent(in) :: that
          call delete(this)
+         this%simulate_crash = that%simulate_crash
+         this%restart_simulated_crash = that%restart_simulated_crash
          this%post_process = that%post_process
          this%skip_solver_loop = that%skip_solver_loop
          this%stop_before_solve = that%stop_before_solve
@@ -95,6 +99,8 @@
        subroutine delete_flow_control_logicals(this)
          implicit none
          type(flow_control_logicals),intent(inout) :: this
+         this%simulate_crash = .false.
+         this%restart_simulated_crash = .false.
          this%post_process = .false.
          this%skip_solver_loop = .false.
          this%stop_before_solve = .false.
@@ -124,6 +130,10 @@
          implicit none
          type(flow_control_logicals),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'simulate_crash                     = ',&
+         this%simulate_crash
+         write(un,*) 'restart_simulated_crash            = ',&
+         this%restart_simulated_crash
          write(un,*) 'post_process                       = ',&
          this%post_process
          write(un,*) 'skip_solver_loop                   = ',&
@@ -176,6 +186,10 @@
          implicit none
          type(flow_control_logicals),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'simulate_crash                     = ',&
+         this%simulate_crash
+         write(un,*) 'restart_simulated_crash            = ',&
+         this%restart_simulated_crash
          write(un,*) 'post_process                       = ',&
          this%post_process
          write(un,*) 'skip_solver_loop                   = ',&
@@ -265,6 +279,8 @@
          implicit none
          type(flow_control_logicals),intent(in) :: this
          integer,intent(in) :: un
+         write(un,*) 'simulate_crash                      = ';write(un,*) this%simulate_crash
+         write(un,*) 'restart_simulated_crash             = ';write(un,*) this%restart_simulated_crash
          write(un,*) 'post_process                        = ';write(un,*) this%post_process
          write(un,*) 'skip_solver_loop                    = ';write(un,*) this%skip_solver_loop
          write(un,*) 'stop_before_solve                   = ';write(un,*) this%stop_before_solve
@@ -294,6 +310,8 @@
          implicit none
          type(flow_control_logicals),intent(inout) :: this
          integer,intent(in) :: un
+         read(un,*); read(un,*) this%simulate_crash
+         read(un,*); read(un,*) this%restart_simulated_crash
          read(un,*); read(un,*) this%post_process
          read(un,*); read(un,*) this%skip_solver_loop
          read(un,*); read(un,*) this%stop_before_solve

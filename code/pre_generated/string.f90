@@ -297,7 +297,7 @@
         if (A%n.eq.B%n) then
           L = .true.
           do i=1,A%n
-            if (A%s(i)%c.eq.B%s(i)%c) L = .false.
+            if (A%s(i)%c.ne.B%s(i)%c) L = .false.
           enddo
         endif
       end function

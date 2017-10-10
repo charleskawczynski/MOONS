@@ -143,6 +143,8 @@ def add_modules(g,T,F,priv,real):
 	g.add_module(m_name)
 	g.module[m_name].set_folder_name(__name__.split('.')[1])
 	g.module[m_name].set_used_modules(['IO_tools_mod'])
+	g.module[m_name].add_prop('simulate_crash'                    ,'logical',priv)
+	g.module[m_name].add_prop('restart_simulated_crash'           ,'logical',priv)
 	g.module[m_name].add_prop('post_process'                      ,'logical',priv)
 	g.module[m_name].add_prop('skip_solver_loop'                  ,'logical',priv)
 	g.module[m_name].add_prop('stop_before_solve'                 ,'logical',priv)

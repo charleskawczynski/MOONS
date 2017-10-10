@@ -183,7 +183,6 @@
          i_first_to_delete = 1
          i_EOF = 1
          do i=1,TMP%n_step
-           write(*,*) '---------------- i = ',i
            read(un,*,iostat=stat) d
            if (TMP%t.gt.d(1)) then
              i_first_to_delete = i

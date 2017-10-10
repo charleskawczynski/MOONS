@@ -96,7 +96,7 @@
        subroutine init_mom(mom,SP,DT)
          implicit none
          type(momentum),intent(inout) :: mom
-         type(sim_params),intent(inout) :: SP
+         type(sim_params),intent(in) :: SP
          type(dir_tree),intent(in) :: DT
          type(TF) :: TF_Face
          integer :: temp_unit
@@ -242,8 +242,6 @@
          else
            write(*,*) 'export_tec_momentum at n_step = ',SP%VS%U%TMP%n_step
            call export_processed(mom%m,mom%U,str(DT%U%field),'U',1)
-           call export_raw(mom%m,mom%Ustar,str(DT%U%field),'Ustar',0)
-
            if (.not.SP%EL%export_soln_only) then
              call export_processed(mom%m,mom%p,str(DT%p%field),'p',1)
              call export_raw(mom%m,mom%divU,str(DT%U%field),'divU',1)
@@ -252,9 +250,6 @@
                call export_processed(mom%m,mom%U,str(DT%U%field),'U',1,SP%MP)
                call export_processed(mom%m,mom%p,str(DT%p%field),'p',1,SP%MP)
              endif
-             call export_raw(mom%m,mom%PCG_P%r,str(DT%P%debug),'residual_p',0)
-             call export_raw(mom%m,mom%PCG_U%r,str(DT%U%debug),'residual_Ustar',0)
-
              write(*,*) '     finished'
            endif
          endif

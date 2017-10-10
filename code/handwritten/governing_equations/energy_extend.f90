@@ -77,7 +77,7 @@
        subroutine init_energy(nrg,SP,DT)
          implicit none
          type(energy),intent(inout) :: nrg
-         type(sim_params),intent(inout) :: SP
+         type(sim_params),intent(in) :: SP
          type(dir_tree),intent(in) :: DT
          integer :: temp_unit
          type(SF) :: k_cc
