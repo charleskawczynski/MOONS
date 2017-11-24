@@ -1,0 +1,325 @@
+#!MC 1120
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = -1.0
+    Y = -1.0
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = -1.0
+    Y = -0.6
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = -1.0
+    Y = -0.2
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = -1.0
+    Y = 0.2
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = -1.0
+    Y = 0.6
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = -1.0
+    Y = 1.0
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = -0.6
+    Y = -1.0
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = -0.6
+    Y = -0.6
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = -0.6
+    Y = -0.2
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = -0.6
+    Y = 0.2
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = -0.6
+    Y = 0.6
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = -0.6
+    Y = 1.0
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = -0.2
+    Y = -1.0
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = -0.2
+    Y = -0.6
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = -0.2
+    Y = -0.2
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = -0.2
+    Y = 0.2
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = -0.2
+    Y = 0.6
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = -0.2
+    Y = 1.0
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = 0.2
+    Y = -1.0
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = 0.2
+    Y = -0.6
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = 0.2
+    Y = -0.2
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = 0.2
+    Y = 0.2
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = 0.2
+    Y = 0.6
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = 0.2
+    Y = 1.0
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = 0.6
+    Y = -1.0
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = 0.6
+    Y = -0.6
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = 0.6
+    Y = -0.2
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = 0.6
+    Y = 0.2
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = 0.6
+    Y = 0.6
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = 0.6
+    Y = 1.0
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = 1.0
+    Y = -1.0
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = 1.0
+    Y = -0.6
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = 1.0
+    Y = -0.2
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = 1.0
+    Y = 0.2
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = 1.0
+    Y = 0.6
+    Z = -1.049
+    }
+$!STREAMTRACE ADD
+  STREAMTYPE = VOLUMELINE
+  DIRECTION = BOTH
+  STARTPOS
+    {
+    X = 1.0
+    Y = 1.0
+    Z = -1.049
+    }

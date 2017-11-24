@@ -44,16 +44,30 @@
        call init(SP%MP_mom,SP%MQP)
        call init(SP%MP_sigma,SP%MQP)
        call init(SP%MP_ind,SP%MQP)
-       call add_base(SP%MP_mom,seg_1d(1,'grid_uniform',45,-1.0_cp,1.0_cp))
-       call add_base(SP%MP_mom,seg_1d(2,'grid_uniform',45,-1.0_cp,1.0_cp))
-       call add_base(SP%MP_mom,seg_1d(3,'grid_uniform',45,-1.0_cp,1.0_cp))
-       ! call add_base(SP%MP_mom,seg_1d(3,'grid_uniform',45,-1.0_cp,1.0_cp))
+       call add_base(SP%MP_mom,seg_1d(1,'grid_Roberts_B' ,200 ,-1.0_cp,1.0_cp))
+       call add_base(SP%MP_mom,seg_1d(2,'grid_Roberts_B' ,200 ,-1.0_cp,1.0_cp))
+       call add_base(SP%MP_mom,seg_1d(3,'grid_uniform'   ,1,-0.5_cp,0.5_cp))
        call init(SP%MP_ind,SP%MP_mom)
        call init(SP%MP_sigma,SP%MP_ind)
-       call add_ext(SP%MP_ind,seg_1d(1,'ext_uniform_IO',11))
-       call add_ext(SP%MP_ind,seg_1d(2,'ext_uniform_IO',11))
-       call add_ext(SP%MP_ind,seg_1d(3,'ext_uniform_IO',11))
      end subroutine
+
+     ! subroutine define_mesh_SP(SP)
+     !   implicit none
+     !   type(sim_params),intent(inout) :: SP
+     !   ! call init(MP,MQP)
+     !   call init(SP%MP_mom,SP%MQP)
+     !   call init(SP%MP_sigma,SP%MQP)
+     !   call init(SP%MP_ind,SP%MQP)
+     !   call add_base(SP%MP_mom,seg_1d(1,'grid_uniform',45,-1.0_cp,1.0_cp))
+     !   call add_base(SP%MP_mom,seg_1d(2,'grid_uniform',45,-1.0_cp,1.0_cp))
+     !   call add_base(SP%MP_mom,seg_1d(3,'grid_uniform',45,-1.0_cp,1.0_cp))
+     !   ! call add_base(SP%MP_mom,seg_1d(3,'grid_uniform',45,-1.0_cp,1.0_cp))
+     !   call init(SP%MP_ind,SP%MP_mom)
+     !   call init(SP%MP_sigma,SP%MP_ind)
+     !   call add_ext(SP%MP_ind,seg_1d(1,'ext_uniform_IO',11))
+     !   call add_ext(SP%MP_ind,seg_1d(2,'ext_uniform_IO',11))
+     !   call add_ext(SP%MP_ind,seg_1d(3,'ext_uniform_IO',11))
+     ! end subroutine
 
      subroutine init_SP(SP)
        implicit none
@@ -86,10 +100,10 @@
        SP%FCL%export_final_restart               = T
        SP%FCL%print_every_MHD_step               = F
        SP%FCL%print_mesh_before_solve            = F
-       SP%FCL%compute_surface_power              = T
+       SP%FCL%compute_surface_power              = F
 
        SP%EL%export_analytic         = F
-       SP%EL%export_meshes           = F
+       SP%EL%export_meshes           = T
        SP%EL%export_vort_SF          = F
        SP%EL%export_mat_props        = F
        SP%EL%export_ICs              = F
@@ -105,7 +119,7 @@
        SP%SCP%uniform_B0_dir             = 3
        SP%SCP%mpg_dir                    = 1
        SP%SCP%couple_time_steps          = T
-       SP%SCP%finite_Rem                 = F
+       SP%SCP%finite_Rem                 = T
        SP%SCP%include_vacuum             = F
        SP%SCP%embed_B_interior           = F
 
@@ -118,7 +132,7 @@
        call init(SP%EF%unsteady_0D   ,T,T,1,10,2)
        call init(SP%EF%unsteady_1D   ,F,F,1,10,2)
        call init(SP%EF%unsteady_2D   ,F,F,1,10,2)
-       call init(SP%EF%unsteady_3D   ,F,F,1,10,4)
+       call init(SP%EF%unsteady_3D   ,T,T,1,10,4)
        call init(SP%EF%restart_files ,F,F,1,10,2)
        call init(SP%EF%final_solution,F,F,1,10,6)
 
@@ -132,14 +146,14 @@
        ! call init(SP%TSP,T,30.0_cp,60.0_cp)
        call init(SP%TSP,F,700.0_cp,800.0_cp)
 
-       t_final                          = 60.0_cp
+       t_final                          = 10.0_cp
        ! dtime                         = 1.0_cp*pow(-2)
        ! dtime                         = 1.0_cp*pow(-4)*0.5_cp**(4.0_cp)
-       dtime                         = 1.0_cp*pow(-2)
+       dtime                         = 1.0_cp*pow(-5)
 
        SP%GP%tw                      = 0.05_cp
        SP%GP%geometry                = 7
-       SP%GP%periodic_dir            = (/0,0,0/)
+       SP%GP%periodic_dir            = (/0,0,1/)
        ! SP%GP%apply_BC_order          = (/3,4,5,6,1,2/) ! good for LDC
        ! SP%GP%apply_BC_order       = (/3,4,5,6,1,2/) ! good for periodic in y?
        SP%GP%apply_BC_order       = (/5,6,1,2,3,4/) ! good for periodic in y?
@@ -147,12 +161,12 @@
        ! SP%GP%apply_BC_order       = (/3,4,1,2,5,6/) ! good for periodic in z?
 
        call delete(SP%DP)
-       SP%DP%Re                      = 100.0_cp
+       SP%DP%Re                      = 11769054.2652_cp
+       SP%DP%Ha                      = 2645.75131106_cp
+       SP%DP%Rem                     = 1.1131984703_cp
        ! SP%DP%N                       = 5.0_cp*pow(0)
        SP%DP%Q                       = 8.0_cp*pow(-1)
-       SP%DP%Rem                     = 1.0_cp*pow(0)
        ! SP%DP%Ha                      = 5.0_cp*pow(2)
-       SP%DP%Ha                      = 10.0_cp
        ! SP%DP%Ha                      = 10.0_cp*pow(3)
        ! SP%DP%Ha                      = 15.0_cp*pow(3)
        ! SP%DP%N                       = 1.0_cp/SP%DP%Q
@@ -185,9 +199,9 @@
 
        ! call init(export_field,export_ever)
        call init(SP%VS%T%unsteady_field  ,F)
-       call init(SP%VS%U%unsteady_field  ,F)
+       call init(SP%VS%U%unsteady_field  ,T)
        call init(SP%VS%P%unsteady_field  ,F)
-       call init(SP%VS%B%unsteady_field  ,F)
+       call init(SP%VS%B%unsteady_field  ,T)
        call init(SP%VS%B0%unsteady_field ,F)
        call init(SP%VS%phi%unsteady_field,F)
        call init(SP%VS%rho%unsteady_field,F)
@@ -228,7 +242,7 @@
 
        ! call init_IC_BC(var      ,IC   ,BC)
        call init_IC_BC(SP%VS%T    ,0    ,0 )
-       call init_IC_BC(SP%VS%U    ,0    ,1 )
+       call init_IC_BC(SP%VS%U    ,0    ,0 )
        call init_IC_BC(SP%VS%P    ,0    ,0 )
        call init_IC_BC(SP%VS%B    ,0    ,1 )
        call init_IC_BC(SP%VS%B0   ,1    ,0 )
@@ -296,7 +310,7 @@
        call init(SP%IT%advection       ,T, 1.0_cp           )
        call init(SP%IT%diffusion       ,T, -SP%VS%B%MFP%beta) ! since LHS and J includes scale
        call init(SP%IT%diffusion_linear,F, -SP%VS%B%MFP%beta) ! since LHS and J includes scale
-       call init(SP%IT%unsteady_B0     ,F, -1.0_cp          ) ! since RHS
+       call init(SP%IT%unsteady_B0     ,T, -1.0_cp          ) ! since RHS
 
        ! Sources to add to energy equation. NOTE: scale is not set if add=false
        call init(SP%ET%advection          , F,-1.0_cp           )

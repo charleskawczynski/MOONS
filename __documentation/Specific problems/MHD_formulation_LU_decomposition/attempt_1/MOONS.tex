@@ -381,6 +381,221 @@ Again, the matrix $\Theta$ may be
 \end{aligned} \end{equation}
 As noted in Perot, the 1st order error term may be circumvented by absorbing the error in the pressure (and, we assume, correction parameter) gradient
 
+\newpage
+\section{Fractional step method for full BC paper}
+The second order temporally accurate finite difference equations we wish to solve are
+\begin{equation}\begin{aligned}
+\frac{\U^{n+1}-\U^n}{\Delta t} - \theta_u \ReInv L(\U^{n+1}) = - G p^{n+1} + (1-\theta_u) \ReInv L(\U^n) + \frac{3}{2} \R^n - \frac{1}{2} \R^{n-1} , \\
+\R^n = - D(\U^n \U^n) + \Al C(\B^n) \CROSS \B^n, \\
+ D \U^{n+1} = 0, \\
+\frac{\B^{n+1}-\B^n}{\Delta t} + \theta_B \RemInv C (\left[ \SO^{-1} C\B^{n+1}) \right] = - G\cleanB^{n+1} - (1-\theta_B) \RemInv C (\left[ \SO^{-1} C\B^n) \right] + \frac{3}{2} \T^n - \frac{1}{2} \T^{n-1}, \\
+\T^n = C (\U^n \CROSS \B^n), \\
+ D \B^{n+1} = 0.
+\end{aligned} \end{equation}
+We may write this in matrix form as
+\[
+\MAT{c c c c}
+A_u & G & 0   & 0 \\
+D   & 0 & 0   & 0 \\
+0   & 0 & A_B & G \\
+0   & 0 & D   & 0 \\
+\EMAT
+\MAT{c}
+\U^{n+1} \\
+ p^{n+1} \\
+\B^{n+1} \\
+\cleanB^{n+1} \\
+\EMAT
+=
+\MAT{c}
+\MAC R \\
+0  \\
+\MAC T \\
+0  \\
+\EMAT +
+\MAT{c}
+BC_1 \\
+BC_2 \\
+BC_3 \\
+BC_4 \\
+\EMAT
+\]
+\begin{equation}\LL\begin{aligned}
+& A_u  = \frac{1}{\Delta t} \left(I - \Delta t \theta_u \ReInv L \right), \\
+& A_B  = \frac{1}{\Delta t} \left(I + \Delta t \theta_B \RemInv C (\SO^{-1} C) \right), \\
+& \MAC R = \frac{1}{\Delta t} \left(I + \Delta t (1-\theta_u) \ReInv L \right) \U^n + \frac{3}{2}\R^n - \frac{1}{2}\R^{n-1}. \\
+& \MAC T = \frac{1}{\Delta t} [I - \Delta t(1-\theta_B) \RemInv C ( \SO^{-1} C) ]\B^n + \frac{3}{2} \T^n - \frac{1}{2} \T^{n-1}. \\
+\end{aligned} \end{equation}
+Now, consider the approximation (which we've seen can achieve 2nd order from Perot):
+\[
+\MAT{c c c c}
+A_u & A_u\Theta_u G    &    0      &              0    \\
+D   &        0         &    0      &              0    \\
+0   &        0         &    A_B    & A_B \Theta_B G    \\
+0   &        0         &    D      &              0    \\
+\EMAT
+\MAT{c}
+\U^{n+1} \\
+ p^{n+1} \\
+\B^{n+1} \\
+\cleanB^{n+1} \\
+\EMAT
+=
+\MAT{c}
+\MAC R \\
+0  \\
+\MAC T \\
+0  \\
+\EMAT +
+\MAT{c}
+BC_1 \\
+BC_2 \\
+BC_3 \\
+BC_4 \\
+\EMAT
+\]
+Factorizing (using \textquote{wxMaxima} software), we get
+% wxMaxima website: http://andrejv.github.io/wxmaxima/
+\[
+\MAT{c c c c}
+I      &     0           &    0      &          0    \\
+D/A_u  &     I           &    0      &          0    \\
+0      &     0           &    I      &          0    \\
+0      &     0           &    D/A_B  &          I    \\
+\EMAT
+\MAT{c c c c}
+A_u & A_u G \Theta_u    &    0      &          0              \\
+0   &    -DG\Theta_u    &    0      &          0              \\
+0   &     0             &    A_B    & A_B G \Theta_B          \\
+0   &     0             &    0      &          -DG\Theta_B    \\
+\EMAT
+\MAT{c}
+\U^{n+1} \\
+ p^{n+1} \\
+\B^{n+1} \\
+\cleanB^{n+1} \\
+\EMAT
+=
+\MAT{c}
+\MAC R \\
+0  \\
+\MAC T \\
+0  \\
+\EMAT +
+\MAT{c}
+BC_1 \\
+BC_2 \\
+BC_3 \\
+BC_4 \\
+\EMAT
+\]
+Re-arranging a bit, we get
+\[
+\MAT{c c c c}
+A_u    &     0           &    0      &          0      \\
+D      &  -D\Theta_u G   &    0      &          0      \\
+0      &     0           &    A_B    &          0      \\
+0      &     0           &    D      &   -D\Theta_B G  \\
+\EMAT
+\underbrace{
+\MAT{c c c c}
+I   &     \Theta_u G    &    0      &          0       \\
+0   &     I             &    0      &          0       \\
+0   &     0             &    I      &     \Theta_B G   \\
+0   &     0             &    0      &          I       \\
+\EMAT
+\MAT{c}
+\U^{n+1} \\
+ p^{n+1} \\
+\B^{n+1} \\
+\cleanB^{n+1} \\
+\EMAT}_{
+\MAT{c}
+\hat{\U} \\
+ p^{n+1} \\
+\hat{\B} \\
+\cleanB^{n+1} \\
+\EMAT
+}
+=
+\MAT{c}
+\MAC R \\
+0  \\
+\MAC T \\
+0  \\
+\EMAT +
+\MAT{c}
+BC_1 \\
+BC_2 \\
+BC_3 \\
+BC_4 \\
+\EMAT
+\]
+Further simplified, this results in a series of operations, which can be viewed as first solving the outer problem:
+\[
+\MAT{c c c c}
+A_u    &     0           &    0      &          0      \\
+D      &  -D\Theta_u G   &    0      &          0      \\
+0      &     0           &    A_B    &          0      \\
+0      &     0           &    D      &   -D\Theta_B G  \\
+\EMAT
+\MAT{c}
+\hat{\U} \\
+ p^{n+1} \\
+\hat{\B} \\
+\cleanB^{n+1} \\
+\EMAT
+=
+\MAT{c}
+\MAC R \\
+0  \\
+\MAC T \\
+0  \\
+\EMAT +
+\MAT{c}
+BC_1 \\
+BC_2 \\
+BC_3 \\
+BC_4 \\
+\EMAT,
+\]
+then the inner problem:
+\[
+\MAT{c c c c}
+I   &     \Theta_u G    &    0      &          0       \\
+0   &     I             &    0      &          0       \\
+0   &     0             &    I      &     \Theta_B G   \\
+0   &     0             &    0      &          I       \\
+\EMAT
+\MAT{c}
+\U^{n+1} \\
+ p^{n+1} \\
+\B^{n+1} \\
+\cleanB^{n+1} \\
+\EMAT =
+\MAT{c}
+\hat{\U} \\
+ p^{n+1} \\
+\hat{\B} \\
+\cleanB^{n+1} \\
+\EMAT.
+\]
+The sequence of operations are:
+\begin{equation}\LL\begin{aligned}
+A_u \hat{\U} = \MAC R + BC_1 \\
+D \Theta_u G p^{n+1} = D\hat{\U} - BC_2 \\
+\U^{n+1} = \hat{\U} - \Theta_u G p^{n+1} \\
+A_B \hat{\B} = \MAC T + BC_3 \\
+D \Theta_B G \cleanB^{n+1} = D\hat{\B} - BC_4 \\
+\B^{n+1} = \hat{\B} - \Theta_B G \cleanB^{n+1} \\
+\end{aligned} \end{equation}
+Again, the matrix $\Theta$ may be
+\begin{equation}\begin{aligned}
+\Theta = \Delta t I, \quad \rightarrow \quad \text{1st order error term} \\
+\Theta = A^{-1}, \quad \rightarrow \quad \text{Uzawa method, requires nested iterations (typically avoided)}
+\end{aligned} \end{equation}
+As noted in Perot, the 1st order error term may be circumvented by absorbing the error in the pressure (and, we assume, correction parameter) gradient
+
 \input{../include_bib.tex}
 
 \end{document}

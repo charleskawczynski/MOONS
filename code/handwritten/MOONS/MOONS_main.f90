@@ -103,7 +103,9 @@
          type(MOONS),intent(inout) :: M
          call print(M%C%sc,M%C%SP%coupled)
 
-         call MOONS_export_full_restart(M)
+         if (M%C%SP%FCL%export_final_restart) then
+           call MOONS_export_full_restart(M)
+         endif
 
          if (M%C%SP%FCL%export_final_tec) then
            if (M%C%SP%VS%T%SS%initialize) call export_tec(M%GE%nrg,M%C%SP,M%C%DT)
