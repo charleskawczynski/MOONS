@@ -40,6 +40,7 @@
          type(string) :: distribution
          real(cp) :: hmax = 0.0_cp
          real(cp) :: hmin = 0.0_cp
+         real(cp) :: buffer = 0.0_cp
          real(cp) :: L = 0.0_cp
          real(cp) :: tau = 0.0_cp
          real(cp) :: yc = 0.0_cp
@@ -57,6 +58,7 @@
          call init(this%distribution,that%distribution)
          this%hmax = that%hmax
          this%hmin = that%hmin
+         this%buffer = that%buffer
          this%L = that%L
          this%tau = that%tau
          this%yc = that%yc
@@ -70,6 +72,7 @@
          call delete(this%distribution)
          this%hmax = 0.0_cp
          this%hmin = 0.0_cp
+         this%buffer = 0.0_cp
          this%L = 0.0_cp
          this%tau = 0.0_cp
          this%yc = 0.0_cp
@@ -84,6 +87,7 @@
          call display(this%distribution,un)
          write(un,*) 'hmax         = ',this%hmax
          write(un,*) 'hmin         = ',this%hmin
+         write(un,*) 'buffer       = ',this%buffer
          write(un,*) 'L            = ',this%L
          write(un,*) 'tau          = ',this%tau
          write(un,*) 'yc           = ',this%yc
@@ -98,6 +102,7 @@
          call display(this%distribution,un)
          write(un,*) 'hmax         = ',this%hmax
          write(un,*) 'hmin         = ',this%hmin
+         write(un,*) 'buffer       = ',this%buffer
          write(un,*) 'L            = ',this%L
          write(un,*) 'tau          = ',this%tau
          write(un,*) 'yc           = ',this%yc
@@ -150,6 +155,7 @@
          write(un,*) 'N_cells       = ';write(un,*) this%N_cells
          write(un,*) 'hmax          = ';write(un,*) this%hmax
          write(un,*) 'hmin          = ';write(un,*) this%hmin
+         write(un,*) 'buffer        = ';write(un,*) this%buffer
          write(un,*) 'L             = ';write(un,*) this%L
          write(un,*) 'tau           = ';write(un,*) this%tau
          write(un,*) 'yc            = ';write(un,*) this%yc
@@ -163,6 +169,7 @@
          read(un,*); read(un,*) this%N_cells
          read(un,*); read(un,*) this%hmax
          read(un,*); read(un,*) this%hmin
+         read(un,*); read(un,*) this%buffer
          read(un,*); read(un,*) this%L
          read(un,*); read(un,*) this%tau
          read(un,*); read(un,*) this%yc

@@ -1,8 +1,8 @@
 # **************** RUN CONFIGURATION *******************
 # Using windows command prompt periodically results in
 # Sporadic filename errors. To circumvent this, use the git powershell
-# RELEASE = 'DEBUG'
-RELEASE = 'OPTIMIZE'
+RELEASE = 'DEBUG'
+# RELEASE = 'OPTIMIZE'
 # RELEASE = 'PROFILE'
 USE_OPEN_MP = 'TRUE'
 PARALLELIZE_3D_OPS = 'TRUE'
@@ -17,8 +17,8 @@ CLUSTER = 'PC_CK'
 # CLUSTER = 'Hoffman2'
 # CLUSTER = 'DOE'
 # ************* MAKE CONFIGURATION ******************
-MKE = gmake
-# MKE = make
+# MKE = gmake
+MKE = make
 # ****************** OS SETTINGS ********************
 ifdef SystemRoot
 	OS_USED = 'OS_WINDOWS'
@@ -54,7 +54,7 @@ SRC_DIR_GENERATED = ..$(PS)code$(PS)generated_code
 SRC_DIR_PRE_GENERATED = ..$(PS)code$(PS)pre_generated
 
 ifeq ($(CLUSTER),'PC_CK')
-	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS9
+	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS1
 endif
 
 ifeq ($(CLUSTER),'Workstation_CK')

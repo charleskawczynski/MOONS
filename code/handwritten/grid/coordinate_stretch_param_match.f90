@@ -159,7 +159,7 @@
              write(*,*) 'Error: Divergent stretch parameter matching.'
              write(*,*) 'Consider decreasing tol in beta Roberts functions.'
              write(*,*) 'Or check mesh config.'
-             stop 'Done in newtonT2 in coordinate_stretch_param_match.f90'
+             stop 'Done in newtonT2_debug in coordinate_stretch_param_match.f90'
            endif
          enddo
 
@@ -174,7 +174,7 @@
            endif
          endif
          if (debug) write(*,*) 'max(iter) = ',k-1 ! number of iterations taken
-         ! if (debug) then; stop 'Done in newtonT2'; endif
+         ! if (debug) then; stop 'Done in newtonT2_debug'; endif
        end subroutine
 #endif
 
@@ -204,21 +204,24 @@
          if (is_nan(beta).or.(abs(fbeta).gt.tol)) then ! oops, gracefully handle
            err = .true.; beta = 1.1_cp
          endif
-         if (err) call write_error_message_to_file(beta,fbeta)
+         if (err) call write_error_message_to_file(beta,fbeta,tol)
 
 #ifdef _DEBUG_COORDINATE_STRETCH_PARAM_MATCH_
          call newtonT2_debug(T_root,T_prime,beta,hmin,hmax,alpha,N,dh,err)
 #endif
        end subroutine
 
-       subroutine write_error_message_to_file(beta,fbeta)
+       subroutine write_error_message_to_file(beta,fbeta,tol)
          implicit none
-         real(cp),intent(in) :: fbeta,beta
+         real(cp),intent(in) :: fbeta,beta,tol
          integer :: un
          un = new_and_open('','mesh_generation_error')
          write(un,*) 'Error: newtonT2 not converged, gracefully handling.'
          write(un,*) 'fbeta = ',fbeta
          write(un,*) 'beta = ',beta
+         write(un,*) 'tol = ',tol
+         write(un,*) 'cond_1 = ',is_nan(beta)
+         write(un,*) 'cond_2 = ',(abs(fbeta).gt.tol)
          close(un)
        end subroutine
 

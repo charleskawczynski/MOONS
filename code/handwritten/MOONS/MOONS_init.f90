@@ -93,18 +93,15 @@
          if (M%C%SP%EL%export_meshes) then
            call export_mesh(M%GE%mom%m,str(M%C%DT%meshes),'m_mom',1)
            call export_mesh(M%GE%ind%m,str(M%C%DT%meshes),'m_ind',1)
-           call export_mesh(M%GE%ind%MD_sigma%m_R2,str(M%C%DT%meshes),'mesh_MD_sigma',1)
-           call export_mesh(M%GE%ind%MD_fluid%m_R2,str(M%C%DT%meshes),'mesh_MD_fluid',1)
+           call export_mesh(M%GE%ind%m_sigma,str(M%C%DT%meshes),'m_sigma',1)
 
            if (M%C%SP%MP%mirror) then
              call mirror_mesh(M%m_temp,M%GE%mom%m,M%C%SP%MP)
-             call export_mesh(M%m_temp,str(M%C%DT%meshes),'mesh_mom_mirror',1)
-             call mirror_mesh(M%m_temp,M%GE%mom%m,M%C%SP%MP)
-             call export_mesh(M%m_temp,str(M%C%DT%meshes),'mesh_ind_mirror',1)
-             call mirror_mesh(M%m_temp,M%GE%ind%MD_sigma%m_R1,M%C%SP%MP)
-             call export_mesh(M%m_temp,str(M%C%DT%meshes),'mesh_MD_sigma_mirror',1)
-             call mirror_mesh(M%m_temp,M%GE%ind%MD_fluid%m_R1,M%C%SP%MP)
-             call export_mesh(M%m_temp,str(M%C%DT%meshes),'mesh_MD_fluid_mirror',1)
+             call export_mesh(M%m_temp,str(M%C%DT%meshes),'m_mom_mirror',1)
+             call mirror_mesh(M%m_temp,M%GE%ind%m,M%C%SP%MP)
+             call export_mesh(M%m_temp,str(M%C%DT%meshes),'m_ind_mirror',1)
+             call mirror_mesh(M%m_temp,M%GE%ind%m_sigma,M%C%SP%MP)
+             call export_mesh(M%m_temp,str(M%C%DT%meshes),'m_sigma_mirror',1)
              call delete(M%m_temp)
            endif
          endif

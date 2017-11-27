@@ -26,7 +26,7 @@
          type(string) :: d
          type(mesh_quality_params) :: MQP
          type(grid) :: g
-         real(cp) :: a,b,L,beta,tau,yc
+         real(cp) :: a,b,L,beta,tau,yc,buffer
          integer :: j,N_cells,dir
          call init(MQP,MP%MQP)
          if (MP%n_base.gt.0) then
@@ -38,7 +38,8 @@
              dir = MP%s_base(j)%dir
              tau = MP%s_base(j)%tau
              yc = MP%s_base(j)%yc
-             beta = Re_Ha_BL_1D(DP%Re,DP%Ha,a,b)
+             buffer = MP%s_base(j)%buffer
+             beta = Re_Ha_BL_1D(DP%Re*buffer,DP%Ha*buffer,a,b)
              if (N_cells.gt.0) then
 
                  if (str(d).eq.'grid_uniform') then;            call grid_uniform(g,a,b,N_cells,dir)
@@ -62,7 +63,8 @@
              L = MP%s_ext(j)%L
              N_cells = MP%s_ext(j)%N_cells
              tau = MP%s_ext(j)%tau
-             beta = Re_Ha_BL_1D(DP%Re,DP%Ha,a,b)
+             buffer = MP%s_ext(j)%buffer
+             beta = Re_Ha_BL_1D(DP%Re*buffer,DP%Ha*buffer,a,b)
              dir = MP%s_ext(j)%dir
              if (N_cells.gt.0) then
                    if (str(d).eq.'ext_uniform_IO') then;          call ext_uniform_IO(g,N_cells,dir)

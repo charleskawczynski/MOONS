@@ -97,7 +97,7 @@
          integer,intent(in) :: N,dir
          type(array) :: a,b
          real(cp) :: hmin,dh
-         call check_N(N,'ext_prep_uniform')
+         call check_N(N,'ext_prep_uniform_IO')
          call init(a,g%c(dir)%hn)
          hmin = g%c(dir)%hmin; dh = g%c(dir)%dhn%f(1)
          call init(b,uniformLeft(hmin,dh,N))
@@ -113,7 +113,7 @@
          real(cp) :: beta,hmin,dh
          type(array) :: a,b
          integer :: i,N_final
-         call check_N(N,'ext_prep_Roberts_L')
+         call check_N(N,'ext_prep_Roberts_L_IO')
          call init(a,g%c(dir)%hn)
          hmin = g%c(dir)%hmin; dh = g%c(dir)%dhn%f(1)
          N_final = N
@@ -135,7 +135,7 @@
          real(cp) :: beta,hmin,dh
          type(array) :: a,b
          integer :: i,N_final
-         call check_N(N,'ext_prep_Roberts_R')
+         call check_N(N,'ext_prep_Roberts_R_IO')
          call init(a,g%c(dir)%hn)
          hmin = g%c(dir)%hmin; dh = g%c(dir)%dhn%f(1)
          N_final = N
@@ -157,7 +157,7 @@
          real(cp) :: beta,hmin,dh
          type(array) :: a,b
          integer :: i,N_final
-         call check_N(N,'ext_prep_Roberts_B')
+         call check_N(N,'ext_prep_Roberts_B_IO')
          call init(a,g%c(dir)%hn)
          hmin = g%c(dir)%hmin; dh = g%c(dir)%dhn%f(1)
          N_final = N
@@ -179,7 +179,7 @@
          real(cp) :: beta,hmin,dh
          type(array) :: a,b
          integer :: i,N_final
-         call check_N(N,'ext_prep_Roberts_B')
+         call check_N(N,'ext_prep_Roberts_C2F_IO')
          call init(a,g%c(dir)%hn)
          hmin = g%c(dir)%hmin; dh = g%c(dir)%dhn%f(1)
          N_final = N

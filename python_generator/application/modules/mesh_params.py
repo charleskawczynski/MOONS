@@ -25,6 +25,7 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('distribution','string',priv)
 	g.module[m_name].add_prop('hmax',real,priv)
 	g.module[m_name].add_prop('hmin',real,priv)
+	g.module[m_name].add_prop('buffer',real,priv)
 	g.module[m_name].add_prop('L',real,priv)
 	g.module[m_name].add_prop('tau',real,priv)
 	g.module[m_name].add_prop('yc',real,priv)

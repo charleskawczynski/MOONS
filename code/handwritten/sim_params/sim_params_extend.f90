@@ -37,37 +37,72 @@
 
      contains
 
-     subroutine define_mesh_SP(SP)
+     subroutine define_mesh_SP_plasma_disruption(SP)
        implicit none
        type(sim_params),intent(inout) :: SP
-       ! call init(MP,MQP)
+       real(cp) :: t_wall,t_fluid,cavity_ratio,buffer
+       integer :: N,N_w
+       cavity_ratio = 5.0_cp; t_fluid = 1.0_cp; t_wall = 0.5_cp; buffer = 2.0_cp; N = 50; N_w = 9
        call init(SP%MP_mom,SP%MQP)
        call init(SP%MP_sigma,SP%MQP)
        call init(SP%MP_ind,SP%MQP)
-       call add_base(SP%MP_mom,seg_1d(1,'grid_Roberts_B' ,200 ,-1.0_cp,1.0_cp))
-       call add_base(SP%MP_mom,seg_1d(2,'grid_Roberts_B' ,200 ,-1.0_cp,1.0_cp))
-       call add_base(SP%MP_mom,seg_1d(3,'grid_uniform'   ,1,-0.5_cp,0.5_cp))
-       call init(SP%MP_ind,SP%MP_mom)
-       call init(SP%MP_sigma,SP%MP_ind)
+       call add_base(SP%MP_mom,seg_1d(1,'grid_Roberts_B'   ,N  ,-t_fluid*cavity_ratio,t_fluid*cavity_ratio,buffer))
+       call add_base(SP%MP_mom,seg_1d(2,'grid_Roberts_B'   ,N  ,-t_fluid*cavity_ratio,t_fluid*cavity_ratio,buffer))
+       call add_base(SP%MP_mom,seg_1d(3,'grid_Roberts_B'   ,N  ,-t_fluid             ,t_fluid             ,buffer))
+       call init(SP%MP_sigma,SP%MP_mom)
+       call add_ext(SP%MP_sigma,seg_1d(1,'ext_Roberts_B_IO',N_w,t_wall,buffer))
+       call add_ext(SP%MP_sigma,seg_1d(2,'ext_Roberts_B_IO',N_w,t_wall,buffer))
+       call add_ext(SP%MP_sigma,seg_1d(3,'ext_Roberts_B_IO',N_w,t_wall,buffer))
+       call init(SP%MP_ind,SP%MP_sigma)
      end subroutine
 
-     ! subroutine define_mesh_SP(SP)
-     !   implicit none
-     !   type(sim_params),intent(inout) :: SP
-     !   ! call init(MP,MQP)
-     !   call init(SP%MP_mom,SP%MQP)
-     !   call init(SP%MP_sigma,SP%MQP)
-     !   call init(SP%MP_ind,SP%MQP)
-     !   call add_base(SP%MP_mom,seg_1d(1,'grid_uniform',45,-1.0_cp,1.0_cp))
-     !   call add_base(SP%MP_mom,seg_1d(2,'grid_uniform',45,-1.0_cp,1.0_cp))
-     !   call add_base(SP%MP_mom,seg_1d(3,'grid_uniform',45,-1.0_cp,1.0_cp))
-     !   ! call add_base(SP%MP_mom,seg_1d(3,'grid_uniform',45,-1.0_cp,1.0_cp))
-     !   call init(SP%MP_ind,SP%MP_mom)
-     !   call init(SP%MP_sigma,SP%MP_ind)
-     !   call add_ext(SP%MP_ind,seg_1d(1,'ext_uniform_IO',11))
-     !   call add_ext(SP%MP_ind,seg_1d(2,'ext_uniform_IO',11))
-     !   call add_ext(SP%MP_ind,seg_1d(3,'ext_uniform_IO',11))
-     ! end subroutine
+     subroutine define_mesh_SP_full_BC_symmetric_geometry(SP) ! Correctness confirmed 11/27/2017
+       implicit none
+       type(sim_params),intent(inout) :: SP
+       real(cp) :: t_wall,t_fluid,t_vac,buffer
+       integer :: N,N_w,N_half
+       t_vac = 7.0_cp; t_fluid = 1.0_cp; t_wall = 0.05_cp; buffer = 2.0_cp; N = 80; N_w = 9; N_half = ceiling(N/2.0_cp)
+       call init(SP%MP_mom,SP%MQP)
+       call init(SP%MP_sigma,SP%MQP)
+       call init(SP%MP_ind,SP%MQP)
+       call add_base(SP%MP_mom,seg_1d(1,'grid_Roberts_B'         ,N       ,-t_fluid        ,t_fluid,buffer))
+       call add_base(SP%MP_mom,seg_1d(3,'grid_Roberts_L'         ,N_half  ,-t_fluid        ,0.0_cp ,buffer))
+       call add_base(SP%MP_mom,seg_1d(2,'grid_Roberts_R'         ,N_half+5, 0.0_cp         ,t_fluid,buffer))
+       call add_ext( SP%MP_mom,seg_1d(2,'ext_prep_Roberts_C2F_IO',N_half  , 0.0_cp+t_fluid ,buffer))
+       call init(SP%MP_sigma,SP%MP_mom)
+       call add_ext(SP%MP_sigma,seg_1d(1,'ext_Roberts_B_IO'      ,N_w-1,t_wall,buffer))
+       call add_ext(SP%MP_sigma,seg_1d(3,'ext_prep_Roberts_B_IO' ,N_w-1,t_wall,buffer))
+       call add_ext(SP%MP_sigma,seg_1d(2,'ext_prep_Roberts_B_IO' ,N_w-1,t_wall,buffer))
+       call init(SP%MP_ind,SP%MP_sigma)
+       call add_ext(SP%MP_ind,seg_1d(1,'ext_Roberts_near_IO'      ,  N_w+1,t_vac - t_fluid - t_wall,buffer))
+       call add_ext(SP%MP_ind,seg_1d(3,'ext_prep_Roberts_R_IO'    ,  N_w+2,t_vac - t_fluid - t_wall,buffer))
+       call add_ext(SP%MP_ind,seg_1d(2,'ext_prep_Roberts_R_IO'    ,  N_w-1,t_vac - t_fluid - t_wall,buffer))
+       call add_ext(SP%MP_ind,seg_1d(2,'ext_app_Roberts_L_IO'     ,2*N_w-2,t_vac - t_fluid         ,buffer))
+     end subroutine
+
+     subroutine define_mesh_SP_MHD_LDC_Sergey_uniform(SP)
+       implicit none
+       type(sim_params),intent(inout) :: SP
+       call init(SP%MP_mom,SP%MQP)
+       call init(SP%MP_sigma,SP%MQP)
+       call init(SP%MP_ind,SP%MQP)
+       call add_base(SP%MP_mom,seg_1d(1,'grid_uniform',45,-1.0_cp,1.0_cp,1.0_cp))
+       call add_base(SP%MP_mom,seg_1d(2,'grid_uniform',45,-1.0_cp,1.0_cp,1.0_cp))
+       call add_base(SP%MP_mom,seg_1d(3,'grid_uniform',45,-1.0_cp,1.0_cp,1.0_cp))
+       call init(SP%MP_ind,SP%MP_mom)
+       call init(SP%MP_sigma,SP%MP_ind)
+       call add_ext(SP%MP_ind,seg_1d(1,'ext_uniform_IO',11))
+       call add_ext(SP%MP_ind,seg_1d(2,'ext_uniform_IO',11))
+       call add_ext(SP%MP_ind,seg_1d(3,'ext_uniform_IO',11))
+     end subroutine
+
+     subroutine define_mesh_SP(SP)
+       implicit none
+       type(sim_params),intent(inout) :: SP
+       call define_mesh_SP_plasma_disruption(SP)
+       ! call define_mesh_SP_full_BC_symmetric_geometry(SP)
+       ! call define_mesh_SP_MHD_LDC_Sergey_uniform(SP)
+     end subroutine
 
      subroutine init_SP(SP)
        implicit none
@@ -77,7 +112,7 @@
        real(cp) :: t_final,dtime
        call delete(SP)
 
-       SP%FCL%stop_after_mesh_export             = F
+       SP%FCL%stop_after_mesh_export             = T
        SP%FCL%stop_before_solve                  = F
        SP%FCL%skip_solver_loop                   = F
        SP%FCL%post_process                       = F
@@ -137,7 +172,7 @@
        call init(SP%EF%final_solution,F,F,1,10,6)
 
        ! call init(MQP,auto_find_N,max_mesh_stretch_ratio,N_max_points_add)
-       call init(SP%MQP,T,1.5_cp,50)
+       call init(SP%MQP,T,2.0_cp,50)
 
        call define_mesh(SP)
 
@@ -161,11 +196,11 @@
        ! SP%GP%apply_BC_order       = (/3,4,1,2,5,6/) ! good for periodic in z?
 
        call delete(SP%DP)
-       SP%DP%Re                      = 11769054.2652_cp
-       SP%DP%Ha                      = 2645.75131106_cp
-       SP%DP%Rem                     = 1.1131984703_cp
-       ! SP%DP%N                       = 5.0_cp*pow(0)
-       SP%DP%Q                       = 8.0_cp*pow(-1)
+       SP%DP%Re                      = 2.0_cp*pow(3)
+       SP%DP%N                       = 5.0_cp*pow(0)
+       ! SP%DP%Ha                      = 2645.75131106_cp
+       SP%DP%Rem                     = 1.0_cp*pow(0)
+       ! SP%DP%Q                       = 8.0_cp*pow(-1)
        ! SP%DP%Ha                      = 5.0_cp*pow(2)
        ! SP%DP%Ha                      = 10.0_cp*pow(3)
        ! SP%DP%Ha                      = 15.0_cp*pow(3)
@@ -184,8 +219,8 @@
        SP%DP%Ec                      = 0.0_cp
 
        ! SP%DP%Ha                      = (1.0_cp/SP%DP%Q*SP%DP%Re)**0.5_cp
-       SP%DP%N                       = SP%DP%Ha**2.0_cp/SP%DP%Re
-       ! SP%DP%Ha                      = (SP%DP%N*SP%DP%Re)**0.5_cp
+       ! SP%DP%N                       = SP%DP%Ha**2.0_cp/SP%DP%Re
+       SP%DP%Ha                      = (SP%DP%N*SP%DP%Re)**0.5_cp
        SP%DP%Al                      = SP%DP%N/SP%DP%Rem
        SP%DP%Pe                      = SP%DP%Pr*SP%DP%Re
        SP%DP%tau                     = SP%DP%Re/SP%DP%Ha
