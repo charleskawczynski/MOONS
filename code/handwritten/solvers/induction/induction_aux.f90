@@ -1,5 +1,6 @@
        module induction_aux_mod
        use current_precision_mod
+       use GF_mod
        use SF_extend_mod
        use VF_extend_mod
        use TF_extend_mod
@@ -32,6 +33,7 @@
        public :: embedVelocity_CC
        public :: set_sigma_inv_SF
        public :: set_sigma_inv_VF
+       public :: set_insulating_above_lid
 
        contains
 
@@ -140,9 +142,48 @@
          call init(sigma_inv_temp,m_other,get_DL(sigma_inv))
          call assign(sigma_inv_temp,1.0_cp)
          call assign(sigma_inv,1.0_cp/DP%sig_local_over_sig_f)
+         ! call set_insulating_above_lid(sigma_inv_temp,m_other,1.0_cp/DP%sig_local_over_sig_f,1.0_cp)
          call embed(sigma_inv,sigma_inv_temp,MD_sigma)
          call delete(sigma_inv_temp)
          call delete(m_other)
+       end subroutine
+
+       subroutine set_insulating_above_lid(sigma_inv,m,sigma_inv_lid,y_lid)
+         implicit none
+         type(VF),intent(inout) :: sigma_inv
+         type(mesh),intent(in) :: m
+         real(cp),intent(in) :: y_lid,sigma_inv_lid
+         integer,dimension(3) :: s
+         logical,dimension(4) :: L
+         integer :: j,t
+         real(cp) :: tol
+         tol = m%MP%dhmin_min*10.0_cp**(-3.0_cp)
+         do t=1,m%s
+         s = sigma_inv%x%BF(t)%GF%s
+         do j=1,s(2)
+         L(1) =  N_along(sigma_inv%x%DL,2)
+         L(2) = CC_along(sigma_inv%x%DL,2)
+         if (L(1)) L(3) = (m%B(t)%g%c(2)%hn%f(j).gt.y_lid-tol)
+         if (L(2)) L(4) = (m%B(t)%g%c(2)%hc%f(j).gt.y_lid-tol)
+         if ((L(1).and.L(3)).or.(L(2).and.L(4))) call assign_plane(sigma_inv%x%BF(t)%GF,sigma_inv_lid,j,2)
+         enddo
+         s = sigma_inv%y%BF(t)%GF%s
+         do j=1,s(2)
+         L(1) =  N_along(sigma_inv%y%DL,2)
+         L(2) = CC_along(sigma_inv%y%DL,2)
+         if (L(1)) L(3) = (m%B(t)%g%c(2)%hn%f(j).gt.y_lid-tol)
+         if (L(2)) L(4) = (m%B(t)%g%c(2)%hc%f(j).gt.y_lid-tol)
+         if ((L(1).and.L(3)).or.(L(2).and.L(4))) call assign_plane(sigma_inv%y%BF(t)%GF,sigma_inv_lid,j,2)
+         enddo
+         s = sigma_inv%z%BF(t)%GF%s
+         do j=1,s(2)
+         L(1) =  N_along(sigma_inv%z%DL,2)
+         L(2) = CC_along(sigma_inv%z%DL,2)
+         if (L(1)) L(3) = (m%B(t)%g%c(2)%hn%f(j).gt.y_lid-tol)
+         if (L(2)) L(4) = (m%B(t)%g%c(2)%hc%f(j).gt.y_lid-tol)
+         if ((L(1).and.L(3)).or.(L(2).and.L(4))) call assign_plane(sigma_inv%z%BF(t)%GF,sigma_inv_lid,j,2)
+         enddo
+         enddo
        end subroutine
 
        end module

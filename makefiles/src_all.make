@@ -180,7 +180,12 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D$(PS)GF_product_add.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D$(PS)GF_subtract.f90\
 	$(SRC_DIR_GENERATED)$(PS)block_field$(PS)block_field.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_extend.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)mesh_bank.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_default$(PS)sim_params_init_DPs.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_default$(PS)sim_params_init_export.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_default$(PS)sim_params_init_flow_config.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_default$(PS)sim_params_init_logicals.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_default$(PS)sim_params_init_solver_config.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_assign_ghost.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_assign_ghost_periodic.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_assign_wall.f90\
@@ -193,10 +198,12 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_multiply_wall.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_MG$(PS)GF_prolongate.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_MG$(PS)GF_restrict.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_default$(PS)sim_params_init_mesh.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_CFL_number$(PS)GF_CFL_number.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_symmetry$(PS)GF_mirror_about_plane.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_norms.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_symmetry$(PS)GF_symmetry_error.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_extend.f90\
 	$(SRC_DIR)$(PS)procedure_array$(PS)single_procedure_plane_op_extend.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF.f90\
 	$(SRC_DIR)$(PS)procedure_array$(PS)procedure_array_plane_op_extend.f90\
@@ -276,6 +283,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)ops$(PS)ops_aux.f90\
 	$(SRC_DIR)$(PS)time_statistics$(PS)time_statistics_extend.f90\
 	$(SRC_DIR)$(PS)MOONS$(PS)MOONS_export_full_restart.f90\
+	$(SRC_DIR)$(PS)MOONS$(PS)MOONS_simulate_crash.f90\
 	$(SRC_DIR)$(PS)MOONS$(PS)export_mesh_aux.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)preconditioners$(PS)preconditioners.f90\

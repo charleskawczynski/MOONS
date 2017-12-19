@@ -1,7 +1,7 @@
-       program parametricStudy
-       use MOONS_mod
+       program main_program
+       use MOONS_main_mod
        implicit none
        character(len=255) :: cwd
        call getcwd(cwd)
-       call MOONS(trim(cwd))
+       call main(trim(cwd))
        end program

@@ -60,8 +60,6 @@ def add_modules(g,T,F,priv,real):
 	g.add_module(m_name)
 	g.module[m_name].set_folder_name(__name__.split('.')[1])
 	g.module[m_name].set_used_modules(['IO_tools_mod'])
-	g.module[m_name].add_prop('geometry','integer',priv)
-	g.module[m_name].add_prop('tw',real,priv)
 	g.module[m_name].add_prop('periodic_dir','integer',priv,F,1,3)
 	g.module[m_name].add_prop('apply_BC_order','integer',priv,F,1,6)
 
@@ -125,6 +123,8 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('frequency_coeff','integer',priv)
 	g.module[m_name].add_prop('frequency_base','integer',priv)
 	g.module[m_name].add_prop('frequency_exp','integer',priv)
+	g.module[m_name].add_prop('t_window_start',real,priv)
+	g.module[m_name].add_prop('t_window_stop',real,priv)
 
 	m_name = 'export_frequency'
 	g.add_module(m_name)
@@ -207,6 +207,9 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('L_eta',real,priv)
 	g.module[m_name].add_prop('U_eta',real,priv)
 	g.module[m_name].add_prop('t_eta',real,priv)
+	g.module[m_name].add_prop('t_start',real,priv)
+	g.module[m_name].add_prop('dtime',real,priv)
+	g.module[m_name].add_prop('t_final',real,priv)
 	g.module[m_name].add_prop(['dir','name'],'string',priv)
 
 	m_name = 'probe_set_mom'

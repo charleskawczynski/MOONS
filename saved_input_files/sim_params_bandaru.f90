@@ -1,17 +1,26 @@
      module sim_params_extend_mod
      use current_precision_mod
      use constants_mod
-     use dir_tree_mod
-     use var_mod
-     use var_set_mod
      use string_mod
-     use path_mod
-     use segment_extend_mod
+     use dir_tree_mod
+     use var_extend_mod
+     use var_set_extend_mod
+     use path_extend_mod
+     use mirror_props_extend_mod
+     use equation_term_extend_mod
+     use export_frequency_params_extend_mod
+     use export_frequency_extend_mod
      use dimensionless_params_extend_mod
      use mesh_params_extend_mod
-     use mesh_quality_params_mod
-     use export_planes_mod
-     use export_lines_mod
+     use segment_extend_mod
+     use mesh_quality_params_extend_mod
+     use time_statistics_params_extend_mod
+     use solver_settings_extend_mod
+     use time_marching_params_extend_mod
+     use iter_solver_params_extend_mod
+     use export_field_extend_mod
+     use export_planes_extend_mod
+     use export_lines_extend_mod
      use sim_params_mod
      use sim_params_aux_mod
      implicit none
@@ -21,49 +30,142 @@
      public :: init
 
      real(cp),parameter :: seconds_per_day = 60.0_cp*60.0_cp*24.0_cp
+     real(cp),parameter :: minutes = 60.0_cp
 
      interface init;         module procedure init_SP;            end interface
      interface define_mesh;  module procedure define_mesh_SP;     end interface
 
      contains
 
-     subroutine define_mesh_SP(SP)
+     subroutine define_mesh_SP_plasma_disruption(SP)
        implicit none
        type(sim_params),intent(inout) :: SP
-       ! call init(MP,MQP)
+       real(cp) :: t_wall,t_fluid,CR,buffer
+       integer :: N,N_w
+       CR = 10.0_cp ! Cavity Ratio
+       t_fluid = 1.0_cp; t_wall = 0.05_cp; buffer = 1.5_cp;
+       ! N = 100; N_w = 9
+       N = 30; N_w = 6
        call init(SP%MP_mom,SP%MQP)
        call init(SP%MP_sigma,SP%MQP)
        call init(SP%MP_ind,SP%MQP)
-       call add_base(SP%MP_mom,seg_1d(1,'grid_uniform'  ,64,0.0_cp,2.0_cp*PI))
-       call add_base(SP%MP_mom,seg_1d(3,'grid_Roberts_B',64,-1.0_cp,1.0_cp))
-       call add_base(SP%MP_mom,seg_1d(2,'grid_uniform'  ,1,-0.5_cp,0.5_cp))
+       call add_base(SP%MP_mom,seg_1d(1,'grid_Roberts_B'   ,N   ,-t_fluid   ,t_fluid   ,buffer))
+       call add_base(SP%MP_mom,seg_1d(2,'grid_Roberts_B'   ,N   ,-t_fluid   ,t_fluid   ,buffer))
+       call add_base(SP%MP_mom,seg_1d(3,'grid_Roberts_B'   ,N*2 ,-t_fluid*CR,t_fluid*CR,buffer))
+       call init(SP%MP_sigma,SP%MP_mom)
+       call add_ext(SP%MP_sigma,seg_1d(1,'ext_Roberts_B_IO',N_w,t_wall,buffer))
+       call add_ext(SP%MP_sigma,seg_1d(2,'ext_Roberts_B_IO',N_w,t_wall,buffer))
+       call add_ext(SP%MP_sigma,seg_1d(3,'ext_Roberts_B_IO',N_w,t_wall,buffer))
+       call init(SP%MP_ind,SP%MP_sigma)
+     end subroutine
+
+     subroutine small_dataset(SP)
+       implicit none
+       type(sim_params),intent(inout) :: SP
+       real(cp) :: t_fluid,buffer
+       integer :: N
+       t_fluid = 1.0_cp; buffer = 1.0_cp; N = 5;
+       call init(SP%MP_mom,SP%MQP)
+       call init(SP%MP_sigma,SP%MQP)
+       call init(SP%MP_ind,SP%MQP)
+       call add_base(SP%MP_mom,seg_1d(1,'grid_Roberts_B'   ,N ,-t_fluid,t_fluid,buffer))
+       call add_base(SP%MP_mom,seg_1d(2,'grid_Roberts_B'   ,N ,-t_fluid,t_fluid,buffer))
+       call add_base(SP%MP_mom,seg_1d(3,'grid_Roberts_B'   ,N ,-t_fluid,t_fluid,buffer))
+       call init(SP%MP_sigma,SP%MP_mom)
+       call init(SP%MP_ind,SP%MP_sigma)
+     end subroutine
+
+     subroutine define_mesh_bandaru(SP)
+       implicit none
+       type(sim_params),intent(inout) :: SP
+       real(cp) :: buffer
+       integer :: N
+       buffer = 1.0_cp; N = 130
+       call init(SP%MP_mom,SP%MQP)
+       call init(SP%MP_sigma,SP%MQP)
+       call init(SP%MP_ind,SP%MQP)
+       call add_base(SP%MP_mom,seg_1d(1,'grid_uniform'  ,N,0.0_cp ,2.0_cp*PI,buffer))
+       call add_base(SP%MP_mom,seg_1d(3,'grid_Roberts_B',N,-1.0_cp,1.0_cp,buffer))
+       call add_base(SP%MP_mom,seg_1d(2,'grid_uniform'  ,1,-0.5_cp,0.5_cp,buffer))
        call init(SP%MP_ind,SP%MP_mom)
        call init(SP%MP_sigma,SP%MP_ind)
      end subroutine
 
-     subroutine init_SP(SP,DT)
+     subroutine define_mesh_SP_full_BC_symmetric_geometry(SP) ! Correctness confirmed 11/27/2017
        implicit none
        type(sim_params),intent(inout) :: SP
-       type(dir_tree),intent(in) :: DT
+       real(cp) :: t_wall,t_fluid,t_vac,buffer
+       integer :: N,N_w,N_half
+       t_vac = 7.0_cp; t_fluid = 1.0_cp; t_wall = 0.05_cp; buffer = 2.0_cp; N = 80; N_w = 9; N_half = ceiling(N/2.0_cp)
+       call init(SP%MP_mom,SP%MQP)
+       call init(SP%MP_sigma,SP%MQP)
+       call init(SP%MP_ind,SP%MQP)
+       call add_base(SP%MP_mom,seg_1d(1,'grid_Roberts_B'         ,N       ,-t_fluid        ,t_fluid,buffer))
+       call add_base(SP%MP_mom,seg_1d(3,'grid_Roberts_L'         ,N_half  ,-t_fluid        ,0.0_cp ,buffer))
+       call add_base(SP%MP_mom,seg_1d(2,'grid_Roberts_R'         ,N_half+5, 0.0_cp         ,t_fluid,buffer))
+       call add_ext( SP%MP_mom,seg_1d(2,'ext_prep_Roberts_C2F_IO',N_half  , 0.0_cp+t_fluid ,buffer))
+       call init(SP%MP_sigma,SP%MP_mom)
+       call add_ext(SP%MP_sigma,seg_1d(1,'ext_Roberts_B_IO'      ,N_w-1,t_wall,buffer))
+       call add_ext(SP%MP_sigma,seg_1d(3,'ext_prep_Roberts_B_IO' ,N_w-1,t_wall,buffer))
+       call add_ext(SP%MP_sigma,seg_1d(2,'ext_prep_Roberts_B_IO' ,N_w-1,t_wall,buffer))
+       call init(SP%MP_ind,SP%MP_sigma)
+       call add_ext(SP%MP_ind,seg_1d(1,'ext_Roberts_near_IO'      ,  N_w+1,t_vac - t_fluid - t_wall,buffer))
+       call add_ext(SP%MP_ind,seg_1d(3,'ext_prep_Roberts_R_IO'    ,  N_w+2,t_vac - t_fluid - t_wall,buffer))
+       call add_ext(SP%MP_ind,seg_1d(2,'ext_prep_Roberts_R_IO'    ,  N_w-1,t_vac - t_fluid - t_wall,buffer))
+       call add_ext(SP%MP_ind,seg_1d(2,'ext_app_Roberts_L_IO'     ,2*N_w-2,t_vac - t_fluid         ,buffer))
+     end subroutine
+
+     subroutine define_mesh_SP_MHD_LDC_Sergey_uniform(SP)
+       implicit none
+       type(sim_params),intent(inout) :: SP
+       call init(SP%MP_mom,SP%MQP)
+       call init(SP%MP_sigma,SP%MQP)
+       call init(SP%MP_ind,SP%MQP)
+       call add_base(SP%MP_mom,seg_1d(1,'grid_uniform',45,-1.0_cp,1.0_cp,1.0_cp))
+       call add_base(SP%MP_mom,seg_1d(2,'grid_uniform',45,-1.0_cp,1.0_cp,1.0_cp))
+       call add_base(SP%MP_mom,seg_1d(3,'grid_uniform',45,-1.0_cp,1.0_cp,1.0_cp))
+       call init(SP%MP_ind,SP%MP_mom)
+       call init(SP%MP_sigma,SP%MP_ind)
+       call add_ext(SP%MP_ind,seg_1d(1,'ext_uniform_IO',11))
+       call add_ext(SP%MP_ind,seg_1d(2,'ext_uniform_IO',11))
+       call add_ext(SP%MP_ind,seg_1d(3,'ext_uniform_IO',11))
+     end subroutine
+
+     subroutine define_mesh_SP(SP)
+       implicit none
+       type(sim_params),intent(inout) :: SP
+       ! call define_mesh_SP_plasma_disruption(SP)
+       ! call small_dataset(SP)
+       call define_mesh_bandaru(SP)
+       ! call define_mesh_SP_full_BC_symmetric_geometry(SP)
+       ! call define_mesh_SP_MHD_LDC_Sergey_uniform(SP)
+     end subroutine
+
+     subroutine init_SP(SP)
+       implicit none
+       type(sim_params),intent(inout) :: SP
        logical,parameter :: T = .true.
        logical,parameter :: F = .false.
-       real(cp) :: time,dtime
-       logical :: RV_BCs
+       real(cp) :: t_final,dtime
        call delete(SP)
-       RV_BCs = T
-       ! call get_environment_variable(name[, value, length, status, trim_name)
+
+       ! call init_SP_logicals_default(SP)
 
        SP%FCL%stop_after_mesh_export             = F
        SP%FCL%stop_before_solve                  = F
        SP%FCL%skip_solver_loop                   = F
        SP%FCL%post_process                       = F
        SP%FCL%Poisson_test                       = F
+       SP%FCL%matrix_visualization               = F
        SP%FCL%Taylor_Green_Vortex_test           = F
        SP%FCL%temporal_convergence_test          = F
-       SP%FCL%operator_interchangability_test    = F
+       SP%FCL%operator_commute_test              = F
        SP%FCL%compute_export_E_K_Budget          = F
        SP%FCL%compute_export_E_M_budget          = F
        SP%FCL%restart_meshes                     = F
+
+       SP%FCL%simulate_crash                     = F
+       SP%FCL%restart_simulated_crash            = F
        SP%FCL%export_numerical_flow_rate         = F
        SP%FCL%export_Shercliff_Hunt_analytic_sol = F
        SP%FCL%export_vorticity_streamfunction    = F
@@ -71,12 +173,13 @@
        SP%FCL%export_final_tec                   = T
        SP%FCL%export_final_restart               = T
        SP%FCL%print_every_MHD_step               = F
-       SP%FCL%compute_surface_power              = T
+       SP%FCL%print_mesh_before_solve            = F
+       SP%FCL%compute_surface_power              = F
 
        SP%EL%export_analytic         = F
        SP%EL%export_meshes           = T
        SP%EL%export_vort_SF          = F
-       SP%EL%export_mat_props        = T
+       SP%EL%export_mat_props        = F
        SP%EL%export_ICs              = F
        SP%EL%export_cell_volume      = F
        SP%EL%export_planar           = F
@@ -85,6 +188,7 @@
        SP%EL%export_soln_only        = F
 
        SP%SCP%export_safe_period         = 1.0_cp*seconds_per_day
+       ! SP%SCP%export_safe_period         = 1.0_cp*minutes
        SP%SCP%uniform_gravity_dir        = 1
        SP%SCP%uniform_B0_dir             = 3
        SP%SCP%mpg_dir                    = 1
@@ -93,52 +197,33 @@
        SP%SCP%include_vacuum             = F
        SP%SCP%embed_B_interior           = F
 
-       SP%matrix_based               = F ! Solve induction equation
-
        ! call init(MP,mirror,mirror_face)
        call init(SP%MP,F,6) ! Must be defined before KE_scale,ME_scale,JE_scale
        SP%EL%export_symmetric = SP%MP%mirror
 
-       ! call init(EFP,export_ever,export_first_step,frequency_base,frequency_exp)
-       call init(SP%EF%info          ,T,T,1,10,2)
-       call init(SP%EF%unsteady_0D   ,T,T,1,10,2)
-       call init(SP%EF%unsteady_1D   ,F,F,1,10,2)
-       call init(SP%EF%unsteady_2D   ,F,F,1,10,2)
-       call init(SP%EF%unsteady_3D   ,F,F,1,10,4)
-       call init(SP%EF%restart_files ,F,F,1,10,2)
-       call init(SP%EF%final_solution,F,F,1,10,6)
-       call init(SP%EF%dir,str(DT%EF))
-       call init(SP%EF%name,'EF')
-
        ! call init(MQP,auto_find_N,max_mesh_stretch_ratio,N_max_points_add)
-       call init(SP%MQP,T,1.5_cp,50)
+       call init(SP%MQP,T,2.0_cp,50)
 
        call define_mesh(SP)
 
        ! Statistics
        ! call init(TSP,collect,t_start,t_stop)
-       ! call init(SP%TSP,T,30.0_cp,60.0_cp)
-       call init(SP%TSP,T,700.0_cp,800.0_cp)
+       call init(SP%TSP,T,900.0_cp,1000.0_cp)
 
-       time                          = 1000.0_cp
-       ! dtime                         = 1.0_cp*pow(-2)
-       dtime                         = 1.0_cp*pow(-4)
+       dtime                         = 5.0_cp*pow(-4)
+       t_final                       = 1400.0_cp
+       ! t_final                       = 3.0_cp*dtime ! for testing
 
        SP%GP%tw                      = 0.05_cp
        SP%GP%geometry                = 7
        SP%GP%periodic_dir            = (/0,1,0/)
-       ! SP%GP%apply_BC_order          = (/3,4,5,6,1,2/) ! good for LDC
-       ! SP%GP%apply_BC_order       = (/3,4,5,6,1,2/) ! good for periodic in y?
-       SP%GP%apply_BC_order       = (/5,6,1,2,3,4/) ! good for periodic in y?
-       ! SP%GP%apply_BC_order       = (/5,6,3,4,1,2/) ! good for periodic in z?
-       ! SP%GP%apply_BC_order       = (/3,4,1,2,5,6/) ! good for periodic in z?
+       SP%GP%apply_BC_order          = (/5,6,1,2,3,4/) ! good for periodic in y?
 
        call delete(SP%DP)
        SP%DP%Re                      = 200.0_cp
        ! SP%DP%N                       = 5.0_cp*pow(0)
        SP%DP%Q                       = 8.0_cp*pow(-1)
-       if (     RV_BCs) SP%DP%Rem                     = 1.0_cp*pow(1)
-       if (.not.RV_BCs) SP%DP%Rem                     = 1.0_cp*pow(0)
+       SP%DP%Rem                     = 1.0_cp*pow(1)
        ! SP%DP%Ha                      = 5.0_cp*pow(2)
        ! SP%DP%Ha                      = 10.0_cp
        ! SP%DP%Ha                      = 10.0_cp*pow(3)
@@ -158,8 +243,6 @@
        SP%DP%Ec                      = 0.0_cp
 
        SP%DP%Ha                      = (1.0_cp/SP%DP%Q*SP%DP%Re)**0.5_cp
-       ! SP%DP%N                       = SP%DP%Ha**2.0_cp/SP%DP%Re
-       ! SP%DP%Ha                      = (SP%DP%N*SP%DP%Re)**0.5_cp
        SP%DP%Al                      = SP%DP%N/SP%DP%Rem
        SP%DP%Pe                      = SP%DP%Pr*SP%DP%Re
        SP%DP%tau                     = SP%DP%Re/SP%DP%Ha
@@ -169,10 +252,16 @@
        SP%DP%KE_scale                = 1.0_cp
        SP%DP%ME_scale                = SP%DP%Al
        SP%DP%JE_scale                = SP%DP%N*2.0_cp ! x2 because (J^2/sigma) not (1/2 J^2/sigma)
-       if (SP%MP%mirror) SP%DP%KE_scale = SP%DP%KE_scale*2.0_cp
-       if (SP%MP%mirror) SP%DP%ME_scale = SP%DP%ME_scale*2.0_cp
-       if (SP%MP%mirror) SP%DP%JE_scale = SP%DP%JE_scale*2.0_cp
        if (.not.SP%SCP%finite_Rem) SP%DP%Rem = 1.0_cp
+
+       ! call init(EFP,export_ever,export_first_step,frequency_base,frequency_exp)
+       call init(SP%EF%info          ,T,T,1,10,2,0.0_cp,t_final)
+       call init(SP%EF%unsteady_0D   ,T,T,1,10,2,0.0_cp,t_final)
+       call init(SP%EF%unsteady_1D   ,F,F,1,10,2,0.0_cp,t_final)
+       call init(SP%EF%unsteady_2D   ,F,F,1,10,2,0.0_cp,t_final)
+       call init(SP%EF%unsteady_3D   ,F,F,1,10,4,0.0_cp,2.0_cp)
+       call init(SP%EF%restart_files ,F,F,1,10,2,0.0_cp,t_final)
+       call init(SP%EF%final_solution,F,F,1,10,6,0.0_cp,t_final)
 
        ! call init(export_field,export_ever)
        call init(SP%VS%T%unsteady_field  ,F)
@@ -221,32 +310,29 @@
        call init_IC_BC(SP%VS%T    ,0    ,0 )
        call init_IC_BC(SP%VS%U    ,0    ,6 )
        call init_IC_BC(SP%VS%P    ,0    ,2 )
-       ! if (     RV_BCs) call init_IC_BC(SP%VS%B    ,0    ,9 ) ! 5 for thin wall
-       ! if (.not.RV_BCs) call init_IC_BC(SP%VS%B    ,0    ,10) ! 5 for thin wall
        call init_IC_BC(SP%VS%B    ,0    ,2 )
        call init_IC_BC(SP%VS%B0   ,4    ,0 )
        call init_IC_BC(SP%VS%phi  ,0    ,0 )
        call init_IC_BC(SP%VS%rho  ,0    ,0 )
 
-       ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,export_convergence,dir,name)
-       call init(SP%VS%T%ISP,  5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_T')
-       call init(SP%VS%U%ISP,  5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_U')
-       call init(SP%VS%P%ISP,  40 ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_P')
-       if (     RV_BCs) call init(SP%VS%B%ISP,  20 ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_B')
-       if (.not.RV_BCs) call init(SP%VS%B%ISP,  5 ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_B')
-       call init(SP%VS%B0%ISP, 5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_B0')
-       call init(SP%VS%phi%ISP,5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_phi')
-       call init(SP%VS%rho%ISP,5  ,pow(-6),pow(-13),1,F,SP%export_heavy,str(DT%ISP),'ISP_rho')
+       ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,export_convergence)
+       call init(SP%VS%T%ISP,  5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy)
+       call init(SP%VS%U%ISP,  5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy)
+       call init(SP%VS%P%ISP,  5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy)
+       call init(SP%VS%B%ISP,  5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy)
+       call init(SP%VS%B0%ISP, 5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy)
+       call init(SP%VS%phi%ISP,5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy)
+       call init(SP%VS%rho%ISP,5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy)
 
-       ! call init(TMP,RK_n_stages,RK_active,multistep_iter,n_step_stop,dtime,dir,name)
-       call init(SP%coupled,   1,F,1 ,ceiling(time/dtime,li),dtime        ,str(DT%TMP),'TMP_coupled')
-       call init(SP%VS%T%TMP,  1,F,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_T')
-       call init(SP%VS%U%TMP,  1,F,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_U')
-       call init(SP%VS%P%TMP,  1,F,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_P')
-       call init(SP%VS%B%TMP,  1,F,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_B')
-       call init(SP%VS%B0%TMP, 1,F,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_B0')
-       call init(SP%VS%phi%TMP,1,F,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_phi')
-       call init(SP%VS%rho%TMP,1,F,1 ,SP%coupled%n_step_stop,SP%coupled%dt,str(DT%TMP),'TMP_rho')
+       ! call init(TMP,RK_n_stages,RK_active,multistep_iter,n_step_stop,dtime)
+       call init(SP%coupled,   1,F,1 ,t_final,dtime)
+       call init(SP%VS%T%TMP,  1,F,1 ,t_final,dtime)
+       call init(SP%VS%U%TMP,  1,F,1 ,t_final,dtime)
+       call init(SP%VS%P%TMP,  1,F,1 ,t_final,dtime)
+       call init(SP%VS%B%TMP,  1,F,1 ,t_final,dtime)
+       call init(SP%VS%B0%TMP, 1,F,1 ,t_final,dtime)
+       call init(SP%VS%phi%TMP,1,F,1 ,t_final,dtime)
+       call init(SP%VS%rho%TMP,1,F,1 ,t_final,dtime)
 
        ! Matrix-free parameters:
        ! coeff_natural  = coefficient of terms in non-discretized equation
@@ -255,7 +341,7 @@
        ! coeff_implicit_time_split = dt*coeff_implicit/coeff_unsteady (computed in time_marching_methods.f90)
 
        SP%VS%B%MFP%alpha = 1.0_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
-       SP%VS%U%MFP%alpha = 0.5_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
+       SP%VS%U%MFP%alpha = 1.0_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
        SP%VS%T%MFP%alpha = 1.0_cp ! weight of implicit treatment (1 = Backward Euler, .5 = Crank Nicholson)
        SP%VS%B%MFP%coeff_natural = -1.0_cp/SP%DP%Rem ! natural diffusion coefficient on RHS
        SP%VS%U%MFP%coeff_natural =  1.0_cp/SP%DP%Re  ! natural diffusion coefficient on RHS
@@ -267,6 +353,7 @@
        ! The following is needed only if curl-curl(B) is used, opposed to J in solver.
        ! if (SP%SCP%finite_Rem) SP%VS%B%MFP%coeff_explicit = SP%VS%B%MFP%coeff_explicit/SP%DP%Rem
 
+       ! IF A TERM IS REPEATED, THE ONLY TERM THAT COUNTS IS THE LAST ONE DEFINED TO BE "TRUE"
        ! Sources to add to momentum equation. NOTE: scale is not set if add=false
        call init(SP%MT%pressure_grad       ,F,-1.0_cp                   )
        call init(SP%MT%diffusion           ,T,SP%VS%U%MFP%coeff_explicit)
@@ -300,7 +387,7 @@
        call init(SP%ET%joule_heating      , F,SP%DP%Ec*SP%DP%N  )
        call init(SP%ET%volumetric_heating , F,1.0_cp            )
 
-       call post_process(SP,DT)
+       call post_process(SP)
      end subroutine
 
      end module

@@ -33,6 +33,7 @@
        use induction_extend_mod
        use momentum_sources_mod
        use MOONS_export_full_restart_mod
+       use MOONS_simulate_crash_mod
        use MOONS_mod
        implicit none
 
@@ -68,7 +69,7 @@
              call assign_RK_stage(M%C%SP%VS%U%TMP,i_RK)
              call assign_RK_stage(M%C%SP%VS%B%TMP,i_RK)
              call assign_RK_stage(M%C%SP%coupled,i_RK)
-             call update(M%C%SP%EF,M%C%SP%coupled%n_step,i_RK.ne.M%C%SP%coupled%RKP%n_stages)
+             call update(M%C%SP%EF,M%C%SP%coupled%t,M%C%SP%coupled%n_step,i_RK.ne.M%C%SP%coupled%RKP%n_stages)
              ! if (M%C%SP%VS%rho%SS%solve)    call solve(dens,M%GE%mom%U,  M%C%SP%EF,M%C%EN,M%C%DT)
              if (M%C%SP%VS%T%SS%solve) then
                call add_all_energy_sources(M%GE%nrg%F,M%GE%nrg%Fnm1,M%GE%nrg%L,M%GE%nrg,M%C%SP%VS%U%TMP,M%C%SP,M%GE%ind,M%GE%mom)
@@ -87,7 +88,7 @@
              call iterate_RK(M%C%SP%VS%B%TMP)
              call iterate_RK(M%C%SP%coupled)
            enddo
-           call update(M%C%SP%EF,M%C%SP%coupled%n_step,.false.)
+           call update(M%C%SP%EF,M%C%SP%coupled%t,M%C%SP%coupled%n_step,.false.)
 
            if (M%C%SP%VS%T%SS%solve) call iterate_step(M%C%SP%VS%T%TMP)
            if (M%C%SP%VS%U%SS%solve) call iterate_step(M%C%SP%VS%U%TMP)
@@ -112,16 +113,7 @@
              call MOONS_export_full_restart(M)
            endif
 
-           if (M%C%SP%FCL%simulate_crash) then
-           if (M%C%SP%coupled%n_step.eq.447) then ! crash simulator
-             stop 'Done in MOONS_solver'
-           endif
-           endif
-           if (M%C%SP%FCL%restart_simulated_crash) then
-           if (M%C%SP%coupled%n_step.eq.947) then ! after crash simulator
-             stop 'Done in MOONS_solver'
-           endif
-           endif
+           call simulate_crash(M)
 
            call import_structured(M%C%SP%DP)
            call import_structured(M%GE%mom%PCG_U%ISP%EC)
@@ -142,6 +134,7 @@
              if (M%C%SP%FCL%export_heavy) then
                call print(M%C%sc,M%C%SP%coupled)
                write(*,*) 'Working directory = ',str(M%C%DT%tar)
+               write(*,*) 'Restart directory = ',str(M%C%DT%restart)
              else
                call print_light(M%C%sc,M%C%SP%coupled)
              endif

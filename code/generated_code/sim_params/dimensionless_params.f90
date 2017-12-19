@@ -61,6 +61,9 @@
          real(cp) :: L_eta = 0.0_cp
          real(cp) :: U_eta = 0.0_cp
          real(cp) :: t_eta = 0.0_cp
+         real(cp) :: t_start = 0.0_cp
+         real(cp) :: dtime = 0.0_cp
+         real(cp) :: t_final = 0.0_cp
          type(string) :: dir
          type(string) :: name
        end type
@@ -93,6 +96,9 @@
          this%L_eta = that%L_eta
          this%U_eta = that%U_eta
          this%t_eta = that%t_eta
+         this%t_start = that%t_start
+         this%dtime = that%dtime
+         this%t_final = that%t_final
          call init(this%dir,that%dir)
          call init(this%name,that%name)
        end subroutine
@@ -121,6 +127,9 @@
          this%L_eta = 0.0_cp
          this%U_eta = 0.0_cp
          this%t_eta = 0.0_cp
+         this%t_start = 0.0_cp
+         this%dtime = 0.0_cp
+         this%t_final = 0.0_cp
          call delete(this%dir)
          call delete(this%name)
        end subroutine
@@ -150,6 +159,9 @@
          write(un,*) 'L_eta                = ',this%L_eta
          write(un,*) 'U_eta                = ',this%U_eta
          write(un,*) 't_eta                = ',this%t_eta
+         write(un,*) 't_start              = ',this%t_start
+         write(un,*) 'dtime                = ',this%dtime
+         write(un,*) 't_final              = ',this%t_final
          call display(this%dir,un)
          call display(this%name,un)
        end subroutine
@@ -179,6 +191,9 @@
          write(un,*) 'L_eta                = ',this%L_eta
          write(un,*) 'U_eta                = ',this%U_eta
          write(un,*) 't_eta                = ',this%t_eta
+         write(un,*) 't_start              = ',this%t_start
+         write(un,*) 'dtime                = ',this%dtime
+         write(un,*) 't_final              = ',this%t_final
          call display(this%dir,un)
          call display(this%name,un)
        end subroutine
@@ -249,6 +264,9 @@
          write(un,*) 'L_eta                 = ';write(un,*) this%L_eta
          write(un,*) 'U_eta                 = ';write(un,*) this%U_eta
          write(un,*) 't_eta                 = ';write(un,*) this%t_eta
+         write(un,*) 't_start               = ';write(un,*) this%t_start
+         write(un,*) 'dtime                 = ';write(un,*) this%dtime
+         write(un,*) 't_final               = ';write(un,*) this%t_final
        end subroutine
 
        subroutine import_primitives_dimensionless_params(this,un)
@@ -276,6 +294,9 @@
          read(un,*); read(un,*) this%L_eta
          read(un,*); read(un,*) this%U_eta
          read(un,*); read(un,*) this%t_eta
+         read(un,*); read(un,*) this%t_start
+         read(un,*); read(un,*) this%dtime
+         read(un,*); read(un,*) this%t_final
        end subroutine
 
        subroutine export_wrap_dimensionless_params(this,dir,name)

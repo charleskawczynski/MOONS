@@ -13,18 +13,19 @@
 
        contains
 
-       subroutine update_EF(EF,n_step,substep)
+       subroutine update_EF(EF,t,n_step,substep)
          implicit none
          type(export_frequency),intent(inout) :: EF
          integer(li),intent(in) :: n_step
+         real(cp),intent(in) :: t
          logical,intent(in) :: substep
-         call update(EF%info,n_step,substep)
-         call update(EF%unsteady_0D,n_step,substep)
-         call update(EF%unsteady_1D,n_step,substep)
-         call update(EF%unsteady_2D,n_step,substep)
-         call update(EF%unsteady_3D,n_step,substep)
-         call update(EF%final_solution,n_step,substep)
-         call update(EF%restart_files,n_step,substep)
+         call update(EF%info,t,n_step,substep)
+         call update(EF%unsteady_0D,t,n_step,substep)
+         call update(EF%unsteady_1D,t,n_step,substep)
+         call update(EF%unsteady_2D,t,n_step,substep)
+         call update(EF%unsteady_3D,t,n_step,substep)
+         call update(EF%final_solution,t,n_step,substep)
+         call update(EF%restart_files,t,n_step,substep)
        end subroutine
 
        end module

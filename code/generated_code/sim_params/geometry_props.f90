@@ -2,7 +2,6 @@
        ! ******* THIS CODE IS GENERATED. DO NOT EDIT *******
        ! ***************************************************
        module geometry_props_mod
-       use current_precision_mod
        use IO_tools_mod
        use datatype_conversion_mod
        use dir_manip_mod
@@ -36,8 +35,6 @@
        interface suppress_warnings;module procedure suppress_warnings_geometry_props;  end interface
 
        type geometry_props
-         integer :: geometry = 0
-         real(cp) :: tw = 0.0_cp
          integer,dimension(3) :: periodic_dir = 0
          integer,dimension(6) :: apply_BC_order = 0
        end type
@@ -49,8 +46,6 @@
          type(geometry_props),intent(inout) :: this
          type(geometry_props),intent(in) :: that
          call delete(this)
-         this%geometry = that%geometry
-         this%tw = that%tw
          this%periodic_dir = that%periodic_dir
          this%apply_BC_order = that%apply_BC_order
        end subroutine
@@ -58,8 +53,6 @@
        subroutine delete_geometry_props(this)
          implicit none
          type(geometry_props),intent(inout) :: this
-         this%geometry = 0
-         this%tw = 0.0_cp
          this%periodic_dir = 0
          this%apply_BC_order = 0
        end subroutine
@@ -68,8 +61,6 @@
          implicit none
          type(geometry_props),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'geometry       = ',this%geometry
-         write(un,*) 'tw             = ',this%tw
          write(un,*) 'periodic_dir   = ',this%periodic_dir
          write(un,*) 'apply_BC_order = ',this%apply_BC_order
        end subroutine
@@ -78,8 +69,6 @@
          implicit none
          type(geometry_props),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'geometry       = ',this%geometry
-         write(un,*) 'tw             = ',this%tw
          write(un,*) 'periodic_dir   = ',this%periodic_dir
          write(un,*) 'apply_BC_order = ',this%apply_BC_order
        end subroutine
@@ -125,8 +114,6 @@
          implicit none
          type(geometry_props),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'geometry        = ';write(un,*) this%geometry
-         write(un,*) 'tw              = ';write(un,*) this%tw
          write(un,*) 'periodic_dir    = ';write(un,*) this%periodic_dir
          write(un,*) 'apply_BC_order  = ';write(un,*) this%apply_BC_order
        end subroutine
@@ -135,8 +122,6 @@
          implicit none
          type(geometry_props),intent(inout) :: this
          integer,intent(in) :: un
-         read(un,*); read(un,*) this%geometry
-         read(un,*); read(un,*) this%tw
          read(un,*); read(un,*) this%periodic_dir
          read(un,*); read(un,*) this%apply_BC_order
        end subroutine

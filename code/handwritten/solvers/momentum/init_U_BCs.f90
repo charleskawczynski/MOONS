@@ -56,8 +56,10 @@
          case (13); call LDC_4_domains(U)
          case (14); call duct_flow_2D_2domains(U)
          case (15); call LDC_9_domains(U)
-         case (16); call LDC_at_ymax_Shatrov_smooth(U,m)
-         case (17); call LDC_at_ymax_Leriche_smooth(U,m)
+         case (16); call LDC_at_ymax_symmetric_zmax(U)
+                    call LDC_at_ymax_Shatrov_smooth(U,m)
+         case (17); call LDC_at_ymax_symmetric_zmax(U)
+                    call LDC_at_ymax_Leriche_smooth(U,m)
          case (18); call Taylor_Green_Vortex(U)
          case default; stop 'Error: bad preset_ID in init_UBCs.f90'
          end select
@@ -99,7 +101,7 @@
          real(cp) :: n_lid
          call init(U%x%BF(1)%BCs,1.0_cp,4)
          n_lid = 18.0_cp
-         call smooth_lid_Leriche(U%x%BF(1)%BCs%face%SB(4)%b,m%B(1)%fb(4),U%x%DL,2,n_lid)
+         call smooth_lid_Leriche(U%x%BF(1)%BCs%face%SB(4)%b,m%B(1)%fb(4),U%x%DL,2,n_lid,3)
        end subroutine
 
        subroutine Taylor_Green_Vortex(U)

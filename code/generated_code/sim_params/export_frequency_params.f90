@@ -2,6 +2,7 @@
        ! ******* THIS CODE IS GENERATED. DO NOT EDIT *******
        ! ***************************************************
        module export_frequency_params_mod
+       use current_precision_mod
        use IO_tools_mod
        use datatype_conversion_mod
        use dir_manip_mod
@@ -41,6 +42,8 @@
          integer :: frequency_coeff = 0
          integer :: frequency_base = 0
          integer :: frequency_exp = 0
+         real(cp) :: t_window_start = 0.0_cp
+         real(cp) :: t_window_stop = 0.0_cp
        end type
 
        contains
@@ -56,6 +59,8 @@
          this%frequency_coeff = that%frequency_coeff
          this%frequency_base = that%frequency_base
          this%frequency_exp = that%frequency_exp
+         this%t_window_start = that%t_window_start
+         this%t_window_stop = that%t_window_stop
        end subroutine
 
        subroutine delete_export_frequency_params(this)
@@ -67,6 +72,8 @@
          this%frequency_coeff = 0
          this%frequency_base = 0
          this%frequency_exp = 0
+         this%t_window_start = 0.0_cp
+         this%t_window_stop = 0.0_cp
        end subroutine
 
        subroutine display_export_frequency_params(this,un)
@@ -79,6 +86,8 @@
          write(un,*) 'frequency_coeff   = ',this%frequency_coeff
          write(un,*) 'frequency_base    = ',this%frequency_base
          write(un,*) 'frequency_exp     = ',this%frequency_exp
+         write(un,*) 't_window_start    = ',this%t_window_start
+         write(un,*) 't_window_stop     = ',this%t_window_stop
        end subroutine
 
        subroutine display_short_export_frequency_params(this,un)
@@ -91,6 +100,8 @@
          write(un,*) 'frequency_coeff   = ',this%frequency_coeff
          write(un,*) 'frequency_base    = ',this%frequency_base
          write(un,*) 'frequency_exp     = ',this%frequency_exp
+         write(un,*) 't_window_start    = ',this%t_window_start
+         write(un,*) 't_window_stop     = ',this%t_window_stop
        end subroutine
 
        subroutine display_wrap_export_frequency_params(this,dir,name)
@@ -140,6 +151,8 @@
          write(un,*) 'frequency_coeff    = ';write(un,*) this%frequency_coeff
          write(un,*) 'frequency_base     = ';write(un,*) this%frequency_base
          write(un,*) 'frequency_exp      = ';write(un,*) this%frequency_exp
+         write(un,*) 't_window_start     = ';write(un,*) this%t_window_start
+         write(un,*) 't_window_stop      = ';write(un,*) this%t_window_stop
        end subroutine
 
        subroutine import_primitives_export_frequency_params(this,un)
@@ -152,6 +165,8 @@
          read(un,*); read(un,*) this%frequency_coeff
          read(un,*); read(un,*) this%frequency_base
          read(un,*); read(un,*) this%frequency_exp
+         read(un,*); read(un,*) this%t_window_start
+         read(un,*); read(un,*) this%t_window_stop
        end subroutine
 
        subroutine export_wrap_export_frequency_params(this,dir,name)

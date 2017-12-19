@@ -5,6 +5,7 @@ RELEASE = 'DEBUG'
 # RELEASE = 'OPTIMIZE'
 # RELEASE = 'PROFILE'
 USE_OPEN_MP = 'TRUE'
+EXPORT_FOR_AUTO_RESTART = 'TRUE'
 PARALLELIZE_3D_OPS = 'TRUE'
 # PARALLELIZE_2D_OPS = 'TRUE'
 # PARALLELIZE_1D_OPS = 'TRUE'
@@ -54,7 +55,7 @@ SRC_DIR_GENERATED = ..$(PS)code$(PS)generated_code
 SRC_DIR_PRE_GENERATED = ..$(PS)code$(PS)pre_generated
 
 ifeq ($(CLUSTER),'PC_CK')
-	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS1
+	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS3
 endif
 
 ifeq ($(CLUSTER),'Workstation_CK')
@@ -185,6 +186,9 @@ FC_DEBUG += -D_DEBUG_GF_NORMS_
 # **************** OPTIMIZE/PARALLELIZE *********************
 ifeq ($(USE_OPEN_MP),'TRUE')
 	FCFLAGS += -fopenmp
+endif
+ifeq ($(EXPORT_FOR_AUTO_RESTART),'TRUE')
+	FCFLAGS += -DEXPORT_FOR_AUTO_RESTART
 endif
 
 FC_OPTIMIZE += -g -O3

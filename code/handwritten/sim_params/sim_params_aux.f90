@@ -59,6 +59,38 @@
        implicit none
        type(sim_params),intent(in) :: SP
        call sanity_check(SP%VS)
+       call check_time_statistics_window(SP)
+     end subroutine
+
+     function alpha_in_window(alpha,min_val,max_val) result(L)
+       implicit none
+       real(cp),intent(in) :: alpha,min_val,max_val
+       logical :: L
+       L = (alpha.gt.min_val).and.(alpha.lt.max_val)
+     end function
+
+     subroutine check_time_statistics_window(SP)
+       implicit none
+       type(sim_params),intent(in) :: SP
+       logical,dimension(4) :: L_temp
+       if (SP%TSP%collect) then
+         L_temp(1) = alpha_in_window(SP%TSP%O1_stats%t_start,SP%DP%t_start,SP%DP%t_final)
+         L_temp(2) = alpha_in_window(SP%TSP%O1_stats%t_stop ,SP%DP%t_start,SP%DP%t_final)
+         L_temp(3) = alpha_in_window(SP%TSP%O2_stats%t_start,SP%DP%t_start,SP%DP%t_final)
+         L_temp(4) = alpha_in_window(SP%TSP%O2_stats%t_stop ,SP%DP%t_start,SP%DP%t_final)
+         if (.not.all(L_temp)) then
+           write(*,*) ''
+           write(*,*) 'Error: time-statistics window extends beyond'
+           write(*,*) 'the simulation time. Ending execution.'
+           write(*,*) 'SP%DP%t_start           = ',SP%DP%t_start
+           write(*,*) 'SP%DP%t_final           = ',SP%DP%t_final
+           write(*,*) 'SP%TSP%O1_stats%t_start = ',SP%TSP%O1_stats%t_start
+           write(*,*) 'SP%TSP%O1_stats%t_stop  = ',SP%TSP%O1_stats%t_stop
+           write(*,*) 'SP%TSP%O2_stats%t_start = ',SP%TSP%O2_stats%t_start
+           write(*,*) 'SP%TSP%O2_stats%t_stop  = ',SP%TSP%O2_stats%t_stop
+           stop 'Done in check_time_statistics_window in sim_params_aux.f90'
+         endif
+       endif
      end subroutine
 
      subroutine display_compiler_info_SP(un)
