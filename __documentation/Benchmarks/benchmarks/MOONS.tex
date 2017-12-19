@@ -1,0 +1,36 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Introduction}
+This document provides detailed documentation to benchmark cases conducted using MOONS.
+
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item Make benchmarks and post-processing automatic. Consider using makefile definitions that override defaults
+\begin{enumerate}
+\setlength\itemsep{-1em}
+\item 3D LDC Hydro flow - grid refinement
+\item 3D LDC Hydro flow, $Re = 400, Re = 1000$ (Guj and Stella)
+\item 2D LDC Hydro flow, $Re = $ (Ghia)
+\item 3D LDC MHD flow, $Re = 100, Ha = 45$ at low $Re_m$ (Pattison)
+\item 2D Channel MHD flow, $Re = 200, Ha = 25.82, Re_m = 1$ (Bandaru)
+\item Benchmarks to consider adding:
+\begin{itemize}
+\setlength\itemsep{-1em}
+\item 3D LDC hydro flow - turbulent (Re=2,000 and 3,200 compare with literature)
+\item 2D kinematic MHD flow (Parker or Weiss)
+\item 3D MHD Duct (Kenjeres)
+\item 3D MHD Isotropic Turbulence decay (Knaepen)
+\item 3D Duct MHD flow - DNS (Kinet, Knaepen, Molokov)
+\item 2D LDC Hydro flow - grid refinement
+\end{itemize}
+\end{enumerate}
+\end{itemize}
+
+
+\end{document}

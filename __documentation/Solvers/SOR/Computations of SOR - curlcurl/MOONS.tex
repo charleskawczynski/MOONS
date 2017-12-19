@@ -1,63 +1,26 @@
 \documentclass[11pt]{article}
-\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
-\usepackage{epstopdf}
-\usepackage{amsmath}
-\usepackage{hyperref}
-\usepackage{xspace}
-\usepackage{mathtools}
-\usepackage{tikz}
-\usepackage{epsfig}
-\usepackage{float}
-\usepackage{natbib}
-\usepackage{subfigure}
-\usepackage{setspace}
-\usepackage{tabularx,ragged2e,booktabs,caption}
-
-
-\setlength{\oddsidemargin}{0.1in}
-\setlength{\textwidth}{7.25in}
-
-\setlength{\topmargin}{-1in}     %\topmargin: gap above header
-\setlength{\headheight}{0in}     %\headheight: height of header
-\setlength{\topskip}{0in}        %\topskip: between header and text
-\setlength{\headsep}{0in}        
-\setlength{\textheight}{692pt}   %\textheight: height of main text
-\setlength{\textwidth}{7.5in}    % \textwidth: width of text
-\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
-\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
-\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
-\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
-\setlength{\voffset}{0.5in}
-
-
-% Useful commands:
-
-% \hfill		aligns-right everything right of \hfill
+\input{../includes.tex}
 
 \begin{document}
 \doublespacing
-\title{Magnetohydrodynamic Object-Oriented Numerical Solver (MOONS)}
-\author{C. Kawczynski \\
-Department of Mechanical and Aerospace Engineering \\
-University of California Los Angeles, USA\\
-}
+\MOONSTITLE
 \maketitle
 
 \section{Computing the curl curl with variable properties}
 This file describes how to construct the operator
 \begin{multline}
-	\nabla \times (k \nabla \times) = \\
-	\nabla \times (
-	\hat{x} (\partial_y B_z - \partial_z B_y) k_{e,x} \\
-	- \hat{y} (\partial_x B_z - \partial_z B_x) k_{e,y} \\
-	+ \hat{z} (\partial_x B_y - \partial_y B_x) k_{e,z} ) \\
+	\CURL (k \CURL) = \\
+	\CURL (
+	\hat{x} (\PD_y B_z - \PD_z B_y) k_{e,x} \\
+	- \hat{y} (\PD_x B_z - \PD_z B_x) k_{e,y} \\
+	+ \hat{z} (\PD_x B_y - \PD_y B_x) k_{e,z} ) \\
 	= \\
-	 \hat{x} \left\{ \partial_y \left[ (\partial_x B_y - \partial_y B_x) k_{e,z} \right] -
-	  \partial_z \left[ (\partial_x B_z - \partial_z B_x) k_{e,y} \right] \right\} \\
-	-\hat{y} \left\{ \partial_x \left[ (\partial_x B_y - \partial_y B_x) k_{e,z} \right] -
-	 \partial_z \left[ (\partial_y B_z - \partial_z B_y) k_{e,x} \right]  \right\} \\
-	+\hat{z} \left\{ \partial_x \left[ (\partial_x B_z - \partial_z B_x) k_{e,y} \right] -
-	 \partial_y \left[ (\partial_y B_z - \partial_z B_y) k_{e,x} \right]  \right\} \\
+	 \hat{x} \left\{ \PD_y \left[ (\PD_x B_y - \PD_y B_x) k_{e,z} \right] -
+	  \PD_z \left[ (\PD_x B_z - \PD_z B_x) k_{e,y} \right] \right\} \\
+	-\hat{y} \left\{ \PD_x \left[ (\PD_x B_y - \PD_y B_x) k_{e,z} \right] -
+	 \PD_z \left[ (\PD_y B_z - \PD_z B_y) k_{e,x} \right]  \right\} \\
+	+\hat{z} \left\{ \PD_x \left[ (\PD_x B_z - \PD_z B_x) k_{e,y} \right] -
+	 \PD_y \left[ (\PD_y B_z - \PD_z B_y) k_{e,x} \right]  \right\} \\
 	.
 \end{multline}
 Where $k = \frac{1}{\sigma}$ in the induction equation.
@@ -67,7 +30,7 @@ Where $k = \frac{1}{\sigma}$ in the induction equation.
 \section{Composite one-sided differencing (uniform properties)}
 
 \begin{equation}
-	\frac{\frac{u_{i+1,j,k}-u_{i,j,k}}{\Delta x_{c,i}} - \frac{u_{i,j,k}-u_{i-1,j,k}}{\Delta x_{c,i-1}}}{\Delta x_{n,i}} + 
+	\frac{\frac{u_{i+1,j,k}-u_{i,j,k}}{\Delta x_{c,i}} - \frac{u_{i,j,k}-u_{i-1,j,k}}{\Delta x_{c,i-1}}}{\Delta x_{n,i}} +
 	\frac{\frac{u_{i,j+1,k}-u_{i,j,k}}{\Delta y_{c,j}} - \frac{u_{i,j,k}-u_{i,j-1,k}}{\Delta y_{c,j-1}}}{\Delta y_{n,j}} +
 	\frac{\frac{u_{i,j,k+1}-u_{i,j,k}}{\Delta z_{c,k}} - \frac{u_{i,j,k}-u_{i,j,k-1}}{\Delta z_{c,k-1}}}{\Delta z_{n,k}} = f_{i,j,k}
 \end{equation}
@@ -79,16 +42,16 @@ We can write this as
 	\frac{
 	u_{i-1,j,k}+(-u_{i,j,k})
 	}{
-	\Delta x_{c,i}} + 
+	\Delta x_{c,i}} +
 	\frac{
 	u_{i,j,k}+(-u_{i+1,j,k})
 	}{
-	\Delta x_{c,i-1}}}{\Delta x_{n,i}} + 
+	\Delta x_{c,i-1}}}{\Delta x_{n,i}} +
 	\frac{-
 	\frac{
 	u_{i,j-1,k}+(-u_{i,j,k})
 	}{
-	\Delta y_{c,j}} + 
+	\Delta y_{c,j}} +
 	\frac{
 	u_{i,j,k}+(-u_{i,j+1,k})
 	}{
@@ -97,7 +60,7 @@ We can write this as
 	\frac{
 	u_{i,j,k-1}+(-u_{i,j,k})
 	}{
-	\Delta z_{c,k}} + 
+	\Delta z_{c,k}} +
 	\frac{
 	u_{i,j,k}+(-u_{i,j,k+1})
 	}{
@@ -149,7 +112,7 @@ Inverting LHS, we have
 
 \begin{equation}
 	u^{k+1}
-	= 
+	=
 	A^{-1}
 	\left\{
 	f -
@@ -167,7 +130,7 @@ Inverting LHS, we have
 Where
 \begin{equation}
 	A
-	= 
+	=
 	(
 	U_x D_x + D_x U_x +
 	U_y D_y + D_y U_y +
@@ -179,13 +142,13 @@ Where
 Comparing this with the old method:
 
 \begin{equation}
-	u_{i,j,k} = 
-	\frac{ 
-	\frac{u_{i+1,j,k}}{\Delta x_{p,i} \Delta x_{d,i}} + \frac{u_{i-1,j,k}}{\Delta x_{p,i-1} \Delta x_{d,i}} + 
+	u_{i,j,k} =
+	\frac{
+	\frac{u_{i+1,j,k}}{\Delta x_{p,i} \Delta x_{d,i}} + \frac{u_{i-1,j,k}}{\Delta x_{p,i-1} \Delta x_{d,i}} +
 	\frac{u_{i,j+1,k}}{\Delta y_{p,j} \Delta y_{d,j}} + \frac{u_{i,j-1,k}}{\Delta y_{p,j-1} \Delta y_{d,j}} +
 	\frac{u_{i,j,k+1}}{\Delta z_{p,k} \Delta z_{d,k}} + \frac{u_{i,j,k-1}}{\Delta z_{p,k-1} \Delta z_{d,k}}
 	- f_{i,j,k} }{
-	\left( 
+	\left(
 	\frac{ 1 }{ \Delta x_{d,i} }
 	\left[
 	\frac{ 1 }{ \Delta x_{p,i} } +
@@ -221,8 +184,8 @@ We can equate some things:
 	U_x U_x u
 	=
 	\frac{u_{i-1}}{\Delta x_{p,i-1} \Delta x_{d,i}}
-	+ 
-	\frac{u_{i+1}}{\Delta x_{p,i} \Delta x_{d,i}} 
+	+
+	\frac{u_{i+1}}{\Delta x_{p,i} \Delta x_{d,i}}
 \end{equation}
 
 \section{Composite one-sided differencing (non-uniform coefficient)}
@@ -230,13 +193,13 @@ We can equate some things:
 If the poisson equation has a non-uniform coefficient, e.g.
 
 \begin{equation}
-	\nabla \bullet \left( \sigma \nabla u \right) = f
+	\DEL \bullet \left( \sigma \DEL u \right) = f
 \end{equation}
 
 If an index is missing from the subscript, assume $i,j,k$. The discrete equation is
 
 \begin{equation}
-	\frac{\frac{u_{i+1}-u}{\Delta x_{p,i}} \sigma_{i+1/2} - \frac{u-u_{i-1}}{\Delta x_{p,i-1}} \sigma_{i-1/2}}{\Delta x_{d,i}} + 
+	\frac{\frac{u_{i+1}-u}{\Delta x_{p,i}} \sigma_{i+1/2} - \frac{u-u_{i-1}}{\Delta x_{p,i-1}} \sigma_{i-1/2}}{\Delta x_{d,i}} +
 	\frac{\frac{u_{j+1}-u}{\Delta y_{p,j}} \sigma_{j+1/2} - \frac{u-u_{j-1}}{\Delta y_{p,j-1}} \sigma_{j-1/2}}{\Delta y_{d,j}} +
 	\frac{\frac{u_{k+1}-u}{\Delta z_{p,k}} \sigma_{k+1/2} - \frac{u-u_{k-1}}{\Delta z_{p,k-1}} \sigma_{k-1/2}}{\Delta z_{d,k}} = f_{i,j,k}
 \end{equation}
@@ -271,7 +234,7 @@ Solving for the implicit terms
 	D_y (\sigma_y U_y u^{k+1}) +
 	D_z (\sigma_z U_z u^{k+1}) \\
 	=
-	f - 
+	f -
 	\left\{
 	D_x (\sigma_x D_x u^{ k }) +
 	U_x (\sigma_x U_x u^{ k }) +
@@ -288,7 +251,7 @@ Inverting this we have:
 	=
 	A^{-1}
 	\left[
-	f - 
+	f -
 	\left\{
 	D_x (\sigma_x D_x u^{ k }) +
 	U_x (\sigma_x U_x u^{ k }) +
@@ -303,7 +266,7 @@ Inverting this we have:
 Where
 \begin{equation}
 	\boxed{
-	A = 
+	A =
 	U_x (\sigma_x D_x) +
 	U_y (\sigma_y D_y) +
 	U_z (\sigma_z D_z) +
@@ -317,7 +280,7 @@ Note that $A$ is a 3D scalar field.
 \section{3-point stencil (uniform properties)}
 
 \begin{equation}
-	\frac{\frac{u_{i+1,j,k}-u_{i,j,k}}{\Delta x_{c,i}} - \frac{u_{i,j,k}-u_{i-1,j,k}}{\Delta x_{c,i-1}}}{\Delta x_{n,i}} + 
+	\frac{\frac{u_{i+1,j,k}-u_{i,j,k}}{\Delta x_{c,i}} - \frac{u_{i,j,k}-u_{i-1,j,k}}{\Delta x_{c,i-1}}}{\Delta x_{n,i}} +
 	\frac{\frac{u_{i,j+1,k}-u_{i,j,k}}{\Delta y_{c,j}} - \frac{u_{i,j,k}-u_{i,j-1,k}}{\Delta y_{c,j-1}}}{\Delta y_{n,j}} +
 	\frac{\frac{u_{i,j,k+1}-u_{i,j,k}}{\Delta z_{c,k}} - \frac{u_{i,j,k}-u_{i,j,k-1}}{\Delta z_{c,k-1}}}{\Delta z_{n,k}} = f_{i,j,k}
 \end{equation}
@@ -344,10 +307,10 @@ Solving for the implicitly treated terms we have
 
 \begin{equation}
 	u^{k+1}
-	= 
+	=
 	A^{-1}
 	\left[
-	f - 
+	f -
 	\left\{
 	L_x u^{k} + U_x u^{k} +
 	L_y u^{k} + U_y u^{k} +
@@ -357,7 +320,7 @@ Solving for the implicitly treated terms we have
 \end{equation}
 Where
 \begin{equation}
-	A = 
+	A =
 	D_x +
 	D_y +
 	D_z

@@ -1,0 +1,42 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Divergence form of magnetic field convection}
+
+Using the vector identity
+\begin{equation}
+	\CURL (A\CROSS B) =
+	A(\DIV B)
+	- B(\DIV A)
+	+(B \DOT \DEL)A - (A \DOT \DEL)B
+\end{equation}
+And noting that (index notation helps here)
+\begin{equation}
+	\PD_j (u_i B_j) =
+	u_i \underbrace{\PD_j B_j}_\text{= 0} + B_j \PD_j u_i
+	= B_j \PD_j u_i
+\end{equation}
+\begin{equation}
+	\PD_j (u_j B_i) =
+	u_j \PD_j B_i + B_i \underbrace{\PD_j u_j}_\text{=0}
+	= u_j \PD_j B_i
+\end{equation}
+We can write our advective term as
+\begin{equation}
+	\CURL (\U \CROSS B)
+	= \U(\DIV B)
+	- B(\DIV \U)
+	+ (B \DOT \DEL)\U
+	- (\U \DOT \DEL)B
+	=
+	\PD_j (u_i B_j) - \PD_j (u_j B_i)
+	=
+	-\PD_j (u_j B_i - u_i B_j)
+\end{equation}
+
+\end{document}

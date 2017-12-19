@@ -1,78 +1,23 @@
 \documentclass[11pt]{article}
-% \documentclass[3p,twocolumn,10pt]{elsarticle}
-\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
-\usepackage{epstopdf}
-\usepackage{amsmath}
-\usepackage{amssymb}
-\usepackage{hyperref}
-\usepackage{xspace}
-\usepackage{mathtools}
-\usepackage{tikz}
-\usepackage{epsfig}
-\usepackage{float}
-%\usepackage{natbib}
-\usepackage{subfigure}
-\usepackage{setspace}
-\usepackage{tabularx,ragged2e,booktabs,caption}
-
-\usepackage{xcolor}
-\usepackage{xspace}
-\usepackage{longtable}
-\usepackage{mathtools}
-\usepackage{natbib}
-\usepackage{setspace}
-\usepackage{ragged2e}
-\usepackage{etoolbox}
-\usepackage{geometry}
-
-\input{../../../../useful_commands.tex}
-
-\newcommand{\volume}{\mathop{\ooalign{\hfil$V$\hfil\cr\kern0.08em--\hfil\cr}}\nolimits}
-\newcommand{\figWidth}{0.45\textwidth}
-\newcommand{\figSuffix}{_png.png}
-\newcommand{\pushright}[1]{\ifmeasuring@#1\else\omit\hfill$\displaystyle#1$\fi\ignorespaces}
-\newcommand{\hfillMath}{\hskip \textwidth minus \textwidth}
-
-\setlength{\oddsidemargin}{0.1in}
-\setlength{\textwidth}{7.25in}
-
-\setlength{\topmargin}{-1in}     %\topmargin: gap above header
-\setlength{\headheight}{0in}     %\headheight: height of header
-\setlength{\topskip}{0in}        %\topskip: between header and text
-\setlength{\headsep}{0in}
-\setlength{\textheight}{692pt}   %\textheight: height of main text
-\setlength{\textwidth}{7.5in}    % \textwidth: width of text
-\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
-\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
-\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
-\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
-\setlength{\voffset}{0.5in}
-
-% Useful commands:
-
-% \hfill    aligns-right everything right of \hfill
+\input{../includes.tex}
 
 \begin{document}
 \doublespacing
-\title{Plasma Disruption 1D Solution}
-\author{C. Kawczynski \\
-Department of Mechanical and Aerospace Engineering \\
-University of California Los Angeles, USA\\
-}
+\MOONSTITLE
 \maketitle
 
 \section{Original governing equations and solution}
 Assuming $\PD_x () =0, \PD_z () = 0, v=0,w=0, \PD_t u = 0, \PD_t B_x = 0,\PD_t B_y^0 = 0, \PD_t B_z^0 = 0,\B^0 = (B_x^0(t),0,B_z^0) \ne \B^0(x,y,z), \DEL p =0$, the dimensional momentum and induction equations for uniform $\rho,\mu,\M,\sigma$ are:
 \begin{equation}\begin{aligned}
-u''   = - \frac{1}{\rho \nu \M} B_z^0 B_x' \\
-B_x'' = \sigma \M (\PD_t B_x^0 - B_z^0 u') \\
+u''   = - \frac{1}{\rho \nu \M} B_z^0 {B_x^1}' \\
+{B_x^1}'' = \sigma \M (\PD_t B_x^0 - B_z^0 u') \\
 \end{aligned} \end{equation}
 \noindent
-The solution using Dirichlet BCs $u=0,B_x = 0$ at $y=[-a,a]$ are:
+The solution using Dirichlet BCs $u=0,B_x^1 = 0$ at $y=[-a,a]$ are:
 \begin{equation}\begin{aligned}
-u   = a \frac{1}{B_z^0} \frac{\PD B_x^0}{\PD t} \left( \frac{y}{a} - \frac{\sinh(Ha \frac{y}{a})}{\sinh(Ha)} \right) \\
-B_x = \sqrt{\mu \sigma a^2 \M^2} \frac{1}{B_z^0} \frac{\PD B_x^0}{\PD t} \left( \frac{\cosh(Ha \frac{y}{a})}{\sinh(Ha)} - \frac{1}{\tanh(Ha)} \right) \\
-Ha = a B_z^0 \sqrt{\frac{\sigma}{\rho \nu}} \\
+B_x^1 = - \sqrt{\mu \sigma a^2 \M^2} \frac{1}{B_z^0} \frac{\PD B_x^0}{\PD t} \left( \frac{1}{\tanh(Ha)} -  \frac{\cosh \left(Ha \frac{y}{a} \right)}{\sinh(Ha)}\right), \\
+u   = -a \frac{1}{B_z^0} \frac{\PD B_x^0}{\PD t} \left( \frac{\sinh\left(Ha \frac{y}{a} \right)}{\sinh(Ha)} - \frac{y}{a} \right), \qquad
+Ha = a B_z^0 \sqrt{\frac{\sigma}{\rho \nu}}. \\
 \end{aligned} \end{equation}
 
 

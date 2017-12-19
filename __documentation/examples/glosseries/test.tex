@@ -1,0 +1,23 @@
+\documentclass{article}
+
+\usepackage{glossaries}
+
+\makeglossaries
+
+\newglossaryentry{lengthtree}%
+{%
+  name={\ensuremath{L_t}},
+  description={description here},
+  sort={L}
+}
+
+\begin{document}
+
+In line: \gls{lengthtree}. In math mode:
+\[
+  \gls{lengthtree}
+\]
+
+\printglossary[title={List of Symbols}]
+
+\end{document}

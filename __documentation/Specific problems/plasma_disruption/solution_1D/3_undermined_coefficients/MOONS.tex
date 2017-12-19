@@ -1,64 +1,9 @@
 \documentclass[11pt]{article}
-% \documentclass[3p,twocolumn,10pt]{elsarticle}
-\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
-\usepackage{epstopdf}
-\usepackage{amsmath}
-\usepackage{amssymb}
-\usepackage{hyperref}
-\usepackage{xspace}
-\usepackage{mathtools}
-\usepackage{tikz}
-\usepackage{epsfig}
-\usepackage{float}
-%\usepackage{natbib}
-\usepackage{subfigure}
-\usepackage{setspace}
-\usepackage{tabularx,ragged2e,booktabs,caption}
-
-\usepackage{xcolor}
-\usepackage{xspace}
-\usepackage{longtable}
-\usepackage{mathtools}
-\usepackage{natbib}
-\usepackage{setspace}
-\usepackage{ragged2e}
-\usepackage{etoolbox}
-\usepackage{geometry}
-
-\input{../../../../useful_commands.tex}
-
-\newcommand{\volume}{\mathop{\ooalign{\hfil$V$\hfil\cr\kern0.08em--\hfil\cr}}\nolimits}
-\newcommand{\figWidth}{0.45\textwidth}
-\newcommand{\figSuffix}{_png.png}
-\newcommand{\pushright}[1]{\ifmeasuring@#1\else\omit\hfill$\displaystyle#1$\fi\ignorespaces}
-\newcommand{\hfillMath}{\hskip \textwidth minus \textwidth}
-
-\setlength{\oddsidemargin}{0.1in}
-\setlength{\textwidth}{7.25in}
-
-\setlength{\topmargin}{-1in}     %\topmargin: gap above header
-\setlength{\headheight}{0in}     %\headheight: height of header
-\setlength{\topskip}{0in}        %\topskip: between header and text
-\setlength{\headsep}{0in}
-\setlength{\textheight}{692pt}   %\textheight: height of main text
-\setlength{\textwidth}{8in}    % \textwidth: width of text
-\setlength{\oddsidemargin}{-0.7in}  % \oddsidemargin: odd page left margin
-\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
-\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
-\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
-\setlength{\voffset}{0.5in}
-
-% Useful commands:
-
-% \hfill    aligns-right everything right of \hfill
+\input{../includes.tex}
 
 \begin{document}
 \doublespacing
-\title{Plasma Disruption 1D solution}
-\author{C. Kawczynski \\
-Department of Mechanical and Aerospace Engineering \\
-University of California Los Angeles, USA\\
-}
+\MOONSTITLE
 \maketitle
 
 \section{Transformed governing equations}

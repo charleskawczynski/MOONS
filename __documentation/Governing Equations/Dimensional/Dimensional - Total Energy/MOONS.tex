@@ -1,0 +1,100 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Dimensional total energy equation}
+Adding the thermal, kinetic and magnetic energy equations
+\begin{equation}
+	\rho C_p \left[ \frac{\PD T}{\PD t}
+	+ (\U \DOT \DEL) T \right]
+	= \DIV (k \DEL T)
+	+ \frac{1}{\sigma} \J^2
+	- \nu \DEL^2 E_K
+	+ \mu (\DEL \U) \DOT (\DEL \U)
+\end{equation}
+\begin{equation}
+	\frac{\PD E_K}{\PD t} +
+	(\U \DOT \DEL) E_K =
+	- \DIV (\U p)
+	+ \nu \DEL^2 E_K
+	- \mu (\DEL \U) \DOT (\DEL \U)
+	- (\U \DOT \DEL) E_M
+	+ \U \DOT \left[\B \DOT \DEL \left( \H \right) \right]
+\end{equation}
+\begin{equation}
+	\frac{\PD E_M}{\PD t} =
+	- \JSS
+	- \DIV \left(\E \CROSS \H \right)
+	+ (\U \DOT \DEL) E_M
+	- \U \DOT \left[(\B \DOT \DEL) \left( \H \right) \right]
+\end{equation}
+Magnetic + Kinetic
+\begin{equation}
+	\frac{\PD E_K}{\PD t}
+	+ \frac{\PD E_M}{\PD t}
+	+ (\U \DOT \DEL) E_K =
+	- \JSS
+	- \DIV \left(\E \CROSS \H \right)
+	- \DIV (\U p)
+	+ \nu \DEL^2 E_K
+	- \mu (\DEL \U) \DOT (\DEL \U)
+\end{equation}
+Assuming viscous losses are negligible, and since flow is isothermal, the Joule heating will balance kinetic energy diffusion, so we'll have
+\begin{equation}\begin{aligned}
+	\frac{\PD (E_K + E_M)}{\PD t}
+	+ (\U \DOT \DEL) E_K =
+	- \DIV \left(\E \CROSS \H \right)
+	- \DIV (\U p) \\
+	\JSS = \nu \DEL^2 E_K
+\end{aligned}\end{equation}
+At steady state, we have
+\begin{equation}\begin{aligned}
+	(\U \DOT \DEL) E_K =
+	- \DIV \left(\E \CROSS \H \right)
+	- \DIV (\U p) \\
+	\JSS = \nu \DEL^2 E_K
+\end{aligned}\end{equation}
+If we consider the magnetic energy equation in the vacuum domain, there is not motion, and no currents, so we have
+\begin{equation}
+	\frac{\PD E_M}{\PD t} =	- \DIV \left(\E \CROSS \H \right)
+\end{equation}
+which means, at steady state, the RHS is zero! Therefore we have
+\begin{equation}\begin{aligned}
+	(\U \DOT \DEL) E_K = - \DIV (\U p) \\
+	\JSS = \nu \DEL^2 E_K
+\end{aligned}\end{equation}
+Let's scale this by
+\begin{equation}\begin{aligned}
+	[\U] = U, \qquad
+	[\DEL] = 1/L, \qquad
+	[p] = \frac{1}{2} \rho U^2, \qquad
+	[\J] = \sigma_c U B
+\end{aligned}\end{equation}
+To get
+\begin{equation}\begin{aligned}
+	\frac{\rho U^3}{2L} (\U \DOT \DEL) ( \U \DOT \U ) =
+	- \frac{\rho U^3}{2L} \DIV (\U p) \\
+	(\U \DOT \DEL) ( \U \DOT \U ) =
+	- \DIV (\U p), \qquad
+\end{aligned}\end{equation}
+and
+\begin{equation}\begin{aligned}
+	\frac{\sigma_c^2 U^2 B^2}{\sigma_c} \JSS =
+	\frac{U^2}{L^2} \mu \DEL^2 \left( \frac{1}{2} \U \DOT \U \right) \\
+	\frac{\sigma_c B^2 L^2}{\mu} \JSS =
+	\DEL^2 \left( \frac{1}{2} \U \DOT \U \right) \\
+	Ha^2 \JSS =
+	\DEL^2 \left( \frac{1}{2} \U \DOT \U \right)
+\end{aligned}\end{equation}
+
+% According to the paper I was reading about how Hartmann number is equal to Reynolds times magnetic Reynolds, we have
+% \begin{equation}\begin{aligned}
+% 	Re Re_m \JSS = \DEL^2 \left( \frac{1}{2} \U \DOT \U \right) \\
+% 	\frac{\JSS}{\DEL^2 \left( \frac{1}{2} \U \DOT \U \right)} = \frac{(Re_m)^{-1}}{Re}
+% \end{aligned}\end{equation}
+
+\end{document}

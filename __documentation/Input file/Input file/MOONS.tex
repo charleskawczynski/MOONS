@@ -1,0 +1,78 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Input file}
+
+\begin{itemize}
+\item An input file may be developed to organize the many cases that MOONS will be used for. This document is a collection of thoughts and documentation on the input file.
+\item No geometry parameters are used for the input file since mesh generation is controlled purely in MOONS.
+\end{itemize}
+
+
+
+\section{Format}
+The format of the inputs will be as follows:
+
+name, value, description
+
+\section{Parameters}
+\subsection{Integers}
+
+\begin{tabular}{ | l | l | }
+\hline  \textbf{Variable name}  & \textbf{Description} \\
+\hline $\text{Nsteps}_{energy}$     & Number of step for energy equation       \\
+\hline $\text{Nsteps}_{momentum}$   & Number of step for momentum equation     \\
+\hline $\text{Nsteps}_{induction}$  & Number of step for induction equation    \\
+\hline $\text{nskip\_exportRaw}$           & of iterations btwn exporting raw solution  \\
+\hline $\text{nskip\_export}$              & of iterations btwn exporting post-processed solution  \\
+\hline $\text{nskip\_exportTransientFull}$ & of iterations btwn exporting transient solution (diff. output)  \\
+\hline $\text{nskip\_exportErrors}$        & of iterations btwn exporting errors  \\
+\hline $\text{nskip\_exportTransient}$     & of iterations btwn exporting transient data (f(t) data)  \\
+\hline $\text{nskip\_print}$               & of iterations btwn printing info  \\
+\hline $solveTMethod$                      & Method to solve for T \\
+\hline $solveUMethod$                      & Method to solve for $\mathbf{U}$ \\
+\hline $solveBMethod$                      & Method to solve for $\mathbf{B}$ \\
+\hline
+\end{tabular}
+
+\subsection{Double precision}
+\begin{tabular}{ | l | l | }
+\hline  \textbf{Variable name}  & \textbf{Description} \\
+\hline $\Delta t_{energy}$     & Time step for energy equation       \\
+\hline $\Delta t_{momentum}$   & Time step for momentum equation     \\
+\hline $\Delta t_{induction}$  & Time step for induction equation    \\
+\hline $Re$   & Reynolds number          \\
+\hline $Ha$   & Hartmann number          \\
+\hline $Re_m$ & Magnetic Reynolds number \\
+\hline $Gr$   & Grashof number           \\
+\hline $Pr$   & Prandtl number           \\
+\hline $Ec$   & Eckert number            \\
+\hline $Al$   & Alven number             \\
+\hline $Fr$   & Freude number            \\
+\hline
+\end{tabular}
+
+\subsection{Logicals}
+\begin{tabular}{ | l | l | }
+\hline  \textbf{Variable name}  & \textbf{Description} \\
+\hline $addJCrossB$         & Include $\frac{Ha^2}{Re} \mathbf{j}\times \mathbf{B}$ in momentum equation \\
+\hline $addBuoyancy$        & Include $\frac{Gr}{Re^2} T \mathbf{g} $ in momentum equation               \\
+\hline $addGravity$         & Include $\frac{1}{Fr^2} \mathbf{g} $ in momentum equation                  \\
+\hline $solveEnergy$        & Solve the Energy equation                                                  \\
+\hline $solveMomentum$      & Solve the Momentum equation                                                \\
+\hline $solveInduction$     & Solve the Induction equation                                               \\
+\hline $exportGrids$        & Export grids before simulation starts                                      \\
+\hline $exportRawICs$       & Export raw initial conditions before simulation starts                     \\
+\hline $exportICs$          & Export post-processed initial conditions before simulation starts          \\
+\hline $stopAfterExportICs$ & Stop simulation after initial exporting                                    \\
+\hline
+\end{tabular}
+
+\section{Default Values}
+
+\end{document}

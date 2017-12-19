@@ -1,61 +1,9 @@
 \documentclass[11pt]{article}
-
-\usepackage{hyperref} % Do not load to make boxes absent
-\usepackage{amsmath}
-\usepackage{tabularx, multirow, booktabs}
-\usepackage{graphicx}
-\usepackage{caption}
-\usepackage{subcaption}
-\usepackage{siunitx}
-\usepackage{float}
-\usepackage{esint}
-\usepackage{xcolor}
-\usepackage{xspace}
-\usepackage{longtable}
-\usepackage{mathtools}
-\usepackage{natbib}
-\usepackage{setspace}
-\usepackage{ragged2e}
-\usepackage{etoolbox}
-\usepackage{geometry}
-\usepackage{numprint}
-
-\newcommand{\B}{\mathbf{B}}
-\newcommand{\C}{\mathbf{C}}
-\newcommand{\U}{\mathbf{u}}
-\renewcommand{\SI}{\sigma}
-\newcommand{\M}{\mu}
-
-\newcommand{\A}{\mathbf{A}}
-\newcommand{\PD}{\partial}
-\newcommand{\MAC}{\mathcal}
-\newcommand{\MC}{\multicolumn}
-\newcommand{\MR}{\multirow}
-\newcommand{\BM}{\frac{\B}{\mu}}
-\newcommand{\J}{\mathbf{j}}
-\newcommand{\E}{\mathbf{E}}
-\newcommand{\N}{\mathbf{n}}
-\newcommand{\JS}{\frac{\J}{\sigma}}
-\newcommand{\JoS}{\frac{\J^1}{\sigma}}
-\newcommand{\JSS}{\frac{\J^2}{\sigma}}
-\newcommand{\SII}{\sigma^{-1}}
-\newcommand{\MO}{\overline{\mu}}
-\newcommand{\SO}{\overline{\sigma}}
-\newcommand{\DOT}{\text{\textbullet}}
-
-\newcommand{\volume}{\mathop{\ooalign{\hfil$V$\hfil\cr\kern0.08em--\hfil\cr}}\nolimits}
-\newcommand{\figWidth}{0.45\textwidth}
-\newcommand{\figSuffix}{_png.png}
-\newcommand{\pushright}[1]{\ifmeasuring@#1\else\omit\hfill$\displaystyle#1$\fi\ignorespaces}
-\newcommand{\hfillMath}{\hskip \textwidth minus \textwidth}
+\input{../includes.tex}
 
 \begin{document}
 \doublespacing
-\title{Magnetohydrodynamic Object-Oriented Numerical Solver (MOONS)}
-\author{C. Kawczynski \\
-Department of Mechanical and Aerospace Engineering \\
-University of California Los Angeles, USA\\
-}
+\MOONSTITLE
 \maketitle
 
 \section{Useful table}

@@ -1,0 +1,147 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+\usepackage[a4paper,margin=1in,landscape]{geometry} % For local use
+
+\newcommand{\ReInv}{Re^{-1}}
+\newcommand{\RemInv}{Re_m^{-1}}
+\newcommand{\Al}{N Re_m^{-1}}
+\newcommand{\Interaction}{N}
+
+\begin{document}
+\doublespacing
+% \MOONSTITLE
+% \maketitle
+
+\section{Desired Equations to Solve}
+\subsection{Continuous Form}
+\begin{equation}\begin{aligned}
+  \PD_t \U + (\U \DOT \DEL) \U
+  = - \DEL p + \ReInv \DEL^2 \U + \Al
+  (\CURL \B) \CROSS \B, \\
+  \PD_t \B + \RemInv \DEL \CROSS ( \SO^{-1} \DEL \CROSS \B ) = \DEL \CROSS \U \CROSS \B,
+\end{aligned}\end{equation}
+
+\subsection{Discrete Form}
+\begin{equation}\begin{aligned}
+\frac{\U^{n+1}-\U^n}{\Delta t} - \theta_u \ReInv L\U^{n+1} = - G p^{n+1} + (1-\theta_u) \ReInv L\U^n + \R^n, \qquad \R^n = - (\U^n \DOT \DEL) \U^n + \Al (C\B^n) \CROSS \B^n, \\
+ D \U^{n+1} = 0, \\
+\end{aligned}\end{equation}
+\begin{equation}\begin{aligned}
+\frac{\B^{n+1}-\B^n}{\Delta t} + \theta_B \RemInv C (\left[ \SO^{-1} C\B^{n+1}) \right] = - G\correctB^{n+1} - (1-\theta_B) \RemInv C (\left[ \SO^{-1} C\B^n) \right] + \T^n, \qquad \T^n = C (\U^n \CROSS \B^n), \\
+ D \B^{n+1} = 0. \\
+\end{aligned}\end{equation}
+
+\newpage
+\subsection{Generic Discrete Form}
+\begin{equation}\begin{aligned}
+\frac{\X^{n+1}-\X^n}{\Delta t} - \theta L\X^{n+1} = - G \zeta^{n+1} + (1-\theta) L\X^n + \F^n, \qquad \F^n = f(\X^n,\Y^n), \\
+ D \X^{n+1} = 0, \\
+\frac{\Y^{n+1}-\Y^n}{\Delta t} - \theta L\Y^{n+1} = - G \xi^{n+1} + (1-\theta) L\Y^n + \R^n, \qquad \R^n = f(\X^n,\Y^n), \\
+ D \Y^{n+1} = 0, \\
+\end{aligned}\end{equation}
+\subsection{Generic Solution Procedure}
+\begin{equation}\begin{aligned}
+&\text{1) solve} \qquad \frac{\hat{\X}-\X^n}{\Delta t} - \theta L\hat{\X} = (1-\theta) L\X^n + \F^n, \qquad \F^n = f(\X^n,\Y^n), \qquad \F^n \text{ cannot be treated implicitly}\\
+&\text{2) solve} \qquad L \zeta^{n+1} = \frac{1}{\Delta t} D \hat{\X} \\
+&\text{3) correct} \qquad \X^{n+1} = \hat{\X} - \Delta t G \zeta^{n+1} \\
+&\text{4) solve} \qquad \frac{\hat{\Y}-\Y^n}{\Delta t} - \theta L\hat{\Y} = (1-\theta) L\Y^n + \R^n, \qquad \R^n = f(\Y^n,\X^n), \qquad \R^n \text{ cannot be treated implicitly} \\
+&\text{5) solve} \qquad L \xi^{n+1} = \frac{1}{\Delta t} D \hat{\Y} \\
+&\text{6) correct} \qquad \Y^{n+1} = \hat{\Y} - \Delta t G \xi^{n+1} \\
+\end{aligned}\end{equation}
+Observations:
+
+1) $\F^n,\R^n$ cannot be treated implicitly because the solver is segregated, which provides the advantage of using powerful numerical methods (CG).
+
+2) According to Equation 2.5: The first stage is computed using the zeroth stage variable in the non-linear term. And, the second stage is computed using the first stage variable in the non-linear term. The problem with this is: the first stage variable is not accessible for the Lorentz term, because it requires the solution of the induction equation. I'm concerned with using source terms, computed from vectors that do not satisfy the divergence-free condition.
+
+3) On the next page, $f(t_n+\frac{\Delta}{2}, u_n + \frac{\Delta}{2} k_1)$ cannot be calculated because $u_n + \frac{\Delta}{2} k_1$ requires divergence correction, which completes a full step, not a sub-step, and the resulting algorithm is simply the same thing that I'm doing.
+
+\newpage
+
+\subsection{Potential Procedure 1 - solve all governing, then correct}
+\begin{equation}\begin{aligned}
+&\text{1) solve for }\hat{\X}^{1} \qquad \frac{\hat{\X}^{1}-\X^{0}}{\Delta t} - \theta L\hat{\X}^{1} = (1-\theta) L\X^{0} + \F^0, \qquad \F^0 = f(\X^0,\Y^0), \qquad \F^n \text{ cannot be treated implicitly}\\
+&\text{2) solve for }\hat{\Y}^{1} \qquad \frac{\hat{\Y}^{1}-\Y^{0}}{\Delta t} - \theta L\hat{\Y}^{1} = (1-\theta) L\Y^{0} + \R^0, \qquad \R^0 = f(\Y^0,\X^0), \qquad \R^n \text{ cannot be treated implicitly} \\
+&\text{3) solve for }\hat{\X}^{2} \qquad \frac{\hat{\X}^{2}-\X^{1}}{\Delta t} - \theta L\hat{\X}^{2} = (1-\theta) L\X^{1} + \F^1, \qquad \F^1 = f(\X^1,\Y^1), \qquad \F^n \text{ cannot be treated implicitly}\\
+&\text{4) solve for }\hat{\Y}^{2} \qquad \frac{\hat{\Y}^{2}-\Y^{1}}{\Delta t} - \theta L\hat{\Y}^{2} = (1-\theta) L\Y^{1} + \R^1, \qquad \R^1 = f(\Y^1,\X^1), \qquad \R^n \text{ cannot be treated implicitly} \\
+&\text{5) solve for }\hat{\X}^{3} \qquad \frac{\hat{\X}^{3}-\X^{2}}{\Delta t} - \theta L\hat{\X}^{3} = (1-\theta) L\X^{2} + \F^2, \qquad \F^2 = f(\X^2,\Y^2), \qquad \F^n \text{ cannot be treated implicitly}\\
+&\text{6) solve for }\hat{\Y}^{3} \qquad \frac{\hat{\Y}^{3}-\Y^{2}}{\Delta t} - \theta L\hat{\Y}^{3} = (1-\theta) L\Y^{2} + \R^2, \qquad \R^2 = f(\Y^2,\X^2), \qquad \R^n \text{ cannot be treated implicitly} \\
+\end{aligned}\end{equation}
+Already, we can see in step 3 that we must solve for $\X^{1}$, which must satisfy the divergence-free constraint, but we have not performed any correction yet. So this algorithm cannot work.
+
+\subsection{Generic Solution Procedure 2 - solve, correct, solve, correct, switch system...}
+\begin{equation}\begin{aligned}
+&\text{1) solve for }\hat{\X}^1 \qquad \frac{\hat{\X}^1-\X^0}{\Delta t} - \theta L\hat{\X}^1 = (1-\theta) L\X^0 + \F^0, \qquad \F^0 = f(\X^0,\Y^0), \qquad \F^0 \text{ cannot be treated implicitly}\\
+&\text{2) solve for } \zeta^{1} \qquad L \zeta^{1} = \frac{1}{\Delta t} D \hat{\X}^1 \\
+&\text{3) solve for } \X^{1}    \qquad \X^{1} = \hat{\X}^1 - \Delta t G \zeta^{1} \\
+&\text{4) solve for }\hat{\X}^2 \qquad \frac{\hat{\X}^2-\X^1}{\Delta t} - \theta L\hat{\X}^2 = (1-\theta) L\X^1 + \F^1, \qquad \F^1 = f(\X^1,\Y^1), \qquad \F^1 \text{ cannot be treated implicitly}\\
+&\text{5) solve for } \zeta^{2} \qquad L \zeta^{2} = \frac{1}{\Delta t} D \hat{\X}^2 \\
+&\text{6) solve for } \X^{2}    \qquad \X^{2} = \hat{\X}^2 - \Delta t G \zeta^{2} \\
+&\text{7) solve for }\hat{\X}^3 \qquad \frac{\hat{\X}^3-\X^2}{\Delta t} - \theta L\hat{\X}^3 = (1-\theta) L\X^2 + \F^2, \qquad \F^2 = f(\X^2,\Y^2), \qquad \F^2 \text{ cannot be treated implicitly}\\
+&\text{8) solve for } \zeta^{3} \qquad L \zeta^{3} = \frac{1}{\Delta t} D \hat{\X}^3 \\
+&\text{9) solve for } \X^{3}    \qquad \X^{3} = \hat{\X}^3 - \Delta t G \zeta^{3} \\
+\end{aligned}\end{equation}
+Already, we can see in step 4 that $\Y^1$ is needed, but we have not solved the other coupled system yet. So this algorithm cannot work.
+
+\subsection{Generic Solution Procedure 3 - solve, correct, switch system, solve, correct...}
+\footnotesize
+\begin{equation}\begin{aligned}
+&\text{1)  solve} \qquad \frac{\hat{\X}^{1}-\X^0}{\Delta t} - \theta L\hat{\X}^1 = (1-\theta) L\X^0 + \F^0, \qquad \F^0 = f(\X^0,\Y^0), \qquad \F^0 \text{ cannot be treated implicitly}\\
+&\text{2)  solve} \qquad L \zeta^{1} = \frac{1}{\Delta t} D \hat{\X}^1 \\
+&\text{3)  solve} \qquad \X^{1} = \hat{\X}^1 - \Delta t G \zeta^{1} \\
+&\text{4)  solve} \qquad \frac{\hat{\Y}^{1}-\Y^0}{\Delta t} - \theta L\hat{\Y}^1 = (1-\theta) L\Y^0 + \R^0, \qquad \R^0 = f(\Y^0,\X^0), \qquad \R^n \text{ cannot be treated implicitly} \\
+&\text{5)  solve} \qquad L \xi^{1} = \frac{1}{\Delta t} D \hat{\Y}^1 \\
+&\text{6)  solve} \qquad \Y^{1} = \hat{\Y}^1 - \Delta t G \xi^{1} \\
+&\text{7)  solve} \qquad \frac{\hat{\X}^{2}-\X^1}{\Delta t} - \theta L\hat{\X}^2 = (1-\theta) L\X^1 + \F^1, \qquad \F^1 = f(\X^1,\Y^1), \qquad \F^1 \text{ cannot be treated implicitly}\\
+&\text{8)  solve} \qquad L \zeta^{2} = \frac{1}{\Delta t} D \hat{\X}^2 \\
+&\text{9)  solve} \qquad \X^{2} = \hat{\X}^2 - \Delta t G \zeta^{2} \\
+&\text{10) solve} \qquad \frac{\hat{\Y}^{1}-\Y^0}{\Delta t} - \theta L\hat{\Y}^1 = (1-\theta) L\Y^0 + \R^0, \qquad \R^0 = f(\Y^0,\X^0), \qquad \R^n \text{ cannot be treated implicitly} \\
+&\text{11) solve} \qquad L \xi^{1} = \frac{1}{\Delta t} D \hat{\Y}^1 \\
+&\text{12) solve} \qquad \Y^{1} = \hat{\Y}^1 - \Delta t G \xi^{1} \\
+&\text{13) solve} \qquad \Y^{1} = \hat{\Y}^1 - \Delta t G \xi^{1} \\
+&\text{14) solve} \qquad \frac{\hat{\X}^{3}-\X^2}{\Delta t} - \theta L\hat{\X}^3 = (1-\theta) L\X^2 + \F^2, \qquad \F^2 = f(\X^2,\Y^2), \qquad \F^2 \text{ cannot be treated implicitly}\\
+&\text{15) solve} \qquad L \zeta^{3} = \frac{1}{\Delta t} D \hat{\X}^3 \\
+&\text{16) solve} \qquad \X^{3} = \hat{\X}^3 - \Delta t G \zeta^{3} \\
+&\text{17) solve} \qquad \frac{\hat{\Y}^{1}-\Y^0}{\Delta t} - \theta L\hat{\Y}^1 = (1-\theta) L\Y^0 + \R^0, \qquad \R^0 = f(\Y^0,\X^0), \qquad \R^n \text{ cannot be treated implicitly} \\
+&\text{18) solve} \qquad L \xi^{1} = \frac{1}{\Delta t} D \hat{\Y}^1 \\
+&\text{19) solve} \qquad \Y^{1} = \hat{\Y}^1 - \Delta t G \xi^{1} \\
+\end{aligned}\end{equation}
+\normalsize
+This solution seems to work. But the problem is: this is exactly what I'm currently doing and it is the same as solving without RK in the first place \textit{but} with variable time-stepping since the time steps are unequal and scheduled. I can do this, but I can't imagine, from a numerical analysis point of view, that it will have better accuracy, nor stability properties.
+
+\newpage
+
+\section{RK4 method (wikipedia)}
+The governing equations are
+\begin{equation}\begin{aligned}
+  \PD_t u = f(t,u), \qquad u(t_0) = u_0 \\
+\end{aligned}\end{equation}
+The formal RK4 method can be outlined as
+\begin{equation}\begin{aligned}
+  u_{n+1} = u_n + \frac{\Delta t}{6} (k_1 + 2 k_2 + 2k_3 + k_4) \\
+  t_{n+1} = t_n + \Delta t \\
+  k_1 = f(t_n,u_n) \\
+  k_2 = f\left(t_n + \frac{\Delta t}{2} , u_n + \frac{\Delta t}{2} k_1 \right) \\
+  k_3 = f\left(t_n + \frac{\Delta t}{2} , u_n + \frac{\Delta t}{2} k_3 \right) \\
+  k_4 = f\left(t_n + \Delta t , u_n + \Delta t k_3 \right) \\
+\end{aligned}\end{equation}
+
+\newpage
+\subsection{Multiple Poisson solves (simpler formulation but more expensive)}
+Using $k+1$ instead of $k$, $k$ instead of $k-1$ etc., equation 2.5 is
+\begin{equation}\begin{aligned}
+\frac{\hat{\U}^{k+1}-\U^k}{\Delta t} = (\alpha_k+\beta_k) \MAC L \U^k + \beta_k \MAC L (\hat{\U}^{k+1} - \U^k)  + \gamma_k \F^k + \zeta_k \F^{k-1}  \\
+\end{aligned} \end{equation}
+Here, $\F^k = - \DEL \DOT (\U^k {\U^k}^T) + \frac{Ha^2}{Re} \J^k \CROSS \B^k$ and this solution is followed by the standard projection correction.
+And coefficients are
+
+\begin{table}[H]\centering\begin{adjustbox}{max width=\textwidth}\begin{tabular}{| c | c | c | c | c |}
+\hline
+Number         & \MR{2}{*}{$\gamma_n$} & \MR{2}{*}{$\zeta_n$}  & \MR{2}{*}{$\alpha_n$}   & \MR{2}{*}{$\beta_n$} \\
+of Stages      &                       &                       &                         &                      \\ \hline
+\MR{3}{*}{3}   &      8/15             &           0           &          4/15           &          4/15        \\
+               &      5/12             &          -17/60       &          1/15           &          1/15        \\
+               &      3/4              &          -5/12        &          1/6            &          1/6         \\ \hline
+\end{tabular} \end{adjustbox} \caption{Original coefficients from Le and Moin 1991} \end{table}
+
+\end{document}

@@ -9,6 +9,12 @@ import shutil
 # os.path.dirname(os.path.realpath(__file__))
 # os.getcwd()
 
+def flatten_list(l):
+	return [item for sublist in l for item in sublist]
+
+def flatten_list_with_str(l):
+	return lambda l: [item for sublist in l for item in sublist]
+
 def gen_files(dir, pattern):
 	for dirname, subdirs, files in os.walk(dir):
 		for f in files:

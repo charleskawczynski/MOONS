@@ -1,0 +1,138 @@
+\documentclass[11pt]{article}
+% \documentclass[11pt,landscape]{article}
+\input{../includes.tex}
+
+\input{\rootdir/includes/margins/narrow_margins_portrait.tex} % For local use
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Decoupling of plasma-disruption governing equations}
+In this document, decouple the plasma disruption governing equations
+\begin{equation}\begin{aligned}
+\PD_t u                 = -\frac{1}{\rho}\PD_x p+ \nu u'' + \frac{1}{\rho \M} B_z^0 B_x' \\
+\PD_t B_x + \PD_t B_x^0 = \frac{1}{\sigma \M} B_x'' + B_z^0 u' \\
+\end{aligned} \end{equation}
+Let
+\begin{equation}\begin{aligned}
+G = \frac{1}{\rho}\PD_x p, \qquad
+H = \nu, \qquad
+A = \frac{1}{\rho \M} B_z^0, \qquad
+C = \PD_t B_x^0, \qquad
+K = \frac{1}{\sigma \M}, \qquad
+D = B_z^0, \qquad
+\end{aligned} \end{equation}
+Then we have
+\begin{equation}\begin{aligned}
+\PD_t u                 = -G+ H u'' + A B_x' \\
+\PD_t B_x + C = K B_x'' + D u' \\
+\end{aligned} \end{equation}
+
+\section{Variable seperation transformation}
+We may apply the transformation
+\begin{equation}\begin{aligned}
+X = u + E B_x \\
+Y = u - E B_x \\
+\end{aligned} \end{equation}
+
+\subsection{Transformation for X}
+We have
+\begin{equation}\begin{aligned}
+\PD_t (X - E B_x)        = -G+ H (X'' - E B_x'') + A \PD_z B_x \\
+\PD_t B_x + C = K B_x'' + D (X' - E B_x') \\
+\end{aligned} \end{equation}
+Distributing
+\begin{equation}\begin{aligned}
+\PD_t X - E \PD_t B_x = -G+ H X'' - H E B_x'' + A B_x' \\
+\PD_t B_x + C = K B_x'' + D \PD_z X - D E B_x' \\
+\end{aligned} \end{equation}
+Combining with factor $F$ for second equation
+\begin{equation}\begin{aligned}
+\PD_t X - E \PD_t B_x + F \PD_t B_x + FC = -G+ H X'' - H E B_x'' + A B_x' + F K B_x'' + DF X' - D EF B_x'\\
+\end{aligned} \end{equation}
+To ensure $B_x$ dissappears, we must enforce
+\begin{equation}\begin{aligned}
+F = E, \qquad
+FK = HE, \qquad
+FDE = A, \qquad \\
+FK = HF, \qquad
+FDF = A, \qquad \\
+K = H, \qquad
+F = \sqrt{\frac{A}{D}}, \qquad \\
+\end{aligned} \end{equation}
+So we have
+\begin{equation}\begin{aligned}
+\PD_t X + FC = -G+ H X'' + DF X'\\
+\end{aligned} \end{equation}
+\subsection{Transformation for Y}
+Reminder
+\begin{equation}\begin{aligned}
+\PD_t u                 = -G+ H u'' + A B_x' \\
+\PD_t B_x + C = K B_x'' + D u' \\
+\end{aligned} \end{equation}
+We have
+\begin{equation}\begin{aligned}
+\PD_t (Y + E B_x)        = -G+ H (Y'' + E B_x'') + A \PD_z B_x \\
+\PD_t B_x + C = K B_x'' + D (Y' + E B_x') \\
+\end{aligned} \end{equation}
+Distributing
+\begin{equation}\begin{aligned}
+\PD_t Y + E \PD_t B_x = -G+ H Y'' + H E B_x'' + A B_x' \\
+\PD_t B_x + C = K B_x'' + D \PD_z Y + D E B_x' \\
+\end{aligned} \end{equation}
+Combining with factor $-F$ for second equation
+\begin{equation}\begin{aligned}
+\PD_t Y + E \PD_t B_x - F \PD_t B_x - F C = -G+ H Y'' + H E B_x'' + A B_x' - F K B_x'' - D F Y' - D E F B_x'\\
+\end{aligned} \end{equation}
+To ensure $B_x$ dissappears, we must enforce
+\begin{equation}\begin{aligned}
+F = E, \qquad
+FK = HE, \qquad
+FDE = A, \qquad \\
+FK = HF, \qquad
+FDF = A, \qquad \\
+K = H, \qquad
+F = \sqrt{\frac{A}{D}}, \qquad \\
+\end{aligned} \end{equation}
+So we have
+\begin{equation}\begin{aligned}
+\PD_t Y - FC = -G+ H Y'' - DF Y'\\
+\end{aligned} \end{equation}
+
+\section{Transformation summary}
+Our decoupled equations are
+\begin{equation}\begin{aligned}
+\PD_t X + EC = -G+ H X'' + DE X'\\
+\PD_t Y - EC = -G+ H Y'' - DE Y'\\
+\end{aligned} \end{equation}
+Or
+\begin{equation}\begin{aligned}
+\PD_t X - H X'' - DE X'  = (- EC -G)\\
+\PD_t Y - H Y'' + DE Y'  = (+ EC -G)\\
+\end{aligned} \end{equation}
+
+With transformations
+\begin{equation}\begin{aligned}
+X = u + E B_x \\
+Y = u - E B_x \\
+E = \sqrt{\frac{A}{D}} \\
+\end{aligned} \end{equation}
+And inverse transformations
+\begin{equation}\begin{aligned}
+u   = \frac{1}{2} \left( X + Y \right) \\
+B_x = \frac{1}{2E} \left( X - Y \right) \\
+E = \sqrt{\frac{A}{D}} \\
+\end{aligned} \end{equation}
+\begin{equation}\begin{aligned}
+G = \frac{1}{\rho}\PD_x p, \qquad
+H = \nu, \qquad
+A = \frac{1}{\rho \M} B_z^0, \qquad
+C = \PD_t B_x^0, \qquad
+K = \frac{1}{\sigma \M}, \qquad
+D = B_z^0, \qquad
+\end{aligned} \end{equation}
+
+
+\end{document}

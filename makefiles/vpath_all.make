@@ -1,0 +1,3 @@
+include vpath_pre_generated.make
+include vpath_generated.make
+include vpath_handwritten.make

@@ -1,0 +1,24 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Dimensional thermal energy equation}
+This is not a derivation. This document simply states the dimensional form of the thermal energy equation. The derivation of the dimensionless thermal energy equation should begin from this form.
+\begin{equation}
+	\boxed{
+	\rho C_p \left[ \frac{\PD T}{\PD t}
+	+ (\U \DOT \DEL) T \right]
+	= \DIV (k \DEL T)
+	+ \frac{1}{\sigma} \J^2
+	- \frac{1}{2} \mu \DEL^2 (\U \DOT \U)
+	+ \mu (\DEL \U) \DOT (\DEL \U)
+	+ \dot{Q}
+	}
+\end{equation}
+The viscous dissipation term can be written is several different ways. We choose to decompose into kinetic energy diffusion and viscous dissipation. The derivation is in the kinetic energy equation. Note the sign difference (source vs. sink).
+
+\end{document}

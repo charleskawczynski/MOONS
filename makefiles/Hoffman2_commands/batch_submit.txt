@@ -1,0 +1,35 @@
+cd /u/home/c/ckawczyn/project-morley/MOONS_out/M0
+chmod u+x submit.sh
+qsub submit.sh
+
+cd /u/home/c/ckawczyn/project-morley/MOONS_out/M1
+chmod u+x submit.sh
+qsub submit.sh
+cd /u/home/c/ckawczyn/project-morley/MOONS_out/M2
+chmod u+x submit.sh
+qsub submit.sh
+cd /u/home/c/ckawczyn/project-morley/MOONS_out/M3
+chmod u+x submit.sh
+qsub submit.sh
+cd /u/home/c/ckawczyn/project-morley/MOONS_out/M4
+chmod u+x submit.sh
+qsub submit.sh
+cd /u/home/c/ckawczyn/project-morley/MOONS_out/M5
+chmod u+x submit.sh
+qsub submit.sh
+cd /u/home/c/ckawczyn/project-morley/MOONS_out/M6
+chmod u+x submit.sh
+qsub submit.sh
+cd /u/home/c/ckawczyn/project-morley/MOONS_out/M7
+chmod u+x submit.sh
+qsub submit.sh
+cd /u/home/c/ckawczyn/project-morley/MOONS_out/M8
+chmod u+x submit.sh
+qsub submit.sh
+cd /u/home/c/ckawczyn/project-morley/MOONS_out/M9
+chmod u+x submit.sh
+qsub submit.sh
+cd /u/home/c/ckawczyn/project-morley/MOONS_out/M10
+chmod u+x submit.sh
+qsub submit.sh
+

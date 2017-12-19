@@ -1,0 +1,158 @@
+\documentclass[landscape,11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+% \maketitle
+
+\section{Expansion of Lorentz force in Rm}
+Non-dimensionalizing the NS equation with the ratio of the characteristic velocity and the ratio of the length scale to advective time yields the following coefficient in front of each term in the momentum equation
+
+\begin{equation}
+	\frac{L_c}{\rho_c U_c^2}
+\end{equation}
+
+This term, in front of the $\J \CROSS \B$ force can result in several different forms starting from
+
+\begin{equation}
+	 \frac{L_c}{\rho_c U_c^2} \J \CROSS \frac{\B}{\mu}
+\end{equation}
+
+\section{Equal Treatment Non-Dimensionalization}
+Non-dimensionalizing the induced and applied magnetic fields by
+\begin{equation}
+	\DEL^* = L_c \DEL \qquad
+	\mu^* = \mu / \mu_c \qquad
+	\B^* = \B/B_c
+\end{equation}
+Yields
+\begin{equation}
+	 \frac{L_c}{\rho_c U_c^2} \J \CROSS \B
+	 =
+	 \frac{L_c}{\rho_c U_c^2} \left( \CURL \frac{\B}{\mu} \right) \CROSS \B
+	 =
+	\frac{B_c^2}{\mu_c \rho_c U_c^2} \left( \DEL^* \CROSS \frac{\B^*}{\mu^*} \right) \CROSS \B^*
+	 =
+	Al \left( \DEL^* \CROSS \frac{\B^*}{\mu^*} \right) \CROSS \B^*
+\end{equation}
+Therefore we have
+\begin{equation}
+	\boxed{
+	 \frac{L_c}{\rho_c U_c^2} \J \CROSS \B
+	 =
+	Al \left( \CURL \frac{\B^*}{\mu^*} \right) \CROSS \B^*
+	}
+\end{equation}
+
+Noting that
+\begin{equation}
+	Al Re_m = \frac{Ha^2}{Re} \qquad
+	Al Re_m^2 = \frac{Ha^2 Re_m}{Re} \qquad
+\end{equation}
+
+\begin{equation}
+	\boxed{
+	 \frac{L_c}{\rho_c U_c^2} \J \CROSS \B
+	 =
+	\frac{Ha^2}{Re Re_m} \left( \CURL \frac{\B^*}{\mu^*} \right) \CROSS \B^*
+	}
+\end{equation}
+
+\section{Non-Dimensionalization by Orders of Rem}
+Non-dimensionalizing by
+\begin{equation}
+	\DEL^* = L_c \DEL \qquad
+	\mu^* = \mu / \mu_c \qquad
+	{\B^{i}}^* = \B^{i}/(Re_m B_c^0) \qquad
+	{\B^0}^* = \B^0/B_c^0
+\end{equation}
+Yields
+
+Looking at the $\J \CROSS \B$ isolated from the coefficients, we have
+
+\begin{equation}
+	\J \CROSS \B
+	=
+	\left( \CURL \frac{\B^{i}+\B^0}{\mu} \right) \CROSS (\B^{i}+\B^0)
+\end{equation}
+\begin{equation}
+	=
+	\underbrace{\left( \CURL \frac{\B^{i}}{\mu} \right) \CROSS \B^0}_
+	{\text{Low}\ Re_m}
+	+
+	\underbrace{\left( \CURL \frac{\B^{i}}{\mu} \right) \CROSS \B^{i}}_
+	{\text{Finite}\ Re_m}
+	+
+	\underbrace{\left( \CURL \frac{\B^0}{\mu} \right) \CROSS \B^0}_
+	{\substack{\J\ \text{from non-uniform}\ \ \B^0 (\text{low}\ Re_m)}}
+	+
+	\underbrace{\left( \CURL \frac{\B^0}{\mu} \right) \CROSS \B^{i}}_
+	{\substack{\J \ \text{from non-uniform} \ \B^0 \ (\text{finite}\ Re_m)}}
+\end{equation}
+
+\begin{equation}
+	=
+	\frac{{B_c^0}^2}{L_c \mu_c}
+	\left\{
+	Re_m \left( \DEL^* \CROSS \frac{{\B^{i}}^*}{\mu^*} \right) \CROSS {\B^0}^*
+	+
+	Re_m^2 \left( \DEL^* \CROSS \frac{{\B^{i}}^*}{\mu^*} \right) \CROSS {\B^{i}}^*
+	+
+	\left( \DEL^* \CROSS \frac{{\B^0}^*}{\mu^*} \right) \CROSS {\B^0}^*
+	+
+	Re_m \left( \DEL^* \CROSS \frac{{\B^0}^*}{\mu^*} \right) \CROSS {\B^{i}}^*
+	\right\}
+\end{equation}
+
+Therefore we have
+\begin{multline}
+	 \frac{L_c}{\rho_c U_c^2} \J \CROSS \B
+	 = \
+	 Al
+	\left\{
+	Re_m \left( \DEL^* \CROSS \frac{{\B^{i}}^*}{\mu^*} \right) \CROSS {\B^0}^*
+	+
+	Re_m^2 \left( \DEL^* \CROSS \frac{{\B^{i}}^*}{\mu^*} \right) \CROSS {\B^{i}}^*
+	+
+	\left( \DEL^* \CROSS \frac{{\B^0}^*}{\mu^*} \right) \CROSS {\B^0}^*
+	+
+	Re_m \left( \DEL^* \CROSS \frac{{\B^0}^*}{\mu^*} \right) \CROSS {\B^{i}}^*
+	\right\}
+\end{multline}
+
+Converting the Alfven to Hartmann,Reynolds and Magnetic Reynolds we have
+\begin{multline}
+	 \frac{L_c}{\rho_c U_c^2} \J \CROSS \B
+	 = \
+	 \frac{Ha^2}{Re}
+	\left\{
+	\left( \DEL^* \CROSS \frac{{\B^{i}}^*}{\mu^*} \right) \CROSS {\B^0}^*
+	+
+	Re_m \left( \DEL^* \CROSS \frac{{\B^{i}}^*}{\mu^*} \right) \CROSS {\B^{i}}^*
+	+
+	\frac{1}{Re_m} \left( \DEL^* \CROSS \frac{{\B^0}^*}{\mu^*} \right) \CROSS {\B^0}^*
+	+
+	\left( \DEL^* \CROSS \frac{{\B^0}^*}{\mu^*} \right) \CROSS {\B^{i}}^*
+	\right\}
+\end{multline}
+Note that in the case of $curl(\B^0) = 0$, the last two terms do not exist and we simply have
+\begin{equation}
+	 \frac{L_c}{\rho_c U_c^2} \J \CROSS \B
+	 = \
+	 \frac{Ha^2}{Re}
+	\left\{
+	\left( \DEL^* \CROSS \frac{{\B^{i}}^*}{\mu^*} \right) \CROSS {\B^0}^*
+	+
+	Re_m \left( \DEL^* \CROSS \frac{{\B^{i}}^*}{\mu^*} \right) \CROSS {\B^{i}}^*
+	\right\}
+\end{equation}
+Or
+\begin{equation}
+	 \frac{L_c}{\rho_c U_c^2} \J \CROSS \B
+	 = \
+	 \frac{Ha^2}{Re}
+	\left( \DEL^* \CROSS \frac{{\B^{i}}^*}{\mu^*} \right) \CROSS ({\B^0}^*+Re_m {\B^{i}}^*)
+\end{equation}
+
+\end{document}

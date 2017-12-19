@@ -1,0 +1,2 @@
+image = pdb.file_eps_load(filename, raw_filename)
+image = pdb.file_eps_load(filename, raw_filename)

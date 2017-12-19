@@ -1,0 +1,32 @@
+Dr Mingjiu Ni
+mjni@ucas.ac.cn
+
+Hi Dr Mingjiu Ni,
+
+This is Charlie, from the UCLA fusion group. I was hoping to see if we could schedule a time to have a meeting over the phone to discuss some of the details of two of your papers. I recently finished my prospectus, and one of the professors (John Kim) made a suggestion that I am struggling with.
+
+And the most relevant papers I found, about the suggestion that Professor Kim made, was two of your papers, hence why I am reaching out to you.
+
+Please let me know if and when we can schedule a meeting over the phone at your earliest convenience.
+
+I appreciate your time.
+
+Charlies Kawczynski
+
+PhD Student @ UCLA, MAE Department
+B.S., Rutgers MAE Department, 2012
+www.charliekawczynski.com
+
+
+
+Important notes regarding the papers:
+
+
+paper I
+	Four-step projection method I (equation 8-11)
+		(JxB)^{k+1} appears on the RHS, how is this computed???
+
+paper II
+	"Usually an explicit Runge–Kutta technique can be employed for update of the convective term for simplicity, and an implicit technique is used for update of the diffusion term for stability."
+		I have not seen any RK methods used in incompressible MHD simulations for segragated solvers, can you please point me to one?
+

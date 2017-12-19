@@ -1,53 +1,13 @@
 \documentclass[landscape]{article}
-\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
-\usepackage{epstopdf}
-\usepackage{amsmath}
-\usepackage{hyperref}
-\usepackage{xspace}
-\usepackage{mathtools}
-\usepackage{tikz}
-\usepackage{epsfig}
-\usepackage{float}
-\usepackage{xcolor}
-%\usepackage{natbib}
-\usepackage{subfigure}
-\usepackage{setspace}
-\usepackage{tabularx,ragged2e,booktabs,caption}
-
-
-% \setlength{\oddsidemargin}{0.1in}
-% \setlength{\textwidth}{7.25in}
-\newcommand{\DEL}{\nabla}
-\newcommand{\PD}{\partial}
-
-\setlength{\topmargin}{-1in}     %\topmargin: gap above header
-\setlength{\headheight}{0in}     %\headheight: height of header
-\setlength{\topskip}{0in}        %\topskip: between header and text
-% \setlength{\headsep}{0in}
-\setlength{\textheight}{525pt}   %\textheight: height of main text
-\setlength{\textwidth}{10in}    % \textwidth: width of text
-\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
-\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
-\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
-\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
-% \setlength{\voffset}{0.5in}
-
-
-% Useful commands:
-
-% \hfill		aligns-right everything right of \hfill
+\input{../includes.tex}
 
 \begin{document}
 \doublespacing
-\title{Magnetohydrodynamic Object-Oriented Numerical Solver (MOONS)}
-\author{C. Kawczynski \\
-Department of Mechanical and Aerospace Engineering \\
-University of California Los Angeles, USA\\
-}
-% \maketitle
+\MOONSTITLE
+\maketitle
 
 \section{Intermediate field BCs}
-Intermediate field BCs, as described in \cite{Kim} are derived below:
+Intermediate field BCs, as described in \cite{Kim1984} are derived below:
 
 \section{Dirichlet}
 The intermediate field prescribed BCs are:
@@ -80,13 +40,11 @@ The Robin conditions are derived as follows
 \section{Summary}
 \begin{equation}\begin{aligned}
   u_i^* = u_i^{n+1} + \Delta t \PD_i \phi^n, \qquad & \text{Dirichlet} \\
-  u_i^* = u_i^{n+1} + \Delta t \PD_i \phi^n, \qquad & \text{Periodic} \\
+  u_i^* = u_i^{n+1} + \Delta t \PD_i \phi^n, `'\qquad & \text{Periodic} \\
   \PD_n u_i^* = \PD_n u_i^{n+1} + \Delta t \PD_n \PD_i \phi^n, \qquad & \text{Neumann} \\
   c \PD_n u_i^* + u_i^* = g, \qquad & \text{Robin} \\
 \end{aligned}\end{equation}
 
-\begin{thebibliography}{1}
-\bibitem{Kim} Kim, John, and Parviz Moin. "Application of a fractional-step method to incompressible Navier-Stokes equations." Journal of computational physics 59.2 (1985): 308-323.
-\end{thebibliography}
+\input{../include_bib.tex}
 
 \end{document}

@@ -1,46 +1,10 @@
 \documentclass[11pt]{article}
-\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
-\usepackage{epstopdf}
-\usepackage{amsmath}
-\usepackage{hyperref}
-\usepackage{xspace}
-\usepackage{mathtools}
-\usepackage{epsfig}
-\usepackage{float}
-\usepackage{natbib}
-\usepackage{subfigure}
-\usepackage{setspace}
-\usepackage{tabularx,ragged2e,booktabs,caption}
-
-\setlength{\oddsidemargin}{0.1in}
-\setlength{\textwidth}{7.25in}
-
-\setlength{\topmargin}{-1in}     %\topmargin: gap above header
-\setlength{\headheight}{0in}     %\headheight: height of header
-\setlength{\topskip}{0in}        %\topskip: between header and text
-\setlength{\headsep}{0in}        
-\setlength{\textheight}{692pt}   %\textheight: height of main text
-\setlength{\textwidth}{7.5in}    % \textwidth: width of text
-\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
-\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
-\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
-\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
-\setlength{\voffset}{0.5in}
-
-
-% Useful commands:
-
-% \hfill		aligns-right everything right of \hfill
+\input{../includes.tex}
 
 \begin{document}
 \doublespacing
-\title{Magnetohydrodynamic Object-Oriented Numerical Solver (MOONS)}
-\author{C. Kawczynski \\
-Department of Mechanical and Aerospace Engineering \\
-University of California Los Angeles, USA\\
-}
+\MOONSTITLE
 \maketitle
-
 
 \section{Construction of Source Terms: interior and boundary values}
 To construct the vector
@@ -53,10 +17,10 @@ A(u_{in} + u_{bc}) = f
 \end{equation}
 Where
 \begin{equation}
-u_{in} = u \in \Omega \qquad u_{in} = 0 \in \partial \Omega
+u_{in} = u \in \Omega \qquad u_{in} = 0 \in \PD \Omega
 \end{equation}
 \begin{equation}
-u_{bc} = 0 \in \Omega \qquad u_{bc} = u \in \partial \Omega
+u_{bc} = 0 \in \Omega \qquad u_{bc} = u \in \PD \Omega
 \end{equation}
 
 Now, we may solve
@@ -83,7 +47,7 @@ To be more specific, let's explicitly write the above equation as
  \begin{pmatrix}
   u_1 \\  u_2 \\  u_3 \\
  \end{pmatrix}
-  = 
+  =
  \begin{pmatrix}
   f_1 \\  f_2 \\  f_3 \\
  \end{pmatrix}
@@ -114,7 +78,7 @@ Where $u_0$ and $u_4$ are ghost cells. This is equivalent to
  \begin{pmatrix}
   0 \\  u_1 \\  u_2 \\  u_3 \\  0 \\
  \end{pmatrix}
-  = 
+  =
  \begin{pmatrix}
   0 \\  f_1 \\  f_2 \\  f_3 \\  0 \\
  \end{pmatrix}
@@ -138,7 +102,7 @@ Au_{in} = f - Au_{bc}
 
 Where
 \begin{equation}
-A = 
+A =
  \begin{pmatrix}
   0 &  0 &  0 &  0 &  0 \\
   1 & -2 &  1 &  0 &  0 \\
@@ -147,7 +111,7 @@ A =
   0 &  0 &  0 &  0 &  0 \\
  \end{pmatrix}
  \qquad or \qquad
-A = 
+A =
  \begin{pmatrix}
   1 & -2 &  1 &  0 &  0 \\
   0 &  1 & -2 &  1 &  0 \\
@@ -170,7 +134,7 @@ This makes solving the PPE very clear in its current implementation. With an ini
  \begin{pmatrix}
   0 \\  p_1 \\  p_2 \\  p_3 \\  0 \\
  \end{pmatrix}
-  = 
+  =
  \begin{pmatrix}
   0 \\  f_1 \\  f_2 \\  f_3 \\  0 \\
  \end{pmatrix}
@@ -188,7 +152,7 @@ This makes solving the PPE very clear in its current implementation. With an ini
  \end{pmatrix}
 \end{equation}
 
-Note that the first non-zero equation is 
+Note that the first non-zero equation is
 
 \begin{equation}
 \frac{-p_1+p_2}{h^2} = f_1 - \frac{p_0}{h^2}
@@ -204,7 +168,7 @@ Note that when $\frac{p_1-p_0}{h} = g = 0$ across the boundary, the stencil is s
 Which is the result of applying the BCs (defining ghost cells) before the SOR loop.
 
 \section{Node Data}
-For node data, $f$ may be non-zero on the boundary values, which means $Au$ must be non-zero on boundary values. Let $u_1$ and $f_3$ live on the boundaries. We may write the above equation explicitly as 
+For node data, $f$ may be non-zero on the boundary values, which means $Au$ must be non-zero on boundary values. Let $u_1$ and $f_3$ live on the boundaries. We may write the above equation explicitly as
 
 \begin{equation}
 \frac{1}{h^2}
@@ -216,7 +180,7 @@ For node data, $f$ may be non-zero on the boundary values, which means $Au$ must
  \begin{pmatrix}
   u_1 \\  u_2 \\  u_3 \\
  \end{pmatrix}
-  = 
+  =
  \begin{pmatrix}
   f_1 \\  f_2 \\  f_3 \\
  \end{pmatrix}
@@ -248,7 +212,7 @@ Where $u_0$ and $u_4$ are ghost cells, and depend on the BCs. This equation is e
  \begin{pmatrix}
   0 \\  u_1 \\  u_2 \\  u_3 \\  0 \\
  \end{pmatrix}
-  = 
+  =
  \begin{pmatrix}
   0 \\  f_1 \\  f_2 \\  f_3 \\  0 \\
  \end{pmatrix}
@@ -276,7 +240,7 @@ Where $u_{in}$ and $f$ include the boundary values, and $u_{bc}$ contains values
 When ghost cells are absent, then the ghost values must be substituted a-priori, since there are no indexes for the ghost cells to exist. Since the ghost cells are absent, we may restrict our focus to wall-coincident BCs. We must be able to enforce Dirichlet and Neumann BCs for this case. Let's write how ghost values would be chosen if they did exist and then substitute them into the equations.
 
 \subsection{Dirichlet BCs}
-Note that this should simplify to the case of dirichlet BCs where $Au=I$ on $\partial \Omega$ and $f = u$ on $\partial \Omega$. So we have
+Note that this should simplify to the case of dirichlet BCs where $Au=I$ on $\PD \Omega$ and $f = u$ on $\PD \Omega$. So we have
 \begin{equation}
 \frac{1}{h^2}
  \begin{pmatrix}
@@ -289,7 +253,7 @@ Note that this should simplify to the case of dirichlet BCs where $Au=I$ on $\pa
  \begin{pmatrix}
   0 \\  u_1 \\  u_2 \\  u_3 \\  0 \\
  \end{pmatrix}
-  = 
+  =
  \begin{pmatrix}
   0 \\  f_1 \\  f_2 \\  f_3 \\  0 \\
  \end{pmatrix}
@@ -337,7 +301,7 @@ We may start with the same matrix setup
  \begin{pmatrix}
   0 \\  u_1 \\  u_2 \\  u_3 \\  0 \\
  \end{pmatrix}
-  = 
+  =
  \begin{pmatrix}
   0 \\  f_1 \\  f_2 \\  f_3 \\  0 \\
  \end{pmatrix}
@@ -380,7 +344,7 @@ So, what we must subtract from the boundary values of $f$ are
  \begin{pmatrix}
   0 \\  u_1 \\  u_2 \\  u_3 \\  0 \\
  \end{pmatrix}
-  = 
+  =
  \begin{pmatrix}
   0 \\  f_1 \\  f_2 \\  f_3 \\  0 \\
  \end{pmatrix}
@@ -411,10 +375,10 @@ Where we may separate the interior and boundary values (in the case of node data
 \end{equation}
 With
 \begin{equation}
-u_{in} = u \in \Omega \qquad u_{in} = 0 \in \partial \Omega
+u_{in} = u \in \Omega \qquad u_{in} = 0 \in \PD \Omega
 \end{equation}
 \begin{equation}
-u_{bc} = 0 \in \Omega \qquad u_{bc} = u \in \partial \Omega
+u_{bc} = 0 \in \Omega \qquad u_{bc} = u \in \PD \Omega
 \end{equation}
 And solve
 \begin{equation}
@@ -426,5 +390,3 @@ And if this equation is solved iteratively, let $k$ be the iteration number and 
 \end{equation}
 
 \end{document}
-
-

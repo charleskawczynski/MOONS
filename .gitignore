@@ -11,4 +11,5 @@
 *.eps
 *.gz
 *.mod
+*.pyc
 *.o

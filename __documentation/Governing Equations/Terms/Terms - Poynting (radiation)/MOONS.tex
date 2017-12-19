@@ -1,0 +1,201 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Analysis of Poynting (radiation)}
+
+\begin{equation}
+	\boxed{
+	\underbrace{\frac{\PD E_m}{\PD t} }_
+	{\substack{\text{Time rate of}\\\text{change of $E_M$}}}
+	=
+	- \underbrace{\DIV \left(\E \CROSS \H \right)}_
+	{\substack{\text{Power of}\\\text{Poynting term $\mathcal P_{P}$}}}
+	- \underbrace{\U \DOT (\J \CROSS \B)}_
+	{\substack{\text{Power of}\\\text{EM forces $\mathcal P_{em}$}}}
+	- \underbrace{\JSS}_
+	{\substack{\text{Joule}\\\text{dissipation}\\\text{$D_J$}}}
+	}
+\end{equation}
+\subsection{Term representation}
+Let's write this as an integral equation. Let
+\begin{equation}
+	E_m = \frac{\B^2}{2 \MO}
+\end{equation}
+\begin{equation}
+	D_J = \int \JSS dV = \text{Joule dissipation of heat}
+\end{equation}
+\begin{equation}
+	\mathcal P_{em} = \int \U \DOT (\J \CROSS \B) dV = \text{Power of electromagnetic forces}
+\end{equation}
+\begin{equation}
+	\Phi_P = \oiint \left( \E \CROSS \H \right) \DOT \N dA = \text{Active and reactive power}
+\end{equation}
+
+Giving us
+\begin{equation}
+	\boxed{
+	\frac{\PD E_m}{\PD t}
+	=
+	- \Phi_P
+	- \mathcal P_{em}
+	- D_J
+	}
+\end{equation}
+Additionally note
+\begin{equation}
+	D_J + \mathcal P_{em} = \text{Total power supplied to charges}
+\end{equation}
+
+\subsection{Notes}
+"Part of this power, used up to drive the flow of charge against the ohmic resistance of the material, corresponds to the Joule effect heating. The rest is transformed into mechanical power by the collective pressure of the electrons on the atoms and globally on the matter." [P. 22 Magnetohydrodynamics, Moreau]
+
+"As a general integral of the field equations, the validity of Poynting's theorem is unimpeachable. Its physical interpretation, however, is open to some criticism" [P. 133 Electromagnetic Theory, Stratton].
+
+"If, finally, all material bodies in the field are absolutely rigid, thereby excluding possible transformations of electromagnetic energy into elastic energy of a stressed medium, the balance can be maintained only by a flow of electromagnetic energy across the surface bounding $V$. This, according to Poynting, is the significance of the surface integral" [P. 132 Electromagnetic Theory, Stratton].
+
+\section{Flux term}
+The integrand of the second term in \ref{eq:nrg} is called Poynting's vector. The electric field can be decomposed into a scalar and vector potential
+\begin{equation}
+	\E = -\DEL \varphi - \frac{\PD \A}{\PD t}, \qquad \B = \CURL \A
+\end{equation}
+Allowing us to write $\Phi_P$ as
+\begin{equation}
+	\Phi_P = \oiint \left( \E \CROSS \H \right) \DOT \N dA =
+	\underbrace{- \oiint \left( \DEL \varphi \CROSS \H \right) \DOT \N dA}_{\Phi_1} +
+	\underbrace{- \oiint \left( \frac{\PD \A}{\PD t} \CROSS \H \right) \DOT \N dA}_{\Phi_2}
+\end{equation}
+The vector identity
+\begin{equation}
+	\CURL (\psi \A) = \psi (\CURL \A) + (\DEL \psi) \CROSS \A
+	, \qquad \rightarrow \qquad
+	(\DEL \psi) \CROSS \A = \CURL (\psi \A) - \psi (\CURL \A)
+\end{equation}
+and Ampere's law allows use to write the first term on the RHS as
+\begin{equation}
+	\Phi_1 = - \underbrace{\oiint \CURL \left(\varphi \H \right) \DOT \N dA}_{= 0}
+	+ \oiint \varphi \J \DOT \N dA
+\end{equation}
+Since the flux of a curl over a closed surface is identically zero (since there are no boundaries), this reduces to
+\begin{equation}
+	\Phi_1 = \oiint \varphi \J \DOT \N dA
+\end{equation}
+Therefore we have
+\begin{equation}
+	\boxed{
+	\Phi_P = \oiint \left( \E \CROSS \H \right) \DOT \N dA = \Phi_1 + \Phi_2 =
+	\underbrace{\oiint (\varphi \J) \DOT \N dA}_{\Phi_1} +
+	\underbrace{- \oiint \left( \frac{\PD \A}{\PD t} \CROSS \H \right) \DOT \N dA}_{\Phi_2}
+	}
+\end{equation}
+
+This may decomposed into "active power" and "reactive power", which is briefly discussed by Moreau.
+
+\section{Final representation}
+Finally, we have
+\begin{equation}
+	\boxed{
+	\underbrace{\frac{\PD E_m}{\PD t} }_
+	{\substack{\text{Time rate of}\\\text{change of $E_M$}}}
+	=
+	- \underbrace{\DIV \left(\varphi \J \right) }_
+	{\substack{\text{Power of}\\\text{Poynting 1 term $\mathcal P_{P_1}$}}}
+	+ \underbrace{\DIV \left( \frac{\PD \A}{\PD t} \CROSS \H \right)}_
+	{\substack{\text{Power of}\\\text{Poynting 2 term $\mathcal P_{P_2}$}}}
+	- \underbrace{\U \DOT (\J \CROSS \B)}_
+	{\substack{\text{Power of}\\\text{EM forces $\mathcal P_{em}$}}}
+	- \underbrace{\JSS}_
+	{\substack{\text{Joule}\\\text{dissipation}\\\text{$D_J$}}}
+	}
+\end{equation}
+Writing these as integrals, we have
+\begin{equation}
+	\boxed{
+	\underbrace{\int \frac{\PD E_m}{\PD t} dV}_
+	{\substack{\text{Time rate of}\\\text{change of $E_M$}}}
+	=
+	- \underbrace{\oiint \left(\varphi \J \right) \DOT \N dA }_
+	{\substack{\text{Power of}\\\text{Poynting 1 term $\mathcal P_{P_1}$}}}
+	+ \underbrace{\oiint \left( \frac{\PD \A}{\PD t} \CROSS \H \right)\DOT \N dA }_
+	{\substack{\text{Power of}\\\text{Poynting 2 term $\mathcal P_{P_2}$}}}
+	- \underbrace{\int \U \DOT (\J \CROSS \B) dV}_
+	{\substack{\text{Power of}\\\text{EM forces $\mathcal P_{em}$}}}
+	- \underbrace{\int \JSS dV}_
+	{\substack{\text{Joule}\\\text{dissipation}\\\text{$D_J$}}}
+	}
+\end{equation}
+Where
+\begin{equation}
+	\B = \CURL \A, \E = - \DEL \varphi - \frac{\PD \A}{\PD t}
+\end{equation}
+\section{Decomposition}
+\subsection{Applied in conductor and vacuum}
+Trivially $0 = 0$, since $\B^0$ is constant and uniform.
+\subsection{Vacuum}
+\begin{equation}
+	\underbrace{\int \frac{\PD }{\PD t} \frac{{\B^{ind}}^2}{2 \mu} dV}_
+	{\substack{\text{Time rate of}\\\text{change of $E_M$}}}
+	=
+	\underbrace{\oiint \left( \frac{\PD \A^{ind}}{\PD t} \CROSS \frac{\B^{0} + \B^{ind}}{\mu} \right)\DOT \N dA }_
+	{\substack{\text{Power of second}\\\text{Poynting term $\mathcal P_{P_2}$}}}
+\end{equation}
+\subsection{Conductor}
+\begin{equation}
+	\underbrace{\int \frac{\PD }{\PD t} \frac{{\B^{ind}}^2}{2 \mu} dV}_
+	{\substack{\text{Time rate of}\\\text{change of $E_M$}}}
+	=
+	\underbrace{\oiint \left( \frac{\PD \A^{ind}}{\PD t} \CROSS \frac{\B^{0} + \B^{ind}}{\mu} \right)\DOT \N dA }_
+	{\substack{\text{Power of second}\\\text{Poynting term $\mathcal P_{P_2}$}}}
+	- \underbrace{\int \U \DOT (\J \CROSS \left[ \B^0 + \B^{ind} \right]) dV}_
+	{\substack{\text{Power of}\\\text{EM forces $\mathcal P_{em}$}}}
+	- \underbrace{\int \JSS dV}_
+	{\substack{\text{Joule}\\\text{dissipation}\\\text{$D_J$}}}
+\end{equation}
+
+\begin{equation}
+	\B = 0, \in \Gamma_v
+\end{equation}
+\section{Non-dimensionalization}
+Consider non-dimensionalization $t=t^*/(L/U), \MO = \mu^*/\mu, \SO = \sigma^*/\sigma, \DEL = L \DEL^*, \U = \U^*/U, \B = \B^*/B, \E = \E^* / (B/ \sigma \mu L), \J = \J^* / (B/\mu L)$, where the asterisk implies local values. Then we have
+\begin{equation}
+	\frac{UB^2}{L \mu}
+	\frac{\PD }{\PD t} \frac{\B^2}{2 \MO}
+	=
+	- \frac{B^2}{\sigma \mu^2 L^2} \DIV \left(\E \CROSS \frac{\B}{\MO} \right)
+	- \frac{U B^2}{\mu L} \U \DOT (\J \CROSS \B)
+	- \frac{B^2}{\sigma \mu^2 L^2} \JSS
+\end{equation}
+Dividing by the transient term coefficient gives
+\begin{equation}
+	\frac{\PD }{\PD t} \frac{\B^2}{2 \MO}
+	=
+	- \frac{1}{\mu \sigma U L} \DIV \left(\E \CROSS \frac{\B}{\MO} \right)
+	- \U \DOT (\J \CROSS \B)
+	- \frac{1}{\mu \sigma U L} \frac{\J^2}{\SO}
+\end{equation}
+Which yields
+\begin{equation} \label{eq:nrg}
+	\boxed{
+	\frac{\PD }{\PD t} \frac{\B^2}{2 \MO}
+	=
+	- \frac{1}{Re_m} \DIV \left(\E \CROSS \frac{\B}{\MO} \right)
+	- \U \DOT (\J \CROSS \B)
+	- \frac{1}{Re_m} \frac{\J^2}{\SO}
+	}
+\end{equation}
+If $\E$ is scaled by $UB$ (Ohm's law) instead of $\frac{B}{\mu L}$ (Ampere's law), then we get
+\begin{equation}
+	\boxed{
+	\frac{\PD }{\PD t} \frac{\B^2}{2 \MO}
+	=
+	- \DIV \left(\E \CROSS \frac{\B}{\MO} \right)
+	- \U \DOT (\J \CROSS \B)
+	- \frac{1}{Re_m} \frac{\J^2}{\SO}
+	}
+\end{equation}
+
+\end{document}

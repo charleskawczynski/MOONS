@@ -1,0 +1,101 @@
+\documentclass[landscape, 11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Dimensionless ME + KE (for BC paper)}
+The dimensionless kinetic and magnetic energy equations are:
+\begin{equation}\begin{aligned}
+	\frac{\PD E_K}{\PD t}
+	+ \frac{t_c U_c}{L_c} (\U \DOT \DEL) E_K
+	=
+	- \frac{t_c p_c}{L_c \rho U_c} \DIV (\U p)
+	+ \frac{t_c \nu_c}{L_c^2}
+	\left( \nu \DEL^2 E_K -  \mu (\DEL \U) \DOT (\DEL \U) \right)
+	+ \frac{t_c B_c^2}{\rho_c L_c U_c \M_c}
+	( - (\U \DOT \DEL) E_M + \U \DOT (\B \DOT \DEL \H) ) \\
+	\frac{\PD E_M}{\PD t} =
+	- \frac{t_c J_c^2 \M_c}{\sigma_c B_c^2} \frac{\J^2}{\SI}
+	- \frac{J_c t_c}{L_c \sigma_c B_c} \DIV \left[\frac{\J}{\SI} \CROSS \H \right]
+	+ \frac{U_c t_c}{L_c}
+	\left(
+	\DIV \left[\left(\U \CROSS \B \right) \CROSS \H \right]
+	+ (\U \DOT \DEL) E_M
+	- \U \DOT (\B \DOT \DEL) \H
+	\right)
+\end{aligned}\end{equation}
+Where
+\begin{equation}
+	E_K = \frac{1}{2} \rho \U \DOT \U, \qquad E_M = \frac{1}{2} \B \DOT \H
+\end{equation}
+Using the specific scales
+\begin{equation}\begin{aligned}
+	J_c = U_c \sigma_c B_c, \qquad
+	p_c = \rho_c U_c^2, \qquad
+	t_c = L_c / U_c
+\end{aligned}\end{equation}
+We have
+\begin{equation}\boxed{\begin{aligned}
+	\frac{\PD E_K}{\PD t}
+	+ (\U \DOT \DEL) E_K
+	=
+	- \DIV (\U p)
+	+ \frac{1}{Re} ( \nu \DEL^2 E_K -  \mu (\DEL \U) \DOT (\DEL \U) )
+	+ \frac{Ha^2}{Re Re_m} (  - (\U \DOT \DEL) E_M + \U \DOT (\B \DOT \DEL \H) )
+	\\
+	\frac{\PD E_M}{\PD t} =
+	- Re_m \frac{\J^2}{\SI}
+	- \DIV \left[\frac{\J}{\SI} \CROSS \H \right]
+	+
+	\DIV \left[\left(\U \CROSS \B \right) \CROSS \H \right]
+	+ (\U \DOT \DEL) E_M - \U \DOT (\B \DOT \DEL) \H
+\end{aligned}}\end{equation}
+Keep in mind that although it appears that Joule heating scales with $Re_m$, the current scales as $Re_m^{-1}$, which is easily seen from its definition:
+\begin{equation}
+	\J^* = \frac{\J}{J_c} = \frac{\CURL \H}{U_c \sigma_c B_c} = \frac{\DEL^* \CROSS \H^*}{U_c \sigma_c L_c \M_c} = \frac{1}{Re_m} \CURL \H^*
+\end{equation}
+We cannot add these equations yet, because they've been scaled by different coefficients. It is clear that, if they were scaled by the correct coefficients then, the corresponding terms would cancel out. Therefore, let's scale the $E_M$ equation by $\frac{Ha^2}{Re Re_m}$, so that they cancel appropriately. In addition, let's combine the Poynting terms.
+\begin{equation}\begin{aligned}
+	\frac{\PD E_K}{\PD t}
+	+ (\U \DOT \DEL) E_K
+	=
+	- \DIV (\U p)
+	+ \frac{1}{Re} \left( \nu \DEL^2 E_K -  \mu (\DEL \U) \DOT (\DEL \U) \right)
+	+ \frac{Ha^2}{Re Re_m} (  - (\U \DOT \DEL) E_M + \U \DOT (\B \DOT \DEL \H) )
+	\\
+	\frac{Ha^2}{Re Re_m} \frac{\PD E_M}{\PD t} =
+	- \frac{Ha^2}{Re} \frac{\J^2}{\SI}
+	+ \frac{Ha^2}{Re Re_m} \DIV \left[\left(\U \CROSS \B - \frac{\J}{\SI} \right) \CROSS \H \right]
+	+ \frac{Ha^2}{Re Re_m} ( + (\U \DOT \DEL) E_M - \U \DOT (\B \DOT \DEL) \H )
+\end{aligned}\end{equation}
+Note that the Poynting term may be written as a flux using Gauss' divergence theorem, and in vacuum domain we have
+\begin{equation}\begin{aligned}
+	\frac{Ha^2}{Re Re_m} \frac{\PD E_M}{\PD t} =
+	\frac{Ha^2}{Re Re_m} \DIV \left[\left(\U \CROSS \B - \frac{\J}{\SI} \right) \CROSS \H \right]
+\end{aligned}\end{equation}
+Therefore, we can see that the Poynting term is zero at steady state. Adding these equations, we have
+\begin{equation}\begin{aligned}
+	\frac{\PD \left( E_K + \frac{Ha^2}{Re Re_m} E_M \right)}{\PD t}
+	+ (\U \DOT \DEL) E_K
+	=
+	- \DIV (\U p)
+	+ \frac{1}{Re} \left( \nu \DEL^2 E_K -  \mu (\DEL \U) \DOT (\DEL \U) \right) \\
+	- \frac{Ha^2}{Re} \frac{\J^2}{\SI}
+	+ \frac{Ha^2}{Re Re_m} \DIV \left[\left(\U \CROSS \B - \frac{\J}{\SI} \right) \CROSS \H \right]
+\end{aligned}\end{equation}
+In terms of the paper, we assume uniform properties, so we have
+\begin{equation}\begin{aligned}
+	\frac{\PD \left( E_K + \frac{Ha^2}{Re Re_m} E_M \right)}{\PD t}
+	+ (\U \DOT \DEL) E_K
+	=
+	- \DIV (\U p)
+	+ \frac{1}{Re} \left( \DEL^2 E_K - (\DEL \U) \DOT (\DEL \U) \right) \\
+	- \frac{Ha^2}{Re} \frac{\J^2}{\SO}
+	+ \frac{Ha^2}{Re Re_m} \DIV \left[\left(\U \CROSS \B - \frac{\J}{\SO} \right) \CROSS \B \right]
+\end{aligned}\end{equation}
+
+
+\end{document}

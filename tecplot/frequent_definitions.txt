@@ -1,0 +1,100 @@
+------------------------------------ Full 3D cases ------------------------------------
+
+{u} = {Upn_x}
+{v} = {Upn_y}
+{w} = {Upn_z}
+{Umag}=sqrt({u}**2+{v}**2+{w}**2)
+{U2}={u}**2+{v}**2+{w}**2
+
+{Bx}={Bpn_x}
+{By}={Bpn_y}
+{Bz}={Bpn_z}
+{B2}={Bx}**2+{By}**2+{Bz}**2
+{Bz_tot}={Bz}+1
+
+{Jx}={Jpn_x}
+{Jy}={Jpn_y}
+{Jz}={Jpn_z}
+{J2}={Jx}**2+{Jy}**2+{Jz}**2
+
+{B_helicity} = {Bx}*{Jx}+{By}*{Jy}+{Bz}*{Jz}
+{cross_helicity} = {Bx}*{u}+{By}*{v}+{Bz}*{w}
+{cross_helicity_tot} = {Bx}*{u}+{By}*{v}+{Bz_tot}*{w}
+{B_helicity_tot} = {Bx}*{Jx}+{By}*{Jy}+{Bz_tot}*{Jz}
+
+------------------------------------ Symmetric cases ------------------------------------
+
+{u} = {U_mirror_3pn_x}
+{v} = {U_mirror_3pn_y}
+{w} = {U_mirror_3pn_z}
+{Umag}=sqrt({u}**2+{v}**2+{w}**2)
+{U2}={u}**2+{v}**2+{w}**2
+{U2}={U_mirror_3pn_x}**2+{U_mirror_3pn_y}**2+{U_mirror_3pn_z}**2
+
+{Bx}={B_mirror_3pn_x}
+{By}={B_mirror_3pn_y}
+{Bz}={B_mirror_3pn_z}
+{Bz_tot}={Bz}+1
+{B2}={Bx}**2+{By}**2+{Bz}**2
+{B2}={B_mirror_3pn_x}**2+{B_mirror_3pn_y}**2+{B_mirror_3pn_z}**2
+{Bz_tot}={B_mirror_3pn_z}+1
+
+{Jx}={J_mirror_3pn_x}
+{Jy}={J_mirror_3pn_y}
+{Jz}={J_mirror_3pn_z}
+{J2}={Jx}**2+{Jy}**2+{Jz}**2
+{J2}={J_mirror_3pn_x}**2+{J_mirror_3pn_y}**2+{J_mirror_3pn_z}**2
+
+{Bx_diff} = {B_mirror_3pn_x}[2]-{B_mirror_3pn_x}[1]
+{By_diff} = {B_mirror_3pn_y}[2]-{B_mirror_3pn_y}[1]
+{Bz_diff} = {B_mirror_3pn_z}[2]-{B_mirror_3pn_z}[1]
+{B2_diff}={Bx_diff}**2+{By_diff}**2+{Bz_diff}**2
+{B_helicity} = {Bx}*{Jx}+{By}*{Jy}+{Bz}*{Jz}
+{cross_helicity} = {Bx}*{u}+{By}*{v}+{Bz}*{w}
+{cross_helicity_tot} = {Bx}*{u}+{By}*{v}+{Bz_tot}*{w}
+{B_helicity_tot} = {Bx}*{Jx}+{By}*{Jy}+{Bz_tot}*{Jz}
+
+{omega_x}={vorticitypn_x}
+{omega_y}={vorticitypn_y}
+{omega_z}={vorticitypn_z}
+{omega2}={omega_x}**2+{omega_y}**2+{omega_z}**2
+{omega_mag}=sqrt({omega2})
+
+
+
+
+
+{Sxx} = 0.5*( ddx({u}) + ddx({u}) )
+{Sxy} = 0.5*( ddy({u}) + ddx({v}) )
+{Sxz} = 0.5*( ddz({u}) + ddx({w}) )
+{Syx} = 0.5*( ddx({v}) + ddy({u}) )
+{Syy} = 0.5*( ddy({v}) + ddy({v}) )
+{Syz} = 0.5*( ddz({v}) + ddy({w}) )
+{Szx} = 0.5*( ddx({w}) + ddz({u}) )
+{Szy} = 0.5*( ddy({w}) + ddz({v}) )
+{Szz} = 0.5*( ddz({w}) + ddz({w}) )
+
+{Omegaxx} = 0.5*( ddx({u}) - ddx({u}) )
+{Omegaxy} = 0.5*( ddy({u}) - ddx({v}) )
+{Omegaxz} = 0.5*( ddz({u}) - ddx({w}) )
+{Omegayx} = 0.5*( ddx({v}) - ddy({u}) )
+{Omegayy} = 0.5*( ddy({v}) - ddy({v}) )
+{Omegayz} = 0.5*( ddz({v}) - ddy({w}) )
+{Omegazx} = 0.5*( ddx({w}) - ddz({u}) )
+{Omegazy} = 0.5*( ddy({w}) - ddz({v}) )
+{Omegazz} = 0.5*( ddz({w}) - ddz({w}) )
+
+{S2} = ({Sxx}+{Sxy}+{Sxz}+{Syx}+{Syy}+{Syz}+{Szx}+{Szy}+{Szz})*({Sxx}+{Sxy}+{Sxz}+{Syx}+{Syy}+{Syz}+{Szx}+{Szy}+{Szz})
+{Omega2} = ({Omegaxx}+{Omegaxy}+{Omegaxz}+{Omegayx}+{Omegayy}+{Omegayz}+{Omegazx}+{Omegazy}+{Omegazz})*({Omegaxx}+{Omegaxy}+{Omegaxz}+{Omegayx}+{Omegayy}+{Omegayz}+{Omegazx}+{Omegazy}+{Omegazz})
+
+{Q_criterion} = 0.5*{Omega2} - {S2}
+
+{S2} = {Sxx}**2.0+{Sxy}**2.0+{Sxz}**2.0+{Syx}**2.0+{Syy}**2.0+{Syz}**2.0+{Szx}**2.0+{Szy}**2.0+{Szz}**2.0
+{Omega2} = {Omegaxx}**2.0+{Omegaxy}**2.0+{Omegaxz}**2.0+{Omegayx}**2.0+{Omegayy}**2.0+{Omegayz}**2.0+{Omegazx}**2.0+{Omegazy}**2.0+{Omegazz}**2.0
+
+
+
+{Fluid_percent} = {ME1_fluid}/{ME1}
+{Conductor_percent} = {ME1_conductor}/{ME1}
+{Wall_percent} = {ME1_walls}/{ME1}
+{Vacuum_percent} = {ME1_vacuum}/{ME1}

@@ -1,0 +1,34 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Converting Lorentz force to maxwell stress and pressure}
+We may write the $\J\CROSS \B$ force as
+
+\begin{equation}
+\begin{aligned}
+	\J\CROSS \B
+	&= \epsilon_{ijk} j_j B_k \\
+	&= \epsilon_{ijk} \left( \epsilon_{jmn} \PD_m \frac{B_n}{\mu} B_k \right) \\
+	&= \epsilon_{ijk} \epsilon_{jmn} \left( \PD_m \frac{B_n}{\mu} B_k \right) \\
+	&= \epsilon_{jki} \epsilon_{jmn} \left( \PD_m \frac{B_n}{\mu} B_k \right) \\
+	&= (\delta_{km} \delta_{in} - \delta_{kn} \delta_{im} ) \left( \PD_m \frac{B_n}{\mu} B_k \right) \\
+	&= \left( \PD_k \frac{B_i}{\mu} B_k \right) -
+	\left( \PD_i \frac{B_k}{\mu} B_k \right) \\
+	\J\CROSS \B &= \left( B_k \PD_k \frac{B_i}{\mu} \right) -
+	\left( \PD_i \frac{B_k B_k}{\mu} \right)
+\end{aligned}
+\end{equation}
+In vector notation, this may be written as
+\begin{equation}
+\begin{aligned}
+	\J \CROSS \B
+	&= \B \DOT \DEL \left( \frac{\B}{\mu} \right) - \DIV \left( \frac{\B \B}{\mu} \right)
+\end{aligned}
+\end{equation}
+
+\end{document}

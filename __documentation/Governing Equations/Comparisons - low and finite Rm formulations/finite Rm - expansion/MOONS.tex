@@ -1,0 +1,45 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Finite Rem formulation}
+Here, we derived the equations for a finite magnetic Reynolds number ($Re_m$) flow. The dimensionless momentum and induction equations are
+
+\begin{equation}\begin{aligned}
+\PD_t u_i+u_j\PD_j u_i =-\PD_i p+ Re^{-1} \PD_{jj} u_i + Re_m^{-1} N (B_j \PD_j B_i - \tfrac{1}{2} \PD_i B_j B_j) \\
+\PD_t B_i = Re_m^{-1} \PD_{jj} B_i - \PD_j (u_j B_i - u_i B_j)
+\end{aligned} \end{equation}
+
+Where $\U,\B,p,Re,N,Re_m$ are the velocity, magnetic field, pressure, Reynolds, interaction and magnetic Reynolds number respectively. First, let's re-write the magnetic pressure term using product rule and seek the steady solution.
+\begin{equation}\begin{aligned}
+u_j\PD_j u_i =-\PD_i p+ Re^{-1} \PD_{jj} u_i + Re_m^{-1} N (B_j \PD_j B_i - B_j \PD_i B_j) \\
+0 = Re_m^{-1} \PD_{jj} B_i - \PD_j (u_j B_i - u_i B_j)
+\end{aligned} \end{equation}
+
+Since we are interested in when $Re_m$ is small, and the induction equation is linear, we'll combine them by factors of $Re_m$. To be clear we may decompse $\B$ in one of two ways:
+\begin{equation}\begin{aligned}
+	\B = \B^0 + \B^1 + \B^2 + \hdots , \\
+	\B = \B^0 + Re_m \B^* + Re_m^2 \B^{**} + \hdots \\
+\end{aligned} \end{equation}
+Now, let's rewrite the induction equation and Lorentz force with this expansion and neglect $Re_m^2$ terms
+\begin{equation}\begin{aligned}
+u_j\PD_j u_i =-\PD_i p+ Re^{-1} \PD_{jj} u_i + N ((B_j^0+Re_m B_j^*) \PD_j (B_i^* + Re_m B_i^{**}) - (B_j^0+Re_m B_j^*) \PD_i (B_j^*+Re_m B_j^{**})) \\
+0 = \PD_{jj} B_i^* + Re_m \PD_{jj} B_i^{**} - \PD_j (u_j (B_i^0 + Re_m B_i^{*}) - u_i (B_j^0+Re_m B_j^{*})), \qquad \B^* = \frac{\B^1}{Re_m} \\
+0 = \PD_{jj} B_i^{**} - Re_m \PD_j (u_j B_i^* - u_i B_j^*)
+\end{aligned} \end{equation}
+
+As you can see, there is an equation corresponding to the induction equation of order $Re_m^2$, however, the source term is of order $Re_m$, therefore $\B^{**}$ will also be of order $Re_m$ so we may neglect terms like $Re_m \B^{**}$. Therefore we may disregard this equation and simplify our result to
+
+\begin{equation}\boxed{
+\begin{aligned}
+u_j\PD_j u_i =-\PD_i p+ Re^{-1} \PD_{jj} u_i + N ((B_j^0+Re_m B_j^*) \PD_j B_i^* - (B_j^0+Re_m B_j^*) \PD_i B_j^*) \\
+0 = \PD_{jj} B_i^* - \PD_j (u_j (B_i^0 + Re_m B_i^{*}) - u_i (B_j^0+Re_m B_j^{*}))
+\end{aligned}}\end{equation}
+
+Notice that with this formulation, we may set $Re_m$ to be zero \textit{exactly} and still be able to solve for have a physical MHD result since $\B^*$ has absorbed $Re_m$ in the denominator of the Lorentz force term in the momentum equation. This is the low $Re_m$ formulation.
+
+\end{document}

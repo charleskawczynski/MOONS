@@ -1,0 +1,27 @@
+# Prep for sim run
+gedit /u/home/c/ckawczyn/project-morley/MOONS/code/sim_params/sim_params.f90 &
+gedit /u/home/c/ckawczyn/project-morley/MOONS/makefiles/makefile &
+cd /u/home/c/ckawczyn/project-morley/MOONS_out/
+clear
+nautilus ./
+clear
+
+# Check jobs
+qstat -u ckawczyn
+
+# pull from MOONS
+cd /u/home/c/ckawczyn/project-morley/MOONS/
+nautilus ./
+clear
+git pull https://github.com/charliekawczynski/MOONS
+
+# to make
+cd /u/home/c/ckawczyn/project-morley/MOONS/makefiles/
+gmake clean
+module load gcc/4.9.3
+clear
+gmake
+
+chmod u+x submit.sh
+qsub submit.sh
+

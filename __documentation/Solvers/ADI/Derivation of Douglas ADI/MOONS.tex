@@ -1,58 +1,19 @@
 \documentclass[11pt]{article}
-\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
-\usepackage{epstopdf}
-\usepackage{amsmath}
-\usepackage{hyperref}
-\usepackage{xspace}
-\usepackage{empheq}
-\usepackage{mathtools}
-\usepackage{tikz}
-\usepackage{epsfig}
-\usepackage{float}
-\usepackage{natbib}
-\usepackage{subfigure}
-\usepackage{setspace}
-\usepackage{tabularx,ragged2e,booktabs,caption}
-
-\newcommand*\widefbox[1]{\fbox{\hspace{2em}#1\hspace{2em}}}
-
-\setlength{\oddsidemargin}{0.1in}
-\setlength{\textwidth}{7.25in}
-
-\setlength{\topmargin}{-1in}     %\topmargin: gap above header
-\setlength{\headheight}{0in}     %\headheight: height of header
-\setlength{\topskip}{0in}        %\topskip: between header and text
-\setlength{\headsep}{0in}        
-\setlength{\textheight}{692pt}   %\textheight: height of main text
-\setlength{\textwidth}{7.5in}    % \textwidth: width of text
-\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
-\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
-\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
-\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
-\setlength{\voffset}{0.5in}
-
-
-% Useful commands:
-
-% \hfill		aligns-right everything right of \hfill
+\input{../includes.tex}
 
 \begin{document}
 \doublespacing
-\title{Magnetohydrodynamic Object-Oriented Numerical Solver (MOONS)}
-\author{C. Kawczynski \\
-Department of Mechanical and Aerospace Engineering \\
-University of California Los Angeles, USA\\
-}
+\MOONSTITLE
 \maketitle
 
 \section{Derivation of 3D Douglas ADI}
 Consider the equation
 \begin{equation}
-	\frac{\partial u}{\partial t}
+	\frac{\PD u}{\PD t}
 	=
-	\alpha_x \frac{\partial^2 u}{\partial x^2} +
-	\alpha_y \frac{\partial^2 u}{\partial y^2} +
-	\alpha_z \frac{\partial^2 u}{\partial z^2}
+	\alpha_x \frac{\PD^2 u}{\PD x^2} +
+	\alpha_y \frac{\PD^2 u}{\PD y^2} +
+	\alpha_z \frac{\PD^2 u}{\PD z^2}
 	-
 	f
 \end{equation}
@@ -83,11 +44,10 @@ Splitting this operator into several steps, we have
 
 After rearranging, we have
 
-\begin{subequations}
-\begin{empheq}[box=\widefbox]{align}
+\begin{equation}\boxed{\begin{aligned}
 	\left(
 	I - \frac{\Delta t}{2} \alpha_x \Delta_x
-	\right) 
+	\right)
 	u_{n+1}^{*}
 	=
 	\left(
@@ -98,20 +58,19 @@ After rearranging, we have
 	u_n - \Delta t f \\
 	\left(
 	I - \frac{\Delta t}{2} \alpha_y \Delta_y
-	\right) 
+	\right)
 	u_{n+1}^{**}
 	=
 	u_{n+1}^{*}
 	- \frac{\Delta t}{2} \alpha_y \Delta_y u_n \\
 	\left(
 	I - \frac{\Delta t}{2} \alpha_z \Delta_z
-	\right) 
+	\right)
 	u_{n+1}
 	=
 	u_{n+1}^{**}
 	- \frac{\Delta t}{2} \alpha_z \Delta_z u_n
-\end{empheq}
-\end{subequations}
+\end{aligned}}\end{equation}
 
 \section{Amplification factor}
 
@@ -135,12 +94,12 @@ Now, note that the error to the discrete equation satisfies the same governing e
 
 Therefore
 \begin{equation}
-	e_{n+1}^{*} = 
+	e_{n+1}^{*} =
 	\frac{(I+D_x+2D_y+2D_z)}{(I-D_x)}e_n
 \end{equation}
 
 \begin{equation}
-	e_{n+1}^{**} = 
+	e_{n+1}^{**} =
 	\frac{
 	\left[
 	\frac{(I+D_x+2D_y+2D_z)}{(I-D_x)}-D_y
@@ -149,7 +108,7 @@ Therefore
 \end{equation}
 
 \begin{equation}
-	e_{n+1} = 
+	e_{n+1} =
 	\frac{
 	\left[
 	\frac{(I+D_x+2D_y+2D_z)}{(I-D_x)(I-D_y)}
@@ -162,7 +121,7 @@ Therefore
 \end{equation}
 
 \begin{equation}
-	e_{n+1} = 
+	e_{n+1} =
 	\left[
 	\frac{(I+D_x+2D_y+2D_z)}{(I-D_x)(I-D_y)(I-D_z)}
 	-
@@ -180,7 +139,7 @@ The amplification factor is defined as
 \end{equation}
 Finding the least common denominator, we have
 \begin{equation}
-	G = 
+	G =
 	\frac{I+D_x+2D_y+2D_z - (I-D_x)D_y - (I-D_x)(I-D_y)D_z}{(I-D_x)(I-D_y)(I-D_z)}
 \end{equation}
 Only looking at the numerator, we have
@@ -196,25 +155,24 @@ Only looking at the numerator, we have
 
 \begin{equation}
 	\boxed{
-	G = 
+	G =
 	\frac{I+(D_x+D_y+D_z)+(D_xD_y+D_yD_z+D_xD_z)-(D_xD_yD_z)}{(I-D_x)(I-D_y)(I-D_z)}
 	}
 \end{equation}
 
-Note that this is a 3rd order perturbation of 
+Note that this is a 3rd order perturbation of
 
 \begin{equation}
-	G = 
+	G =
 	\frac{I+(D_x+D_y+D_z)+(D_xD_y+D_yD_z+D_xD_z)+(D_xD_yD_z)}{(I-D_x)(I-D_y)(I-D_z)}
 \end{equation}
 Which may be rewritten as
 \begin{equation}
-	G = 
+	G =
 	\frac{(I+D_x)}{(I-D_x)}
 	\frac{(I+D_y)}{(I-D_y)}
 	\frac{(I+D_z)}{(I-D_z)}
 \end{equation}
 Which is the product of the three 1D amplification factors. This justifies using a timestep derived from analysis for a 1D aplification factor.
-
 
 \end{document}

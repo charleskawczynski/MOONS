@@ -1,59 +1,12 @@
 \documentclass[11pt]{article}
-\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
-\usepackage{epstopdf}
-\usepackage{amsmath}
-\usepackage{hyperref}
-\usepackage{xspace}
-\usepackage{mathtools}
-\usepackage{tikz}
-\usepackage{epsfig}
-\usepackage{float}
-\usepackage{natbib}
-\usepackage{subfigure}
-\usepackage{setspace}
-\usepackage{tabularx,ragged2e,booktabs,caption}
-
-\newcommand{\figS}{22.1em}
-\newcommand{\ffigS}{15.1em}
-\newcommand{\figH}{\figS}
-\newcommand{\figW}{\figS}
-\newcommand{\ffigH}{\ffigS}
-\newcommand{\ffigW}{\ffigS}
-
-\input{./../path_to_useful_commands.tex}
-\input{\PATHTOUSEFULCOMMANDS}
-
-
-\setlength{\oddsidemargin}{0.1in}
-\setlength{\textwidth}{7.25in}
-
-\setlength{\topmargin}{-1in}     %\topmargin: gap above header
-\setlength{\headheight}{0in}     %\headheight: height of header
-\setlength{\topskip}{0in}        %\topskip: between header and text
-\setlength{\headsep}{0in}
-\setlength{\textheight}{692pt}   %\textheight: height of main text
-\setlength{\textwidth}{7.5in}    % \textwidth: width of text
-\setlength{\oddsidemargin}{-0.5in}  % \oddsidemargin: odd page left margin
-\setlength{\evensidemargin}{0in} %\evensidemargin : even page left margin
-\setlength{\parindent}{0.25in}   %\parindent: indentation of paragraphs
-\setlength{\parskip}{0pt}        %\parskip: gap between paragraphs
-\setlength{\voffset}{0.5in}
-
-
-% Useful commands:
-
-% \hfill		aligns-right everything right of \hfill
+\input{../includes.tex}
 
 \begin{document}
 \doublespacing
-\title{Progress towards verifying UCLA MHD codes for finite \texorpdfstring{$Re_m$}}
-\author{S. Smolentsev, C. Kawczynski \\
-Department of Mechanical and Aerospace Engineering \\
-University of California Los Angeles, USA\\
-}
+\MOONSTITLE
 \maketitle
 
-\section{Introduction}
+\section{Progress towards verifying UCLA MHD codes for finite \texorpdfstring{$Re_m$}{Rm}}
 The purpose of the UCLA MHD codes was to compare a small research code with a commercial code, HIMAG, developed by HyperComp with help from UCLA. The B-formulation was implemented in HIMAG (HIMAG-B), and the UCLA codes were developed to validate HIMAG-B for problems with simple geometries.
 
 Our goal is to verify the UCLA MHD codes for finite magnetic Reynolds number ($Re_m$) flows via code-to-code comparisons and comparison with exact solutions (if they exist). This document provides a summary of the code-to-code numerical tests performed so far.
@@ -72,13 +25,13 @@ The current codes use rectilinear coordinate systems and are limited to simple g
 
 For the present code-to-code comparisons, we will restrict ourselves to a long rectangular cavity which may be used as a duct flow or a no slip cavity flow.
 
-% \begin{figure}[H]
+% \FIG[H]
 %  \centering
 %  \subfigure[]{
-%   \includegraphics[width=\ffigW,height=\ffigH]{geometry.png}
+%   \IG[width=\ffigW,height=\ffigH]{geometry.png}
 %   }
 %    \caption[Optional ]{}
-% \end{figure}
+% \EFIG
 
 Where the domain range is
 \begin{equation}
@@ -488,12 +441,12 @@ The same analytic solution is valid but with $B_{y,exact}(z,t)$.
 \subsubsection{Results}
 Both codes performed these computations using $\Delta t = 10^{-5}$. The solution, $B_z$ was probed at the center of the domain and compared as a function of time. In addition, KB was computed and compared as a function of time.
 
-% \begin{figure}[H]
+% \FIG[H]
 %  \centering
-%  \subfigure[]{\includegraphics[width=\figW,height=\figH]{Bz_u0.png}}
-%  \subfigure[]{\includegraphics[width=\figW,height=\figH]{KB_u0.png}}
+%  \subfigure[]{\IG[width=\figW,height=\figH]{Bz_u0.png}}
+%  \subfigure[]{\IG[width=\figW,height=\figH]{KB_u0.png}}
 %    \caption[Optional ]{}
-% \end{figure}
+% \EFIG
 
 \subsection{Case B: Eddy Currents in a stationary block, 3 magnetic field components}
 Here, we made the following assumptions:
@@ -568,11 +521,11 @@ The same analytic solution for $B_y$ exists from the previous section. For $B_x$
 \subsubsection{Results}
 Both codes performed these computations using $\Delta t = 10^{-5}$. The solutions, $B_x$ and $B_y$ were probed at the center of the domain and compared as a function of time.
 
-% \begin{figure}[H]
+% \FIG[H]
 %  \centering
-%  \subfigure[]{\includegraphics[width=\figW,height=\figH]{B2_u0.png}}
+%  \subfigure[]{\IG[width=\figW,height=\figH]{B2_u0.png}}
 %    \caption[Optional ]{}
-% \end{figure}
+% \EFIG
 
 
 \subsection{Case C: One-Way Coupled 3 Component Magnetic field in a Parabolic Flow}
@@ -714,18 +667,18 @@ Clearly, the time, and y-z spatial plane evolution for the x-component of the ma
 \subsubsection{Results}
 Both codes performed these computations using $\Delta t = 10^{-5}$. The solutions, $B_x$, $B_y$ and $B_z$ were probed at the center of the domain and compared as a function of time.
 
-% \begin{figure}[H]
+% \FIG[H]
 %  \centering
-%  \subfigure[]{\includegraphics[width=\figW,height=\figH]{B2x_u_parabolic.png}}
-%  \subfigure[]{\includegraphics[width=\figW,height=\figH]{B2y_u_parabolic.png}}
+%  \subfigure[]{\IG[width=\figW,height=\figH]{B2x_u_parabolic.png}}
+%  \subfigure[]{\IG[width=\figW,height=\figH]{B2y_u_parabolic.png}}
 %    \caption[Optional ]{}
-% \end{figure}
-% \begin{figure}[H]
+% \EFIG
+% \FIG[H]
 %  \centering
-%  \subfigure[]{\includegraphics[width=\figW,height=\figH]{B2z_u_parabolic.png}}
-%  \subfigure[]{\includegraphics[width=\figW,height=\figH]{KB_u_parabolic.png}}
+%  \subfigure[]{\IG[width=\figW,height=\figH]{B2z_u_parabolic.png}}
+%  \subfigure[]{\IG[width=\figW,height=\figH]{KB_u_parabolic.png}}
 %    \caption[Optional ]{}
-% \end{figure}
+% \EFIG
 
 \subsection{Case D: Fully Coupled 1 Component Magnetic field in a Periodic Duct}
 
@@ -1331,10 +1284,6 @@ Assuming that the Reynolds number is negligibly small, then we have
 % 	\right\}
 % \end{multline}
 
-
-
-\bibliographystyle{unsrt}
-\bibliography{MHD,Math,Interface,fluids,CFD,handpicked}
-
+\input{../include_bib.tex}
 
 \end{document}

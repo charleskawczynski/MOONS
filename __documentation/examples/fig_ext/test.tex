@@ -1,0 +1,18 @@
+\documentclass[a4paper]{article}
+
+\usepackage{graphicx}
+\newcommand{\figdir}{figs}
+\newcommand{\figExt}{png}
+
+\begin{document}
+
+Hello World.
+
+\begin{figure}[!ht]
+  % \includegraphics{\figdir/test.png}
+  \includegraphics{\figdir/test.\figExt}
+  \caption{Test image.}
+  \label{fig:test}
+\end{figure}
+
+\end{document}

@@ -1,0 +1,74 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Energy}
+
+\subsection{Kinetic}
+Consider an infinitesimal measure of kinetic energy $KE$
+\begin{equation}
+	d(KE) = \frac{1}{2} \U^2 dm
+\end{equation}
+Where $m=\rho V$ is the mass, $V$ is the volume, $u$ is velocity and $\rho$ is density.
+\begin{equation}
+	d(KE) = \frac{1}{2} \rho \U^2 dV
+\end{equation}
+Integrating this we have
+\begin{equation}
+	KE = \frac{1}{2} \int_V \rho \U^2 dV
+\end{equation}
+For uniform density we have
+\begin{equation}
+	KE = \frac{1}{2} \rho \int_V \U^2 dV
+\end{equation}
+This is the dimensional form of the kinetic energy. Using the following non-dimensionalization
+\begin{equation}
+	u^* = \frac{u}{U},
+	\qquad
+	\rho^* = \frac{\rho}{\rho_c},
+	\qquad
+	V^* = \frac{V}{L^3}
+\end{equation}
+We have
+\begin{equation}
+	\boxed{
+	KE = \rho_c U^2 L^3 \left( \frac{1}{2} \rho^* \int_V {\U^*}^2 dV^* \right)
+	}
+\end{equation}
+\subsection{Magnetic}
+Consider an infinitesimal measure of magnetic energy $ME$
+\begin{equation}
+	d(ME) = \frac{1}{2} \frac{\B^2}{\mu} dV
+\end{equation}
+Where $V$ is the volume and $\mu$ is magnetic permeability.
+\begin{equation}
+	d(ME) = \frac{1}{2} \frac{\B^2}{\mu} dV
+\end{equation}
+The total magnetic energy is
+\begin{equation}
+	ME = \frac{1}{2} \int_V \frac{\B^2}{\mu} dV
+\end{equation}
+For uniform $\mu$, we have
+\begin{equation}
+	ME = \frac{1}{2} \mu^{-1} \int_V \B^2 dV
+\end{equation}
+This is the dimensional form of the magnetic energy. Using the following non-dimensionalization
+\begin{equation}
+	B^* = \frac{B}{B_c},
+	\qquad
+	\mu^* = \frac{\mu}{\mu_c},
+	\qquad
+	V^* = \frac{V}{L^3}
+\end{equation}
+We have
+\begin{equation}
+	\boxed{
+	ME = \mu_c^{-1} B_c^2 L^3 \left( \frac{1}{2} {\mu^*}^{-1} \int_V {\B^*}^2 dV^* \right)
+	}
+\end{equation}
+
+\end{document}

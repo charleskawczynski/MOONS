@@ -1,0 +1,98 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+% \maketitle
+
+\section{Finite Rm formulation}
+The dimensional induction equation is
+\begin{equation}
+  \frac{\PD \B}{\PD t}
+  =
+  (\CURL \U \CROSS \B)
+  - \\
+  \left(
+  \CURL
+  \left\{
+  \frac{1}{\sigma}
+  \CURL
+  \frac{\B}{\mu}
+  \right\}
+  \right)
+\end{equation}
+Non-dimensionalizing time, velocity, length, conductivity and magnetic permeability by $L/U,U,L,\sigma,\mu$, we have
+\begin{equation}
+  \frac{\PD \B}{\PD t}
+  =
+  (\CURL \U \CROSS \B)
+  - \\
+  \frac{1}{Re_m}
+  \left(
+  \CURL
+  \left\{
+  \frac{1}{\sigma}
+  \CURL
+  \frac{\B}{\mu}
+  \right\}
+  \right)
+  ,\qquad Re_m = \sigma \mu LU
+\end{equation}
+Note that, in the above equation, $\B$ has not been non-dimensionalized. Let
+\begin{equation}
+  G(\B)
+  =
+  \frac{\PD \B}{\PD t}
+  -
+  (\CURL \U \CROSS \B)
+  +
+  \frac{1}{Re_m}
+  \left(
+  \CURL
+  \left\{
+  \frac{1}{\sigma}
+  \CURL
+  \frac{\B}{\mu}
+  \right\}
+  \right)
+  =
+  \mathbf{0}
+\end{equation}
+Since this equation applies to the external $\B$ as well as any induced $\B$ fields, we may write (generally)
+
+\noindent
+\rule{\textwidth}{1pt}
+\begin{center}
+This is where the two formulations part ways.
+\end{center}
+\noindent
+\rule{\textwidth}{1pt}
+\begin{equation}
+	\sum_{k=0}^{\infty} G(\B^k) = \mathbf{0}
+\end{equation}
+Considering the first two terms we have
+\begin{equation}
+  G(\B^0) + G(\B^1) = \mathbf{0}
+\end{equation}
+For a uniform and steady external field ($\B^0$), this simplifies to
+\begin{equation}
+  \frac{\PD \B^1}{\PD t}
+  -
+  (\CURL \U \CROSS (\B^0 + \B^1))
+  +
+  \frac{1}{Re_m}
+  \left(
+  \CURL
+  \left\{
+  \frac{1}{\sigma}
+  \CURL
+  \frac{\B^1}{\mu}
+  \right\}
+  \right)
+  =
+  \mathbf{0}
+\end{equation}
+This is the finite $Re_m$ formulation, where the strength of the induced magnetic field is $\B^1$.
+
+\end{document}

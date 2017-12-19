@@ -1,0 +1,154 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+% \maketitle
+
+\section{Governing equations}
+The dimensional momentum equation is
+\begin{equation}\begin{aligned}
+\PD_t u_i+u_j\PD_j u_i = -\frac{1}{\rho} \PD_i p - g_i + \frac{\mu}{\rho} \PD_{jj} u_i \\
+\end{aligned} \end{equation}
+Expanding, neglecting viscous effects, and using the material derivative we have
+\begin{equation}\begin{aligned}
+D_t u = -\frac{1}{\rho} \PD_x p     \\
+D_t v = -\frac{1}{\rho} \PD_y p     \\
+D_t w = -\frac{1}{\rho} \PD_z p - g \\
+\end{aligned} \end{equation}
+Using Boussinesq approximation,
+\begin{equation}\begin{aligned}
+g \rho = g \rho_0 - g \rho_0 \alpha \ttheta
+\end{aligned} \end{equation}
+Here, $\ttheta, \alpha$ are temperature and coefficient of expansion.
+Plugging in $\rho$ for gravity, assuming $\rho=\rho_0$ for other terms and absorbing $\theta$ independent $g$ term into pressure, we have
+\begin{equation}\begin{aligned}
+D_t u = -\frac{1}{\rho} \PD_x P     \\
+D_t v = -\frac{1}{\rho} \PD_y P     \\
+D_t w = -\frac{1}{\rho} \PD_z P + \gamma \ttheta \\
+\end{aligned} \end{equation}
+Where $\rho$ is constant, $\gamma=g\alpha$ and $P=p + g\rho z$.
+
+Eq. for conduction of heat is
+\begin{equation}\begin{aligned}
+D_t \ttheta = \kappa (\PD_{xx} \ttheta+\PD_{yy} \ttheta+\PD_{zz} \ttheta) \\
+\end{aligned} \end{equation}
+Domain is $0 \le z \le \xi$, at which $\U=\zero$ and $\PD_z \ttheta = \beta = \text{constant}$. If the equilibrium is stable, then $\beta$ is positive. If unstable with a higher temperature below, then $\beta$ is negative.
+Let the temperature be written as the equilibrium temperature and departure from equilibrium $\theta = \ttheta - \Theta$. Substituting this and absorbing $\Theta$ in momentum yields
+\begin{equation}\begin{aligned}
+D_t u = -\frac{1}{\rho} \PD_x \omega     \\
+D_t v = -\frac{1}{\rho} \PD_y \omega     \\
+D_t w = -\frac{1}{\rho} \PD_z \omega + \gamma \theta \\
+\end{aligned} \end{equation}
+Where $\omega = P - \rho \gamma \int \Theta dz$.
+Applying the same substitution to the energy equation, and assuming $\theta = \theta(z)$, we have
+\begin{equation}\begin{aligned}
+D_t \ttheta = & \PD_t \theta + \PD_t \Theta + w \PD_z \theta + w \PD_z \Theta, \qquad \text{assume eq. temp steady \& zero slope} \\
+            = & \PD_t \theta + w \PD_z \theta  \\
+            = & \PD_t \theta + w \beta  \\
+\end{aligned} \end{equation}
+Assuming $u,v,w,\theta$ are small, neglecting 2nd order terms, and including incompressibility, we finally have
+\begin{equation}\begin{aligned}
+\PD_x u + \PD_y v + \PD_z w = 0 \\
+\PD_t u = -\frac{1}{\rho} \PD_x \omega     \\
+\PD_t v = -\frac{1}{\rho} \PD_y \omega     \\
+\PD_t w = -\frac{1}{\rho} \PD_z \omega + \gamma \theta \\
+\PD_t \theta + w \beta = \kappa \PD_{zz} \theta \\
+\end{aligned} \end{equation}
+This constitutes our problem.
+
+\newpage
+\section{governing equations}
+\begin{equation}\begin{aligned}
+\PD_x u + \PD_y v + \PD_z w = 0 \\
+\PD_t u = -\frac{1}{\rho} \PD_x \omega     \\
+\PD_t v = -\frac{1}{\rho} \PD_y \omega     \\
+\PD_t w = -\frac{1}{\rho} \PD_z \omega + \gamma \theta \\
+\PD_t \theta + w \beta = \kappa \PD_{zz} \theta \\
+\end{aligned} \end{equation}
+
+Assuming small quantities are proportional to
+\begin{equation}\begin{aligned}
+e^{nt} e^{ilx} e^{imy} e^{isz} \\
+\end{aligned} \end{equation}
+We have
+\begin{equation}\begin{aligned}
+il u + im v + is w = 0 \\
+n u = -\frac{1}{\rho} il \omega \\
+n v = -\frac{1}{\rho} im \omega \\
+n w = -\frac{1}{\rho} is \omega + \gamma \theta \\
+n \theta + w \beta = \kappa (-s^2-l^2 -m^2) \theta \\
+\end{aligned} \end{equation}
+By elimination, we can derive an equation for $w$
+\begin{equation}\begin{aligned}
+il u + im v + \PD_z w = 0 \\
+u = -\frac{1}{n \rho} il \omega \\
+v = -\frac{1}{n \rho} im \omega \\
+. \\
+il (-\frac{1}{n \rho} il \omega) + im (-\frac{1}{n \rho} im \omega) + \PD_z w = 0 \\
+\frac{l^2}{n \rho} \omega + \frac{m^2}{n \rho} \omega + \PD_z w = 0 \\
+(l^2 + m^2)\omega + n \rho \PD_z w = 0 \\
+. \\
+\omega + \frac{n \rho}{l^2 + m^2} \PD_z w = 0 \\
+\PD_z \omega + \frac{n \rho}{l^2 + m^2} \PD_z^2 w = 0 \\
+%
+. \\
+w = -\frac{1}{n \rho} \PD_z \omega + \frac{1}{n}\gamma \theta \\
+\PD_z \omega = \rho \gamma \theta - n \rho w \\
+. \\
+\rho \gamma \theta - n \rho w + \frac{n \rho}{l^2 + m^2} \PD_z^2 w = 0 \\
+\gamma \theta - n w + \frac{n}{l^2 + m^2} \PD_z^2 w = 0 \\
+\frac{n}{l^2 + m^2} \PD_z^2 w = n w - \gamma \theta \\
+\end{aligned} \end{equation}
+The energy equation terms may be collected:
+\begin{equation}\begin{aligned}
+n \theta + w \beta = \kappa (\PD_{zz}-l^2 -m^2) \theta \\
+w \beta + \left\{n + \kappa (l^2 +m^2-\PD_{zz}) \right\} \theta = 0 \\
+\end{aligned} \end{equation}
+
+Our final form is
+\begin{equation}\begin{aligned}
+w \beta + \left\{n + \kappa (l^2 +m^2-\PD_{zz}) \right\} \theta = 0 \\
+\frac{n}{l^2 + m^2} \PD_z^2 w = n w - \gamma \theta \\
+\end{aligned} \end{equation}
+Or
+\begin{equation}\begin{aligned}
+w \beta + \left\{n + \kappa (l^2 +m^2-\PD_{zz}) \right\} \theta = 0 \\
+n (w (l^2 + m^2) - \PD_z^2 w) - \gamma (l^2 + m^2) \theta = 0 \\
+\end{aligned} \end{equation}
+
+Considering the BCs, Note that the $\theta$ BC is for the departure temperature, ($u=0,v=0,w=0,\theta=0$ on $z=0,\xi$), we may assume that these quantities are proportional to sine functions $\sin(sz), s=q\pi/\xi, q=$integer to get
+\begin{equation}\begin{aligned}
+w \beta + \left\{n + \kappa (l^2 +m^2+s^2) \right\} \theta = 0 \\
+n (l^2 + m^2 + s^2) w - \gamma (l^2 + m^2) \theta = 0 \\
+\end{aligned} \end{equation}
+The equation determining $n$ found by combining these equations
+\begin{equation}\begin{aligned}
+w = \frac{\gamma (l^2 + m^2) \theta}{n (l^2 + m^2 + s^2)} \\
+\frac{\gamma (l^2 + m^2) \theta}{n (l^2 + m^2 + s^2)} \beta + \left\{n + \kappa (l^2 +m^2+s^2) \right\} \theta = 0 \\
+\gamma (l^2 + m^2) \beta + \left\{n + \kappa (l^2 +m^2+s^2) \right\} n (l^2 + m^2 + s^2) = 0 \\
+\gamma (l^2 + m^2) \beta + n^2 (l^2 + m^2 + s^2) + n \kappa (l^2 +m^2+s^2)^2 = 0 \\
+n^2 (l^2 + m^2 + s^2) + n \kappa (l^2 +m^2+s^2)^2 + \beta \gamma (l^2 + m^2) = 0 \\
+n^2 + n \kappa (l^2 +m^2+s^2) + \beta \gamma \frac{l^2 + m^2}{l^2 + m^2 + s^2} = 0 \\
+\end{aligned} \end{equation}
+
+Finally:
+
+\begin{equation}\begin{aligned}
+n = -\kappa (l^2 +m^2+s^2) \pm \frac{1}{2} \sqrt{\kappa^2 (l^2 +m^2+s^2)^2-4 \beta \gamma \frac{l^2 + m^2}{l^2 + m^2 + s^2}}  \\
+\end{aligned} \end{equation}
+For $\kappa=0$ there is no conduction, so that each element of fluid retains its temperature and density.
+
+If $\beta$ is positive, equilibrium is reached
+\begin{equation}\begin{aligned}
+n = \pm i \sqrt{\beta \gamma \frac{l^2 + m^2}{l^2 + m^2 + s^2}}  \\
+\end{aligned} \end{equation}
+
+If $\beta$ is negative, disturbances increase with time
+\begin{equation}\begin{aligned}
+n = \pm \sqrt{\beta \gamma \frac{l^2 + m^2}{l^2 + m^2 + s^2}}  \\
+\end{aligned} \end{equation}
+
+
+\end{document}

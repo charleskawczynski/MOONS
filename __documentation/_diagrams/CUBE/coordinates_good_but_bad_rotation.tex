@@ -1,0 +1,85 @@
+% LOOKS GOOD, BUT NOT WORKING WELL UNDER ROTATION
+% COORDINATES
+
+% Preliminaries
+\newcommand{\PHIANGLE}{10}   % 0 <  phi  < 45 : Controls left to right rotation
+\newcommand{\THETAANGLE}{30} % 0 < theta < 90 : Controls top to bottom rotation
+\newcommand{\COSTHETA}{cos(\THETAANGLE)}
+\newcommand{\SINTHETA}{sin(\THETAANGLE)}
+\newcommand{\COSPHI}{cos(\PHIANGLE)}
+\newcommand{\SINPHI}{sin(\PHIANGLE)}
+\newcommand{\ORIGINX}{0.0}
+\newcommand{\ORIGINY}{0.0}
+\newcommand{\DX}{2}
+\newcommand{\DY}{2}
+\newcommand{\DZ}{2}
+% \newcommand{\DIAGX}{\COSPHI*\SINPHI*\COSTHETA}
+% \newcommand{\DIAGY}{\SINPHI*\COSPHI*\SINTHETA}
+
+\newcommand{\DIAGX}{\COSPHI*\SINPHI*\COSTHETA}
+\newcommand{\DIAGY}{\SINPHI*\COSPHI*\SINTHETA}
+
+% CELL CENTER
+\newcommand{\CCX}{\ORIGINX}
+\newcommand{\CCY}{\ORIGINY}
+
+% FACES
+\newcommand{\XBFACEX}{\CCX-.5*\DX}
+\newcommand{\XTFACEX}{\CCX+.5*\DX}
+\newcommand{\YBFACEX}{\CCX}
+\newcommand{\YTFACEX}{\CCX}
+\newcommand{\ZBFACEX}{\CCX+.5*\DZ*\DIAGX}
+\newcommand{\ZTFACEX}{\CCX-.5*\DZ*\DIAGX}
+
+\newcommand{\XBFACEY}{\CCY}
+\newcommand{\XTFACEY}{\CCY}
+\newcommand{\YBFACEY}{\CCY-.5*\DY}
+\newcommand{\YTFACEY}{\CCY+.5*\DY}
+\newcommand{\ZBFACEY}{\CCY+.5*\DZ*\DIAGY}
+\newcommand{\ZTFACEY}{\CCY-.5*\DZ*\DIAGY}
+
+% EDGES
+\newcommand{\XEDGEAX}{\ZBFACEX} % Edge 1
+\newcommand{\XEDGEBX}{\ZTFACEX} % Edge 1
+\newcommand{\XEDGECX}{\ZBFACEX} % Edge 1
+\newcommand{\XEDGEDX}{\ZTFACEX} % Edge 1
+\newcommand{\YEDGEAX}{\ZBFACEX-.5*\DX} % Edge 1
+\newcommand{\YEDGEBX}{\ZTFACEX-.5*\DX} % Edge 1
+\newcommand{\YEDGECX}{\ZBFACEX+.5*\DX} % Edge 1
+\newcommand{\YEDGEDX}{\ZTFACEX+.5*\DX} % Edge 1
+\newcommand{\ZEDGEAX}{\XBFACEX} % Edge 1
+\newcommand{\ZEDGEBX}{\XTFACEX} % Edge 1
+\newcommand{\ZEDGECX}{\XBFACEX} % Edge 1
+\newcommand{\ZEDGEDX}{\XTFACEX} % Edge 1
+
+\newcommand{\XEDGEAY}{\ZBFACEY-.5*\DY} % Edge 1
+\newcommand{\XEDGEBY}{\ZTFACEY-.5*\DY} % Edge 1
+\newcommand{\XEDGECY}{\ZBFACEY+.5*\DY} % Edge 1
+\newcommand{\XEDGEDY}{\ZTFACEY+.5*\DY} % Edge 1
+\newcommand{\YEDGEAY}{\ZBFACEY} % Edge 1
+\newcommand{\YEDGEBY}{\ZTFACEY} % Edge 1
+\newcommand{\YEDGECY}{\ZBFACEY} % Edge 1
+\newcommand{\YEDGEDY}{\ZTFACEY} % Edge 1
+\newcommand{\ZEDGEAY}{\XBFACEY-.5*\DZ} % Edge 1
+\newcommand{\ZEDGEBY}{\XTFACEY-.5*\DZ} % Edge 1
+\newcommand{\ZEDGECY}{\XBFACEY+.5*\DZ} % Edge 1
+\newcommand{\ZEDGEDY}{\XTFACEY+.5*\DZ} % Edge 1
+
+% NODES
+\newcommand{\NODEAX}{\XEDGEAX-0.5*\DX}
+\newcommand{\NODEBX}{\XEDGEAX+0.5*\DX}
+\newcommand{\NODECX}{\XEDGECX-0.5*\DX}
+\newcommand{\NODEDX}{\XEDGECX+0.5*\DX}
+\newcommand{\NODEEX}{\XEDGEBX-0.5*\DX}
+\newcommand{\NODEFX}{\XEDGEBX+0.5*\DX}
+\newcommand{\NODEGX}{\XEDGEDX-0.5*\DX}
+\newcommand{\NODEHX}{\XEDGEDX+0.5*\DX}
+
+\newcommand{\NODEAY}{\XEDGEAY}
+\newcommand{\NODEBY}{\XEDGEAY}
+\newcommand{\NODECY}{\XEDGECY}
+\newcommand{\NODEDY}{\XEDGECY}
+\newcommand{\NODEEY}{\XEDGEBY}
+\newcommand{\NODEFY}{\XEDGEBY}
+\newcommand{\NODEGY}{\XEDGEDY}
+\newcommand{\NODEHY}{\XEDGEDY}

@@ -1,215 +1,106 @@
-% \documentclass[11pt]{article}
+% Convert to .eps instructions:
+% pdfcrop $2.pdf
+% pdftops -f $1 -l $1 -eps "$2-crop.pdf"
+% rm  "$2-crop.pdf"
+% mv  "$2-crop.eps" $2.eps
+
 \documentclass[tikz,border=5pt]{standalone}
-% \documentclass[landscape, 12pt]{report}
-% \usepackage[a4paper, total={4in, 4in}]{geometry}
-\usepackage[a4paper,margin=0pt]{geometry}
-\usepackage{graphicx}    % needed for including graphics e.g. EPS, PS
-\usepackage{epstopdf}
-\usepackage{amsmath}
-% \usepackage{hyperref}
-\usepackage{xspace}
-\usepackage{mathtools}
-\usepackage{tikz}
+% \documentclass[convert={outext=.eps, command=\unexpanded{pdftops -eps \infile}}]{standalone}
+
+\input{../includes.tex}
+\input{\rootdir/includes/diagrams/coordinates.tex} % For local use
+\input{\rootdir/includes/margins/zero_margins.tex} % For local use
+\setlength{\voffset}{-1in}
+\setlength{\hoffset}{-1in}
 \usetikzlibrary{positioning}
-\usepackage{epsfig}
-\usepackage{float}
-\usepackage{natbib}
-\usepackage{subfigure}
-\usepackage{setspace}
 \usetikzlibrary{shapes.geometric,calc}
-\usepackage{tabularx,ragged2e,booktabs,caption}
+% \usepackage{tikzexternal}
+% \tikzexternalize
 
-% Angle of incidence
-\newcommand{\phiAngle}{45}   % 0 <  phi  < 45 : Controls left to right rotation
-\newcommand{\thetaAngle}{30} % 0 < theta < 90 : Controls top to bottom rotation
-\newcommand{\cosPhi}{cos(\phiAngle)}
-\newcommand{\sinPhi}{sin(\phiAngle)}
-
-\newcommand{\cosTheta}{cos(\thetaAngle)}
-\newcommand{\sinTheta}{sin(\thetaAngle)}
-
-% Origin location
-\newcommand{\OR}{0.1} % Origin
+% Equation font size
+\newcommand{\EQS}{\Huge}
 
 % Length of arrowed parts
-% \newcommand{\arrowL}{1.2}
-\newcommand{\arrowL}{1.2}
-\newcommand{\arrowLe}{1.2} % Edge data
-\newcommand{\arrowLZ}{\arrowL/\cosTheta*1.2}
-\newcommand{\coordL}{0.65}
-
-% Lengths
-\newcommand{\dx}{1.7}
-\newcommand{\dy}{1.7}
-\newcommand{\dz}{1.7}
-\newcommand{\vol}{\dx*\dy*\dz}
-
-% Projected lengths
-\newcommand{\cosL}{\dz*\cosPhi*\sinPhi*\cosTheta}
-\newcommand{\sinL}{\dz*\sinPhi*\cosPhi*\sinTheta}
-
-% Coordinate location
-\newcommand{\COx}{\dx+1.2} % Coordinate
-\newcommand{\COy}{\dy-0.1} % Coordinate
-
-% Cell center location
-\newcommand{\CCx}{-{\cosL}/2+\OR+\dx/2}
-\newcommand{\CCy}{-{\sinL}/2+\OR+\dy/2}
-
-% Cell Face location
-\newcommand{\Fx}{-{\cosL}/2+\OR,-{\sinL}/2+\dy/2+\OR}
-\newcommand{\Fy}{-{\sinL}/2+\OR+\dy/2}
+\newcommand{\arrowL}{0.4}
+\newcommand{\coordL}{0.2}
 
 % Thickness of lines
 \newcommand{\w}{2}
-\newcommand{\wSquare}{\w}
 \newcommand{\wCrissCross}{\w/2}
 \newcommand{\wCoord}{\w}
 \newcommand{\wArr}{5}
-% \newcommand{\s}{5.6} % Previously used
 \newcommand{\s}{4.8} % New
-
-\newcommand{\vs}{5in}
-\newcommand{\hs}{6in}
-
-% \newcommand{\s}{3.96}
-\newcommand{\ra}{0.04}
-
-% \newcommand{\w}{1}
-% \newcommand{\wSquare}{\w}
-% \newcommand{\wCrissCross}{\w/2}
-% \newcommand{\wCoord}{\w}
-% \newcommand{\wArr}{1}
-% \newcommand{\s}{5.6}
-% \newcommand{\ra}{0.01}
 
 % Arrow head type and direction
 \newcommand{\arrL}{stealth-}
 \newcommand{\arrR}{-stealth}
 \newcommand{\arrLR}{-stealth-}
 
-
-% Numbering from: https://www.sharelatex.com/learn-scripts/images/f/fc/Layout-dimensions.png
-\setlength{\hoffset}{-1in}       % 1
-\setlength{\voffset}{0in}        % 2
-\setlength{\oddsidemargin}{0in}  % 3
-\setlength{\topmargin}{-1in}     % 4
-\setlength{\headheight}{0in}     % 5
-\setlength{\headsep}{0in}        % 6
-\setlength{\textheight}{350pt}   % 7
-\setlength{\textwidth}{5in}    % 8
-\setlength{\marginparsep}{0in}   % 9
-\setlength{\marginparwidth}{0in} % 10
-\setlength{\footskip}{0in}       % 11 a (see fig)
-\setlength{\marginparpush}{0in}  % 11 b (see fig)
-\setlength{\hoffset}{-1in}        % 11 c (see fig)
-\setlength{\voffset}{0in}        % 11 d (see fig)
-\setlength{\paperwidth}{0in}     % 11 e (see fig)
-\setlength{\paperheight}{390pt}  % 11 f (see fig)
-
-% \setlength{\topskip}{0in}        % 
-% \setlength{\parindent}{0.25in}   % 
-% \setlength{\parskip}{0pt}        % 
-% \setlength{\evensidemargin}{0in} % 
-
-
-
-% Useful commands:
-
-% \hfill		aligns-right everything right of \hfill
-
 \begin{document}
+\MOONSTITLE
 \pagenumbering{gobble}
-% For some reason, if -{\cosL} or {\sinL} is not the first term WITH a sign, compilation fails.
+\noindent
 
-% \resizebox{\hs}{\vs}{
 \begin{tikzpicture}[scale=\s]
-% SIZES: \tiny \scriptsize \footnotesize \small \normalsize \large \Large \LARGE \huge \Huge
 \tikzstyle{every node}=[font=\LARGE]
+% Node lines
+	% \draw[line width=1,dashed] ({\NODEAX},{\NODEAY}) -- ({\NODEBX},{\NODEBY});
+	\draw[line width=1] ({\NODECX},{\NODECY}) -- ({\NODEDX},{\NODEDY});
+	\draw[line width=1] ({\NODEEX},{\NODEEY}) -- ({\NODEFX},{\NODEFY});
+	\draw[line width=1] ({\NODEGX},{\NODEGY}) -- ({\NODEHX},{\NODEHY});
 
-% Back face lines
-\draw[line width=\wSquare,dashed] (\OR+\dx,\OR) -- ++ (-\dx,0) -- ++ (0,\dy);
-\draw[line width=\wSquare]        (\OR+\dx,\OR) -- ++	(0,\dy) -- ++ (-\dx,0);
-% Front face lines
-\draw[line width=\wSquare] (-{\cosL}+\OR,-{\sinL}+\OR) -- ++ (\dx,0) -- ++ (0,\dy);
-\draw[line width=\wSquare] (-{\cosL}+\OR,-{\sinL}+\OR) -- ++ (0,\dy) -- ++ (\dx,0);
+	% \draw[line width=1,dashed] ({\NODEAX},{\NODEAY}) -- ({\NODEEX},{\NODEEY});
+	\draw[line width=1] ({\NODEBX},{\NODEBY}) -- ({\NODEFX},{\NODEFY});
+	\draw[line width=1] ({\NODECX},{\NODECY}) -- ({\NODEGX},{\NODEGY});
+	\draw[line width=1] ({\NODEDX},{\NODEDY}) -- ({\NODEHX},{\NODEHY});
 
-% % Back face circles
-% \draw[fill,line width=\w] (\OR,\OR) circle [radius=\ra];
-% \draw[fill,line width=\w] (\OR+\dx,\OR) circle [radius=\ra];
-% \draw[fill,line width=\w] (\OR+\dx,\OR+\dy) circle [radius=\ra];
-% \draw[fill,line width=\w] (\OR,\OR+\dy) circle [radius=\ra];
-% % Front face circles
-% \draw[fill,line width=\wSquare] (-{\cosL}+\OR,-{\sinL}+\OR) circle [radius=\ra];
-% \draw[fill,line width=\wSquare] (-{\cosL}+\OR+\dx,-{\sinL}+\OR) circle [radius=\ra];
-% \draw[fill,line width=\wSquare] (-{\cosL}+\OR+\dx,-{\sinL}+\OR+\dy) circle [radius=\ra];
-% \draw[fill,line width=\wSquare] (-{\cosL}+\OR,-{\sinL}+\OR+\dy) circle [radius=\ra];
-
-% Connecting lines
-\draw[line width=\wSquare,dashed] (\OR,\OR)         -- ++({-\cosL},{-\sinL});
-\draw[line width=\wSquare]        (\OR+\dx,\OR)     -- ++({-\cosL},{-\sinL});
-\draw[line width=\wSquare]        (\OR+\dx,\OR+\dy) -- ++({-\cosL},{-\sinL});
-\draw[line width=\wSquare]        (\OR,\OR+\dy)     -- ++({-\cosL},{-\sinL});
+	% \draw[line width=1,dashed] ({\NODEAX},{\NODEAY}) -- ({\NODECX},{\NODECY});
+	\draw[line width=1] ({\NODEBX},{\NODEBY}) -- ({\NODEDX},{\NODEDY});
+	\draw[line width=1] ({\NODEEX},{\NODEEY}) -- ({\NODEGX},{\NODEGY});
+	\draw[line width=1] ({\NODEFX},{\NODEFY}) -- ({\NODEHX},{\NODEHY});
 
 % Criss-cross lines (Sergey's request)
-\draw[line width=\wCrissCross,dashed] (\OR,\OR) -- ++(\dx,\dy);
-\draw[line width=\wCrissCross,dashed] (\OR,\OR) -- ++(-{\cosL}+\dx,-{\sinL});
-\draw[line width=\wCrissCross,dashed] (\OR,\OR) -- ++(-{\cosL},-{\sinL}+\dy);
+	\draw[line width=\wCrissCross,dashed] ({\NODEFX},{\NODEFY}) -- ({\NODEDX},{\NODEDY});
+	\draw[line width=\wCrissCross,dashed] ({\NODEHX},{\NODEHY}) -- ({\NODEBX},{\NODEBY});
+	\draw[line width=\wCrissCross,dashed] ({\NODEGX},{\NODEGY}) -- ({\NODEDX},{\NODEDY});
+	\draw[line width=\wCrissCross,dashed] ({\NODECX},{\NODECY}) -- ({\NODEHX},{\NODEHY});
+	\draw[line width=\wCrissCross,dashed] ({\NODEEX},{\NODEEY}) -- ({\NODEHX},{\NODEHY});
+	\draw[line width=\wCrissCross,dashed] ({\NODEGX},{\NODEGY}) -- ({\NODEFX},{\NODEFY});
 
-\draw[line width=\wCrissCross,dashed] (-{\cosL}+\OR,-{\sinL}+\OR) -- ++({\dx+\cosL},{\sinL});
-\draw[line width=\wCrissCross,dashed] (-{\cosL}+\OR,-{\sinL}+\OR) -- ++({\cosL},{\dy+\sinL});
-\draw[line width=\wCrissCross,dashed] (\OR,\OR+\dy) -- ++(\dx,-\dy);
+% Lines to faces
+	% \draw[line width=1] ({\CCX},{\CCY}) -- ++ ({\XTFACEX},{\XTFACEY});
+	% \draw[line width=1] ({\CCX},{\CCY}) -- ++ ({\YTFACEX},{\YTFACEY});
+	% \draw[line width=1] ({\CCX},{\CCY}) -- ++ ({\ZTFACEX},{\ZTFACEY});
 
-% E/J Field
-\draw[\arrR,anchor=east,line width=\wArr]  
-(\OR+\dx/2,\OR) -- ++(\dx/1.5,0) node[right=1.3,anchor=north]
-{$(\nabla \times \mathbf{B})_{x,i,j-\frac{1}{2},k-\frac{1}{2}}$};
-\draw[\arrR,anchor=east,line width=\wArr]  
-(\OR,\OR+\dy/2) -- ++(0,\dy/1.5) node[anchor=east]
-{$(\nabla \times \mathbf{B})_{y,i-\frac{1}{2},j,k-\frac{1}{2}}$};
-\draw[\arrR,anchor=east,line width=\wArr]  
-({\OR-\cosL/2},{\OR-\sinL/2}) -- ++({-\cosL},{-\sinL}) node[anchor=north]
-{$(\nabla \times \mathbf{B})_{z,i-\frac{1}{2},j-\frac{1}{2},k}$};
+% Face fields:
+	\draw[line width=\wArr,\arrR] ({\XTFACEX},{\XTFACEY}) -- ++ ({\arrowL},{0})                        node[anchor=west]  {\EQS $(u,B_x)_{i+\frac{1}{2},j,k}$};
+	\draw[line width=\wArr,\arrR] ({\YTFACEX},{\YTFACEY}) -- ++ ({0},{\arrowL})                        node[anchor=south]  {\EQS $(v,B_y)_{i,j+\frac{1}{2},k}$};
+	% \draw[line width=\wArr,\arrR] ({\ZTFACEX},{\ZTFACEY}) -- ++ ({-\arrowL*\DIAGX},{-\arrowL*\DIAGY})  node[right=1,anchor=north]  {\EQS $(w,B_z)_{i,j,k+\frac{1}{2}}$};
+	% \draw[line width=\wArr,\arrL] ({\ZTFACEX-\arrowL*\DIAGX},{\ZTFACEY-\arrowL*\DIAGY}) -- ++ ({\arrowL*\DIAGX},{\arrowL*\DIAGY})  node[below=2,anchor=north]  {\EQS $(w,B_z)_{i,j,k+\frac{1}{2}}$};
+	\draw[line width=\wArr,\arrL] ({\ZTFACEX-\arrowL*\DIAGX},{\ZTFACEY-\arrowL*\DIAGY}) -- ++ ({\arrowL*\DIAGX},{\arrowL*\DIAGY})  node[below=.8,anchor=north]  {\EQS $(w,B_z)_{i,j,k+\frac{1}{2}}$};
 
-% \draw[\arrR,anchor=east,line width=\w]  (\OR+\dx/2,\OR) -- ++(\dx/1.5,0) node[anchor=west]{$(\nabla \times \mathbf{B})_x, (\mathbf{u} \times \mathbf{B})_x$};
-% \draw[\arrR,anchor=east,line width=\w]  (\OR,\OR+\dy/2) -- ++(0,\dy/1.5) node[anchor=east]{$(\nabla \times \mathbf{B})_y, (\mathbf{u} \times \mathbf{\text{B}})_y$};
-% \draw[\arrR,anchor=east,line width=\w]  ({\OR-\cosL/2},{\OR-\sinL/2}) -- ++({-\cosL/1.3},{-\sinL/1.3}) node[anchor=east]{$(\nabla \times \mathbf{B})_z, (\mathbf{u} \times \mathbf{B})_z$};
+% Edge fields:
+	% \draw[line width=\wArr,\arrR] ({\XEDGEDX},{\XEDGEDY}) -- ++ ({\arrowL},{0})                        node[left=.7,anchor=north]  {\EQS ${J_x}_{i,j+\frac{1}{2},k+\frac{1}{2}}$};
+	% \draw[line width=\wArr,\arrR] ({\YEDGEDX},{\YEDGEDY}) -- ++ ({0},{\arrowL})                        node[below=1.7,anchor=north]  {\EQS ${J_y}_{i+\frac{1}{2},j,k+\frac{1}{2}}$};
+	% \draw[line width=\wArr,\arrR] ({\ZEDGEDX},{\ZEDGEDY}) -- ++ ({-\arrowL*\DIAGX},{-\arrowL*\DIAGY})  node[below=-.4,anchor=north west]  {\EQS ${J_z}_{i+\frac{1}{2},j+\frac{1}{2},k}$};
+	\draw[line width=\wArr,\arrR] ({\XEDGEDX},{\XEDGEDY}) -- ++ ({\arrowL},{0})                        node[left=.7,anchor=north]         {\EQS $(\sigma,J_x)_{i,j+\frac{1}{2},k+\frac{1}{2}}$};
+	\draw[line width=\wArr,\arrR] ({\YEDGEDX},{\YEDGEDY}) -- ++ ({0},{\arrowL})                        node[below=1.7,anchor=north]       {\EQS $(\sigma,J_y)_{i+\frac{1}{2},j,k+\frac{1}{2}}$};
+	\draw[line width=\wArr,\arrR] ({\ZEDGEDX},{\ZEDGEDY}) -- ++ ({-\arrowL*\DIAGX},{-\arrowL*\DIAGY})  node[right=.6]  {\EQS $(\sigma,J_z)_{i+\frac{1}{2},j+\frac{1}{2},k}$};
 
-% u,v,w
-\draw[line width=\wArr,\arrL] (\CCx-\dx/2,\CCy)     
--- ++(-\arrowL,0) node[anchor=south west]
-{$(u,B_x)_{i-\frac{1}{2},j,k}$};%x
-\draw[line width=\wArr,\arrL] (\CCx,\CCy-\dy/2)     
--- ++(0,-\arrowL) node[anchor=south east]
-{$(v,B_y)_{i,j-\frac{1}{2},k}$};%y
-\draw[line width=\wArr,\arrL] (\OR+\dx/2,\OR+\dy/2) 
--- ++({\cosL*\arrowLZ},{\sinL*\arrowLZ}) node[left=-0.5,anchor=south]
-{$(w,B_z)_{i,j,k-\frac{1}{2}}$};%z
+% Coordinate system and cell center fields (coordinate system cell center)
+	% \draw [fill] (\CCX,\CCY) circle [radius=0.02];
+	% \draw (\CCX,\CCY) node[right=1.3,anchor=north]{\EQS$ (\correctU,\correctB)_{i,j,k}$};
+	% \draw[line width=\wCoord,\arrR]	(\CCX,\CCY) -- ++ (\coordL,0)                           node[anchor=south]{\EQS $x$};
+	% \draw[line width=\wCoord,\arrR]	(\CCX,\CCY) -- ++ (0,\coordL)                           node[anchor=south]{\EQS $y$};
+	% \draw[line width=\wCoord,\arrR]	(\CCX,\CCY) -- ++ ({-\DIAGX*\coordL},{-\DIAGY*\coordL}) node[anchor=east] {\EQS $z$};
 
-% Coordinate system
-% \draw[line width=\w,\arrR] (\OR+\COx,\OR+\COy) -- ++(0,\coordL) node[anchor=south]{$y$};
-% \draw[line width=\w,\arrR] (\OR+\COx,\OR+\COy) -- ++(\coordL,0) node[anchor=north]{$x$};
-% \draw[line width=\w,\arrR] (\OR+\COx,\OR+\COy) -- ++({-\cosL*\coordL},{-\sinL*\coordL}) node[anchor=east]{$z$};
-
-% B system
-\draw[line width=\wCoord,\arrR] 
-	(\CCx,\CCy) -- ++
-	(0,\coordL) node[anchor=south]{$y$};
-\draw[line width=\wCoord,\arrR] 
-	(\CCx,\CCy) -- ++
-	(\coordL,0) node[anchor=south]{$x$};
-\draw[line width=\wCoord,\arrR] 
-	(\CCx,\CCy) -- ++
-	({-\cosL*\coordL},{-\sinL*\coordL}) node[anchor=east]{$z$};
-
-% Pressure circle
-% \draw [fill] (\CCx,\CCy) circle [radius=0.03];
-\draw (\CCx,\CCy) node[below=0.4,anchor=north west]
-{$(p, \nabla \text{\textbullet} \mathbf{u}, \nabla \text{\textbullet} \mathbf{B})_{i,j,k}$};
-
+% Coordinate system and cell center fields (coordinate system outside)
+	\draw [fill] (\CCX,\CCY) circle [radius=0.02];
+	% \draw (\CCX,\CCY) node[left=.5,anchor=east]{\EQS$ (\correctU,\correctB)_{i,j,k}$};
+	\draw (\CCX,\CCY) node[left=.7,anchor=south]{\EQS$ (\correctU,\correctB)_{i,j,k}$};
+	\draw[line width=\wCoord,\arrR]	({\NODEBX},{\NODEBY}) -- ++ (\coordL,0)                           node[anchor=south]{\EQS $x$};
+	\draw[line width=\wCoord,\arrR]	({\NODECX},{\NODECY}) -- ++ (0,\coordL)                           node[anchor=south]{\EQS $y$};
+	\draw[line width=\wCoord,\arrR]	({\NODEEX},{\NODEEY}) -- ++ ({-\DIAGX*\coordL},{-\DIAGY*\coordL}) node[anchor=east] {\EQS $z$};
 \end{tikzpicture}
-% }
-
-
 
 \end{document}

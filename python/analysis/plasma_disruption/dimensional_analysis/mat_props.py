@@ -4,9 +4,9 @@
 # 3)
 # 4)
 
-from sympy.solvers import solve
-from sympy import Symbol
-from sympy import *
+# from sympy.solvers import solve
+# from sympy import Symbol
+# from sympy import *
 from itertools import *
 from math import factorial
 import numpy as np
@@ -27,6 +27,7 @@ class mat_props:
 	Xi_m = 0.0
 	K_m = 0.0
 	mu_m = 0.0
+	nu_m = 0.0
 
 	def __init__(self):
 		return
@@ -52,6 +53,8 @@ class mat_props:
 		self.Xi_m  = 1.4*pow(-5)
 		self.K_m   = self.Xi_m+1.0
 		self.mu_m  = self.K_m*mu_m0
+		self.mu_m  = self.K_m*mu_m0
+		self.nu_m  = (self.sigma*self.mu_m)**(-1.0)
 		return self
 
 	def Lead_Lithium(self,T): # http://oa.upm.es/11738/1/INVE_MEM_2011_103029.pdf
@@ -72,6 +75,7 @@ class mat_props:
 		self.Xi_m        = 1.4*pow(-5) # http://hyperphysics.phy-astr.gsu.edu/hbase/Tables/magprop.html
 		self.K_m         = self.Xi_m+1.0
 		self.mu_m        = self.K_m*mu_m0
+		self.nu_m  = (self.sigma*self.mu_m)**(-1.0)
 		return self
 
 	def liquid_lead(self,T): # http://www.iaea.org/inis/collection/NCLCollectionStore/_Public/43/095/43095088.pdf
@@ -88,6 +92,7 @@ class mat_props:
 		self.Xi_m        = 0 # not given in ref.
 		self.K_m         = self.Xi_m+1.0
 		self.mu_m        = self.K_m*mu_m0
+		self.nu_m  = (self.sigma*self.mu_m)**(-1.0)
 		return self
 
 	def steel(self):
@@ -108,21 +113,22 @@ class mat_props:
 
 	def print_MP(self):
 		t = '\t'
-		print ' --------- '+self.name+' --------- '
-		# print '[Ohm]         = [(kg m^2)/(s^3 A^2)]'
-		# print '[H] = [henry] = [(kg m^2)/(s^2 A^2)]'
-		# print '[H/Ohm] = [s], [H] = [Ohm s]'
-		# print '[S] = [1/Ohm]'
-		# print '[m Pa = m N/m^2 = kg/(m*s^2)]'
-		# print ''
-		print 'sigma = ' + str(self.sigma) + t+t +   ' [Ohm^-1 m^-1]'
-		print 'nu    = ' + str(self.nu)    + t+      ' [m^2/s]'
-		print 'rho   = ' + str(self.rho)   + t+t+t + ' [kg/m^3]'
-		print 'mu    = ' + str(self.mu)    + t+t+t+  ' [kg/(m s)]'
-		print 'mu_m  = ' + str(self.mu_m)  + t +     ' [H/m]'
-		print 'mu_m  = ' + str(self.mu_m)  + t +     ' [(Ohm s)/m]'
-		print 'Xi_m  = ' + str(self.Xi_m)  + t+t+t + ' [1]'
-		print 'K_m   = ' + str(self.K_m)   + t+t +   ' [1]'
-		print ' --------------------------------- '
+		print(' --------- '+self.name+' --------- ')
+		# print('[Ohm]         = [(kg m^2)/(s^3 A^2)]')
+		# print('[H] = [henry] = [(kg m^2)/(s^2 A^2)]')
+		# print('[H/Ohm] = [s], [H] = [Ohm s]')
+		# print('[S] = [1/Ohm]')
+		# print('[m Pa = m N/m^2 = kg/(m*s^2)]')
+		# print('')
+		print('sigma = ' + str(self.sigma) + t+t +   ' [Ohm^-1 m^-1]')
+		print('nu    = ' + str(self.nu)    + t+      ' [m^2/s]')
+		print('rho   = ' + str(self.rho)   + t+t+t + ' [kg/m^3]')
+		print('mu    = ' + str(self.mu)    + t+t+t+  ' [kg/(m s)]')
+		print('mu_m  = ' + str(self.mu_m)  + t +     ' [H/m]')
+		print('mu_m  = ' + str(self.mu_m)  + t +     ' [(Ohm s)/m]')
+		print('nu_m  = ' + str(self.nu_m)  + t + t + ' [m^2/s]')
+		print('Xi_m  = ' + str(self.Xi_m)  + t+t+t + ' [1]')
+		print('K_m   = ' + str(self.K_m)   + t+t +   ' [1]')
+		print(' --------------------------------- ')
 		return
 

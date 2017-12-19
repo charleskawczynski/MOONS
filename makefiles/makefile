@@ -1,8 +1,11 @@
 # **************** RUN CONFIGURATION *******************
+# Using windows command prompt periodically results in
+# Sporadic filename errors. To circumvent this, use the git powershell
 RELEASE = 'DEBUG'
 # RELEASE = 'OPTIMIZE'
 # RELEASE = 'PROFILE'
 USE_OPEN_MP = 'TRUE'
+EXPORT_FOR_AUTO_RESTART = 'TRUE'
 PARALLELIZE_3D_OPS = 'TRUE'
 # PARALLELIZE_2D_OPS = 'TRUE'
 # PARALLELIZE_1D_OPS = 'TRUE'
@@ -15,8 +18,8 @@ CLUSTER = 'PC_CK'
 # CLUSTER = 'Hoffman2'
 # CLUSTER = 'DOE'
 # ************* MAKE CONFIGURATION ******************
-MKE = gmake
-# MKE = make
+# MKE = gmake
+MKE = make
 # ****************** OS SETTINGS ********************
 ifdef SystemRoot
 	OS_USED = 'OS_WINDOWS'
@@ -24,37 +27,39 @@ else
 	OS_USED = 'OS_LINUX'
 endif
 
-ifeq ($(OS_USED),'OS_WINDOWS')
-	RM = del
-	PS = $(strip \\)
-else
-	PS = $(strip /)
-	RM = rm
-endif
+# The following commented code was abandoned because
+# windows command prompt resulted in errors.
+# ifeq ($(OS_USED),'OS_WINDOWS')
+# 	RM = del
+# 	PS = $(strip /)
+# 	# BEWARE: The double back-slash has caused an issue with compilation on windows gcc 4.9.2
+# 	# PS = $(strip \\)
+# else
+# 	PS = $(strip /)
+# 	RM = rm
+# endif
+# ifeq ($(CLUSTER),$(filter $(CLUSTER),'Workstation_CK' 'PC_CK'))
+# 	PS_clean = $(strip \)
+# endif
+# ifeq ($(CLUSTER),$(filter $(CLUSTER),'Hoffman2'))
+# 	PS_clean = $(strip /)
+# endif
 
-ifeq ($(CLUSTER),$(filter $(CLUSTER),'Workstation_CK' 'PC_CK'))
-	PS_clean = $(strip \)
-endif
-ifeq ($(CLUSTER),$(filter $(CLUSTER),'Hoffman2'))
-	PS_clean = $(strip /)
-endif
+PS = $(strip /)
+RM = rm
+PS_clean = $(strip /)
 
 # ************* DIRECTORY SETTINGS ******************
-SRC_DIR = ..$(PS)code
+SRC_DIR = ..$(PS)code$(PS)handwritten
+SRC_DIR_GENERATED = ..$(PS)code$(PS)generated_code
+SRC_DIR_PRE_GENERATED = ..$(PS)code$(PS)pre_generated
 
 ifeq ($(CLUSTER),'PC_CK')
-	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS1
+	TARGET_DIR = C:$(PS)Users$(PS)Charlie$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)MOONS3
 endif
 
 ifeq ($(CLUSTER),'Workstation_CK')
-	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)MOONS5
 	TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)BC_full$(PS)Shatrov_inspired$(PS)M4
-	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)NME_new_fast$(PS)mesh_refinement_study$(PS)coarse
-	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)NME_new_fast$(PS)mesh_refinement_study$(PS)moderate
-	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)NME_new_fast$(PS)mesh_refinement_study$(PS)fine
-	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)NME_new_fast$(PS)sigma_study$(PS)sig1em2
-	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)NME_new_fast$(PS)sigma_study$(PS)sig1em3
-	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)NME_new_fast$(PS)sigma_study$(PS)sig1em4
 endif
 
 ifeq ($(CLUSTER),'Hoffman2')
@@ -86,9 +91,14 @@ $(info PS_clean = $(PS_clean))
 $(info OS_USED = $(OS_USED))
 
 # ****************** DEFAULT FLAGS ******************
-FCFLAGS = -J"$(MOD_DIR)" -fimplicit-none -Wuninitialized -cpp
+FCFLAGS = -J"$(MOD_DIR)"
+FCFLAGS += -fimplicit-none
+FCFLAGS += -Wuninitialized
+FCFLAGS += -cpp
 # FCFLAGS += -std=legacy
 FCFLAGS += -std=gnu
+# FCFLAGS += -v
+# FCFLAGS += -E -dM
 # FCFLAGS += -std=f95
 # FCFLAGS += -std=f2003
 # FCFLAGS += -std=2008
@@ -98,7 +108,8 @@ FCFLAGS += -std=gnu
 FCFLAGS += -D_DOUBLE_PRECISION_
 # FCFLAGS += -D_QUAD_PRECISION_
 
-FCFLAGS += -D_MATRIX_FREE_
+# FCFLAGS += -D_MATRIX_FREE_
+# FCFLAGS += -D_OPTIMIZE_IO_TOOLS_
 
 # FFT_poisson.f90:
 # FCFLAGS += -D_FFT_FULL_
@@ -136,16 +147,24 @@ endif
 # So include all but this one:
 
 # -O0 bad in cygwin generated gfortran
-FC_DEBUG += -Wall -Wextra -fbacktrace -O0 -Og
+ifeq ($(CLUSTER),'Hoffman2')
+	FC_DEBUG += -Wall -Wextra -fbacktrace -O0
+else
+	FC_DEBUG += -Wall -Wextra -fbacktrace -O0 -Og
+endif
 # FC_DEBUG += -Wall -Wextra -fbacktrace
 
 # Suppress temporrary array warning:
 # FC_DEBUG += -Wno-array-temporaries
-FC_DEBUG += -fcheck=bounds -fcheck=do -fcheck=mem -fcheck=pointer -fcheck=recursion
+ifneq ($(CLUSTER),'Hoffman2')
+	FC_DEBUG += -fcheck=bounds -fcheck=do -fcheck=mem -fcheck=pointer -fcheck=recursion
+endif
 
 # These flags are for rigorous mesh / stencil checking
 # FC_DEBUG += -D_DEBUG_COORDINATES_
 # FC_DEBUG += -D_DEBUG_COORDINATE_STRETCH_PARAM_MATCH_
+# FC_DEBUG += -D_DEBUG_RK_PARAMS_
+
 FC_DEBUG += -D_DEBUG_IO_EXPORT_
 FC_DEBUG += -D_DEBUG_EMBEDEXTRACT_
 FC_DEBUG += -D_DEBUG_DATA_LOCATION_
@@ -163,12 +182,13 @@ FC_DEBUG += -D_DEBUG_BOUNDARY_CONDITIONS_
 FC_DEBUG += -D_DEBUG_APPLY_BCS_
 FC_DEBUG += -D_DEBUG_IO_TOOLS_
 FC_DEBUG += -D_DEBUG_GF_NORMS_
-FC_DEBUG += -D_DEBUG_STENCIL_1D_
-FC_DEBUG += -D_DEBUG_STENCIL_3D_
 
 # **************** OPTIMIZE/PARALLELIZE *********************
 ifeq ($(USE_OPEN_MP),'TRUE')
 	FCFLAGS += -fopenmp
+endif
+ifeq ($(EXPORT_FOR_AUTO_RESTART),'TRUE')
+	FCFLAGS += -DEXPORT_FOR_AUTO_RESTART
 endif
 
 FC_OPTIMIZE += -g -O3
@@ -203,7 +223,6 @@ ifeq ($(PARALLELIZE_1D_OPS),'TRUE')
 endif
 
 # AUXILIARY OPERATIONS
-# FC_OPTIMIZE += -D_OPTIMIZE_IO_TOOLS_
 # FC_OPTIMIZE += -D_PARALLELIZE_RICHARDSONEXTRAPOLATION_
 
 # FC_OPTIMIZE += mpif90
@@ -238,329 +257,13 @@ endif
 
 TARGET = $(TARGET_DIR)$(PS)MOONS.exe
 
-# **************** INCLUDE PATHS ********************
-VPATH =\
-	$(TARGET_DIR)\
-	$(SRC_DIR)$(PS)block\
-	$(SRC_DIR)$(PS)BCs\
-	$(SRC_DIR)$(PS)BCs$(PS)apply\
-	$(SRC_DIR)$(PS)BCs$(PS)base\
-	$(SRC_DIR)$(PS)BCs$(PS)direct\
-	$(SRC_DIR)$(PS)BCs$(PS)implicit\
-	$(SRC_DIR)$(PS)clock\
-	$(SRC_DIR)$(PS)convergence_rate\
-	$(SRC_DIR)$(PS)coordinates\
-	$(SRC_DIR)$(PS)directory\
-	$(SRC_DIR)$(PS)domain\
-	$(SRC_DIR)$(PS)fields\
-	$(SRC_DIR)$(PS)fields$(PS)default\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_matmult_3D\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_global\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_export_import\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_embed_extract\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_restrict_prolongate\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_interp_extrap\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_symmetry\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_CFL_number\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_Fourier_number\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_Robin_BC_coeff\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)BF\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)SF\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)VF\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)TF\
-	$(SRC_DIR)$(PS)globals\
-	$(SRC_DIR)$(PS)grid\
-	$(SRC_DIR)$(PS)IO\
-	$(SRC_DIR)$(PS)lib\
-	$(SRC_DIR)$(PS)material_props\
-	$(SRC_DIR)$(PS)math\
-	$(SRC_DIR)$(PS)mesh\
-	$(SRC_DIR)$(PS)norms\
-	$(SRC_DIR)$(PS)ops\
-	$(SRC_DIR)$(PS)probes\
-	$(SRC_DIR)$(PS)procedure_array\
-	$(SRC_DIR)$(PS)sim_params\
-	$(SRC_DIR)$(PS)solvers\
-	$(SRC_DIR)$(PS)solvers$(PS)energy\
-	$(SRC_DIR)$(PS)solvers$(PS)density\
-	$(SRC_DIR)$(PS)solvers$(PS)FFT\
-	$(SRC_DIR)$(PS)solvers$(PS)GS\
-	$(SRC_DIR)$(PS)solvers$(PS)induction\
-	$(SRC_DIR)$(PS)solvers$(PS)Jacobi\
-	$(SRC_DIR)$(PS)solvers$(PS)MG\
-	$(SRC_DIR)$(PS)solvers$(PS)momentum\
-	$(SRC_DIR)$(PS)solvers$(PS)PCG\
-	$(SRC_DIR)$(PS)solvers$(PS)PSE\
-	$(SRC_DIR)$(PS)solvers$(PS)SOR\
-	$(SRC_DIR)$(PS)solvers$(PS)preconditioners\
-	$(SRC_DIR)$(PS)sparse\
-	$(SRC_DIR)$(PS)stencils\
-	$(SRC_DIR)$(PS)stitches\
-	$(SRC_DIR)$(PS)string\
-	$(SRC_DIR)$(PS)table\
-	$(SRC_DIR)$(PS)time_statistics\
-	$(SRC_DIR)$(PS)user\
-	$(SRC_DIR)$(PS)version
+include vpath_pre_generated.make
+include vpath_generated.make
+include vpath_handwritten.make
 
-# **************** SOURCE FILES *********************
-SRCS_F =\
-	$(SRC_DIR)$(PS)globals$(PS)current_precision.f90\
-	$(SRC_DIR)$(PS)globals$(PS)constants.f90\
-	$(SRC_DIR)$(PS)material_props$(PS)material_props.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)face_edge_corner_indexing.f90\
-	$(SRC_DIR)$(PS)math$(PS)simple_int_tensor.f90\
-	$(SRC_DIR)$(PS)string$(PS)string.f90\
-	$(SRC_DIR)$(PS)string$(PS)string_aux.f90\
-	$(SRC_DIR)$(PS)fields$(PS)data_location.f90\
-	$(SRC_DIR)$(PS)math$(PS)is_nan.f90\
-	$(SRC_DIR)$(PS)math$(PS)even_odd.f90\
-	$(SRC_DIR)$(PS)IO$(PS)fmt.f90\
-	$(SRC_DIR)$(PS)IO$(PS)datatype_conversion.f90\
-	$(SRC_DIR)$(PS)IO$(PS)inquire_funcs.f90\
-	$(SRC_DIR)$(PS)IO$(PS)IO_check.f90\
-	$(SRC_DIR)$(PS)IO$(PS)IO_tools.f90\
-	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Zone.f90\
-	$(SRC_DIR)$(PS)IO$(PS)exp_Tecplot_Header.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)export_logicals.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)dimensionless_params.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)geometry_props.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)mesh_quality_params.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)iter_solver_params.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)solver_settings.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)time_marching_params.f90\
-	$(SRC_DIR)$(PS)table$(PS)table.f90\
-	$(SRC_DIR)$(PS)directory$(PS)path.f90\
-	$(SRC_DIR)$(PS)directory$(PS)dir_group.f90\
-	$(SRC_DIR)$(PS)directory$(PS)dir_tree.f90\
-	$(SRC_DIR)$(PS)sparse$(PS)array.f90\
-	$(SRC_DIR)$(PS)sparse$(PS)sparse.f90\
-	$(SRC_DIR)$(PS)stitches$(PS)stitch.f90\
-	$(SRC_DIR)$(PS)coordinates$(PS)derivative_stencils.f90\
-	$(SRC_DIR)$(PS)coordinates$(PS)interpolation_stencils.f90\
-	$(SRC_DIR)$(PS)coordinates$(PS)coordinates.f90\
-	$(SRC_DIR)$(PS)domain$(PS)overlap.f90\
-	$(SRC_DIR)$(PS)grid$(PS)grid.f90\
-	$(SRC_DIR)$(PS)coordinates$(PS)coordinate_stretch_parameters.f90\
-	$(SRC_DIR)$(PS)coordinates$(PS)coordinate_distribution_funcs.f90\
-	$(SRC_DIR)$(PS)coordinates$(PS)coordinate_distribution_funcs_iterate.f90\
-	$(SRC_DIR)$(PS)coordinates$(PS)coordinate_stretch_param_match.f90\
-	$(SRC_DIR)$(PS)grid$(PS)grid_init.f90\
-	$(SRC_DIR)$(PS)grid$(PS)grid_extend.f90\
-	$(SRC_DIR)$(PS)grid$(PS)grid_connect.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_base.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D$(PS)GF_assign.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D$(PS)GF_add.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D$(PS)GF_subtract.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D$(PS)GF_multiply.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D$(PS)GF_divide.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D$(PS)GF_add_product.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D$(PS)GF_product_add.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D$(PS)GF_square.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D$(PS)GF_square_root.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_arithmatic_3D$(PS)GF_cross_product.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_assign_plane.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_assign_plane_ave.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_add_plane.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_assign_ghost.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_assign_wall.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_multiply_plane.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_multiply_wall.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_assign_ghost_periodic.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_interp_extrap$(PS)GF_extrap.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_interp_extrap$(PS)GF_interp.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_restrict_prolongate$(PS)GF_restrict.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_restrict_prolongate$(PS)GF_prolongate.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_aux.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_export_import$(PS)GF_export.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_export_import$(PS)GF_import.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_embed_extract$(PS)GF_embed_extract.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_distributions.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_CFL_number$(PS)GF_CFL_number.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_Fourier_number$(PS)GF_Fourier_number.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_Robin_BC_coeff$(PS)GF_Robin_BC_coeff.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_diagonals.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_plane_sum.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_plane_mean.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_2D$(PS)GF_mean_along_dir.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_symmetry$(PS)GF_symmetry_error.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_symmetry$(PS)GF_mirror_about_plane.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_norms_weights.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_norms.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_matmult_3D$(PS)GF_laplacian.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF_matmult_3D$(PS)GF_curl_curl.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)GF$(PS)GF.f90\
-	$(SRC_DIR)$(PS)sparse$(PS)sparse_field.f90\
-	$(SRC_DIR)$(PS)sparse$(PS)sparse_mult.f90\
-	$(SRC_DIR)$(PS)sparse$(PS)stencil_1D.f90\
-	$(SRC_DIR)$(PS)sparse$(PS)stencil_3D.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)bctype.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)BC_logicals.f90\
-	$(SRC_DIR)$(PS)domain$(PS)sub_domain.f90\
-	$(SRC_DIR)$(PS)domain$(PS)physical_sub_domain.f90\
-	$(SRC_DIR)$(PS)domain$(PS)face_SD.f90\
-	$(SRC_DIR)$(PS)domain$(PS)edge_SD.f90\
-	$(SRC_DIR)$(PS)block$(PS)block_curl_curl_stencil.f90\
-	$(SRC_DIR)$(PS)block$(PS)block_Laplacian_stencil.f90\
-	$(SRC_DIR)$(PS)block$(PS)block.f90\
-	$(SRC_DIR)$(PS)mesh$(PS)mesh_props.f90\
-	$(SRC_DIR)$(PS)mesh$(PS)mesh.f90\
-	$(SRC_DIR)$(PS)domain$(PS)physical_domain.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)direct$(PS)apply_BCs_faces_raw.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)direct$(PS)apply_BCs_edges_raw.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)direct$(PS)apply_BCs_faces_bridge.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)implicit$(PS)apply_BCs_faces_raw_implicit.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)implicit$(PS)apply_BCs_faces_bridge_implicit.f90\
-	$(SRC_DIR)$(PS)procedure_array$(PS)single_procedure.f90\
-	$(SRC_DIR)$(PS)procedure_array$(PS)procedure_array.f90\
-	$(SRC_DIR)$(PS)procedure_array$(PS)single_procedure_plane_op.f90\
-	$(SRC_DIR)$(PS)procedure_array$(PS)procedure_array_plane_op.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)single_boundary.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)boundary.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)boundary_conditions.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)BF$(PS)BF.f90\
-	$(SRC_DIR)$(PS)block$(PS)mesh_block.f90\
-	$(SRC_DIR)$(PS)time_statistics$(PS)stats_period.f90\
-	$(SRC_DIR)$(PS)time_statistics$(PS)time_statistics_params.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)equation_term.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)energy_terms.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)momentum_terms.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)induction_terms.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)matrix_free_params.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)export_line.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)export_lines.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)export_plane.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)export_planes.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)export_field.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)var.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)var_set.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)export_frequency_params.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)export_frequency.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)mirror_props.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)flow_control_logicals.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)sim_params.f90\
-	$(SRC_DIR)$(PS)user$(PS)kill_switch.f90\
-	$(SRC_DIR)$(PS)user$(PS)export_now.f90\
-	$(SRC_DIR)$(PS)user$(PS)export_safe.f90\
-	$(SRC_DIR)$(PS)user$(PS)refine_mesh.f90\
-	$(SRC_DIR)$(PS)domain$(PS)mesh_domain.f90\
-	$(SRC_DIR)$(PS)mesh$(PS)mesh_PD_geometries.f90\
-	$(SRC_DIR)$(PS)mesh$(PS)mesh_BC_geometries.f90\
-	$(SRC_DIR)$(PS)mesh$(PS)mesh_complex_BC_geometries.f90\
-	$(SRC_DIR)$(PS)mesh$(PS)mesh_benchmark_geometries.f90\
-	$(SRC_DIR)$(PS)mesh$(PS)mesh_generate.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)SF$(PS)SF.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)VF$(PS)VF.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)TF$(PS)TF.f90\
-	$(SRC_DIR)$(PS)fields$(PS)default$(PS)index_mapping.f90\
-	$(SRC_DIR)$(PS)mesh$(PS)mesh_stencils.f90\
-	$(SRC_DIR)$(PS)IO$(PS)base_export.f90\
-	$(SRC_DIR)$(PS)IO$(PS)base_import.f90\
-	$(SRC_DIR)$(PS)IO$(PS)IO_export.f90\
-	$(SRC_DIR)$(PS)IO$(PS)IO_import.f90\
-	$(SRC_DIR)$(PS)version$(PS)version.f90\
-	$(SRC_DIR)$(PS)clock$(PS)unit_conversion.f90\
-	$(SRC_DIR)$(PS)clock$(PS)clock.f90\
-	$(SRC_DIR)$(PS)clock$(PS)stop_clock.f90\
-	$(SRC_DIR)$(PS)ops$(PS)ops_norms.f90\
-	$(SRC_DIR)$(PS)norms$(PS)norms.f90\
-	$(SRC_DIR)$(PS)ops$(PS)ops_fft.f90\
-	$(SRC_DIR)$(PS)ops$(PS)ops_dct.f90\
-	$(SRC_DIR)$(PS)ops$(PS)ops_idct.f90\
-	$(SRC_DIR)$(PS)stencils$(PS)stencils.f90\
-	$(SRC_DIR)$(PS)ops$(PS)ops_del.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)base$(PS)check_BCs.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)apply$(PS)apply_BCs.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)apply$(PS)apply_BCs_implicit.f90\
-	$(SRC_DIR)$(PS)ops$(PS)ops_embedExtract.f90\
-	$(SRC_DIR)$(PS)ops$(PS)ops_interp.f90\
-	$(SRC_DIR)$(PS)ops$(PS)ops_mirror_field.f90\
-	$(SRC_DIR)$(PS)IO$(PS)export_raw_processed.f90\
-	$(SRC_DIR)$(PS)IO$(PS)export_raw_processed_symmetry.f90\
-	$(SRC_DIR)$(PS)IO$(PS)export_processed_FPL.f90\
-	$(SRC_DIR)$(PS)ops$(PS)ops_aux.f90\
-	$(SRC_DIR)$(PS)ops$(PS)ops_discrete.f90\
-	$(SRC_DIR)$(PS)ops$(PS)ops_advect.f90\
-	$(SRC_DIR)$(PS)probes$(PS)probe.f90\
-	$(SRC_DIR)$(PS)BCs$(PS)BC_funcs.f90\
-	$(SRC_DIR)$(PS)time_statistics$(PS)time_statistics.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)matrix_free_operators.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)matrix_based_operators.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)preconditioners$(PS)diagonals.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)preconditioners$(PS)preconditioners.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)AB2.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)update_intermediate_field_BCs.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)compute_energy.f90\
-	$(SRC_DIR)$(PS)sparse$(PS)matrix.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)FFT$(PS)FFT_poisson.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)Jacobi$(PS)Jacobi_solver.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)Jacobi$(PS)Jacobi.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)GS$(PS)GS_solver.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)GS$(PS)GS_poisson.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)SOR$(PS)SOR.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)PSE$(PS)PSE_solver.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)PSE$(PS)PSE.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG_aux.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG_solver.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)clean_divergence.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)time_marching_methods.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)time_marching_methods_SF.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)density$(PS)init_rho_BCs.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)density$(PS)init_rho_field.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)density$(PS)density_solver.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)density$(PS)density.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)energy_sources.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_T_BCs.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_gravity_field.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_T_field.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_K.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)energy_aux.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)energy_solver.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)energy.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum_stability.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)vorticity_streamfunction.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)profile_funcs.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)export_analytic.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_U_BCs.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_P_BCs.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_U_field.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_Ustar_field.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_P_field.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)E_K_budget_terms.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)E_K_budget.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum_sources.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum_aux.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)momentum.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_aux.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)Mike_Ulrickson_data.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)assign_B0_vs_t.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)curl_curl_B.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)E_M_budget_terms.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)E_M_budget.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_phi_BCs.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_B_BCs.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_phi_field.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_B_field.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_Bstar_field.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_B0_field.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_B_interior.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_J_interior.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_Sigma.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_sources.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_solver.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)add_all_energy_sources.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)add_all_momentum_sources.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)add_all_induction_sources.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)MHDSolver.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)Poisson_test.f90\
-	$(SRC_DIR)$(PS)user$(PS)export_mesh_aux.f90\
-	$(SRC_DIR)$(PS)user$(PS)MOONS.f90
+include src_all.make
 
-SRCS_F += $(TARGET_DIR)$(PS)parametricStudy.f90
+SRCS_F += $(TARGET_DIR)$(PS)main.f90
 
 # **************** DO NOT EDIT BELOW HERE *********************
 # **************** DO NOT EDIT BELOW HERE *********************
@@ -568,9 +271,13 @@ SRCS_F += $(TARGET_DIR)$(PS)parametricStudy.f90
 
 OBJS_F = $(patsubst %.f90,$(OBJ_DIR)$(PS)%.o,$(notdir $(SRCS_F)))
 
-$(warning ************************************)
-$(warning ********** BUILDING MOONS **********)
-$(warning ************************************)
+$(info ************************************)
+$(info ********** BUILDING MOONS **********)
+$(info ************************************)
+$(info $(OBJ_DIR))
+$(info $(SRC_DIR_PRE_GENERATED))
+$(info $(SRC_DIR_GENERATED))
+$(info $(SRC_DIR))
 
 all: $(TARGET)
 
