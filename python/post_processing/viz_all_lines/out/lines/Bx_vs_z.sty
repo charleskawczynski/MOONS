@@ -1,0 +1,309 @@
+#!MC 1120
+# Created by Tecplot 360 build 11.2-0-563
+$!SETSTYLEBASE FACTORY
+$!PLOTTYPE  = XYLINE
+$!FRAMELAYOUT 
+  SHOWBORDER = NO
+  SHOWHEADER = NO
+  HEADERCOLOR = RED
+  XYPOS
+    {
+    X = 1
+    Y = 0.25
+    }
+  WIDTH = 9
+  HEIGHT = 8
+$!THREEDAXIS 
+  ASPECTRATIOLIMIT = 25
+  BOXASPECTRATIOLIMIT = 25
+$!DELETELINEMAPS 
+$!ACTIVELINEMAPS  =  [1-5]
+$!GLOBALLINEPLOT 
+  DATALABELS
+    {
+    DISTANCESKIP = 5
+    }
+  LEGEND
+    {
+    TEXTSHAPE
+      {
+      HEIGHT = 4
+      }
+    XYPOS
+      {
+      X = 95
+      }
+    }
+$!LINEMAP  [1]
+  NAME = 'Re<sub>m</sub> = 0, |B| = 2.42e-05'
+  ASSIGN
+    {
+    ZONE = 1
+    XAXISVAR = 1
+    YAXISVAR = 3
+    }
+  LINES
+    {
+    COLOR = BLACK
+    LINETHICKNESS = 0.2
+    }
+  SYMBOLS
+    {
+    SYMBOLSHAPE
+      {
+      GEOMSHAPE = CIRCLE
+      }
+    COLOR = BLACK
+    FILLCOLOR = BLACK
+    SIZE = 2
+    LINETHICKNESS = 0.2
+    }
+  BARCHARTS
+    {
+    COLOR = RED
+    FILLCOLOR = RED
+    }
+  ERRORBARS
+    {
+    COLOR = RED
+    }
+  INDICES
+    {
+    IJKLINES = K
+    }
+$!LINEMAP  [2]
+  NAME = 'Re<sub>m</sub> = 1, |B| = 1.39e-05'
+  ASSIGN
+    {
+    ZONE = 2
+    XAXISVAR = 1
+    YAXISVAR = 4
+    }
+  LINES
+    {
+    COLOR = BLACK
+    LINETHICKNESS = 0.2
+    }
+  SYMBOLS
+    {
+    COLOR = BLACK
+    FILLCOLOR = BLACK
+    SIZE = 2
+    LINETHICKNESS = 0.2
+    }
+  BARCHARTS
+    {
+    COLOR = GREEN
+    FILLCOLOR = GREEN
+    }
+  ERRORBARS
+    {
+    COLOR = GREEN
+    }
+  INDICES
+    {
+    IJKLINES = K
+    }
+$!LINEMAP  [3]
+  NAME = 'Re<sub>m</sub> = 100, |B| = 0.00144'
+  ASSIGN
+    {
+    ZONE = 3
+    XAXISVAR = 1
+    YAXISVAR = 5
+    }
+  LINES
+    {
+    COLOR = BLACK
+    LINETHICKNESS = 0.2
+    }
+  SYMBOLS
+    {
+    SYMBOLSHAPE
+      {
+      GEOMSHAPE = DEL
+      }
+    COLOR = BLACK
+    FILLCOLOR = BLACK
+    SIZE = 2
+    LINETHICKNESS = 0.2
+    }
+  BARCHARTS
+    {
+    COLOR = BLUE
+    FILLCOLOR = BLUE
+    }
+  ERRORBARS
+    {
+    COLOR = BLUE
+    }
+  INDICES
+    {
+    IJKLINES = K
+    }
+$!LINEMAP  [4]
+  NAME = 'Re<sub>m</sub> = 500, |B| = 0.00939'
+  ASSIGN
+    {
+    ZONE = 4
+    XAXISVAR = 1
+    YAXISVAR = 6
+    }
+  LINES
+    {
+    COLOR = BLACK
+    LINETHICKNESS = 0.2
+    }
+  SYMBOLS
+    {
+    SYMBOLSHAPE
+      {
+      GEOMSHAPE = DIAMOND
+      }
+    COLOR = BLACK
+    FILLCOLOR = BLACK
+    SIZE = 2
+    LINETHICKNESS = 0.2
+    }
+  BARCHARTS
+    {
+    COLOR = CYAN
+    FILLCOLOR = CYAN
+    }
+  ERRORBARS
+    {
+    COLOR = CYAN
+    }
+  INDICES
+    {
+    IJKLINES = K
+    }
+$!LINEMAP  [5]
+  NAME = 'Re<sub>m</sub> = 1000, |B| = 0.0547'
+  ASSIGN
+    {
+    ZONE = 5
+    XAXISVAR = 1
+    YAXISVAR = 7
+    }
+  LINES
+    {
+    COLOR = BLACK
+    LINETHICKNESS = 0.2
+    }
+  SYMBOLS
+    {
+    SYMBOLSHAPE
+      {
+      GEOMSHAPE = RTRI
+      }
+    COLOR = BLACK
+    FILLMODE = USELINECOLOR
+    FILLCOLOR = BLACK
+    SIZE = 2
+    LINETHICKNESS = 0.2
+    }
+  BARCHARTS
+    {
+    COLOR = YELLOW
+    FILLCOLOR = YELLOW
+    }
+  ERRORBARS
+    {
+    COLOR = YELLOW
+    }
+  INDICES
+    {
+    IJKLINES = K
+    }
+$!LINEMAP  [6]
+  ASSIGN
+    {
+    ZONE = 1
+    XAXISVAR = 1
+    YAXISVAR = 2
+    }
+  LINES
+    {
+    COLOR = PURPLE
+    }
+  SYMBOLS
+    {
+    COLOR = PURPLE
+    FILLCOLOR = PURPLE
+    }
+  BARCHARTS
+    {
+    COLOR = PURPLE
+    FILLCOLOR = PURPLE
+    }
+  ERRORBARS
+    {
+    COLOR = PURPLE
+    }
+  INDICES
+    {
+    IJKLINES = K
+    }
+$!XYLINEAXIS 
+  DEPXTOYRATIO = 1
+$!XYLINEAXIS 
+  XDETAIL 1
+    {
+    RANGEMIN = -1.5
+    RANGEMAX = 0
+    GRSPACING = 0.5
+    TICKLABEL
+      {
+      TEXTSHAPE
+        {
+        HEIGHT = 5
+        }
+      }
+    TITLE
+      {
+      TEXTSHAPE
+        {
+        HEIGHT = 7
+        }
+      PERCENTALONGLINE = 60
+      }
+    }
+$!XYLINEAXIS 
+  YDETAIL 1
+    {
+    RANGEMIN = -3209.016357421875
+    RANGEMAX = 325.85415649414062
+    GRSPACING = 1000
+    TICKLABEL
+      {
+      TEXTSHAPE
+        {
+        HEIGHT = 5
+        }
+      }
+    TITLE
+      {
+      TITLEMODE = USETEXT
+      TEXT = ''
+      TEXTSHAPE
+        {
+        HEIGHT = 7
+        }
+      }
+    }
+$!LINEPLOTLAYERS 
+  SHOWSYMBOLS = YES
+$!ATTACHTEXT 
+  ANCHORPOS
+    {
+    Y = 97
+    }
+  TEXTSHAPE
+    {
+    HEIGHT = 50
+    }
+  ANCHOR = HEADLEFT
+  CLIPPING = CLIPTOFRAME
+  TEXT = '<greek>b</greek><sub>x</sub><sup>1</sup>'
+$!SETSTYLEBASE CONFIG
