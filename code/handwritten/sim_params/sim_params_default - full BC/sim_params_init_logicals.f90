@@ -62,7 +62,7 @@
        SP%SCP%uniform_B0_dir                     = 3
        SP%SCP%mpg_dir                            = 1
        SP%SCP%couple_time_steps                  = T
-       SP%SCP%finite_Rem                         = F
+       SP%SCP%finite_Rem                         = T
        SP%SCP%include_vacuum                     = F
        SP%SCP%embed_B_interior                   = F
 

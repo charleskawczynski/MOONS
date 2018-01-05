@@ -32,21 +32,22 @@
        ! ********************* ESSENTIALS *************************
        ! **********************************************************
 
-       subroutine init_TMP(TMP,n_stages,active,multistep_iter,t_final,dt)
+       subroutine init_TMP(TMP,n_stages,active,multistep_iter,t_start,t_final,dt)
          implicit none
          type(time_marching_params),intent(inout) :: TMP
          integer,intent(in) :: n_stages,multistep_iter
          logical,intent(in) :: active
-         real(cp),intent(in) :: t_final,dt
+         real(cp),intent(in) :: t_start,t_final,dt
          call init(TMP%RKP,n_stages,active)
          TMP%n_step_start = 0
          TMP%n_step = 0
          TMP%multistep_iter = multistep_iter
-         TMP%t = 0.0_cp
+         TMP%t = t_start
          TMP%C_max = 0.1_cp
          TMP%TS%dt = dt
          TMP%TS%t_final = t_final
-         TMP%n_step_stop = int(t_final/dt,li)
+         TMP%TS%t_start = t_start
+         TMP%n_step_stop = int((t_final-t_start)/dt,li)
          if (TMP%n_step_stop.lt.1) then
            stop 'Error: TMP%n_step_stop<1 in time_marching_params.f90'
          endif
@@ -78,6 +79,7 @@
          TMP%t = coupled%t
          TMP%multistep_iter = 1
          TMP%TS%t_final = coupled%TS%t_final
+         TMP%TS%t_start = coupled%TS%t_start
          TMP%TS%dt = coupled%TS%dt
          TMP%n_step_start = coupled%n_step_start
          TMP%n_step_stop = coupled%n_step_stop
@@ -99,7 +101,7 @@
          type(time_marching_params),intent(inout) :: TMP
          real(cp),intent(in) :: dt
          TMP%TS%dt = dt
-         TMP%n_step_stop = ceiling(TMP%TS%t_final/TMP%TS%dt)
+         TMP%n_step_stop = ceiling((TMP%TS%t_final-TMP%TS%t_start)/TMP%TS%dt)
        end subroutine
 
        end module

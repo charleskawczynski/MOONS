@@ -16,16 +16,17 @@
        type(sim_params),intent(inout) :: SP
        call delete(SP%DP)
 
-       SP%DP%dtime                   = 1.0_cp*pow(-1)
-       SP%DP%t_start                 = 0.0_cp
-       SP%DP%t_final                 = 30.0_cp
+       SP%DP%dtime                   = 2.5_cp*pow(-3)
+       SP%DP%t_start                 = 0.0_cp ! Does not do anything yet...
+
+       SP%DP%t_final                 = 2000.0_cp
        ! SP%DP%t_final                 = 3.0_cp*SP%DP%dtime ! for testing
 
-       SP%DP%Re                      = 1.0_cp*pow(2)
-       ! SP%DP%N                       = 5.0_cp*pow(0)
+       SP%DP%Re                      = 2.0_cp*pow(3)
+       SP%DP%N                       = 5.0_cp*pow(0)
        ! SP%DP%Q                       = 3.0_cp*pow(-1)
-       SP%DP%Rem                     = 1.0_cp*pow(0)
-       SP%DP%Ha                      = 1.0_cp*pow(1)
+       SP%DP%Rem                     = 2.0_cp*pow(3)
+       ! SP%DP%Ha                      = 1.0_cp*pow(1)
        ! SP%DP%N                       = 1.0_cp/SP%DP%Q
        SP%DP%c_w(1:6)                = 0.0_cp
        SP%DP%c_w( 5 )                = 1.0_cp
@@ -33,15 +34,15 @@
        SP%DP%Robin_coeff             = 0.0_cp
        SP%DP%Robin_coeff(5:6)        = -1.0_cp/SP%DP%c_w(5:6)
        ! SP%DP%c_w_coeff                = (2.0_cp*SP%DP%c_w/dh_nhat-1.0_cp)/(2.0_cp*SP%DP%c_w/dh_nhat+1.0_cp)
-       SP%DP%sig_local_over_sig_f    = 1.0_cp
+       SP%DP%sig_local_over_sig_f    = 1.0_cp*pow(-3)
        SP%DP%Gr                      = 0.0_cp
        SP%DP%Pr                      = 0.01_cp
        SP%DP%Fr                      = 1.0_cp
        SP%DP%Ec                      = 0.0_cp
 
        ! SP%DP%Ha                      = (1.0_cp/SP%DP%Q*SP%DP%Re)**0.5_cp
-       SP%DP%N                       = SP%DP%Ha**2.0_cp/SP%DP%Re
-       ! SP%DP%Ha                      = (SP%DP%N*SP%DP%Re)**0.5_cp
+       ! SP%DP%N                       = SP%DP%Ha**2.0_cp/SP%DP%Re
+       SP%DP%Ha                      = (SP%DP%N*SP%DP%Re)**0.5_cp
        SP%DP%Al                      = SP%DP%N/SP%DP%Rem
        SP%DP%Pe                      = SP%DP%Pr*SP%DP%Re
        SP%DP%tau                     = SP%DP%Re/SP%DP%Ha

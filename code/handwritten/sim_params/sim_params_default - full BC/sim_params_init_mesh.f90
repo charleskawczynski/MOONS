@@ -27,9 +27,11 @@
 
        ! call define_mesh_SP_plasma_disruption(SP)
        ! call small_dataset(SP)
-       call define_mesh_bandaru(SP)
-       ! call define_mesh_SP_full_BC_symmetric_geometry(SP)
-       ! call define_mesh_SP_full_BC_3D_geometry(SP)
+       ! call define_mesh_bandaru(SP)
+       ! call define_mesh_full_BC_w_vacuum_symmetric(SP)
+       ! call define_mesh_full_BC_n_vacuum_symmetric(SP)
+       call define_mesh_full_BC_w_vacuum_3D(SP)
+       ! call define_mesh_full_BC_n_vacuum_3D(SP)
        ! call define_mesh_SP_MHD_LDC_Sergey_uniform(SP)
      end subroutine
 

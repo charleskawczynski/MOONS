@@ -49,6 +49,7 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].set_used_modules(['IO_tools_mod'])
 	g.module[m_name].add_prop('dt',real,priv)
 	g.module[m_name].add_prop('t_final','real(cp)',priv)
+	g.module[m_name].add_prop('t_start','real(cp)',priv)
 	g.module[m_name].add_prop(['dir','name'],'string',priv)
 
 	m_name = 'time_marching_params'

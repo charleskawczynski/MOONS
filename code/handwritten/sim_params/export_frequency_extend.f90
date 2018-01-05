@@ -3,6 +3,7 @@
        use current_precision_mod
        use string_mod
        use IO_tools_mod
+       use time_marching_params_mod
        use export_frequency_params_mod
        use export_frequency_params_extend_mod
        implicit none
@@ -13,19 +14,18 @@
 
        contains
 
-       subroutine update_EF(EF,t,n_step,substep)
+       subroutine update_EF(EF,TMP,substep)
          implicit none
          type(export_frequency),intent(inout) :: EF
-         integer(li),intent(in) :: n_step
-         real(cp),intent(in) :: t
+         type(time_marching_params),intent(in) :: TMP
          logical,intent(in) :: substep
-         call update(EF%info,t,n_step,substep)
-         call update(EF%unsteady_0D,t,n_step,substep)
-         call update(EF%unsteady_1D,t,n_step,substep)
-         call update(EF%unsteady_2D,t,n_step,substep)
-         call update(EF%unsteady_3D,t,n_step,substep)
-         call update(EF%final_solution,t,n_step,substep)
-         call update(EF%restart_files,t,n_step,substep)
+         call update(EF%info,TMP,substep)
+         call update(EF%unsteady_0D,TMP,substep)
+         call update(EF%unsteady_1D,TMP,substep)
+         call update(EF%unsteady_2D,TMP,substep)
+         call update(EF%unsteady_3D,TMP,substep)
+         call update(EF%final_solution,TMP,substep)
+         call update(EF%restart_files,TMP,substep)
        end subroutine
 
        end module

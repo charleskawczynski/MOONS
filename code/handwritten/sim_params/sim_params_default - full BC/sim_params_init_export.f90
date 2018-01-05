@@ -24,14 +24,14 @@
        logical,parameter :: T = .true.
        logical,parameter :: F = .false.
 
-       ! call init(EFP,export_ever,export_first_step,N_points_in_window,t_window_start,t_window_stop,dt_window_factor)
-       call init(SP%EF%info          ,T,T,10**2,SP%DP%t_start,SP%DP%t_final,0.01_cp)
-       call init(SP%EF%unsteady_0D   ,T,T,10**2,SP%DP%t_start,SP%DP%t_final,0.01_cp)
-       call init(SP%EF%unsteady_1D   ,F,F,  0  ,SP%DP%t_start,SP%DP%t_final,0.01_cp)
-       call init(SP%EF%unsteady_2D   ,F,F,  0  ,SP%DP%t_start,SP%DP%t_final,0.01_cp)
-       call init(SP%EF%unsteady_3D   ,F,F,  0  ,SP%DP%t_start,2.0_cp,0.01_cp)
-       call init(SP%EF%restart_files ,F,F,10**2,SP%DP%t_start,SP%DP%t_final,0.01_cp)
-       call init(SP%EF%final_solution,F,F,  1  ,SP%DP%t_start,SP%DP%t_final,0.01_cp)
+       ! call init(EFP,export_ever,export_first_step,frequency_base,frequency_exp)
+       call init(SP%EF%info          ,T,T,1,10,2,0.0_cp,SP%DP%t_final)
+       call init(SP%EF%unsteady_0D   ,T,T,1,10,2,0.0_cp,SP%DP%t_final)
+       call init(SP%EF%unsteady_1D   ,F,F,1,10,2,0.0_cp,SP%DP%t_final)
+       call init(SP%EF%unsteady_2D   ,F,F,1,10,2,0.0_cp,SP%DP%t_final)
+       call init(SP%EF%unsteady_3D   ,F,F,1,10,4,0.0_cp,2.0_cp)
+       call init(SP%EF%restart_files ,F,F,1,10,2,0.0_cp,SP%DP%t_final)
+       call init(SP%EF%final_solution,F,F,1,10,6,0.0_cp,SP%DP%t_final)
 
        ! call init(export_field,export_ever)
        call init(SP%VS%T%unsteady_field  ,F)
@@ -61,7 +61,7 @@
 
        ! Statistics
        ! call init(TSP,collect,t_start,t_stop)
-       call init(SP%TSP,F,900.0_cp,1000.0_cp)
+       call init(SP%TSP,T,900.0_cp,1000.0_cp)
      end subroutine
 
      end module

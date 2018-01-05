@@ -70,7 +70,6 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)sim_params$(PS)equation_term_extend.f90\
 	$(SRC_DIR)$(PS)var_set$(PS)export_field_extend.f90\
 	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)export_frequency.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)export_frequency_params_extend.f90\
 	$(SRC_DIR)$(PS)var_set$(PS)export_line_extend.f90\
 	$(SRC_DIR_GENERATED)$(PS)var_set$(PS)export_lines.f90\
 	$(SRC_DIR_GENERATED)$(PS)MOONS$(PS)export_now.f90\
@@ -107,7 +106,6 @@ SRCS_F +=\
 	$(SRC_DIR_GENERATED)$(PS)grid$(PS)coordinates.f90\
 	$(SRC_DIR)$(PS)dir_tree$(PS)dir_group_extend.f90\
 	$(SRC_DIR_GENERATED)$(PS)dir_tree$(PS)dir_tree.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)export_frequency_extend.f90\
 	$(SRC_DIR)$(PS)var_set$(PS)export_lines_extend.f90\
 	$(SRC_DIR)$(PS)MOONS$(PS)export_now_extend.f90\
 	$(SRC_DIR)$(PS)var_set$(PS)export_planes_extend.f90\
@@ -122,6 +120,7 @@ SRCS_F +=\
 	$(SRC_DIR_GENERATED)$(PS)apply_face_BC_op$(PS)apply_face_BC_op.f90\
 	$(SRC_DIR)$(PS)grid$(PS)derivative_stencils.f90\
 	$(SRC_DIR)$(PS)dir_tree$(PS)dir_tree_extend.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)export_frequency_params_extend.f90\
 	$(SRC_DIR_GENERATED)$(PS)grid$(PS)grid.f90\
 	$(SRC_DIR)$(PS)grid$(PS)interpolation_stencils.f90\
 	$(SRC_DIR)$(PS)sub_domain$(PS)overlap_extend.f90\
@@ -136,6 +135,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_plane_sum.f90\
 	$(SRC_DIR_GENERATED)$(PS)block$(PS)block.f90\
 	$(SRC_DIR)$(PS)grid$(PS)coordinates_extend.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)export_frequency_extend.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_fft.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)profile_funcs.f90\
 	$(SRC_DIR_GENERATED)$(PS)procedure_array$(PS)single_procedure.f90\

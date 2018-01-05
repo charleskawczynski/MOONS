@@ -32,7 +32,7 @@
        call init_IC_BC(SP%VS%T    ,0    ,0 )
        call init_IC_BC(SP%VS%U    ,0    ,1 )
        call init_IC_BC(SP%VS%P    ,0    ,0 )
-       call init_IC_BC(SP%VS%B    ,0    ,1 )
+       call init_IC_BC(SP%VS%B    ,0    ,0 )
        call init_IC_BC(SP%VS%B0   ,1    ,0 )
        call init_IC_BC(SP%VS%phi  ,0    ,0 )
        call init_IC_BC(SP%VS%rho  ,0    ,0 )

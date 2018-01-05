@@ -1,0 +1,26 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+% \doublespacing
+\MOONSTITLE
+\maketitle
+\section{Governing equations}
+Here, we derive the induction solution for a time varying field ($\PD_t B_z^0$) in a solid rectangular bar. Since the bar is stationary ($\U=\zero$), the only source term is the time varying field. The dimensional induction equation for uniform $\rho,\mu,\M,\sigma$ is
+\begin{equation}\begin{aligned}
+\PD_t B_i + \PD_t B_i^0 = \frac{1}{\sigma \M} \PD_{jj} B_i
+\end{aligned} \end{equation}
+Assuming pseudo-vacuum BCs, this problem simplifies to only one component with no variation along $z$ and with Dirichlet BCs for $B_z$ along the $x,y$ directions:
+\begin{itemize}\setlength\itemsep{-1em}
+	\item $B_x=0$,$B_y=0$,$\PD_z B_z = 0$
+\end{itemize}
+Expanding equations yields
+\begin{equation}\begin{aligned}
+\PD_t B_z + \PD_t B_z^0 = \frac{1}{\sigma \M} (\PD_{xx} B_z + \PD_{yy} B_z) \\
+\end{aligned} \end{equation}
+Or, removing the $z$ subscript, we have
+\begin{equation}\begin{aligned}
+\PD_t B + \PD_t B^0 = \frac{1}{\sigma \M} (\PD_{xx} B + \PD_{yy} B) \\
+\end{aligned} \end{equation}
+
+\end{document}

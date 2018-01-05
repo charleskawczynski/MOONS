@@ -1,10 +1,12 @@
 # **************** RUN CONFIGURATION *******************
 # Using windows command prompt periodically results in
 # Sporadic filename errors. To circumvent this, use the git powershell
-RELEASE = 'DEBUG'
-# RELEASE = 'OPTIMIZE'
+# RELEASE = 'DEBUG'
+RELEASE = 'OPTIMIZE'
 # RELEASE = 'PROFILE'
 USE_OPEN_MP = 'TRUE'
+# Setting EXPORT_FOR_AUTO_RESTART = 'FALSE' removes all import statements from the main loop,
+# so the solution cannot be restarted and no parameters can be modified during runtime.
 EXPORT_FOR_AUTO_RESTART = 'TRUE'
 PARALLELIZE_3D_OPS = 'TRUE'
 # PARALLELIZE_2D_OPS = 'TRUE'
