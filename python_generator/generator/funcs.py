@@ -109,6 +109,7 @@ def make_generated(d,file_list):
     L_start = sorted_file_list
     paths_to_replace = [d.dir_app,d.dir_GOOFPY,d.dir_code_generated]
     vpaths_files = [d.vpath_pre_generated,d.vpath_handwritten,d.vpath_generated]
+
     # Path
     L = L_start
     for y in paths_to_replace:
@@ -143,6 +144,19 @@ def make_generated(d,file_list):
     IO.write_list_to_file(d.src_generated,[''.join(L_FILES)])
     return
 
+def get_defined_vars(d):
+    L = IO.read_file_to_list(d,'get_defined_vars')
+    L = [x for x in L if '=' in x]
+    # L = [x for x in L if "'" in x]
+    L = [x for x in L if not x.startswith('#')]
+    L = [x for x in L if not x.startswith('\t')]
+    L = [x for x in L if not '+' in x]
+    L = [x for x in L if not '$' in x]
+    L = [(x.split('=')[0].strip(),x.split('=')[1].strip()) for x in L]
+    L = [(x,y.replace("'",'')) for x,y in L]
+    defined_vars = L
+    return defined_vars
+
 def get_compiled_files(d,make_src_files):
     f = ''.join([IO.get_file_contents(x) for x in make_src_files])
     compiled_files = list(filter(None, f.split('\n')))
@@ -165,21 +179,25 @@ def get_compiled_files(d,make_src_files):
     compiled_files = [d.common_root+x for x in compiled_files]
     compiled_files = [x.replace('..','') for x in compiled_files]
     compiled_files = [x.replace(d.PS_file_sys+d.PS_file_sys,d.PS_file_sys) for x in compiled_files]
+    defined_vars = get_defined_vars(d.makefile_main)
+    for DV in defined_vars:
+        compiled_files = [x.replace('$('+DV[0]+')',DV[1]) for x in compiled_files]
     root_path_replace = [(x,y.replace('..','')) for x,y in root_path_replace]
     root_path_replace = [(x,y.replace(d.PS_make_file,d.PS_file_sys)) for x,y in root_path_replace]
-    return (compiled_files,root_path_replace)
+    return (compiled_files,root_path_replace,defined_vars)
 
 def combine_makefile(d):
     L = []
     make_src_files = [d.src_generated,d.src_pre_generated,d.src_handwritten]
-    (compiled_files,root_path_replace) = get_compiled_files(d,make_src_files)
+    (compiled_files,root_path_replace,defined_vars) = get_compiled_files(d,make_src_files)
     compiled_files = list(set(compiled_files))
-
     sorted_file_list = get_sorted_file_list(d,compiled_files)
     L = sorted_file_list
     for MFV in d.make_file_vpaths:
         L = [x.replace(MFV[0],MFV[1]) for x in L]
     L = [x.replace(d.PS_file_sys,d.PS_make_file) for x in L]
+    for DV in defined_vars:
+        L = [x.replace(DV[1],'$('+DV[0]+')') for x in L]
     L = [x+'\\' if x.endswith('.f90') else x for x in L]
     L = ['\t'+x for x in L]
     L = [x.replace(' ','') for x in L]

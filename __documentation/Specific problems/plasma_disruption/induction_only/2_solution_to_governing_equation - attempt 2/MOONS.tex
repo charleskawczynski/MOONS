@@ -1,0 +1,38 @@
+\documentclass[11pt]{article}
+\input{../includes.tex}
+
+\begin{document}
+% \doublespacing
+\MOONSTITLE
+\maketitle
+\section{Deriving the separable PDE}
+The derived governing equation is
+\begin{equation}\begin{aligned}
+\PD_t B^1 + \PD_t B^0 = R (\PD_{xx} B^1 + \PD_{yy} B^1), \qquad B^1(x,y,t),B^0(t),R=\text{constant} \\
+\end{aligned} \end{equation}
+Assuming a superposition of two terms
+\begin{equation}\begin{aligned}
+B = B^1(x,y,t) + B^0(t) \\
+\end{aligned} \end{equation}
+Our equation is then
+\begin{equation}\begin{aligned}
+\PD_t B = R (\PD_{xx} B + \PD_{yy} B), \qquad B(x,y,t),\theta(t),R=\text{constant} \\
+\end{aligned} \end{equation}
+
+Which satisfy the governing equations as follows
+\begin{equation}\begin{aligned}
+\PD_t B_h = R (\PD_{yy} B_h) \\
+\PD_t B_n + \theta = R (\PD_{xx} B_n) \\
+\end{aligned} \end{equation}
+
+\section{Laplace Transform}
+Applying the Laplace transform, we have
+\begin{equation}\begin{aligned}
+\MAC L \{f(t)\} = \int_0^{\infty} e^{-st} f(t) dt \\
+\end{aligned} \end{equation}
+For a simple function, say $\PD_t B^0 = \PD_t e^{-\omega t} = - \omega e^{-\omega t} $, we have
+\begin{equation}\begin{aligned}
+\MAC L \{ e^{-\omega t} \} = \frac{- \omega}{s+\omega} \\
+\end{aligned} \end{equation}
+
+\end{document}

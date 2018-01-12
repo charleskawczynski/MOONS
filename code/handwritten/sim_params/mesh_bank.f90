@@ -45,6 +45,23 @@
        call init(SP%MP_ind,SP%MP_sigma)
      end subroutine
 
+     subroutine define_mesh_SP_plasma_disruption_1D_analytic(SP)
+       implicit none
+       type(sim_params),intent(inout) :: SP
+       real(cp) :: t_fluid,buffer
+       integer :: N
+       t_fluid = 1.0_cp; buffer = 1.5_cp;
+       N = 100
+       call init(SP%MP_mom,SP%MQP)
+       call init(SP%MP_sigma,SP%MQP)
+       call init(SP%MP_ind,SP%MQP)
+       call add_base(SP%MP_mom,seg_1d(1,'grid_uniform'   ,1 ,-t_fluid,t_fluid,buffer))
+       call add_base(SP%MP_mom,seg_1d(2,'grid_uniform'   ,N ,-t_fluid,t_fluid,buffer))
+       call add_base(SP%MP_mom,seg_1d(3,'grid_uniform'   ,1 ,-t_fluid,t_fluid,buffer))
+       call init(SP%MP_sigma,SP%MP_mom)
+       call init(SP%MP_ind,SP%MP_sigma)
+     end subroutine
+
      subroutine small_dataset(SP)
        implicit none
        type(sim_params),intent(inout) :: SP

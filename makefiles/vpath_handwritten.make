@@ -46,7 +46,7 @@ VPATH +=\
 	$(SRC_DIR)$(PS)physical_domain\
 	$(SRC_DIR)$(PS)procedure_array\
 	$(SRC_DIR)$(PS)probe\
-	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_default\
+	$(SRC_DIR)$(PS)sim_params$(PS)$(sim_params_default)\
 	$(SRC_DIR)$(PS)sim_params\
 	$(SRC_DIR)$(PS)sub_domain\
 	$(SRC_DIR)$(PS)var_set\

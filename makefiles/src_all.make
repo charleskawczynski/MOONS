@@ -26,7 +26,7 @@ SRCS_F +=\
 	$(SRC_DIR_GENERATED)$(PS)stop_clock$(PS)clock.f90\
 	$(SRC_DIR_GENERATED)$(PS)fields$(PS)data_location.f90\
 	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)dimensionless_params.f90\
-	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)equation_term.f90\
+	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)equation_te$(RM).f90\
 	$(SRC_DIR_GENERATED)$(PS)var_set$(PS)exit_criteria.f90\
 	$(SRC_DIR_GENERATED)$(PS)var_set$(PS)export_field.f90\
 	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)export_frequency_params.f90\
@@ -42,7 +42,7 @@ SRCS_F +=\
 	$(SRC_DIR_GENERATED)$(PS)var_set$(PS)matrix_free_params.f90\
 	$(SRC_DIR_GENERATED)$(PS)mesh_params$(PS)mesh_quality_params.f90\
 	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)mirror_props.f90\
-	$(SRC_DIR_GENERATED)$(PS)PCG$(PS)norms.f90\
+	$(SRC_DIR_GENERATED)$(PS)PCG$(PS)no$(RM)s.f90\
 	$(SRC_DIR_GENERATED)$(PS)sub_domain$(PS)overlap.f90\
 	$(SRC_DIR_GENERATED)$(PS)dir_tree$(PS)path.f90\
 	$(SRC_DIR_GENERATED)$(PS)probe$(PS)probe.f90\
@@ -66,8 +66,8 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)fields$(PS)data_location_extend.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)dimensionless_params_extend.f90\
 	$(SRC_DIR_GENERATED)$(PS)dir_tree$(PS)dir_group.f90\
-	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)energy_terms.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)equation_term_extend.f90\
+	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)energy_te$(RM)s.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)equation_te$(RM)_extend.f90\
 	$(SRC_DIR)$(PS)var_set$(PS)export_field_extend.f90\
 	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)export_frequency.f90\
 	$(SRC_DIR)$(PS)var_set$(PS)export_line_extend.f90\
@@ -76,7 +76,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)var_set$(PS)export_plane_extend.f90\
 	$(SRC_DIR_GENERATED)$(PS)var_set$(PS)export_planes.f90\
 	$(SRC_DIR)$(PS)MOONS$(PS)export_safe_extend.f90\
-	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)induction_terms.f90\
+	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)induction_te$(RM)s.f90\
 	$(SRC_DIR_GENERATED)$(PS)var_set$(PS)iter_solver_params.f90\
 	$(SRC_DIR)$(PS)MOONS$(PS)kill_switch_extend.f90\
 	$(SRC_DIR)$(PS)var_set$(PS)matrix_free_params_extend.f90\
@@ -84,7 +84,7 @@ SRCS_F +=\
 	$(SRC_DIR_GENERATED)$(PS)mesh$(PS)mesh_props.f90\
 	$(SRC_DIR)$(PS)mesh_params$(PS)mesh_quality_params_extend.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)mirror_props_extend.f90\
-	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)momentum_terms.f90\
+	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)momentum_te$(RM)s.f90\
 	$(SRC_DIR)$(PS)dir_tree$(PS)path_extend.f90\
 	$(SRC_DIR_GENERATED)$(PS)apply_face_BC_op$(PS)plane_op.f90\
 	$(SRC_DIR_GENERATED)$(PS)sim_params$(PS)probe_set_ind.f90\
@@ -175,17 +175,17 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_interp$(PS)GF_extrap.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D$(PS)GF_multiply.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_multiply_plane.f90\
-	$(SRC_DIR)$(PS)grid_field$(PS)GF_norms_weights.f90\
-	$(SRC_DIR)$(PS)grid_field$(PS)GF_norms_weights_light.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_no$(RM)s_weights.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_no$(RM)s_weights_light.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D$(PS)GF_product_add.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D$(PS)GF_subtract.f90\
 	$(SRC_DIR_GENERATED)$(PS)block_field$(PS)block_field.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)mesh_bank.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_default$(PS)sim_params_init_DPs.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_default$(PS)sim_params_init_export.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_default$(PS)sim_params_init_flow_config.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_default$(PS)sim_params_init_logicals.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_default$(PS)sim_params_init_solver_config.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)$(sim_params_default)$(PS)sim_params_init_DPs.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)$(sim_params_default)$(PS)sim_params_init_export.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)$(sim_params_default)$(PS)sim_params_init_flow_config.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)$(sim_params_default)$(PS)sim_params_init_logicals.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)$(sim_params_default)$(PS)sim_params_init_solver_config.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_assign_ghost.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_assign_ghost_periodic.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_assign_wall.f90\
@@ -198,10 +198,10 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_multiply_wall.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_MG$(PS)GF_prolongate.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_MG$(PS)GF_restrict.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_default$(PS)sim_params_init_mesh.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)$(sim_params_default)$(PS)sim_params_init_mesh.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_CFL_number$(PS)GF_CFL_number.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_symmetry$(PS)GF_mirror_about_plane.f90\
-	$(SRC_DIR)$(PS)grid_field$(PS)GF_norms.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_no$(RM)s.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_symmetry$(PS)GF_symmetry_error.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_extend.f90\
 	$(SRC_DIR)$(PS)procedure_array$(PS)single_procedure_plane_op_extend.f90\
@@ -257,7 +257,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_T_BCs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)init_U_BCs.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_phi_BCs.f90\
-	$(SRC_DIR)$(PS)ops$(PS)ops_norms.f90\
+	$(SRC_DIR)$(PS)ops$(PS)ops_no$(RM)s.f90\
 	$(SRC_DIR_GENERATED)$(PS)governing_equations$(PS)energy.f90\
 	$(SRC_DIR)$(PS)IO$(PS)import_raw.f90\
 	$(SRC_DIR_GENERATED)$(PS)governing_equations$(PS)induction.f90\
@@ -271,7 +271,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)solvers$(PS)energy$(PS)init_gravity_field.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)init_phi_field.f90\
 	$(SRC_DIR_GENERATED)$(PS)governing_equations$(PS)momentum.f90\
-	$(SRC_DIR)$(PS)PCG$(PS)norms_extend.f90\
+	$(SRC_DIR)$(PS)PCG$(PS)no$(RM)s_extend.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_interp.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)compute_energy.f90\
 	$(SRC_DIR)$(PS)IO$(PS)export_raw_processed.f90\
@@ -287,8 +287,8 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)MOONS$(PS)export_mesh_aux.f90\
 	$(SRC_DIR)$(PS)ops$(PS)ops_discrete.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)preconditioners$(PS)preconditioners.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)E_K_budget_terms.f90\
-	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)E_M_budget_terms.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)E_K_budget_te$(RM)s.f90\
+	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)E_M_budget_te$(RM)s.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)FFT$(PS)FFT_poisson.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)GS$(PS)GS_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)curl_curl_B.f90\

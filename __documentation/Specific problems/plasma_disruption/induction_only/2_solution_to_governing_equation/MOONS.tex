@@ -8,16 +8,7 @@
 \section{Deriving the separable PDE}
 The derived governing equation is
 \begin{equation}\begin{aligned}
-\PD_t B + \PD_t B^0 = \frac{1}{\sigma \M} (\PD_{xx} B + \PD_{yy} B) \\
-\end{aligned} \end{equation}
-First, let
-\begin{equation}\begin{aligned}
-\theta(t) = \PD_t B^0 = f(t), \ne f(x,y) \\
-R = \frac{1}{\sigma \M} \\
-\end{aligned} \end{equation}
-To yield
-\begin{equation}\begin{aligned}
-\PD_t B + \theta = R (\PD_{xx} B + \PD_{yy} B) \\
+\PD_t B + \theta = R (\PD_{xx} B + \PD_{yy} B), \qquad B(x,y,t),\theta(t),R=\text{constant} \\
 \end{aligned} \end{equation}
 Assuming a superposition of homogeneous and non-homogeneous terms
 \begin{equation}\begin{aligned}
@@ -160,7 +151,7 @@ Assuming a solution of the form $Q = D_1 e^{\omega t}$, we have
 \end{aligned} \end{equation}
 
 \section{General Solution and Initial Conditions}
-The general solution is therefore a superposition (sum) of all possible solutions:
+The general solution is therefore a superposition of all possible solutions:
 \begin{equation}\begin{aligned}
 B(x,y,t) = B_h + B_n \\
 B(x,y,t) = - \int_0^t \theta(\tau) d\tau +
