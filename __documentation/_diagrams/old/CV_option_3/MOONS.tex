@@ -7,7 +7,11 @@
 \documentclass[tikz,border=5pt]{standalone}
 % \documentclass[convert={outext=.eps, command=\unexpanded{pdftops -eps \infile}}]{standalone}
 
-\input{../includes.tex}
+\newcommand{\PSCHAIN}{..}
+\input{../prepend_PS_chain}
+\newcommand{\rootdir}{\PSCHAIN}
+\input{\PSCHAIN/includes/includes}
+
 \input{../include_zero_margins.tex}
 \setlength{\voffset}{-1in}
 \setlength{\hoffset}{-1in}

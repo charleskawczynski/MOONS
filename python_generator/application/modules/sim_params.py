@@ -106,6 +106,7 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('diffusion','equation_term',priv)
 	g.module[m_name].add_prop('diffusion_linear','equation_term',priv)
 	g.module[m_name].add_prop('unsteady_B0','equation_term',priv)
+	g.module[m_name].add_prop('constant_dB0dt','equation_term',priv)
 	g.module[m_name].add_prop('current','equation_term',priv)
 	g.module[m_name].add_prop('B_applied','equation_term',priv)
 

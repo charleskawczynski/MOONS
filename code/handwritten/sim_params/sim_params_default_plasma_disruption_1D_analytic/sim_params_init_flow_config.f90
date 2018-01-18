@@ -25,7 +25,7 @@
        logical,parameter :: T = .true.
        logical,parameter :: F = .false.
 
-       SP%GP%periodic_dir            = (/0,0,0/)
+       SP%GP%periodic_dir            = (/1,1,0/)
        SP%GP%apply_BC_order          = (/5,6,1,2,3,4/) ! good for periodic in y?
 
        ! call init_IC_BC(var      ,IC   ,BC)
@@ -64,7 +64,8 @@
        call init(SP%IT%advection       ,T, 1.0_cp           )
        call init(SP%IT%diffusion       ,T, -SP%VS%B%MFP%beta) ! since LHS and J includes scale
        call init(SP%IT%diffusion_linear,F, -SP%VS%B%MFP%beta) ! since LHS and J includes scale
-       call init(SP%IT%unsteady_B0     ,T, -1.0_cp          ) ! since RHS
+       call init(SP%IT%unsteady_B0     ,F, -1.0_cp          ) ! since RHS
+       call init(SP%IT%constant_dB0dt  ,T, +1.0_cp          ) ! since RHS, positive since dB0dt is neg on LHS
 
        ! Sources to add to energy equation. NOTE: scale is not set if add=false
        call init(SP%ET%advection          , F,-1.0_cp           )

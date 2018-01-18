@@ -1,6 +1,10 @@
 \documentclass[11pt]{article}
 % \documentclass[11pt,landscape]{article}
-\input{../includes.tex}
+\newcommand{\PSCHAIN}{..}
+\input{../prepend_PS_chain}
+\newcommand{\rootdir}{\PSCHAIN}
+\input{\PSCHAIN/includes/includes}
+
 
 \input{\rootdir/includes/margins/narrow_margins_portrait.tex} % For local use
 

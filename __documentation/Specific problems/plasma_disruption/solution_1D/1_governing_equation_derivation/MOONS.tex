@@ -1,5 +1,9 @@
 \documentclass[11pt]{article}
-\input{../includes.tex}
+
+\newcommand{\PSCHAIN}{..}
+\input{../prepend_PS_chain}
+\newcommand{\rootdir}{\PSCHAIN}
+\input{\PSCHAIN/includes/includes}
 
 \begin{document}
 \doublespacing
@@ -73,15 +77,23 @@ Here, we will further assume
 \end{itemize}
 Which yields an ordinary differential equation
 \begin{equation}\begin{aligned}
-\PD_t u                 = -\frac{1}{\rho}\PD_x p+ \nu u'' + \frac{1}{\rho \M} B_z^0 B_x' \\
-\PD_t B_x + \PD_t B_x^0 = \frac{1}{\sigma \M} B_x'' + B_z^0 u' \\
+\PD_t u                 = -\frac{1}{\rho}\PD_x p+ \nu \PD_{zz} u + \frac{1}{\rho \M} B_z^0 \PD_z B_x \\
+\PD_t B_x + \PD_t B_x^0 = \frac{1}{\sigma \M} \PD_{zz} B_x + B_z^0 \PD_z u \\
 \end{aligned} \end{equation}
-
 We may further assume no pressure gradient exists, to get
-
 \begin{equation}\begin{aligned}
-\PD_t u                 = \nu u'' + \frac{1}{\rho \M} B_z^0 B_x' \\
-\PD_t B_x + \PD_t B_x^0 = \frac{1}{\sigma \M} B_x'' + B_z^0 u' \\
+\PD_t u                 = \nu \PD_{zz} u + \frac{1}{\rho \M} B_z^0 \PD_z B_x \\
+\PD_t B_x + \PD_t B_x^0 = \frac{1}{\sigma \M} \PD_{zz} B_x + B_z^0 \PD_z u \\
+\end{aligned} \end{equation}
+At steady state, we have
+\begin{equation}\begin{aligned}
+\nu \PD_{zz} u = - \frac{1}{\rho \M} B_z^0 \PD_z B_x \\
+\PD_t B_x^0    = \frac{1}{\sigma \M} \PD_{zz} B_x + B_z^0 \PD_z u \\
+\end{aligned} \end{equation}
+Re-arranging, we have
+\begin{equation}\begin{aligned}
+\PD_{zz} u = - \frac{1}{\rho \nu \M} B_z^0 \PD_z B_x \\
+\PD_{zz} B_x = \sigma \M \PD_t B_x^0 - \sigma \M B_z^0 \PD_z u \\
 \end{aligned} \end{equation}
 
 \end{document}

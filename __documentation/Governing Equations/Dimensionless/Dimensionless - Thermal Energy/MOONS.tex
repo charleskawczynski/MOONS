@@ -1,5 +1,9 @@
 \documentclass[11pt]{article}
-\input{../includes.tex}
+\newcommand{\PSCHAIN}{..}
+\input{../prepend_PS_chain}
+\newcommand{\rootdir}{\PSCHAIN}
+\input{\PSCHAIN/includes/includes}
+
 
 \newcommand{\OB}{\overbrace{\rightarrow}^{\left(\frac{t_c}{\rho_c {C_p}_c \theta_c}\right)}}
 \newcommand{\Cp}{{C_p}_c}

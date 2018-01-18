@@ -10,6 +10,7 @@
 *.png
 *.eps
 *.gz
+*.synctex.gz
 *.mod
 *.pyc
 *.o

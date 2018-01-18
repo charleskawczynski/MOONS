@@ -44,6 +44,9 @@
          if (SP%IT%unsteady_B0%add) then
            call add_unsteady_B0(F,ind%B0,ind%dB0dt,SP%IT%B_applied%scale,SP%IT%unsteady_B0%scale,TMP)
          endif
+         if (SP%IT%constant_dB0dt%add) then
+           call add(F%x,SP%IT%constant_dB0dt%scale)
+         endif
        end subroutine
 
        end module

@@ -51,7 +51,7 @@
        call init(SP%VS%phi%ISP,5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy)
        call init(SP%VS%rho%ISP,5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy)
 
-       ! call init(TMP,RK_n_stages,RK_active,multistep_iter,n_step_stop,dtime)
+       ! call init(TMP,RK_n_stages,RK_active,multistep_iter,t_start,t_stop,dtime)
        call init(SP%coupled,   1,F,1 ,SP%DP%t_start,SP%DP%t_final,SP%DP%dtime)
        call init(SP%VS%T%TMP,  1,F,1 ,SP%DP%t_start,SP%DP%t_final,SP%DP%dtime)
        call init(SP%VS%U%TMP,  1,F,1 ,SP%DP%t_start,SP%DP%t_final,SP%DP%dtime)

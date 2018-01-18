@@ -1,5 +1,9 @@
 \documentclass{article}
-\input{../includes.tex}
+\newcommand{\PSCHAIN}{..}
+\input{../prepend_PS_chain}
+\newcommand{\rootdir}{\PSCHAIN}
+\input{\PSCHAIN/includes/includes}
+
 \usepackage{geometry} % For local use
 
 \newcommand{\ReInv}{Re^{-1}}
@@ -37,6 +41,6 @@ D \Theta_u G p^{n+1}_U = D(\U^{n+1} + \Theta_u G p^{n+1}) - D \Theta_u G p^{n+1}
 D \Theta_u G p^{n+1} = D(\U^{n+1} + \Theta_u G p^{n+1}) \\
 \end{aligned} \end{equation}
 
-\input{../include_bib.tex}
+\input{\rootdir/includes/include_bib.tex}
 
 \end{document}

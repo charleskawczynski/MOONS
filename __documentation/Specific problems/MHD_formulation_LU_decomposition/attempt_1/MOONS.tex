@@ -1,5 +1,9 @@
 \documentclass[landscape]{article}
-\input{../includes.tex}
+\newcommand{\PSCHAIN}{..}
+\input{../prepend_PS_chain}
+\newcommand{\rootdir}{\PSCHAIN}
+\input{\PSCHAIN/includes/includes}
+
 \usepackage[a4paper,margin=1in,landscape]{geometry} % For local use
 
 \newcommand{\ReInv}{Re^{-1}}
@@ -596,6 +600,6 @@ Again, the matrix $\Theta$ may be
 \end{aligned} \end{equation}
 As noted in Perot, the 1st order error term may be circumvented by absorbing the error in the pressure (and, we assume, correction parameter) gradient
 
-\input{../include_bib.tex}
+\input{\rootdir/includes/include_bib.tex}
 
 \end{document}

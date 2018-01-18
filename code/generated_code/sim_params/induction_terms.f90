@@ -40,6 +40,7 @@
          type(equation_term) :: diffusion
          type(equation_term) :: diffusion_linear
          type(equation_term) :: unsteady_B0
+         type(equation_term) :: constant_dB0dt
          type(equation_term) :: current
          type(equation_term) :: B_applied
        end type
@@ -55,6 +56,7 @@
          call init(this%diffusion,that%diffusion)
          call init(this%diffusion_linear,that%diffusion_linear)
          call init(this%unsteady_B0,that%unsteady_B0)
+         call init(this%constant_dB0dt,that%constant_dB0dt)
          call init(this%current,that%current)
          call init(this%B_applied,that%B_applied)
        end subroutine
@@ -66,6 +68,7 @@
          call delete(this%diffusion)
          call delete(this%diffusion_linear)
          call delete(this%unsteady_B0)
+         call delete(this%constant_dB0dt)
          call delete(this%current)
          call delete(this%B_applied)
        end subroutine
@@ -78,6 +81,7 @@
          call display(this%diffusion,un)
          call display(this%diffusion_linear,un)
          call display(this%unsteady_B0,un)
+         call display(this%constant_dB0dt,un)
          call display(this%current,un)
          call display(this%B_applied,un)
        end subroutine
@@ -90,6 +94,7 @@
          call display(this%diffusion,un)
          call display(this%diffusion_linear,un)
          call display(this%unsteady_B0,un)
+         call display(this%constant_dB0dt,un)
          call display(this%current,un)
          call display(this%B_applied,un)
        end subroutine
@@ -124,6 +129,7 @@
          call export(this%diffusion,un)
          call export(this%diffusion_linear,un)
          call export(this%unsteady_B0,un)
+         call export(this%constant_dB0dt,un)
          call export(this%current,un)
          call export(this%B_applied,un)
        end subroutine
@@ -137,6 +143,7 @@
          call import(this%diffusion,un)
          call import(this%diffusion_linear,un)
          call import(this%unsteady_B0,un)
+         call import(this%constant_dB0dt,un)
          call import(this%current,un)
          call import(this%B_applied,un)
        end subroutine
@@ -189,6 +196,8 @@
          call set_IO_dir(this%diffusion_linear,&
          dir//'diffusion_linear'//fortran_PS)
          call set_IO_dir(this%unsteady_B0,dir//'unsteady_B0'//fortran_PS)
+         call set_IO_dir(this%constant_dB0dt,&
+         dir//'constant_dB0dt'//fortran_PS)
          call set_IO_dir(this%current,dir//'current'//fortran_PS)
          call set_IO_dir(this%B_applied,dir//'B_applied'//fortran_PS)
        end subroutine
@@ -204,6 +213,8 @@
          call make_IO_dir(this%diffusion_linear,&
          dir//'diffusion_linear'//fortran_PS)
          call make_IO_dir(this%unsteady_B0,dir//'unsteady_B0'//fortran_PS)
+         call make_IO_dir(this%constant_dB0dt,&
+         dir//'constant_dB0dt'//fortran_PS)
          call make_IO_dir(this%current,dir//'current'//fortran_PS)
          call make_IO_dir(this%B_applied,dir//'B_applied'//fortran_PS)
        end subroutine
@@ -221,6 +232,8 @@
          dir//'diffusion_linear'//fortran_PS)
          call export_structured(this%unsteady_B0,&
          dir//'unsteady_B0'//fortran_PS)
+         call export_structured(this%constant_dB0dt,&
+         dir//'constant_dB0dt'//fortran_PS)
          call export_structured(this%current,dir//'current'//fortran_PS)
          call export_structured(this%B_applied,dir//'B_applied'//fortran_PS)
          close(un)
@@ -239,6 +252,8 @@
          dir//'diffusion_linear'//fortran_PS)
          call import_structured(this%unsteady_B0,&
          dir//'unsteady_B0'//fortran_PS)
+         call import_structured(this%constant_dB0dt,&
+         dir//'constant_dB0dt'//fortran_PS)
          call import_structured(this%current,dir//'current'//fortran_PS)
          call import_structured(this%B_applied,dir//'B_applied'//fortran_PS)
          close(un)

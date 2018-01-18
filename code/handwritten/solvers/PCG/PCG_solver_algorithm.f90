@@ -25,12 +25,12 @@
 
       private
       public :: solve_PCG
-      interface solve_PCG;      module procedure solve_PCG_SF;   end interface
-      interface solve_PCG;      module procedure solve_PCG_VF;   end interface
+      interface solve_PCG;            module procedure solve_PCG_SF;            end interface
+      interface solve_PCG;            module procedure solve_PCG_VF;            end interface
 
-      interface print_info;  module procedure print_info_PCG; end interface
-      interface compute_export_norms;  module procedure compute_export_norms_SF; end interface
-      interface compute_export_norms;  module procedure compute_export_norms_VF; end interface
+      interface print_info;           module procedure print_info_PCG;          end interface
+      interface compute_export_norms; module procedure compute_export_norms_SF; end interface
+      interface compute_export_norms; module procedure compute_export_norms_VF; end interface
 
       contains
 

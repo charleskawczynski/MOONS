@@ -1,5 +1,9 @@
 \documentclass[11pt]{article}
-\input{../includes.tex}
+\newcommand{\PSCHAIN}{..}
+\input{../prepend_PS_chain}
+\newcommand{\rootdir}{\PSCHAIN}
+\input{\PSCHAIN/includes/includes}
+
 
 \begin{document}
 \doublespacing
@@ -9,8 +13,8 @@
 \section{Decoupling of 1D plasma-disruption governing equations}
 In this document, decouple the 1D plasma disruption governing equations
 \begin{equation}\begin{aligned}
-u''   = - \frac{1}{\rho \nu \M} B_z^0 B_x' \\
-B_x'' = \sigma \M (\PD_t B_x^0 - B_z^0 u') \\
+\PD_{zz} u = - \frac{1}{\rho \nu \M} B_z^0 \PD_z B_x \\
+\PD_{zz} B_x = \sigma \M \PD_t B_x^0 - \sigma \M B_z^0 \PD_z u \\
 \end{aligned} \end{equation}
 Let
 \begin{equation}\begin{aligned}
@@ -18,6 +22,7 @@ A = \frac{1}{\rho \nu \M} B_z^0, \qquad
 C = \sigma \M \PD_t B_x^0, \qquad
 D = \sigma \M B_z^0
 \end{aligned} \end{equation}
+Recognizing that this equation is variable with respect to $z$ only, we have a coupled ODE system:
 \begin{equation}\begin{aligned}
 u''   = - A B_x' \\
 B_x'' = C - D u' \\

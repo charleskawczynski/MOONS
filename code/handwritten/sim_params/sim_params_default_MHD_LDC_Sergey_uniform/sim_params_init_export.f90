@@ -25,12 +25,12 @@
        logical,parameter :: F = .false.
 
        ! call init(EFP,export_ever,export_first_step,N_points_in_window,t_window_start,t_window_stop,dt_window_factor)
-       call init(SP%EF%info          ,T,T,10**2,SP%DP%t_start,SP%DP%t_final,0.01_cp)
-       call init(SP%EF%unsteady_0D   ,T,T,10**2,SP%DP%t_start,SP%DP%t_final,0.01_cp)
+       call init(SP%EF%info          ,T,T,10**3,SP%DP%t_start,SP%DP%t_final,0.01_cp)
+       call init(SP%EF%unsteady_0D   ,T,T,10**3,SP%DP%t_start,SP%DP%t_final,0.01_cp)
        call init(SP%EF%unsteady_1D   ,F,F,  0  ,SP%DP%t_start,SP%DP%t_final,0.01_cp)
        call init(SP%EF%unsteady_2D   ,F,F,  0  ,SP%DP%t_start,SP%DP%t_final,0.01_cp)
        call init(SP%EF%unsteady_3D   ,F,F,  0  ,SP%DP%t_start,2.0_cp,0.01_cp)
-       call init(SP%EF%restart_files ,F,F,10**2,SP%DP%t_start,SP%DP%t_final,0.01_cp)
+       call init(SP%EF%restart_files ,F,F,10**3,SP%DP%t_start,SP%DP%t_final,0.01_cp)
        call init(SP%EF%final_solution,F,F,  1  ,SP%DP%t_start,SP%DP%t_final,0.01_cp)
 
        ! call init(export_field,export_ever)

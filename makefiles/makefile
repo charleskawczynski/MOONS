@@ -4,16 +4,15 @@
 # RELEASE = 'DEBUG'
 RELEASE = 'OPTIMIZE'
 # RELEASE = 'PROFILE'
-USE_OPEN_MP = 'TRUE'
+USE_OPEN_MP = 'FALSE'
 # Setting EXPORT_FOR_AUTO_RESTART = 'FALSE' removes all import statements from the main loop,
 # so the solution cannot be restarted and no parameters can be modified during runtime.
 EXPORT_FOR_AUTO_RESTART = 'TRUE'
-PARALLELIZE_3D_OPS = 'TRUE'
+PARALLELIZE_3D_OPS = 'FALSE'
 # Enter the name of the desired input file folder:
-sim_params_default = sim_params_default_MHD_LDC_Sergey_uniform
 # sim_params_default = sim_params_default_MHD_LDC_Sergey_uniform
 # sim_params_default = sim_params_default_plasma_disruption
-# sim_params_default = sim_params_default_plasma_disruption_1D_analytic
+sim_params_default = sim_params_default_plasma_disruption_1D_analytic
 # sim_params_default = sim_params_default_Bandaru
 # sim_params_default = sim_params_default_BC_full_3D
 # sim_params_default = sim_params_default_full_BC

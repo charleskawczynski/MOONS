@@ -1,5 +1,9 @@
 \documentclass[11pt]{article}
-\input{../includes.tex}
+\newcommand{\PSCHAIN}{..}
+\input{../prepend_PS_chain}
+\newcommand{\rootdir}{\PSCHAIN}
+\input{\PSCHAIN/includes/includes}
+
 
 \begin{document}
 \doublespacing
@@ -9,40 +13,41 @@
 \section{Boundary Element Method (BEM)}
 Here, I follow the work of \cite{Iskakov2004}. Consider boundary $\Gamma$. The tangential component of the electric field on the boundary is
 \begin{equation}
-  E_{\tau} = -\mathbf{\tau} \DOT (\mathbf{u} \times \B)_{\Gamma} +
-  Re_m^{-1} \mathbf{\tau} \DOT (\DEL \times \B)_{\Gamma}
+  E_{\tau} = -\mathbf{\tau} \DOT (\mathbf{u} \CROSS \B)_{\Gamma} +
+  Re_m^{-1} \mathbf{\tau} \DOT (\DEL \CROSS \B)_{\Gamma}
 \end{equation}
 If we assume $\mathbf{u}_{\Gamma} \DOT \mathbf{n} = 0$ then this simplifies to
 \begin{equation}
-  E_{\tau} = -\mathbf{\tau} \DOT (\mathbf{u} \times (B_n \mathbf{n})_{\Gamma}) +
-  Re_m^{-1} \mathbf{\tau} \DOT (\DEL \times \B)_{\Gamma}
+  E_{\tau} = -\mathbf{\tau} \DOT (\mathbf{u} \CROSS (B_n \mathbf{n})_{\Gamma}) +
+  Re_m^{-1} \mathbf{\tau} \DOT (\DEL \CROSS \B)_{\Gamma}
 \end{equation}
 % \begin{equation}
-%   (\DEL \times \B)_{\Gamma} = \lim_{r \rightarrow \Gamma} (\DEL \times \B(\mathbf{r}))
+%   (\DEL \CROSS \B)_{\Gamma} = \lim_{r \rightarrow \Gamma} (\DEL \CROSS \B(\mathbf{r}))
 % \end{equation}
 The first term requires knowledge of $B_n$ only and therefore requires no special difficulty. The second term may be approximated using a 2nd order accurate stencil, but the tangential component of the magnetic field is still unknown. This will be determined from the normal component and from proper boundary conditions.
 
 \section{Vector identities}
 \begin{equation}\begin{aligned}
-  \CURL (\A \times \B) = \A (\DIV \B) - \B (\DIV \A) + (\B \DOT \DEL)\A - (\A \DOT \DEL)\B \\
-  \A \times (\B \times \C) = \B (\A \DOT \C) - \C (\A \DOT \B)
+  \CURL (\A \CROSS \B) = \A (\DIV \B) - \B (\DIV \A) + (\B \DOT \DEL)\A - (\A \DOT \DEL)\B \\
+  \A \CROSS (\B \CROSS \C) = \B (\A \DOT \C) - \C (\A \DOT \B)
 \end{aligned}\end{equation}
 
 \section{Details of first term}
 The component of $\E$ tangent to the surface normal $\N$ is
+
 \begin{equation}\begin{aligned}
-  \N \times \E = -\N \times (\U \times \B) + Re_m^{-1} \N \times (\SII \DEL \times \B) \\
-  \A \times (\B \times \C) = \B (\A \DOT \C) - \C (\A \DOT \B) \\
-  \N \times \E = -(\U (\N \DOT \B) - \B (\N \DOT \U)) + Re_m^{-1} \N \times (\SII \DEL \times \B) \\
+  \N \CROSS \E = -\N \CROSS (\U \CROSS \B) + Re_m^{-1} \N \CROSS (\SII \DEL \CROSS \B) \\
+  \A \CROSS (\B \CROSS \C) = \B (\A \DOT \C) - \C (\A \DOT \B) \\
+  \N \CROSS \E = -(\U (\N \DOT \B) - \B (\N \DOT \U)) + Re_m^{-1} \N \CROSS (\SII \DEL \CROSS \B) \\
 \end{aligned}\end{equation}
 
 The normal component may be updated from
 
 \begin{equation}\begin{aligned}
   \PD_t (\N \DOT \B) =& - \N \DOT \CURL \E \\
-   =& - \N \DOT \CURL (\SII \CURL \B - \U \times \B) \\
-   =& \N \DOT \CURL \U \times \B - \N \DOT \CURL (\SII \CURL \B) \\
-  & \CURL (\A \times \B) = \A (\DIV \B) - \B (\DIV \A) + (\B \DOT \DEL)\A - (\A \DOT \DEL)\B \\
+   =& - \N \DOT \CURL (\SII \CURL \B - \U \CROSS \B) \\
+   =& \N \DOT \CURL \U \CROSS \B - \N \DOT \CURL (\SII \CURL \B) \\
+  & \CURL (\A \CROSS \B) = \A (\DIV \B) - \B (\DIV \A) + (\B \DOT \DEL)\A - (\A \DOT \DEL)\B \\
    =& \N \DOT (\U (\DIV \B) - \B (\DIV \U) + (\B \DOT \DEL)\U - (\U \DOT \DEL)\B) - \N \DOT \CURL (\SII \CURL \B) \\
    =& \N \DOT ((\B \DOT \DEL)\U - (\U \DOT \DEL)\B) - \N \DOT \CURL (\SII \CURL \B) \\
    =& \qquad \qquad \hdots \qquad \qquad \quad  - \N \DOT \CURL (\SII \CURL \B) \\
@@ -126,6 +131,6 @@ The term $\frac{\PD}{\PD n} \frac{1}{|\X_i-\Y|} $ may be evaluated to give us
        \right] \\
 \end{equation}
 
-\input{../include_bib.tex}
+\input{\rootdir/includes/include_bib.tex}
 
 \end{document}

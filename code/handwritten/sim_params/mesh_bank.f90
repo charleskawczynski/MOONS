@@ -13,6 +13,7 @@
 
      private
      public :: define_mesh_SP_plasma_disruption
+     public :: define_mesh_SP_plasma_disruption_1D_analytic
      public :: small_dataset
      public :: define_mesh_bandaru
      public :: define_mesh_full_BC_w_vacuum_symmetric
@@ -35,9 +36,9 @@
        call init(SP%MP_mom,SP%MQP)
        call init(SP%MP_sigma,SP%MQP)
        call init(SP%MP_ind,SP%MQP)
-       call add_base(SP%MP_mom,seg_1d(1,'grid_Roberts_B'   ,N   ,-t_fluid   ,t_fluid   ,buffer))
+       call add_base(SP%MP_mom,seg_1d(1,'grid_Roberts_B'   ,N*2 ,-t_fluid*CR,t_fluid*CR,buffer))
        call add_base(SP%MP_mom,seg_1d(2,'grid_Roberts_B'   ,N   ,-t_fluid   ,t_fluid   ,buffer))
-       call add_base(SP%MP_mom,seg_1d(3,'grid_Roberts_B'   ,N*2 ,-t_fluid*CR,t_fluid*CR,buffer))
+       call add_base(SP%MP_mom,seg_1d(3,'grid_Roberts_B'   ,N   ,-t_fluid   ,t_fluid   ,buffer))
        call init(SP%MP_sigma,SP%MP_mom)
        call add_ext(SP%MP_sigma,seg_1d(1,'ext_Roberts_B_IO',N_w,t_wall,buffer))
        call add_ext(SP%MP_sigma,seg_1d(2,'ext_Roberts_B_IO',N_w,t_wall,buffer))
@@ -55,9 +56,9 @@
        call init(SP%MP_mom,SP%MQP)
        call init(SP%MP_sigma,SP%MQP)
        call init(SP%MP_ind,SP%MQP)
-       call add_base(SP%MP_mom,seg_1d(1,'grid_uniform'   ,1 ,-t_fluid,t_fluid,buffer))
-       call add_base(SP%MP_mom,seg_1d(2,'grid_uniform'   ,N ,-t_fluid,t_fluid,buffer))
-       call add_base(SP%MP_mom,seg_1d(3,'grid_uniform'   ,1 ,-t_fluid,t_fluid,buffer))
+       call add_base(SP%MP_mom,seg_1d(1,'grid_uniform'     ,1 ,-t_fluid,t_fluid,buffer))
+       call add_base(SP%MP_mom,seg_1d(2,'grid_uniform'     ,1 ,-t_fluid,t_fluid,buffer))
+       call add_base(SP%MP_mom,seg_1d(3,'grid_Roberts_B'   ,N ,-t_fluid,t_fluid,buffer))
        call init(SP%MP_sigma,SP%MP_mom)
        call init(SP%MP_ind,SP%MP_sigma)
      end subroutine

@@ -1,0 +1,75 @@
+\documentclass[11pt]{article}
+\newcommand{\PSCHAIN}{..}
+\input{../prepend_PS_chain}
+\newcommand{\rootdir}{\PSCHAIN}
+\input{\PSCHAIN/includes/includes}
+
+
+\begin{document}
+% \doublespacing
+\MOONSTITLE
+\maketitle
+\section{Deriving the separable PDE}
+The derived governing equation is
+\begin{equation}\begin{aligned}
+\PD_t B^1 = R (\PD_{xx} B^1 + \PD_{yy} B^1) - \PD_t B^0, \qquad B^1(x,y,t),B^0(t),R=\text{constant} \\
+\end{aligned} \end{equation}
+\section{Sergey's Russian mathematics book}
+Using Sergey's russian mathematics book (P. 145 for the problem statement, P. 149 for solution)
+\begin{equation}\begin{aligned}
+\PD_t T = a (\PD_{xx} T + \PD_{yy} T) + \Phi(x,y,t) \\
+\end{aligned} \end{equation}
+Under case 6, finite BCs are used:
+\begin{equation}\begin{aligned}
+0 \le x \le L_x \\
+0 \le y \le L_y \\
+T = f(x,y), \quad t=0 \\
+T = 0 \in \PD \Omega \\
+\end{aligned} \end{equation}
+The solution to the equation is:
+\begin{equation}\begin{aligned}
+T(x,y,t)=
+\int_0^{L_x} \int_0^{L_y} G(x,\xi,y,\zeta,t) f(\xi,\zeta) d \xi d \zeta
+\\ +
+\int_0^t \int_0^{L_x} \int_0^{L_y} G(x,\xi,y,\zeta,t-\tau) \Phi(\xi,\zeta,\tau) d \xi d \zeta d \tau
+\\
+G(x,\xi,y,\zeta,t) =
+\frac{4}{L_x L_y} \sum_{n=1}^{\infty} \sum_{m=1}^{\infty}
+e^{\left[ -\pi^2 a t \left( \frac{n^2}{L_x^2} + \frac{m^2}{L_y^2} \right) \right]}
+\sin \left( \frac{n \pi x}{L_x} \right)
+\sin \left( \frac{n \pi \xi}{L_x} \right)
+\sin \left( \frac{m \pi y}{L_y} \right)
+\sin \left( \frac{m \pi \zeta}{L_y} \right)
+\\
+\end{aligned} \end{equation}
+
+\section{Applying the solution to our case}
+The derived governing equation is
+\begin{equation}\begin{aligned}
+\PD_t B^1 = R (\PD_{xx} B^1 + \PD_{yy} B^1) - \PD_t B^0, \qquad B^1(x,y,t),B^0(t),R=\text{constant} \\
+\end{aligned} \end{equation}
+For our equation
+\begin{equation}\begin{aligned}
+T(x,y,t) = B(x,y,t) \\
+f(\xi,\zeta) = 0 \\
+\Phi(\xi,\zeta,\tau) = - \PD_t B^0 = \theta(t) \\
+a = R \\
+\end{aligned} \end{equation}
+Therefore, we have
+\begin{equation}\begin{aligned}
+B(x,y,t) = \int_0^t \int_0^{L_x} \int_0^{L_y} G(x,\xi,y,\zeta,t-\tau) \theta(\tau) d \xi d \zeta d \tau \\
+G(x,\xi,y,\zeta,t) =
+\frac{4}{L_x L_y} \sum_{n=1}^{\infty} \sum_{m=1}^{\infty}
+e^{-\pi^2 R t \left( \frac{n^2}{L_x^2} + \frac{m^2}{L_y^2} \right)}
+\sin \left( \frac{n \pi x}{L_x} \right)
+\sin \left( \frac{n \pi \xi}{L_x} \right)
+\sin \left( \frac{m \pi y}{L_y} \right)
+\sin \left( \frac{m \pi \zeta}{L_y} \right)
+\\
+\end{aligned} \end{equation}
+Therefore, the electric current is
+\begin{equation}\begin{aligned}
+\J = \CURL \B \\
+\end{aligned} \end{equation}
+
+\end{document}

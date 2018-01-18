@@ -5,7 +5,11 @@
 % mv  "$2-crop.eps" $2.eps
 \documentclass[tikz,border=5pt]{standalone}
 
-\input{../includes.tex}
+\newcommand{\PSCHAIN}{..}
+\input{../prepend_PS_chain}
+\newcommand{\rootdir}{\PSCHAIN}
+\input{\PSCHAIN/includes/includes}
+
 \input{../../includes/diagrams/coordinates.tex}
 \input{../include_zero_margins.tex}
 \setlength{\voffset}{-1in}

@@ -1,0 +1,14 @@
+% How to include packages and includes
+
+% In the main tex file:
+\newcommand{\PSCHAIN}{..}
+\input{../prepend_PS_chain}
+\newcommand{\rootdir}{\PSCHAIN}
+\input{\PSCHAIN/includes/includes}
+
+% In all subfolders, except those without subfolders, make a file named prepend_PS_chain.tex with contents:
+\edef\PSCHAIN{../\PSCHAIN}
+\input{\PSCHAIN/prepend_PS_chain}
+
+% The file prepend_PS_chain.tex in the root directory needs special content:
+\edef\PSCHAIN{\PSCHAIN/LATEX_INCLUDES}
