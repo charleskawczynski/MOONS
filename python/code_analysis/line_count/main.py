@@ -53,12 +53,15 @@ compiled_files = [x[:-1] if x.endswith('\\') else x for x in compiled_files]
 # print('\n'.join(compiled_files))
 # print(' ----------------------------------------------- ')
 
+# compiled_files = [x for x in compiled_files if '$(SRC_DIR_GENERATED)' in x]
+
 compiled_files = [x.replace('	$(SRC_DIR_PRE_GENERATED)',code_dir_pre_generated) for x in compiled_files]
 compiled_files = [x.replace('	$(SRC_DIR_GENERATED)',code_dir_generated) for x in compiled_files]
 compiled_files = [x.replace('	$(SRC_DIR)',code_dir_handwritten) for x in compiled_files]
 # if generated:
 # else:
 compiled_files = [x.replace('$(PS)',PS) for x in compiled_files]
+compiled_files = [x.replace('$(sim_params_default)','sim_params_default_Bandaru') for x in compiled_files]
 compiled_files = [x for x in compiled_files if not x.replace('\t','').startswith('#')]
 print('\n'.join(compiled_files))
 

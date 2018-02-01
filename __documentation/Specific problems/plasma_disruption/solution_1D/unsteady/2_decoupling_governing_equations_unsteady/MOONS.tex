@@ -44,13 +44,13 @@ Y = u - E B_x \\
 \subsection{Transformation for X}
 We have
 \begin{equation}\begin{aligned}
-\PD_t (X - E B_x)        = -G+ H (X'' - E B_x'') + A \PD_z B_x \\
+\PD_t (X - E B_x)        = -G+ H (X'' - E B_x'') + A B_x' \\
 \PD_t B_x + C = K B_x'' + D (X' - E B_x') \\
 \end{aligned} \end{equation}
 Distributing
 \begin{equation}\begin{aligned}
 \PD_t X - E \PD_t B_x = -G+ H X'' - H E B_x'' + A B_x' \\
-\PD_t B_x + C = K B_x'' + D \PD_z X - D E B_x' \\
+\PD_t B_x + C = K B_x'' + D X' - D E B_x' \\
 \end{aligned} \end{equation}
 Combining with factor $F$ for second equation
 \begin{equation}\begin{aligned}
@@ -66,7 +66,7 @@ FDF = A, \qquad \\
 K = H, \qquad
 F = \sqrt{\frac{A}{D}}, \qquad \\
 \end{aligned} \end{equation}
-So we have
+The $K=H$ requirement implies that $\nu = \nu_m$. Put differently, magnetic Prandtle ($Pr_m$) must equal unity ($Pr_m = 1$). So, we have
 \begin{equation}\begin{aligned}
 \PD_t X + FC = -G+ H X'' + DF X'\\
 \end{aligned} \end{equation}
@@ -78,13 +78,13 @@ Reminder
 \end{aligned} \end{equation}
 We have
 \begin{equation}\begin{aligned}
-\PD_t (Y + E B_x)        = -G+ H (Y'' + E B_x'') + A \PD_z B_x \\
+\PD_t (Y + E B_x)        = -G+ H (Y'' + E B_x'') + A B_x'' \\
 \PD_t B_x + C = K B_x'' + D (Y' + E B_x') \\
 \end{aligned} \end{equation}
 Distributing
 \begin{equation}\begin{aligned}
 \PD_t Y + E \PD_t B_x = -G+ H Y'' + H E B_x'' + A B_x' \\
-\PD_t B_x + C = K B_x'' + D \PD_z Y + D E B_x' \\
+\PD_t B_x + C = K B_x'' + D Y' + D E B_x' \\
 \end{aligned} \end{equation}
 Combining with factor $-F$ for second equation
 \begin{equation}\begin{aligned}
@@ -100,7 +100,7 @@ FDF = A, \qquad \\
 K = H, \qquad
 F = \sqrt{\frac{A}{D}}, \qquad \\
 \end{aligned} \end{equation}
-So we have
+Again, the $K=H$ requirement implies that $\nu = \nu_m$. Put differently, magnetic Prandtle ($Pr_m$) must equal unity ($Pr_m = 1$). So, we have
 \begin{equation}\begin{aligned}
 \PD_t Y - FC = -G+ H Y'' - DF Y'\\
 \end{aligned} \end{equation}
@@ -131,11 +131,10 @@ E = \sqrt{\frac{A}{D}} \\
 \end{aligned} \end{equation}
 \begin{equation}\begin{aligned}
 G = \frac{1}{\rho}\PD_x p, \qquad
-H = \nu, \qquad
+H = K = \nu = \frac{1}{\sigma \M}, \qquad
 A = \frac{1}{\rho \M} B_z^0, \qquad
 C = \PD_t B_x^0, \qquad
-K = \frac{1}{\sigma \M}, \qquad
-D = B_z^0, \qquad
+D = B_z^0.
 \end{aligned} \end{equation}
 
 

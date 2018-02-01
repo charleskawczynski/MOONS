@@ -178,7 +178,10 @@
          integer :: t
          e = 0.0_cp
          do t=1,vol%s
-           call compute_Ln_norm(temp,u%x%BF(t)%GF,u%y%BF(t)%GF,u%z%BF(t)%GF,n,vol%BF(t)%GF)
+           call compute_Ln_norm(temp,u%x%BF(t)%GF,&
+                                     u%y%BF(t)%GF,&
+                                     u%z%BF(t)%GF,&
+                                     n,vol%BF(t)%GF)
            e = e + temp
          enddo
        end subroutine
@@ -225,7 +228,9 @@
          e = 0.0_cp
          if (is_collocated(u)) then
            do t=1,u%x%s
-             call compute_Ln_norm(temp,u%x%BF(t)%GF,u%y%BF(t)%GF,u%z%BF(t)%GF,n); e = e + temp
+             call compute_Ln_norm(temp,u%x%BF(t)%GF,&
+                                       u%y%BF(t)%GF,&
+                                       u%z%BF(t)%GF,n); e = e + temp
            enddo
          else
            do t=1,u%x%s

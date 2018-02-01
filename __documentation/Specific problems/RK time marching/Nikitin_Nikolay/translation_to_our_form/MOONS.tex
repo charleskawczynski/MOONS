@@ -1,0 +1,69 @@
+\documentclass[11pt]{article}
+\newcommand{\PSCHAIN}{..}
+\input{../prepend_PS_chain}
+\newcommand{\rootdir}{\PSCHAIN}
+\input{\PSCHAIN/includes/includes}
+
+
+\newcommand{\ReInv}{Re^{-1}}
+\newcommand{\RemInv}{Re_m^{-1}}
+\newcommand{\Al}{N Re_m^{-1}}
+\newcommand{\Interaction}{N}
+
+\begin{document}
+
+\MOONSTITLE
+% \maketitle
+
+\section{Converting to form with MHD variables} \label{sec:MHD_form}
+The governing equations are defined as
+\begin{equation}\begin{aligned}
+  \PD_t w = H(t,w) - G p \\
+\end{aligned}\end{equation}
+Here, $H$ contains the convective AND viscous terms. Let the discrete operators be denoted by $D = \DIV, L = \DEL^2$. A simple direct conversion to our standard naming convention yields
+\begin{equation}\begin{aligned}
+  % F = H(t,w) - G p = - \MAC L \X + \MAC F - G \zeta \\
+  F = H(w(t)) - G p = - \MAC L \X + \MAC F - G \zeta \\
+\end{aligned}\end{equation}
+Simply choosing the linear operator $\MAC L$ for the linear operator $L$ (introduced in equation 5 of Nikitin) yields. NOTE: here, we still use $L$ to denote the Laplacian operator, not the linear operator used in Nikitin.
+\begin{equation}\begin{aligned}
+  F_n = F(\X_n) \\
+  L \zeta_n = D F_n \\
+  (I - \gamma \tau \MAC L) (\X' - \X_n) = \frac{2}{3} \tau (F_n - G \zeta_n) \\
+\end{aligned}\end{equation}
+\begin{equation}\begin{aligned}
+  % F' = F(t_n + 2 \tau/3,\X') \\
+  F' = F(\X') \\
+  L \zeta' = D F' \\
+  (I - \gamma \tau \MAC L) \left(\X'' - \frac{3}{2}\X' + \frac{1}{2} \X_n \right) = \frac{1}{3} \tau (F' - G \zeta') + \X_n - \X' \\
+  (I - \gamma \tau \MAC L) \left(\tilde{\X}_{n+1} - \frac{3}{2}\X'' + \frac{3}{4} \X' - \frac{1}{4}\X_n\right) = \frac{3}{4} (\X'' - \X_n) \\
+\end{aligned}\end{equation}
+\begin{equation}\begin{aligned}
+  % F'' = F(t_n + 2 \tau/3,\X'') \\
+  F'' = F(\X'') \\
+  (I - \gamma \tau \MAC L) \left(\hat{\X}_{n+1} - \frac{1}{2} \tilde{\X}_{n+1} - \frac{3}{4} \X'' + \frac{1}{4} \X_n\right) = \frac{3}{4} \tau (F'' - G \zeta') + \frac{5}{8} \X_n + \frac{3}{8} \X'' - \tilde{\X}_{n+1} \\
+  L q = D \hat{\X}_{n+1} \\
+  \X_{n+1} = \hat{\X}_{n+1} - G q \\
+\end{aligned}\end{equation}
+
+\section{Confirming decoupled system}
+To finalize that this time marching method will work with the coupled system, we must know that solving each linear system can be performed separately. All of the linear systems are can be written in a simplified form of:
+\begin{equation}\begin{aligned}
+  (I - \gamma \tau \MAC L) \X_{temp} = \Y \\
+\end{aligned}\end{equation}
+Where $\Y$ is known. Substituting the linear operator in, we have
+\begin{equation}\begin{aligned}
+  \left(I - \gamma \tau \MAT{c c}
+-\ReInv \DEL^2 & 0 \\
+0 & \RemInv \DEL \CROSS ( \SO^{-1} \DEL \CROSS ) \\
+\EMAT
+ \right) \X_{temp} = \Y \\
+  \left(\MAT{c c}
+1 + \gamma \tau\ReInv \DEL^2 & 0 \\
+0 & 1-\gamma \tau \RemInv \DEL \CROSS ( \SO^{-1} \DEL \CROSS ) \\
+\EMAT
+ \right) \X_{temp} = \Y \\
+\end{aligned}\end{equation}
+This confirms that the systems are in fact decoupled, since each equation can be solved separately since $\Y$ is constant for each iteration.
+
+\end{document}

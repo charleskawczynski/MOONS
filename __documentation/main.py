@@ -11,14 +11,14 @@ def delete_auxiliary_files(file_name,extensions):
 		if os.path.isfile(f): os.remove(f)
 	print('-------------------------------------')
 
+def get_file_contents(file_name):
+	with open(file_name, 'r') as content_file: contents = content_file.read()
+	return contents.split('\n')
+
 def write_list_to_file(file_name,L):
 	f = open(file_name,'w+')
 	f.write('\n'.join(L))
 	f.close()
-
-def get_file_contents(file_name):
-	with open(file_name, 'r') as content_file: contents = content_file.read()
-	return contents.split('\n')
 
 def read_file_to_list(file_name):
 	with open(file_name,encoding='utf8') as f: # Accounts for encoded characters

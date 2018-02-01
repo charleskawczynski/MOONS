@@ -1,0 +1,33 @@
+\documentclass[11pt]{article}
+\newcommand{\PSCHAIN}{..}
+\input{../prepend_PS_chain}
+\newcommand{\rootdir}{\PSCHAIN}
+\input{\PSCHAIN/includes/includes}
+
+
+\newcommand{\ReInv}{Re^{-1}}
+\newcommand{\RemInv}{Re_m^{-1}}
+\newcommand{\Al}{N Re_m^{-1}}
+\newcommand{\Interaction}{N}
+
+\begin{document}
+
+\MOONSTITLE
+% \maketitle
+
+\section{Writing in segragated form}
+Our original equations are:
+\begin{equation}\begin{aligned}
+  \PD_t \U = \ReInv \DEL^2 \U - \DEL p + \left( \DEL \DOT (\U \U^T) + \Al (\CURL \B) \CROSS \B \right) \\
+  \PD_t \B = -\RemInv \DEL \CROSS ( \SO^{-1} \DEL \CROSS \B ) = -\DEL \phi + \left( \DEL \CROSS \U \CROSS \B \right) \\
+\end{aligned}\end{equation}
+
+Applying our adopted method, we have the following steps:
+\begin{equation}\begin{aligned}
+  1.1) \qquad Lp^n = D() \\
+  1.2) \qquad  \\
+\end{aligned}\end{equation}
+
+
+
+\end{document}

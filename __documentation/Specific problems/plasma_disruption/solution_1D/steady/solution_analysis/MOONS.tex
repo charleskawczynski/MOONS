@@ -13,8 +13,8 @@
 \section{Solution}
 The 1D solution is:
 \begin{equation}\begin{aligned}
-B_x^1 = - \sqrt{\mu \sigma a^2 \M^2} \frac{1}{B_z^0} \frac{\PD B_x^0}{\PD t} \left( \frac{1}{\tanh(Ha)} -  \frac{\cosh \left(Ha \frac{y}{a} \right)}{\sinh(Ha)}\right), \\
-u   = -a \frac{1}{B_z^0} \frac{\PD B_x^0}{\PD t} \left( \frac{\sinh\left(Ha \frac{y}{a} \right)}{\sinh(Ha)} - \frac{y}{a} \right), \qquad
+B_x^1 = - \sqrt{\mu \sigma a^2 \M^2} \frac{1}{B_z^0} \frac{\PD B_x^0}{\PD t} \left( \frac{1}{\tanh(Ha)} -  \frac{\cosh \left(Ha \frac{z}{a} \right)}{\sinh(Ha)}\right), \\
+u   = -a \frac{1}{B_z^0} \frac{\PD B_x^0}{\PD t} \left( \frac{\sinh\left(Ha \frac{z}{a} \right)}{\sinh(Ha)} - \frac{z}{a} \right), \qquad
 Ha = a B_z^0 \sqrt{\frac{\sigma}{\rho \nu}}. \\
 \end{aligned} \end{equation}
 Using values for lead lithium:
@@ -111,22 +111,22 @@ B_z^0                   & = 5 \text{ [T]}\\
 \caption{Magnetic Reynolds number}
 \end{table}
 
-\newpage
+% \newpage
 
-\begin{figure}[H]
-  \noindent
-    \includegraphics[width=0.4\textwidth]{figs/umax_3D.eps} \hspace{2em}
-    \includegraphics[width=0.4\textwidth]{figs/Bmax_3D.eps}
-  \caption{Dimensional velocity [m/s] and magnetic field [T].} \label{fig:umax-Bmax}
-\end{figure}
+% \begin{figure}[H]
+%   \noindent
+%     \includegraphics[width=0.4\textwidth]{figs/umax_3D.eps} \hspace{2em}
+%     \includegraphics[width=0.4\textwidth]{figs/Bmax_3D.eps}
+%   \caption{Dimensional velocity [m/s] and magnetic field [T].} \label{fig:umax-Bmax}
+% \end{figure}
 
-\begin{figure}[H]
-  \noindent
-    \includegraphics[width=0.3\textwidth]{figs/Re_3D.eps} \hspace{2em}
-    \includegraphics[width=0.3\textwidth]{figs/Ha_3D.eps}
-	\includegraphics[width=0.3\textwidth]{figs/Rem_3D.eps}
-  \caption{Reynolds and Hartmann number.} \label{fig:Re-Ha-Rem}
-\end{figure}
+% \begin{figure}[H]
+%   \noindent
+%     \includegraphics[width=0.3\textwidth]{figs/Re_3D.eps} \hspace{2em}
+%     \includegraphics[width=0.3\textwidth]{figs/Ha_3D.eps}
+% 	\includegraphics[width=0.3\textwidth]{figs/Rem_3D.eps}
+%   \caption{Reynolds and Hartmann number.} \label{fig:Re-Ha-Rem}
+% \end{figure}
 
 
 \end{document}

@@ -226,6 +226,11 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].set_used_modules(['IO_tools_mod'])
 	g.module[m_name].add_prop(['probe_divB','probe_divJ','JE','JE_fluid'],'probe',priv)
 	g.module[m_name].add_prop(['ME','ME_fluid','ME_conductor','probe_dB0dt','probe_B0'],'probe',priv,F,1,3)
+	g.module[m_name].add_prop(['Bx','By','Bz'],'probe',priv,F,1,3)
+	g.module[m_name].add_prop(['max_JxB_x'],'probe',priv)
+	g.module[m_name].add_prop(['max_JxB_y'],'probe',priv)
+	g.module[m_name].add_prop(['max_JxB_z'],'probe',priv)
+	g.module[m_name].add_prop(['max_JxB'],'probe',priv)
 
 	m_name = 'probe_set_nrg'
 	g.add_module(m_name)

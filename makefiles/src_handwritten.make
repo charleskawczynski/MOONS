@@ -70,6 +70,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D$(PS)GF_product_add.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D$(PS)GF_square.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D$(PS)GF_square_root.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D$(PS)GF_magnitude.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D$(PS)GF_cross_product.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_assign_plane.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_assign_plane_ave.f90\

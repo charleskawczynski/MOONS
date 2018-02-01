@@ -101,6 +101,8 @@ class fortran_module:
     def get_props(self): return self.prop
 
     def add_prop(self,name,class_,privacy,allocatable = False,rank = 1,dimension = 1,procedure = False):
+        if allocatable:
+            dimension = 3 # dim does not matter if allocatable, but must be > 1
         if type(name) is str:
             self.add_prop_string(name,class_,privacy,allocatable,rank,dimension,procedure)
         elif type(name) is list:

@@ -102,6 +102,21 @@
              call init(M%C%SP%PS_ind%probe_B0(2)   ,str(M%C%DT%B%energy),'B0_y',   L,.true.,M%C%SP%VS%B%TMP)
              call init(M%C%SP%PS_ind%probe_B0(3)   ,str(M%C%DT%B%energy),'B0_z',   L,.true.,M%C%SP%VS%B%TMP)
            endif
+           call init(M%C%SP%PS_ind%max_JxB     ,str(M%C%DT%B%energy),'max_JxB',      L,.true.,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%max_JxB_x   ,str(M%C%DT%B%energy),'max_JxB_x',    L,.true.,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%max_JxB_y   ,str(M%C%DT%B%energy),'max_JxB_y',    L,.true.,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%max_JxB_z   ,str(M%C%DT%B%energy),'max_JxB_z',    L,.true.,M%C%SP%VS%B%TMP)
+
+           call init(M%C%SP%PS_ind%Bx(1)   ,str(M%C%DT%B%energy),'Bx',    L,.true.,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%By(1)   ,str(M%C%DT%B%energy),'By',    L,.true.,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%Bz(1)   ,str(M%C%DT%B%energy),'Bz',    L,.true.,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%Bx(2)   ,str(M%C%DT%B%energy),'B0x',   L,.true.,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%By(2)   ,str(M%C%DT%B%energy),'B0y',   L,.true.,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%Bz(2)   ,str(M%C%DT%B%energy),'B0z',   L,.true.,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%Bx(3)   ,str(M%C%DT%B%energy),'B1x',   L,.true.,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%By(3)   ,str(M%C%DT%B%energy),'B1y',   L,.true.,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%Bz(3)   ,str(M%C%DT%B%energy),'B1z',   L,.true.,M%C%SP%VS%B%TMP)
+
            call init(M%C%SP%PS_ind%probe_divB     ,str(M%C%DT%B%residual),'transient_divB',L,.true.,M%C%SP%VS%B%TMP)
            call init(M%C%SP%PS_ind%probe_divJ     ,str(M%C%DT%J%residual),'transient_divJ',L,.true.,M%C%SP%VS%B%TMP)
            call init(M%C%SP%PS_ind%JE             ,str(M%C%DT%J%energy),'JE',            L,.true.,M%C%SP%VS%B%TMP)

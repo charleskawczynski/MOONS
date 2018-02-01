@@ -1,0 +1,148 @@
+\documentclass[11pt]{article}
+\newcommand{\PSCHAIN}{..}
+\input{../prepend_PS_chain}
+\newcommand{\rootdir}{\PSCHAIN}
+\input{\PSCHAIN/includes/includes}
+
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Solving for the Undetermined Coefficients}
+Our decoupled equations are
+\begin{equation}\begin{aligned}
+\PD_t X - H X'' - DE X'  = (- EC -G)\\
+\PD_t Y - H Y'' + DE Y'  = (+ EC -G)\\
+\end{aligned} \end{equation}
+With transformations
+\begin{equation}\begin{aligned}
+X = u + E B_x \\
+Y = u - E B_x \\
+E = \sqrt{\frac{A}{D}} \\
+\end{aligned} \end{equation}
+And inverse transformations
+\begin{equation}\begin{aligned}
+u   = \frac{1}{2} \left( X + Y \right) \\
+B_x = \frac{1}{2E} \left( X - Y \right) \\
+E = \sqrt{\frac{A}{D}} = \sqrt{\frac{1}{\rho \M}} \\
+\end{aligned} \end{equation}
+\begin{equation}\begin{aligned}
+G = \frac{1}{\rho}\PD_x p, \qquad
+H = \nu, \qquad
+A = \frac{1}{\rho \M} B_z^0, \qquad
+C = \PD_t B_x^0, \qquad
+K = \frac{1}{\sigma \M}, \qquad
+D = B_z^0, \qquad
+\end{aligned} \end{equation}
+
+\section{Solution prep}
+First, let's introduce a variable so that we can solve both systems simultaneously. Let $\kappa = 1$ for the $X$ equation, and $\kappa = -1$ for the $Y$ equation.
+\begin{equation}\begin{aligned}
+	\PD_t \MAC X - H \MAC X'' - DE \kappa \MAC X'  = (- \kappa EC -G) \\
+\end{aligned} \end{equation}
+\section{Solution procedure}
+First, let's decompose the solution into homogeneous and non-homogeneous:
+\begin{equation}\begin{aligned}
+	\MAC X = \MAC X_h + \MAC X_n, \\
+\end{aligned} \end{equation}
+where the homogeneous solution satisfies
+\begin{equation}\begin{aligned}
+	\PD_t \MAC X_h - H \MAC X_h'' - DE \kappa \MAC X_h'  = 0 \\
+\end{aligned} \end{equation}
+Assuming the homogeneous solution is separable ($\MAC X_h(z,t) = F(z)Q(t)$), we have
+\begin{equation}\begin{aligned}
+	F\dot{Q} - HQF'' - \kappa DEQF' = 0 \\
+\end{aligned} \end{equation}
+Dividing by $FQ$ yields
+\begin{equation}\begin{aligned}
+	\frac{\dot{Q}}{Q} = H \frac{F''}{F} + \kappa DE \frac{F'}{F} = \text{constant} = -\gamma \\
+\end{aligned} \end{equation}
+\subsection{Spatial solution}
+Let's solve the RHS equation:
+\begin{equation}\begin{aligned}
+	H F'' + \kappa DE F' = -F \gamma \\
+	F'' + \frac{\kappa DE}{H} F' = -\frac{F}{H} \gamma \\
+\end{aligned} \end{equation}
+Let's assume $F(z) = e^{i\alpha z}$, to get
+\begin{equation}\begin{aligned}
+	H F'' + \kappa DE F' = - F \gamma \\
+	-\alpha^2 + i \frac{\kappa DE}{H} \alpha = - \frac{1}{H} \gamma \\
+	-\alpha^2 + i\frac{\kappa DE}{H} \alpha + \frac{1}{H} \gamma = 0  \\
+	\alpha^2 - i\frac{\kappa DE}{H} \alpha - \frac{1}{H} \gamma = 0  \\
+	\alpha = i \frac{\kappa DE}{2H} \pm \frac{1}{2} \sqrt{\left(\frac{i \kappa DE}{H}\right)^2 - \frac{4}{H} \gamma} \\
+	\alpha = i \frac{\kappa DE}{2H} \pm \frac{i}{2} \sqrt{\left(\frac{\kappa DE}{H}\right)^2 + \frac{4}{H} \gamma} \\
+\end{aligned} \end{equation}
+From this, we may write
+\begin{equation}\begin{aligned}
+	\alpha_1 + \alpha_2 = i \frac{\kappa DE}{H} \\
+	\alpha_1 - \alpha_2 = i \sqrt{\left(\frac{DE}{H}\right)^2 + \frac{4}{H} \gamma} \\
+\end{aligned} \end{equation}
+
+So, we have
+\begin{equation}\begin{aligned}
+	F(z) = c_1 e^{\alpha_1 z} + c_2 e^{\alpha_2 z} \\
+\end{aligned} \end{equation}
+Applying BC ($F(0) = 0$)
+\begin{equation}\begin{aligned}
+	F(0) = & c_1 + c_2 = 0 \\
+	     = & c_2 =-c_1  \\
+\end{aligned} \end{equation}
+Yields
+\begin{equation}\begin{aligned}
+	F(z) = c_1 (e^{\alpha_1 z} - e^{\alpha_2 z}) \\
+\end{aligned} \end{equation}
+Applying BC ($F(L) = 0$)
+\begin{equation}\begin{aligned}
+	F(L) = & c_1 (e^{\alpha_1 L} - e^{\alpha_2 L}) = 0 \\
+	     = &     (e^{\alpha_1 L} - e^{\alpha_2 L}) = 0 \\
+	     = &     (e^{\alpha_1 L}e^{-\alpha_2 L} - 1) = 0 \\
+	       &     e^{(\alpha_1-\alpha_2) L} = 1 = e^{i2n\pi} \\
+	       &     e^{(\alpha_1-\alpha_2) L} = 1 = e^{i2n\pi} \\
+	       &     (\alpha_1-\alpha_2) = \frac{i2n\pi}{L} \\
+	       &     (\alpha_1-\alpha_2)^2 = \left( \frac{i2n\pi}{L} \right)^2 \\
+	       &     (\alpha_1-\alpha_2)^2 = - \left( \frac{2n\pi}{L} \right)^2 \\
+	       &     \left(\frac{DE}{H}\right)^2 + \frac{4}{H} \gamma = - \left( \frac{2n\pi}{L} \right)^2 \\
+	       &     \frac{4}{H} \gamma = - \left( \frac{2n\pi}{L} \right)^2 - \left(\frac{\kappa DE}{H}\right)^2 \\
+	       &     \gamma = - \frac{H}{4} \left[ \left( \frac{2n\pi}{L} \right)^2 + \left(\frac{\kappa DE}{H}\right)^2 \right] \\
+\end{aligned} \end{equation}
+Returning to the $\alpha$ equation, we have
+\begin{equation}\begin{aligned}
+	\alpha = & i \frac{\kappa DE}{2H} \pm \frac{i}{2} \sqrt{\left(\frac{\kappa DE}{H}\right)^2 + \frac{4}{H} \gamma} \\
+	\alpha = & i \frac{\kappa DE}{2H} \pm \frac{i}{2} \sqrt{\left(\frac{\kappa DE}{H}\right)^2 - \frac{4}{H} \frac{H}{4} \left[ \left( \frac{2n\pi}{L} \right)^2 + \left(\frac{\kappa DE}{H}\right)^2 \right]} \\
+	\alpha = & i \frac{\kappa DE}{2H} \pm \frac{i}{2} \sqrt{-\left( \frac{2n\pi}{L} \right)^2} \\
+	\alpha = & i \frac{\kappa DE}{2H} \pm \frac{-1}{2} \frac{2n\pi}{L} \\
+	\alpha_1 = \bar{\alpha}_1 + i \bar{\alpha}_2 \\
+	\alpha_2 = \bar{\alpha}_1 - i \bar{\alpha}_2 \\
+\end{aligned} \end{equation}
+So, our spatial solution becomes
+\begin{equation}\begin{aligned}
+	F(z) = & c_1 (e^{(\bar{\alpha}_1 + i \bar{\alpha}_2) z} - e^{(\bar{\alpha}_1 - i \bar{\alpha}_2) z}) \\
+	     = & c_1 (e^{\bar{\alpha}_1 z}e^{i \bar{\alpha}_2 z} - e^{\bar{\alpha}_1 z}e^{-i \bar{\alpha}_2 z}) \\
+	     = & c_1 e^{\bar{\alpha}_1 z} (e^{i \bar{\alpha}_2 z} - e^{-i \bar{\alpha}_2 z}) \\
+	     = & c_1 e^{\bar{\alpha}_1 z} \sin(\bar{\alpha}_2 z) \\
+\end{aligned} \end{equation}
+
+\subsection{Temporal Solution}
+The original temporal equation is
+\begin{equation}\begin{aligned}
+\dot{Q} = -Q \gamma_n \\
+\end{aligned} \end{equation}
+Assuming a solution of the form $Q = D_1 e^{-\omega t}$, we have
+\begin{equation}\begin{aligned}
+\omega_n = \gamma_n \\
+\end{aligned} \end{equation}
+
+\subsection{General Solution}
+Our general solution is then:
+\begin{equation}\begin{aligned}
+	\MAC X = \MAC X_n + \sum_{n=0}^{\infty} \sum_{n=0}^{\infty} D_n e^{-\frac{H}{4} \left[ \left(\frac{DE}{H}\right)^2 + \left( \frac{2n\pi}{L} \right)^2  \right] t} e^{-\frac{\kappa DE}{2H} z} \sin\left(\frac{n\pi}{L} z \right) \\
+\end{aligned} \end{equation}
+Applying the initial condition, we have
+\begin{equation}\begin{aligned}
+	\MAC X(z,0) = \MAC X_n(z,0) + \sum_{n=0}^{\infty} \sum_{n=0}^{\infty} D_n e^{-\frac{\kappa DE}{2H} z} \sin\left(\frac{n\pi}{L} z \right) = (- \kappa EC -G) \\
+\end{aligned} \end{equation}
+
+
+\end{document}

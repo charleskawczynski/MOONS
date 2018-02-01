@@ -173,6 +173,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_assign_plane_ave.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D$(PS)GF_divide.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_interp$(PS)GF_extrap.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D$(PS)GF_magnitude.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D$(PS)GF_multiply.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_multiply_plane.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_no$(RM)s_weights.f90\

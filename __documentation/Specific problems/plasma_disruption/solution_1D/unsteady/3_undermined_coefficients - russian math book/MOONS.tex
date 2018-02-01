@@ -1,0 +1,113 @@
+\documentclass[11pt]{article}
+% \documentclass[11pt,landscape]{article}
+\newcommand{\PSCHAIN}{..}
+\input{../prepend_PS_chain}
+\newcommand{\rootdir}{\PSCHAIN}
+\input{\PSCHAIN/includes/includes}
+% \input{\PSCHAIN/includes/zero_margins}
+
+\newcommand{\ABA}{\bar{\alpha}_1}
+\newcommand{\ABB}{\bar{\alpha}_2}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Solving for the Undetermined Coefficients}
+Our decoupled equations are
+\begin{equation}\begin{aligned}
+\PD_t X - H X'' - DE X'  = (- EC -G)\\
+\PD_t Y - H Y'' + DE Y'  = (+ EC -G)\\
+\end{aligned} \end{equation}
+With transformations
+\begin{equation}\begin{aligned}
+X = u + E B_x \\
+Y = u - E B_x \\
+E = \sqrt{\frac{A}{D}} \\
+\end{aligned} \end{equation}
+And inverse transformations
+\begin{equation}\begin{aligned}
+u   = \frac{1}{2} \left( X + Y \right) \\
+B_x = \frac{1}{2E} \left( X - Y \right) \\
+E = \sqrt{\frac{A}{D}} = \sqrt{\frac{1}{\rho \M}} \\
+\end{aligned} \end{equation}
+\begin{equation}\begin{aligned}
+G = \frac{1}{\rho}\PD_x p, \qquad
+H = K = \nu = \frac{1}{\sigma \M}, \qquad
+A = \frac{1}{\rho \M} B_z^0, \qquad
+C = \PD_t B_x^0, \qquad
+D = B_z^0.
+\end{aligned} \end{equation}
+
+\section{Solution generalization}
+First, let's introduce a variable so that we can solve both systems simultaneously. Let $\kappa = 1$ for the $X$ equation, and $\kappa = -1$ for the $Y$ equation.
+\begin{equation}\begin{aligned}
+	\PD_t \MAC X - H \MAC X'' - DE \kappa \MAC X'  = (- \kappa EC -G) \\
+\end{aligned} \end{equation}
+
+\section{Sergey's Russian mathematics handbook}
+Using Sergey's Russian mathematics handbook. Refer to page 41 for the governing equation, page 42 for the generic solution and page 45, under 2) for the Dirichlet problem, for the solution.
+\subsection{Governing equation}
+\begin{equation}\begin{aligned}
+\PD_t T = a \PD_x^2 T + b \PD_x T +c T + \Phi(x,t) \\
+\end{aligned} \end{equation}
+\subsection{Generic solution}
+\begin{equation}\begin{aligned}
+T(x,t) = \int_0^L G(x,\xi,t) f(\xi) d\xi + \int_0^t \int_0^L G(x,\xi,t-\tau) \Phi(\xi,\tau) d\xi d\tau \\
+T(x,t=0) = f(\xi) \\
+G(x,\xi,t) = \frac{2}{L} \sum_{n=0}^{\infty}
+\sin\left(\frac{\pi n x}{L}\right)
+\sin\left(\frac{\pi n \xi}{L}\right)
+e^{- \frac{a\pi^2n^2}{L^2}t + bt }
+\\
+\end{aligned} \end{equation}
+
+\section{Putting into our form}
+Plugging in the initial condition and the RHS of the governing equation yields
+\begin{equation}\begin{aligned}
+\MAC X(z,t) =  \int_0^t \int_0^L G(z,\xi,t-\tau) (- \kappa EC -G) d\xi d\tau \\
+G(z,\xi,t) = \frac{2}{L} \sum_{n=0}^{\infty}
+\sin\left(\frac{\pi n \xi}{L}\right)
+\sin\left(\frac{\pi n z}{L}\right)
+e^{- \frac{a\pi^2n^2}{L^2}t + b t }
+\\
+\end{aligned} \end{equation}
+Or
+\begin{equation}\begin{aligned}
+\MAC X(z,t) =  (- \kappa EC -G) \frac{2}{L} \sum_{n=0}^{\infty} \int_0^t \int_0^L \sin\left(\frac{\pi n \xi}{L}\right) \sin\left(\frac{\pi n z}{L}\right) e^{- \frac{a\pi^2n^2}{L^2}(t-\tau) + b (t-\tau) } d\xi d\tau \\
+\MAC X(z,t) =  (- \kappa EC -G) \frac{2}{L} \sum_{n=0}^{\infty} \sin\left(\frac{\pi n z}{L}\right) \int_0^t \int_0^L \sin\left(\frac{\pi n \xi}{L}\right) e^{- \frac{a\pi^2n^2}{L^2}(t-\tau) + b (t-\tau) } d\xi d\tau \\
+\MAC X(z,t) =  (- \kappa EC -G) \frac{2}{L} \sum_{n=0}^{\infty} \sin\left(\frac{\pi n z}{L}\right) \int_0^L \sin\left(\frac{\pi n \xi}{L}\right) d\xi \int_0^t e^{- \frac{a\pi^2n^2}{L^2}(t-\tau) + b (t-\tau) } d\tau \\
+\MAC X(z,t) =  (- \kappa EC -G) \frac{2}{L} \sum_{n=0}^{\infty} \sin\left(\frac{\pi n z}{L}\right) [1-(-1)^n] \left( \frac{L}{n\pi} \right) \int_0^t e^{- \frac{a\pi^2n^2}{L^2}(t-\tau) + b (t-\tau) } d\tau \\
+\MAC X(z,t) =  (- \kappa EC -G) \frac{2}{\pi} \sum_{n=0}^{\infty} \sin\left(\frac{\pi n z}{L}\right) [1-(-1)^n] \left( \frac{1}{n} \right) \int_0^t e^{- \frac{a\pi^2n^2}{L^2}(t-\tau) + b (t-\tau) } d\tau \\
+\end{aligned} \end{equation}
+The time integral
+\begin{equation}\begin{aligned}
+\int_0^t e^{- \frac{a\pi^2n^2}{L^2}(t-\tau) + b (t-\tau) } d\tau &= \int_0^t e^{-(t-\tau) \left(\frac{a\pi^2n^2}{L^2} - b\right)} d\tau \\
+                                                                 &= \frac{1}{\left(\frac{a\pi^2n^2}{L^2} - b\right)} \left. e^{-(t-\tau) \left(\frac{a\pi^2n^2}{L^2} - b\right)} \right|_t^0 \\
+                                                                 &= \frac{1}{\left(\frac{a\pi^2n^2}{L^2} - b\right)} \left( e^{-t\left(\frac{a\pi^2n^2}{L^2} - b\right)} - 1 \right) \\
+\end{aligned} \end{equation}
+Our result then turns into
+\begin{equation}\begin{aligned}
+\MAC X(z,t) =  (- \kappa EC -G) \frac{2}{\pi} \sum_{n=0}^{\infty} \sin\left(\frac{\pi n z}{L}\right) [1-(-1)^n] \left( \frac{1}{n} \right) \frac{1}{\left(\frac{a\pi^2n^2}{L^2} - b\right)} \left( e^{-t\left(\frac{a\pi^2n^2}{L^2} - b\right)} - 1 \right) \\
+\end{aligned} \end{equation}
+\section{Final solution}
+Plugging in the rest of our parameters, we have
+\begin{equation}\begin{aligned}
+\MAC X(z,t) = & (- \kappa EC -G) \frac{2}{\pi} \sum_{n=0}^{\infty} \sin\left(\frac{\pi n z}{L}\right) [1-(-1)^n] \left( \frac{1}{n} \right) \frac{1}{\left(\frac{(-H)\pi^2n^2}{L^2} + DE\right)} \left( e^{-t\left(\frac{(-H)\pi^2n^2}{L^2} + DE\right)} - 1 \right) \\
+            = & (- \kappa EC -G) \frac{2}{\pi} \sum_{n=0}^{\infty} \sin\left(\frac{\pi n z}{L}\right) [1-(-1)^n] \left( \frac{1}{n} \right) \frac{1}{\left(DE - \frac{H\pi^2n^2}{L^2}\right)} \left( e^{-t\left(DE - \frac{H\pi^2n^2}{L^2}\right)} - 1 \right) \\
+\end{aligned} \end{equation}
+Plugging our primitive variables, we have
+\begin{equation}\begin{aligned}
+\MAC X(z,t) =  (- \kappa EC -G) \frac{2}{\pi} \sum_{n=0}^{\infty} \sin\left(\frac{\pi n z}{L}\right) [1-(-1)^n] \left( \frac{1}{n} \right) \frac{1}{\left(DE - \frac{H\pi^2n^2}{L^2}\right)} \left( e^{-t\left(DE - \frac{H\pi^2n^2}{L^2}\right)} - 1 \right) \\
+\end{aligned} \end{equation}
+Applying the inverse transformations, we have
+\begin{equation}\begin{aligned}
+u   = \frac{1}{2} \left( (- EC -G) + (EC -G) \right) \\
+u   = -G \frac{2}{\pi} \sum_{n=0}^{\infty} \sin\left(\frac{\pi n z}{L}\right) [1-(-1)^n] \left( \frac{1}{n} \right) \frac{1}{\left(DE - \frac{H\pi^2n^2}{L^2}\right)} \left( e^{-t\left(DE - \frac{H\pi^2n^2}{L^2}\right)} - 1 \right) \\
+B_x = \frac{1}{2E} \left( (-EC -G) - (EC -G) \right) \\
+B_x = -C \frac{2}{\pi} \sum_{n=0}^{\infty} \sin\left(\frac{\pi n z}{L}\right) [1-(-1)^n] \left( \frac{1}{n} \right) \frac{1}{\left(DE - \frac{H\pi^2n^2}{L^2}\right)} \left( e^{-t\left(DE - \frac{H\pi^2n^2}{L^2}\right)} - 1 \right) \\
+E = \sqrt{\frac{A}{D}} = \sqrt{\frac{1}{\rho \M}} \\
+\end{aligned} \end{equation}
+
+\end{document}

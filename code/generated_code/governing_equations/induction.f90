@@ -64,9 +64,11 @@
          type(VF) :: B
          type(VF) :: Bnm1
          type(VF) :: B0
+         type(VF) :: Btot
          type(VF) :: B_interior
          type(VF) :: temp_F1
          type(VF) :: temp_F2
+         type(VF) :: jCrossB
          type(VF) :: Bstar
          type(VF) :: dB0dt
          type(VF) :: temp_CC_VF
@@ -108,9 +110,11 @@
          call init(this%B,that%B)
          call init(this%Bnm1,that%Bnm1)
          call init(this%B0,that%B0)
+         call init(this%Btot,that%Btot)
          call init(this%B_interior,that%B_interior)
          call init(this%temp_F1,that%temp_F1)
          call init(this%temp_F2,that%temp_F2)
+         call init(this%jCrossB,that%jCrossB)
          call init(this%Bstar,that%Bstar)
          call init(this%dB0dt,that%dB0dt)
          call init(this%temp_CC_VF,that%temp_CC_VF)
@@ -148,9 +152,11 @@
          call delete(this%B)
          call delete(this%Bnm1)
          call delete(this%B0)
+         call delete(this%Btot)
          call delete(this%B_interior)
          call delete(this%temp_F1)
          call delete(this%temp_F2)
+         call delete(this%jCrossB)
          call delete(this%Bstar)
          call delete(this%dB0dt)
          call delete(this%temp_CC_VF)
@@ -189,9 +195,11 @@
          call display(this%B,un)
          call display(this%Bnm1,un)
          call display(this%B0,un)
+         call display(this%Btot,un)
          call display(this%B_interior,un)
          call display(this%temp_F1,un)
          call display(this%temp_F2,un)
+         call display(this%jCrossB,un)
          call display(this%Bstar,un)
          call display(this%dB0dt,un)
          call display(this%temp_CC_VF,un)
@@ -230,9 +238,11 @@
          call display(this%B,un)
          call display(this%Bnm1,un)
          call display(this%B0,un)
+         call display(this%Btot,un)
          call display(this%B_interior,un)
          call display(this%temp_F1,un)
          call display(this%temp_F2,un)
+         call display(this%jCrossB,un)
          call display(this%Bstar,un)
          call display(this%dB0dt,un)
          call display(this%temp_CC_VF,un)
@@ -293,9 +303,11 @@
          call export(this%B,un)
          call export(this%Bnm1,un)
          call export(this%B0,un)
+         call export(this%Btot,un)
          call export(this%B_interior,un)
          call export(this%temp_F1,un)
          call export(this%temp_F2,un)
+         call export(this%jCrossB,un)
          call export(this%Bstar,un)
          call export(this%dB0dt,un)
          call export(this%temp_CC_VF,un)
@@ -335,9 +347,11 @@
          call import(this%B,un)
          call import(this%Bnm1,un)
          call import(this%B0,un)
+         call import(this%Btot,un)
          call import(this%B_interior,un)
          call import(this%temp_F1,un)
          call import(this%temp_F2,un)
+         call import(this%jCrossB,un)
          call import(this%Bstar,un)
          call import(this%dB0dt,un)
          call import(this%temp_CC_VF,un)
@@ -404,9 +418,11 @@
          call set_IO_dir(this%B,dir//'B'//fortran_PS)
          call set_IO_dir(this%Bnm1,dir//'Bnm1'//fortran_PS)
          call set_IO_dir(this%B0,dir//'B0'//fortran_PS)
+         call set_IO_dir(this%Btot,dir//'Btot'//fortran_PS)
          call set_IO_dir(this%B_interior,dir//'B_interior'//fortran_PS)
          call set_IO_dir(this%temp_F1,dir//'temp_F1'//fortran_PS)
          call set_IO_dir(this%temp_F2,dir//'temp_F2'//fortran_PS)
+         call set_IO_dir(this%jCrossB,dir//'jCrossB'//fortran_PS)
          call set_IO_dir(this%Bstar,dir//'Bstar'//fortran_PS)
          call set_IO_dir(this%dB0dt,dir//'dB0dt'//fortran_PS)
          call set_IO_dir(this%temp_CC_VF,dir//'temp_CC_VF'//fortran_PS)
@@ -467,6 +483,9 @@
          if (get_necessary_for_restart(this%B0)) then
            call make_IO_dir(this%B0,dir//'B0'//fortran_PS)
          endif
+         if (get_necessary_for_restart(this%Btot)) then
+           call make_IO_dir(this%Btot,dir//'Btot'//fortran_PS)
+         endif
          if (get_necessary_for_restart(this%B_interior)) then
            call make_IO_dir(this%B_interior,dir//'B_interior'//fortran_PS)
          endif
@@ -475,6 +494,9 @@
          endif
          if (get_necessary_for_restart(this%temp_F2)) then
            call make_IO_dir(this%temp_F2,dir//'temp_F2'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%jCrossB)) then
+           call make_IO_dir(this%jCrossB,dir//'jCrossB'//fortran_PS)
          endif
          if (get_necessary_for_restart(this%Bstar)) then
            call make_IO_dir(this%Bstar,dir//'Bstar'//fortran_PS)
@@ -555,6 +577,9 @@
          if (get_necessary_for_restart(this%B0)) then
            call export_structured(this%B0,dir//'B0'//fortran_PS)
          endif
+         if (get_necessary_for_restart(this%Btot)) then
+           call export_structured(this%Btot,dir//'Btot'//fortran_PS)
+         endif
          if (get_necessary_for_restart(this%B_interior)) then
            call export_structured(this%B_interior,&
            dir//'B_interior'//fortran_PS)
@@ -564,6 +589,9 @@
          endif
          if (get_necessary_for_restart(this%temp_F2)) then
            call export_structured(this%temp_F2,dir//'temp_F2'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%jCrossB)) then
+           call export_structured(this%jCrossB,dir//'jCrossB'//fortran_PS)
          endif
          if (get_necessary_for_restart(this%Bstar)) then
            call export_structured(this%Bstar,dir//'Bstar'//fortran_PS)
@@ -650,6 +678,9 @@
          if (get_necessary_for_restart(this%B0)) then
            call import_structured(this%B0,dir//'B0'//fortran_PS)
          endif
+         if (get_necessary_for_restart(this%Btot)) then
+           call import_structured(this%Btot,dir//'Btot'//fortran_PS)
+         endif
          if (get_necessary_for_restart(this%B_interior)) then
            call import_structured(this%B_interior,&
            dir//'B_interior'//fortran_PS)
@@ -659,6 +690,9 @@
          endif
          if (get_necessary_for_restart(this%temp_F2)) then
            call import_structured(this%temp_F2,dir//'temp_F2'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%jCrossB)) then
+           call import_structured(this%jCrossB,dir//'jCrossB'//fortran_PS)
          endif
          if (get_necessary_for_restart(this%Bstar)) then
            call import_structured(this%Bstar,dir//'Bstar'//fortran_PS)

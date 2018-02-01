@@ -67,9 +67,59 @@ e^{-\pi^2 R t \left( \frac{n^2}{L_x^2} + \frac{m^2}{L_y^2} \right)}
 \sin \left( \frac{m \pi \zeta}{L_y} \right)
 \\
 \end{aligned} \end{equation}
-Therefore, the electric current is
-\begin{equation}\begin{aligned}
-\J = \CURL \B \\
+To simplify this, we can plug in the kernal, and factor out the summations to get
+\tiny\begin{equation}\begin{aligned}
+B(x,y,t) = \frac{4}{L_x L_y} \sum_{n=1}^{\infty} \sum_{m=1}^{\infty} \int_0^t \int_0^{L_x} \int_0^{L_y}
+e^{-\pi^2 R (t-\tau) \left( \frac{n^2}{L_x^2} + \frac{m^2}{L_y^2} \right)}
+\sin \left( \frac{n \pi x}{L_x} \right)
+\sin \left( \frac{n \pi \xi}{L_x} \right)
+\sin \left( \frac{m \pi y}{L_y} \right)
+\sin \left( \frac{m \pi \zeta}{L_y} \right)
+ \theta(\tau) d \xi d \zeta d \tau \\
+\end{aligned} \end{equation}
+Further simplifying, we have
+\tiny\begin{equation}\begin{aligned}
+B(x,y,t) = \frac{4}{L_x L_y} \sum_{n=1}^{\infty} \sum_{m=1}^{\infty}
+\sin \left( \frac{n \pi x}{L_x} \right)
+\sin \left( \frac{m \pi y}{L_y} \right)
+\int_0^t
+e^{-\pi^2 R (t-\tau) \left( \frac{n^2}{L_x^2} + \frac{m^2}{L_y^2} \right)}
+ \theta(\tau)
+ d \tau
+\int_0^{L_x}
+\sin \left( \frac{n \pi \xi}{L_x} \right)
+ d \xi
+\int_0^{L_y}
+\sin \left( \frac{m \pi \zeta}{L_y} \right)
+ d \zeta
+\end{aligned} \end{equation}
+Evaluating the sin integrals yields
+\tiny\begin{equation}\begin{aligned}
+B(x,y,t) = \frac{4}{L_x L_y} \sum_{n=1}^{\infty} \sum_{m=1}^{\infty}
+\sin \left( \frac{n \pi x}{L_x} \right)
+\sin \left( \frac{m \pi y}{L_y} \right)
+ [1 - (-1)^n]
+ [1 - (-1)^m]
+ \left( \frac{L_x}{n \pi} \right)
+ \left( \frac{L_y}{m \pi} \right)
+\int_0^t
+e^{-\pi^2 R (t-\tau) \left( \frac{n^2}{L_x^2} + \frac{m^2}{L_y^2} \right)}
+ \theta(\tau)
+ d \tau
+\end{aligned} \end{equation}
+Canceling out factors yields
+\tiny\begin{equation}\begin{aligned}
+B(x,y,t) = \frac{4}{\pi^2} \sum_{n=1}^{\infty} \sum_{m=1}^{\infty}
+\sin \left( \frac{n \pi x}{L_x} \right)
+\sin \left( \frac{m \pi y}{L_y} \right)
+ [1 - (-1)^n]
+ [1 - (-1)^m]
+ \left( \frac{1}{n} \right)
+ \left( \frac{1}{m} \right)
+\int_0^t
+e^{-\pi^2 R (t-\tau) \left( \frac{n^2}{L_x^2} + \frac{m^2}{L_y^2} \right)}
+ \theta(\tau)
+ d \tau
 \end{aligned} \end{equation}
 
 \end{document}
