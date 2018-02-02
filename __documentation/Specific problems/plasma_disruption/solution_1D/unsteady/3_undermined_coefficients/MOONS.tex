@@ -1,0 +1,197 @@
+\documentclass[11pt]{article}
+% \documentclass[11pt,landscape]{article}
+\newcommand{\PSCHAIN}{..}
+\input{../prepend_PS_chain}
+\newcommand{\rootdir}{\PSCHAIN}
+\input{\PSCHAIN/includes/includes}
+% \input{\PSCHAIN/includes/zero_margins}
+
+\newcommand{\ABA}{\bar{\alpha}_1}
+\newcommand{\ABB}{\bar{\alpha}_2}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Solving for the Undetermined Coefficients}
+Our decoupled equations are
+\begin{equation}\begin{aligned}
+\PD_t X - H X'' - DE X'  = (- EC -G)\\
+\PD_t Y - H Y'' + DE Y'  = (+ EC -G)\\
+\end{aligned} \end{equation}
+With transformations
+\begin{equation}\begin{aligned}
+X = u + E B_x \\
+Y = u - E B_x \\
+E = \sqrt{\frac{A}{D}} \\
+\end{aligned} \end{equation}
+And inverse transformations
+\begin{equation}\begin{aligned}
+u   = \frac{1}{2} \left( X + Y \right) \\
+B_x = \frac{1}{2E} \left( X - Y \right) \\
+E = \sqrt{\frac{A}{D}} = \sqrt{\frac{1}{\rho \M}} \\
+\end{aligned} \end{equation}
+\begin{equation}\begin{aligned}
+G = \frac{1}{\rho}\PD_x p, \qquad
+H = K = \nu = \frac{1}{\sigma \M}, \qquad
+A = \frac{1}{\rho \M} B_z^0, \qquad
+C = \PD_t B_x^0, \qquad
+D = B_z^0.
+\end{aligned} \end{equation}
+
+\section{Solution generalization}
+First, let's introduce a variable so that we can solve both systems simultaneously. Let $\kappa = 1$ for the $X$ equation, and $\kappa = -1$ for the $Y$ equation.
+\begin{equation}\begin{aligned}
+	\PD_t \MAC X - H \MAC X'' - DE \kappa \MAC X'  = (- \kappa EC -G) \\
+\end{aligned} \end{equation}
+\section{Solution procedure}
+First, let's decompose the solution into homogeneous and non-homogeneous:
+\begin{equation}\begin{aligned}
+	\MAC X = \MAC X_h + \MAC X_n, \\
+\end{aligned} \end{equation}
+where the homogeneous solution satisfies
+\begin{equation}\begin{aligned}
+	\PD_t \MAC X_h - H \MAC X_h'' - DE \kappa \MAC X_h'  = 0 \\
+\end{aligned} \end{equation}
+Assuming the homogeneous solution is separable ($\MAC X_h(z,t) = F(z)Q(t)$), we have
+\begin{equation}\begin{aligned}
+	F\dot{Q} - HQF'' - \kappa DEQF' = 0 \\
+\end{aligned} \end{equation}
+Dividing by $FQ$ yields
+\begin{equation}\begin{aligned}
+	\frac{\dot{Q}}{Q} = H \frac{F''}{F} + \kappa DE \frac{F'}{F} = \text{constant} = -\gamma \\
+\end{aligned} \end{equation}
+\subsection{Spatial solution}
+Let's solve the RHS equation:
+\begin{equation}\begin{aligned}
+	H F'' + \kappa DE F' = -F \gamma \\
+	F'' + \frac{\kappa DE}{H} F' = -\frac{F}{H} \gamma \\
+\end{aligned} \end{equation}
+Let's assume $F(z) = e^{\alpha z}$, to get
+\begin{equation}\begin{aligned}
+	H F'' + \kappa DE F' = - F \gamma \\
+	\alpha^2 + \frac{\kappa DE}{H} \alpha = - \frac{1}{H} \gamma \\
+	\alpha^2 + \frac{\kappa DE}{H} \alpha + \frac{1}{H} \gamma = 0  \\
+	\alpha = -\frac{\kappa DE}{2H} \pm \frac{1}{2} \sqrt{\left(\frac{\kappa DE}{H}\right)^2 - \frac{4}{H} \gamma} \\
+	\alpha = -\frac{\kappa DE}{2H} \pm \frac{1}{2} \sqrt{\left(\frac{DE}{H}\right)^2 - \frac{4}{H} \gamma} \\
+\end{aligned} \end{equation}
+
+From this, we may write
+\begin{equation}\begin{aligned}
+	\alpha_1 + \alpha_2 = -\frac{\kappa DE}{H} \\
+	\alpha_1 - \alpha_2 = \sqrt{\left(\frac{DE}{H}\right)^2 - \frac{4}{H} \gamma} \\
+\end{aligned} \end{equation}
+
+So, we have
+\begin{equation}\begin{aligned}
+	F(z) = c_1 e^{\alpha_1 z} + c_2 e^{\alpha_2 z} \\
+\end{aligned} \end{equation}
+Applying BC ($F(0) = 0$)
+\begin{equation}\begin{aligned}
+	F(0) = & c_1 + c_2 = 0 \\
+	     = & c_2 =-c_1  \\
+\end{aligned} \end{equation}
+Yields
+\begin{equation}\begin{aligned}
+	F(z) = c_1 (e^{\alpha_1 z} - e^{\alpha_2 z}) \\
+\end{aligned} \end{equation}
+Applying BC ($F(L) = 0$)
+\begin{equation}\begin{aligned}
+	F(L) = & c_1 (e^{\alpha_1 L} - e^{\alpha_2 L}) = 0 \\
+	     = &     (e^{\alpha_1 L} - e^{\alpha_2 L}) = 0 \\
+	     = &     (e^{\alpha_1 L}e^{-\alpha_2 L} - 1) = 0 \\
+	       &     e^{(\alpha_1-\alpha_2) L} = 1 = e^{i2n\pi} \\
+	       &     e^{(\alpha_1-\alpha_2) L} = 1 = e^{i2n\pi} \\
+	       &     (\alpha_1-\alpha_2) = \frac{i2n\pi}{L} \\
+	       &     \left(\frac{\kappa DE}{H}\right)^2 - \frac{4}{H} \gamma = \left( \frac{i2n\pi}{L} \right)^2 \\
+	       &     \frac{4}{H} \gamma = \left(\frac{\kappa DE}{H}\right)^2 - \left( \frac{i2n\pi}{L} \right)^2 \\
+	       &     \gamma = \frac{H}{4} \left[ \left(\frac{\kappa DE}{H}\right)^2 - \left( \frac{i2n\pi}{L} \right)^2  \right]\\
+	       &     \gamma = \frac{H}{4} \left[ \left(\frac{DE}{H}\right)^2 + \left( \frac{2n\pi}{L} \right)^2  \right]\\
+\end{aligned} \end{equation}
+Returning to the $\alpha$ equation, we have
+\begin{equation}\begin{aligned}
+	\alpha = & -\frac{\kappa DE}{2H} \pm \frac{1}{2} \sqrt{\left(\frac{DE}{H}\right)^2 - \frac{4}{H} \frac{H}{4} \left[ \left(\frac{DE}{H}\right)^2 + \left( \frac{2n\pi}{L} \right)^2  \right]} \\
+	       = & -\frac{\kappa DE}{2H} \pm i \frac{n\pi}{L} \\
+	\alpha_1 = \ABA + i \ABB \\
+	\alpha_2 = \ABA - i \ABB \\
+\end{aligned} \end{equation}
+So, our spatial solution becomes
+\begin{equation}\begin{aligned}
+	F(z) = & c_1 (e^{(\ABA + i \ABB) z} - e^{(\ABA - i \ABB) z}) \\
+	     = & c_1 (e^{\ABA z}e^{i \ABB z} - e^{\ABA z}e^{-i \ABB z}) \\
+	     = & c_1 e^{\ABA z} (e^{i \ABB z} - e^{-i \ABB z}) \\
+	     = & c_1 e^{\ABA z} \sin(\ABB z) \\
+\end{aligned} \end{equation}
+
+\subsection{Temporal Solution}
+The original temporal equation is
+\begin{equation}\begin{aligned}
+\dot{Q} = -Q \gamma_n \\
+\end{aligned} \end{equation}
+Assuming a solution of the form $Q = D_1 e^{-\omega t}$, we have
+\begin{equation}\begin{aligned}
+\omega_n = \gamma_n \\
+\end{aligned} \end{equation}
+
+\subsection{General Solution}
+Our general solution is then:
+\begin{equation}\begin{aligned}
+	\MAC X = \MAC X_n + \sum_{n=0}^{\infty} D_n e^{-\frac{H}{4} \left[ \left(\frac{DE}{H}\right)^2 + \left( \frac{2n\pi}{L} \right)^2  \right] t} e^{-\frac{\kappa DE}{2H} z} \sin\left(\frac{n\pi}{L} z \right) \\
+\end{aligned} \end{equation}
+Or, more compactly
+\begin{equation}\begin{aligned}
+	\MAC X = \MAC X_n + \sum_{n=0}^{\infty} D_n e^{-\gamma_n t} e^{\ABA z} \sin(\ABB z) \\
+	\gamma_n = \frac{H}{4} \left[ \left(\frac{DE}{H}\right)^2 + \left( \frac{2n\pi}{L} \right)^2  \right] \\
+	\ABA = -\frac{\kappa DE}{2H} \\
+	\ABB = \frac{n\pi}{L} \\
+\end{aligned} \end{equation}
+
+To apply the initial condition, plug $X$ into the governing equations, and solve for the coefficients w.r.t. the non-homogeneous source term at $t=0$:
+
+\begin{equation}\begin{aligned}
+	\MAC X = \MAC X_n + \sum_{n=0}^{\infty} D_n e^{\gamma_n t} e^{\ABA z} \sin (\ABB z) \\
+	\dot{\MAC X} = \dot{\MAC X_n} - \sum_{n=0}^{\infty} D_n \gamma_n e^{\ABA z} \sin(\ABB z) \\
+	\MAC X' = \MAC X_n'   + \sum_{n=0}^{\infty} D_n ( \ABA e^{\ABA z} \sin (\ABB z) + e^{\ABA z} \ABB \cos (\ABB z) ) \\
+	\MAC X' = \MAC X_n'   + \sum_{n=0}^{\infty} D_n e^{\ABA z} ( \ABA \sin (\ABB z) + \ABB \cos (\ABB z) ) \\
+	\MAC X''= \MAC X_n''  + \sum_{n=0}^{\infty} D_n (e^{\ABA z} ( \ABA \ABB \cos (\ABB z) - \ABB \ABB \cos (\ABB z) ) +\ABA e^{\ABA z} ( \ABA \sin (\ABB z) + \ABB \cos (\ABB z) )) \\
+	\MAC X''= \MAC X_n''  + \sum_{n=0}^{\infty} D_n e^{\ABA z} \left[ (2 \ABA \ABB - \ABB \ABB) \cos (\ABB z) + \ABA \ABA \sin (\ABB z) \right] \\
+\end{aligned} \end{equation}
+The governing equations are:
+\begin{equation}\begin{aligned}
+	\PD_t \MAC X - H \MAC X'' - DE \kappa \MAC X'  = (- \kappa EC -G) \\
+\end{aligned} \end{equation}
+\subsection{With homogeneous part}
+So, we have (at $t=0$)
+\begin{equation}\begin{aligned}
+	\left( \dot{\MAC X_n} - \sum_{n=0}^{\infty} D_n \gamma_n e^{\ABA z} \sin(\ABB z) \right) \\
+	 - H \left( \MAC X_n''  + \sum_{n=0}^{\infty} D_n e^{\ABA z} \left[ (2 \ABA \ABB - \ABB \ABB) \cos (\ABB z) + \ABA \ABA \sin (\ABB z) \right] \right) \\
+	 - DE \kappa \left( \MAC X_n'   + \sum_{n=0}^{\infty} D_n e^{\ABA z} ( \ABA \sin (\ABB z) + \ABB \cos (\ABB z) ) \right) \\
+	  = \\
+	  (- \kappa EC -G) \\
+\end{aligned} \end{equation}
+
+\subsection{Try removing non-homogeneous part}
+So, we have (at $t=0$)
+\begin{equation}\begin{aligned}
+	\left( - \sum_{n=0}^{\infty} D_n \gamma_n e^{\ABA z} \sin(\ABB z) \right) \\
+	 - H \left( \sum_{n=0}^{\infty} D_n e^{\ABA z} \left[ (2 \ABA \ABB - \ABB \ABB) \cos (\ABB z) + \ABA \ABA \sin (\ABB z) \right] \right) \\
+	 - DE \kappa \left( \sum_{n=0}^{\infty} D_n e^{\ABA z} ( \ABA \sin (\ABB z) + \ABB \cos (\ABB z) ) \right) \\
+	  = \\
+	  (- \kappa EC -G) \\
+\end{aligned} \end{equation}
+Removing negative signs yields
+\begin{equation}\begin{aligned}
+	\left( \sum_{n=0}^{\infty} D_n \gamma_n e^{\ABA z} \sin(\ABB z) \right) \\
+	 + H \left( \sum_{n=0}^{\infty} D_n e^{\ABA z} \left[ (2 \ABA \ABB - \ABB \ABB) \cos (\ABB z) + \ABA \ABA \sin (\ABB z) \right] \right) \\
+	 + DE \kappa \left( \sum_{n=0}^{\infty} D_n e^{\ABA z} ( \ABA \sin (\ABB z) + \ABB \cos (\ABB z) ) \right) \\
+	  = \\
+	  (\kappa EC +G) \\
+\end{aligned} \end{equation}
+Factoring and collecting sin and cosine terms:
+\begin{equation}\begin{aligned}
+	 \sum_{n=0}^{\infty} D_n e^{\ABA z} \left[ (\gamma_n + H \ABA \ABA + DE \kappa \ABA) \sin(\ABB z) + (H(2 \ABA \ABB - \ABB \ABB) + DE\kappa \ABB ) \cos (\ABB z) \right] \\ = (\kappa EC + G) \\
+\end{aligned} \end{equation}
+
+
+\end{document}

@@ -4,6 +4,7 @@
         use grid_field_mod
         use grid_field_extend_mod
         use GF_assign_mod
+        use GF_magnitude_mod
         use GF_add_mod
         use GF_add_product_mod
         use GF_product_add_mod
@@ -118,6 +119,7 @@
         ! GF_aux_mod
         public :: abs,insist_amax_lt_tol,square,square_root,min,max,amin,amax
         public :: mean,sum,size
+        public :: magnitude
 
         public :: cross_product_x
         public :: cross_product_y

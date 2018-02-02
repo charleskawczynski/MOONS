@@ -53,12 +53,12 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)sim_params$(PS)export_frequency_extend.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_aux.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)mesh_bank.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_default$(PS)sim_params_init_mesh.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_default$(PS)sim_params_init_DPs.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_default$(PS)sim_params_init_export.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_default$(PS)sim_params_init_flow_config.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_default$(PS)sim_params_init_logicals.f90\
-	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_default$(PS)sim_params_init_solver_config.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)$(sim_params_default)$(PS)sim_params_init_mesh.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)$(sim_params_default)$(PS)sim_params_init_DPs.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)$(sim_params_default)$(PS)sim_params_init_export.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)$(sim_params_default)$(PS)sim_params_init_flow_config.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)$(sim_params_default)$(PS)sim_params_init_logicals.f90\
+	$(SRC_DIR)$(PS)sim_params$(PS)$(sim_params_default)$(PS)sim_params_init_solver_config.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)sim_params_extend.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)grid_field_extend.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D$(PS)GF_assign.f90\
@@ -70,6 +70,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D$(PS)GF_product_add.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D$(PS)GF_square.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D$(PS)GF_square_root.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D$(PS)GF_magnitude.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D$(PS)GF_cross_product.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_assign_plane.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_assign_plane_ave.f90\

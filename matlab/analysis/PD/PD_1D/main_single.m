@@ -29,13 +29,15 @@ dB0_x_dt = dB0_x_dt_max;
 
 %% Solution construction
 Ha = a*B0_z*sqrt(sigma/rho/nu);
-% Ha = .1; % For plots
+Ha = .1; % For plots
+
 U_c = -a*dB0_x_dt/B0_z;
-B_c = -U_c*sqrt(mu*sigma*mu_m^2.0);
-y = linspace(-a,a,N_nodes);
-u_temp = sinh_a_over_sinh_b_safe(Ha*y/a,Ha);
-B_temp = cosh_a_over_sinh_b_safe(Ha*y/a,Ha);
-u = U_c*(u_temp - y/a);
+B_c = U_c*sqrt(mu*sigma*mu_m^2.0);
+
+z = linspace(-a,a,N_nodes);
+u_temp = sinh_a_over_sinh_b_safe(Ha*z/a,Ha);
+B_temp = cosh_a_over_sinh_b_safe(Ha*z/a,Ha);
+u = U_c*(u_temp - z/a);
 B_x = B_c*(1/tanh(Ha) - B_temp);
 
 disp(['dB0_x_dt = ' num2str(dB0_x_dt)])
@@ -50,14 +52,14 @@ disp(' ------------- DIMENSIONLESS PARAMETERS ------------- ')
 %% Plot solutions
 figure
 subplot(2,2,1)
-plot(y,u)
+plot(z,u)
 title('Dimensional velocity')
-xlabel('y [m]')
+xlabel('z [m]')
 ylabel('u [m/s]')
 subplot(2,2,2)
-plot(y,B_x)
+plot(z,B_x)
 title('Dimensional magnetic field')
-xlabel('y [m]')
+xlabel('z [m]')
 ylabel('B_x [T]')
 
 %% Estimate dimensionless parameters
@@ -71,22 +73,36 @@ disp(['Ha  = ' num2str(Ha)])
 %% Dimensionless solution plot
 u_star = u/U_c;
 B_star = B_x/B_c;
-y_star = y/a;
+z_star = z/a;
 
 subplot(2,2,3)
-plot(y_star,u_star)
+plot(z_star,u_star)
 title('Dimensionless velocity')
-xlabel('y/a')
+xlabel('z/a')
 ylabel('u/U_c')
 subplot(2,2,4)
-plot(y_star,B_star)
+plot(z_star,B_star)
 title('Dimensionless magnetic field')
-xlabel('y/a')
+xlabel('z/a')
 ylabel('B_x/B_c')
 
 if save_profile_to_file
-    T = [y_star' u_star' B_star'];
-    file = ['sol/PD_solution_Ha=' num2str(Ha) '.dat'];
-    save(file,'T','-ascii')
+    file = ['sol/u_PD_solution_Ha=' num2str(Ha) '.dat'];
+    T = [z_star' u_star'];
+	fmt = '%2.6f';
+	header = {};
+	header{1} = 'TITLE = "test"\n';
+	header{2} = ['VARIABLES = "z", "Ha=' num2str(Ha) '"\n'];
+	header{3} = ['ZONE, T ="1", I = ' num2str(length(u_star)) ', DATAPACKING = POINT\n'];
+	save_data_for_tec(file,T,header,fmt);
+
+    file = ['sol/B_PD_solution_Ha=' num2str(Ha) '.dat'];
+    T = [z_star' B_star'];
+	fmt = '%2.6f';
+	header = {};
+	header{1} = 'TITLE = "test"\n';
+	header{2} = ['VARIABLES = "z", "Ha=' num2str(Ha) '"\n'];
+	header{3} = ['ZONE, T ="1", I = ' num2str(length(u_star)) ', DATAPACKING = POINT\n'];
+	save_data_for_tec(file,T,header,fmt);
 end
 

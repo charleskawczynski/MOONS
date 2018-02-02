@@ -192,6 +192,36 @@
          ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/(TMP%TS%dt*RKP%gamma%f(RKP%n)),m,temp_F1,temp_CC,compute_norms)
        end subroutine
 
+       subroutine RK_method_1(PCG_VF,PCG_SF,X,Xstar,Xnm1,phi,F,Fnm1,L,m,&
+         TMP,RKP,temp_F1,temp_CC,compute_norms)
+         implicit none
+         type(PCG_solver_VF),intent(inout) :: PCG_VF
+         type(PCG_solver_SF),intent(inout) :: PCG_SF
+         type(SF),intent(inout) :: phi
+         type(VF),intent(inout) :: X,Xstar,Xnm1
+         type(VF),intent(in) :: F,Fnm1,L
+         type(mesh),intent(in) :: m
+         type(time_marching_params),intent(in) :: TMP
+         type(RK_Params),intent(in) :: RKP
+         type(VF),intent(inout) :: temp_F1
+         type(SF),intent(inout) :: temp_CC
+         logical,intent(in) :: compute_norms
+         call multiply(temp_F1,F      ,two_thirds)
+         call multiply(temp_F1,F      ,TMP%TS%dt*RKP%gamma%f(RKP%n))
+         call add_product(temp_F1,Fnm1,TMP%TS%dt*RKP%zeta%f(RKP%n))
+         ! call add_product(temp_F1,L   ,TMP%TS%dt*RKP%alpha%f(RKP%n))
+         call add_product(temp_F1,L   ,TMP%TS%dt*2.0_cp*RKP%alpha%f(RKP%n))
+         call assign_wall_Dirichlet(temp_F1,0.0_cp,X)
+         call add(temp_F1,X)
+         call assign(Xnm1,X)
+         ! call update_MFP(PCG_VF,m,TMP%TS%dt*RKP%d%f(RKP%n)*PCG_VF%MFP%coeff_implicit,.true.)
+         call update_MFP(PCG_VF,m,TMP%TS%dt*2.0_cp*RKP%beta%f(RKP%n)*PCG_VF%MFP%coeff_implicit,.true.)
+         call solve(PCG_VF,Xstar,temp_F1,m,compute_norms) ! Solve for X*
+         ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/TMP%TS%dt,m,temp_F1,temp_CC,compute_norms)
+         call clean_div(PCG_SF,X,Xstar,phi,1.0_cp,m,temp_F1,temp_CC,compute_norms)
+         ! call clean_div(PCG_SF,X,Xstar,phi,1.0_cp/(TMP%TS%dt*RKP%gamma%f(RKP%n)),m,temp_F1,temp_CC,compute_norms)
+       end subroutine
+
        ! **********************************************************************
        ! ******************** DIFFUSION EXPLICIT TIME MARCHING ****************
        ! **********************************************************************

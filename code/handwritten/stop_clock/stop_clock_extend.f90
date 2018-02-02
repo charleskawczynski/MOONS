@@ -121,7 +121,7 @@
         real(cp) :: temp
         character(len=1) :: u
         write(un,*) ''
-        write(un,*) ' ****************************** CLOCK INFO ************************* '
+        write(un,*) '*********************** CLOCK INFO ***********************'
         call negative_time_elapsed_reported(sc)
 
         write(un,*) 'Convective time'
@@ -151,7 +151,7 @@
         write(un,*) '     Rate  based estimate = ',sc%percentage_complete_RB
         write(un,*) '     State based estimate = ',sc%percentage_complete_SB
 
-        write(un,*) ' ******************************************************************* '
+        write(un,*) '**********************************************************'
       end subroutine
 
       subroutine print_light_sc(sc,TMP)

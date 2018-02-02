@@ -1,0 +1,82 @@
+\documentclass[11pt]{article}
+\newcommand{\PSCHAIN}{..}
+\input{../prepend_PS_chain}
+\newcommand{\rootdir}{\PSCHAIN}
+\input{\PSCHAIN/includes/includes}
+
+
+\newcommand{\ReInv}{Re^{-1}}
+\newcommand{\RemInv}{Re_m^{-1}}
+\newcommand{\Al}{N Re_m^{-1}}
+\newcommand{\Interaction}{N}
+
+\begin{document}
+
+\MOONSTITLE
+% \maketitle
+
+\section{Desired equations to solve}
+\begin{equation}
+  \PD_t \U - \ReInv \DEL^2 \U
+  = - \DEL p + \left( \DEL \DOT (\U \U^T) \\ + \Al
+  (\CURL \B) \CROSS \B \right)
+\end{equation}
+\begin{equation}
+  \DEL \DOT \U = 0
+\end{equation}
+\begin{equation}
+  \PD_t \B + \RemInv \DEL \CROSS ( \SO^{-1} \DEL \CROSS \B ) = -\DEL \phi + \left( \DEL \CROSS \U \CROSS \B \right)
+\end{equation}
+\begin{equation}
+  \DEL \DOT \B = 0
+\end{equation}
+
+\section{Vector form}
+Let
+\begin{equation}
+\X = \MAT{c} \U \\ \B \\ \EMAT, \qquad
+\zeta = \MAT{c} p \\ \phi \\ \EMAT, \qquad
+\theta = \MAT{c} \theta_u \\ \theta_B \\ \EMAT
+\end{equation}
+and
+\begin{equation}
+\MAC L(\theta) =
+\MAT{c c}
+- \ReInv \DEL^2 & 0 \\
+0 & \RemInv \DEL \CROSS ( \SO^{-1} \DEL \CROSS ) \\
+\EMAT
+\theta
+\end{equation}
+\begin{equation}
+\MAC F(\theta) =
+\MAT{c}
+\ReInv \DEL^2 \U \\
+\RemInv \DEL \CROSS ( \SO^{-1} \DEL \CROSS ) \\
+\EMAT
+(1-\theta)
++
+\MAT{c}
+\DEL \DOT (\U \U^T) + \Al (\CURL \B) \CROSS \B \\
+\DEL \CROSS \U \CROSS \B \\
+\EMAT
+\end{equation}
+Our equations then become:
+\begin{equation}
+  \PD_t \X + \underbrace{\MAC L(\theta)}_{\text{linear operator}} \X = \underbrace{- \DEL \zeta}_{\text{enforces constraint}} + \underbrace{\MAC F(\theta)}_{\text{explicitly treated}}
+\end{equation}
+\begin{equation}
+  \DEL \DOT \X = 0
+\end{equation}
+
+\begin{equation}\begin{aligned}
+  \PD_t \X + \MAC L(\theta) \X = - \DEL \zeta + \MAC F(\theta) \\
+  \DEL \DOT \X = 0
+\end{aligned}\end{equation}
+Alternatively, we may write
+\begin{equation}\begin{aligned}
+  \PD_t \X = - \DEL \zeta + \MAC Q, \qquad \MAC Q = \MAC F(\theta) - \MAC L(\theta) \X \\
+  \DEL \DOT \X = 0
+\end{aligned}\end{equation}
+
+
+\end{document}

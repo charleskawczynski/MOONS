@@ -39,11 +39,16 @@
          logical :: export_ever = .false.
          logical :: export_first_step = .false.
          logical :: export_now = .false.
-         integer :: frequency_coeff = 0
-         integer :: frequency_base = 0
-         integer :: frequency_exp = 0
          real(cp) :: t_window_start = 0.0_cp
          real(cp) :: t_window_stop = 0.0_cp
+         integer :: N_points_in_window = 0
+         integer :: left_point_export = 0
+         integer :: right_point_export = 0
+         real(cp) :: dt_star = 0.0_cp
+         real(cp) :: dt_star_range = 0.0_cp
+         real(cp) :: t_star_left = 0.0_cp
+         real(cp) :: t_star_right = 0.0_cp
+         real(cp) :: dt_window_factor = 0.0_cp
        end type
 
        contains
@@ -56,11 +61,16 @@
          this%export_ever = that%export_ever
          this%export_first_step = that%export_first_step
          this%export_now = that%export_now
-         this%frequency_coeff = that%frequency_coeff
-         this%frequency_base = that%frequency_base
-         this%frequency_exp = that%frequency_exp
          this%t_window_start = that%t_window_start
          this%t_window_stop = that%t_window_stop
+         this%N_points_in_window = that%N_points_in_window
+         this%left_point_export = that%left_point_export
+         this%right_point_export = that%right_point_export
+         this%dt_star = that%dt_star
+         this%dt_star_range = that%dt_star_range
+         this%t_star_left = that%t_star_left
+         this%t_star_right = that%t_star_right
+         this%dt_window_factor = that%dt_window_factor
        end subroutine
 
        subroutine delete_export_frequency_params(this)
@@ -69,39 +79,54 @@
          this%export_ever = .false.
          this%export_first_step = .false.
          this%export_now = .false.
-         this%frequency_coeff = 0
-         this%frequency_base = 0
-         this%frequency_exp = 0
          this%t_window_start = 0.0_cp
          this%t_window_stop = 0.0_cp
+         this%N_points_in_window = 0
+         this%left_point_export = 0
+         this%right_point_export = 0
+         this%dt_star = 0.0_cp
+         this%dt_star_range = 0.0_cp
+         this%t_star_left = 0.0_cp
+         this%t_star_right = 0.0_cp
+         this%dt_window_factor = 0.0_cp
        end subroutine
 
        subroutine display_export_frequency_params(this,un)
          implicit none
          type(export_frequency_params),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'export_ever       = ',this%export_ever
-         write(un,*) 'export_first_step = ',this%export_first_step
-         write(un,*) 'export_now        = ',this%export_now
-         write(un,*) 'frequency_coeff   = ',this%frequency_coeff
-         write(un,*) 'frequency_base    = ',this%frequency_base
-         write(un,*) 'frequency_exp     = ',this%frequency_exp
-         write(un,*) 't_window_start    = ',this%t_window_start
-         write(un,*) 't_window_stop     = ',this%t_window_stop
+         write(un,*) 'export_ever        = ',this%export_ever
+         write(un,*) 'export_first_step  = ',this%export_first_step
+         write(un,*) 'export_now         = ',this%export_now
+         write(un,*) 't_window_start     = ',this%t_window_start
+         write(un,*) 't_window_stop      = ',this%t_window_stop
+         write(un,*) 'N_points_in_window = ',this%N_points_in_window
+         write(un,*) 'left_point_export  = ',this%left_point_export
+         write(un,*) 'right_point_export = ',this%right_point_export
+         write(un,*) 'dt_star            = ',this%dt_star
+         write(un,*) 'dt_star_range      = ',this%dt_star_range
+         write(un,*) 't_star_left        = ',this%t_star_left
+         write(un,*) 't_star_right       = ',this%t_star_right
+         write(un,*) 'dt_window_factor   = ',this%dt_window_factor
        end subroutine
 
        subroutine display_short_export_frequency_params(this,un)
          implicit none
          type(export_frequency_params),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'export_ever       = ',this%export_ever
-         write(un,*) 'export_first_step = ',this%export_first_step
-         write(un,*) 'export_now        = ',this%export_now
-         write(un,*) 'frequency_coeff   = ',this%frequency_coeff
-         write(un,*) 'frequency_base    = ',this%frequency_base
-         write(un,*) 'frequency_exp     = ',this%frequency_exp
-         write(un,*) 't_window_start    = ',this%t_window_start
-         write(un,*) 't_window_stop     = ',this%t_window_stop
+         write(un,*) 'export_ever        = ',this%export_ever
+         write(un,*) 'export_first_step  = ',this%export_first_step
+         write(un,*) 'export_now         = ',this%export_now
+         write(un,*) 't_window_start     = ',this%t_window_start
+         write(un,*) 't_window_stop      = ',this%t_window_stop
+         write(un,*) 'N_points_in_window = ',this%N_points_in_window
+         write(un,*) 'left_point_export  = ',this%left_point_export
+         write(un,*) 'right_point_export = ',this%right_point_export
+         write(un,*) 'dt_star            = ',this%dt_star
+         write(un,*) 'dt_star_range      = ',this%dt_star_range
+         write(un,*) 't_star_left        = ',this%t_star_left
+         write(un,*) 't_star_right       = ',this%t_star_right
+         write(un,*) 'dt_window_factor   = ',this%dt_window_factor
        end subroutine
 
        subroutine display_wrap_export_frequency_params(this,dir,name)
@@ -145,14 +170,19 @@
          implicit none
          type(export_frequency_params),intent(in) :: this
          integer,intent(in) :: un
-         write(un,*) 'export_ever        = ';write(un,*) this%export_ever
-         write(un,*) 'export_first_step  = ';write(un,*) this%export_first_step
-         write(un,*) 'export_now         = ';write(un,*) this%export_now
-         write(un,*) 'frequency_coeff    = ';write(un,*) this%frequency_coeff
-         write(un,*) 'frequency_base     = ';write(un,*) this%frequency_base
-         write(un,*) 'frequency_exp      = ';write(un,*) this%frequency_exp
-         write(un,*) 't_window_start     = ';write(un,*) this%t_window_start
-         write(un,*) 't_window_stop      = ';write(un,*) this%t_window_stop
+         write(un,*) 'export_ever         = ';write(un,*) this%export_ever
+         write(un,*) 'export_first_step   = ';write(un,*) this%export_first_step
+         write(un,*) 'export_now          = ';write(un,*) this%export_now
+         write(un,*) 't_window_start      = ';write(un,*) this%t_window_start
+         write(un,*) 't_window_stop       = ';write(un,*) this%t_window_stop
+         write(un,*) 'N_points_in_window  = ';write(un,*) this%N_points_in_window
+         write(un,*) 'left_point_export   = ';write(un,*) this%left_point_export
+         write(un,*) 'right_point_export  = ';write(un,*) this%right_point_export
+         write(un,*) 'dt_star             = ';write(un,*) this%dt_star
+         write(un,*) 'dt_star_range       = ';write(un,*) this%dt_star_range
+         write(un,*) 't_star_left         = ';write(un,*) this%t_star_left
+         write(un,*) 't_star_right        = ';write(un,*) this%t_star_right
+         write(un,*) 'dt_window_factor    = ';write(un,*) this%dt_window_factor
        end subroutine
 
        subroutine import_primitives_export_frequency_params(this,un)
@@ -162,11 +192,16 @@
          read(un,*); read(un,*) this%export_ever
          read(un,*); read(un,*) this%export_first_step
          read(un,*); read(un,*) this%export_now
-         read(un,*); read(un,*) this%frequency_coeff
-         read(un,*); read(un,*) this%frequency_base
-         read(un,*); read(un,*) this%frequency_exp
          read(un,*); read(un,*) this%t_window_start
          read(un,*); read(un,*) this%t_window_stop
+         read(un,*); read(un,*) this%N_points_in_window
+         read(un,*); read(un,*) this%left_point_export
+         read(un,*); read(un,*) this%right_point_export
+         read(un,*); read(un,*) this%dt_star
+         read(un,*); read(un,*) this%dt_star_range
+         read(un,*); read(un,*) this%t_star_left
+         read(un,*); read(un,*) this%t_star_right
+         read(un,*); read(un,*) this%dt_window_factor
        end subroutine
 
        subroutine export_wrap_export_frequency_params(this,dir,name)

@@ -32,7 +32,7 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('PCG_cleanB','PCG_Solver_SF',priv)
 	g.module[m_name].add_prop(['U_E','temp_E_TF','temp_F1_TF','temp_F2_TF'],'TF',priv)
 	g.module[m_name].add_prop(['sigmaInv_CC','divB','divJ','phi','temp_CC'],'SF',priv)
-	g.module[m_name].add_prop(['F','Fnm1','L','J','temp_E','B','Bnm1','B0','B_interior','temp_F1','temp_F2','Bstar','dB0dt','temp_CC_VF','sigmaInv_edge','J_interior','curlUCrossB','CC_VF_fluid','CC_VF_sigma'],'VF',priv)
+	g.module[m_name].add_prop(['F','Fnm1','L','J','temp_E','B','Bnm1','B0','Btot','B_interior','temp_F1','temp_F2','jCrossB','Bstar','dB0dt','temp_CC_VF','sigmaInv_edge','J_interior','curlUCrossB','CC_VF_fluid','CC_VF_sigma'],'VF',priv)
 	g.module[m_name].add_prop(['MD_fluid','MD_sigma'],'mesh_domain',priv)
 
 	m_name = 'energy'

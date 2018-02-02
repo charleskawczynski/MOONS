@@ -1,0 +1,35 @@
+\renewcommand{\arraystretch}{0.8} % CONTROLS VERTICAL SPACING BETWEEN ITEMS
+
+\makeatletter
+\def\@@acrodef{\@ifstar\@acrodefs\@acrodef}
+\newtoks\acro@list
+\newcommand{\@acrodef}[2]{%
+  \global\acro@list=\expandafter{\the\acro@list\@elt{#1}{#2}}%
+  \global\@namedef{acro@#1}{n{#1}{#2}}}
+\newtoks\acro@resetlist
+\newcommand{\@acrodefs}[2]{%
+  \global\acro@resetlist=\expandafter{\the\acro@resetlist\@elt{#1}}%
+  \@acrodef{#1}{#2}}
+\def\acro@doresetlist{\begingroup
+  \def\@elt##1{\expandafter\expandafter\expandafter
+    \acro@reset\csname acro@##1\endcsname}\the\acro@resetlist\endgroup}
+\def\acro@reset#1#2#3{\global\@namedef{acro@#2}{n{#2}{#3}}}
+\newcommand{\acro}[1]{\expandafter\expandafter\expandafter
+  \use@acro\csname acro@#1\endcsname}
+\def\use@acro#1#2#3{\ifx n#1
+  #3 (#2)\global\@namedef{acro@#2}{o{#2}{#3}}%
+  \else
+  #2%
+\fi}
+\newcommand{\listofacronyms}[1][tabular]{%
+  \begingroup\def\@elt##1##2{##1&##2\\}%
+  \@ifundefined{chapter}{\section*}{\chapter*}{\listacronymname}
+  \noindent\begin{#1}{@{}p{6em}p{\dimexpr\columnwidth-2\tabcolsep-6em\relax}@{}}
+    \the\acro@list
+  \end{#1}\endgroup}
+\providecommand\listacronymname{List of acronyms}
+\newenvironment{acronyms}{\let\acrodef\@@acrodef}{}
+\newenvironment{acronyms*}{\let\acrodef\@@acrodef}{}
+\def\g@preto@macro#1#2{\toks0=\expandafter{#1}%
+  \toks2={#2}\xdef#1{\the\toks2 \the\toks0 }}
+\makeatother

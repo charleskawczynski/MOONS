@@ -1,0 +1,84 @@
+\documentclass[11pt]{article}
+\newcommand{\PSCHAIN}{..}
+\input{../prepend_PS_chain}
+\newcommand{\rootdir}{\PSCHAIN}
+\input{\PSCHAIN/includes/includes}
+
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Original governing equations and solution}
+Assuming $\PD_x () =0, v=0,w=0, \PD_t u = 0, \PD_t B_x = 0,\PD_t B_y^0 = 0, \PD_t B_z^0 = 0,\B^0 = (B_x^0(t),0,B_z^0) \ne \B^0(x,y,z), \DEL p =0$, the dimensional momentum and induction equations for uniform $\rho,\mu,\M,\sigma$ are:
+\begin{equation}\begin{aligned}
+u''   = - \frac{1}{\rho \nu \M} B_z^0 {B_x^1}' \\
+{B_x^1}'' = \sigma \M (\PD_t B_x^0 - B_z^0 u') \\
+\end{aligned} \end{equation}
+\noindent
+The solution using Dirichlet BCs $u=0,B_x^1 = 0$ at $z=[-a,a]$ are:
+\begin{equation}\begin{aligned}
+B_x^1 = - \sqrt{\mu \sigma a^2 \M^2} \frac{1}{B_z^0} \frac{\PD B_x^0}{\PD t} \left( \frac{1}{\tanh(Ha)} -  \frac{\cosh \left(Ha \frac{z}{a} \right)}{\sinh(Ha)}\right), \\
+u   = -a \frac{1}{B_z^0} \frac{\PD B_x^0}{\PD t} \left( \frac{\sinh\left(Ha \frac{z}{a} \right)}{\sinh(Ha)} - \frac{z}{a} \right), \\
+Ha = a B_z^0 \sqrt{\frac{\sigma}{\rho \nu}}. \\
+\end{aligned} \end{equation}
+\section{Non-dimensionalization - convective time}
+To non-dimensionalize, let's choose the scales
+\begin{equation}\begin{aligned}
+[z] = a,  \quad
+[t] = \frac{a}{U},  \quad
+[U] = U,  \quad
+[B] = B_z^0,  \quad
+\end{aligned} \end{equation}
+Therefore, our velocity equation is
+\begin{equation}\begin{aligned}
+u   = -a \frac{1}{B_z^0} \frac{\PD B_x^0}{\PD t} \left( \frac{\sinh\left(Ha \frac{z}{a} \right)}{\sinh(Ha)} - \frac{z}{a} \right), \\
+U u^*   = -a \frac{U}{a} \frac{1}{{B_z^0}^*} \frac{\PD {B_x^0}^*}{\PD t^*} \left( \frac{\sinh\left(Ha z^* \right)}{\sinh(Ha)} - z^* \right), \\
+U u^*   = -U \frac{1}{{B_z^0}^*} \frac{\PD {B_x^0}^*}{\PD t^*} \left( \frac{\sinh\left(Ha z^* \right)}{\sinh(Ha)} - z^* \right), \\
+u^*     = - \frac{1}{{B_z^0}^*} \frac{\PD {B_x^0}^*}{\PD t^*} \left( \frac{\sinh\left(Ha z^* \right)}{\sinh(Ha)} - z^* \right), \\
+\end{aligned} \end{equation}
+And induced magnetic field equation:
+\begin{equation}\begin{aligned}
+B_x^1 = - \sqrt{\mu \sigma a^2 \M^2} \frac{1}{B_z^0} \frac{\PD B_x^0}{\PD t} \left( \frac{1}{\tanh(Ha)} -  \frac{\cosh \left(Ha \frac{z}{a} \right)}{\sinh(Ha)}\right), \\
+B {B_x^1}^* = - \frac{U}{a} \sqrt{\mu \sigma a^2 \M^2} \frac{1}{{B_z^0}^*} \frac{\PD {B_x^0}^*}{\PD t^*} \left( \frac{1}{\tanh(Ha)} -  \frac{\cosh \left(Ha z^* \right)}{\sinh(Ha)}\right), \\
+B {B_x^1}^* = - U \sqrt{\mu \sigma \M^2} \frac{1}{{B_z^0}^*} \frac{\PD {B_x^0}^*}{\PD t^*} \left( \frac{1}{\tanh(Ha)} -  \frac{\cosh \left(Ha z^* \right)}{\sinh(Ha)}\right), \\
+B {B_x^1}^* = - \sqrt{\frac{\mu}{\sigma a^2} }\sqrt{a^2 \sigma^2 U^2 \M^2} \frac{1}{{B_z^0}^*} \frac{\PD {B_x^0}^*}{\PD t^*} \left( \frac{1}{\tanh(Ha)} -  \frac{\cosh \left(Ha z^* \right)}{\sinh(Ha)}\right), \\
+B {B_x^1}^* = - \sqrt{\frac{\mu}{\sigma a^2} }Re_m \frac{1}{{B_z^0}^*} \frac{\PD {B_x^0}^*}{\PD t^*} \left( \frac{1}{\tanh(Ha)} -  \frac{\cosh \left(Ha z^* \right)}{\sinh(Ha)}\right), \\
+{B_x^1}^* = - \frac{1}{B a} \sqrt{\frac{\mu}{\sigma} }Re_m \frac{1}{{B_z^0}^*} \frac{\PD {B_x^0}^*}{\PD t^*} \left( \frac{1}{\tanh(Ha)} -  \frac{\cosh \left(Ha z^* \right)}{\sinh(Ha)}\right), \\
+{B_x^1}^* = - \frac{Re_m}{Ha} \frac{1}{{B_z^0}^*} \frac{\PD {B_x^0}^*}{\PD t^*} \left( \frac{1}{\tanh(Ha)} -  \frac{\cosh \left(Ha z^* \right)}{\sinh(Ha)}\right), \\
+\end{aligned} \end{equation}
+So, our final set of equations are:
+\begin{equation}\begin{aligned}
+{B_x^1}^* = - \frac{Re_m}{Ha} \frac{1}{{B_z^0}^*} \frac{\PD {B_x^0}^*}{\PD t^*} \left( \frac{1}{\tanh(Ha)} -  \frac{\cosh \left(Ha z^* \right)}{\sinh(Ha)}\right), \\
+u^*       = - \frac{1}{{B_z^0}^*} \frac{\PD {B_x^0}^*}{\PD t^*} \left( \frac{\sinh\left(Ha z^* \right)}{\sinh(Ha)} - z^* \right), \\
+Re_m = \sigma \mu_m U a, \\
+Ha = a B_z^0 \sqrt{\frac{\sigma}{\rho \nu}}, \\
+\end{aligned} \end{equation}
+
+\section{Non-dimensionalization - magnetic diffusion time}
+To non-dimensionalize, let's choose the scales
+\begin{equation}\begin{aligned}
+[z] = a,  \quad
+[t] = \frac{a^2}{\eta} = a^2 \sigma \mu_m,  \quad
+[U] = U,  \quad
+[B] = B_z^0,  \quad
+\end{aligned} \end{equation}
+
+And induced magnetic field equation:
+\begin{equation}\begin{aligned}
+B_x^1 = - \sqrt{\mu \sigma a^2 \M^2} \frac{1}{B_z^0} \frac{\PD B_x^0}{\PD t} \left( \frac{1}{\tanh(Ha)} -  \frac{\cosh \left(Ha \frac{z}{a} \right)}{\sinh(Ha)}\right), \\
+B {B_x^1}^* = - \frac{1}{a^2 \sigma \mu_m} \sqrt{\mu \sigma a^2 \M^2} \frac{1}{{B_z^0}^*} \frac{\PD {B_x^0}^*}{\PD t^*} \left( \frac{1}{\tanh(Ha)} -  \frac{\cosh \left(Ha z^* \right)}{\sinh(Ha)}\right), \\
+B {B_x^1}^* = - \frac{1}{a \sigma} \sqrt{\mu \sigma} \frac{1}{{B_z^0}^*} \frac{\PD {B_x^0}^*}{\PD t^*} \left( \frac{1}{\tanh(Ha)} -  \frac{\cosh \left(Ha z^* \right)}{\sinh(Ha)}\right), \\
+{B_x^1}^*   = - \frac{1}{B a} \sqrt{\frac{\mu}{\sigma}} \frac{1}{{B_z^0}^*} \frac{\PD {B_x^0}^*}{\PD t^*} \left( \frac{1}{\tanh(Ha)} -  \frac{\cosh \left(Ha z^* \right)}{\sinh(Ha)}\right), \\
+{B_x^1}^*   = - \frac{1}{Ha} \frac{1}{{B_z^0}^*} \frac{\PD {B_x^0}^*}{\PD t^*} \left( \frac{1}{\tanh(Ha)} -  \frac{\cosh \left(Ha z^* \right)}{\sinh(Ha)}\right), \\
+\end{aligned} \end{equation}
+So, our final set of equations are:
+\begin{equation}\begin{aligned}
+u^*     = -  \frac{1}{Re_m} \frac{1}{{B_z^0}^*} \frac{\PD {B_x^0}^*}{\PD t^*} \left( \frac{\sinh\left(Ha z^* \right)}{\sinh(Ha)} - z^* \right), \\
+{B_x^1}^* = - \frac{1}{Ha} \frac{1}{{B_z^0}^*} \frac{\PD {B_x^0}^*}{\PD t^*} \left( \frac{1}{\tanh(Ha)} -  \frac{\cosh \left(Ha z^* \right)}{\sinh(Ha)}\right), \\
+Re_m = \sigma \mu_m U a, \\
+Ha = a B_z^0 \sqrt{\frac{\sigma}{\rho \nu}}, \\
+\end{aligned} \end{equation}
+
+\end{document}

@@ -9,6 +9,7 @@ suppress_all_warnings = True
 make_dir_quiet = True
 IO_structured_quiet = True
 
+IO_structured_OFF = False
 
 # skip_structured_IO_child_class = ['SF','VF','TF']
 make_dir_also_sets_dir = True
@@ -100,6 +101,8 @@ class fortran_module:
     def get_props(self): return self.prop
 
     def add_prop(self,name,class_,privacy,allocatable = False,rank = 1,dimension = 1,procedure = False):
+        if allocatable:
+            dimension = 3 # dim does not matter if allocatable, but must be > 1
         if type(name) is str:
             self.add_prop_string(name,class_,privacy,allocatable,rank,dimension,procedure)
         elif type(name) is list:
@@ -637,8 +640,10 @@ class fortran_module:
 
         if any([self.name==x for x in parent_restart_file_indicator]) and use_restart_file_indicator:
           c=c+["integer :: un_indicate"]
+          if IO_structured_OFF: c=c+["#ifdef EXPORT_FOR_AUTO_RESTART"]
           c=c+["un_indicate = new_and_open(dir,'delete_primitives_to_bypass_restart')"]
           c=c+["close(un_indicate)"]
+
 
         if not IO_structured_quiet:
           c=c+["write(*,*) 'Exporting "+ self.name +" structured'"]
@@ -662,6 +667,7 @@ class fortran_module:
             if self.get_restart_condition(self.prop[key]): c=c+["endif" ]
 
         c=c+['close(un)']
+        if IO_structured_OFF: c=c+["#enddef"]
         c=c+[self.end_sub()]
         return c
 
@@ -681,6 +687,7 @@ class fortran_module:
 
         if any([self.name==x for x in parent_restart_file_indicator]) and use_restart_file_indicator:
           c=c+["integer :: un_indicate"]
+          if IO_structured_OFF: c=c+["#ifdef EXPORT_FOR_AUTO_RESTART"]
           c=c+["un_indicate = new_and_open(str(this%dir),'delete_primitives_to_bypass_restart')"]
           c=c+["close(un_indicate)"]
 
@@ -690,6 +697,7 @@ class fortran_module:
           if self.get_structured_condition(self.prop[key]):
             c=c+[[x for x in self.prop[key].write_export_structured('str(this%dir)')]]
         c=c+['close(un)']
+        if IO_structured_OFF: c=c+["#enddef"]
         c=c+[self.end_sub()]
         return c
 
@@ -707,6 +715,7 @@ class fortran_module:
             L = self.prop[key].get_list_of_local_shape()
             if L: c=c+[L]
         c=c+["integer :: un" ]
+        if IO_structured_OFF: c=c+["#ifdef EXPORT_FOR_AUTO_RESTART"]
         if not IO_structured_quiet:
           c=c+["write(*,*) 'Importing "+ self.name +" structured'"]
         c=c+["un = open_to_read(dir,'primitives')" ]
@@ -735,6 +744,7 @@ class fortran_module:
                 c=c+[[x for x in self.prop[key].write_set_procedures()]]
 
         c=c+['close(un)']
+        if IO_structured_OFF: c=c+["#enddef"]
         c=c+[self.end_sub()]
         return c
 
@@ -751,12 +761,14 @@ class fortran_module:
             L = self.prop[key].get_list_of_local_shape()
             if L: c=c+[L]
         c=c+["integer :: un" ]
+        if IO_structured_OFF: c=c+["#ifdef EXPORT_FOR_AUTO_RESTART"]
         c=c+["un = open_to_read(str(this%dir),'primitives')" ]
         c=c+["call import_primitives(this,un)" ]
         for key in self.prop:
           if self.get_structured_condition(self.prop[key]):
             c=c+[[x for x in self.prop[key].write_import_structured('str(this%dir)')]]
         c=c+['close(un)']
+        if IO_structured_OFF: c=c+["#enddef"]
         c=c+[self.end_sub()]
         return c
 

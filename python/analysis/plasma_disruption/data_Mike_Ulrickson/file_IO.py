@@ -86,7 +86,7 @@ def make_directory_tree_target(root,LDC,PS):
 		make_new_directory_tree_in_field(root,L+'Jfield'+PS,PS)
 		directory_tree(root,L+'Tfield'+PS,PS)
 		make_new_directory_tree_in_field(root,L+'Tfield'+PS,PS)
-		print L.replace(root,'')
+		print(L.replace(root,''))
 
 def delete_folders_in_dir_tree(root,LDC,PS):
 	for L in LDC:

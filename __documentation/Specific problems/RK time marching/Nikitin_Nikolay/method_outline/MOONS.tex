@@ -1,0 +1,87 @@
+\documentclass[11pt]{article}
+\newcommand{\PSCHAIN}{..}
+\input{../prepend_PS_chain}
+\newcommand{\rootdir}{\PSCHAIN}
+\input{\PSCHAIN/includes/includes}
+
+
+\newcommand{\ReInv}{Re^{-1}}
+\newcommand{\RemInv}{Re_m^{-1}}
+\newcommand{\Al}{N Re_m^{-1}}
+\newcommand{\Interaction}{N}
+
+\begin{document}
+
+\MOONSTITLE
+% \maketitle
+
+\section{Our adopted RK method}
+Our adopted RK method is that of the paper by Ref: Nikitin, Nikolay. "Third-order-accurate semi-implicit Runge-Kutta scheme for incompressible Navier-Stokes equations." International Journal for Numerical Methods in Fluids 51.2 (2006): 221-233.
+
+This paper uses the following 3rd order accurate RK scheme:
+
+\begin{equation}\begin{aligned}
+  \frac{dw}{dt} = F(t,w) \\
+  \frac{w'-w_n}{\tau} = \frac{2}{3} F_n + \gamma L(w' - w_n) \\
+  \frac{w''-w_n}{\tau} = \frac{1}{3} F_n + \frac{1}{3} F' + \gamma L(w'' - w') \\
+  \frac{w_{n+1}        -w_n}{\tau} = \frac{1}{4} F_n + \frac{3}{4} F'' + \gamma L(w_{n+1} - \tilde{w}_{n+1}) \\
+  . \\
+  \frac{\tilde{w}_{n+1}-w_n}{\tau} = \frac{1}{4} F_n + \frac{3}{4} F'  + \gamma L(\tilde{w}_{n+1} - \bar{w}_{n+1}) \\
+  \bar{w}_{n+1} = \frac{3}{2} (\alpha w' + (1-\alpha) w'') - \frac{1}{2} w_n \\
+  \gamma = \frac{1}{3} \\
+  \alpha = \frac{3}{2} \\
+  F' = F(t_n + \frac{2\tau}{3},w') \\
+  F'' = F(t_n + \frac{2\tau}{3},w'') \\
+\end{aligned}\end{equation}
+
+\newpage
+
+\section{General Sequential Solution Form}
+\begin{equation}\begin{aligned}
+  \gamma &= \frac{1}{3} \\
+  \alpha &= \frac{3}{2} \\
+  \frac{dw}{dt} &= F(t,w) \\
+  (I - \tau \gamma L)w' &= w_n + \tau \frac{2}{3} F_n - \tau \gamma L(w_n) \\
+  F'  &= F\left(t_n + \frac{2\tau}{3},w'\right) \\
+  (I - \tau \gamma L)w'' &= w_n + \tau \frac{1}{3} F_n + \tau \frac{1}{3} F' - \tau \gamma L(w') \\
+  F'' &= F\left(t_n + \frac{2\tau}{3},w''\right) \\
+  \text{Let} \quad \bar{w}_{n+1} &= \frac{3}{2} (\alpha w' + (1-\alpha) w'') - \frac{1}{2} w_n \\
+  (I-\tau \gamma L)\tilde{w}_{n+1} &= w_n+ \tau \frac{1}{4} F_n + \tau \frac{3}{4} F'  - \tau \gamma L(\bar{w}_{n+1}) \\
+  (I - \tau \gamma L)w_{n+1} &= w_n + \tau \frac{1}{4} F_n + \tau \frac{3}{4} F'' - \tau \gamma L(\tilde{w}_{n+1}) \\
+\end{aligned}\end{equation}
+
+
+\newpage
+\section{Final compact form}
+The original equations are defined as:
+\begin{equation}\begin{aligned}
+  \PD_t w = H(t,w) - G p \\
+\end{aligned}\end{equation}
+The final compact form
+\begin{equation}\begin{aligned}
+  H_n &= H(t_n,w_n) \\
+  D G p_n &= D H_n \\
+  (I - \gamma \tau L) (w' - w_n) &= \frac{2}{3} \tau (H_n - G p_n) \\
+\end{aligned}\end{equation}
+\begin{equation}\begin{aligned}
+  H' &= H(t_n + 2 \tau/3,w') \\
+  D G p' &= D H' \\
+  (I - \gamma \tau L) (w'' - \frac{3}{2}w' + \frac{1}{2} w_n) &= \frac{1}{3} \tau (H' - G p') + w_n - w' \\
+  (I - \gamma \tau L) (\tilde{w}_{n+1} - \frac{3}{2}w'' + \frac{3}{4} w' - \frac{1}{4}w_n) &= \frac{3}{4} (w'' - w_n) \\
+\end{aligned}\end{equation}
+\begin{equation}\begin{aligned}
+  H'' &= H(t_n + 2 \tau/3,w'') \\
+  (I - \gamma \tau L) (\hat{w}_{n+1} - \frac{1}{2} \tilde{w}_{n+1} - \frac{3}{4} w'' + \frac{1}{4} w_n) &= \frac{3}{4} \tau (H'' - G p') + \frac{5}{8} w_n + \frac{3}{8} w'' - \tilde{w}_{n+1} \\
+  D G q &= D \hat{w}_{n+1} \\
+  w_{n+1} &= \hat{w}_{n+1} - Gq \\
+\end{aligned}\end{equation}
+
+The last step does not includevector $w'$, thus, storage for only four velocity vectors plus one pressure vector is necessaryto perform all the steps of the scheme.
+
+After calculation of $w_{n+1}$ vectors $\tilde{w}_{n+1}$ and $w_n$ are kept safe, so that the local error may be estimated by
+\begin{equation}\begin{aligned}
+ err = || w_{n+1} - \tilde{w}_{n+1} ||, \\
+\end{aligned}\end{equation}
+and the integration may be repeated starting from $t_n$ if necessary. In the conclusion it is noted that the presented scheme is completely self-starting. Only an initial condition for the velocity $w_n$ is needed to perform all the steps.
+
+\end{document}

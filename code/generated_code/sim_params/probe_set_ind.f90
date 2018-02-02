@@ -45,6 +45,13 @@
          type(probe),dimension(3) :: ME_conductor
          type(probe),dimension(3) :: probe_dB0dt
          type(probe),dimension(3) :: probe_B0
+         type(probe),dimension(3) :: Bx
+         type(probe),dimension(3) :: By
+         type(probe),dimension(3) :: Bz
+         type(probe) :: max_JxB_x
+         type(probe) :: max_JxB_y
+         type(probe) :: max_JxB_z
+         type(probe) :: max_JxB
        end type
 
        contains
@@ -58,11 +65,17 @@
          integer :: i_ME_conductor
          integer :: i_probe_dB0dt
          integer :: i_probe_B0
+         integer :: i_Bx
+         integer :: i_By
+         integer :: i_Bz
          integer :: s_ME
          integer :: s_ME_fluid
          integer :: s_ME_conductor
          integer :: s_probe_dB0dt
          integer :: s_probe_B0
+         integer :: s_Bx
+         integer :: s_By
+         integer :: s_Bz
          call delete(this)
          call init(this%probe_divB,that%probe_divB)
          call init(this%probe_divJ,that%probe_divJ)
@@ -90,6 +103,22 @@
          do i_probe_B0=1,s_probe_B0
            call init(this%probe_B0(i_probe_B0),that%probe_B0(i_probe_B0))
          enddo
+         s_Bx = size(that%Bx)
+         do i_Bx=1,s_Bx
+           call init(this%Bx(i_Bx),that%Bx(i_Bx))
+         enddo
+         s_By = size(that%By)
+         do i_By=1,s_By
+           call init(this%By(i_By),that%By(i_By))
+         enddo
+         s_Bz = size(that%Bz)
+         do i_Bz=1,s_Bz
+           call init(this%Bz(i_Bz),that%Bz(i_Bz))
+         enddo
+         call init(this%max_JxB_x,that%max_JxB_x)
+         call init(this%max_JxB_y,that%max_JxB_y)
+         call init(this%max_JxB_z,that%max_JxB_z)
+         call init(this%max_JxB,that%max_JxB)
        end subroutine
 
        subroutine delete_probe_set_ind(this)
@@ -100,11 +129,17 @@
          integer :: i_ME_conductor
          integer :: i_probe_dB0dt
          integer :: i_probe_B0
+         integer :: i_Bx
+         integer :: i_By
+         integer :: i_Bz
          integer :: s_ME
          integer :: s_ME_fluid
          integer :: s_ME_conductor
          integer :: s_probe_dB0dt
          integer :: s_probe_B0
+         integer :: s_Bx
+         integer :: s_By
+         integer :: s_Bz
          call delete(this%probe_divB)
          call delete(this%probe_divJ)
          call delete(this%JE)
@@ -129,6 +164,22 @@
          do i_probe_B0=1,s_probe_B0
            call delete(this%probe_B0(i_probe_B0))
          enddo
+         s_Bx = size(this%Bx)
+         do i_Bx=1,s_Bx
+           call delete(this%Bx(i_Bx))
+         enddo
+         s_By = size(this%By)
+         do i_By=1,s_By
+           call delete(this%By(i_By))
+         enddo
+         s_Bz = size(this%Bz)
+         do i_Bz=1,s_Bz
+           call delete(this%Bz(i_Bz))
+         enddo
+         call delete(this%max_JxB_x)
+         call delete(this%max_JxB_y)
+         call delete(this%max_JxB_z)
+         call delete(this%max_JxB)
        end subroutine
 
        subroutine display_probe_set_ind(this,un)
@@ -140,11 +191,17 @@
          integer :: i_ME_conductor
          integer :: i_probe_dB0dt
          integer :: i_probe_B0
+         integer :: i_Bx
+         integer :: i_By
+         integer :: i_Bz
          integer :: s_ME
          integer :: s_ME_fluid
          integer :: s_ME_conductor
          integer :: s_probe_dB0dt
          integer :: s_probe_B0
+         integer :: s_Bx
+         integer :: s_By
+         integer :: s_Bz
          call display(this%probe_divB,un)
          call display(this%probe_divJ,un)
          call display(this%JE,un)
@@ -169,6 +226,22 @@
          do i_probe_B0=1,s_probe_B0
            call display(this%probe_B0(i_probe_B0),un)
          enddo
+         s_Bx = size(this%Bx)
+         do i_Bx=1,s_Bx
+           call display(this%Bx(i_Bx),un)
+         enddo
+         s_By = size(this%By)
+         do i_By=1,s_By
+           call display(this%By(i_By),un)
+         enddo
+         s_Bz = size(this%Bz)
+         do i_Bz=1,s_Bz
+           call display(this%Bz(i_Bz),un)
+         enddo
+         call display(this%max_JxB_x,un)
+         call display(this%max_JxB_y,un)
+         call display(this%max_JxB_z,un)
+         call display(this%max_JxB,un)
        end subroutine
 
        subroutine display_short_probe_set_ind(this,un)
@@ -180,11 +253,17 @@
          integer :: i_ME_conductor
          integer :: i_probe_dB0dt
          integer :: i_probe_B0
+         integer :: i_Bx
+         integer :: i_By
+         integer :: i_Bz
          integer :: s_ME
          integer :: s_ME_fluid
          integer :: s_ME_conductor
          integer :: s_probe_dB0dt
          integer :: s_probe_B0
+         integer :: s_Bx
+         integer :: s_By
+         integer :: s_Bz
          call display(this%probe_divB,un)
          call display(this%probe_divJ,un)
          call display(this%JE,un)
@@ -209,6 +288,22 @@
          do i_probe_B0=1,s_probe_B0
            call display(this%probe_B0(i_probe_B0),un)
          enddo
+         s_Bx = size(this%Bx)
+         do i_Bx=1,s_Bx
+           call display(this%Bx(i_Bx),un)
+         enddo
+         s_By = size(this%By)
+         do i_By=1,s_By
+           call display(this%By(i_By),un)
+         enddo
+         s_Bz = size(this%Bz)
+         do i_Bz=1,s_Bz
+           call display(this%Bz(i_Bz),un)
+         enddo
+         call display(this%max_JxB_x,un)
+         call display(this%max_JxB_y,un)
+         call display(this%max_JxB_z,un)
+         call display(this%max_JxB,un)
        end subroutine
 
        subroutine display_wrap_probe_set_ind(this,dir,name)
@@ -242,11 +337,17 @@
          integer :: i_ME_conductor
          integer :: i_probe_dB0dt
          integer :: i_probe_B0
+         integer :: i_Bx
+         integer :: i_By
+         integer :: i_Bz
          integer :: s_ME
          integer :: s_ME_fluid
          integer :: s_ME_conductor
          integer :: s_probe_dB0dt
          integer :: s_probe_B0
+         integer :: s_Bx
+         integer :: s_By
+         integer :: s_Bz
          call export(this%probe_divB,un)
          call export(this%probe_divJ,un)
          call export(this%JE,un)
@@ -276,6 +377,25 @@
          do i_probe_B0=1,s_probe_B0
            call export(this%probe_B0(i_probe_B0),un)
          enddo
+         s_Bx = size(this%Bx)
+         write(un,*) s_Bx
+         do i_Bx=1,s_Bx
+           call export(this%Bx(i_Bx),un)
+         enddo
+         s_By = size(this%By)
+         write(un,*) s_By
+         do i_By=1,s_By
+           call export(this%By(i_By),un)
+         enddo
+         s_Bz = size(this%Bz)
+         write(un,*) s_Bz
+         do i_Bz=1,s_Bz
+           call export(this%Bz(i_Bz),un)
+         enddo
+         call export(this%max_JxB_x,un)
+         call export(this%max_JxB_y,un)
+         call export(this%max_JxB_z,un)
+         call export(this%max_JxB,un)
        end subroutine
 
        subroutine import_probe_set_ind(this,un)
@@ -287,11 +407,17 @@
          integer :: i_ME_conductor
          integer :: i_probe_dB0dt
          integer :: i_probe_B0
+         integer :: i_Bx
+         integer :: i_By
+         integer :: i_Bz
          integer :: s_ME
          integer :: s_ME_fluid
          integer :: s_ME_conductor
          integer :: s_probe_dB0dt
          integer :: s_probe_B0
+         integer :: s_Bx
+         integer :: s_By
+         integer :: s_Bz
          call delete(this)
          call import(this%probe_divB,un)
          call import(this%probe_divJ,un)
@@ -327,6 +453,28 @@
              call import(this%probe_B0(i_probe_B0),un)
            enddo
          endif
+         read(un,*) s_Bx
+         if (s_Bx.gt.0) then
+           do i_Bx=1,s_Bx
+             call import(this%Bx(i_Bx),un)
+           enddo
+         endif
+         read(un,*) s_By
+         if (s_By.gt.0) then
+           do i_By=1,s_By
+             call import(this%By(i_By),un)
+           enddo
+         endif
+         read(un,*) s_Bz
+         if (s_Bz.gt.0) then
+           do i_Bz=1,s_Bz
+             call import(this%Bz(i_Bz),un)
+           enddo
+         endif
+         call import(this%max_JxB_x,un)
+         call import(this%max_JxB_y,un)
+         call import(this%max_JxB_z,un)
+         call import(this%max_JxB,un)
        end subroutine
 
        subroutine export_primitives_probe_set_ind(this,un)
@@ -376,11 +524,17 @@
          integer :: i_ME_conductor
          integer :: i_probe_dB0dt
          integer :: i_probe_B0
+         integer :: i_Bx
+         integer :: i_By
+         integer :: i_Bz
          integer :: s_ME
          integer :: s_ME_fluid
          integer :: s_ME_conductor
          integer :: s_probe_dB0dt
          integer :: s_probe_B0
+         integer :: s_Bx
+         integer :: s_By
+         integer :: s_Bz
          call suppress_warnings(this)
          call set_IO_dir(this%probe_divB,dir//'probe_divB'//fortran_PS)
          call set_IO_dir(this%probe_divJ,dir//'probe_divJ'//fortran_PS)
@@ -411,6 +565,25 @@
            call set_IO_dir(this%probe_B0(i_probe_B0),&
            dir//'probe_B0_'//int2str(i_probe_B0)//fortran_PS)
          enddo
+         s_Bx = size(this%Bx)
+         do i_Bx=1,s_Bx
+           call set_IO_dir(this%Bx(i_Bx),&
+           dir//'Bx_'//int2str(i_Bx)//fortran_PS)
+         enddo
+         s_By = size(this%By)
+         do i_By=1,s_By
+           call set_IO_dir(this%By(i_By),&
+           dir//'By_'//int2str(i_By)//fortran_PS)
+         enddo
+         s_Bz = size(this%Bz)
+         do i_Bz=1,s_Bz
+           call set_IO_dir(this%Bz(i_Bz),&
+           dir//'Bz_'//int2str(i_Bz)//fortran_PS)
+         enddo
+         call set_IO_dir(this%max_JxB_x,dir//'max_JxB_x'//fortran_PS)
+         call set_IO_dir(this%max_JxB_y,dir//'max_JxB_y'//fortran_PS)
+         call set_IO_dir(this%max_JxB_z,dir//'max_JxB_z'//fortran_PS)
+         call set_IO_dir(this%max_JxB,dir//'max_JxB'//fortran_PS)
        end subroutine
 
        subroutine make_IO_dir_probe_set_ind(this,dir)
@@ -422,11 +595,17 @@
          integer :: i_ME_conductor
          integer :: i_probe_dB0dt
          integer :: i_probe_B0
+         integer :: i_Bx
+         integer :: i_By
+         integer :: i_Bz
          integer :: s_ME
          integer :: s_ME_fluid
          integer :: s_ME_conductor
          integer :: s_probe_dB0dt
          integer :: s_probe_B0
+         integer :: s_Bx
+         integer :: s_By
+         integer :: s_Bz
          call suppress_warnings(this)
          call make_dir_quiet(dir)
          call make_IO_dir(this%probe_divB,dir//'probe_divB'//fortran_PS)
@@ -458,6 +637,25 @@
            call make_IO_dir(this%probe_B0(i_probe_B0),&
            dir//'probe_B0_'//int2str(i_probe_B0)//fortran_PS)
          enddo
+         s_Bx = size(this%Bx)
+         do i_Bx=1,s_Bx
+           call make_IO_dir(this%Bx(i_Bx),&
+           dir//'Bx_'//int2str(i_Bx)//fortran_PS)
+         enddo
+         s_By = size(this%By)
+         do i_By=1,s_By
+           call make_IO_dir(this%By(i_By),&
+           dir//'By_'//int2str(i_By)//fortran_PS)
+         enddo
+         s_Bz = size(this%Bz)
+         do i_Bz=1,s_Bz
+           call make_IO_dir(this%Bz(i_Bz),&
+           dir//'Bz_'//int2str(i_Bz)//fortran_PS)
+         enddo
+         call make_IO_dir(this%max_JxB_x,dir//'max_JxB_x'//fortran_PS)
+         call make_IO_dir(this%max_JxB_y,dir//'max_JxB_y'//fortran_PS)
+         call make_IO_dir(this%max_JxB_z,dir//'max_JxB_z'//fortran_PS)
+         call make_IO_dir(this%max_JxB,dir//'max_JxB'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_probe_set_ind(this,dir)
@@ -469,11 +667,17 @@
          integer :: i_ME_conductor
          integer :: i_probe_dB0dt
          integer :: i_probe_B0
+         integer :: i_Bx
+         integer :: i_By
+         integer :: i_Bz
          integer :: s_ME
          integer :: s_ME_fluid
          integer :: s_ME_conductor
          integer :: s_probe_dB0dt
          integer :: s_probe_B0
+         integer :: s_Bx
+         integer :: s_By
+         integer :: s_Bz
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
@@ -513,6 +717,28 @@
            call export_structured(this%probe_B0(i_probe_B0),&
            dir//'probe_B0_'//int2str(i_probe_B0)//fortran_PS)
          enddo
+         s_Bx = size(this%Bx)
+         write(un,*) s_Bx
+         do i_Bx=1,s_Bx
+           call export_structured(this%Bx(i_Bx),&
+           dir//'Bx_'//int2str(i_Bx)//fortran_PS)
+         enddo
+         s_By = size(this%By)
+         write(un,*) s_By
+         do i_By=1,s_By
+           call export_structured(this%By(i_By),&
+           dir//'By_'//int2str(i_By)//fortran_PS)
+         enddo
+         s_Bz = size(this%Bz)
+         write(un,*) s_Bz
+         do i_Bz=1,s_Bz
+           call export_structured(this%Bz(i_Bz),&
+           dir//'Bz_'//int2str(i_Bz)//fortran_PS)
+         enddo
+         call export_structured(this%max_JxB_x,dir//'max_JxB_x'//fortran_PS)
+         call export_structured(this%max_JxB_y,dir//'max_JxB_y'//fortran_PS)
+         call export_structured(this%max_JxB_z,dir//'max_JxB_z'//fortran_PS)
+         call export_structured(this%max_JxB,dir//'max_JxB'//fortran_PS)
          close(un)
        end subroutine
 
@@ -525,11 +751,17 @@
          integer :: i_ME_conductor
          integer :: i_probe_dB0dt
          integer :: i_probe_B0
+         integer :: i_Bx
+         integer :: i_By
+         integer :: i_Bz
          integer :: s_ME
          integer :: s_ME_fluid
          integer :: s_ME_conductor
          integer :: s_probe_dB0dt
          integer :: s_probe_B0
+         integer :: s_Bx
+         integer :: s_By
+         integer :: s_Bz
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
@@ -564,6 +796,25 @@
            call import_structured(this%probe_B0(i_probe_B0),&
            dir//'probe_B0_'//int2str(i_probe_B0)//fortran_PS)
          enddo
+         s_Bx = size(this%Bx)
+         do i_Bx=1,s_Bx
+           call import_structured(this%Bx(i_Bx),&
+           dir//'Bx_'//int2str(i_Bx)//fortran_PS)
+         enddo
+         s_By = size(this%By)
+         do i_By=1,s_By
+           call import_structured(this%By(i_By),&
+           dir//'By_'//int2str(i_By)//fortran_PS)
+         enddo
+         s_Bz = size(this%Bz)
+         do i_Bz=1,s_Bz
+           call import_structured(this%Bz(i_Bz),&
+           dir//'Bz_'//int2str(i_Bz)//fortran_PS)
+         enddo
+         call import_structured(this%max_JxB_x,dir//'max_JxB_x'//fortran_PS)
+         call import_structured(this%max_JxB_y,dir//'max_JxB_y'//fortran_PS)
+         call import_structured(this%max_JxB_z,dir//'max_JxB_z'//fortran_PS)
+         call import_structured(this%max_JxB,dir//'max_JxB'//fortran_PS)
          close(un)
        end subroutine
 

@@ -2,9 +2,11 @@
        use current_precision_mod
        use sim_params_mod
        use mesh_extend_mod
+       use SF_extend_mod
        use VF_extend_mod
        use TF_extend_mod
        use mesh_domain_extend_mod
+       use ops_interp_mod
        use IO_tools_mod
        use induction_aux_mod
        use ops_advect_mod
@@ -17,22 +19,19 @@
        public :: add_curl_U_cross_B
        public :: add_curl_J
        public :: add_unsteady_B0
+       public :: compute_jCrossB
 
        contains
 
-       subroutine add_curl_U_cross_B(F,m,U_E,B0,B,curlUCrossB,scale,finite_Rem,temp_F,temp_E_TF,temp_E)
+       subroutine add_curl_U_cross_B(F,m,U_E,B,curlUCrossB,scale,temp_E_TF,temp_E)
          implicit none
-         type(VF),intent(inout) :: F,temp_F,curlUCrossB,temp_E
-         type(VF),intent(inout) :: B,B0
-         type(TF),intent(inout) :: U_E,temp_E_TF
+         type(VF),intent(inout) :: F,curlUCrossB,temp_E
+         type(VF),intent(in) :: B
+         type(TF),intent(in) :: U_E
+         type(TF),intent(inout) :: temp_E_TF
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: scale
-         logical,intent(in) :: finite_Rem
-         if (finite_Rem) then
-               call add(temp_F,B,B0) ! Since finite Rem
-               call advect_B(curlUCrossB,U_E,temp_F,m,temp_E_TF,temp_E)
-         else; call advect_B(curlUCrossB,U_E,B0    ,m,temp_E_TF,temp_E)
-         endif
+         call advect_B(curlUCrossB,U_E,B,m,temp_E_TF,temp_E)
          call add_product(F,curlUCrossB,scale)
        end subroutine
 
@@ -56,6 +55,22 @@
          call multiply(B0,scale_B0)
          call assign_dB0_dt_vs_t(dB0dt,TMP)
          call add_product(F,dB0dt,scale_dB0_dt) ! (-) since added to RHS
+       end subroutine
+
+       subroutine compute_JCrossB(jCrossB,B,J,m,scale,&
+         temp_CC,temp_F1_TF,temp_F2_TF)
+         ! computes:  scale J x B
+         implicit none
+         type(VF),intent(inout) :: jCrossB
+         type(VF),intent(in) :: B,J
+         type(mesh),intent(in) :: m
+         real(cp),intent(in) :: scale
+         type(SF),intent(inout) :: temp_CC
+         type(TF),intent(inout) :: temp_F1_TF,temp_F2_TF
+         call edge2Face_no_diag(temp_F1_TF,J,m)
+         call face2Face_no_diag(temp_F2_TF,B,m,temp_CC)
+         call cross_product(jCrossB,temp_F1_TF,temp_F2_TF)
+         call multiply(jCrossB,scale) ! Since J includes Rem
        end subroutine
 
        end module

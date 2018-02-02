@@ -18,6 +18,7 @@
        use export_processed_FPL_mod
        use export_frequency_mod
        use export_now_mod
+       use induction_sources_mod
        use assign_B0_vs_t_mod
        use datatype_conversion_mod
        use RK_Params_mod
@@ -117,9 +118,11 @@
          call init_Face(ind%temp_F1_TF     ,ind%m,0.0_cp)
          call init_Face(ind%temp_F2_TF     ,ind%m,0.0_cp)
          call init_Face(ind%F              ,ind%m,0.0_cp)
+         call init_Face(ind%jCrossB        ,ind%m,0.0_cp)
          call init_Face(ind%Fnm1           ,ind%m,0.0_cp)
          call init_Face(ind%L              ,ind%m,0.0_cp)
          call init_Face(ind%B              ,ind%m,0.0_cp)
+         call init_Face(ind%Btot           ,ind%m,0.0_cp)
          call init_Face(ind%Bnm1           ,ind%m,0.0_cp)
          call init_Face(ind%B0             ,ind%m,0.0_cp)
          call init_Face(ind%dB0dt          ,ind%m,0.0_cp)
@@ -178,6 +181,8 @@
          ! *************************************************************
 
          call compute_J_ind(ind,SP)
+         call compute_Btot(ind,SP)
+         call compute_JCrossB_ind(ind,SP)
 
          ! ********** SET CLEANING PROCEDURE SOLVER SETTINGS *************
 
@@ -210,9 +215,9 @@
          type(sim_params),intent(in) :: SP
          integer,intent(in) :: un
          if (SP%FCL%export_heavy) then
-           write(un,*) '**************************************************************'
-           write(un,*) '************************** MAGNETIC **************************'
-           write(un,*) '**************************************************************'
+           write(un,*) '**********************************************************'
+           write(un,*) '************************ MAGNETIC ************************'
+           write(un,*) '**********************************************************'
            write(un,*) 'Rem,finite_Rem,include_vacuum = ',SP%DP%Rem,SP%SCP%finite_Rem,SP%SCP%include_vacuum
            write(un,*) 't,dt = ',SP%VS%B%TMP%t,SP%VS%B%TMP%TS%dt
            write(un,*) 'solveBMethod,N_ind,N_cleanB = ',SP%VS%B%SS%solve_method,&
@@ -291,6 +296,7 @@
          type(sim_params),intent(inout) :: SP
          type(time_marching_params),intent(in) :: TMP
          real(cp) :: temp,scale
+         integer :: i
          call compute_divBJ(ind%divB,ind%divJ,ind%B,ind%J,ind%m)
          call compute_Ln(temp,ind%divB,2.0_cp,ind%m); call export(SP%PS_ind%probe_divB,TMP,temp)
          call compute_Ln(temp,ind%divJ,2.0_cp,ind%m); call export(SP%PS_ind%probe_divJ,TMP,temp)
@@ -304,19 +310,30 @@
          endif
 
          scale = SP%DP%ME_scale
+
          call add(ind%temp_F1,ind%B,ind%B0)
-         call face2cellCenter(ind%temp_CC_VF,ind%temp_F1,ind%m)
-         call compute_Total_Energy(SP%PS_ind%ME(1),ind%temp_CC_VF,TMP,ind%m,scale)
-         call compute_Total_Energy_Domain(SP%PS_ind%ME_fluid(1),ind%temp_CC_VF,ind%CC_VF_fluid,TMP,ind%m,scale,ind%MD_fluid)
-         call compute_Total_Energy_Domain(SP%PS_ind%ME_conductor(1),ind%temp_CC_VF,ind%CC_VF_sigma,TMP,ind%m,scale,ind%MD_sigma)
-         call face2cellCenter(ind%temp_CC_VF,ind%B0,ind%m)
-         call compute_Total_Energy(SP%PS_ind%ME(2),ind%temp_CC_VF,TMP,ind%m,scale)
-         call compute_Total_Energy_Domain(SP%PS_ind%ME_fluid(2),ind%temp_CC_VF,ind%CC_VF_fluid,TMP,ind%m,scale,ind%MD_fluid)
-         call compute_Total_Energy_Domain(SP%PS_ind%ME_conductor(2),ind%temp_CC_VF,ind%CC_VF_sigma,TMP,ind%m,scale,ind%MD_sigma)
-         call face2cellCenter(ind%temp_CC_VF,ind%B,ind%m)
-         call compute_Total_Energy(SP%PS_ind%ME(3),ind%temp_CC_VF,TMP,ind%m,scale)
-         call compute_Total_Energy_Domain(SP%PS_ind%ME_fluid(3),ind%temp_CC_VF,ind%CC_VF_fluid,TMP,ind%m,scale,ind%MD_fluid)
-         call compute_Total_Energy_Domain(SP%PS_ind%ME_conductor(3),ind%temp_CC_VF,ind%CC_VF_sigma,TMP,ind%m,scale,ind%MD_sigma)
+         do i=1,3
+           if (i.eq.1) then
+             call face2cellCenter(ind%temp_CC_VF,ind%temp_F1,ind%m)
+           elseif (i.eq.2) then
+             call face2cellCenter(ind%temp_CC_VF,ind%B0,ind%m)
+           elseif (i.eq.3) then
+             call face2cellCenter(ind%temp_CC_VF,ind%B,ind%m)
+           endif
+           call compute_Total_Energy(SP%PS_ind%ME(i),ind%temp_CC_VF,TMP,ind%m,scale)
+           call compute_Total_Energy_Domain(SP%PS_ind%ME_fluid(i),ind%temp_CC_VF,ind%CC_VF_fluid,TMP,ind%m,scale,ind%MD_fluid)
+           call compute_Total_Energy_Domain(SP%PS_ind%ME_conductor(i),ind%temp_CC_VF,ind%CC_VF_sigma,TMP,ind%m,scale,ind%MD_sigma)
+           call compute_Energy_Component(SP%PS_ind%Bx(i),ind%temp_CC_VF%x,TMP,ind%m,scale)
+           call compute_Energy_Component(SP%PS_ind%By(i),ind%temp_CC_VF%y,TMP,ind%m,scale)
+           call compute_Energy_Component(SP%PS_ind%Bz(i),ind%temp_CC_VF%z,TMP,ind%m,scale)
+         enddo
+
+         call face2cellCenter(ind%temp_CC_VF,ind%jCrossB,ind%m)
+         call magnitude(ind%temp_CC,ind%temp_CC_VF)
+         call export(SP%PS_ind%max_JxB  ,TMP,amax(ind%temp_CC))
+         call export(SP%PS_ind%max_JxB_x,TMP,amax(ind%jCrossB%x))
+         call export(SP%PS_ind%max_JxB_y,TMP,amax(ind%jCrossB%y))
+         call export(SP%PS_ind%max_JxB_z,TMP,amax(ind%jCrossB%z))
 
          scale = SP%DP%JE_scale
          call edge2cellCenter(ind%temp_CC_VF,ind%J,ind%m,ind%temp_F1)
@@ -361,6 +378,14 @@
          ! call assign(ind%J,0.0_cp)
          ! call embedEdge(ind%J,ind%J_interior,ind%MD_sigma)
          call compute_J(ind%J,ind%B,SP%IT%current%scale,ind%m)
+       end subroutine
+
+       subroutine compute_JCrossB_ind(ind,SP)
+         implicit none
+         type(induction),intent(inout) :: ind
+         type(sim_params),intent(in) :: SP
+         call compute_jCrossB(ind%jCrossB,ind%Btot,ind%J,ind%m,SP%MT%JCrossB%scale,&
+         ind%temp_CC,ind%temp_F1_TF,ind%temp_F2_TF)
        end subroutine
 
        subroutine set_sigma_inv_ind(ind,SP)
@@ -413,6 +438,19 @@
          enddo
          ! ********************* POST SOLUTION COMPUTATIONS *********************
          call compute_J_ind(ind,SP)
+         call compute_Btot(ind,SP)
+         call compute_JCrossB_ind(ind,SP)
+       end subroutine
+
+       subroutine compute_Btot(ind,SP)
+         implicit none
+         type(induction),intent(inout) :: ind
+         type(sim_params),intent(in) :: SP
+         if (SP%SCP%finite_Rem) then
+           call add(ind%Btot,ind%B0,ind%B)
+         else
+           call assign(ind%Btot,ind%B0)
+         endif
        end subroutine
 
        subroutine export_unsteady_ind(ind,SP,TMP,EF,EN,DT)

@@ -50,6 +50,10 @@
          call compute_J_ind(M%GE%ind,M%C%SP)
          call face2CellCenter(M%GE%mom%U_CC,M%GE%mom%U,M%GE%mom%m)
          call face2edge_no_diag(M%GE%mom%U_E,M%GE%mom%U,M%GE%mom%m)
+         call update(M%C%SP%EF,M%C%SP%coupled,.false.)
+         if (M%C%SP%VS%T%SS%solve) call export_unsteady(M%GE%nrg,M%C%SP,M%C%SP%VS%T%TMP,M%C%SP%EF,M%C%EN,M%C%DT)
+         if (M%C%SP%VS%U%SS%solve) call export_unsteady(M%GE%mom,M%C%SP,M%C%SP%VS%U%TMP,M%C%SP%EF,M%C%EN,M%C%DT)
+         if (M%C%SP%VS%B%SS%solve) call export_unsteady(M%GE%ind,M%C%SP,M%C%SP%VS%B%TMP,M%C%SP%EF,M%C%EN,M%C%DT)
          write(*,*) '***************************************************************'
          write(*,*) '****************** ENTERING MAIN LOOP *************************'
          write(*,*) '***************************************************************'
@@ -69,7 +73,7 @@
              call assign_RK_stage(M%C%SP%VS%U%TMP,i_RK)
              call assign_RK_stage(M%C%SP%VS%B%TMP,i_RK)
              call assign_RK_stage(M%C%SP%coupled,i_RK)
-             call update(M%C%SP%EF,M%C%SP%coupled%t,M%C%SP%coupled%n_step,i_RK.ne.M%C%SP%coupled%RKP%n_stages)
+             call update(M%C%SP%EF,M%C%SP%coupled,i_RK.ne.M%C%SP%coupled%RKP%n_stages)
              ! if (M%C%SP%VS%rho%SS%solve)    call solve(dens,M%GE%mom%U,  M%C%SP%EF,M%C%EN,M%C%DT)
              if (M%C%SP%VS%T%SS%solve) then
                call add_all_energy_sources(M%GE%nrg%F,M%GE%nrg%Fnm1,M%GE%nrg%L,M%GE%nrg,M%C%SP%VS%U%TMP,M%C%SP,M%GE%ind,M%GE%mom)
@@ -88,7 +92,7 @@
              call iterate_RK(M%C%SP%VS%B%TMP)
              call iterate_RK(M%C%SP%coupled)
            enddo
-           call update(M%C%SP%EF,M%C%SP%coupled%t,M%C%SP%coupled%n_step,.false.)
+           call update(M%C%SP%EF,M%C%SP%coupled,.false.)
 
            if (M%C%SP%VS%T%SS%solve) call iterate_step(M%C%SP%VS%T%TMP)
            if (M%C%SP%VS%U%SS%solve) call iterate_step(M%C%SP%VS%U%TMP)
@@ -115,6 +119,7 @@
 
            call simulate_crash(M)
 
+#ifdef EXPORT_FOR_AUTO_RESTART
            call import_structured(M%C%SP%DP)
            call import_structured(M%GE%mom%PCG_U%ISP%EC)
            call import_structured(M%GE%mom%PCG_P%ISP%EC)
@@ -126,6 +131,7 @@
            call import_structured(M%C%SP%coupled%TS)
            if (M%C%SP%SCP%couple_time_steps) call couple_time_step(M%C%SP%VS,M%C%SP%coupled)
            call import_structured(M%C%EN)
+#endif
 
            call update(M%C%EN,M%C%ES%export_now)
            if (M%C%EN%any_next) call export_structured(M%C%EN) ! May be needed to avoid constant exporting
@@ -139,7 +145,9 @@
                call print_light(M%C%sc,M%C%SP%coupled)
              endif
              call export(M%C%sc,M%C%SP%coupled%t)
+#ifdef EXPORT_FOR_AUTO_RESTART
              call import_structured(M%C%KS)
+#endif
            endif
          enddo
          write(*,*) '***************************************************************'

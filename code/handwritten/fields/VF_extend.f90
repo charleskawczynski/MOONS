@@ -100,6 +100,7 @@
         public :: mean,max,amin,amax
         public :: boundary_flux
         public :: sum
+        public :: magnitude
         public :: assignX,assignY,assignZ
 
         public :: is_collocated
@@ -253,12 +254,13 @@
         interface divide;                   module procedure divide_VF_S;                   end interface
         interface divide;                   module procedure divide_S_VF;                   end interface
 
+        interface magnitude;                module procedure magnitude_VF;                  end interface
         interface invert;                   module procedure invert_VF;                     end interface
         interface mean;                     module procedure mean_VF;                       end interface
         interface max;                      module procedure max_VF;                        end interface
         interface amax;                     module procedure amax_VF;                       end interface
         interface amin;                     module procedure amin_VF;                       end interface
-        interface sum;                      module procedure sum_pad_VF;                        end interface
+        interface sum;                      module procedure sum_pad_VF;                    end interface
         interface boundary_flux;            module procedure boundary_flux_VF;              end interface
 
         interface square;                   module procedure square_VF;                     end interface
@@ -898,6 +900,13 @@
         end subroutine
 
       ! ------------------- OTHER ------------------------
+
+        subroutine magnitude_VF(f,g)
+          implicit none
+          type(SF),intent(inout) :: f
+          type(VF),intent(in) :: g
+          call magnitude(f,g%x,g%y,g%z)
+        end subroutine
 
         subroutine invert_VF(f)
           implicit none

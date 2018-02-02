@@ -1,5 +1,9 @@
 \documentclass[11pt]{article}
-\input{../includes.tex}
+\newcommand{\PSCHAIN}{..}
+\input{../prepend_PS_chain}
+\newcommand{\rootdir}{\PSCHAIN}
+\input{\PSCHAIN/includes/includes}
+
 \renewcommand{\height}{0.4}
 \renewcommand{\radius}{0.1}
 \renewcommand{\offSet}{12}
@@ -89,5 +93,3 @@ Solving for the ghost cell which we are extrapolating to, we have
 
 
 \end{document}
-
-

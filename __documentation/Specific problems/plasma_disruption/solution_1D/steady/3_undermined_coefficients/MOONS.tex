@@ -1,0 +1,205 @@
+\documentclass[11pt]{article}
+\newcommand{\PSCHAIN}{..}
+\input{../prepend_PS_chain}
+\newcommand{\rootdir}{\PSCHAIN}
+\input{\PSCHAIN/includes/includes}
+
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Solving for the Undetermined Coefficients}
+Our decoupled equations are
+\begin{equation}\begin{aligned}
+X'' + F D X' =   FC \\
+Y'' - F D Y' = - FC \\
+\end{aligned} \end{equation}
+With transformations
+\begin{equation}\begin{aligned}
+X = u + F B_x \\
+Y = u - F B_x \\
+F = \sqrt{\frac{A}{D}} \\
+\end{aligned} \end{equation}
+And inverse transformations
+\begin{equation}\begin{aligned}
+u   = \frac{1}{2} \left( X + Y \right) \\
+B_x = \frac{1}{2F} \left( X - Y \right) \\
+F = \sqrt{\frac{A}{D}} \\
+\end{aligned} \end{equation}
+\begin{equation}\begin{aligned}
+A = \frac{1}{\rho \nu \M} B_z^0, \qquad
+C = \sigma \M \PD_t B_x^0, \qquad
+D = \sigma \M B_z^0
+\end{aligned} \end{equation}
+\section{Solution procedure}
+Using Wolfram alpha, the ODEs and solutions are:
+\begin{equation}\begin{aligned}
+	Z'' + A Z' = +B, \qquad \rightarrow \qquad Z = \frac{B}{A} z + \frac{e^{-A z}}{A} \alpha_1 +\alpha_2 \\
+	Z'' - A Z' = -B, \qquad \rightarrow \qquad Z = \frac{B}{A} z + \frac{e^{+A z}}{A} \beta_1  +\beta_2  \\
+\end{aligned} \end{equation}
+So our solutions are
+\begin{equation}\begin{aligned}
+	X = \frac{FC}{FD} z + \frac{e^{-FD z}}{FD} \alpha_1 +\alpha_2 \\
+	Y = \frac{FC}{FD} z + \frac{e^{+FD z}}{FD} \beta_1  +\beta_2  \\
+\end{aligned} \end{equation}
+Canceling
+\begin{equation}\begin{aligned}
+	X = \frac{C}{D} z + \frac{e^{-FD z}}{FD} \alpha_1 +\alpha_2 \\
+	Y = \frac{C}{D} z + \frac{e^{+FD z}}{FD} \beta_1  +\beta_2  \\
+\end{aligned} \end{equation}
+Applying BCs, we have
+\begin{equation}\begin{aligned}
+	X(-a) = -\frac{C}{D} a + \frac{e^{+FD a}}{FD} \alpha_1 +\alpha_2 = 0\\
+	X(+a) =  \frac{C}{D} a + \frac{e^{-FD a}}{FD} \alpha_1 +\alpha_2 = 0\\
+	Y(-a) = -\frac{C}{D} a + \frac{e^{-FD a}}{FD} \beta_1  +\beta_2  = 0\\
+	Y(+a) =  \frac{C}{D} a + \frac{e^{+FD a}}{FD} \beta_1  +\beta_2  = 0\\
+\end{aligned} \end{equation}
+Combining, and multiplying by the exponent coefficient,we have
+\begin{equation}\begin{aligned}
+- 2 FCa + \left(e^{+FD a} - e^{-FD a} \right) \alpha_1 = 0\\
++ 2 FCa + \left(e^{+FD a} - e^{-FD a} \right) \beta_1  = 0\\
+\end{aligned} \end{equation}
+Solving for the first coefficient, we have
+\begin{equation}\begin{aligned}
+\alpha_1 = \frac{+2FCa}{(e^{+FD a} - e^{-FD a})} = +\frac{FCa}{\sinh(FD a)} \\
+\beta_1  = \frac{-2FCa}{(e^{+FD a} - e^{-FD a})} = -\frac{FCa}{\sinh(FD a)} \\
+\end{aligned} \end{equation}
+The second coefficient is found from
+\begin{equation}\begin{aligned}
+	\frac{C}{D} a + \frac{e^{-FD a}}{FD} \frac{FCa}{\sinh(FD a)} +\alpha_2 = 0\\
+	\frac{C}{D} a - \frac{e^{+FD a}}{FD} \frac{FCa}{\sinh(FD a)} +\beta_2  = 0\\
+\end{aligned} \end{equation}
+Or
+\begin{equation}\begin{aligned}
+	\alpha_2 = - \frac{Ca}{D} - \frac{Ca}{D\sinh(FD a)} e^{-FD a} \\
+	\beta_2  = - \frac{Ca}{D} + \frac{Ca}{D\sinh(FD a)} e^{+FD a} \\
+	\alpha_2 = - \frac{Ca\sinh(FD a)}{D\sinh(FD a)} - \frac{+Ca}{D\sinh(FD a)} e^{-FD a} \\
+	\beta_2  = - \frac{Ca\sinh(FD a)}{D\sinh(FD a)} + \frac{-Ca}{D\sinh(FD a)} e^{+FD a} \\
+	\alpha_2 =   \frac{-Ca\sinh(FD a) -Ca e^{-FD a}}{D\sinh(FD a)} \\
+	\beta_2  =   \frac{-Ca\sinh(FD a) +Ca e^{+FD a}}{D\sinh(FD a)} \\
+	\alpha_2 = - \frac{Ca}{D\sinh(FD a)} (\sinh(FD a) + e^{-FD a}) \\
+	\beta_2  = - \frac{Ca}{D\sinh(FD a)} (\sinh(FD a) - e^{+FD a}) \\
+\end{aligned} \end{equation}
+\section{Final decoupled solution}
+So our final solution is
+\begin{equation}\begin{aligned}
+	X = \frac{FC}{FD} z + \frac{e^{-FD z}}{FD} \frac{FCa}{\sinh(FD a)} - \frac{Ca}{D\sinh(FD a)} (\sinh(FD a) + e^{-FD a}) \\
+	Y = \frac{FC}{FD} z - \frac{e^{ FD z}}{FD} \frac{FCa}{\sinh(FD a)} - \frac{Ca}{D\sinh(FD a)} (\sinh(FD a) - e^{ FD a}) \\
+\end{aligned} \end{equation}
+Factoring and canceling
+\begin{equation}\begin{aligned}
+	X = \frac{aC}{D} \left[ \frac{z}{a} + \frac{e^{-FD z}}{\sinh(FD a)} - \frac{\sinh(FD a) + e^{-FD a}}{\sinh(FD a)} \right] \\
+	Y = \frac{aC}{D} \left[ \frac{z}{a} - \frac{e^{ FD z}}{\sinh(FD a)} - \frac{\sinh(FD a) - e^{ FD a}}{\sinh(FD a)} \right] \\
+\end{aligned} \end{equation}
+More simplifying
+\begin{equation}\begin{aligned}
+	X = \frac{aC}{D} \left[ \frac{z}{a} - 1 + \frac{1}{\sinh(FD a)} \left(   e^{-FD z} - e^{-FD a} \right) \right] \\
+	Y = \frac{aC}{D} \left[ \frac{z}{a} - 1 + \frac{1}{\sinh(FD a)} \left( - e^{ FD z} + e^{ FD a} \right) \right] \\
+\end{aligned} \end{equation}
+
+\section{Primary variable solution}
+Using the transformed solution
+\begin{equation}\begin{aligned}
+	X = \frac{aC}{D} \left[ \frac{z}{a} - 1 + \frac{1}{\sinh(FD a)} \left(   e^{-FD z} - e^{-FD a} \right) \right] \\
+	Y = \frac{aC}{D} \left[ \frac{z}{a} - 1 + \frac{1}{\sinh(FD a)} \left( - e^{ FD z} + e^{ FD a} \right) \right] \\
+\end{aligned} \end{equation}
+The primary variable solution is
+\begin{equation}\begin{aligned}
+u   = \frac{1}{2} \left( X + Y \right) \\
+B_x = \frac{1}{2F} \left( X - Y \right) \\
+\end{aligned} \end{equation}
+Which yields
+\begin{equation}\begin{aligned}
+u   = \frac{1}{2}  \left( \frac{aC}{D} \left[ \frac{z}{a} - 1 + \frac{1}{\sinh(FD a)} \left(   e^{-FD z} - e^{-FD a} \right) \right] + \frac{aC}{D} \left[ \frac{z}{a} - 1 + \frac{1}{\sinh(FD a)} \left( - e^{ FD z} + e^{ FD a} \right) \right] \right) \\
+B_x = \frac{1}{2F} \left( \frac{aC}{D} \left[ \frac{z}{a} - 1 + \frac{1}{\sinh(FD a)} \left(   e^{-FD z} - e^{-FD a} \right) \right] - \frac{aC}{D} \left[ \frac{z}{a} - 1 + \frac{1}{\sinh(FD a)} \left( - e^{ FD z} + e^{ FD a} \right) \right] \right) \\
+u   = \frac{aC}{2D}  \left( \frac{z}{a} - 1 + \frac{1}{\sinh(FD a)} \left(   e^{-FD z} - e^{-FD a} \right) + \frac{z}{a} - 1 + \frac{1}{\sinh(FD a)} \left( - e^{ FD z} + e^{ FD a} \right) \right) \\
+B_x = \frac{aC}{2FD} \left( \frac{z}{a} - 1 + \frac{1}{\sinh(FD a)} \left(   e^{-FD z} - e^{-FD a} \right) - \frac{z}{a} + 1 - \frac{1}{\sinh(FD a)} \left( - e^{ FD z} + e^{ FD a} \right) \right) \\
+\end{aligned} \end{equation}
+Collecting
+\begin{equation}\begin{aligned}
+u   = \frac{aC}{2D}  \left( 2\frac{z}{a} - 2 + \frac{1}{\sinh(FD a)} \left(   e^{-FD z} - e^{-FD a} \right) + \frac{1}{\sinh(FD a)} \left( - e^{ FD z} + e^{ FD a} \right) \right) \\
+B_x = \frac{aC}{2FD} \left(\frac{1}{\sinh(FD a)} \left(   e^{-FD z} - e^{-FD a} \right) - \frac{1}{\sinh(FD a)} \left( - e^{ FD z} + e^{ FD a} \right) \right) \\
+\end{aligned} \end{equation}
+Factoring
+\begin{equation}\begin{aligned}
+u   = \frac{aC}{D}  \left( \frac{z}{a} - 1 + \frac{1}{2\sinh(FD a)} \left(   e^{-FD z} - e^{-FD a} - e^{ FD z} + e^{ FD a}\right) \right) \\
+B_x = \frac{aC}{2FD\sinh(FD a)} \left(\left(e^{-FD z} - e^{-FD a} \right) - \left( - e^{ FD z} + e^{ FD a} \right) \right) \\
+\end{aligned} \end{equation}
+Re-ordering and distributing
+\begin{equation}\begin{aligned}
+u   = \frac{aC}{D}  \left( \frac{z}{a} - 1 + \frac{1}{2\sinh(FD a)} \left( - e^{ FD z} + e^{-FD z} + e^{ FD a} - e^{-FD a} \right) \right) \\
+B_x = \frac{aC}{2FD\sinh(FD a)} \left( e^{ FD z} + e^{-FD z}- e^{ FD a} - e^{-FD a} \right) \\
+\end{aligned} \end{equation}
+Hyperbolic sine and cosine definition
+\begin{equation}\begin{aligned}
+u   = \frac{aC}{D}  \left( \frac{z}{a} - 1 + \frac{1}{\sinh(FD a)} ( \sinh(FD a) - \sinh(FD z) ) \right) \\
+B_x = \frac{aC}{FD\sinh(FD a)} \left( \cosh(FD z) - \cosh(FD a) \right) \\
+\end{aligned} \end{equation}
+Distributing
+\begin{equation}\begin{aligned}
+u   = \frac{aC}{D}  \left( \frac{z}{a} - 1 + 1 - \frac{\sinh(FD z)}{\sinh(FD a)} \right) \\
+B_x = \frac{aC}{FD} \left( \frac{\cosh(FD z)}{\sinh(FD a)} - \frac{1}{\tanh(FD a)} \right) \\
+\end{aligned} \end{equation}
+Collecting and re-ordering
+\begin{equation}\begin{aligned}
+u   = \frac{aC}{D}  \left( \frac{z}{a} - \frac{\sinh(FD z)}{\sinh(FD a)} \right) \\
+B_x = \frac{aC}{FD} \left( \frac{\cosh(FD z)}{\sinh(FD a)} - \frac{1}{\tanh(FD a)} \right) \\
+\end{aligned} \end{equation}
+
+\section{Solution summary}
+Our final solution is
+\begin{equation}\begin{aligned}
+u   = \frac{aC}{D}  \left( \frac{z}{a} - \frac{\sinh(FD z)}{\sinh(FD a)} \right) \\
+B_x = \frac{aC}{FD} \left( \frac{\cosh(FD z)}{\sinh(FD a)} - \frac{1}{\tanh(FD a)} \right) \\
+\end{aligned} \end{equation}
+Where
+\begin{equation}\begin{aligned}
+A = \frac{1}{\rho \nu \M} B_z^0, \qquad
+C = \sigma \M \PD_t B_x^0, \qquad
+D = \sigma \M B_z^0, \qquad
+F = \sqrt{\frac{A}{D}} \\
+\end{aligned} \end{equation}
+
+\section{Solution with original dimensional parameters}
+We note that the coefficients are
+\begin{equation}\begin{aligned}
+FD = \sqrt{AD} = \sqrt{\frac{1}{\rho \nu \M} B_z^0 \sigma \M B_z^0} = B_z^0 \sqrt{\frac{\sigma}{\rho \nu}} \\
+\frac{C}{D} = \frac{\sigma \M \PD_t B_x^0}{\sigma \M B_z^0} = \frac{\PD_t B_x^0}{ B_z^0} \\
+\frac{C}{FD} = \frac{\sigma \M \PD_t B_x^0}{B_z^0 \sqrt{\frac{\sigma}{\rho \nu}}} = \M \sqrt{\rho \nu \sigma} \frac{\PD_t B_x^0}{B_z^0} \\
+\end{aligned} \end{equation}
+
+Finally
+\begin{equation}\begin{aligned}
+u   = a \frac{\PD_t B_x^0}{ B_z^0} \left( \frac{z}{a} - \frac{\sinh(Ha \frac{z}{a})}{\sinh(Ha)} \right) \\
+B_x = a \M \sqrt{\rho \nu \sigma}  \frac{\PD B_x^0}{\PD t} \left( \frac{\cosh(Ha \frac{z}{a})}{\sinh(Ha)} - \frac{1}{\tanh(Ha)} \right) \\
+Ha = a B_z^0 \sqrt{\frac{\sigma}{\rho \nu}} \\
+\end{aligned} \end{equation}
+Or
+\begin{equation}\begin{aligned}
+u   = a \frac{1}{B_z^0} \frac{\PD B_x^0}{\PD t}  \left( \frac{z}{a} - \frac{\sinh(Ha \frac{z}{a})}{\sinh(Ha)} \right) \\
+B_x = \sqrt{\mu \sigma a^2 \M^2} \frac{1}{B_z^0} \frac{\PD B_x^0}{\PD t} \left( \frac{\cosh(Ha \frac{z}{a})}{\sinh(Ha)} - \frac{1}{\tanh(Ha)} \right) \\
+Ha = a B_z^0 \sqrt{\frac{\sigma}{\rho \nu}} \\
+\end{aligned} \end{equation}
+
+\section{Unit check}
+Clearly, units are correct for velocity
+\begin{equation}\begin{aligned}
+u  \sim [a] \frac{[B]}{[t] [B]} = \frac{[m]}{[s]} \\
+\end{aligned} \end{equation}
+For the magnetic field, we have
+
+\begin{equation}\begin{aligned}
+B_x \sim & \sqrt{[\mu] [\sigma] [a]^2 [\M]^2} \frac{1}{[B]} \frac{[B]}{[t]}  \\
+       = & [a] [\M] \sqrt{[\mu] [\sigma]} \frac{1}{[t]} \\
+       = & [m] [Ohm] [s] [m^{-1}] \sqrt{[kg] [m^{-1}] [s^{-1}] [Ohm^{-1}] [m^{-1}]} \frac{1}{[s]} \\
+       = & [Ohm] \sqrt{[kg] [m^{-1}] [s^{-1}] [Ohm^{-1}] [m^{-1}]} \\
+       = & \sqrt{[kg] [m^{-1}] [s^{-1}] [Ohm] [m^{-1}]} \\
+       = & [m^{-1}] \sqrt{[kg] [Ohm] [s^{-1}]} \\
+       = & [m^{-1}] \sqrt{[kg] [kg] [m^2] [s^{-3}] [A^{-2}] [s^{-1}]} \\
+       = & [kg] [A^{-1}] [s^{-2}] \\
+\end{aligned} \end{equation}
+Which are the correct units.
+
+\end{document}

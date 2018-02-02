@@ -14,6 +14,7 @@
       public :: open_to_append
       public :: safe_read
       public :: dot_dat
+      public :: get_n_lines_of_file
 
       interface safe_read;      module procedure safe_read_int_IO;      end interface
       interface safe_read;      module procedure safe_read_log_IO;      end interface
@@ -204,55 +205,75 @@
         do i=1,pos-1; read(un,*); enddo
       end function
 
-       subroutine safe_read_int_IO(i,un,caller)
-         implicit none
-         integer,intent(inout) :: i
-         integer,intent(in) :: un
-         character(len=*),intent(in) :: caller
-         integer :: temp
-         integer :: ReadStatus
-         read(un,*, iostat=ReadStatus) temp
-         if ( ReadStatus.eq.0 ) then; i = temp
-         else; call print_error_message('Error: read bad integer input in '//caller)
-         endif
-       end subroutine
+      function get_n_lines_of_file(dir,name) result(n_lines)
+        implicit none
+        character(len=*),intent(in) :: dir,name
+        integer(li) :: n_lines
+        integer :: un,stat
+        logical :: not_EOF
+        un = open_to_read(dir,name)
+        n_lines = 0
+        not_EOF = .true.
+        do while (not_EOF)
+          read(un,*,iostat=stat)
+          if (stat .lt. 0) then
+            not_EOF = .false.
+          else
+            n_lines = n_lines + 1
+          endif
+        enddo
+        close(un)
+      end function
 
-       subroutine safe_read_log_IO(L,un,caller)
-         implicit none
-         logical,intent(inout) :: L
-         integer,intent(in) :: un
-         character(len=*),intent(in) :: caller
-         logical :: temp
-         integer :: ReadStatus
-         read(un,*, iostat=ReadStatus) temp
-         if ( ReadStatus.eq.0 ) then; L = temp
-         else; call print_error_message('Error: read bad logical input in '//caller)
-         endif
-       end subroutine
+      subroutine safe_read_int_IO(i,un,caller)
+        implicit none
+        integer,intent(inout) :: i
+        integer,intent(in) :: un
+        character(len=*),intent(in) :: caller
+        integer :: temp
+        integer :: ReadStatus
+        read(un,*, iostat=ReadStatus) temp
+        if ( ReadStatus.eq.0 ) then; i = temp
+        else; call print_error_message('Error: read bad integer input in '//caller)
+        endif
+      end subroutine
 
-       subroutine safe_read_cp_IO(R,un,caller)
-         implicit none
-         real(cp),intent(inout) :: R
-         integer,intent(in) :: un
-         character(len=*),intent(in) :: caller
-         real(cp) :: temp
-         integer :: ReadStatus
-         read(un,*, iostat=ReadStatus) temp
-         if ( ReadStatus.eq.0 ) then; R = temp
-         else; call print_error_message('Error: read bad logical input in '//caller)
-         endif
-       end subroutine
+      subroutine safe_read_log_IO(L,un,caller)
+        implicit none
+        logical,intent(inout) :: L
+        integer,intent(in) :: un
+        character(len=*),intent(in) :: caller
+        logical :: temp
+        integer :: ReadStatus
+        read(un,*, iostat=ReadStatus) temp
+        if ( ReadStatus.eq.0 ) then; L = temp
+        else; call print_error_message('Error: read bad logical input in '//caller)
+        endif
+      end subroutine
 
-       subroutine print_error_message(m)
-         implicit none
-         character(len=*),intent(in) :: m
-         write (*,*) ' ----------------------- '
-         write (*,*) ' ----------------------- '
-         write (*,*) ' ----------------------- '
-         write (*,*) m
-         write (*,*) ' ----------------------- '
-         write (*,*) ' ----------------------- '
-         write (*,*) ' ----------------------- '
-       end subroutine
+      subroutine safe_read_cp_IO(R,un,caller)
+        implicit none
+        real(cp),intent(inout) :: R
+        integer,intent(in) :: un
+        character(len=*),intent(in) :: caller
+        real(cp) :: temp
+        integer :: ReadStatus
+        read(un,*, iostat=ReadStatus) temp
+        if ( ReadStatus.eq.0 ) then; R = temp
+        else; call print_error_message('Error: read bad logical input in '//caller)
+        endif
+      end subroutine
+
+      subroutine print_error_message(m)
+        implicit none
+        character(len=*),intent(in) :: m
+        write (*,*) ' ----------------------- '
+        write (*,*) ' ----------------------- '
+        write (*,*) ' ----------------------- '
+        write (*,*) m
+        write (*,*) ' ----------------------- '
+        write (*,*) ' ----------------------- '
+        write (*,*) ' ----------------------- '
+      end subroutine
 
       end module

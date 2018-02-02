@@ -1,5 +1,9 @@
 \documentclass[tikz,border=5pt]{standalone}
-\input{../includes.tex}
+\newcommand{\PSCHAIN}{..}
+\input{../prepend_PS_chain}
+\newcommand{\rootdir}{\PSCHAIN}
+\input{\PSCHAIN/includes/includes}
+
 \input{../include_zero_margins.tex}
 \setlength{\voffset}{-1in}
 \setlength{\hoffset}{-1in}

@@ -42,6 +42,7 @@
        type time_step
          real(cp) :: dt = 0.0_cp
          real(cp) :: t_final = 0.0_cp
+         real(cp) :: t_start = 0.0_cp
          type(string) :: dir
          type(string) :: name
        end type
@@ -55,6 +56,7 @@
          call delete(this)
          this%dt = that%dt
          this%t_final = that%t_final
+         this%t_start = that%t_start
          call init(this%dir,that%dir)
          call init(this%name,that%name)
        end subroutine
@@ -64,6 +66,7 @@
          type(time_step),intent(inout) :: this
          this%dt = 0.0_cp
          this%t_final = 0.0_cp
+         this%t_start = 0.0_cp
          call delete(this%dir)
          call delete(this%name)
        end subroutine
@@ -74,6 +77,7 @@
          integer,intent(in) :: un
          write(un,*) 'dt      = ',this%dt
          write(un,*) 't_final = ',this%t_final
+         write(un,*) 't_start = ',this%t_start
          call display(this%dir,un)
          call display(this%name,un)
        end subroutine
@@ -84,6 +88,7 @@
          integer,intent(in) :: un
          write(un,*) 'dt      = ',this%dt
          write(un,*) 't_final = ',this%t_final
+         write(un,*) 't_start = ',this%t_start
          call display(this%dir,un)
          call display(this%name,un)
        end subroutine
@@ -135,6 +140,7 @@
          integer,intent(in) :: un
          write(un,*) 'dt       = ';write(un,*) this%dt
          write(un,*) 't_final  = ';write(un,*) this%t_final
+         write(un,*) 't_start  = ';write(un,*) this%t_start
        end subroutine
 
        subroutine import_primitives_time_step(this,un)
@@ -143,6 +149,7 @@
          integer,intent(in) :: un
          read(un,*); read(un,*) this%dt
          read(un,*); read(un,*) this%t_final
+         read(un,*); read(un,*) this%t_start
        end subroutine
 
        subroutine export_wrap_time_step(this,dir,name)

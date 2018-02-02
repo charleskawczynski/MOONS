@@ -1,12 +1,23 @@
 # **************** RUN CONFIGURATION *******************
 # Using windows command prompt periodically results in
 # Sporadic filename errors. To circumvent this, use the git powershell
-RELEASE = 'DEBUG'
-# RELEASE = 'OPTIMIZE'
+# RELEASE = 'DEBUG'
+RELEASE = 'OPTIMIZE'
 # RELEASE = 'PROFILE'
 USE_OPEN_MP = 'TRUE'
+# Setting EXPORT_FOR_AUTO_RESTART = 'FALSE' removes all import statements from the main loop,
+# so the solution cannot be restarted and no parameters can be modified during runtime.
 EXPORT_FOR_AUTO_RESTART = 'TRUE'
 PARALLELIZE_3D_OPS = 'TRUE'
+# Enter the name of the desired input file folder:
+sim_params_default = sim_params_default_MHD_LDC_Sergey_uniform
+# sim_params_default = sim_params_default_MHD_cylinder_driven_cavity
+# sim_params_default = sim_params_default_plasma_disruption
+# sim_params_default = sim_params_default_plasma_disruption_1D_analytic
+# sim_params_default = sim_params_default_Bandaru
+# sim_params_default = sim_params_default_BC_full_3D
+# sim_params_default = sim_params_default_full_BC
+
 # PARALLELIZE_2D_OPS = 'TRUE'
 # PARALLELIZE_1D_OPS = 'TRUE'
 # FORMAT_OUTPUT = 'FORMATTED'
@@ -83,12 +94,17 @@ ifeq ($(CLUSTER),'DOE')
 	FC = ftn
 endif
 
+$(info )
+$(info ************************************ INFO.....)
+$(info sim_params_default = $(sim_params_default))
 $(info CLUSTER = $(CLUSTER))
 $(info BUILD COMMAND = $(FC))
 $(info TARGET = $(TARGET_DIR))
 $(info PS = $(PS))
 $(info PS_clean = $(PS_clean))
 $(info OS_USED = $(OS_USED))
+$(info ************************************)
+$(info )
 
 # ****************** DEFAULT FLAGS ******************
 FCFLAGS = -J"$(MOD_DIR)"

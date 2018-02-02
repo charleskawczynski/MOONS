@@ -28,6 +28,7 @@
        public :: compute_J
        public :: compute_Total_Energy_Domain
        public :: compute_Total_Energy
+       public :: compute_Energy_Component
        public :: embedVelocity_E
        public :: embedVelocity_F
        public :: embedVelocity_CC
@@ -77,6 +78,20 @@
          implicit none
          type(probe),intent(inout) :: energy
          type(VF),intent(inout) :: field
+         type(time_marching_params),intent(in) :: TMP
+         type(mesh),intent(in) :: m
+         real(cp),intent(in) :: scale
+         real(cp) :: temp
+         call assign_ghost_XPeriodic(field,0.0_cp) ! norms now includes ghost points
+         call compute_Ln(temp,field,2.0_cp,m)
+         temp = scale*0.5_cp*temp
+         call export(energy,TMP,temp)
+       end subroutine
+
+       subroutine compute_Energy_Component(energy,field,TMP,m,scale)
+         implicit none
+         type(probe),intent(inout) :: energy
+         type(SF),intent(inout) :: field
          type(time_marching_params),intent(in) :: TMP
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: scale

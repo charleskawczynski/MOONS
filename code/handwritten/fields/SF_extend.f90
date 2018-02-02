@@ -104,6 +104,7 @@
         ! Auxiliary
         public :: square,square_root,min,max,amin,amax
         public :: mean,sum,abs,insist_amax_lt_tol
+        public :: magnitude
 
         public :: assign_ghost_xmin_xmax
         public :: assign_ghost_ymin_ymax
@@ -262,6 +263,7 @@
         interface square;                   module procedure square_SF;                    end interface
         interface square_root;              module procedure square_root_SF;               end interface
         interface abs;                      module procedure abs_SF;                       end interface
+        interface magnitude;                module procedure magnitude_SF_SF_SF;           end interface
         interface insist_amax_lt_tol;       module procedure insist_amax_lt_tol_SF;        end interface
 
         interface swap;                     module procedure swap_SF;                      end interface
@@ -1258,6 +1260,19 @@
           real(cp),intent(in) :: g2
           integer :: i
           do i=1,f%s; call divide(g2,f%BF(i)%GF); enddo
+        end subroutine
+
+      ! ------------------- Magnitude ------------------------
+
+        subroutine magnitude_SF_SF_SF(R,x,y,z)
+          implicit none
+          type(SF),intent(inout) :: R
+          type(SF),intent(in) :: x,y,z
+          integer :: i
+          do i=1,R%s; call magnitude(R%BF(i)%GF,&
+                                     x%BF(i)%GF,&
+                                     y%BF(i)%GF,&
+                                     z%BF(i)%GF); enddo
         end subroutine
 
       ! ------------------- OTHER ------------------------

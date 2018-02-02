@@ -13,11 +13,13 @@
 
      private
      public :: define_mesh_SP_plasma_disruption
+     public :: define_mesh_SP_plasma_disruption_1D_analytic
      public :: small_dataset
      public :: define_mesh_bandaru
      public :: define_mesh_full_BC_w_vacuum_symmetric
      public :: define_mesh_full_BC_n_vacuum_symmetric
      public :: define_mesh_full_BC_w_vacuum_3D
+     public :: define_mesh_full_BC_w_vacuum_3D_high_res
      public :: define_mesh_full_BC_n_vacuum_3D
      public :: define_mesh_SP_MHD_LDC_Sergey_uniform
 
@@ -35,13 +37,30 @@
        call init(SP%MP_mom,SP%MQP)
        call init(SP%MP_sigma,SP%MQP)
        call init(SP%MP_ind,SP%MQP)
-       call add_base(SP%MP_mom,seg_1d(1,'grid_Roberts_B'   ,N   ,-t_fluid   ,t_fluid   ,buffer))
+       call add_base(SP%MP_mom,seg_1d(1,'grid_Roberts_B'   ,N*2 ,-t_fluid*CR,t_fluid*CR,buffer))
        call add_base(SP%MP_mom,seg_1d(2,'grid_Roberts_B'   ,N   ,-t_fluid   ,t_fluid   ,buffer))
-       call add_base(SP%MP_mom,seg_1d(3,'grid_Roberts_B'   ,N*2 ,-t_fluid*CR,t_fluid*CR,buffer))
+       call add_base(SP%MP_mom,seg_1d(3,'grid_Roberts_B'   ,N   ,-t_fluid   ,t_fluid   ,buffer))
        call init(SP%MP_sigma,SP%MP_mom)
        call add_ext(SP%MP_sigma,seg_1d(1,'ext_Roberts_B_IO',N_w,t_wall,buffer))
        call add_ext(SP%MP_sigma,seg_1d(2,'ext_Roberts_B_IO',N_w,t_wall,buffer))
        call add_ext(SP%MP_sigma,seg_1d(3,'ext_Roberts_B_IO',N_w,t_wall,buffer))
+       call init(SP%MP_ind,SP%MP_sigma)
+     end subroutine
+
+     subroutine define_mesh_SP_plasma_disruption_1D_analytic(SP)
+       implicit none
+       type(sim_params),intent(inout) :: SP
+       real(cp) :: t_fluid,buffer
+       integer :: N
+       t_fluid = 1.0_cp; buffer = 1.5_cp;
+       N = 100
+       call init(SP%MP_mom,SP%MQP)
+       call init(SP%MP_sigma,SP%MQP)
+       call init(SP%MP_ind,SP%MQP)
+       call add_base(SP%MP_mom,seg_1d(1,'grid_uniform'     ,1 ,-t_fluid,t_fluid,buffer))
+       call add_base(SP%MP_mom,seg_1d(2,'grid_uniform'     ,1 ,-t_fluid,t_fluid,buffer))
+       call add_base(SP%MP_mom,seg_1d(3,'grid_Roberts_B'   ,N ,-t_fluid,t_fluid,buffer))
+       call init(SP%MP_sigma,SP%MP_mom)
        call init(SP%MP_ind,SP%MP_sigma)
      end subroutine
 
@@ -128,6 +147,31 @@
        integer :: N,N_w,N_half
        t_vac = 7.0_cp; t_fluid = 1.0_cp; t_wall = 0.05_cp;
        buffer = 2.0_cp; N = 80; N_w = 9; N_half = ceiling(N/2.0_cp)
+       call init(SP%MP_mom,SP%MQP)
+       call init(SP%MP_sigma,SP%MQP)
+       call init(SP%MP_ind,SP%MQP)
+       call add_base(SP%MP_mom,seg_1d(1,'grid_Roberts_B'         ,N       ,-t_fluid        ,t_fluid,buffer))
+       call add_base(SP%MP_mom,seg_1d(3,'grid_Roberts_B'         ,N       ,-t_fluid        ,t_fluid,buffer))
+       call add_base(SP%MP_mom,seg_1d(2,'grid_Roberts_R'         ,N_half+5, 0.0_cp         ,t_fluid,buffer))
+       call add_ext( SP%MP_mom,seg_1d(2,'ext_prep_Roberts_C2F_IO',N_half  , 0.0_cp+t_fluid ,buffer))
+       call init(SP%MP_sigma,SP%MP_mom)
+       call add_ext(SP%MP_sigma,seg_1d(1,'ext_Roberts_B_IO'      ,N_w-1,t_wall,buffer))
+       call add_ext(SP%MP_sigma,seg_1d(3,'ext_Roberts_B_IO'      ,N_w-1,t_wall,buffer))
+       call add_ext(SP%MP_sigma,seg_1d(2,'ext_prep_Roberts_B_IO' ,N_w-1,t_wall,buffer))
+       call init(SP%MP_ind,SP%MP_sigma)
+       call add_ext(SP%MP_ind,seg_1d(1,'ext_Roberts_near_IO'      ,  N_w+1,t_vac - t_fluid - t_wall,buffer))
+       call add_ext(SP%MP_ind,seg_1d(3,'ext_Roberts_near_IO'      ,  N_w+1,t_vac - t_fluid - t_wall,buffer))
+       call add_ext(SP%MP_ind,seg_1d(2,'ext_prep_Roberts_R_IO'    ,  N_w-1,t_vac - t_fluid - t_wall,buffer))
+       call add_ext(SP%MP_ind,seg_1d(2,'ext_app_Roberts_L_IO'     ,2*N_w-2,t_vac - t_fluid         ,buffer))
+     end subroutine
+
+     subroutine define_mesh_full_BC_w_vacuum_3D_high_res(SP)
+       implicit none
+       type(sim_params),intent(inout) :: SP
+       real(cp) :: t_wall,t_fluid,t_vac,buffer
+       integer :: N,N_w,N_half
+       t_vac = 7.0_cp; t_fluid = 1.0_cp; t_wall = 0.05_cp;
+       buffer = 2.0_cp; N = 100; N_w = 9; N_half = ceiling(N/2.0_cp)
        call init(SP%MP_mom,SP%MQP)
        call init(SP%MP_sigma,SP%MQP)
        call init(SP%MP_ind,SP%MQP)

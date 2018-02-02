@@ -1,0 +1,121 @@
+\documentclass[11pt]{article}
+\newcommand{\PSCHAIN}{..}
+\input{../prepend_PS_chain}
+\newcommand{\rootdir}{\PSCHAIN}
+\input{\PSCHAIN/includes/includes}
+
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Decoupling of 1D plasma-disruption governing equations}
+In this document, decouple the 1D plasma disruption governing equations
+\begin{equation}\begin{aligned}
+\PD_{zz} u = - \frac{1}{\rho \nu \M} B_z^0 \PD_z B_x \\
+\PD_{zz} B_x = \sigma \M \PD_t B_x^0 - \sigma \M B_z^0 \PD_z u \\
+\end{aligned} \end{equation}
+Let
+\begin{equation}\begin{aligned}
+A = \frac{1}{\rho \nu \M} B_z^0, \qquad
+C = \sigma \M \PD_t B_x^0, \qquad
+D = \sigma \M B_z^0
+\end{aligned} \end{equation}
+Recognizing that this equation is variable with respect to $z$ only, we have a coupled ODE system:
+\begin{equation}\begin{aligned}
+u''   = - A B_x' \\
+B_x'' = C - D u' \\
+\end{aligned} \end{equation}
+
+\section{Variable seperation transformation}
+We may apply the transformation
+\begin{equation}\begin{aligned}
+X = u + F B_x \\
+Y = u - F B_x \\
+\end{aligned} \end{equation}
+
+\subsection{Transformation for X}
+We have
+\begin{equation}\begin{aligned}
+(X - F B_x)''   = - A B_x' \\
+B_x'' = C - D (X - F B_x)' \\
+\end{aligned} \end{equation}
+Distributing
+\begin{equation}\begin{aligned}
+X'' - F B_x''   = - A B_x' \\
+B_x'' = C - D X' + D F B_x' \\
+\end{aligned} \end{equation}
+Combining with factor $E$ for second equation
+\begin{equation}\begin{aligned}
+X'' - F B_x'' + FB_x''   = - A B_x' + E(C - D X' + D F B_x') \\
+\end{aligned} \end{equation}
+To ensure $B_x$ dissappears, we must enforce
+\begin{equation}\begin{aligned}
+-F + E = 0, \qquad E = F \\
+-A + FDE = 0,\qquad E^2D = A, \qquad E = F = \sqrt{\frac{A}{D}}\\
+\end{aligned} \end{equation}
+So we have
+\begin{equation}\begin{aligned}
+X'' - F B_x'' + FB_x''   = - A B_x' + E(C - D X' + D F B_x') \\
+X'' = - A B_x' + FC - FD X' + E^2 D B_x' \\
+X'' = FC - FD X' + (E^2 D B_x' - A B_x') \\
+X'' = FC - FD X' + \left(\frac{A}{D} D B_x' - A B_x' \right) \\
+X'' = FC - FD X' \\
+\end{aligned} \end{equation}
+\subsection{Transformation for Y}
+Reminder
+\begin{equation}\begin{aligned}
+u''   = - A B_x' \\
+B_x'' = C - D u' \\
+\end{aligned} \end{equation}
+We have
+\begin{equation}\begin{aligned}
+(Y + F B_x)''   = - A B_x' \\
+B_x'' = C - D (Y + F B_x)' \\
+\end{aligned} \end{equation}
+Distributing
+\begin{equation}\begin{aligned}
+Y'' + F B_x''   = - A B_x' \\
+B_x'' = C - D Y' - D F B_x' \\
+\end{aligned} \end{equation}
+Combining with factor $-E$ for second equation yields
+\begin{equation}\begin{aligned}
+Y'' + F B_x'' - FB_x''   = - A B_x' - E(C - D Y' - D F B_x') \\
+Y'' = - A B_x' - FC + E D Y' + E D F B_x' \\
+Y'' = - FC + E D Y' + (E D F B_x' - A B_x') \\
+Y'' = - FC + E D Y' + \left(\frac{A}{D} D B_x' - A B_x' \right) \\
+Y'' = - FC + F D Y' \\
+\end{aligned} \end{equation}
+\section{Transformation summary}
+Our decoupled equations are
+\begin{equation}\begin{aligned}
+X'' + F D X' =   FC \\
+Y'' - F D Y' = - FC \\
+\end{aligned} \end{equation}
+Where
+\begin{equation}\begin{aligned}
+A = \frac{1}{\rho \nu \M} B_z^0, \qquad
+C = \sigma \M \PD_t B_x^0, \qquad
+D = \sigma \M B_z^0, \qquad
+F = \sqrt{\frac{A}{D}} \\
+\end{aligned} \end{equation}
+With transformations
+\begin{equation}\begin{aligned}
+X = u + F B_x \\
+Y = u - F B_x \\
+\end{aligned} \end{equation}
+And inverse transformations
+\begin{equation}\begin{aligned}
+u   = \frac{1}{2} \left( X + Y \right) \\
+B_x = \frac{1}{2E} \left( X - Y \right) \\
+\end{aligned} \end{equation}
+\begin{equation}\begin{aligned}
+A = \frac{1}{\rho \nu \M} B_z^0, \qquad
+C = \sigma \M \PD_t B_x^0, \qquad
+D = \sigma \M B_z^0, \qquad
+F = \sqrt{\frac{A}{D}} \\
+\end{aligned} \end{equation}
+
+
+\end{document}

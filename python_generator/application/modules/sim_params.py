@@ -106,13 +106,10 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('diffusion','equation_term',priv)
 	g.module[m_name].add_prop('diffusion_linear','equation_term',priv)
 	g.module[m_name].add_prop('unsteady_B0','equation_term',priv)
+	g.module[m_name].add_prop('constant_dB0dt','equation_term',priv)
 	g.module[m_name].add_prop('current','equation_term',priv)
 	g.module[m_name].add_prop('B_applied','equation_term',priv)
 
-	# In MOONS, these parameters are defined for default values:
-	# integer,parameter :: frequency_coeff_default = 1
-	# integer,parameter :: frequency_base_default = 10
-	# integer,parameter :: frequency_exp_default = 6
 	m_name = 'export_frequency_params'
 	g.add_module(m_name)
 	g.module[m_name].set_folder_name(__name__.split('.')[1])
@@ -120,11 +117,16 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('export_ever','logical',priv)
 	g.module[m_name].add_prop('export_first_step','logical',priv)
 	g.module[m_name].add_prop('export_now','logical',priv)
-	g.module[m_name].add_prop('frequency_coeff','integer',priv)
-	g.module[m_name].add_prop('frequency_base','integer',priv)
-	g.module[m_name].add_prop('frequency_exp','integer',priv)
 	g.module[m_name].add_prop('t_window_start',real,priv)
 	g.module[m_name].add_prop('t_window_stop',real,priv)
+	g.module[m_name].add_prop('N_points_in_window','integer',priv)
+	g.module[m_name].add_prop('left_point_export','integer',priv)
+	g.module[m_name].add_prop('right_point_export','integer',priv)
+	g.module[m_name].add_prop('dt_star',real,priv)
+	g.module[m_name].add_prop('dt_star_range',real,priv)
+	g.module[m_name].add_prop('t_star_left',real,priv)
+	g.module[m_name].add_prop('t_star_right',real,priv)
+	g.module[m_name].add_prop('dt_window_factor',real,priv)
 
 	m_name = 'export_frequency'
 	g.add_module(m_name)
@@ -224,6 +226,11 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].set_used_modules(['IO_tools_mod'])
 	g.module[m_name].add_prop(['probe_divB','probe_divJ','JE','JE_fluid'],'probe',priv)
 	g.module[m_name].add_prop(['ME','ME_fluid','ME_conductor','probe_dB0dt','probe_B0'],'probe',priv,F,1,3)
+	g.module[m_name].add_prop(['Bx','By','Bz'],'probe',priv,F,1,3)
+	g.module[m_name].add_prop(['max_JxB_x'],'probe',priv)
+	g.module[m_name].add_prop(['max_JxB_y'],'probe',priv)
+	g.module[m_name].add_prop(['max_JxB_z'],'probe',priv)
+	g.module[m_name].add_prop(['max_JxB'],'probe',priv)
 
 	m_name = 'probe_set_nrg'
 	g.add_module(m_name)

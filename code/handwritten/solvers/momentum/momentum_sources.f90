@@ -28,8 +28,7 @@
        public :: compute_add_advection_base_flow
        public :: compute_add_diffusion
        public :: compute_add_MPG
-       public :: compute_add_JCrossB
-       public :: compute_add_JCrossB_div_free
+       public :: extract_add_JCrossB
        public :: compute_add_Q2D_JCrossB
        public :: compute_add_buoyancy
        public :: compute_add_gravity
@@ -109,58 +108,16 @@
          end select
        end subroutine
 
-       subroutine compute_add_JCrossB(F,jCrossB,B,B0,J,m,D_fluid,scale,finite_Rem,&
-         temp_CC,temp_F,temp_F1_TF,temp_F2_TF)
-         ! computes
-         !
-         !     finite Rem:  scale J x (B0 + B_induced)
-         !     low    Rem:  scale J x (B0)
-         !
+       subroutine extract_add_JCrossB(F,jCrossB,jCrossB_ind,D_fluid,scale)
+         ! computes:  scale J x B
          implicit none
-         type(VF),intent(inout) :: F,jCrossB,temp_F
-         type(VF),intent(in) :: B,B0,J
-         type(mesh),intent(in) :: m
+         type(VF),intent(inout) :: F,jCrossB
+         type(VF),intent(in) :: jCrossB_ind
          type(mesh_domain),intent(in) :: D_fluid
          real(cp),intent(in) :: scale
-         logical,intent(in) :: finite_Rem
-         type(SF),intent(inout) :: temp_CC
-         type(TF),intent(inout) :: temp_F1_TF,temp_F2_TF
-         call edge2Face_no_diag(temp_F1_TF,J,m)
-         if (finite_Rem) then; call add(temp_F,B0,B); call face2Face_no_diag(temp_F2_TF,temp_F,m,temp_CC)
-         else;                                        call face2Face_no_diag(temp_F2_TF,B0    ,m,temp_CC)
-         endif
-         call cross_product(temp_F,temp_F1_TF,temp_F2_TF)
-         call extractFace(jCrossB,temp_F,D_fluid)
+         call extractFace(jCrossB,jCrossB_ind,D_fluid)
          call assign_ghost_XPeriodic(jCrossB,0.0_cp)
          call add_product(F,jCrossB,scale) ! Since J includes Rem
-       end subroutine
-
-       subroutine compute_add_JCrossB_div_free(F,jCrossB,B,B0,m,D_fluid,scale,finite_Rem,&
-         temp_CC,temp_F,temp_F1,temp_F2,temp_F3,TF_E)
-         ! computes divergence-free Lorentz force using
-         ! jxB = B•∇(B/μ) - ∇ (B²/μ)
-         !
-         !     finite Rem:  Ha^2/Re jxB = B •∇(B        /μ)
-         !     low    Rem:  Ha^2/Re jxB = B0•∇(B_induced/μ)
-         !
-         implicit none
-         type(VF),intent(inout) :: F,jCrossB,temp_F,temp_F1,temp_F2,temp_F3
-         type(VF),intent(in) :: B,B0
-         type(mesh),intent(in) :: m
-         type(mesh_domain),intent(in) :: D_fluid
-         real(cp),intent(in) :: scale
-         logical,intent(in) :: finite_Rem
-         type(SF),intent(inout) :: temp_CC
-         type(TF),intent(inout) :: TF_E
-         if (finite_Rem) then
-           call add(temp_F1,B0,B)
-           call advect_U_convection(temp_F,temp_F1,temp_F1,TF_E,m,temp_F2,temp_F3,temp_CC)
-         else
-           call advect_U_convection(temp_F,B0     ,B      ,TF_E,m,temp_F2,temp_F3,temp_CC)
-         endif
-         call extractFace(jCrossB,temp_F,D_fluid)
-         call assign_ghost_XPeriodic(jCrossB,0.0_cp)
-         call add_product(F,jCrossB,scale)
        end subroutine
 
        subroutine compute_add_Q2D_JCrossB(F,Q2D_JCrossB,U,scale)

@@ -76,7 +76,7 @@
          implicit none
          type(probe),intent(inout) :: p
          type(time_marching_params),intent(in) :: TMP
-         integer :: i_last
+         integer(li) :: i_last
          p%restart = .true.
          call truncate_data_in_open_file(p,TMP,i_last)
          i_last = get_last_data_point_location(str(p%tec_dir),str(p%tec_name))
@@ -173,35 +173,37 @@
          implicit none
          type(probe),intent(in) :: p
          type(time_marching_params),intent(in) :: TMP
-         integer,intent(inout) :: i_last
+         integer(li),intent(inout) :: i_last
          real(cp),dimension(:),allocatable :: d
-         integer(li) :: i,i_first_to_delete,i_EOF
+         integer(li) :: i,i_first_to_delete,n_lines_in_file
          integer :: un,stat
-         un = open_to_read(str(p%tec_dir),str(p%tec_name))
-         read(un,*); read(un,*); read(un,*)
-         allocate(d(p%cols))
-         i_first_to_delete = 1
-         i_EOF = 1
-         do i=1,TMP%n_step
-           read(un,*,iostat=stat) d
-           if (TMP%t.gt.d(1)) then
-             i_first_to_delete = i
+         n_lines_in_file = get_n_lines_of_file(str(p%tec_dir),str(p%tec_name))
+         i_last = n_lines_in_file
+         if (n_lines_in_file.gt.3) then
+           un = open_to_read(str(p%tec_dir),str(p%tec_name))
+           read(un,*); read(un,*); read(un,*)
+           allocate(d(p%cols))
+           i_first_to_delete = 1
+           do i=1,n_lines_in_file-3
+             read(un,*,iostat=stat) d
+             if (TMP%t.gt.d(1)) then
+               i_first_to_delete = i
+             endif
+             if (stat .lt. 0) then
+               exit
+             endif
+           enddo
+           close(un)
+           un = open_to_read_write(str(p%tec_dir),str(p%tec_name))
+           read(un,*); read(un,*); read(un,*)
+           if (i_first_to_delete.ne.TMP%n_step) then
+             do i=1,i_first_to_delete; read(un,*); enddo
+             do i=i_first_to_delete+1,n_lines_in_file-3; write(un,*) ''; enddo
            endif
-           if (stat .lt. 0) then
-             i_EOF = i
-             exit
-           endif
-         enddo
-         close(un)
-         un = open_to_read_write(str(p%tec_dir),str(p%tec_name))
-         read(un,*); read(un,*); read(un,*)
-         if (i_first_to_delete.ne.TMP%n_step) then
-           do i=1,i_first_to_delete; read(un,*); enddo
-           do i=i_first_to_delete+1,i_EOF; write(un,*) ''; enddo
+           deallocate(d)
+           close(un)
+           i_last = int(i_first_to_delete)+3
          endif
-         deallocate(d)
-         close(un)
-         i_last = int(i_first_to_delete)+3
        end subroutine
 
        function get_last_data_point_location(tec_dir,tec_name) result(i_last)
