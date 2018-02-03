@@ -12,8 +12,6 @@
 
      integer,parameter :: n_points = 58
      real(cp),parameter :: micro_seconds_to_seconds = 10.0_cp**(-6.0_cp)
-     ! real(cp) :: t_c = 0.00790207929237_cp
-     real(cp) :: t_c = 0.0047_cp
 
      contains
 
@@ -29,11 +27,12 @@
        call B_poloidal_mean(B); B = B/B_maxval()
      end subroutine
 
-     subroutine time_normalized(t)
+     subroutine time_normalized(t,t_plasma)
        implicit none
        real(cp),dimension(n_points),intent(inout) :: t
+       real(cp),intent(in) :: t_plasma
        call time(t)
-       t = t*micro_seconds_to_seconds/t_c
+       t = t*micro_seconds_to_seconds/t_plasma
      end subroutine
 
      function B_maxval() result(B_max)

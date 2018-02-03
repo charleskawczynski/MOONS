@@ -14,14 +14,15 @@
 
        contains
 
-       subroutine assign_B0_vs_t(B0,TMP)
+       subroutine assign_B0_vs_t(B0,TMP,t_plasma)
          implicit none
          type(VF),intent(inout) :: B0
          type(time_marching_params),intent(in) :: TMP
+         real(cp),intent(in) :: t_plasma
          real(cp),dimension(n_data_points) :: B_p_all,B_r_all,t_all
          real(cp) :: time
          ! Non-dimensionalize
-         call time_normalized(t_all)
+         call time_normalized(t_all,t_plasma)
          time = TMP%t+t_all(i_start)
          call B_r_mean_normalized(B_r_all)
          call B_p_mean_normalized(B_p_all)
@@ -39,13 +40,14 @@
          ! call assign(B0%x,get_B_from_t(t_all,B_p_all,time))
        end subroutine
 
-       subroutine assign_dB0_dt_vs_t(dB0_dt,TMP)
+       subroutine assign_dB0_dt_vs_t(dB0_dt,TMP,t_plasma)
          implicit none
          type(VF),intent(inout) :: dB0_dt
          type(time_marching_params),intent(in) :: TMP
+         real(cp),intent(in) :: t_plasma
          real(cp),dimension(n_data_points) :: B_p_all,B_r_all,t_all
          real(cp) :: time
-         call time_normalized(t_all)
+         call time_normalized(t_all,t_plasma)
          time = TMP%t+t_all(i_start)
          call B_r_mean_normalized(B_r_all)
          call B_p_mean_normalized(B_p_all)

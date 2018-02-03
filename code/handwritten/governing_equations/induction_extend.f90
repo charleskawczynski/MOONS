@@ -152,7 +152,7 @@
          call init_phi_field(ind%phi,SP)
          call assign(ind%Bnm1,ind%B)
 
-         if (SP%IT%unsteady_B0%add) call assign_B0_vs_t(ind%B0,SP%VS%B%TMP)
+         if (SP%IT%unsteady_B0%add) call assign_B0_vs_t(ind%B0,SP%VS%B%TMP,SP%DP%t_plasma)
          call multiply(ind%B0,SP%IT%B_applied%scale)
 
          write(*,*) '     B-field initialized'
@@ -331,9 +331,9 @@
          call face2cellCenter(ind%temp_CC_VF,ind%jCrossB,ind%m)
          call magnitude(ind%temp_CC,ind%temp_CC_VF)
          call export(SP%PS_ind%max_JxB  ,TMP,amax(ind%temp_CC))
-         call export(SP%PS_ind%max_JxB_x,TMP,amax(ind%jCrossB%x))
-         call export(SP%PS_ind%max_JxB_y,TMP,amax(ind%jCrossB%y))
-         call export(SP%PS_ind%max_JxB_z,TMP,amax(ind%jCrossB%z))
+         call export(SP%PS_ind%max_JxB_x,TMP,amax(ind%temp_CC_VF%x))
+         call export(SP%PS_ind%max_JxB_y,TMP,amax(ind%temp_CC_VF%y))
+         call export(SP%PS_ind%max_JxB_z,TMP,amax(ind%temp_CC_VF%z))
 
          scale = SP%DP%JE_scale
          call edge2cellCenter(ind%temp_CC_VF,ind%J,ind%m,ind%temp_F1)

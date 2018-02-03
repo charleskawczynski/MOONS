@@ -70,7 +70,9 @@ ifeq ($(CLUSTER),'PC_CK')
 endif
 
 ifeq ($(CLUSTER),'Workstation_CK')
-	TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)BC_full$(PS)Shatrov_inspired$(PS)M4
+	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)BC_full$(PS)Shatrov_inspired$(PS)M4
+	TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)PD$(PS)fusion
+	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)PD$(PS)fusion_solid
 endif
 
 ifeq ($(CLUSTER),'Hoffman2')

@@ -1,3 +1,4 @@
-gmake clean
+make clean
 cls
-gmake run
+make clean $(SRC_DIR)$(PS)sim_params$(PS)
+make run

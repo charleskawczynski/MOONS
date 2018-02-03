@@ -1,0 +1,22 @@
+\documentclass[11pt]{article}
+\newcommand{\PSCHAIN}{..}
+\input{../prepend_PS_chain}
+\newcommand{\rootdir}{\PSCHAIN}
+\input{\PSCHAIN/includes/includes}
+
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+The total dimensional force per unit volume is
+\begin{equation}\begin{aligned}
+F_{\PH} &= \J \CROSS \B \\
+        &= J_c B_c \J^* \CROSS \B^* \\
+        &= \sigma U_c B_c^2 \J^* \CROSS \B^* \\
+        &= \sigma U_c B_c^2 \left(\frac{\rho U_c}{\sigma B_c^2 L_c} N \right) \J^* \CROSS \B^* \\
+        &= \left(\frac{\rho U_c^2}{L_c} \right) N \J^* \CROSS \B^* \\
+\end{aligned}\end{equation}
+
+\end{document}
