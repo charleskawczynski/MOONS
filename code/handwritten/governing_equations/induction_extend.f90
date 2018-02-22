@@ -61,6 +61,7 @@
        use induction_solver_mod
        use preconditioners_mod
        use PCG_solver_extend_mod
+       use FFT_solver_extend_mod
        use matrix_free_params_mod
        use matrix_free_operators_mod
        use induction_aux_mod
@@ -138,9 +139,15 @@
          call init_CC(ind%divB             ,ind%m,0.0_cp)
          call init_Node(ind%divJ           ,ind%m,0.0_cp)
          call init_CC(ind%sigmaInv_CC      ,ind%m,0.0_cp)
+         call init_CC(ind%cell_volume      ,ind%m,0.0_cp)
+         call init_CC(ind%cell_inverse_area,ind%m,0.0_cp)
+         call init_CC(ind%stresses         ,ind%m,0.0_cp)
+         call init_CC(ind%temp_CC_TF       ,ind%m,0.0_cp)
 
          write(*,*) '     Fields allocated'
 
+         call volume(ind%cell_volume,ind%m)
+         call inverse_area(ind%cell_inverse_area,ind%m)
          ! --- Initialize Fields ---
          call init_B_BCs(ind%B,ind%m,SP);     write(*,*) '     B BCs initialized'
          call update_BC_vals(ind%B)
@@ -183,6 +190,7 @@
          call compute_J_ind(ind,SP)
          call compute_Btot(ind,SP)
          call compute_JCrossB_ind(ind,SP)
+         call compute_stresses_ind(ind,SP)
 
          ! ********** SET CLEANING PROCEDURE SOLVER SETTINGS *************
 
@@ -205,6 +213,9 @@
          ind%m,SP%VS%phi%ISP,SP%VS%phi%MFP,ind%phi,ind%phi,TF_face,str(DT%phi%residual),'phi',.false.,.false.)
          call delete(TF_face)
          write(*,*) '     PCG Solver initialized for phi'
+
+         call init(ind%FFT_cleanB,ind%phi,ind%m,SP%GP%FFT_dir,'FFT_phi')
+         write(*,*) '     FFT Solver initialized for phi'
 
          write(*,*) '     Finished'
        end subroutine
@@ -281,6 +292,17 @@
              call export_processed(ind%m,ind%J ,str(DT%J%field),'J',1)
              call export_raw(ind%m,ind%divB ,str(DT%B%field),'divB',0)
 
+             call export_raw(ind%m,ind%U_E%x,str(DT%B%field),'U_E_x',1)
+             call export_raw(ind%m,ind%U_E%y,str(DT%B%field),'U_E_y',1)
+             call export_raw(ind%m,ind%U_E%z,str(DT%B%field),'U_E_z',1)
+
+             call export_raw(ind%m,ind%jCrossB ,str(DT%jCrossB%field),'jCrossB',0)
+             call export_processed(ind%m,ind%jCrossB ,str(DT%jCrossB%field),'jCrossB',1)
+
+             call export_processed(ind%m,ind%stresses%x,str(DT%stresses%field),'stresses_x',1)
+             call export_processed(ind%m,ind%stresses%y,str(DT%stresses%field),'stresses_y',1)
+             call export_processed(ind%m,ind%stresses%z,str(DT%stresses%field),'stresses_z',1)
+
              if (SP%EL%export_symmetric) then
              call export_processed(ind%m,ind%B,str(DT%B%field),'B',1,anti_mirror(SP%MP))
              call export_processed(ind%m,ind%J,str(DT%J%field),'J',1,SP%MP)
@@ -311,10 +333,9 @@
 
          scale = SP%DP%ME_scale
 
-         call add(ind%temp_F1,ind%B,ind%B0)
          do i=1,3
            if (i.eq.1) then
-             call face2cellCenter(ind%temp_CC_VF,ind%temp_F1,ind%m)
+             call face2cellCenter(ind%temp_CC_VF,ind%Btot,ind%m)
            elseif (i.eq.2) then
              call face2cellCenter(ind%temp_CC_VF,ind%B0,ind%m)
            elseif (i.eq.3) then
@@ -329,11 +350,21 @@
          enddo
 
          call face2cellCenter(ind%temp_CC_VF,ind%jCrossB,ind%m)
+         call multiply(ind%temp_CC_VF,ind%cell_volume)
          call magnitude(ind%temp_CC,ind%temp_CC_VF)
          call export(SP%PS_ind%max_JxB  ,TMP,amax(ind%temp_CC))
-         call export(SP%PS_ind%max_JxB_x,TMP,amax(ind%jCrossB%x))
-         call export(SP%PS_ind%max_JxB_y,TMP,amax(ind%jCrossB%y))
-         call export(SP%PS_ind%max_JxB_z,TMP,amax(ind%jCrossB%z))
+         call export(SP%PS_ind%max_JxB_x,TMP,amax(ind%temp_CC_VF%x))
+         call export(SP%PS_ind%max_JxB_y,TMP,amax(ind%temp_CC_VF%y))
+         call export(SP%PS_ind%max_JxB_z,TMP,amax(ind%temp_CC_VF%z))
+
+         call export(SP%PS_ind%max_stress,TMP,amax(ind%stresses))
+
+         call assign(ind%CC_VF_fluid,0.0_cp)
+         call assign(ind%temp_CC_TF,ind%stresses)
+         call embedCC(ind%temp_CC_TF%x,ind%CC_VF_fluid,ind%MD_fluid)
+         call embedCC(ind%temp_CC_TF%y,ind%CC_VF_fluid,ind%MD_fluid)
+         call embedCC(ind%temp_CC_TF%z,ind%CC_VF_fluid,ind%MD_fluid)
+         call export(SP%PS_ind%max_stress_walls,TMP,amax(ind%temp_CC_TF))
 
          scale = SP%DP%JE_scale
          call edge2cellCenter(ind%temp_CC_VF,ind%J,ind%m,ind%temp_F1)
@@ -357,8 +388,16 @@
          type(sim_params),intent(in) :: SP
          type(time_marching_params),intent(in) :: TMP
          type(dir_tree),intent(in) :: DT
-         call export_processed(ind%m,ind%B,str(DT%B%unsteady),'B',1,TMP,SP%VS%B%unsteady_planes)
+         call export_processed(ind%m,ind%jCrossB,str(DT%jCrossB%unsteady),'jCrossB',1,TMP,SP%VS%jCrossB%unsteady_planes)
+         call export_processed(ind%m,ind%B%x,str(DT%B%unsteady),'B_x',1,TMP,SP%VS%B%unsteady_planes)
+         call export_processed(ind%m,ind%Btot%x,str(DT%B%unsteady),'Btot_x',1,TMP,SP%VS%B%unsteady_planes)
+         call export_processed(ind%m,ind%stresses%x,str(DT%stresses%unsteady),'stresses_x',1,TMP,SP%VS%stresses%unsteady_planes)
+         call export_processed(ind%m,ind%stresses%y,str(DT%stresses%unsteady),'stresses_y',1,TMP,SP%VS%stresses%unsteady_planes)
+         call export_processed(ind%m,ind%stresses%z,str(DT%stresses%unsteady),'stresses_z',1,TMP,SP%VS%stresses%unsteady_planes)
          call export_processed(ind%m,ind%J,str(DT%J%unsteady),'J',1,TMP,SP%VS%B%unsteady_planes)
+
+         ! call export_processed(ind%m,ind%B,str(DT%B%unsteady),'B',1,TMP,SP%VS%B%unsteady_planes)
+         ! call export_processed(ind%m,ind%J,str(DT%J%unsteady),'J',1,TMP,SP%VS%B%unsteady_planes)
        end subroutine
 
        subroutine export_unsteady_3D_ind(ind,SP,TMP,DT)
@@ -384,8 +423,18 @@
          implicit none
          type(induction),intent(inout) :: ind
          type(sim_params),intent(in) :: SP
-         call compute_jCrossB(ind%jCrossB,ind%Btot,ind%J,ind%m,SP%MT%JCrossB%scale,&
+         call compute_JCrossB(ind%jCrossB,ind%Btot,ind%J,ind%m,SP%MT%JCrossB%scale,&
          ind%temp_CC,ind%temp_F1_TF,ind%temp_F2_TF)
+         ! call compute_B_dot_gradB(ind%jCrossB,ind%B,ind%m,SP%MT%JCrossB%scale,&
+         ! ind%temp_CC,ind%temp_F1,ind%temp_F2,ind%temp_E_TF)
+       end subroutine
+
+       subroutine compute_stresses_ind(ind,SP)
+         implicit none
+         type(induction),intent(inout) :: ind
+         type(sim_params),intent(in) :: SP
+         call compute_Lorentz_stresses(ind%stresses,ind%Btot,ind%m,&
+         ind%cell_volume,SP%DP%Al,ind%temp_CC_VF)
        end subroutine
 
        subroutine set_sigma_inv_ind(ind,SP)
@@ -432,6 +481,10 @@
            call Euler_time_RK_sources(ind%PCG_B,ind%PCG_cleanB,ind%B,ind%Bstar,ind%Bnm1,&
            ind%phi,F,Fnm1,L,ind%m,TMP,TMP%RKP,ind%temp_F1,ind%temp_CC,&
            EF%unsteady_0D%export_now)
+         case (9)
+           call Euler_time_AB2_sources_FFT(ind%PCG_B,ind%FFT_cleanB,ind%B,ind%Bstar,ind%Bnm1,&
+           ind%phi,F,Fnm1,ind%m,TMP,ind%temp_F1,ind%L,ind%temp_CC,&
+           EF%unsteady_0D%export_now)
          case default; stop 'Error: bad solveBMethod input solve_induction in induction.f90'
          end select
          if (SP%SCP%embed_B_interior) call embedFace(ind%B,ind%B_interior,ind%MD_sigma)
@@ -440,6 +493,7 @@
          call compute_J_ind(ind,SP)
          call compute_Btot(ind,SP)
          call compute_JCrossB_ind(ind,SP)
+         call compute_stresses_ind(ind,SP)
        end subroutine
 
        subroutine compute_Btot(ind,SP)

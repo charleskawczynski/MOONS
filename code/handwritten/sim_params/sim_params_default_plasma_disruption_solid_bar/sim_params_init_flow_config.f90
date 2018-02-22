@@ -61,7 +61,7 @@
        call init(SP%IT%B_applied       ,T, 1.0_cp           ) ! B0 = scale*B0
        call init(SP%IT%current         ,T, 1.0_cp/SP%DP%Rem ) ! J = scale curl(B)
        call init(SP%IT%advection       ,F, 1.0_cp/SP%DP%Rem ) ! For Rem ne 1 in Bandaru
-       call init(SP%IT%advection       ,T, 1.0_cp           )
+       call init(SP%IT%advection       ,F, 1.0_cp           )
        call init(SP%IT%diffusion       ,T, -SP%VS%B%MFP%beta) ! since LHS and J includes scale
        call init(SP%IT%diffusion_linear,F, -SP%VS%B%MFP%beta) ! since LHS and J includes scale
        call init(SP%IT%unsteady_B0     ,T, -1.0_cp          ) ! since RHS

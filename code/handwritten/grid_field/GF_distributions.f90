@@ -1,6 +1,7 @@
       module GF_distributions_mod
         use grid_field_mod
         use GF_assign_mod
+        use GF_assign_ghost_mod
         use GF_assign_plane_mod
         use GF_multiply_mod
         use grid_mod
@@ -13,6 +14,7 @@
         implicit none
         private
 
+        public :: inverse_area
         public :: volume
         public :: sine_waves
         public :: sinh_waves
@@ -35,6 +37,8 @@
 
         interface volume;                module procedure volume_DL_GF;                    end interface
         interface volume;                module procedure volume_GF;                       end interface
+        interface inverse_area;          module procedure inverse_area_DL_GF;              end interface
+        interface inverse_area;          module procedure inverse_area_GF;                 end interface
         interface sine_waves;            module procedure sine_waves_GF;                   end interface
         interface sinh_waves;            module procedure sinh_waves_GF;                   end interface
         interface cosine_waves;          module procedure cosine_waves_GF;                 end interface
@@ -88,6 +92,46 @@
           type(grid_field),intent(inout) :: u
           type(grid),intent(in) :: g
           call volume(u,g,DL_CC())
+        end subroutine
+
+        subroutine inverse_area_DL_GF(u,g,DL,dir)
+          ! Computes: volume(x(i),y(j),z(k)) = dx(i) dy(j) dz(k)
+          implicit none
+          type(grid_field),intent(inout) :: u
+          type(grid),intent(in) :: g
+          type(data_location),intent(in) :: DL
+          integer,intent(in) :: dir
+          type(array),dimension(3) :: dh
+          integer :: i,j,k
+          integer,dimension(3) :: e
+          call assign(u,0.0_cp)
+          call get_coordinates_dual_dh(dh,g,DL)
+          e = N_eye(DL)
+          dh(dir)%f = 1.0_cp
+
+#ifdef _PARALLELIZE_GF_
+          !$OMP PARALLEL DO SHARED(g)
+
+#endif
+          do k=2,u%s(3)-1; do j=2,u%s(2)-1; do i=2,u%s(1)-1
+              u%f(i,j,k) = 1.0_cp/(dh(1)%f(i-e(1))*&
+                                   dh(2)%f(j-e(2))*&
+                                   dh(3)%f(k-e(3)))
+          enddo; enddo; enddo
+#ifdef _PARALLELIZE_GF_
+          !$OMP END PARALLEL DO
+
+#endif
+          do i=1,3; call delete(dh(i)); enddo
+          call assign_ghost_all(u,0.0_cp)
+        end subroutine
+
+        subroutine inverse_area_GF(u,g,dir)
+          implicit none
+          type(grid_field),intent(inout) :: u
+          type(grid),intent(in) :: g
+          integer,intent(in) :: dir
+          call inverse_area(u,g,DL_CC(),dir)
         end subroutine
 
         subroutine sine_waves_GF(f,g,wavenum,phi,DL)

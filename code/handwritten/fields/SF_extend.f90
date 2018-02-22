@@ -29,6 +29,7 @@
 
         public :: get_DL
 
+        public :: inverse_area
         public :: volume
         public :: sine_waves
         public :: cosine_waves
@@ -47,6 +48,7 @@
 
         public :: multiply_volume
         public :: mean_along_dir
+        public :: amax_diff
         public :: subtract_mean_along_dir
 
         public :: assign_BCs
@@ -141,6 +143,8 @@
 
         interface multiply_volume;          module procedure multiply_volume_SF;           end interface
         interface mean_along_dir;           module procedure mean_along_dir_SF;            end interface
+        interface amax_diff;                module procedure amax_diff_SF;                 end interface
+        interface amax_diff;                module procedure amax_diff_dir_SF;             end interface
         interface subtract_mean_along_dir;  module procedure subtract_mean_along_dir_SF;   end interface
 
         interface is_CC;                    module procedure is_CC_SF;                     end interface
@@ -150,6 +154,7 @@
 
         interface get_DL;                   module procedure get_DL_SF;                    end interface
 
+        interface inverse_area;             module procedure inverse_area_SF;              end interface
         interface volume;                   module procedure volume_SF;                    end interface
         interface sine_waves;               module procedure sine_waves_SF;                end interface
         interface cosine_waves;             module procedure cosine_waves_SF;              end interface
@@ -575,6 +580,18 @@
           u%vol = sum(u)
         end subroutine
 
+        subroutine inverse_area_SF(u,m,dir)
+          implicit none
+          type(SF),intent(inout) :: u
+          type(mesh),intent(in) :: m
+          integer,intent(in) :: dir
+          integer :: i
+          call assign(u,0.0_cp)
+          do i=1,m%s
+            call inverse_area(u%BF(i),m%B(i),u%DL,dir)
+          enddo
+        end subroutine
+
         subroutine sine_waves_SF(u,m,wavenum,phi)
           implicit none
           type(SF),intent(inout) :: u
@@ -982,6 +999,33 @@
          case default; stop 'Error: dir must = 1,2,3 in mean_along_dir in SF.f90'
          end select
        end subroutine
+
+       function amax_diff_SF(x) result(x_amax_diff)
+         implicit none
+         type(SF),intent(in) :: x
+         real(cp),dimension(3) :: x_amax_diff
+         real(cp),dimension(3) :: temp
+         integer :: t
+         x_amax_diff = 0.0_cp
+         do t=1,x%s
+         temp = amax_diff(x%BF(t)%GF)
+         x_amax_diff(1) = maxval((/x_amax_diff(1),temp(1)/))
+         x_amax_diff(2) = maxval((/x_amax_diff(2),temp(2)/))
+         x_amax_diff(3) = maxval((/x_amax_diff(3),temp(3)/))
+         enddo
+       end function
+
+       function amax_diff_dir_SF(x,dir) result(x_amax_diff)
+         implicit none
+         type(SF),intent(in) :: x
+         integer,intent(in) :: dir
+         real(cp) :: x_amax_diff
+         integer :: t
+         x_amax_diff = 0.0_cp
+         do t=1,x%s
+         x_amax_diff = maxval((/x_amax_diff,amax_diff(x%BF(t)%GF,dir)/))
+         enddo
+       end function
 
        subroutine subtract_mean_along_dir_SF(x,m,dir,x_temp)
          implicit none

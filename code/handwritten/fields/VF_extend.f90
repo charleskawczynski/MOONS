@@ -48,6 +48,7 @@
         public :: get_any_Robin
         public :: get_any_Prescribed
 
+        public :: inverse_area
         public :: volume
         public :: sine_waves
         public :: cosine_waves
@@ -134,6 +135,7 @@
         interface init_Node;                module procedure init_Node_VF_assign;           end interface
         interface multiply_volume;          module procedure multiply_volume_VF;            end interface
 
+        interface inverse_area;             module procedure inverse_area_VF;               end interface
         interface volume;                   module procedure volume_VF;                     end interface
         interface sine_waves;               module procedure sine_waves_VF;                 end interface
         interface cosine_waves;             module procedure cosine_waves_VF;               end interface
@@ -462,6 +464,15 @@
           type(VF),intent(inout) :: u
           type(mesh),intent(in) :: m
           call volume(u%x,m); call volume(u%y,m); call volume(u%z,m)
+        end subroutine
+
+        subroutine inverse_area_VF(u,m)
+          implicit none
+          type(VF),intent(inout) :: u
+          type(mesh),intent(in) :: m
+          call inverse_area(u%x,m,1)
+          call inverse_area(u%y,m,2)
+          call inverse_area(u%z,m,3)
         end subroutine
 
         subroutine sine_waves_VF(u,m,wavenum,phi)

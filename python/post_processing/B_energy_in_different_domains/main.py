@@ -17,10 +17,11 @@ PS = '\\'; print('PS = '+PS+'\n')
 root_folder = 'F:'+PS+'Property_of_C_Kawczynski'+PS
 root = root_folder+'SIMS'+PS+'BC_full'+PS+'results_from_prospectus'+PS
 target = root_folder+'SIMS'+PS+'BC_full'+PS+'results_from_prospectus'+PS+'post_processed'+PS
+target = 'F:'+PS+'Property_of_C_Kawczynski'+PS+'SIMS'+PS+'BC_full'+PS+'results_from_prospectus'+PS
 print('root = '+root)
 print('target = '+target)
 
-Re_m = [1,100,200,300,400,500,600,700,800,900,1000]
+Re_m = [1,100,200,300,400,500,600,700,800,900,1000,1500,2000]
 # Re_m = [0,1,100,200,300,400,500,600,700,800,900,1000]
 Re_m_s = [str(x) for x in Re_m]
 LDC_path = PS+'out'+PS+'LDC'

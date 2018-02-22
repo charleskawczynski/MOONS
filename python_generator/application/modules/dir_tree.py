@@ -60,6 +60,6 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('PS','string',priv)
 	g.module[m_name].add_prop('tar','string',priv)
 
-	g.module[m_name].add_prop(['U','B','J','T','p','phi','rho','test'],'dir_group',priv)
+	g.module[m_name].add_prop(['U','B','jCrossB','stresses','J','T','p','phi','rho','test'],'dir_group',priv)
 
 	return g

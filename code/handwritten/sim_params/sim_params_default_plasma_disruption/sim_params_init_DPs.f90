@@ -19,13 +19,13 @@
        SP%DP%dtime                   = 1.0_cp*pow(-4)
        SP%DP%t_start                 = 0.0_cp
 
-       SP%DP%t_final                 = 2000.0_cp
+       SP%DP%t_final                 = 10.0_cp
        ! SP%DP%t_final                 = 3.0_cp*SP%DP%dtime ! for testing
 
-       SP%DP%Re                      = 11769054.2652_cp
+       SP%DP%Re                      = 58845271.32_cp
        ! SP%DP%N                       = 1.0_cp
-       SP%DP%Ha                      = 2645.75131106_cp
-       SP%DP%Rem                     = 1.1131984703
+       SP%DP%Ha                      = 13228.75_cp
+       SP%DP%Rem                     = 5.56_cp
        ! SP%DP%Q                       = 8.0_cp*pow(-1)
        ! SP%DP%Ha                      = 5.0_cp*pow(2)
        ! SP%DP%Ha                      = 10.0_cp*pow(3)

@@ -79,8 +79,6 @@
          integer(li) :: i_last
          p%restart = .true.
          call truncate_data_in_open_file(p,TMP,i_last)
-         i_last = get_last_data_point_location(str(p%tec_dir),str(p%tec_name))
-         ! p%un = open_to_append(p%tec_dir,p%tec_name,i_last) ! Does not work yet.
          p%un = open_to_append(str(p%tec_dir),str(p%tec_name))
          call export(p) ! So that restart is passed to next sim.
        end subroutine
@@ -205,26 +203,5 @@
            i_last = int(i_first_to_delete)+3
          endif
        end subroutine
-
-       function get_last_data_point_location(tec_dir,tec_name) result(i_last)
-         implicit none
-         character(len=*),intent(in) :: tec_dir,tec_name
-         integer(li) :: i,i_EOF
-         integer :: i_last
-         integer :: un,stat
-         logical :: L
-         un = open_to_read(tec_dir,tec_name)
-         i_EOF = 1
-         i = 1
-         L = .true.
-         do while (L)
-           read(un,*,iostat=stat)
-           i_EOF = i
-           L = .not.(stat .lt. 0)
-           i=i+1
-         enddo
-         close(un)
-         i_last = int(i_EOF)
-       end function
 
        end module

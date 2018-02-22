@@ -3,6 +3,7 @@
        ! ***************************************************
        module momentum_mod
        use IO_tools_mod
+       use FFT_Solver_SF_mod
        use PCG_solver_SF_mod
        use PCG_solver_VF_mod
        use SF_mod
@@ -46,6 +47,7 @@
          type(mesh) :: m
          type(PCG_Solver_SF) :: PCG_P
          type(PCG_Solver_VF) :: PCG_U
+         type(FFT_Solver_SF) :: FFT_P
          type(time_statistics_VF) :: TS
          type(SF) :: p
          type(SF) :: divU
@@ -78,6 +80,7 @@
          call init(this%m,that%m)
          call init(this%PCG_P,that%PCG_P)
          call init(this%PCG_U,that%PCG_U)
+         call init(this%FFT_P,that%FFT_P)
          call init(this%TS,that%TS)
          call init(this%p,that%p)
          call init(this%divU,that%divU)
@@ -106,6 +109,7 @@
          call delete(this%m)
          call delete(this%PCG_P)
          call delete(this%PCG_U)
+         call delete(this%FFT_P)
          call delete(this%TS)
          call delete(this%p)
          call delete(this%divU)
@@ -135,6 +139,7 @@
          call display(this%m,un)
          call display(this%PCG_P,un)
          call display(this%PCG_U,un)
+         call display(this%FFT_P,un)
          call display(this%TS,un)
          call display(this%p,un)
          call display(this%divU,un)
@@ -164,6 +169,7 @@
          call display(this%m,un)
          call display(this%PCG_P,un)
          call display(this%PCG_U,un)
+         call display(this%FFT_P,un)
          call display(this%TS,un)
          call display(this%p,un)
          call display(this%divU,un)
@@ -215,6 +221,7 @@
          call export(this%m,un)
          call export(this%PCG_P,un)
          call export(this%PCG_U,un)
+         call export(this%FFT_P,un)
          call export(this%TS,un)
          call export(this%p,un)
          call export(this%divU,un)
@@ -245,6 +252,7 @@
          call import(this%m,un)
          call import(this%PCG_P,un)
          call import(this%PCG_U,un)
+         call import(this%FFT_P,un)
          call import(this%TS,un)
          call import(this%p,un)
          call import(this%divU,un)
@@ -307,6 +315,7 @@
          call suppress_warnings(this)
          call set_IO_dir(this%PCG_P,dir//'PCG_P'//fortran_PS)
          call set_IO_dir(this%PCG_U,dir//'PCG_U'//fortran_PS)
+         call set_IO_dir(this%FFT_P,dir//'FFT_P'//fortran_PS)
          call set_IO_dir(this%TS,dir//'TS'//fortran_PS)
          call set_IO_dir(this%p,dir//'p'//fortran_PS)
          call set_IO_dir(this%divU,dir//'divU'//fortran_PS)
@@ -333,6 +342,7 @@
          call make_dir_quiet(dir)
          call make_IO_dir(this%PCG_P,dir//'PCG_P'//fortran_PS)
          call make_IO_dir(this%PCG_U,dir//'PCG_U'//fortran_PS)
+         call make_IO_dir(this%FFT_P,dir//'FFT_P'//fortran_PS)
          call make_IO_dir(this%TS,dir//'TS'//fortran_PS)
          if (get_necessary_for_restart(this%p)) then
            call make_IO_dir(this%p,dir//'p'//fortran_PS)
@@ -390,6 +400,7 @@
          call export_primitives(this,un)
          call export_structured(this%PCG_P,dir//'PCG_P'//fortran_PS)
          call export_structured(this%PCG_U,dir//'PCG_U'//fortran_PS)
+         call export_structured(this%FFT_P,dir//'FFT_P'//fortran_PS)
          call export_structured(this%TS,dir//'TS'//fortran_PS)
          if (get_necessary_for_restart(this%p)) then
            call export_structured(this%p,dir//'p'//fortran_PS)
@@ -449,6 +460,7 @@
          call import_primitives(this,un)
          call import_structured(this%PCG_P,dir//'PCG_P'//fortran_PS)
          call import_structured(this%PCG_U,dir//'PCG_U'//fortran_PS)
+         call import_structured(this%FFT_P,dir//'FFT_P'//fortran_PS)
          call import_structured(this%TS,dir//'TS'//fortran_PS)
          if (get_necessary_for_restart(this%p)) then
            call import_structured(this%p,dir//'p'//fortran_PS)

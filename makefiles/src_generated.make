@@ -83,6 +83,7 @@ SRCS_F+=\
 	$(SRC_DIR_GENERATED)$(PS)PCG$(PS)norms.f90\
 	$(SRC_DIR_GENERATED)$(PS)PCG$(PS)PCG_solver_SF.f90\
 	$(SRC_DIR_GENERATED)$(PS)PCG$(PS)PCG_solver_VF.f90\
+	$(SRC_DIR_GENERATED)$(PS)FFT_solver$(PS)FFT_Solver_SF.f90\
 	$(SRC_DIR_GENERATED)$(PS)governing_equations$(PS)momentum.f90\
 	$(SRC_DIR_GENERATED)$(PS)governing_equations$(PS)induction.f90\
 	$(SRC_DIR_GENERATED)$(PS)governing_equations$(PS)energy.f90\

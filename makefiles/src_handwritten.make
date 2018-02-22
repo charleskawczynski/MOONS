@@ -96,6 +96,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_plane_sum.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_plane_mean.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_mean_along_dir.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_amax_diff.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_symmetry$(PS)GF_symmetry_error.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_symmetry$(PS)GF_mirror_about_plane.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_norms_weights.f90\
@@ -172,6 +173,8 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG_aux.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG_solver_algorithm.f90\
 	$(SRC_DIR)$(PS)PCG$(PS)PCG_solver_extend.f90\
+	$(SRC_DIR)$(PS)FFT_solver$(PS)FFT_algorithm.f90\
+	$(SRC_DIR)$(PS)FFT_solver$(PS)FFT_solver_extend.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)clean_divergence.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)time_marching_methods.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)time_marching_methods_SF.f90\

@@ -187,13 +187,13 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)sim_params$(PS)$(sim_params_default)$(PS)sim_params_init_flow_config.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)$(sim_params_default)$(PS)sim_params_init_logicals.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)$(sim_params_default)$(PS)sim_params_init_solver_config.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_amax_diff.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_assign_ghost.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_assign_ghost_periodic.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_assign_wall.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_aux.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_3D$(PS)GF_cross_product.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_diagonals.f90\
-	$(SRC_DIR)$(PS)grid_field$(PS)GF_distributions.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_interp$(PS)GF_interp.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_mean_along_dir.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_2D$(PS)GF_multiply_wall.f90\
@@ -201,6 +201,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_MG$(PS)GF_restrict.f90\
 	$(SRC_DIR)$(PS)sim_params$(PS)$(sim_params_default)$(PS)sim_params_init_mesh.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_CFL_number$(PS)GF_CFL_number.f90\
+	$(SRC_DIR)$(PS)grid_field$(PS)GF_distributions.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_symmetry$(PS)GF_mirror_about_plane.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_no$(RM)s.f90\
 	$(SRC_DIR)$(PS)grid_field$(PS)GF_symmetry$(PS)GF_symmetry_error.f90\
@@ -223,6 +224,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)block_field$(PS)block_field_extend.f90\
 	$(SRC_DIR_GENERATED)$(PS)fields$(PS)SF.f90\
 	$(SRC_DIR)$(PS)mesh_domain$(PS)mesh_domain_extend.f90\
+	$(SRC_DIR_GENERATED)$(PS)FFT_solver$(PS)FFT_Solver_SF.f90\
 	$(SRC_DIR)$(PS)fields$(PS)SF_extend.f90\
 	$(SRC_DIR_GENERATED)$(PS)fields$(PS)VF.f90\
 	$(SRC_DIR_GENERATED)$(PS)time_statistics$(PS)time_statistics_SF.f90\
@@ -290,6 +292,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)solvers$(PS)preconditioners$(PS)preconditioners.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)E_K_budget_te$(RM)s.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)E_M_budget_te$(RM)s.f90\
+	$(SRC_DIR)$(PS)FFT_solver$(PS)FFT_algorithm.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)FFT$(PS)FFT_poisson.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)GS$(PS)GS_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)curl_curl_B.f90\
@@ -302,6 +305,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)ops$(PS)ops_advect.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)momentum$(PS)E_K_budget.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)E_M_budget.f90\
+	$(SRC_DIR)$(PS)FFT_solver$(PS)FFT_solver_extend.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)Jacobi$(PS)Jacobi_solver.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)PCG$(PS)PCG_aux.f90\
 	$(SRC_DIR)$(PS)solvers$(PS)induction$(PS)induction_sources.f90\

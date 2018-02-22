@@ -26,17 +26,17 @@
          call B_r_mean_normalized(B_r_all)
          call B_p_mean_normalized(B_p_all)
 
-         ! Old coordinate system
-         call assign(B0%x,5.0_cp)
-         ! call assign(B0%y,get_B_from_t(t_all,B_r_all,time))
-         call assign(B0%y,0.0_cp)
-         call assign(B0%z,get_B_from_t(t_all,B_p_all,time))
+         ! ! Old coordinate system
+         ! call assign(B0%x,5.0_cp)
+         ! ! call assign(B0%y,get_B_from_t(t_all,B_r_all,time))
+         ! call assign(B0%y,0.0_cp)
+         ! call assign(B0%z,get_B_from_t(t_all,B_p_all,time))
 
          ! New coordinate system
-         ! call assign(B0%z,5.0_cp)
-         ! call assign(B0%y,0.0_cp)
+         call assign(B0%z,5.0_cp)
+         call assign(B0%y,0.0_cp)
          ! call assign(B0%y,get_B_from_t(t_all,B_r_all,time))
-         ! call assign(B0%x,get_B_from_t(t_all,B_p_all,time))
+         call assign(B0%x,get_B_from_t(t_all,B_p_all,time))
        end subroutine
 
        subroutine assign_dB0_dt_vs_t(dB0_dt,TMP)
@@ -50,17 +50,17 @@
          call B_r_mean_normalized(B_r_all)
          call B_p_mean_normalized(B_p_all)
 
-         ! Old coordinate system
-         call assign(dB0_dt%x,0.0_cp)
-         ! call assign(dB0_dt%y,get_dB0_dt_from_t(t_all,B_r_all,time))
-         call assign(dB0_dt%y,0.0_cp)
-         call assign(dB0_dt%z,get_dB0_dt_from_t(t_all,B_p_all,time))
+         ! ! Old coordinate system
+         ! call assign(dB0_dt%x,0.0_cp)
+         ! ! call assign(dB0_dt%y,get_dB0_dt_from_t(t_all,B_r_all,time))
+         ! call assign(dB0_dt%y,0.0_cp)
+         ! call assign(dB0_dt%z,get_dB0_dt_from_t(t_all,B_p_all,time))
 
          ! New coordinate system
-         ! call assign(dB0_dt%x,get_dB0_dt_from_t(t_all,B_p_all,time))
+         call assign(dB0_dt%z,0.0_cp)
+         call assign(dB0_dt%y,0.0_cp)
          ! call assign(dB0_dt%y,get_dB0_dt_from_t(t_all,B_r_all,time))
-         ! call assign(dB0_dt%y,0.0_cp)
-         ! call assign(dB0_dt%z,0.0_cp)
+         call assign(dB0_dt%x,get_dB0_dt_from_t(t_all,B_p_all,time))
        end subroutine
 
        function get_dB0_dt_from_t(t_all,B_all,t) result(dB0_dt)

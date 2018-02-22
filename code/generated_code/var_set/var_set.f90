@@ -40,6 +40,8 @@
          type(var) :: U
          type(var) :: p
          type(var) :: B
+         type(var) :: jCrossB
+         type(var) :: stresses
          type(var) :: B0
          type(var) :: phi
          type(var) :: rho
@@ -56,6 +58,8 @@
          call init(this%U,that%U)
          call init(this%p,that%p)
          call init(this%B,that%B)
+         call init(this%jCrossB,that%jCrossB)
+         call init(this%stresses,that%stresses)
          call init(this%B0,that%B0)
          call init(this%phi,that%phi)
          call init(this%rho,that%rho)
@@ -68,6 +72,8 @@
          call delete(this%U)
          call delete(this%p)
          call delete(this%B)
+         call delete(this%jCrossB)
+         call delete(this%stresses)
          call delete(this%B0)
          call delete(this%phi)
          call delete(this%rho)
@@ -81,6 +87,8 @@
          call display(this%U,un)
          call display(this%p,un)
          call display(this%B,un)
+         call display(this%jCrossB,un)
+         call display(this%stresses,un)
          call display(this%B0,un)
          call display(this%phi,un)
          call display(this%rho,un)
@@ -94,6 +102,8 @@
          call display(this%U,un)
          call display(this%p,un)
          call display(this%B,un)
+         call display(this%jCrossB,un)
+         call display(this%stresses,un)
          call display(this%B0,un)
          call display(this%phi,un)
          call display(this%rho,un)
@@ -129,6 +139,8 @@
          call export(this%U,un)
          call export(this%p,un)
          call export(this%B,un)
+         call export(this%jCrossB,un)
+         call export(this%stresses,un)
          call export(this%B0,un)
          call export(this%phi,un)
          call export(this%rho,un)
@@ -143,6 +155,8 @@
          call import(this%U,un)
          call import(this%p,un)
          call import(this%B,un)
+         call import(this%jCrossB,un)
+         call import(this%stresses,un)
          call import(this%B0,un)
          call import(this%phi,un)
          call import(this%rho,un)
@@ -195,6 +209,8 @@
          call set_IO_dir(this%U,dir//'U'//fortran_PS)
          call set_IO_dir(this%p,dir//'p'//fortran_PS)
          call set_IO_dir(this%B,dir//'B'//fortran_PS)
+         call set_IO_dir(this%jCrossB,dir//'jCrossB'//fortran_PS)
+         call set_IO_dir(this%stresses,dir//'stresses'//fortran_PS)
          call set_IO_dir(this%B0,dir//'B0'//fortran_PS)
          call set_IO_dir(this%phi,dir//'phi'//fortran_PS)
          call set_IO_dir(this%rho,dir//'rho'//fortran_PS)
@@ -210,6 +226,8 @@
          call make_IO_dir(this%U,dir//'U'//fortran_PS)
          call make_IO_dir(this%p,dir//'p'//fortran_PS)
          call make_IO_dir(this%B,dir//'B'//fortran_PS)
+         call make_IO_dir(this%jCrossB,dir//'jCrossB'//fortran_PS)
+         call make_IO_dir(this%stresses,dir//'stresses'//fortran_PS)
          call make_IO_dir(this%B0,dir//'B0'//fortran_PS)
          call make_IO_dir(this%phi,dir//'phi'//fortran_PS)
          call make_IO_dir(this%rho,dir//'rho'//fortran_PS)
@@ -226,6 +244,8 @@
          call export_structured(this%U,dir//'U'//fortran_PS)
          call export_structured(this%p,dir//'p'//fortran_PS)
          call export_structured(this%B,dir//'B'//fortran_PS)
+         call export_structured(this%jCrossB,dir//'jCrossB'//fortran_PS)
+         call export_structured(this%stresses,dir//'stresses'//fortran_PS)
          call export_structured(this%B0,dir//'B0'//fortran_PS)
          call export_structured(this%phi,dir//'phi'//fortran_PS)
          call export_structured(this%rho,dir//'rho'//fortran_PS)
@@ -243,6 +263,8 @@
          call import_structured(this%U,dir//'U'//fortran_PS)
          call import_structured(this%p,dir//'p'//fortran_PS)
          call import_structured(this%B,dir//'B'//fortran_PS)
+         call import_structured(this%jCrossB,dir//'jCrossB'//fortran_PS)
+         call import_structured(this%stresses,dir//'stresses'//fortran_PS)
          call import_structured(this%B0,dir//'B0'//fortran_PS)
          call import_structured(this%phi,dir//'phi'//fortran_PS)
          call import_structured(this%rho,dir//'rho'//fortran_PS)

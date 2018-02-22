@@ -33,6 +33,7 @@
         use GF_CFL_number_mod
         use GF_Fourier_number_mod
         use GF_Robin_BC_coeff_mod
+        use GF_amax_diff_mod
 
         implicit none
         private
@@ -48,6 +49,7 @@
         public :: init_Node
 
         ! GF_distributions_mod
+        public :: inverse_area
         public :: volume
         public :: sine_waves
         public :: sinh_waves
@@ -94,6 +96,7 @@
         public :: mean_along_x
         public :: mean_along_y
         public :: mean_along_z
+        public :: amax_diff
 
         public :: mirror_about_hmin,mirror_about_hmax
 

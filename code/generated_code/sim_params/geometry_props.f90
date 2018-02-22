@@ -37,6 +37,7 @@
        type geometry_props
          integer,dimension(3) :: periodic_dir = 0
          integer,dimension(6) :: apply_BC_order = 0
+         integer :: FFT_dir = 0
        end type
 
        contains
@@ -48,6 +49,7 @@
          call delete(this)
          this%periodic_dir = that%periodic_dir
          this%apply_BC_order = that%apply_BC_order
+         this%FFT_dir = that%FFT_dir
        end subroutine
 
        subroutine delete_geometry_props(this)
@@ -55,6 +57,7 @@
          type(geometry_props),intent(inout) :: this
          this%periodic_dir = 0
          this%apply_BC_order = 0
+         this%FFT_dir = 0
        end subroutine
 
        subroutine display_geometry_props(this,un)
@@ -63,6 +66,7 @@
          integer,intent(in) :: un
          write(un,*) 'periodic_dir   = ',this%periodic_dir
          write(un,*) 'apply_BC_order = ',this%apply_BC_order
+         write(un,*) 'FFT_dir        = ',this%FFT_dir
        end subroutine
 
        subroutine display_short_geometry_props(this,un)
@@ -71,6 +75,7 @@
          integer,intent(in) :: un
          write(un,*) 'periodic_dir   = ',this%periodic_dir
          write(un,*) 'apply_BC_order = ',this%apply_BC_order
+         write(un,*) 'FFT_dir        = ',this%FFT_dir
        end subroutine
 
        subroutine display_wrap_geometry_props(this,dir,name)
@@ -116,6 +121,7 @@
          integer,intent(in) :: un
          write(un,*) 'periodic_dir    = ';write(un,*) this%periodic_dir
          write(un,*) 'apply_BC_order  = ';write(un,*) this%apply_BC_order
+         write(un,*) 'FFT_dir         = ';write(un,*) this%FFT_dir
        end subroutine
 
        subroutine import_primitives_geometry_props(this,un)
@@ -124,6 +130,7 @@
          integer,intent(in) :: un
          read(un,*); read(un,*) this%periodic_dir
          read(un,*); read(un,*) this%apply_BC_order
+         read(un,*); read(un,*) this%FFT_dir
        end subroutine
 
        subroutine export_wrap_geometry_props(this,dir,name)

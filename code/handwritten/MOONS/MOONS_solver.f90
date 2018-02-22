@@ -81,6 +81,8 @@
              endif
              if (M%C%SP%VS%U%SS%solve) then
                call add_all_momentum_sources(M%GE%mom%F,M%GE%mom%Fnm1,M%GE%mom%L,M%GE%mom,M%C%SP%VS%U%TMP,M%C%SP,M%GE%ind,M%GE%nrg)
+               call assign(M%GE%mom%F%y,0.0_cp)
+               call assign(M%GE%mom%F%z,0.0_cp)
                call solve(M%GE%mom,M%C%SP,M%GE%mom%F,M%GE%mom%Fnm1,M%GE%mom%L,M%C%SP%VS%U%TMP,M%C%SP%EF)
              endif
              if (M%C%SP%VS%B%SS%solve) then

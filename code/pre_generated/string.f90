@@ -19,6 +19,7 @@
 
       public :: string
       public :: init,delete,display,print,export,import ! Essentials
+      public :: new
 
       public :: write_formatted
       public :: string_allocated
@@ -36,6 +37,7 @@
       public :: export_primitives
       public :: import_primitives
 
+      interface new;                  module procedure init_string_new;                end interface
       interface init;                 module procedure init_size;                      end interface
       interface init;                 module procedure init_string;                    end interface
       interface init;                 module procedure init_copy;                      end interface
@@ -109,6 +111,13 @@
           call init_char(st%s(i),s(i:i))
         enddo
       end subroutine
+
+      function init_string_new(s) result(st)
+        implicit none
+        character(len=*),intent(in) :: s
+        type(string) :: st
+        call init(st,s)
+      end function
 
       subroutine init_copy(a,b)
         implicit none

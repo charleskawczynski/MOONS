@@ -43,6 +43,7 @@ VPATH +=\
 	$(SRC_DIR)$(PS)norms\
 	$(SRC_DIR)$(PS)ops\
 	$(SRC_DIR)$(PS)PCG\
+	$(SRC_DIR)$(PS)FFT_solver\
 	$(SRC_DIR)$(PS)physical_domain\
 	$(SRC_DIR)$(PS)procedure_array\
 	$(SRC_DIR)$(PS)probe\

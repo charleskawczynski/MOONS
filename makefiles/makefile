@@ -8,11 +8,15 @@ USE_OPEN_MP = 'TRUE'
 # Setting EXPORT_FOR_AUTO_RESTART = 'FALSE' removes all import statements from the main loop,
 # so the solution cannot be restarted and no parameters can be modified during runtime.
 EXPORT_FOR_AUTO_RESTART = 'TRUE'
+# EXPORT_FOR_AUTO_RESTART = 'FALSE'
 PARALLELIZE_3D_OPS = 'TRUE'
 # Enter the name of the desired input file folder:
-sim_params_default = sim_params_default_MHD_LDC_Sergey_uniform
+# sim_params_default = sim_params_default_MHD_LDC_Sergey_uniform
+# sim_params_default = sim_params_default_MHD_Shercliff
 # sim_params_default = sim_params_default_MHD_cylinder_driven_cavity
 # sim_params_default = sim_params_default_plasma_disruption
+sim_params_default = sim_params_default_plasma_disruption_plane
+# sim_params_default = sim_params_default_plasma_disruption_solid_bar
 # sim_params_default = sim_params_default_plasma_disruption_1D_analytic
 # sim_params_default = sim_params_default_Bandaru
 # sim_params_default = sim_params_default_BC_full_3D
@@ -24,8 +28,8 @@ sim_params_default = sim_params_default_MHD_LDC_Sergey_uniform
 # ************* CLUSTER CONFIGURATION ******************
 # On Hoffman / DOE, run "module load gcc/4.9.3" in terminal before compile
 # Submitting on Hoffman run "job.q"
-CLUSTER = 'PC_CK'
-# CLUSTER = 'Workstation_CK'
+# CLUSTER = 'PC_CK'
+CLUSTER = 'Workstation_CK'
 # CLUSTER = 'Hoffman2'
 # CLUSTER = 'DOE'
 # ************* MAKE CONFIGURATION ******************
@@ -70,7 +74,26 @@ ifeq ($(CLUSTER),'PC_CK')
 endif
 
 ifeq ($(CLUSTER),'Workstation_CK')
-	TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)BC_full$(PS)Shatrov_inspired$(PS)M4
+	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)BC_full$(PS)Shatrov_inspired$(PS)M4
+	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)BC_full$(PS)Shatrov_inspired$(PS)M200_3D
+	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)BC_full$(PS)Shatrov_inspired$(PS)M20_3D
+	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)BC_full$(PS)Shatrov_inspired$(PS)KD$(PS)M2000
+	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)BC_full$(PS)Shatrov_inspired$(PS)KD$(PS)M1000
+	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)BC_full$(PS)Shatrov_inspired$(PS)Mnew
+	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)PD$(PS)fusion
+	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)PD$(PS)PD_plane
+	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)PD$(PS)PD_plane_solid
+	# TARGET_DIR = F:$(PS)Property_of_C_Kawczynski$(PS)SIMS$(PS)PD$(PS)PD_plane_new
+	# TARGET_DIR = F:$(PS)Property_of_C_Kawczynski$(PS)SIMS$(PS)PD$(PS)PD_constant_dB0dt_plane
+	# TARGET_DIR = F:$(PS)Property_of_C_Kawczynski$(PS)SIMS$(PS)PD$(PS)PD_plane_solid_zero_res
+	# TARGET_DIR = F:$(PS)Property_of_C_Kawczynski$(PS)SIMS$(PS)PD$(PS)PD_plane_unsteady_B0_zero_res
+	# TARGET_DIR = F:$(PS)Property_of_C_Kawczynski$(PS)SIMS$(PS)PD$(PS)PD_plane_insulating
+	TARGET_DIR = F:$(PS)Property_of_C_Kawczynski$(PS)SIMS$(PS)PD$(PS)PD_plane_stresses
+	# TARGET_DIR = F:$(PS)Property_of_C_Kawczynski$(PS)SIMS$(PS)Bandaru$(PS)B1
+	# TARGET_DIR = F:$(PS)Property_of_C_Kawczynski$(PS)SIMS$(PS)PD$(PS)PD_plane_solid_unsteady_B0_zero_res
+	# TARGET_DIR = F:$(PS)Property_of_C_Kawczynski$(PS)SIMS$(PS)PD$(PS)PD_constant_dB0dt_plane_solid
+	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)PD$(PS)PD_plane_div_adv
+	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)PD$(PS)fusion_solid
 endif
 
 ifeq ($(CLUSTER),'Hoffman2')

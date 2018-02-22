@@ -52,6 +52,8 @@
          type(probe) :: max_JxB_y
          type(probe) :: max_JxB_z
          type(probe) :: max_JxB
+         type(probe) :: max_stress
+         type(probe) :: max_stress_walls
        end type
 
        contains
@@ -119,6 +121,8 @@
          call init(this%max_JxB_y,that%max_JxB_y)
          call init(this%max_JxB_z,that%max_JxB_z)
          call init(this%max_JxB,that%max_JxB)
+         call init(this%max_stress,that%max_stress)
+         call init(this%max_stress_walls,that%max_stress_walls)
        end subroutine
 
        subroutine delete_probe_set_ind(this)
@@ -180,6 +184,8 @@
          call delete(this%max_JxB_y)
          call delete(this%max_JxB_z)
          call delete(this%max_JxB)
+         call delete(this%max_stress)
+         call delete(this%max_stress_walls)
        end subroutine
 
        subroutine display_probe_set_ind(this,un)
@@ -242,6 +248,8 @@
          call display(this%max_JxB_y,un)
          call display(this%max_JxB_z,un)
          call display(this%max_JxB,un)
+         call display(this%max_stress,un)
+         call display(this%max_stress_walls,un)
        end subroutine
 
        subroutine display_short_probe_set_ind(this,un)
@@ -304,6 +312,8 @@
          call display(this%max_JxB_y,un)
          call display(this%max_JxB_z,un)
          call display(this%max_JxB,un)
+         call display(this%max_stress,un)
+         call display(this%max_stress_walls,un)
        end subroutine
 
        subroutine display_wrap_probe_set_ind(this,dir,name)
@@ -396,6 +406,8 @@
          call export(this%max_JxB_y,un)
          call export(this%max_JxB_z,un)
          call export(this%max_JxB,un)
+         call export(this%max_stress,un)
+         call export(this%max_stress_walls,un)
        end subroutine
 
        subroutine import_probe_set_ind(this,un)
@@ -475,6 +487,8 @@
          call import(this%max_JxB_y,un)
          call import(this%max_JxB_z,un)
          call import(this%max_JxB,un)
+         call import(this%max_stress,un)
+         call import(this%max_stress_walls,un)
        end subroutine
 
        subroutine export_primitives_probe_set_ind(this,un)
@@ -584,6 +598,9 @@
          call set_IO_dir(this%max_JxB_y,dir//'max_JxB_y'//fortran_PS)
          call set_IO_dir(this%max_JxB_z,dir//'max_JxB_z'//fortran_PS)
          call set_IO_dir(this%max_JxB,dir//'max_JxB'//fortran_PS)
+         call set_IO_dir(this%max_stress,dir//'max_stress'//fortran_PS)
+         call set_IO_dir(this%max_stress_walls,&
+         dir//'max_stress_walls'//fortran_PS)
        end subroutine
 
        subroutine make_IO_dir_probe_set_ind(this,dir)
@@ -656,6 +673,9 @@
          call make_IO_dir(this%max_JxB_y,dir//'max_JxB_y'//fortran_PS)
          call make_IO_dir(this%max_JxB_z,dir//'max_JxB_z'//fortran_PS)
          call make_IO_dir(this%max_JxB,dir//'max_JxB'//fortran_PS)
+         call make_IO_dir(this%max_stress,dir//'max_stress'//fortran_PS)
+         call make_IO_dir(this%max_stress_walls,&
+         dir//'max_stress_walls'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_probe_set_ind(this,dir)
@@ -739,6 +759,10 @@
          call export_structured(this%max_JxB_y,dir//'max_JxB_y'//fortran_PS)
          call export_structured(this%max_JxB_z,dir//'max_JxB_z'//fortran_PS)
          call export_structured(this%max_JxB,dir//'max_JxB'//fortran_PS)
+         call export_structured(this%max_stress,&
+         dir//'max_stress'//fortran_PS)
+         call export_structured(this%max_stress_walls,&
+         dir//'max_stress_walls'//fortran_PS)
          close(un)
        end subroutine
 
@@ -815,6 +839,10 @@
          call import_structured(this%max_JxB_y,dir//'max_JxB_y'//fortran_PS)
          call import_structured(this%max_JxB_z,dir//'max_JxB_z'//fortran_PS)
          call import_structured(this%max_JxB,dir//'max_JxB'//fortran_PS)
+         call import_structured(this%max_stress,&
+         dir//'max_stress'//fortran_PS)
+         call import_structured(this%max_stress_walls,&
+         dir//'max_stress_walls'//fortran_PS)
          close(un)
        end subroutine
 

@@ -59,6 +59,7 @@
        use ops_norms_mod
 
        use PCG_solver_extend_mod
+       use FFT_solver_extend_mod
        use preconditioners_mod
        use E_K_Budget_mod
 
@@ -166,6 +167,9 @@
          SP%VS%P%ISP,SP%VS%P%MFP,mom%p,mom%p,TF_Face,str(DT%p%residual),'p',.false.,.false.)
          call delete(TF_Face)
          write(*,*) '     PCG solver initialized for p'
+
+         call init(mom%FFT_P,mom%p,mom%m,SP%GP%FFT_dir,'FFT_p')
+         write(*,*) '     FFT solver initialized for p'
 
          temp_unit = new_and_open(str(DT%params),'info_mom')
          call display(mom,SP,temp_unit)
@@ -299,7 +303,7 @@
          type(sim_params),intent(in) :: SP
          type(time_marching_params),intent(in) :: TMP
          type(dir_tree),intent(in) :: DT
-         call export_processed(mom%m,mom%U,str(DT%U%unsteady),'U',1,TMP,SP%VS%U%unsteady_planes)
+         call export_processed(mom%m,mom%U%x,str(DT%U%unsteady),'u',1,TMP,SP%VS%U%unsteady_planes)
          call export_processed(mom%m,mom%p,str(DT%P%unsteady),'p',1,TMP,SP%VS%P%unsteady_planes)
        end subroutine
 
@@ -350,6 +354,10 @@
          case (8)
            call Euler_time_RK_sources(mom%PCG_U,mom%PCG_P,mom%U,mom%Ustar,mom%Unm1,&
            mom%p,F,Fnm1,L,mom%m,TMP,TMP%RKP,mom%temp_F1,mom%temp_CC,&
+           EF%unsteady_0D%export_now)
+         case (9)
+           call Euler_time_AB2_sources_FFT(mom%PCG_U,mom%FFT_P,mom%U,mom%Ustar,mom%Unm1,&
+           mom%p,F,Fnm1,mom%m,TMP,mom%temp_F1,mom%L,mom%temp_CC,&
            EF%unsteady_0D%export_now)
          case default; stop 'Error: solveUMethod must = 1:4 in momentum.f90.'
          end select

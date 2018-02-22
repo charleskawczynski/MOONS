@@ -20,6 +20,7 @@ PS = '\\'; print('PS = '+PS+'\n')
 root_folder = 'F:'+PS+'Property_of_C_Kawczynski'+PS
 root = root_folder+'SIMS'+PS+'BC_full'+PS+'results_from_prospectus'+PS
 target = root_folder+'SIMS'+PS+'BC_full'+PS+'results_from_prospectus'+PS+'post_processed'+PS
+target = 'F:'+PS+'Property_of_C_Kawczynski'+PS+'SIMS'+PS+'BC_full'+PS+'results_from_prospectus'+PS
 print('root = '+root)
 print('target = '+target)
 
@@ -120,14 +121,25 @@ var_name_list = ['Re<sub>m</sub>',
 'ME',
 'ME<sup>1</sup>',
 'ME<sup>0</sup>',
-'|B<sup>1</sup>|/|B<sup>0</sup>|',
-'|B<sup>1</sup>|/|B|',
-'|B<sup>1</sup><sub>x</sub>|/|B<sup>0</sup>|',
-'|B<sup>1</sup><sub>y</sub>|/|B<sup>0</sup>|',
-'|B<sup>1</sup><sub>z</sub>|/|B<sup>0</sup>|',
-'|B<sup>1</sup><sub>x</sub>|/|B|',
-'|B<sup>1</sup><sub>y</sub>|/|B|',
-'|B<sup>1</sup><sub>z</sub>|/|B|',
+'RMS(B<sup>1</sup><math>c</math>B<sup>1</sup>,B<sup>0</sup><math>c</math>B<sup>0</sup>)',
+'RMS(B<sup>1</sup><math>c</math>B<sup>1</sup>,B<math>c</math>B)',
+'RMS({B<sub>x</sub>}<sup>2</sup>,B<sup>0</sup><math>c</math>B<sup>0</sup>)',
+'RMS({B<sub>y</sub>}<sup>2</sup>,B<sup>0</sup><math>c</math>B<sup>0</sup>)',
+'RMS({B<sub>z</sub>}<sup>2</sup>,B<sup>0</sup><math>c</math>B<sup>0</sup>)',
+'RMS({B<sub>x</sub>}<sup>2</sup>,B<math>c</math>B)',
+'RMS({B<sub>y</sub>}<sup>2</sup>,B<math>c</math>B)',
+'RMS({B<sub>z</sub>}<sup>2</sup>,B<math>c</math>B)',
+# 'ME',
+# 'ME<sup>1</sup>',
+# 'ME<sup>0</sup>',
+# '|B<sup>1</sup>|/|B<sup>0</sup>|',
+# '|B<sup>1</sup>|/|B|',
+# '|B<sup>1</sup><sub>x</sub>|/|B<sup>0</sup>|',
+# '|B<sup>1</sup><sub>y</sub>|/|B<sup>0</sup>|',
+# '|B<sup>1</sup><sub>z</sub>|/|B<sup>0</sup>|',
+# '|B<sup>1</sup><sub>x</sub>|/|B|',
+# '|B<sup>1</sup><sub>y</sub>|/|B|',
+# '|B<sup>1</sup><sub>z</sub>|/|B|',
 ]
 V = [Re_m,
 ME,

@@ -95,7 +95,7 @@ for x in table:
 row_flat = [item for sublist in row for item in sublist]
 row_flat = [' TITLE = "SS Energies"\n']+row_flat
 contents = ''.join(row_flat)
-IO.set_file_contents(target+'SS_B_energy_new.dat',contents)
+IO.set_file_contents(target+'SS_energies_new.dat',contents)
 
 IO.delete_pyc_files()
 print('Done')

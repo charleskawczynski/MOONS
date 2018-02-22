@@ -165,6 +165,8 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('U','var',priv)
 	g.module[m_name].add_prop('p','var',priv)
 	g.module[m_name].add_prop('B','var',priv)
+	g.module[m_name].add_prop('jCrossB','var',priv)
+	g.module[m_name].add_prop('stresses','var',priv)
 	g.module[m_name].add_prop('B0','var',priv)
 	g.module[m_name].add_prop('phi','var',priv)
 	g.module[m_name].add_prop('rho','var',priv)

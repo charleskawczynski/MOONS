@@ -23,6 +23,8 @@
      public :: display_compiler_info
      public :: set_restart
      public :: post_process
+     public :: get_apply_BC_order
+     public :: get_FFT_dir
 
      interface sanity_check;          module procedure sanity_check_SP;                  end interface
      interface display_compiler_info; module procedure display_compiler_info_SP;         end interface
@@ -31,6 +33,52 @@
      interface post_process;          module procedure post_process_SP;                  end interface
 
      contains
+
+     function get_apply_BC_order(periodic_dir) result(apply_BC_order)
+       implicit none
+       integer,dimension(3),intent(in) :: periodic_dir
+       integer,dimension(6) :: apply_BC_order
+       apply_BC_order = (/5,6,1,2,3,4/) ! Chosen for lid-driven cavity case, lid at y_max
+       if (sum(periodic_dir).eq.1) then
+             if (periodic_dir(1).eq.1) then
+             apply_BC_order = (/5,6,3,4,1,2/)
+         elseif (periodic_dir(2).eq.1) then
+             apply_BC_order = (/5,6,1,2,3,4/)
+         elseif (periodic_dir(3).eq.1) then
+             apply_BC_order = (/1,2,3,4,5,6/)
+         else; stop 'Error: bad periodic_dir in get_apply_BC_order in sim_params_aux.f90'
+         endif
+       elseif (sum(periodic_dir).eq.2) then
+             if ((periodic_dir(2).eq.1).and.(periodic_dir(3).eq.1)) then
+             apply_BC_order = (/1,2,5,6,3,4/)
+         elseif ((periodic_dir(1).eq.1).and.(periodic_dir(3).eq.1)) then
+             apply_BC_order = (/3,4,5,6,1,2/)
+         elseif ((periodic_dir(1).eq.1).and.(periodic_dir(2).eq.1)) then
+             apply_BC_order = (/1,2,3,4,5,6/)
+         else; stop 'Error: bad periodic_dir in get_apply_BC_order in sim_params_aux.f90'
+         endif
+       endif
+     end function
+
+     function get_FFT_dir(periodic_dir) result(FFT_dir)
+       implicit none
+       integer,dimension(3),intent(in) :: periodic_dir
+       integer :: FFT_dir
+       FFT_dir = 1
+       if (sum(periodic_dir).eq.1) then
+             if (periodic_dir(1).eq.1) then; FFT_dir = 1
+         elseif (periodic_dir(2).eq.1) then; FFT_dir = 2
+         elseif (periodic_dir(3).eq.1) then; FFT_dir = 3
+         else; stop 'Error: bad periodic_dir in get_FFT_dir in sim_params_aux.f90'
+         endif
+       elseif (sum(periodic_dir).eq.2) then
+             if ((periodic_dir(2).eq.1).and.(periodic_dir(3).eq.1)) then; FFT_dir = 1
+         elseif ((periodic_dir(1).eq.1).and.(periodic_dir(3).eq.1)) then; FFT_dir = 2
+         elseif ((periodic_dir(1).eq.1).and.(periodic_dir(2).eq.1)) then; FFT_dir = 3
+         else; stop 'Error: bad periodic_dir in get_FFT_dir in sim_params_aux.f90'
+         endif
+       endif
+     end function
 
      subroutine post_process_SP(SP)
        implicit none

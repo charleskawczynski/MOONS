@@ -62,6 +62,7 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].set_used_modules(['IO_tools_mod'])
 	g.module[m_name].add_prop('periodic_dir','integer',priv,F,1,3)
 	g.module[m_name].add_prop('apply_BC_order','integer',priv,F,1,6)
+	g.module[m_name].add_prop('FFT_dir','integer',priv)
 
 	m_name = 'equation_term'
 	g.add_module(m_name)
@@ -231,6 +232,8 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop(['max_JxB_y'],'probe',priv)
 	g.module[m_name].add_prop(['max_JxB_z'],'probe',priv)
 	g.module[m_name].add_prop(['max_JxB'],'probe',priv)
+	g.module[m_name].add_prop(['max_stress'],'probe',priv)
+	g.module[m_name].add_prop(['max_stress_walls'],'probe',priv)
 
 	m_name = 'probe_set_nrg'
 	g.add_module(m_name)

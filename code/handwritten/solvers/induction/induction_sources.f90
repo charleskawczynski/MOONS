@@ -19,7 +19,8 @@
        public :: add_curl_U_cross_B
        public :: add_curl_J
        public :: add_unsteady_B0
-       public :: compute_jCrossB
+       public :: compute_JCrossB
+       public :: compute_B_dot_gradB
 
        contains
 
@@ -71,6 +72,21 @@
          call face2Face_no_diag(temp_F2_TF,B,m,temp_CC)
          call cross_product(jCrossB,temp_F1_TF,temp_F2_TF)
          call multiply(jCrossB,scale) ! Since J includes Rem
+       end subroutine
+
+       subroutine compute_B_dot_gradB(B_dot_gradB,B,m,scale,&
+         temp_CC,temp_F1,temp_F2,temp_E_TF)
+         ! computes:  scale J x B
+         implicit none
+         type(VF),intent(inout) :: B_dot_gradB
+         type(VF),intent(in) :: B
+         type(mesh),intent(in) :: m
+         real(cp),intent(in) :: scale
+         type(SF),intent(inout) :: temp_CC
+         type(VF),intent(inout) :: temp_F1,temp_F2
+         type(TF),intent(inout) :: temp_E_TF
+         call advect_U_convection(B_dot_gradB,B,temp_E_TF,m,.true.,temp_F1,temp_F2,temp_CC)
+         call multiply(B_dot_gradB,scale)
        end subroutine
 
        end module

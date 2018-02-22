@@ -171,7 +171,7 @@ g = time_statistics.add_modules(g,T,F,priv,real)
 
 # --------------- Very large data structures
 g = PCG.add_modules(g,T,F,priv,real,abstract_interfaces_path) # Contains interfaces
-# g = FFT_solver.add_modules(g,T,F,priv,real)
+g = FFT_solver.add_modules(g,T,F,priv,real)
 g = governing_equations.add_modules(g,T,F,priv,real)
 g = MOONS.add_modules(g,T,F,priv,real)
 

@@ -13,9 +13,14 @@
 
      private
      public :: define_mesh_SP_plasma_disruption
+     public :: define_mesh_SP_plasma_disruption_plane
+     public :: define_mesh_SP_plasma_disruption_plane_insulating
+     public :: define_mesh_SP_plasma_disruption_line
      public :: define_mesh_SP_plasma_disruption_1D_analytic
      public :: small_dataset
      public :: define_mesh_bandaru
+     public :: define_mesh_MHD_Shercliff_plane
+     public :: define_mesh_MHD_Shercliff_plane_FFT
      public :: define_mesh_full_BC_w_vacuum_symmetric
      public :: define_mesh_full_BC_n_vacuum_symmetric
      public :: define_mesh_full_BC_w_vacuum_3D
@@ -32,8 +37,8 @@
        integer :: N,N_w
        CR = 10.0_cp ! Cavity Ratio
        t_fluid = 1.0_cp; t_wall = 0.05_cp; buffer = 1.5_cp;
-       ! N = 100; N_w = 9
-       N = 30; N_w = 6
+       N = 100; N_w = 14
+       ! N = 30; N_w = 4
        call init(SP%MP_mom,SP%MQP)
        call init(SP%MP_sigma,SP%MQP)
        call init(SP%MP_ind,SP%MQP)
@@ -41,8 +46,62 @@
        call add_base(SP%MP_mom,seg_1d(2,'grid_Roberts_B'   ,N   ,-t_fluid   ,t_fluid   ,buffer))
        call add_base(SP%MP_mom,seg_1d(3,'grid_Roberts_B'   ,N   ,-t_fluid   ,t_fluid   ,buffer))
        call init(SP%MP_sigma,SP%MP_mom)
-       call add_ext(SP%MP_sigma,seg_1d(1,'ext_Roberts_B_IO',N_w,t_wall,buffer))
+       call add_ext(SP%MP_sigma,seg_1d(1,'ext_Roberts_B_IO',N_w*2,t_wall,buffer))
+       call add_ext(SP%MP_sigma,seg_1d(2,'ext_Roberts_B_IO',N_w  ,t_wall,buffer))
+       call add_ext(SP%MP_sigma,seg_1d(3,'ext_Roberts_B_IO',N_w  ,t_wall,buffer))
+       call init(SP%MP_ind,SP%MP_sigma)
+     end subroutine
+
+     subroutine define_mesh_SP_plasma_disruption_plane(SP)
+       implicit none
+       type(sim_params),intent(inout) :: SP
+       real(cp) :: t_wall,t_fluid,buffer
+       integer :: N,N_w
+       t_fluid = 1.0_cp; t_wall = 0.05_cp; buffer = 1.5_cp;
+       N = 150; N_w = 14
+       call init(SP%MP_mom,SP%MQP)
+       call init(SP%MP_sigma,SP%MQP)
+       call init(SP%MP_ind,SP%MQP)
+       call add_base(SP%MP_mom,seg_1d(1,'grid_uniform'  ,1 ,-0.5_cp ,0.5_cp ,buffer))
+       call add_base(SP%MP_mom,seg_1d(2,'grid_Roberts_B',N ,-t_fluid,t_fluid,buffer))
+       call add_base(SP%MP_mom,seg_1d(3,'grid_Roberts_B',N ,-t_fluid,t_fluid,buffer))
+       call init(SP%MP_sigma,SP%MP_mom)
        call add_ext(SP%MP_sigma,seg_1d(2,'ext_Roberts_B_IO',N_w,t_wall,buffer))
+       call add_ext(SP%MP_sigma,seg_1d(3,'ext_Roberts_B_IO',N_w,t_wall,buffer))
+       call init(SP%MP_ind,SP%MP_sigma)
+     end subroutine
+
+     subroutine define_mesh_SP_plasma_disruption_plane_insulating(SP)
+       implicit none
+       type(sim_params),intent(inout) :: SP
+       real(cp) :: t_wall,t_fluid,buffer
+       integer :: N,N_w
+       t_fluid = 1.0_cp; t_wall = 0.05_cp; buffer = 1.5_cp;
+       N = 150; N_w = 14
+       call init(SP%MP_mom,SP%MQP)
+       call init(SP%MP_sigma,SP%MQP)
+       call init(SP%MP_ind,SP%MQP)
+       call add_base(SP%MP_mom,seg_1d(1,'grid_uniform'  ,1 ,-0.5_cp ,0.5_cp ,buffer))
+       call add_base(SP%MP_mom,seg_1d(2,'grid_Roberts_B',N ,-t_fluid,t_fluid,buffer))
+       call add_base(SP%MP_mom,seg_1d(3,'grid_Roberts_B',N ,-t_fluid,t_fluid,buffer))
+       call init(SP%MP_sigma,SP%MP_mom)
+       call init(SP%MP_ind,SP%MP_sigma)
+     end subroutine
+
+     subroutine define_mesh_SP_plasma_disruption_line(SP)
+       implicit none
+       type(sim_params),intent(inout) :: SP
+       real(cp) :: t_wall,t_fluid,buffer
+       integer :: N,N_w
+       t_fluid = 1.0_cp; t_wall = 0.05_cp; buffer = 1.5_cp;
+       N = 200; N_w = 14
+       call init(SP%MP_mom,SP%MQP)
+       call init(SP%MP_sigma,SP%MQP)
+       call init(SP%MP_ind,SP%MQP)
+       call add_base(SP%MP_mom,seg_1d(1,'grid_uniform'  ,1 ,-0.5_cp ,0.5_cp ,buffer))
+       call add_base(SP%MP_mom,seg_1d(2,'grid_uniform'  ,1 ,-0.5_cp ,0.5_cp ,buffer))
+       call add_base(SP%MP_mom,seg_1d(3,'grid_Roberts_B',N ,-t_fluid,t_fluid,buffer))
+       call init(SP%MP_sigma,SP%MP_mom)
        call add_ext(SP%MP_sigma,seg_1d(3,'ext_Roberts_B_IO',N_w,t_wall,buffer))
        call init(SP%MP_ind,SP%MP_sigma)
      end subroutine
@@ -92,6 +151,38 @@
        call add_base(SP%MP_mom,seg_1d(1,'grid_uniform'  ,N,0.0_cp ,2.0_cp*PI,buffer))
        call add_base(SP%MP_mom,seg_1d(3,'grid_Roberts_B',N,-1.0_cp,1.0_cp,buffer))
        call add_base(SP%MP_mom,seg_1d(2,'grid_uniform'  ,1,-0.5_cp,0.5_cp,buffer))
+       call init(SP%MP_ind,SP%MP_mom)
+       call init(SP%MP_sigma,SP%MP_ind)
+     end subroutine
+
+     subroutine define_mesh_MHD_Shercliff_plane(SP)
+       implicit none
+       type(sim_params),intent(inout) :: SP
+       real(cp) :: buffer
+       integer :: N
+       buffer = 1.0_cp; N = 150
+       call init(SP%MP_mom,SP%MQP)
+       call init(SP%MP_sigma,SP%MQP)
+       call init(SP%MP_ind,SP%MQP)
+       call add_base(SP%MP_mom,seg_1d(1,'grid_uniform'  ,1,-0.5_cp,0.5_cp,buffer))
+       call add_base(SP%MP_mom,seg_1d(2,'grid_Roberts_B',N,-1.0_cp,1.0_cp,buffer))
+       call add_base(SP%MP_mom,seg_1d(3,'grid_Roberts_B',N,-1.0_cp,1.0_cp,buffer))
+       call init(SP%MP_ind,SP%MP_mom)
+       call init(SP%MP_sigma,SP%MP_ind)
+     end subroutine
+
+     subroutine define_mesh_MHD_Shercliff_plane_FFT(SP)
+       implicit none
+       type(sim_params),intent(inout) :: SP
+       real(cp) :: buffer
+       integer :: N
+       buffer = 1.0_cp; N = 128
+       call init(SP%MP_mom,SP%MQP)
+       call init(SP%MP_sigma,SP%MQP)
+       call init(SP%MP_ind,SP%MQP)
+       call add_base(SP%MP_mom,seg_1d(1,'grid_uniform'  ,1,-0.5_cp,0.5_cp,buffer))
+       call add_base(SP%MP_mom,seg_1d(2,'grid_uniform'  ,N,-0.5_cp,0.5_cp,buffer))
+       call add_base(SP%MP_mom,seg_1d(3,'grid_uniform'  ,N,-0.5_cp,0.5_cp,buffer))
        call init(SP%MP_ind,SP%MP_mom)
        call init(SP%MP_sigma,SP%MP_ind)
      end subroutine

@@ -29,6 +29,7 @@
         public :: init_BC_props
         public :: set_procedures
 
+        public :: inverse_area
         public :: volume
         public :: cosine_waves
         public :: sine_waves
@@ -106,6 +107,7 @@
        interface set_procedures;              module procedure set_procedures_BF;               end interface
        interface set_necessary_for_restart;   module procedure set_necessary_for_restart_BF;    end interface
 
+       interface inverse_area;                module procedure inverse_area_DL_BF;              end interface
        interface volume;                      module procedure volume_DL_BF;                    end interface
        interface volume;                      module procedure volume_BF;                       end interface
        interface cosine_waves;                module procedure cosine_waves_BF;                 end interface
@@ -405,6 +407,15 @@
          call set_assign_wall_Dirichlet(BF)
          call set_multiply_wall_Neumann(BF)
          call set_assign_wall_Periodic_single_BF(BF)
+       end subroutine
+
+       subroutine inverse_area_DL_BF(u,B,DL,dir)
+         implicit none
+         type(block_field),intent(inout) :: u
+         type(block),intent(in) :: B
+         type(data_location),intent(in) :: DL
+         integer,intent(in) :: dir
+         call inverse_area(u%GF,B%g,DL,dir)
        end subroutine
 
        subroutine volume_DL_BF(u,B,DL) ! Computes: volume(x(i),y(j),z(k)) = dx(i) dy(j) dz(k)
