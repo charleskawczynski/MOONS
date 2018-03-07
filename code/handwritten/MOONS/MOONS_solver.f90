@@ -34,6 +34,7 @@
        use momentum_sources_mod
        use MOONS_export_full_restart_mod
        use MOONS_simulate_crash_mod
+       use MOONS_IO_controls_mod
        use MOONS_mod
        implicit none
 
@@ -51,6 +52,7 @@
          call face2CellCenter(M%GE%mom%U_CC,M%GE%mom%U,M%GE%mom%m)
          call face2edge_no_diag(M%GE%mom%U_E,M%GE%mom%U,M%GE%mom%m)
          call update(M%C%SP%EF,M%C%SP%coupled,.false.)
+         call MOONS_export_controls(M)
          if (M%C%SP%VS%T%SS%solve) call export_unsteady(M%GE%nrg,M%C%SP,M%C%SP%VS%T%TMP,M%C%SP%EF,M%C%EN,M%C%DT)
          if (M%C%SP%VS%U%SS%solve) call export_unsteady(M%GE%mom,M%C%SP,M%C%SP%VS%U%TMP,M%C%SP%EF,M%C%EN,M%C%DT)
          if (M%C%SP%VS%B%SS%solve) call export_unsteady(M%GE%ind,M%C%SP,M%C%SP%VS%B%TMP,M%C%SP%EF,M%C%EN,M%C%DT)
@@ -81,8 +83,6 @@
              endif
              if (M%C%SP%VS%U%SS%solve) then
                call add_all_momentum_sources(M%GE%mom%F,M%GE%mom%Fnm1,M%GE%mom%L,M%GE%mom,M%C%SP%VS%U%TMP,M%C%SP,M%GE%ind,M%GE%nrg)
-               call assign(M%GE%mom%F%y,0.0_cp)
-               call assign(M%GE%mom%F%z,0.0_cp)
                call solve(M%GE%mom,M%C%SP,M%GE%mom%F,M%GE%mom%Fnm1,M%GE%mom%L,M%C%SP%VS%U%TMP,M%C%SP%EF)
              endif
              if (M%C%SP%VS%B%SS%solve) then
@@ -121,19 +121,7 @@
 
            call simulate_crash(M)
 
-#ifdef EXPORT_FOR_AUTO_RESTART
-           call import_structured(M%C%SP%DP)
-           call import_structured(M%GE%mom%PCG_U%ISP%EC)
-           call import_structured(M%GE%mom%PCG_P%ISP%EC)
-           call import_structured(M%GE%ind%PCG_B%ISP%EC)
-           call import_structured(M%GE%ind%PCG_B%ISP%EC)
-           call import_structured(M%GE%ind%PCG_cleanB%ISP%EC)
-           call import_exit_criteria(M%C%SP%VS)
-           call import_TMP_dt(M%C%SP%VS)
-           call import_structured(M%C%SP%coupled%TS)
-           if (M%C%SP%SCP%couple_time_steps) call couple_time_step(M%C%SP%VS,M%C%SP%coupled)
-           call import_structured(M%C%EN)
-#endif
+           call MOONS_import_controls(M)
 
            call update(M%C%EN,M%C%ES%export_now)
            if (M%C%EN%any_next) call export_structured(M%C%EN) ! May be needed to avoid constant exporting
@@ -147,9 +135,7 @@
                call print_light(M%C%sc,M%C%SP%coupled)
              endif
              call export(M%C%sc,M%C%SP%coupled%t)
-#ifdef EXPORT_FOR_AUTO_RESTART
              call import_structured(M%C%KS)
-#endif
            endif
          enddo
          write(*,*) '***************************************************************'

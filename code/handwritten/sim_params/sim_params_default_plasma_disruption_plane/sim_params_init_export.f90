@@ -28,7 +28,7 @@
        call init(SP%EF%info          ,T,T,10**3,SP%DP%t_start,SP%DP%t_final,0.01_cp)
        call init(SP%EF%unsteady_0D   ,T,T,10**3,SP%DP%t_start,SP%DP%t_final,0.01_cp)
        call init(SP%EF%unsteady_1D   ,T,T,  0  ,SP%DP%t_start,1.0_cp,0.01_cp)
-       call init(SP%EF%unsteady_2D   ,T,T,1000 ,SP%DP%t_start,4.0_cp,0.01_cp)
+       call init(SP%EF%unsteady_2D   ,T,T,10000,SP%DP%t_start,40.0_cp,0.01_cp)
        call init(SP%EF%unsteady_3D   ,F,F,  0  ,SP%DP%t_start,2.0_cp,0.01_cp)
        call init(SP%EF%restart_files ,F,F,10**3,SP%DP%t_start,SP%DP%t_final,0.01_cp)
        call init(SP%EF%final_solution,F,F,  1  ,SP%DP%t_start,SP%DP%t_final,0.01_cp)

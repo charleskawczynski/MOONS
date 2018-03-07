@@ -2,44 +2,46 @@
        ! ******* THIS CODE IS GENERATED. DO NOT EDIT *******
        ! ***************************************************
        module MOONS_mod
-       use IO_tools_mod
        use config_mod
-       use datatype_conversion_mod
-       use dir_manip_mod
-       use governing_equations_mod
-       use mesh_mod
        use string_mod
+       use governing_equations_mod
+       use datatype_conversion_mod
+       use IO_tools_mod
+       use mesh_mod
+       use dir_manip_mod
        implicit none
 
        private
        public :: MOONS
        public :: init,delete,display,display_short,display,print,print_short,&
-       export,export_primitives,import,export_structured,import_structured,&
-       import_primitives,export,import,set_IO_dir,make_IO_dir,&
-       suppress_warnings,export,import,export_structured,import_structured
+       export,export_primitives,import,export_folder_structure,&
+       export_structured,import_structured,import_primitives,export,import,&
+       set_IO_dir,make_IO_dir,suppress_warnings,export,import,&
+       export_structured,import_structured
 
-       interface init;             module procedure init_copy_MOONS;           end interface
-       interface delete;           module procedure delete_MOONS;              end interface
-       interface display;          module procedure display_MOONS;             end interface
-       interface display_short;    module procedure display_short_MOONS;       end interface
-       interface display;          module procedure display_wrap_MOONS;        end interface
-       interface print;            module procedure print_MOONS;               end interface
-       interface print_short;      module procedure print_short_MOONS;         end interface
-       interface export;           module procedure export_MOONS;              end interface
-       interface export_primitives;module procedure export_primitives_MOONS;   end interface
-       interface import;           module procedure import_MOONS;              end interface
-       interface export_structured;module procedure export_structured_D_MOONS; end interface
-       interface import_structured;module procedure import_structured_D_MOONS; end interface
-       interface import_primitives;module procedure import_primitives_MOONS;   end interface
-       interface export;           module procedure export_wrap_MOONS;         end interface
-       interface import;           module procedure import_wrap_MOONS;         end interface
-       interface set_IO_dir;       module procedure set_IO_dir_MOONS;          end interface
-       interface make_IO_dir;      module procedure make_IO_dir_MOONS;         end interface
-       interface suppress_warnings;module procedure suppress_warnings_MOONS;   end interface
-       interface export;           module procedure export_DN_MOONS;           end interface
-       interface import;           module procedure import_DN_MOONS;           end interface
-       interface export_structured;module procedure export_structured_DN_MOONS;end interface
-       interface import_structured;module procedure import_structured_DN_MOONS;end interface
+       interface init;                   module procedure init_copy_MOONS;              end interface
+       interface delete;                 module procedure delete_MOONS;                 end interface
+       interface display;                module procedure display_MOONS;                end interface
+       interface display_short;          module procedure display_short_MOONS;          end interface
+       interface display;                module procedure display_wrap_MOONS;           end interface
+       interface print;                  module procedure print_MOONS;                  end interface
+       interface print_short;            module procedure print_short_MOONS;            end interface
+       interface export;                 module procedure export_MOONS;                 end interface
+       interface export_primitives;      module procedure export_primitives_MOONS;      end interface
+       interface import;                 module procedure import_MOONS;                 end interface
+       interface export_folder_structure;module procedure export_folder_structure_MOONS;end interface
+       interface export_structured;      module procedure export_structured_D_MOONS;    end interface
+       interface import_structured;      module procedure import_structured_D_MOONS;    end interface
+       interface import_primitives;      module procedure import_primitives_MOONS;      end interface
+       interface export;                 module procedure export_wrap_MOONS;            end interface
+       interface import;                 module procedure import_wrap_MOONS;            end interface
+       interface set_IO_dir;             module procedure set_IO_dir_MOONS;             end interface
+       interface make_IO_dir;            module procedure make_IO_dir_MOONS;            end interface
+       interface suppress_warnings;      module procedure suppress_warnings_MOONS;      end interface
+       interface export;                 module procedure export_DN_MOONS;              end interface
+       interface import;                 module procedure import_DN_MOONS;              end interface
+       interface export_structured;      module procedure export_structured_DN_MOONS;   end interface
+       interface import_structured;      module procedure import_structured_DN_MOONS;   end interface
 
        type MOONS
          type(config) :: C
@@ -249,6 +251,17 @@
          call make_IO_dir(this%GE,dir//'GE'//fortran_PS)
          call make_IO_dir(this%dir,dir//'dir'//fortran_PS)
          call make_IO_dir(this%name,dir//'name'//fortran_PS)
+       end subroutine
+
+       subroutine export_folder_structure_MOONS(this,dir)
+         implicit none
+         type(MOONS),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         call export_structured(this%C,dir//'C'//fortran_PS)
+         call export_structured(this%GE,dir//'GE'//fortran_PS)
+         call export_structured(this%dir,dir//'dir'//fortran_PS)
+         call export_structured(this%name,dir//'name'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_MOONS(this,dir)

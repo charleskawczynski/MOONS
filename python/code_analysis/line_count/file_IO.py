@@ -42,9 +42,19 @@ def set_file_contents(file_path,contents):
 	text_file.write(contents)
 	text_file.close()
 
+def write_list_to_file(file_name,L):
+	f = open(file_name,'w+',encoding='utf8')
+	f.write('\n'.join(L))
+	f.close()
+
 def get_file_contents(file_path):
 	with open(file_path, 'r') as content_file: contents = content_file.read()
 	return contents
+
+def read_file_to_list(file_name):
+	with open(file_name,encoding='utf8') as f: # Accounts for encoded characters
+		L = f.read().splitlines() # list of lines
+	return L
 
 def directory_tree(root,new_path,PS):
 	path = root+new_path

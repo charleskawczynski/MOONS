@@ -2,45 +2,47 @@
        ! ******* THIS CODE IS GENERATED. DO NOT EDIT *******
        ! ***************************************************
        module time_statistics_VF_mod
-       use IO_tools_mod
-       use TF_mod
-       use VF_mod
-       use datatype_conversion_mod
-       use dir_manip_mod
        use probe_mod
-       use string_mod
        use time_statistics_params_mod
+       use datatype_conversion_mod
+       use IO_tools_mod
+       use VF_mod
+       use TF_mod
+       use string_mod
+       use dir_manip_mod
        implicit none
 
        private
        public :: time_statistics_VF
        public :: init,delete,display,display_short,display,print,print_short,&
-       export,export_primitives,import,export_structured,import_structured,&
-       import_primitives,export,import,set_IO_dir,make_IO_dir,&
-       suppress_warnings,export,import,export_structured,import_structured
+       export,export_primitives,import,export_folder_structure,&
+       export_structured,import_structured,import_primitives,export,import,&
+       set_IO_dir,make_IO_dir,suppress_warnings,export,import,&
+       export_structured,import_structured
 
-       interface init;             module procedure init_copy_time_statistics_VF;           end interface
-       interface delete;           module procedure delete_time_statistics_VF;              end interface
-       interface display;          module procedure display_time_statistics_VF;             end interface
-       interface display_short;    module procedure display_short_time_statistics_VF;       end interface
-       interface display;          module procedure display_wrap_time_statistics_VF;        end interface
-       interface print;            module procedure print_time_statistics_VF;               end interface
-       interface print_short;      module procedure print_short_time_statistics_VF;         end interface
-       interface export;           module procedure export_time_statistics_VF;              end interface
-       interface export_primitives;module procedure export_primitives_time_statistics_VF;   end interface
-       interface import;           module procedure import_time_statistics_VF;              end interface
-       interface export_structured;module procedure export_structured_D_time_statistics_VF; end interface
-       interface import_structured;module procedure import_structured_D_time_statistics_VF; end interface
-       interface import_primitives;module procedure import_primitives_time_statistics_VF;   end interface
-       interface export;           module procedure export_wrap_time_statistics_VF;         end interface
-       interface import;           module procedure import_wrap_time_statistics_VF;         end interface
-       interface set_IO_dir;       module procedure set_IO_dir_time_statistics_VF;          end interface
-       interface make_IO_dir;      module procedure make_IO_dir_time_statistics_VF;         end interface
-       interface suppress_warnings;module procedure suppress_warnings_time_statistics_VF;   end interface
-       interface export;           module procedure export_DN_time_statistics_VF;           end interface
-       interface import;           module procedure import_DN_time_statistics_VF;           end interface
-       interface export_structured;module procedure export_structured_DN_time_statistics_VF;end interface
-       interface import_structured;module procedure import_structured_DN_time_statistics_VF;end interface
+       interface init;                   module procedure init_copy_time_statistics_VF;              end interface
+       interface delete;                 module procedure delete_time_statistics_VF;                 end interface
+       interface display;                module procedure display_time_statistics_VF;                end interface
+       interface display_short;          module procedure display_short_time_statistics_VF;          end interface
+       interface display;                module procedure display_wrap_time_statistics_VF;           end interface
+       interface print;                  module procedure print_time_statistics_VF;                  end interface
+       interface print_short;            module procedure print_short_time_statistics_VF;            end interface
+       interface export;                 module procedure export_time_statistics_VF;                 end interface
+       interface export_primitives;      module procedure export_primitives_time_statistics_VF;      end interface
+       interface import;                 module procedure import_time_statistics_VF;                 end interface
+       interface export_folder_structure;module procedure export_folder_structure_time_statistics_VF;end interface
+       interface export_structured;      module procedure export_structured_D_time_statistics_VF;    end interface
+       interface import_structured;      module procedure import_structured_D_time_statistics_VF;    end interface
+       interface import_primitives;      module procedure import_primitives_time_statistics_VF;      end interface
+       interface export;                 module procedure export_wrap_time_statistics_VF;            end interface
+       interface import;                 module procedure import_wrap_time_statistics_VF;            end interface
+       interface set_IO_dir;             module procedure set_IO_dir_time_statistics_VF;             end interface
+       interface make_IO_dir;            module procedure make_IO_dir_time_statistics_VF;            end interface
+       interface suppress_warnings;      module procedure suppress_warnings_time_statistics_VF;      end interface
+       interface export;                 module procedure export_DN_time_statistics_VF;              end interface
+       interface import;                 module procedure import_DN_time_statistics_VF;              end interface
+       interface export_structured;      module procedure export_structured_DN_time_statistics_VF;   end interface
+       interface import_structured;      module procedure import_structured_DN_time_statistics_VF;   end interface
 
        type time_statistics_VF
          type(string) :: dir
@@ -315,6 +317,29 @@
          endif
          call make_IO_dir(this%L2_stresses,dir//'L2_stresses'//fortran_PS)
          call make_IO_dir(this%TSP,dir//'TSP'//fortran_PS)
+       end subroutine
+
+       subroutine export_folder_structure_time_statistics_VF(this,dir)
+         implicit none
+         type(time_statistics_VF),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         call export_structured(this%dir,dir//'dir'//fortran_PS)
+         call export_structured(this%name,dir//'name'//fortran_PS)
+         if (get_necessary_for_restart(this%U_sum)) then
+           call export_structured(this%U_sum,dir//'U_sum'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%U_ave)) then
+           call export_structured(this%U_ave,dir//'U_ave'//fortran_PS)
+         endif
+         call export_structured(this%mean_energy,&
+         dir//'mean_energy'//fortran_PS)
+         if (get_necessary_for_restart(this%RMS)) then
+           call export_structured(this%RMS,dir//'RMS'//fortran_PS)
+         endif
+         call export_structured(this%L2_stresses,&
+         dir//'L2_stresses'//fortran_PS)
+         call export_structured(this%TSP,dir//'TSP'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_time_statistics_VF(this,dir)

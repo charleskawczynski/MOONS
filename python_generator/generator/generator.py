@@ -1,6 +1,7 @@
 import os
 import sys
 import file_IO as IO
+import subprocess
 from collections import OrderedDict
 import collections
 import GOOFPY_directory as GD
@@ -116,3 +117,5 @@ class generator:
 		# func.make_makefile(self.d.src_generated,self.d.vpath_generated,file_list,paths_to_replace,'$(PS)')
 		# func.make_dummy_main(self.d.dir_code_generated+'main_dummy.f90',self.module_list,self.base_spaces)
 		print('Number of lines generated (Total): ' + str(N_tot))
+		python_line_count = self.d.dir_MOONS+'python'+PS+'code_analysis'+PS+'line_count'+PS+'main.py'
+		subprocess.run('python '+python_line_count)

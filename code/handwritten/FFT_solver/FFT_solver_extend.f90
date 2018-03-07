@@ -50,6 +50,7 @@
         integer :: i,j,k,t
         real(cp) :: cosi,cosj,cosk
         real(cp) :: dx,dy,dz
+        real(cp) :: Nx,Ny,Nz
 
         call init(FFT%f,u)
         call init(FFT%var_name,var_name)
@@ -63,42 +64,45 @@
         select case(direction)
         case (1)
           do t=1,m%s;
-          do k=1,u%BF(t)%GF%s(3); do j=2,u%BF(t)%GF%s(2)-1; do i=2,u%BF(t)%GF%s(1)-1
-          cosj = cos(PI*real(j-2,cp)/real(m%B(t)%g%c(2)%sc-2,cp))
-          cosk = cos(PI*real(k-2,cp)/real(m%B(t)%g%c(3)%sc-2,cp))
           dy = m%B(t)%g%c(2)%dhn%f(1)
           dz = m%B(t)%g%c(3)%dhn%f(1)
+          Ny = real(m%B(t)%g%c(2)%sc-2,cp)
+          Nz = real(m%B(t)%g%c(3)%sc-2,cp)
+          do k=1,u%BF(t)%GF%s(3); do j=2,u%BF(t)%GF%s(2)-1; do i=2,u%BF(t)%GF%s(1)-1
+          cosj = cos(PI*real(j-2,cp)/Ny)
+          cosk = cos(PI*real(k-2,cp)/Nz)
           if (.not.((i.eq.2).and.(j.eq.2))) then
-                FFT%coeff%BF(t)%GF%f(i,j,k) = 0.5_cp*1.0_cp/(cosj+cosk-2.0_cp)*&
-                dy*dz
+                FFT%coeff%BF(t)%GF%f(i,j,k) = 0.5_cp*dy*dz/(cosj+cosk-2.0_cp)
           else; FFT%coeff%BF(t)%GF%f(i,j,k) = 1.0_cp
           endif
           enddo; enddo; enddo
           enddo
         case (2)
           do t=1,m%s;
-          do k=2,u%BF(t)%GF%s(3)-1; do j=1,u%BF(t)%GF%s(2); do i=2,u%BF(t)%GF%s(1)-1
-          cosi = cos(PI*real(i-2,cp)/real(m%B(t)%g%c(1)%sc-2,cp))
-          cosk = cos(PI*real(k-2,cp)/real(m%B(t)%g%c(3)%sc-2,cp))
           dx = m%B(t)%g%c(1)%dhn%f(1)
           dz = m%B(t)%g%c(3)%dhn%f(1)
+          Nx = real(m%B(t)%g%c(1)%sc-2,cp)
+          Nz = real(m%B(t)%g%c(3)%sc-2,cp)
+          do k=2,u%BF(t)%GF%s(3)-1; do j=1,u%BF(t)%GF%s(2); do i=2,u%BF(t)%GF%s(1)-1
+          cosi = cos(PI*real(i-2,cp)/Nx)
+          cosk = cos(PI*real(k-2,cp)/Nz)
           if (.not.((i.eq.2).and.(k.eq.2))) then
-                FFT%coeff%BF(t)%GF%f(i,j,k) = 0.5_cp*1.0_cp/(cosi+cosk-2.0_cp)*&
-                dx*dz
+                FFT%coeff%BF(t)%GF%f(i,j,k) = 0.5_cp*dx*dz/(cosi+cosk-2.0_cp)
           else; FFT%coeff%BF(t)%GF%f(i,j,k) = 1.0_cp
           endif
           enddo; enddo; enddo
           enddo
         case(3)
           do t=1,m%s;
-          do k=1,u%BF(t)%GF%s(3); do j=2,u%BF(t)%GF%s(2)-1; do i=2,u%BF(t)%GF%s(1)-1
-          cosi = cos(PI*real(i-2,cp)/real(m%B(t)%g%c(1)%sc-2,cp))
-          cosj = cos(PI*real(j-2,cp)/real(m%B(t)%g%c(2)%sc-2,cp))
           dx = m%B(t)%g%c(1)%dhn%f(1)
           dy = m%B(t)%g%c(2)%dhn%f(1)
+          Nx = real(m%B(t)%g%c(1)%sc-2,cp)
+          Ny = real(m%B(t)%g%c(2)%sc-2,cp)
+          do k=1,u%BF(t)%GF%s(3); do j=2,u%BF(t)%GF%s(2)-1; do i=2,u%BF(t)%GF%s(1)-1
+          cosi = cos(PI*real(i-2,cp)/Nx)
+          cosj = cos(PI*real(j-2,cp)/Ny)
           if (.not.((i.eq.2).and.(j.eq.2))) then
-                FFT%coeff%BF(t)%GF%f(i,j,k) = 0.5_cp*1.0_cp/(cosi+cosj-2.0_cp)*&
-                dx*dy
+                FFT%coeff%BF(t)%GF%f(i,j,k) = 0.5_cp*dx*dy/(cosi+cosj-2.0_cp)
           else; FFT%coeff%BF(t)%GF%f(i,j,k) = 1.0_cp
           endif
           enddo; enddo; enddo

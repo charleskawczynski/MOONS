@@ -2,38 +2,39 @@
        ! ******* THIS CODE IS GENERATED. DO NOT EDIT *******
        ! ***************************************************
        module physical_domain_mod
-       use IO_tools_mod
        use datatype_conversion_mod
-       use dir_manip_mod
+       use IO_tools_mod
        use physical_sub_domain_mod
        use string_mod
+       use dir_manip_mod
        implicit none
 
        private
        public :: physical_domain
        public :: init,delete,display,display_short,display,print,print_short,&
-       export,export_primitives,import,export_structured,import_structured,&
-       import_primitives,export,import,set_IO_dir,make_IO_dir,&
-       suppress_warnings
+       export,export_primitives,import,export_folder_structure,&
+       export_structured,import_structured,import_primitives,export,import,&
+       set_IO_dir,make_IO_dir,suppress_warnings
 
-       interface init;             module procedure init_copy_physical_domain;          end interface
-       interface delete;           module procedure delete_physical_domain;             end interface
-       interface display;          module procedure display_physical_domain;            end interface
-       interface display_short;    module procedure display_short_physical_domain;      end interface
-       interface display;          module procedure display_wrap_physical_domain;       end interface
-       interface print;            module procedure print_physical_domain;              end interface
-       interface print_short;      module procedure print_short_physical_domain;        end interface
-       interface export;           module procedure export_physical_domain;             end interface
-       interface export_primitives;module procedure export_primitives_physical_domain;  end interface
-       interface import;           module procedure import_physical_domain;             end interface
-       interface export_structured;module procedure export_structured_D_physical_domain;end interface
-       interface import_structured;module procedure import_structured_D_physical_domain;end interface
-       interface import_primitives;module procedure import_primitives_physical_domain;  end interface
-       interface export;           module procedure export_wrap_physical_domain;        end interface
-       interface import;           module procedure import_wrap_physical_domain;        end interface
-       interface set_IO_dir;       module procedure set_IO_dir_physical_domain;         end interface
-       interface make_IO_dir;      module procedure make_IO_dir_physical_domain;        end interface
-       interface suppress_warnings;module procedure suppress_warnings_physical_domain;  end interface
+       interface init;                   module procedure init_copy_physical_domain;              end interface
+       interface delete;                 module procedure delete_physical_domain;                 end interface
+       interface display;                module procedure display_physical_domain;                end interface
+       interface display_short;          module procedure display_short_physical_domain;          end interface
+       interface display;                module procedure display_wrap_physical_domain;           end interface
+       interface print;                  module procedure print_physical_domain;                  end interface
+       interface print_short;            module procedure print_short_physical_domain;            end interface
+       interface export;                 module procedure export_physical_domain;                 end interface
+       interface export_primitives;      module procedure export_primitives_physical_domain;      end interface
+       interface import;                 module procedure import_physical_domain;                 end interface
+       interface export_folder_structure;module procedure export_folder_structure_physical_domain;end interface
+       interface export_structured;      module procedure export_structured_D_physical_domain;    end interface
+       interface import_structured;      module procedure import_structured_D_physical_domain;    end interface
+       interface import_primitives;      module procedure import_primitives_physical_domain;      end interface
+       interface export;                 module procedure export_wrap_physical_domain;            end interface
+       interface import;                 module procedure import_wrap_physical_domain;            end interface
+       interface set_IO_dir;             module procedure set_IO_dir_physical_domain;             end interface
+       interface make_IO_dir;            module procedure make_IO_dir_physical_domain;            end interface
+       interface suppress_warnings;      module procedure suppress_warnings_physical_domain;      end interface
 
        type physical_domain
          integer :: s = 0
@@ -236,6 +237,25 @@
              call make_IO_dir(this%sd(i_sd),&
              dir//'sd_'//int2str(i_sd)//fortran_PS)
            enddo
+         endif
+       end subroutine
+
+       subroutine export_folder_structure_physical_domain(this,dir)
+         implicit none
+         type(physical_domain),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_sd
+         integer :: s_sd
+         integer :: un
+         if (allocated(this%sd)) then
+           s_sd = size(this%sd)
+           write(un,*) s_sd
+           do i_sd=1,s_sd
+             call export_structured(this%sd(i_sd),&
+             dir//'sd_'//int2str(i_sd)//fortran_PS)
+           enddo
+         else
+           write(un,*) 0
          endif
        end subroutine
 

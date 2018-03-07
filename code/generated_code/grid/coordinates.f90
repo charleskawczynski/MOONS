@@ -3,39 +3,40 @@
        ! ***************************************************
        module coordinates_mod
        use current_precision_mod
+       use datatype_conversion_mod
        use IO_tools_mod
        use array_mod
-       use datatype_conversion_mod
-       use dir_manip_mod
-       use sparse_mod
        use string_mod
+       use sparse_mod
+       use dir_manip_mod
        implicit none
 
        private
        public :: coordinates
        public :: init,delete,display,display_short,display,print,print_short,&
-       export,export_primitives,import,export_structured,import_structured,&
-       import_primitives,export,import,set_IO_dir,make_IO_dir,&
-       suppress_warnings
+       export,export_primitives,import,export_folder_structure,&
+       export_structured,import_structured,import_primitives,export,import,&
+       set_IO_dir,make_IO_dir,suppress_warnings
 
-       interface init;             module procedure init_copy_coordinates;          end interface
-       interface delete;           module procedure delete_coordinates;             end interface
-       interface display;          module procedure display_coordinates;            end interface
-       interface display_short;    module procedure display_short_coordinates;      end interface
-       interface display;          module procedure display_wrap_coordinates;       end interface
-       interface print;            module procedure print_coordinates;              end interface
-       interface print_short;      module procedure print_short_coordinates;        end interface
-       interface export;           module procedure export_coordinates;             end interface
-       interface export_primitives;module procedure export_primitives_coordinates;  end interface
-       interface import;           module procedure import_coordinates;             end interface
-       interface export_structured;module procedure export_structured_D_coordinates;end interface
-       interface import_structured;module procedure import_structured_D_coordinates;end interface
-       interface import_primitives;module procedure import_primitives_coordinates;  end interface
-       interface export;           module procedure export_wrap_coordinates;        end interface
-       interface import;           module procedure import_wrap_coordinates;        end interface
-       interface set_IO_dir;       module procedure set_IO_dir_coordinates;         end interface
-       interface make_IO_dir;      module procedure make_IO_dir_coordinates;        end interface
-       interface suppress_warnings;module procedure suppress_warnings_coordinates;  end interface
+       interface init;                   module procedure init_copy_coordinates;              end interface
+       interface delete;                 module procedure delete_coordinates;                 end interface
+       interface display;                module procedure display_coordinates;                end interface
+       interface display_short;          module procedure display_short_coordinates;          end interface
+       interface display;                module procedure display_wrap_coordinates;           end interface
+       interface print;                  module procedure print_coordinates;                  end interface
+       interface print_short;            module procedure print_short_coordinates;            end interface
+       interface export;                 module procedure export_coordinates;                 end interface
+       interface export_primitives;      module procedure export_primitives_coordinates;      end interface
+       interface import;                 module procedure import_coordinates;                 end interface
+       interface export_folder_structure;module procedure export_folder_structure_coordinates;end interface
+       interface export_structured;      module procedure export_structured_D_coordinates;    end interface
+       interface import_structured;      module procedure import_structured_D_coordinates;    end interface
+       interface import_primitives;      module procedure import_primitives_coordinates;      end interface
+       interface export;                 module procedure export_wrap_coordinates;            end interface
+       interface import;                 module procedure import_wrap_coordinates;            end interface
+       interface set_IO_dir;             module procedure set_IO_dir_coordinates;             end interface
+       interface make_IO_dir;            module procedure make_IO_dir_coordinates;            end interface
+       interface suppress_warnings;      module procedure suppress_warnings_coordinates;      end interface
 
        type coordinates
          real(cp) :: hmin = 0.0_cp
@@ -500,6 +501,44 @@
          call make_IO_dir(this%hc,dir//'hc'//fortran_PS)
          call make_IO_dir(this%dhn,dir//'dhn'//fortran_PS)
          call make_IO_dir(this%dhc,dir//'dhc'//fortran_PS)
+       end subroutine
+
+       subroutine export_folder_structure_coordinates(this,dir)
+         implicit none
+         type(coordinates),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_colCC
+         integer :: i_colN
+         integer :: i_colCC_centered
+         integer :: s_colCC
+         integer :: s_colN
+         integer :: s_colCC_centered
+         integer :: un
+         call export_structured(this%stagCC2N,dir//'stagCC2N'//fortran_PS)
+         call export_structured(this%stagN2CC,dir//'stagN2CC'//fortran_PS)
+         call export_structured(this%theta,dir//'theta'//fortran_PS)
+         s_colCC = size(this%colCC)
+         write(un,*) s_colCC
+         do i_colCC=1,s_colCC
+           call export_structured(this%colCC(i_colCC),&
+           dir//'colCC_'//int2str(i_colCC)//fortran_PS)
+         enddo
+         s_colN = size(this%colN)
+         write(un,*) s_colN
+         do i_colN=1,s_colN
+           call export_structured(this%colN(i_colN),&
+           dir//'colN_'//int2str(i_colN)//fortran_PS)
+         enddo
+         s_colCC_centered = size(this%colCC_centered)
+         write(un,*) s_colCC_centered
+         do i_colCC_centered=1,s_colCC_centered
+           call export_structured(this%colCC_centered(i_colCC_centered),&
+           dir//'colCC_centered_'//int2str(i_colCC_centered)//fortran_PS)
+         enddo
+         call export_structured(this%hn,dir//'hn'//fortran_PS)
+         call export_structured(this%hc,dir//'hc'//fortran_PS)
+         call export_structured(this%dhn,dir//'dhn'//fortran_PS)
+         call export_structured(this%dhc,dir//'dhc'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_coordinates(this,dir)

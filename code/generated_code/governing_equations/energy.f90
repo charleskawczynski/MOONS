@@ -2,43 +2,44 @@
        ! ******* THIS CODE IS GENERATED. DO NOT EDIT *******
        ! ***************************************************
        module energy_mod
-       use IO_tools_mod
        use PCG_solver_SF_mod
-       use SF_mod
-       use TF_mod
-       use VF_mod
-       use datatype_conversion_mod
-       use dir_manip_mod
-       use mesh_mod
-       use mesh_domain_mod
        use string_mod
+       use datatype_conversion_mod
+       use mesh_domain_mod
+       use IO_tools_mod
+       use VF_mod
+       use TF_mod
+       use mesh_mod
+       use SF_mod
+       use dir_manip_mod
        implicit none
 
        private
        public :: energy
        public :: init,delete,display,display_short,display,print,print_short,&
-       export,export_primitives,import,export_structured,import_structured,&
-       import_primitives,export,import,set_IO_dir,make_IO_dir,&
-       suppress_warnings
+       export,export_primitives,import,export_folder_structure,&
+       export_structured,import_structured,import_primitives,export,import,&
+       set_IO_dir,make_IO_dir,suppress_warnings
 
-       interface init;             module procedure init_copy_energy;          end interface
-       interface delete;           module procedure delete_energy;             end interface
-       interface display;          module procedure display_energy;            end interface
-       interface display_short;    module procedure display_short_energy;      end interface
-       interface display;          module procedure display_wrap_energy;       end interface
-       interface print;            module procedure print_energy;              end interface
-       interface print_short;      module procedure print_short_energy;        end interface
-       interface export;           module procedure export_energy;             end interface
-       interface export_primitives;module procedure export_primitives_energy;  end interface
-       interface import;           module procedure import_energy;             end interface
-       interface export_structured;module procedure export_structured_D_energy;end interface
-       interface import_structured;module procedure import_structured_D_energy;end interface
-       interface import_primitives;module procedure import_primitives_energy;  end interface
-       interface export;           module procedure export_wrap_energy;        end interface
-       interface import;           module procedure import_wrap_energy;        end interface
-       interface set_IO_dir;       module procedure set_IO_dir_energy;         end interface
-       interface make_IO_dir;      module procedure make_IO_dir_energy;        end interface
-       interface suppress_warnings;module procedure suppress_warnings_energy;  end interface
+       interface init;                   module procedure init_copy_energy;              end interface
+       interface delete;                 module procedure delete_energy;                 end interface
+       interface display;                module procedure display_energy;                end interface
+       interface display_short;          module procedure display_short_energy;          end interface
+       interface display;                module procedure display_wrap_energy;           end interface
+       interface print;                  module procedure print_energy;                  end interface
+       interface print_short;            module procedure print_short_energy;            end interface
+       interface export;                 module procedure export_energy;                 end interface
+       interface export_primitives;      module procedure export_primitives_energy;      end interface
+       interface import;                 module procedure import_energy;                 end interface
+       interface export_folder_structure;module procedure export_folder_structure_energy;end interface
+       interface export_structured;      module procedure export_structured_D_energy;    end interface
+       interface import_structured;      module procedure import_structured_D_energy;    end interface
+       interface import_primitives;      module procedure import_primitives_energy;      end interface
+       interface export;                 module procedure export_wrap_energy;            end interface
+       interface import;                 module procedure import_wrap_energy;            end interface
+       interface set_IO_dir;             module procedure set_IO_dir_energy;             end interface
+       interface make_IO_dir;            module procedure make_IO_dir_energy;            end interface
+       interface suppress_warnings;      module procedure suppress_warnings_energy;      end interface
 
        type energy
          logical :: suppress_warning = .false.
@@ -373,6 +374,65 @@
            call make_IO_dir(this%temp_CC2_VF,dir//'temp_CC2_VF'//fortran_PS)
          endif
          call make_IO_dir(this%MD,dir//'MD'//fortran_PS)
+       end subroutine
+
+       subroutine export_folder_structure_energy(this,dir)
+         implicit none
+         type(energy),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         call export_structured(this%PCG_T,dir//'PCG_T'//fortran_PS)
+         if (get_necessary_for_restart(this%T)) then
+           call export_structured(this%T,dir//'T'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%Tnm1)) then
+           call export_structured(this%Tnm1,dir//'Tnm1'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_CC1)) then
+           call export_structured(this%temp_CC1,dir//'temp_CC1'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_CC2)) then
+           call export_structured(this%temp_CC2,dir//'temp_CC2'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%F)) then
+           call export_structured(this%F,dir//'F'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%Fnm1)) then
+           call export_structured(this%Fnm1,dir//'Fnm1'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%L)) then
+           call export_structured(this%L,dir//'L'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%divQ)) then
+           call export_structured(this%divQ,dir//'divQ'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%Q_source)) then
+           call export_structured(this%Q_source,dir//'Q_source'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_F)) then
+           call export_structured(this%temp_F,dir//'temp_F'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%k)) then
+           call export_structured(this%k,dir//'k'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%U_F)) then
+           call export_structured(this%U_F,dir//'U_F'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%U_CC)) then
+           call export_structured(this%U_CC,dir//'U_CC'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%gravity)) then
+           call export_structured(this%gravity,dir//'gravity'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_CC1_VF)) then
+           call export_structured(this%temp_CC1_VF,&
+           dir//'temp_CC1_VF'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_CC2_VF)) then
+           call export_structured(this%temp_CC2_VF,&
+           dir//'temp_CC2_VF'//fortran_PS)
+         endif
+         call export_structured(this%MD,dir//'MD'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_energy(this,dir)

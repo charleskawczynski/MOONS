@@ -2,43 +2,43 @@
        ! ******* THIS CODE IS GENERATED. DO NOT EDIT *******
        ! ***************************************************
        module boundary_conditions_mod
-       use IO_tools_mod
-       use data_location_mod
-       use BC_logicals_mod
        use boundary_mod
-       use data_location_mod
        use datatype_conversion_mod
-       use dir_manip_mod
        use face_SD_mod
        use procedure_array_mod
+       use IO_tools_mod
        use string_mod
+       use data_location_mod
+       use BC_logicals_mod
+       use dir_manip_mod
        implicit none
 
        private
        public :: boundary_conditions
        public :: init,delete,display,display_short,display,print,print_short,&
-       export,export_primitives,import,export_structured,import_structured,&
-       import_primitives,export,import,set_IO_dir,make_IO_dir,&
-       suppress_warnings
+       export,export_primitives,import,export_folder_structure,&
+       export_structured,import_structured,import_primitives,export,import,&
+       set_IO_dir,make_IO_dir,suppress_warnings
 
-       interface init;             module procedure init_copy_boundary_conditions;          end interface
-       interface delete;           module procedure delete_boundary_conditions;             end interface
-       interface display;          module procedure display_boundary_conditions;            end interface
-       interface display_short;    module procedure display_short_boundary_conditions;      end interface
-       interface display;          module procedure display_wrap_boundary_conditions;       end interface
-       interface print;            module procedure print_boundary_conditions;              end interface
-       interface print_short;      module procedure print_short_boundary_conditions;        end interface
-       interface export;           module procedure export_boundary_conditions;             end interface
-       interface export_primitives;module procedure export_primitives_boundary_conditions;  end interface
-       interface import;           module procedure import_boundary_conditions;             end interface
-       interface export_structured;module procedure export_structured_D_boundary_conditions;end interface
-       interface import_structured;module procedure import_structured_D_boundary_conditions;end interface
-       interface import_primitives;module procedure import_primitives_boundary_conditions;  end interface
-       interface export;           module procedure export_wrap_boundary_conditions;        end interface
-       interface import;           module procedure import_wrap_boundary_conditions;        end interface
-       interface set_IO_dir;       module procedure set_IO_dir_boundary_conditions;         end interface
-       interface make_IO_dir;      module procedure make_IO_dir_boundary_conditions;        end interface
-       interface suppress_warnings;module procedure suppress_warnings_boundary_conditions;  end interface
+       interface init;                   module procedure init_copy_boundary_conditions;              end interface
+       interface delete;                 module procedure delete_boundary_conditions;                 end interface
+       interface display;                module procedure display_boundary_conditions;                end interface
+       interface display_short;          module procedure display_short_boundary_conditions;          end interface
+       interface display;                module procedure display_wrap_boundary_conditions;           end interface
+       interface print;                  module procedure print_boundary_conditions;                  end interface
+       interface print_short;            module procedure print_short_boundary_conditions;            end interface
+       interface export;                 module procedure export_boundary_conditions;                 end interface
+       interface export_primitives;      module procedure export_primitives_boundary_conditions;      end interface
+       interface import;                 module procedure import_boundary_conditions;                 end interface
+       interface export_folder_structure;module procedure export_folder_structure_boundary_conditions;end interface
+       interface export_structured;      module procedure export_structured_D_boundary_conditions;    end interface
+       interface import_structured;      module procedure import_structured_D_boundary_conditions;    end interface
+       interface import_primitives;      module procedure import_primitives_boundary_conditions;      end interface
+       interface export;                 module procedure export_wrap_boundary_conditions;            end interface
+       interface import;                 module procedure import_wrap_boundary_conditions;            end interface
+       interface set_IO_dir;             module procedure set_IO_dir_boundary_conditions;             end interface
+       interface make_IO_dir;            module procedure make_IO_dir_boundary_conditions;            end interface
+       interface suppress_warnings;      module procedure suppress_warnings_boundary_conditions;      end interface
 
        type boundary_conditions
          type(BC_logicals) :: BCL
@@ -233,6 +233,31 @@
          endif
          if (this%BCL%defined) then
            call make_IO_dir(this%f_BCs,dir//'f_BCs'//fortran_PS)
+         endif
+       end subroutine
+
+       subroutine export_folder_structure_boundary_conditions(this,dir)
+         implicit none
+         type(boundary_conditions),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         call export_structured(this%BCL,dir//'BCL'//fortran_PS)
+         if (this%BCL%defined) then
+           call export_structured(this%DL,dir//'DL'//fortran_PS)
+         endif
+         if (this%BCL%defined) then
+           call export_structured(this%face,dir//'face'//fortran_PS)
+         endif
+         if (this%BCL%defined) then
+           call export_structured(this%PA_face_BCs,&
+           dir//'PA_face_BCs'//fortran_PS)
+         endif
+         if (this%BCL%defined) then
+           call export_structured(this%PA_face_implicit_BCs,&
+           dir//'PA_face_implicit_BCs'//fortran_PS)
+         endif
+         if (this%BCL%defined) then
+           call export_structured(this%f_BCs,dir//'f_BCs'//fortran_PS)
          endif
        end subroutine
 

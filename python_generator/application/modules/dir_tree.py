@@ -23,6 +23,7 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('field','path',priv)
 	g.module[m_name].add_prop('debug','path',priv)
 	g.module[m_name].add_prop('energy','path',priv)
+	g.module[m_name].add_prop('local','path',priv)
 	g.module[m_name].add_prop('residual','path',priv)
 	g.module[m_name].add_prop('unsteady','path',priv)
 	g.module[m_name].add_prop('stats','path',priv)

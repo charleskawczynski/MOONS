@@ -3,39 +3,40 @@
        ! ***************************************************
        module face_SD_mod
        use current_precision_mod
-       use IO_tools_mod
-       use datatype_conversion_mod
-       use dir_manip_mod
-       use index_2D_mod
        use string_mod
+       use datatype_conversion_mod
+       use IO_tools_mod
+       use index_2D_mod
        use sub_domain_mod
+       use dir_manip_mod
        implicit none
 
        private
        public :: face_SD
        public :: init,delete,display,display_short,display,print,print_short,&
-       export,export_primitives,import,export_structured,import_structured,&
-       import_primitives,export,import,set_IO_dir,make_IO_dir,&
-       suppress_warnings
+       export,export_primitives,import,export_folder_structure,&
+       export_structured,import_structured,import_primitives,export,import,&
+       set_IO_dir,make_IO_dir,suppress_warnings
 
-       interface init;             module procedure init_copy_face_SD;          end interface
-       interface delete;           module procedure delete_face_SD;             end interface
-       interface display;          module procedure display_face_SD;            end interface
-       interface display_short;    module procedure display_short_face_SD;      end interface
-       interface display;          module procedure display_wrap_face_SD;       end interface
-       interface print;            module procedure print_face_SD;              end interface
-       interface print_short;      module procedure print_short_face_SD;        end interface
-       interface export;           module procedure export_face_SD;             end interface
-       interface export_primitives;module procedure export_primitives_face_SD;  end interface
-       interface import;           module procedure import_face_SD;             end interface
-       interface export_structured;module procedure export_structured_D_face_SD;end interface
-       interface import_structured;module procedure import_structured_D_face_SD;end interface
-       interface import_primitives;module procedure import_primitives_face_SD;  end interface
-       interface export;           module procedure export_wrap_face_SD;        end interface
-       interface import;           module procedure import_wrap_face_SD;        end interface
-       interface set_IO_dir;       module procedure set_IO_dir_face_SD;         end interface
-       interface make_IO_dir;      module procedure make_IO_dir_face_SD;        end interface
-       interface suppress_warnings;module procedure suppress_warnings_face_SD;  end interface
+       interface init;                   module procedure init_copy_face_SD;              end interface
+       interface delete;                 module procedure delete_face_SD;                 end interface
+       interface display;                module procedure display_face_SD;                end interface
+       interface display_short;          module procedure display_short_face_SD;          end interface
+       interface display;                module procedure display_wrap_face_SD;           end interface
+       interface print;                  module procedure print_face_SD;                  end interface
+       interface print_short;            module procedure print_short_face_SD;            end interface
+       interface export;                 module procedure export_face_SD;                 end interface
+       interface export_primitives;      module procedure export_primitives_face_SD;      end interface
+       interface import;                 module procedure import_face_SD;                 end interface
+       interface export_folder_structure;module procedure export_folder_structure_face_SD;end interface
+       interface export_structured;      module procedure export_structured_D_face_SD;    end interface
+       interface import_structured;      module procedure import_structured_D_face_SD;    end interface
+       interface import_primitives;      module procedure import_primitives_face_SD;      end interface
+       interface export;                 module procedure export_wrap_face_SD;            end interface
+       interface import;                 module procedure import_wrap_face_SD;            end interface
+       interface set_IO_dir;             module procedure set_IO_dir_face_SD;             end interface
+       interface make_IO_dir;            module procedure make_IO_dir_face_SD;            end interface
+       interface suppress_warnings;      module procedure suppress_warnings_face_SD;      end interface
 
        type face_SD
          integer :: s = 0
@@ -555,6 +556,69 @@
          s_i_2D = size(this%i_2D)
          do i_i_2D=1,s_i_2D
            call make_IO_dir(this%i_2D(i_i_2D),&
+           dir//'i_2D_'//int2str(i_i_2D)//fortran_PS)
+         enddo
+       end subroutine
+
+       subroutine export_folder_structure_face_SD(this,dir)
+         implicit none
+         type(face_SD),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_G
+         integer :: i_G_periodic_N
+         integer :: i_B
+         integer :: i_I
+         integer :: i_I_OPP
+         integer :: i_I_OPP_periodic_N
+         integer :: i_i_2D
+         integer :: s_G
+         integer :: s_G_periodic_N
+         integer :: s_B
+         integer :: s_I
+         integer :: s_I_OPP
+         integer :: s_I_OPP_periodic_N
+         integer :: s_i_2D
+         integer :: un
+         s_G = size(this%G)
+         write(un,*) s_G
+         do i_G=1,s_G
+           call export_structured(this%G(i_G),&
+           dir//'G_'//int2str(i_G)//fortran_PS)
+         enddo
+         s_G_periodic_N = size(this%G_periodic_N)
+         write(un,*) s_G_periodic_N
+         do i_G_periodic_N=1,s_G_periodic_N
+           call export_structured(this%G_periodic_N(i_G_periodic_N),&
+           dir//'G_periodic_N_'//int2str(i_G_periodic_N)//fortran_PS)
+         enddo
+         s_B = size(this%B)
+         write(un,*) s_B
+         do i_B=1,s_B
+           call export_structured(this%B(i_B),&
+           dir//'B_'//int2str(i_B)//fortran_PS)
+         enddo
+         s_I = size(this%I)
+         write(un,*) s_I
+         do i_I=1,s_I
+           call export_structured(this%I(i_I),&
+           dir//'I_'//int2str(i_I)//fortran_PS)
+         enddo
+         s_I_OPP = size(this%I_OPP)
+         write(un,*) s_I_OPP
+         do i_I_OPP=1,s_I_OPP
+           call export_structured(this%I_OPP(i_I_OPP),&
+           dir//'I_OPP_'//int2str(i_I_OPP)//fortran_PS)
+         enddo
+         s_I_OPP_periodic_N = size(this%I_OPP_periodic_N)
+         write(un,*) s_I_OPP_periodic_N
+         do i_I_OPP_periodic_N=1,s_I_OPP_periodic_N
+           call export_structured(this%I_OPP_periodic_N(i_I_OPP_periodic_N),&
+           dir//'I_OPP_periodic_N_'//int2str(i_I_OPP_periodic_N)//fortran_PS)
+         enddo
+         s_i_2D = size(this%i_2D)
+         write(un,*) s_i_2D
+         do i_i_2D=1,s_i_2D
+           call export_structured(this%i_2D(i_i_2D),&
            dir//'i_2D_'//int2str(i_i_2D)//fortran_PS)
          enddo
        end subroutine

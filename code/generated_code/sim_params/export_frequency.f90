@@ -2,42 +2,44 @@
        ! ******* THIS CODE IS GENERATED. DO NOT EDIT *******
        ! ***************************************************
        module export_frequency_mod
-       use IO_tools_mod
        use datatype_conversion_mod
-       use dir_manip_mod
        use export_frequency_params_mod
+       use IO_tools_mod
        use string_mod
+       use dir_manip_mod
        implicit none
 
        private
        public :: export_frequency
        public :: init,delete,display,display_short,display,print,print_short,&
-       export,export_primitives,import,export_structured,import_structured,&
-       import_primitives,export,import,set_IO_dir,make_IO_dir,&
-       suppress_warnings,export,import,export_structured,import_structured
+       export,export_primitives,import,export_folder_structure,&
+       export_structured,import_structured,import_primitives,export,import,&
+       set_IO_dir,make_IO_dir,suppress_warnings,export,import,&
+       export_structured,import_structured
 
-       interface init;             module procedure init_copy_export_frequency;           end interface
-       interface delete;           module procedure delete_export_frequency;              end interface
-       interface display;          module procedure display_export_frequency;             end interface
-       interface display_short;    module procedure display_short_export_frequency;       end interface
-       interface display;          module procedure display_wrap_export_frequency;        end interface
-       interface print;            module procedure print_export_frequency;               end interface
-       interface print_short;      module procedure print_short_export_frequency;         end interface
-       interface export;           module procedure export_export_frequency;              end interface
-       interface export_primitives;module procedure export_primitives_export_frequency;   end interface
-       interface import;           module procedure import_export_frequency;              end interface
-       interface export_structured;module procedure export_structured_D_export_frequency; end interface
-       interface import_structured;module procedure import_structured_D_export_frequency; end interface
-       interface import_primitives;module procedure import_primitives_export_frequency;   end interface
-       interface export;           module procedure export_wrap_export_frequency;         end interface
-       interface import;           module procedure import_wrap_export_frequency;         end interface
-       interface set_IO_dir;       module procedure set_IO_dir_export_frequency;          end interface
-       interface make_IO_dir;      module procedure make_IO_dir_export_frequency;         end interface
-       interface suppress_warnings;module procedure suppress_warnings_export_frequency;   end interface
-       interface export;           module procedure export_DN_export_frequency;           end interface
-       interface import;           module procedure import_DN_export_frequency;           end interface
-       interface export_structured;module procedure export_structured_DN_export_frequency;end interface
-       interface import_structured;module procedure import_structured_DN_export_frequency;end interface
+       interface init;                   module procedure init_copy_export_frequency;              end interface
+       interface delete;                 module procedure delete_export_frequency;                 end interface
+       interface display;                module procedure display_export_frequency;                end interface
+       interface display_short;          module procedure display_short_export_frequency;          end interface
+       interface display;                module procedure display_wrap_export_frequency;           end interface
+       interface print;                  module procedure print_export_frequency;                  end interface
+       interface print_short;            module procedure print_short_export_frequency;            end interface
+       interface export;                 module procedure export_export_frequency;                 end interface
+       interface export_primitives;      module procedure export_primitives_export_frequency;      end interface
+       interface import;                 module procedure import_export_frequency;                 end interface
+       interface export_folder_structure;module procedure export_folder_structure_export_frequency;end interface
+       interface export_structured;      module procedure export_structured_D_export_frequency;    end interface
+       interface import_structured;      module procedure import_structured_D_export_frequency;    end interface
+       interface import_primitives;      module procedure import_primitives_export_frequency;      end interface
+       interface export;                 module procedure export_wrap_export_frequency;            end interface
+       interface import;                 module procedure import_wrap_export_frequency;            end interface
+       interface set_IO_dir;             module procedure set_IO_dir_export_frequency;             end interface
+       interface make_IO_dir;            module procedure make_IO_dir_export_frequency;            end interface
+       interface suppress_warnings;      module procedure suppress_warnings_export_frequency;      end interface
+       interface export;                 module procedure export_DN_export_frequency;              end interface
+       interface import;                 module procedure import_DN_export_frequency;              end interface
+       interface export_structured;      module procedure export_structured_DN_export_frequency;   end interface
+       interface import_structured;      module procedure import_structured_DN_export_frequency;   end interface
 
        type export_frequency
          type(export_frequency_params) :: info
@@ -311,6 +313,28 @@
          dir//'restart_files'//fortran_PS)
          call make_IO_dir(this%dir,dir//'dir'//fortran_PS)
          call make_IO_dir(this%name,dir//'name'//fortran_PS)
+       end subroutine
+
+       subroutine export_folder_structure_export_frequency(this,dir)
+         implicit none
+         type(export_frequency),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         call export_structured(this%info,dir//'info'//fortran_PS)
+         call export_structured(this%unsteady_0D,&
+         dir//'unsteady_0D'//fortran_PS)
+         call export_structured(this%unsteady_1D,&
+         dir//'unsteady_1D'//fortran_PS)
+         call export_structured(this%unsteady_2D,&
+         dir//'unsteady_2D'//fortran_PS)
+         call export_structured(this%unsteady_3D,&
+         dir//'unsteady_3D'//fortran_PS)
+         call export_structured(this%final_solution,&
+         dir//'final_solution'//fortran_PS)
+         call export_structured(this%restart_files,&
+         dir//'restart_files'//fortran_PS)
+         call export_structured(this%dir,dir//'dir'//fortran_PS)
+         call export_structured(this%name,dir//'name'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_export_frequency(this,dir)

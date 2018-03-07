@@ -2,39 +2,40 @@
        ! ******* THIS CODE IS GENERATED. DO NOT EDIT *******
        ! ***************************************************
        module boundary_mod
-       use IO_tools_mod
-       use BC_logicals_mod
        use datatype_conversion_mod
-       use dir_manip_mod
        use single_boundary_mod
+       use IO_tools_mod
        use string_mod
+       use BC_logicals_mod
+       use dir_manip_mod
        implicit none
 
        private
        public :: boundary
        public :: init,delete,display,display_short,display,print,print_short,&
-       export,export_primitives,import,export_structured,import_structured,&
-       import_primitives,export,import,set_IO_dir,make_IO_dir,&
-       suppress_warnings
+       export,export_primitives,import,export_folder_structure,&
+       export_structured,import_structured,import_primitives,export,import,&
+       set_IO_dir,make_IO_dir,suppress_warnings
 
-       interface init;             module procedure init_copy_boundary;          end interface
-       interface delete;           module procedure delete_boundary;             end interface
-       interface display;          module procedure display_boundary;            end interface
-       interface display_short;    module procedure display_short_boundary;      end interface
-       interface display;          module procedure display_wrap_boundary;       end interface
-       interface print;            module procedure print_boundary;              end interface
-       interface print_short;      module procedure print_short_boundary;        end interface
-       interface export;           module procedure export_boundary;             end interface
-       interface export_primitives;module procedure export_primitives_boundary;  end interface
-       interface import;           module procedure import_boundary;             end interface
-       interface export_structured;module procedure export_structured_D_boundary;end interface
-       interface import_structured;module procedure import_structured_D_boundary;end interface
-       interface import_primitives;module procedure import_primitives_boundary;  end interface
-       interface export;           module procedure export_wrap_boundary;        end interface
-       interface import;           module procedure import_wrap_boundary;        end interface
-       interface set_IO_dir;       module procedure set_IO_dir_boundary;         end interface
-       interface make_IO_dir;      module procedure make_IO_dir_boundary;        end interface
-       interface suppress_warnings;module procedure suppress_warnings_boundary;  end interface
+       interface init;                   module procedure init_copy_boundary;              end interface
+       interface delete;                 module procedure delete_boundary;                 end interface
+       interface display;                module procedure display_boundary;                end interface
+       interface display_short;          module procedure display_short_boundary;          end interface
+       interface display;                module procedure display_wrap_boundary;           end interface
+       interface print;                  module procedure print_boundary;                  end interface
+       interface print_short;            module procedure print_short_boundary;            end interface
+       interface export;                 module procedure export_boundary;                 end interface
+       interface export_primitives;      module procedure export_primitives_boundary;      end interface
+       interface import;                 module procedure import_boundary;                 end interface
+       interface export_folder_structure;module procedure export_folder_structure_boundary;end interface
+       interface export_structured;      module procedure export_structured_D_boundary;    end interface
+       interface import_structured;      module procedure import_structured_D_boundary;    end interface
+       interface import_primitives;      module procedure import_primitives_boundary;      end interface
+       interface export;                 module procedure export_wrap_boundary;            end interface
+       interface import;                 module procedure import_wrap_boundary;            end interface
+       interface set_IO_dir;             module procedure set_IO_dir_boundary;             end interface
+       interface make_IO_dir;            module procedure make_IO_dir_boundary;            end interface
+       interface suppress_warnings;      module procedure suppress_warnings_boundary;      end interface
 
        type boundary
          type(BC_logicals) :: BCL
@@ -249,6 +250,27 @@
            enddo
          endif
          call make_IO_dir(this%name,dir//'name'//fortran_PS)
+       end subroutine
+
+       subroutine export_folder_structure_boundary(this,dir)
+         implicit none
+         type(boundary),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_SB
+         integer :: s_SB
+         integer :: un
+         call export_structured(this%BCL,dir//'BCL'//fortran_PS)
+         if (allocated(this%SB)) then
+           s_SB = size(this%SB)
+           write(un,*) s_SB
+           do i_SB=1,s_SB
+             call export_structured(this%SB(i_SB),&
+             dir//'SB_'//int2str(i_SB)//fortran_PS)
+           enddo
+         else
+           write(un,*) 0
+         endif
+         call export_structured(this%name,dir//'name'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_boundary(this,dir)

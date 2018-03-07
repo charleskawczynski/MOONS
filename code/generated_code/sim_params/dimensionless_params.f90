@@ -3,41 +3,43 @@
        ! ***************************************************
        module dimensionless_params_mod
        use current_precision_mod
-       use IO_tools_mod
        use datatype_conversion_mod
-       use dir_manip_mod
+       use IO_tools_mod
        use string_mod
+       use dir_manip_mod
        implicit none
 
        private
        public :: dimensionless_params
        public :: init,delete,display,display_short,display,print,print_short,&
-       export,export_primitives,import,export_structured,import_structured,&
-       import_primitives,export,import,set_IO_dir,make_IO_dir,&
-       suppress_warnings,export,import,export_structured,import_structured
+       export,export_primitives,import,export_folder_structure,&
+       export_structured,import_structured,import_primitives,export,import,&
+       set_IO_dir,make_IO_dir,suppress_warnings,export,import,&
+       export_structured,import_structured
 
-       interface init;             module procedure init_copy_dimensionless_params;           end interface
-       interface delete;           module procedure delete_dimensionless_params;              end interface
-       interface display;          module procedure display_dimensionless_params;             end interface
-       interface display_short;    module procedure display_short_dimensionless_params;       end interface
-       interface display;          module procedure display_wrap_dimensionless_params;        end interface
-       interface print;            module procedure print_dimensionless_params;               end interface
-       interface print_short;      module procedure print_short_dimensionless_params;         end interface
-       interface export;           module procedure export_dimensionless_params;              end interface
-       interface export_primitives;module procedure export_primitives_dimensionless_params;   end interface
-       interface import;           module procedure import_dimensionless_params;              end interface
-       interface export_structured;module procedure export_structured_D_dimensionless_params; end interface
-       interface import_structured;module procedure import_structured_D_dimensionless_params; end interface
-       interface import_primitives;module procedure import_primitives_dimensionless_params;   end interface
-       interface export;           module procedure export_wrap_dimensionless_params;         end interface
-       interface import;           module procedure import_wrap_dimensionless_params;         end interface
-       interface set_IO_dir;       module procedure set_IO_dir_dimensionless_params;          end interface
-       interface make_IO_dir;      module procedure make_IO_dir_dimensionless_params;         end interface
-       interface suppress_warnings;module procedure suppress_warnings_dimensionless_params;   end interface
-       interface export;           module procedure export_DN_dimensionless_params;           end interface
-       interface import;           module procedure import_DN_dimensionless_params;           end interface
-       interface export_structured;module procedure export_structured_DN_dimensionless_params;end interface
-       interface import_structured;module procedure import_structured_DN_dimensionless_params;end interface
+       interface init;                   module procedure init_copy_dimensionless_params;              end interface
+       interface delete;                 module procedure delete_dimensionless_params;                 end interface
+       interface display;                module procedure display_dimensionless_params;                end interface
+       interface display_short;          module procedure display_short_dimensionless_params;          end interface
+       interface display;                module procedure display_wrap_dimensionless_params;           end interface
+       interface print;                  module procedure print_dimensionless_params;                  end interface
+       interface print_short;            module procedure print_short_dimensionless_params;            end interface
+       interface export;                 module procedure export_dimensionless_params;                 end interface
+       interface export_primitives;      module procedure export_primitives_dimensionless_params;      end interface
+       interface import;                 module procedure import_dimensionless_params;                 end interface
+       interface export_folder_structure;module procedure export_folder_structure_dimensionless_params;end interface
+       interface export_structured;      module procedure export_structured_D_dimensionless_params;    end interface
+       interface import_structured;      module procedure import_structured_D_dimensionless_params;    end interface
+       interface import_primitives;      module procedure import_primitives_dimensionless_params;      end interface
+       interface export;                 module procedure export_wrap_dimensionless_params;            end interface
+       interface import;                 module procedure import_wrap_dimensionless_params;            end interface
+       interface set_IO_dir;             module procedure set_IO_dir_dimensionless_params;             end interface
+       interface make_IO_dir;            module procedure make_IO_dir_dimensionless_params;            end interface
+       interface suppress_warnings;      module procedure suppress_warnings_dimensionless_params;      end interface
+       interface export;                 module procedure export_DN_dimensionless_params;              end interface
+       interface import;                 module procedure import_DN_dimensionless_params;              end interface
+       interface export_structured;      module procedure export_structured_DN_dimensionless_params;   end interface
+       interface import_structured;      module procedure import_structured_DN_dimensionless_params;   end interface
 
        type dimensionless_params
          real(cp) :: Re = 0.0_cp
@@ -385,6 +387,15 @@
          call init(this%name,'primitives')
          call make_IO_dir(this%dir,dir//'dir'//fortran_PS)
          call make_IO_dir(this%name,dir//'name'//fortran_PS)
+       end subroutine
+
+       subroutine export_folder_structure_dimensionless_params(this,dir)
+         implicit none
+         type(dimensionless_params),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         call export_structured(this%dir,dir//'dir'//fortran_PS)
+         call export_structured(this%name,dir//'name'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_dimensionless_params(this,dir)

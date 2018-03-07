@@ -291,6 +291,7 @@
              call export_processed(ind%m,ind%phi ,str(DT%phi%field),'phi',1)
              call export_processed(ind%m,ind%J ,str(DT%J%field),'J',1)
              call export_raw(ind%m,ind%divB ,str(DT%B%field),'divB',0)
+             call export_raw(ind%m,ind%phi ,str(DT%phi%field),'phi',0)
 
              call export_raw(ind%m,ind%U_E%x,str(DT%B%field),'U_E_x',1)
              call export_raw(ind%m,ind%U_E%y,str(DT%B%field),'U_E_y',1)
@@ -299,6 +300,7 @@
              call export_raw(ind%m,ind%jCrossB ,str(DT%jCrossB%field),'jCrossB',0)
              call export_processed(ind%m,ind%jCrossB ,str(DT%jCrossB%field),'jCrossB',1)
 
+             call export_raw(ind%m,ind%stresses%x,str(DT%stresses%field),'stresses_x',0)
              call export_processed(ind%m,ind%stresses%x,str(DT%stresses%field),'stresses_x',1)
              call export_processed(ind%m,ind%stresses%y,str(DT%stresses%field),'stresses_y',1)
              call export_processed(ind%m,ind%stresses%z,str(DT%stresses%field),'stresses_z',1)
@@ -322,14 +324,19 @@
          call compute_divBJ(ind%divB,ind%divJ,ind%B,ind%J,ind%m)
          call compute_Ln(temp,ind%divB,2.0_cp,ind%m); call export(SP%PS_ind%probe_divB,TMP,temp)
          call compute_Ln(temp,ind%divJ,2.0_cp,ind%m); call export(SP%PS_ind%probe_divJ,TMP,temp)
-         if (SP%IT%unsteady_B0%add) then
-           call export(SP%PS_ind%probe_dB0dt(1),TMP,ind%dB0dt%x%BF(1)%GF%f(1,1,1))
-           call export(SP%PS_ind%probe_dB0dt(2),TMP,ind%dB0dt%y%BF(1)%GF%f(1,1,1))
-           call export(SP%PS_ind%probe_dB0dt(3),TMP,ind%dB0dt%z%BF(1)%GF%f(1,1,1))
-           call export(SP%PS_ind%probe_B0(1),TMP,ind%B0%x%BF(1)%GF%f(1,1,1))
-           call export(SP%PS_ind%probe_B0(2),TMP,ind%B0%y%BF(1)%GF%f(1,1,1))
-           call export(SP%PS_ind%probe_B0(3),TMP,ind%B0%z%BF(1)%GF%f(1,1,1))
-         endif
+
+         call export(SP%PS_ind%probe_dB0dt(1),TMP,amax(ind%dB0dt%x))
+         call export(SP%PS_ind%probe_dB0dt(2),TMP,amax(ind%dB0dt%y))
+         call export(SP%PS_ind%probe_dB0dt(3),TMP,amax(ind%dB0dt%z))
+         call export(SP%PS_ind%probe_B0(1),TMP,amax(ind%B0%x))
+         call export(SP%PS_ind%probe_B0(2),TMP,amax(ind%B0%y))
+         call export(SP%PS_ind%probe_B0(3),TMP,amax(ind%B0%z))
+         call export(SP%PS_ind%probe_B1(1),TMP,amax(ind%B%x))
+         call export(SP%PS_ind%probe_B1(2),TMP,amax(ind%B%y))
+         call export(SP%PS_ind%probe_B1(3),TMP,amax(ind%B%z))
+         call export(SP%PS_ind%probe_Btot(1),TMP,amax(ind%Btot%x))
+         call export(SP%PS_ind%probe_Btot(2),TMP,amax(ind%Btot%y))
+         call export(SP%PS_ind%probe_Btot(3),TMP,amax(ind%Btot%z))
 
          scale = SP%DP%ME_scale
 
@@ -352,19 +359,36 @@
          call face2cellCenter(ind%temp_CC_VF,ind%jCrossB,ind%m)
          call multiply(ind%temp_CC_VF,ind%cell_volume)
          call magnitude(ind%temp_CC,ind%temp_CC_VF)
-         call export(SP%PS_ind%max_JxB  ,TMP,amax(ind%temp_CC))
-         call export(SP%PS_ind%max_JxB_x,TMP,amax(ind%temp_CC_VF%x))
-         call export(SP%PS_ind%max_JxB_y,TMP,amax(ind%temp_CC_VF%y))
-         call export(SP%PS_ind%max_JxB_z,TMP,amax(ind%temp_CC_VF%z))
+         call export(SP%PS_ind%amax_JxB  ,TMP,amax(ind%temp_CC))
+         call export(SP%PS_ind%amax_JxB_x,TMP,amax(ind%temp_CC_VF%x))
+         call export(SP%PS_ind%amax_JxB_y,TMP,amax(ind%temp_CC_VF%y))
+         call export(SP%PS_ind%amax_JxB_z,TMP,amax(ind%temp_CC_VF%z))
 
-         call export(SP%PS_ind%max_stress,TMP,amax(ind%stresses))
+         call export(SP%PS_ind%amax_stress_xx,TMP,amax(ind%stresses%x%x))
+         call export(SP%PS_ind%amax_stress_xy,TMP,amax(ind%stresses%x%y))
+         call export(SP%PS_ind%amax_stress_xz,TMP,amax(ind%stresses%x%z))
+         call export(SP%PS_ind%amax_stress_yx,TMP,amax(ind%stresses%y%x))
+         call export(SP%PS_ind%amax_stress_yy,TMP,amax(ind%stresses%y%y))
+         call export(SP%PS_ind%amax_stress_yz,TMP,amax(ind%stresses%y%z))
+         call export(SP%PS_ind%amax_stress_zx,TMP,amax(ind%stresses%z%x))
+         call export(SP%PS_ind%amax_stress_zy,TMP,amax(ind%stresses%z%y))
+         call export(SP%PS_ind%amax_stress_zz,TMP,amax(ind%stresses%z%z))
 
          call assign(ind%CC_VF_fluid,0.0_cp)
          call assign(ind%temp_CC_TF,ind%stresses)
          call embedCC(ind%temp_CC_TF%x,ind%CC_VF_fluid,ind%MD_fluid)
          call embedCC(ind%temp_CC_TF%y,ind%CC_VF_fluid,ind%MD_fluid)
          call embedCC(ind%temp_CC_TF%z,ind%CC_VF_fluid,ind%MD_fluid)
-         call export(SP%PS_ind%max_stress_walls,TMP,amax(ind%temp_CC_TF))
+
+         call export(SP%PS_ind%amax_stress_walls_xx,TMP,amax(ind%temp_CC_TF%x%x))
+         call export(SP%PS_ind%amax_stress_walls_xy,TMP,amax(ind%temp_CC_TF%x%y))
+         call export(SP%PS_ind%amax_stress_walls_xz,TMP,amax(ind%temp_CC_TF%x%z))
+         call export(SP%PS_ind%amax_stress_walls_yx,TMP,amax(ind%temp_CC_TF%y%x))
+         call export(SP%PS_ind%amax_stress_walls_yy,TMP,amax(ind%temp_CC_TF%y%y))
+         call export(SP%PS_ind%amax_stress_walls_yz,TMP,amax(ind%temp_CC_TF%y%z))
+         call export(SP%PS_ind%amax_stress_walls_zx,TMP,amax(ind%temp_CC_TF%z%x))
+         call export(SP%PS_ind%amax_stress_walls_zy,TMP,amax(ind%temp_CC_TF%z%y))
+         call export(SP%PS_ind%amax_stress_walls_zz,TMP,amax(ind%temp_CC_TF%z%z))
 
          scale = SP%DP%JE_scale
          call edge2cellCenter(ind%temp_CC_VF,ind%J,ind%m,ind%temp_F1)
@@ -388,12 +412,16 @@
          type(sim_params),intent(in) :: SP
          type(time_marching_params),intent(in) :: TMP
          type(dir_tree),intent(in) :: DT
-         call export_processed(ind%m,ind%jCrossB,str(DT%jCrossB%unsteady),'jCrossB',1,TMP,SP%VS%jCrossB%unsteady_planes)
+         call export_processed(ind%m,ind%jCrossB,&
+          str(DT%jCrossB%unsteady),'jCrossB',1,TMP,SP%VS%jCrossB%unsteady_planes)
          call export_processed(ind%m,ind%B%x,str(DT%B%unsteady),'B_x',1,TMP,SP%VS%B%unsteady_planes)
          call export_processed(ind%m,ind%Btot%x,str(DT%B%unsteady),'Btot_x',1,TMP,SP%VS%B%unsteady_planes)
-         call export_processed(ind%m,ind%stresses%x,str(DT%stresses%unsteady),'stresses_x',1,TMP,SP%VS%stresses%unsteady_planes)
-         call export_processed(ind%m,ind%stresses%y,str(DT%stresses%unsteady),'stresses_y',1,TMP,SP%VS%stresses%unsteady_planes)
-         call export_processed(ind%m,ind%stresses%z,str(DT%stresses%unsteady),'stresses_z',1,TMP,SP%VS%stresses%unsteady_planes)
+         ! call export_processed(ind%m,ind%stresses%x,str(DT%stresses%unsteady),'stresses_x',1,TMP,SP%VS%stresses%unsteady_planes)
+         ! call export_processed(ind%m,ind%stresses%y,str(DT%stresses%unsteady),'stresses_y',1,TMP,SP%VS%stresses%unsteady_planes)
+         call export_processed(ind%m,ind%stresses%z,&
+          str(DT%stresses%unsteady),'stresses_z',1,TMP,SP%VS%stresses%unsteady_planes)
+         call export_processed(ind%m,ind%temp_CC_TF%z,&
+          str(DT%stresses%unsteady),'stresses_walls_z',1,TMP,SP%VS%stresses%unsteady_planes)
          call export_processed(ind%m,ind%J,str(DT%J%unsteady),'J',1,TMP,SP%VS%B%unsteady_planes)
 
          ! call export_processed(ind%m,ind%B,str(DT%B%unsteady),'B',1,TMP,SP%VS%B%unsteady_planes)
@@ -434,7 +462,7 @@
          type(induction),intent(inout) :: ind
          type(sim_params),intent(in) :: SP
          call compute_Lorentz_stresses(ind%stresses,ind%Btot,ind%m,&
-         ind%cell_volume,SP%DP%Al,ind%temp_CC_VF)
+         SP%DP%Al,ind%temp_CC_VF)
        end subroutine
 
        subroutine set_sigma_inv_ind(ind,SP)

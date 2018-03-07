@@ -248,7 +248,7 @@
            call export_processed(mom%m,mom%U,str(DT%U%field),'U',1)
            if (.not.SP%EL%export_soln_only) then
              call export_processed(mom%m,mom%p,str(DT%p%field),'p',1)
-             call export_raw(mom%m,mom%divU,str(DT%U%field),'divU',1)
+             call export_raw(mom%m,mom%divU,str(DT%U%field),'divU',0)
              call export_raw(mom%m,mom%p,str(DT%P%field),'p',0)
              if (SP%EL%export_symmetric) then
                call export_processed(mom%m,mom%U,str(DT%U%field),'U',1,SP%MP)
@@ -275,6 +275,10 @@
          temp = scale*temp/SP%DP%Re
          call export(SP%PS_mom%probe_Q,TMP,temp)
          endif
+
+         call export(SP%PS_mom%amax_U_x,TMP,amax(mom%U%x))
+         call export(SP%PS_mom%amax_U_y,TMP,amax(mom%U%y))
+         call export(SP%PS_mom%amax_U_z,TMP,amax(mom%U%z))
 
          if (mom%m%MP%plane_any) then
          if (mom%m%MP%plane(1)) call compute_TKE_2C(temp,mom%U_CC%y,mom%U_CC%z,mom%m,scale,mom%temp_CC)

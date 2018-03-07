@@ -2,40 +2,44 @@
        ! ******* THIS CODE IS GENERATED. DO NOT EDIT *******
        ! ***************************************************
        module probe_set_mom_mod
-       use IO_tools_mod
-       use datatype_conversion_mod
-       use dir_manip_mod
        use probe_mod
+       use datatype_conversion_mod
+       use IO_tools_mod
        use string_mod
+       use dir_manip_mod
        implicit none
 
        private
        public :: probe_set_mom
        public :: init,delete,display,display_short,display,print,print_short,&
-       export,export_primitives,import,export_structured,import_structured,&
-       import_primitives,export,import,set_IO_dir,make_IO_dir,&
-       suppress_warnings
+       export,export_primitives,import,export_folder_structure,&
+       export_structured,import_structured,import_primitives,export,import,&
+       set_IO_dir,make_IO_dir,suppress_warnings
 
-       interface init;             module procedure init_copy_probe_set_mom;          end interface
-       interface delete;           module procedure delete_probe_set_mom;             end interface
-       interface display;          module procedure display_probe_set_mom;            end interface
-       interface display_short;    module procedure display_short_probe_set_mom;      end interface
-       interface display;          module procedure display_wrap_probe_set_mom;       end interface
-       interface print;            module procedure print_probe_set_mom;              end interface
-       interface print_short;      module procedure print_short_probe_set_mom;        end interface
-       interface export;           module procedure export_probe_set_mom;             end interface
-       interface export_primitives;module procedure export_primitives_probe_set_mom;  end interface
-       interface import;           module procedure import_probe_set_mom;             end interface
-       interface export_structured;module procedure export_structured_D_probe_set_mom;end interface
-       interface import_structured;module procedure import_structured_D_probe_set_mom;end interface
-       interface import_primitives;module procedure import_primitives_probe_set_mom;  end interface
-       interface export;           module procedure export_wrap_probe_set_mom;        end interface
-       interface import;           module procedure import_wrap_probe_set_mom;        end interface
-       interface set_IO_dir;       module procedure set_IO_dir_probe_set_mom;         end interface
-       interface make_IO_dir;      module procedure make_IO_dir_probe_set_mom;        end interface
-       interface suppress_warnings;module procedure suppress_warnings_probe_set_mom;  end interface
+       interface init;                   module procedure init_copy_probe_set_mom;              end interface
+       interface delete;                 module procedure delete_probe_set_mom;                 end interface
+       interface display;                module procedure display_probe_set_mom;                end interface
+       interface display_short;          module procedure display_short_probe_set_mom;          end interface
+       interface display;                module procedure display_wrap_probe_set_mom;           end interface
+       interface print;                  module procedure print_probe_set_mom;                  end interface
+       interface print_short;            module procedure print_short_probe_set_mom;            end interface
+       interface export;                 module procedure export_probe_set_mom;                 end interface
+       interface export_primitives;      module procedure export_primitives_probe_set_mom;      end interface
+       interface import;                 module procedure import_probe_set_mom;                 end interface
+       interface export_folder_structure;module procedure export_folder_structure_probe_set_mom;end interface
+       interface export_structured;      module procedure export_structured_D_probe_set_mom;    end interface
+       interface import_structured;      module procedure import_structured_D_probe_set_mom;    end interface
+       interface import_primitives;      module procedure import_primitives_probe_set_mom;      end interface
+       interface export;                 module procedure export_wrap_probe_set_mom;            end interface
+       interface import;                 module procedure import_wrap_probe_set_mom;            end interface
+       interface set_IO_dir;             module procedure set_IO_dir_probe_set_mom;             end interface
+       interface make_IO_dir;            module procedure make_IO_dir_probe_set_mom;            end interface
+       interface suppress_warnings;      module procedure suppress_warnings_probe_set_mom;      end interface
 
        type probe_set_mom
+         type(probe) :: amax_U_x
+         type(probe) :: amax_U_y
+         type(probe) :: amax_U_z
          type(probe) :: probe_KE
          type(probe) :: probe_KE_2C
          type(probe) :: probe_divU
@@ -49,6 +53,9 @@
          type(probe_set_mom),intent(inout) :: this
          type(probe_set_mom),intent(in) :: that
          call delete(this)
+         call init(this%amax_U_x,that%amax_U_x)
+         call init(this%amax_U_y,that%amax_U_y)
+         call init(this%amax_U_z,that%amax_U_z)
          call init(this%probe_KE,that%probe_KE)
          call init(this%probe_KE_2C,that%probe_KE_2C)
          call init(this%probe_divU,that%probe_divU)
@@ -58,6 +65,9 @@
        subroutine delete_probe_set_mom(this)
          implicit none
          type(probe_set_mom),intent(inout) :: this
+         call delete(this%amax_U_x)
+         call delete(this%amax_U_y)
+         call delete(this%amax_U_z)
          call delete(this%probe_KE)
          call delete(this%probe_KE_2C)
          call delete(this%probe_divU)
@@ -68,6 +78,9 @@
          implicit none
          type(probe_set_mom),intent(in) :: this
          integer,intent(in) :: un
+         call display(this%amax_U_x,un)
+         call display(this%amax_U_y,un)
+         call display(this%amax_U_z,un)
          call display(this%probe_KE,un)
          call display(this%probe_KE_2C,un)
          call display(this%probe_divU,un)
@@ -78,6 +91,9 @@
          implicit none
          type(probe_set_mom),intent(in) :: this
          integer,intent(in) :: un
+         call display(this%amax_U_x,un)
+         call display(this%amax_U_y,un)
+         call display(this%amax_U_z,un)
          call display(this%probe_KE,un)
          call display(this%probe_KE_2C,un)
          call display(this%probe_divU,un)
@@ -110,6 +126,9 @@
          implicit none
          type(probe_set_mom),intent(in) :: this
          integer,intent(in) :: un
+         call export(this%amax_U_x,un)
+         call export(this%amax_U_y,un)
+         call export(this%amax_U_z,un)
          call export(this%probe_KE,un)
          call export(this%probe_KE_2C,un)
          call export(this%probe_divU,un)
@@ -121,6 +140,9 @@
          type(probe_set_mom),intent(inout) :: this
          integer,intent(in) :: un
          call delete(this)
+         call import(this%amax_U_x,un)
+         call import(this%amax_U_y,un)
+         call import(this%amax_U_z,un)
          call import(this%probe_KE,un)
          call import(this%probe_KE_2C,un)
          call import(this%probe_divU,un)
@@ -170,6 +192,9 @@
          type(probe_set_mom),intent(inout) :: this
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
+         call set_IO_dir(this%amax_U_x,dir//'amax_U_x'//fortran_PS)
+         call set_IO_dir(this%amax_U_y,dir//'amax_U_y'//fortran_PS)
+         call set_IO_dir(this%amax_U_z,dir//'amax_U_z'//fortran_PS)
          call set_IO_dir(this%probe_KE,dir//'probe_KE'//fortran_PS)
          call set_IO_dir(this%probe_KE_2C,dir//'probe_KE_2C'//fortran_PS)
          call set_IO_dir(this%probe_divU,dir//'probe_divU'//fortran_PS)
@@ -182,10 +207,29 @@
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
+         call make_IO_dir(this%amax_U_x,dir//'amax_U_x'//fortran_PS)
+         call make_IO_dir(this%amax_U_y,dir//'amax_U_y'//fortran_PS)
+         call make_IO_dir(this%amax_U_z,dir//'amax_U_z'//fortran_PS)
          call make_IO_dir(this%probe_KE,dir//'probe_KE'//fortran_PS)
          call make_IO_dir(this%probe_KE_2C,dir//'probe_KE_2C'//fortran_PS)
          call make_IO_dir(this%probe_divU,dir//'probe_divU'//fortran_PS)
          call make_IO_dir(this%probe_Q,dir//'probe_Q'//fortran_PS)
+       end subroutine
+
+       subroutine export_folder_structure_probe_set_mom(this,dir)
+         implicit none
+         type(probe_set_mom),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         call export_structured(this%amax_U_x,dir//'amax_U_x'//fortran_PS)
+         call export_structured(this%amax_U_y,dir//'amax_U_y'//fortran_PS)
+         call export_structured(this%amax_U_z,dir//'amax_U_z'//fortran_PS)
+         call export_structured(this%probe_KE,dir//'probe_KE'//fortran_PS)
+         call export_structured(this%probe_KE_2C,&
+         dir//'probe_KE_2C'//fortran_PS)
+         call export_structured(this%probe_divU,&
+         dir//'probe_divU'//fortran_PS)
+         call export_structured(this%probe_Q,dir//'probe_Q'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_probe_set_mom(this,dir)
@@ -195,6 +239,9 @@
          integer :: un
          un = new_and_open(dir,'primitives')
          call export_primitives(this,un)
+         call export_structured(this%amax_U_x,dir//'amax_U_x'//fortran_PS)
+         call export_structured(this%amax_U_y,dir//'amax_U_y'//fortran_PS)
+         call export_structured(this%amax_U_z,dir//'amax_U_z'//fortran_PS)
          call export_structured(this%probe_KE,dir//'probe_KE'//fortran_PS)
          call export_structured(this%probe_KE_2C,&
          dir//'probe_KE_2C'//fortran_PS)
@@ -211,6 +258,9 @@
          integer :: un
          un = open_to_read(dir,'primitives')
          call import_primitives(this,un)
+         call import_structured(this%amax_U_x,dir//'amax_U_x'//fortran_PS)
+         call import_structured(this%amax_U_y,dir//'amax_U_y'//fortran_PS)
+         call import_structured(this%amax_U_z,dir//'amax_U_z'//fortran_PS)
          call import_structured(this%probe_KE,dir//'probe_KE'//fortran_PS)
          call import_structured(this%probe_KE_2C,&
          dir//'probe_KE_2C'//fortran_PS)

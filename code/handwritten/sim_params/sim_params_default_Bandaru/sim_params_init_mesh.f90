@@ -27,7 +27,8 @@
 
        ! call define_mesh_SP_plasma_disruption(SP)
        ! call small_dataset(SP)
-       call define_mesh_bandaru(SP)
+       ! call define_mesh_bandaru(SP)
+       call define_mesh_bandaru_FFT(SP)
        ! call define_mesh_SP_full_BC_symmetric_geometry(SP)
        ! call define_mesh_SP_full_BC_3D_geometry(SP)
        ! call define_mesh_SP_MHD_LDC_Sergey_uniform(SP)

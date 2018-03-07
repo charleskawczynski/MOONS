@@ -83,10 +83,15 @@
          implicit none
          type(MOONS),intent(inout) :: M
          logical :: L
+         logical,parameter :: T = .true.
+         logical,parameter :: F = .false.
          write(*,*) ' ************* STARTED CONFIGURING PROBES ************** '
          L = M%C%SP%FCL%restart_all
 
          if (M%C%SP%VS%U%SS%initialize) then
+           call init(M%C%SP%PS_mom%amax_U_x   ,str(M%C%DT%U%local),'amax(u)', L,T,M%C%SP%VS%U%TMP)
+           call init(M%C%SP%PS_mom%amax_U_y   ,str(M%C%DT%U%local),'amax(v)', L,T,M%C%SP%VS%U%TMP)
+           call init(M%C%SP%PS_mom%amax_U_z   ,str(M%C%DT%U%local),'amax(w)', L,T,M%C%SP%VS%U%TMP)
            call init(M%C%SP%PS_mom%probe_divU ,str(M%C%DT%U%residual),'probe_divU',L,.true. ,M%C%SP%VS%U%TMP)
            call init(M%C%SP%PS_mom%probe_KE   ,str(M%C%DT%U%energy)  ,'KE'        ,L,.false.,M%C%SP%VS%U%TMP)
            call init(M%C%SP%PS_mom%probe_Q    ,str(M%C%DT%U%energy)  ,'probe_Q'   ,L,.true. ,M%C%SP%VS%U%TMP)
@@ -94,36 +99,75 @@
          endif
 
          if (M%C%SP%VS%B%SS%initialize) then
-           if (M%C%SP%IT%unsteady_B0%add) then
-             call init(M%C%SP%PS_ind%probe_dB0dt(1),str(M%C%DT%B%energy),'dB0dt_x',L,.true.,M%C%SP%VS%B%TMP)
-             call init(M%C%SP%PS_ind%probe_dB0dt(2),str(M%C%DT%B%energy),'dB0dt_y',L,.true.,M%C%SP%VS%B%TMP)
-             call init(M%C%SP%PS_ind%probe_dB0dt(3),str(M%C%DT%B%energy),'dB0dt_z',L,.true.,M%C%SP%VS%B%TMP)
-             call init(M%C%SP%PS_ind%probe_B0(1)   ,str(M%C%DT%B%energy),'B0_x',   L,.true.,M%C%SP%VS%B%TMP)
-             call init(M%C%SP%PS_ind%probe_B0(2)   ,str(M%C%DT%B%energy),'B0_y',   L,.true.,M%C%SP%VS%B%TMP)
-             call init(M%C%SP%PS_ind%probe_B0(3)   ,str(M%C%DT%B%energy),'B0_z',   L,.true.,M%C%SP%VS%B%TMP)
-           endif
-           call init(M%C%SP%PS_ind%max_JxB     ,str(M%C%DT%jCrossB%energy),'max_JxB',   L,.true.,M%C%SP%VS%B%TMP)
-           call init(M%C%SP%PS_ind%max_JxB_x   ,str(M%C%DT%jCrossB%energy),'max_JxB_x', L,.true.,M%C%SP%VS%B%TMP)
-           call init(M%C%SP%PS_ind%max_JxB_y   ,str(M%C%DT%jCrossB%energy),'max_JxB_y', L,.true.,M%C%SP%VS%B%TMP)
-           call init(M%C%SP%PS_ind%max_JxB_z   ,str(M%C%DT%jCrossB%energy),'max_JxB_z', L,.true.,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%probe_dB0dt(1),str(M%C%DT%B%local),'amax(dB0dt)_x',L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%probe_dB0dt(2),str(M%C%DT%B%local),'amax(dB0dt)_y',L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%probe_dB0dt(3),str(M%C%DT%B%local),'amax(dB0dt)_z',L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%probe_B0(1)  ,str(M%C%DT%B%local),'amax(B0)_x',   L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%probe_B0(2)  ,str(M%C%DT%B%local),'amax(B0)_y',   L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%probe_B0(3)  ,str(M%C%DT%B%local),'amax(B0)_z',   L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%probe_B1(1)  ,str(M%C%DT%B%local),'amax(B1)_x',   L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%probe_B1(2)  ,str(M%C%DT%B%local),'amax(B1)_y',   L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%probe_B1(3)  ,str(M%C%DT%B%local),'amax(B1)_z',   L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%probe_Btot(1),str(M%C%DT%B%local),'amax(Btot)_x', L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%probe_Btot(2),str(M%C%DT%B%local),'amax(Btot)_y', L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%probe_Btot(3),str(M%C%DT%B%local),'amax(Btot)_z', L,T,M%C%SP%VS%B%TMP)
 
-           call init(M%C%SP%PS_ind%max_stress  ,str(M%C%DT%stresses%energy) ,'max_stress',L,.true.,M%C%SP%VS%B%TMP)
-           call init(M%C%SP%PS_ind%max_stress_walls  ,str(M%C%DT%stresses%energy) ,'max_stress_walls',L,.true.,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%amax_JxB     ,str(M%C%DT%jCrossB%energy),'amax(JxB)',   L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%amax_JxB_x   ,str(M%C%DT%jCrossB%energy),'amax(JxB)_x', L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%amax_JxB_y   ,str(M%C%DT%jCrossB%energy),'amax(JxB)_y', L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%amax_JxB_z   ,str(M%C%DT%jCrossB%energy),'amax(JxB)_z', L,T,M%C%SP%VS%B%TMP)
 
-           call init(M%C%SP%PS_ind%Bx(1)   ,str(M%C%DT%B%energy),'Bx',    L,.true.,M%C%SP%VS%B%TMP)
-           call init(M%C%SP%PS_ind%By(1)   ,str(M%C%DT%B%energy),'By',    L,.true.,M%C%SP%VS%B%TMP)
-           call init(M%C%SP%PS_ind%Bz(1)   ,str(M%C%DT%B%energy),'Bz',    L,.true.,M%C%SP%VS%B%TMP)
-           call init(M%C%SP%PS_ind%Bx(2)   ,str(M%C%DT%B%energy),'B0x',   L,.true.,M%C%SP%VS%B%TMP)
-           call init(M%C%SP%PS_ind%By(2)   ,str(M%C%DT%B%energy),'B0y',   L,.true.,M%C%SP%VS%B%TMP)
-           call init(M%C%SP%PS_ind%Bz(2)   ,str(M%C%DT%B%energy),'B0z',   L,.true.,M%C%SP%VS%B%TMP)
-           call init(M%C%SP%PS_ind%Bx(3)   ,str(M%C%DT%B%energy),'B1x',   L,.true.,M%C%SP%VS%B%TMP)
-           call init(M%C%SP%PS_ind%By(3)   ,str(M%C%DT%B%energy),'B1y',   L,.true.,M%C%SP%VS%B%TMP)
-           call init(M%C%SP%PS_ind%Bz(3)   ,str(M%C%DT%B%energy),'B1z',   L,.true.,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%amax_stress_xx,str(M%C%DT%stresses%local),&
+            'amax(stress)_xx',L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%amax_stress_xy,str(M%C%DT%stresses%local),&
+            'amax(stress)_xy',L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%amax_stress_xz,str(M%C%DT%stresses%local),&
+            'amax(stress)_xz',L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%amax_stress_yx,str(M%C%DT%stresses%local),&
+            'amax(stress)_yx',L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%amax_stress_yy,str(M%C%DT%stresses%local),&
+            'amax(stress)_yy',L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%amax_stress_yz,str(M%C%DT%stresses%local),&
+            'amax(stress)_yz',L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%amax_stress_zx,str(M%C%DT%stresses%local),&
+            'amax(stress)_zx',L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%amax_stress_zy,str(M%C%DT%stresses%local),&
+            'amax(stress)_zy',L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%amax_stress_zz,str(M%C%DT%stresses%local),&
+            'amax(stress)_zz',L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%amax_stress_walls_xx,str(M%C%DT%stresses%local),&
+            'amax(stress_walls)_xx',L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%amax_stress_walls_xy,str(M%C%DT%stresses%local),&
+            'amax(stress_walls)_xy',L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%amax_stress_walls_xz,str(M%C%DT%stresses%local),&
+            'amax(stress_walls)_xz',L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%amax_stress_walls_yx,str(M%C%DT%stresses%local),&
+            'amax(stress_walls)_yx',L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%amax_stress_walls_yy,str(M%C%DT%stresses%local),&
+            'amax(stress_walls)_yy',L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%amax_stress_walls_yz,str(M%C%DT%stresses%local),&
+            'amax(stress_walls)_yz',L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%amax_stress_walls_zx,str(M%C%DT%stresses%local),&
+            'amax(stress_walls)_zx',L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%amax_stress_walls_zy,str(M%C%DT%stresses%local),&
+            'amax(stress_walls)_zy',L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%amax_stress_walls_zz,str(M%C%DT%stresses%local),&
+            'amax(stress_walls)_zz',L,T,M%C%SP%VS%B%TMP)
 
-           call init(M%C%SP%PS_ind%probe_divB     ,str(M%C%DT%B%residual),'transient_divB',L,.true.,M%C%SP%VS%B%TMP)
-           call init(M%C%SP%PS_ind%probe_divJ     ,str(M%C%DT%J%residual),'transient_divJ',L,.true.,M%C%SP%VS%B%TMP)
-           call init(M%C%SP%PS_ind%JE             ,str(M%C%DT%J%energy),'JE',            L,.true.,M%C%SP%VS%B%TMP)
-           call init(M%C%SP%PS_ind%JE_fluid       ,str(M%C%DT%J%energy),'JE_fluid',      L,.true.,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%Bx(1)   ,str(M%C%DT%B%energy),'Bx',    L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%By(1)   ,str(M%C%DT%B%energy),'By',    L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%Bz(1)   ,str(M%C%DT%B%energy),'Bz',    L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%Bx(2)   ,str(M%C%DT%B%energy),'B0x',   L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%By(2)   ,str(M%C%DT%B%energy),'B0y',   L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%Bz(2)   ,str(M%C%DT%B%energy),'B0z',   L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%Bx(3)   ,str(M%C%DT%B%energy),'B1x',   L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%By(3)   ,str(M%C%DT%B%energy),'B1y',   L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%Bz(3)   ,str(M%C%DT%B%energy),'B1z',   L,T,M%C%SP%VS%B%TMP)
+
+           call init(M%C%SP%PS_ind%probe_divB     ,str(M%C%DT%B%residual),'transient_divB',L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%probe_divJ     ,str(M%C%DT%J%residual),'transient_divJ',L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%JE             ,str(M%C%DT%J%energy),'JE',            L,T,M%C%SP%VS%B%TMP)
+           call init(M%C%SP%PS_ind%JE_fluid       ,str(M%C%DT%J%energy),'JE_fluid',      L,T,M%C%SP%VS%B%TMP)
            call init(M%C%SP%PS_ind%ME(1)          ,str(M%C%DT%B%energy),'ME',           L,.false.,M%C%SP%VS%B%TMP)
            call init(M%C%SP%PS_ind%ME_fluid(1)    ,str(M%C%DT%B%energy),'ME_fluid',     L,.false.,M%C%SP%VS%B%TMP)
            call init(M%C%SP%PS_ind%ME_conductor(1),str(M%C%DT%B%energy),'ME_conductor', L,.false.,M%C%SP%VS%B%TMP)
@@ -137,7 +181,7 @@
          endif
 
          if (M%C%SP%VS%T%SS%initialize) then
-           call init(M%C%SP%PS_nrg%probe_divQ,str(M%C%DT%T%residual),'probe_divQ',L,.true.,M%C%SP%VS%T%TMP)
+           call init(M%C%SP%PS_nrg%probe_divQ,str(M%C%DT%T%residual),'probe_divQ',L,T,M%C%SP%VS%T%TMP)
            write(*,*) '     Energy probes initialized'
          endif
 

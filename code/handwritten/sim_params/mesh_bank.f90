@@ -19,6 +19,7 @@
      public :: define_mesh_SP_plasma_disruption_1D_analytic
      public :: small_dataset
      public :: define_mesh_bandaru
+     public :: define_mesh_bandaru_FFT
      public :: define_mesh_MHD_Shercliff_plane
      public :: define_mesh_MHD_Shercliff_plane_FFT
      public :: define_mesh_full_BC_w_vacuum_symmetric
@@ -27,6 +28,7 @@
      public :: define_mesh_full_BC_w_vacuum_3D_high_res
      public :: define_mesh_full_BC_n_vacuum_3D
      public :: define_mesh_SP_MHD_LDC_Sergey_uniform
+     public :: define_mesh_hydro_LDC_Ghia
 
      contains
 
@@ -58,7 +60,7 @@
        real(cp) :: t_wall,t_fluid,buffer
        integer :: N,N_w
        t_fluid = 1.0_cp; t_wall = 0.05_cp; buffer = 1.5_cp;
-       N = 150; N_w = 14
+       N = 130; N_w = 14
        call init(SP%MP_mom,SP%MQP)
        call init(SP%MP_sigma,SP%MQP)
        call init(SP%MP_ind,SP%MQP)
@@ -151,6 +153,22 @@
        call add_base(SP%MP_mom,seg_1d(1,'grid_uniform'  ,N,0.0_cp ,2.0_cp*PI,buffer))
        call add_base(SP%MP_mom,seg_1d(3,'grid_Roberts_B',N,-1.0_cp,1.0_cp,buffer))
        call add_base(SP%MP_mom,seg_1d(2,'grid_uniform'  ,1,-0.5_cp,0.5_cp,buffer))
+       call init(SP%MP_ind,SP%MP_mom)
+       call init(SP%MP_sigma,SP%MP_ind)
+     end subroutine
+
+     subroutine define_mesh_bandaru_FFT(SP)
+       implicit none
+       type(sim_params),intent(inout) :: SP
+       real(cp) :: buffer
+       integer :: N
+       buffer = 1.0_cp; N = 128
+       call init(SP%MP_mom,SP%MQP)
+       call init(SP%MP_sigma,SP%MQP)
+       call init(SP%MP_ind,SP%MQP)
+       call add_base(SP%MP_mom,seg_1d(1,'grid_uniform',N,0.0_cp ,2.0_cp*PI,buffer))
+       call add_base(SP%MP_mom,seg_1d(3,'grid_uniform',N*2,-1.0_cp,1.0_cp,buffer))
+       call add_base(SP%MP_mom,seg_1d(2,'grid_uniform',1,-0.5_cp,0.5_cp,buffer))
        call init(SP%MP_ind,SP%MP_mom)
        call init(SP%MP_sigma,SP%MP_ind)
      end subroutine
@@ -316,6 +334,22 @@
        call add_ext(SP%MP_ind,seg_1d(1,'ext_uniform_IO',11))
        call add_ext(SP%MP_ind,seg_1d(2,'ext_uniform_IO',11))
        call add_ext(SP%MP_ind,seg_1d(3,'ext_uniform_IO',11))
+     end subroutine
+
+     subroutine define_mesh_hydro_LDC_Ghia(SP)
+       implicit none
+       type(sim_params),intent(inout) :: SP
+       real(cp) :: buffer
+       integer :: N
+       buffer = 1.0_cp; N = 64
+       call init(SP%MP_mom,SP%MQP)
+       call init(SP%MP_sigma,SP%MQP)
+       call init(SP%MP_ind,SP%MQP)
+       call add_base(SP%MP_mom,seg_1d(1,'grid_uniform',N,-1.0_cp,1.0_cp,buffer))
+       call add_base(SP%MP_mom,seg_1d(2,'grid_uniform',N,-1.0_cp,1.0_cp,buffer))
+       call add_base(SP%MP_mom,seg_1d(3,'grid_uniform',1,-0.5_cp,0.5_cp,buffer))
+       call init(SP%MP_ind,SP%MP_mom)
+       call init(SP%MP_sigma,SP%MP_ind)
      end subroutine
 
      end module

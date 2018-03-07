@@ -39,14 +39,13 @@
 
        contains
 
-       subroutine compute_Lorentz_stresses(stresses,B,m,volume,scale,VF_CC)
+       subroutine compute_Lorentz_stresses(stresses,B,m,scale,VF_CC)
          ! Computes: sigma_{ij} = B_j B_i = B bun B
          implicit none
          type(TF),intent(inout) :: stresses
          type(VF),intent(in) :: B
          type(mesh),intent(in) :: m
          real(cp),intent(in) :: scale
-         type(SF),intent(in) :: volume
          type(VF),intent(inout) :: VF_CC
          call face2CellCenter(VF_CC,B,m)
 
@@ -62,9 +61,10 @@
          call multiply(stresses%z%y,VF_CC%z,VF_CC%y)
          call multiply(stresses%z%z,VF_CC%z,VF_CC%z)
 
-         call multiply(stresses%x,volume)
-         call multiply(stresses%y,volume)
-         call multiply(stresses%z,volume)
+         call multiply(stresses%x%x,0.5_cp)
+         call multiply(stresses%y%y,0.5_cp)
+         call multiply(stresses%z%z,0.5_cp)
+
          call multiply(stresses,scale)
        end subroutine
 

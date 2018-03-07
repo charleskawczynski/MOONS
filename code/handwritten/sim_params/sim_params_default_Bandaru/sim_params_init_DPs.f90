@@ -16,11 +16,11 @@
        type(sim_params),intent(inout) :: SP
        call delete(SP%DP)
 
-       SP%DP%dtime                   = 5.0_cp*pow(-4)
+       SP%DP%dtime                   = 1.0_cp*pow(-6)
        SP%DP%t_start                 = 0.0_cp ! Does not do anything yet...
 
-       ! SP%DP%t_final                 = 1400.0_cp
-       SP%DP%t_final                 = 3.0_cp*SP%DP%dtime ! for testing
+       SP%DP%t_final                 = 1400.0_cp
+       ! SP%DP%t_final                 = 3.0_cp*SP%DP%dtime ! for testing
 
        SP%DP%Re                      = 200.0_cp
        ! SP%DP%N                       = 5.0_cp*pow(0)

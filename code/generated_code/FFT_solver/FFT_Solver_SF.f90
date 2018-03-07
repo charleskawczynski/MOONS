@@ -2,40 +2,40 @@
        ! ******* THIS CODE IS GENERATED. DO NOT EDIT *******
        ! ***************************************************
        module FFT_Solver_SF_mod
+       use datatype_conversion_mod
        use IO_tools_mod
        use norms_mod
-       use SF_mod
-       use datatype_conversion_mod
-       use dir_manip_mod
-       use norms_mod
        use string_mod
+       use SF_mod
+       use dir_manip_mod
        implicit none
 
        private
        public :: FFT_Solver_SF
        public :: init,delete,display,display_short,display,print,print_short,&
-       export,export_primitives,import,export_structured,import_structured,&
-       import_primitives,export,import,set_IO_dir,make_IO_dir,&
-       suppress_warnings
+       export,export_primitives,import,export_folder_structure,&
+       export_structured,import_structured,import_primitives,export,import,&
+       set_IO_dir,make_IO_dir,suppress_warnings
 
-       interface init;             module procedure init_copy_FFT_Solver_SF;          end interface
-       interface delete;           module procedure delete_FFT_Solver_SF;             end interface
-       interface display;          module procedure display_FFT_Solver_SF;            end interface
-       interface display_short;    module procedure display_short_FFT_Solver_SF;      end interface
-       interface display;          module procedure display_wrap_FFT_Solver_SF;       end interface
-       interface print;            module procedure print_FFT_Solver_SF;              end interface
-       interface print_short;      module procedure print_short_FFT_Solver_SF;        end interface
-       interface export;           module procedure export_FFT_Solver_SF;             end interface
-       interface export_primitives;module procedure export_primitives_FFT_Solver_SF;  end interface
-       interface import;           module procedure import_FFT_Solver_SF;             end interface
-       interface export_structured;module procedure export_structured_D_FFT_Solver_SF;end interface
-       interface import_structured;module procedure import_structured_D_FFT_Solver_SF;end interface
-       interface import_primitives;module procedure import_primitives_FFT_Solver_SF;  end interface
-       interface export;           module procedure export_wrap_FFT_Solver_SF;        end interface
-       interface import;           module procedure import_wrap_FFT_Solver_SF;        end interface
-       interface set_IO_dir;       module procedure set_IO_dir_FFT_Solver_SF;         end interface
-       interface make_IO_dir;      module procedure make_IO_dir_FFT_Solver_SF;        end interface
-       interface suppress_warnings;module procedure suppress_warnings_FFT_Solver_SF;  end interface
+       interface init;                   module procedure init_copy_FFT_Solver_SF;              end interface
+       interface delete;                 module procedure delete_FFT_Solver_SF;                 end interface
+       interface display;                module procedure display_FFT_Solver_SF;                end interface
+       interface display_short;          module procedure display_short_FFT_Solver_SF;          end interface
+       interface display;                module procedure display_wrap_FFT_Solver_SF;           end interface
+       interface print;                  module procedure print_FFT_Solver_SF;                  end interface
+       interface print_short;            module procedure print_short_FFT_Solver_SF;            end interface
+       interface export;                 module procedure export_FFT_Solver_SF;                 end interface
+       interface export_primitives;      module procedure export_primitives_FFT_Solver_SF;      end interface
+       interface import;                 module procedure import_FFT_Solver_SF;                 end interface
+       interface export_folder_structure;module procedure export_folder_structure_FFT_Solver_SF;end interface
+       interface export_structured;      module procedure export_structured_D_FFT_Solver_SF;    end interface
+       interface import_structured;      module procedure import_structured_D_FFT_Solver_SF;    end interface
+       interface import_primitives;      module procedure import_primitives_FFT_Solver_SF;      end interface
+       interface export;                 module procedure export_wrap_FFT_Solver_SF;            end interface
+       interface import;                 module procedure import_wrap_FFT_Solver_SF;            end interface
+       interface set_IO_dir;             module procedure set_IO_dir_FFT_Solver_SF;             end interface
+       interface make_IO_dir;            module procedure make_IO_dir_FFT_Solver_SF;            end interface
+       interface suppress_warnings;      module procedure suppress_warnings_FFT_Solver_SF;      end interface
 
        type FFT_Solver_SF
          type(SF) :: f
@@ -217,6 +217,27 @@
          endif
          call make_IO_dir(this%norm,dir//'norm'//fortran_PS)
          call make_IO_dir(this%var_name,dir//'var_name'//fortran_PS)
+       end subroutine
+
+       subroutine export_folder_structure_FFT_Solver_SF(this,dir)
+         implicit none
+         type(FFT_Solver_SF),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         if (get_necessary_for_restart(this%f)) then
+           call export_structured(this%f,dir//'f'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%res)) then
+           call export_structured(this%res,dir//'res'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%vol)) then
+           call export_structured(this%vol,dir//'vol'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%coeff)) then
+           call export_structured(this%coeff,dir//'coeff'//fortran_PS)
+         endif
+         call export_structured(this%norm,dir//'norm'//fortran_PS)
+         call export_structured(this%var_name,dir//'var_name'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_FFT_Solver_SF(this,dir)

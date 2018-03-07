@@ -2,44 +2,46 @@
        ! ******* THIS CODE IS GENERATED. DO NOT EDIT *******
        ! ***************************************************
        module governing_equations_mod
-       use IO_tools_mod
        use datatype_conversion_mod
-       use dir_manip_mod
        use energy_mod
-       use induction_mod
+       use IO_tools_mod
        use momentum_mod
        use string_mod
+       use induction_mod
+       use dir_manip_mod
        implicit none
 
        private
        public :: governing_equations
        public :: init,delete,display,display_short,display,print,print_short,&
-       export,export_primitives,import,export_structured,import_structured,&
-       import_primitives,export,import,set_IO_dir,make_IO_dir,&
-       suppress_warnings,export,import,export_structured,import_structured
+       export,export_primitives,import,export_folder_structure,&
+       export_structured,import_structured,import_primitives,export,import,&
+       set_IO_dir,make_IO_dir,suppress_warnings,export,import,&
+       export_structured,import_structured
 
-       interface init;             module procedure init_copy_governing_equations;           end interface
-       interface delete;           module procedure delete_governing_equations;              end interface
-       interface display;          module procedure display_governing_equations;             end interface
-       interface display_short;    module procedure display_short_governing_equations;       end interface
-       interface display;          module procedure display_wrap_governing_equations;        end interface
-       interface print;            module procedure print_governing_equations;               end interface
-       interface print_short;      module procedure print_short_governing_equations;         end interface
-       interface export;           module procedure export_governing_equations;              end interface
-       interface export_primitives;module procedure export_primitives_governing_equations;   end interface
-       interface import;           module procedure import_governing_equations;              end interface
-       interface export_structured;module procedure export_structured_D_governing_equations; end interface
-       interface import_structured;module procedure import_structured_D_governing_equations; end interface
-       interface import_primitives;module procedure import_primitives_governing_equations;   end interface
-       interface export;           module procedure export_wrap_governing_equations;         end interface
-       interface import;           module procedure import_wrap_governing_equations;         end interface
-       interface set_IO_dir;       module procedure set_IO_dir_governing_equations;          end interface
-       interface make_IO_dir;      module procedure make_IO_dir_governing_equations;         end interface
-       interface suppress_warnings;module procedure suppress_warnings_governing_equations;   end interface
-       interface export;           module procedure export_DN_governing_equations;           end interface
-       interface import;           module procedure import_DN_governing_equations;           end interface
-       interface export_structured;module procedure export_structured_DN_governing_equations;end interface
-       interface import_structured;module procedure import_structured_DN_governing_equations;end interface
+       interface init;                   module procedure init_copy_governing_equations;              end interface
+       interface delete;                 module procedure delete_governing_equations;                 end interface
+       interface display;                module procedure display_governing_equations;                end interface
+       interface display_short;          module procedure display_short_governing_equations;          end interface
+       interface display;                module procedure display_wrap_governing_equations;           end interface
+       interface print;                  module procedure print_governing_equations;                  end interface
+       interface print_short;            module procedure print_short_governing_equations;            end interface
+       interface export;                 module procedure export_governing_equations;                 end interface
+       interface export_primitives;      module procedure export_primitives_governing_equations;      end interface
+       interface import;                 module procedure import_governing_equations;                 end interface
+       interface export_folder_structure;module procedure export_folder_structure_governing_equations;end interface
+       interface export_structured;      module procedure export_structured_D_governing_equations;    end interface
+       interface import_structured;      module procedure import_structured_D_governing_equations;    end interface
+       interface import_primitives;      module procedure import_primitives_governing_equations;      end interface
+       interface export;                 module procedure export_wrap_governing_equations;            end interface
+       interface import;                 module procedure import_wrap_governing_equations;            end interface
+       interface set_IO_dir;             module procedure set_IO_dir_governing_equations;             end interface
+       interface make_IO_dir;            module procedure make_IO_dir_governing_equations;            end interface
+       interface suppress_warnings;      module procedure suppress_warnings_governing_equations;      end interface
+       interface export;                 module procedure export_DN_governing_equations;              end interface
+       interface import;                 module procedure import_DN_governing_equations;              end interface
+       interface export_structured;      module procedure export_structured_DN_governing_equations;   end interface
+       interface import_structured;      module procedure import_structured_DN_governing_equations;   end interface
 
        type governing_equations
          type(momentum) :: mom
@@ -257,6 +259,22 @@
          call make_IO_dir(this%nrg,dir//'nrg'//fortran_PS)
          call make_IO_dir(this%dir,dir//'dir'//fortran_PS)
          call make_IO_dir(this%name,dir//'name'//fortran_PS)
+       end subroutine
+
+       subroutine export_folder_structure_governing_equations(this,dir)
+         implicit none
+         type(governing_equations),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         integer :: un_indicate
+         un_indicate = new_and_open(dir,&
+         'delete_primitives_to_bypass_restart')
+         close(un_indicate)
+         call export_structured(this%mom,dir//'mom'//fortran_PS)
+         call export_structured(this%ind,dir//'ind'//fortran_PS)
+         call export_structured(this%nrg,dir//'nrg'//fortran_PS)
+         call export_structured(this%dir,dir//'dir'//fortran_PS)
+         call export_structured(this%name,dir//'name'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_governing_equations(this,dir)

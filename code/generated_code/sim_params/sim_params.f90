@@ -2,55 +2,56 @@
        ! ******* THIS CODE IS GENERATED. DO NOT EDIT *******
        ! ***************************************************
        module sim_params_mod
-       use IO_tools_mod
+       use probe_set_mom_mod
        use datatype_conversion_mod
        use dimensionless_params_mod
-       use dir_manip_mod
-       use energy_terms_mod
-       use export_frequency_mod
        use export_logicals_mod
-       use flow_control_logicals_mod
+       use probe_set_nrg_mod
+       use mirror_props_mod
+       use energy_terms_mod
        use geometry_props_mod
        use induction_terms_mod
+       use time_marching_params_mod
+       use dir_manip_mod
+       use momentum_terms_mod
+       use var_set_mod
+       use time_statistics_params_mod
+       use export_frequency_mod
+       use probe_set_ind_mod
+       use sim_config_params_mod
        use mesh_params_mod
        use mesh_quality_params_mod
-       use mirror_props_mod
-       use momentum_terms_mod
-       use probe_set_ind_mod
-       use probe_set_mom_mod
-       use probe_set_nrg_mod
-       use sim_config_params_mod
+       use flow_control_logicals_mod
+       use IO_tools_mod
        use string_mod
-       use time_marching_params_mod
-       use time_statistics_params_mod
-       use var_set_mod
        implicit none
 
        private
        public :: sim_params
        public :: init,delete,display,display_short,display,print,print_short,&
-       export,export_primitives,import,export_structured,import_structured,&
-       import_primitives,export,import,set_IO_dir,make_IO_dir,&
-       suppress_warnings
+       export,export_primitives,import,export_folder_structure,&
+       export_structured,import_structured,import_primitives,export,import,&
+       set_IO_dir,make_IO_dir,suppress_warnings
 
-       interface init;             module procedure init_copy_sim_params;          end interface
-       interface delete;           module procedure delete_sim_params;             end interface
-       interface display;          module procedure display_sim_params;            end interface
-       interface display_short;    module procedure display_short_sim_params;      end interface
-       interface display;          module procedure display_wrap_sim_params;       end interface
-       interface print;            module procedure print_sim_params;              end interface
-       interface print_short;      module procedure print_short_sim_params;        end interface
-       interface export;           module procedure export_sim_params;             end interface
-       interface export_primitives;module procedure export_primitives_sim_params;  end interface
-       interface import;           module procedure import_sim_params;             end interface
-       interface export_structured;module procedure export_structured_D_sim_params;end interface
-       interface import_structured;module procedure import_structured_D_sim_params;end interface
-       interface import_primitives;module procedure import_primitives_sim_params;  end interface
-       interface export;           module procedure export_wrap_sim_params;        end interface
-       interface import;           module procedure import_wrap_sim_params;        end interface
-       interface set_IO_dir;       module procedure set_IO_dir_sim_params;         end interface
-       interface make_IO_dir;      module procedure make_IO_dir_sim_params;        end interface
-       interface suppress_warnings;module procedure suppress_warnings_sim_params;  end interface
+       interface init;                   module procedure init_copy_sim_params;              end interface
+       interface delete;                 module procedure delete_sim_params;                 end interface
+       interface display;                module procedure display_sim_params;                end interface
+       interface display_short;          module procedure display_short_sim_params;          end interface
+       interface display;                module procedure display_wrap_sim_params;           end interface
+       interface print;                  module procedure print_sim_params;                  end interface
+       interface print_short;            module procedure print_short_sim_params;            end interface
+       interface export;                 module procedure export_sim_params;                 end interface
+       interface export_primitives;      module procedure export_primitives_sim_params;      end interface
+       interface import;                 module procedure import_sim_params;                 end interface
+       interface export_folder_structure;module procedure export_folder_structure_sim_params;end interface
+       interface export_structured;      module procedure export_structured_D_sim_params;    end interface
+       interface import_structured;      module procedure import_structured_D_sim_params;    end interface
+       interface import_primitives;      module procedure import_primitives_sim_params;      end interface
+       interface export;                 module procedure export_wrap_sim_params;            end interface
+       interface import;                 module procedure import_wrap_sim_params;            end interface
+       interface set_IO_dir;             module procedure set_IO_dir_sim_params;             end interface
+       interface make_IO_dir;            module procedure make_IO_dir_sim_params;            end interface
+       interface suppress_warnings;      module procedure suppress_warnings_sim_params;      end interface
 
        type sim_params
          type(probe_set_mom) :: PS_mom
@@ -347,6 +348,33 @@
          call make_IO_dir(this%FCL,dir//'FCL'//fortran_PS)
          call make_IO_dir(this%TSP,dir//'TSP'//fortran_PS)
          call make_IO_dir(this%SCP,dir//'SCP'//fortran_PS)
+       end subroutine
+
+       subroutine export_folder_structure_sim_params(this,dir)
+         implicit none
+         type(sim_params),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         call export_structured(this%PS_mom,dir//'PS_mom'//fortran_PS)
+         call export_structured(this%PS_ind,dir//'PS_ind'//fortran_PS)
+         call export_structured(this%PS_nrg,dir//'PS_nrg'//fortran_PS)
+         call export_structured(this%VS,dir//'VS'//fortran_PS)
+         call export_structured(this%MP_mom,dir//'MP_mom'//fortran_PS)
+         call export_structured(this%MQP,dir//'MQP'//fortran_PS)
+         call export_structured(this%MP_ind,dir//'MP_ind'//fortran_PS)
+         call export_structured(this%MP_sigma,dir//'MP_sigma'//fortran_PS)
+         call export_structured(this%DP,dir//'DP'//fortran_PS)
+         call export_structured(this%EL,dir//'EL'//fortran_PS)
+         call export_structured(this%EF,dir//'EF'//fortran_PS)
+         call export_structured(this%ET,dir//'ET'//fortran_PS)
+         call export_structured(this%MT,dir//'MT'//fortran_PS)
+         call export_structured(this%IT,dir//'IT'//fortran_PS)
+         call export_structured(this%GP,dir//'GP'//fortran_PS)
+         call export_structured(this%MP,dir//'MP'//fortran_PS)
+         call export_structured(this%coupled,dir//'coupled'//fortran_PS)
+         call export_structured(this%FCL,dir//'FCL'//fortran_PS)
+         call export_structured(this%TSP,dir//'TSP'//fortran_PS)
+         call export_structured(this%SCP,dir//'SCP'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_sim_params(this,dir)

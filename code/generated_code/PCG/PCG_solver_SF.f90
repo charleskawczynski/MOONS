@@ -2,48 +2,50 @@
        ! ******* THIS CODE IS GENERATED. DO NOT EDIT *******
        ! ***************************************************
        module PCG_solver_SF_mod
+       use string_mod
+       use datatype_conversion_mod
        use IO_tools_mod
        use matrix_free_operators_interfaces_mod
        use preconditioner_interfaces_mod
-       use SF_mod
-       use TF_mod
-       use datatype_conversion_mod
-       use dir_manip_mod
-       use iter_solver_params_mod
-       use matrix_free_params_mod
        use norms_mod
-       use string_mod
+       use TF_mod
+       use matrix_free_params_mod
+       use iter_solver_params_mod
+       use SF_mod
+       use dir_manip_mod
        implicit none
 
        private
        public :: PCG_solver_SF
        public :: init,delete,display,display_short,display,print,print_short,&
-       export,export_primitives,import,export_structured,import_structured,&
-       import_primitives,export,import,set_IO_dir,make_IO_dir,&
-       suppress_warnings,export,import,export_structured,import_structured
+       export,export_primitives,import,export_folder_structure,&
+       export_structured,import_structured,import_primitives,export,import,&
+       set_IO_dir,make_IO_dir,suppress_warnings,export,import,&
+       export_structured,import_structured
 
-       interface init;             module procedure init_copy_PCG_solver_SF;           end interface
-       interface delete;           module procedure delete_PCG_solver_SF;              end interface
-       interface display;          module procedure display_PCG_solver_SF;             end interface
-       interface display_short;    module procedure display_short_PCG_solver_SF;       end interface
-       interface display;          module procedure display_wrap_PCG_solver_SF;        end interface
-       interface print;            module procedure print_PCG_solver_SF;               end interface
-       interface print_short;      module procedure print_short_PCG_solver_SF;         end interface
-       interface export;           module procedure export_PCG_solver_SF;              end interface
-       interface export_primitives;module procedure export_primitives_PCG_solver_SF;   end interface
-       interface import;           module procedure import_PCG_solver_SF;              end interface
-       interface export_structured;module procedure export_structured_D_PCG_solver_SF; end interface
-       interface import_structured;module procedure import_structured_D_PCG_solver_SF; end interface
-       interface import_primitives;module procedure import_primitives_PCG_solver_SF;   end interface
-       interface export;           module procedure export_wrap_PCG_solver_SF;         end interface
-       interface import;           module procedure import_wrap_PCG_solver_SF;         end interface
-       interface set_IO_dir;       module procedure set_IO_dir_PCG_solver_SF;          end interface
-       interface make_IO_dir;      module procedure make_IO_dir_PCG_solver_SF;         end interface
-       interface suppress_warnings;module procedure suppress_warnings_PCG_solver_SF;   end interface
-       interface export;           module procedure export_DN_PCG_solver_SF;           end interface
-       interface import;           module procedure import_DN_PCG_solver_SF;           end interface
-       interface export_structured;module procedure export_structured_DN_PCG_solver_SF;end interface
-       interface import_structured;module procedure import_structured_DN_PCG_solver_SF;end interface
+       interface init;                   module procedure init_copy_PCG_solver_SF;              end interface
+       interface delete;                 module procedure delete_PCG_solver_SF;                 end interface
+       interface display;                module procedure display_PCG_solver_SF;                end interface
+       interface display_short;          module procedure display_short_PCG_solver_SF;          end interface
+       interface display;                module procedure display_wrap_PCG_solver_SF;           end interface
+       interface print;                  module procedure print_PCG_solver_SF;                  end interface
+       interface print_short;            module procedure print_short_PCG_solver_SF;            end interface
+       interface export;                 module procedure export_PCG_solver_SF;                 end interface
+       interface export_primitives;      module procedure export_primitives_PCG_solver_SF;      end interface
+       interface import;                 module procedure import_PCG_solver_SF;                 end interface
+       interface export_folder_structure;module procedure export_folder_structure_PCG_solver_SF;end interface
+       interface export_structured;      module procedure export_structured_D_PCG_solver_SF;    end interface
+       interface import_structured;      module procedure import_structured_D_PCG_solver_SF;    end interface
+       interface import_primitives;      module procedure import_primitives_PCG_solver_SF;      end interface
+       interface export;                 module procedure export_wrap_PCG_solver_SF;            end interface
+       interface import;                 module procedure import_wrap_PCG_solver_SF;            end interface
+       interface set_IO_dir;             module procedure set_IO_dir_PCG_solver_SF;             end interface
+       interface make_IO_dir;            module procedure make_IO_dir_PCG_solver_SF;            end interface
+       interface suppress_warnings;      module procedure suppress_warnings_PCG_solver_SF;      end interface
+       interface export;                 module procedure export_DN_PCG_solver_SF;              end interface
+       interface import;                 module procedure import_DN_PCG_solver_SF;              end interface
+       interface export_structured;      module procedure export_structured_DN_PCG_solver_SF;   end interface
+       interface import_structured;      module procedure import_structured_DN_PCG_solver_SF;   end interface
 
        type PCG_solver_SF
          integer :: un = 0
@@ -422,6 +424,44 @@
          call make_IO_dir(this%name,dir//'name'//fortran_PS)
          call make_IO_dir(this%var_dir,dir//'var_dir'//fortran_PS)
          call make_IO_dir(this%var_name,dir//'var_name'//fortran_PS)
+       end subroutine
+
+       subroutine export_folder_structure_PCG_solver_SF(this,dir)
+         implicit none
+         type(PCG_solver_SF),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         call export_structured(this%MFP,dir//'MFP'//fortran_PS)
+         if (get_necessary_for_restart(this%r)) then
+           call export_structured(this%r,dir//'r'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%p)) then
+           call export_structured(this%p,dir//'p'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%tempx)) then
+           call export_structured(this%tempx,dir//'tempx'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%Ax)) then
+           call export_structured(this%Ax,dir//'Ax'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%x_BC)) then
+           call export_structured(this%x_BC,dir//'x_BC'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%vol)) then
+           call export_structured(this%vol,dir//'vol'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%z)) then
+           call export_structured(this%z,dir//'z'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%Minv)) then
+           call export_structured(this%Minv,dir//'Minv'//fortran_PS)
+         endif
+         call export_structured(this%norm,dir//'norm'//fortran_PS)
+         call export_structured(this%ISP,dir//'ISP'//fortran_PS)
+         call export_structured(this%dir,dir//'dir'//fortran_PS)
+         call export_structured(this%name,dir//'name'//fortran_PS)
+         call export_structured(this%var_dir,dir//'var_dir'//fortran_PS)
+         call export_structured(this%var_name,dir//'var_name'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_PCG_solver_SF(this,dir)

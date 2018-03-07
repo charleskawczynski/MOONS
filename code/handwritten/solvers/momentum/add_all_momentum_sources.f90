@@ -77,6 +77,12 @@
                                     nrg%MD,nrg%temp_F,nrg%temp_CC1_VF)
          endif
 
+         if (SP%MT%zero_source_components_any) then
+           if (SP%MT%zero_source_components(1)) call assign(F%x,0.0_cp)
+           if (SP%MT%zero_source_components(2)) call assign(F%y,0.0_cp)
+           if (SP%MT%zero_source_components(3)) call assign(F%z,0.0_cp)
+         endif
+
        end subroutine
 
 !        subroutine add_all_momentum_raw_func(F,mom_temp_F3,ind_temp_F1_TF,ind_J,ind_m,&

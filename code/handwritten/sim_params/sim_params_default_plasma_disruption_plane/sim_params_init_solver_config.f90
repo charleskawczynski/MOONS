@@ -43,13 +43,13 @@
        !     solve_method = 8 = Euler_time_AB2_sources_new
 
        ! call init(ISP,iter_max,tol_rel,tol_abs,n_skip_check_res,export_convergence)
-       call init(SP%VS%T%ISP,  200 ,pow(-10),pow(-13),1,F,SP%FCL%export_heavy)
-       call init(SP%VS%U%ISP,  200 ,pow(-10),pow(-13),1,F,SP%FCL%export_heavy)
-       call init(SP%VS%P%ISP,  200 ,pow(-10),pow(-13),1,F,SP%FCL%export_heavy)
-       call init(SP%VS%B%ISP,  200 ,pow(-10),pow(-13),1,F,SP%FCL%export_heavy)
-       call init(SP%VS%B0%ISP, 200 ,pow(-10),pow(-13),1,F,SP%FCL%export_heavy)
-       call init(SP%VS%phi%ISP,200 ,pow(-10),pow(-13),1,F,SP%FCL%export_heavy)
-       call init(SP%VS%rho%ISP,200 ,pow(-10),pow(-13),1,F,SP%FCL%export_heavy)
+       call init(SP%VS%T%ISP,  50 ,pow(-10),pow(-13),1,F,SP%FCL%export_heavy)
+       call init(SP%VS%U%ISP,  50 ,pow(-10),pow(-13),1,F,SP%FCL%export_heavy)
+       call init(SP%VS%P%ISP,  50 ,pow(-10),pow(-13),1,F,SP%FCL%export_heavy)
+       call init(SP%VS%B%ISP,  50 ,pow(-10),pow(-13),1,F,SP%FCL%export_heavy)
+       call init(SP%VS%B0%ISP, 50 ,pow(-10),pow(-13),1,F,SP%FCL%export_heavy)
+       call init(SP%VS%phi%ISP,50 ,pow(-10),pow(-13),1,F,SP%FCL%export_heavy)
+       call init(SP%VS%rho%ISP,50 ,pow(-10),pow(-13),1,F,SP%FCL%export_heavy)
 
        ! call init(TMP,RK_n_stages,RK_active,multistep_iter,t_start,t_stop,dtime)
        call init(SP%coupled,   1,F,1 ,SP%DP%t_start,SP%DP%t_final,SP%DP%dtime)

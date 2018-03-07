@@ -238,28 +238,30 @@ class fortran_module:
         d = list(set([item for sublist in d for item in sublist if item]))
         d.sort()
         c = c+[x+'_mod' for x in d]
+        c = list(set(c))
         return ['use '+x if x else None for x in c]
 
     def write_interfaces(self):
         alias = []
         sub_name = []
-        alias = alias+['init'];              sub_name = sub_name+['init_copy'];
-        alias = alias+['delete'];            sub_name = sub_name+['delete'];
-        alias = alias+['display'];           sub_name = sub_name+['display'];
-        alias = alias+['display_short'];     sub_name = sub_name+['display_short'];
-        alias = alias+['display'];           sub_name = sub_name+['display_wrap'];
-        alias = alias+['print'];             sub_name = sub_name+['print'];
-        alias = alias+['print_short'];       sub_name = sub_name+['print_short'];
-        alias = alias+['export'];            sub_name = sub_name+['export'];
-        alias = alias+['export_primitives']; sub_name = sub_name+['export_primitives'];
-        alias = alias+['import'];            sub_name = sub_name+['import'];
-        alias = alias+['export_structured']; sub_name = sub_name+['export_structured_D'];
-        alias = alias+['import_structured']; sub_name = sub_name+['import_structured_D'];
-        alias = alias+['import_primitives']; sub_name = sub_name+['import_primitives'];
-        alias = alias+['export'];            sub_name = sub_name+['export_wrap'];
-        alias = alias+['import'];            sub_name = sub_name+['import_wrap'];
-        alias = alias+['set_IO_dir'];        sub_name = sub_name+['set_IO_dir'];
-        alias = alias+['make_IO_dir'];       sub_name = sub_name+['make_IO_dir'];
+        alias = alias+['init'];                    sub_name = sub_name+['init_copy'];
+        alias = alias+['delete'];                  sub_name = sub_name+['delete'];
+        alias = alias+['display'];                 sub_name = sub_name+['display'];
+        alias = alias+['display_short'];           sub_name = sub_name+['display_short'];
+        alias = alias+['display'];                 sub_name = sub_name+['display_wrap'];
+        alias = alias+['print'];                   sub_name = sub_name+['print'];
+        alias = alias+['print_short'];             sub_name = sub_name+['print_short'];
+        alias = alias+['export'];                  sub_name = sub_name+['export'];
+        alias = alias+['export_primitives'];       sub_name = sub_name+['export_primitives'];
+        alias = alias+['import'];                  sub_name = sub_name+['import'];
+        alias = alias+['export_folder_structure']; sub_name = sub_name+['export_folder_structure'];
+        alias = alias+['export_structured'];       sub_name = sub_name+['export_structured_D'];
+        alias = alias+['import_structured'];       sub_name = sub_name+['import_structured_D'];
+        alias = alias+['import_primitives'];       sub_name = sub_name+['import_primitives'];
+        alias = alias+['export'];                  sub_name = sub_name+['export_wrap'];
+        alias = alias+['import'];                  sub_name = sub_name+['import_wrap'];
+        alias = alias+['set_IO_dir'];              sub_name = sub_name+['set_IO_dir'];
+        alias = alias+['make_IO_dir'];             sub_name = sub_name+['make_IO_dir'];
 
         if self.name=='VF' or self.name=='SF' or self.name=='block_field':
           alias = alias+['get_necessary_for_restart'];       sub_name = sub_name+['get_necessary_for_restart'];
@@ -268,10 +270,10 @@ class fortran_module:
             alias = alias+['suppress_warnings']; sub_name = sub_name+['suppress_warnings'];
 
         if self.has_dir_name:
-          alias = alias+['export'];          sub_name = sub_name+['export_DN'];
-          alias = alias+['import'];          sub_name = sub_name+['import_DN'];
-          alias = alias+['export_structured']; sub_name = sub_name+['export_structured_DN'];
-          alias = alias+['import_structured']; sub_name = sub_name+['import_structured_DN'];
+          alias = alias+['export'];                  sub_name = sub_name+['export_DN'];
+          alias = alias+['import'];                  sub_name = sub_name+['import_DN'];
+          alias = alias+['export_structured'];       sub_name = sub_name+['export_structured_DN'];
+          alias = alias+['import_structured'];       sub_name = sub_name+['import_structured_DN'];
         st_al = [len(x) for x in alias]
         st_sn = [len(x) for x in sub_name]
         sp_al = [self.spaces[max(st_al)-x] for x in st_al]
@@ -320,6 +322,7 @@ class fortran_module:
 
         c=c+[self.set_IO_dir_module()+['']]
         c=c+[self.make_IO_dir_module()+['']]
+        c=c+[self.export_folder_structure_module()+['']] # export_structured(this,dir), names are determined by data structure
         c=c+[self.export_structured_D_module()+['']] # export_structured(this), if has (dir,name)
         c=c+[self.import_structured_D_module()+['']] # import_structured(this), if has (dir,name)
 
@@ -667,6 +670,51 @@ class fortran_module:
             if self.get_restart_condition(self.prop[key]): c=c+["endif" ]
 
         c=c+['close(un)']
+        if IO_structured_OFF: c=c+["#enddef"]
+        c=c+[self.end_sub()]
+        return c
+
+    def export_folder_structure_module(self):
+        sig = 'export_folder_structure_' + self.get_suffix()
+        c = []
+        c=c+[self.full_sub_signature(sig,'this,dir')]
+        c=c+[self.implicitNone]
+        c=c+['type(' + self.name + '),intent(in) :: this']
+        c=c+['character(len=*),intent(in) :: dir']
+        for key in self.prop:
+          L = self.prop[key].get_list_of_local_iterators()
+          if L: c=c+L
+        if self.any_non_primitive_high_dimension:
+          for key in self.prop:
+            L = self.prop[key].get_list_of_local_shape()
+            if L: c=c+L
+        c=c+["integer :: un"]
+
+        if any([self.name==x for x in parent_restart_file_indicator]) and use_restart_file_indicator:
+          c=c+["integer :: un_indicate"]
+          if IO_structured_OFF: c=c+["#ifdef EXPORT_FOR_AUTO_RESTART"]
+          c=c+["un_indicate = new_and_open(dir,'delete_primitives_to_bypass_restart')"]
+          c=c+["close(un_indicate)"]
+
+        if not IO_structured_quiet:
+          c=c+["write(*,*) 'Exporting "+ self.name +" structured'"]
+
+        for key in self.prop:
+          if self.get_structured_condition(self.prop[key]):
+            if self.get_structured_condition_GNR(self.prop[key]):
+              c=c+["if (get_necessary_for_restart(this%"+self.prop[key].name+")) then" ]
+
+            if self.get_restart_condition(self.prop[key]):
+              c=c+["if (this%necessary_for_restart) then" ]
+            if self.get_BC_condition(self.prop[key]):
+              c=c+["if (this%BCL%defined) then" ]
+
+            c=c+[x for x in self.prop[key].write_export_structured('dir')]
+
+            if self.get_structured_condition_GNR(self.prop[key]): c=c+["endif" ]
+            if self.get_BC_condition(self.prop[key]): c=c+["endif" ]
+            if self.get_restart_condition(self.prop[key]): c=c+["endif" ]
+
         if IO_structured_OFF: c=c+["#enddef"]
         c=c+[self.end_sub()]
         return c

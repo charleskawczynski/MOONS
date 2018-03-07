@@ -78,6 +78,7 @@ f_ext     = '.f90'
 file_main = full_path(__file__)
 dir_app = dir_name(file_main)+PS
 dir_bin = dir_app+'bin'+PS
+dir_MOONS = up_dir(dir_app,1)+PS
 dir_code = up_dir(dir_app,1)+PS+'code'+PS
 dir_code_handwritten = dir_code+'handwritten'+PS
 dir_code_generated = dir_code+'generated_code'+PS
@@ -87,6 +88,7 @@ dir_interface = dir_app+'abstract_interfaces'+PS
 abstract_interfaces_path = dir_code_handwritten+'abstract_interfaces'+PS
 
 d = GD.GOOFPY_directory(PS)
+d.set_dir_MOONS(dir_MOONS)
 d.set_f_ext(f_ext)
 d.set_file_main(file_main)
 d.set_dir_app(dir_app)

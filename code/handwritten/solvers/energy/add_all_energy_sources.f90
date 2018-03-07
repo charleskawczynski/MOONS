@@ -64,6 +64,7 @@
            call add_volumetric_heating_Nuclear(F,nrg%m,&
            SP%ET%volumetric_heating%scale,nrg%temp_CC1)
          endif
+
        end subroutine
 
        end module

@@ -27,7 +27,7 @@
 
        ! call init(SS        ,initialize,solve,restart,prescribe_BCs,solve_method)
        call init(SP%VS%T%SS  ,F         ,F    ,F      ,F            ,0)
-       call init(SP%VS%U%SS  ,T         ,T    ,F      ,T            ,6)
+       call init(SP%VS%U%SS  ,T         ,T    ,F      ,T            ,9)
        call init(SP%VS%P%SS  ,T         ,T    ,F      ,F            ,0)
        call init(SP%VS%B%SS  ,T         ,T    ,F      ,T            ,6)
        call init(SP%VS%B0%SS ,T         ,T    ,F      ,F            ,0)
@@ -52,14 +52,14 @@
        call init(SP%VS%rho%ISP,5  ,pow(-6),pow(-13),1,F,SP%FCL%export_heavy)
 
        ! call init(TMP,RK_n_stages,RK_active,multistep_iter,n_step_stop,dtime)
-       call init(SP%coupled,   1,F,1 ,SP%DP%t_final,SP%DP%dtime)
-       call init(SP%VS%T%TMP,  1,F,1 ,SP%DP%t_final,SP%DP%dtime)
-       call init(SP%VS%U%TMP,  1,F,1 ,SP%DP%t_final,SP%DP%dtime)
-       call init(SP%VS%P%TMP,  1,F,1 ,SP%DP%t_final,SP%DP%dtime)
-       call init(SP%VS%B%TMP,  1,F,1 ,SP%DP%t_final,SP%DP%dtime)
-       call init(SP%VS%B0%TMP, 1,F,1 ,SP%DP%t_final,SP%DP%dtime)
-       call init(SP%VS%phi%TMP,1,F,1 ,SP%DP%t_final,SP%DP%dtime)
-       call init(SP%VS%rho%TMP,1,F,1 ,SP%DP%t_final,SP%DP%dtime)
+       call init(SP%coupled,   1,F,1 ,SP%DP%t_start,SP%DP%t_final,SP%DP%dtime)
+       call init(SP%VS%T%TMP,  1,F,1 ,SP%DP%t_start,SP%DP%t_final,SP%DP%dtime)
+       call init(SP%VS%U%TMP,  1,F,1 ,SP%DP%t_start,SP%DP%t_final,SP%DP%dtime)
+       call init(SP%VS%P%TMP,  1,F,1 ,SP%DP%t_start,SP%DP%t_final,SP%DP%dtime)
+       call init(SP%VS%B%TMP,  1,F,1 ,SP%DP%t_start,SP%DP%t_final,SP%DP%dtime)
+       call init(SP%VS%B0%TMP, 1,F,1 ,SP%DP%t_start,SP%DP%t_final,SP%DP%dtime)
+       call init(SP%VS%phi%TMP,1,F,1 ,SP%DP%t_start,SP%DP%t_final,SP%DP%dtime)
+       call init(SP%VS%rho%TMP,1,F,1 ,SP%DP%t_start,SP%DP%t_final,SP%DP%dtime)
 
        ! Matrix-free parameters:
        ! coeff_natural  = coefficient of terms in non-discretized equation

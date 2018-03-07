@@ -2,23 +2,22 @@
        ! ******* THIS CODE IS GENERATED. DO NOT EDIT *******
        ! ***************************************************
        module SF_mod
+       use block_field_extend_mod
        use current_precision_mod
+       use datatype_conversion_mod
        use IO_tools_mod
+       use string_mod
        use data_location_mod
        use block_field_mod
-       use block_field_extend_mod
-       use data_location_mod
-       use datatype_conversion_mod
        use dir_manip_mod
-       use string_mod
        implicit none
 
        private
        public :: SF
        public :: init,delete,display,display_short,display,print,print_short,&
-       export,export_primitives,import,export_structured,import_structured,&
-       import_primitives,export,import,set_IO_dir,make_IO_dir,&
-       get_necessary_for_restart,suppress_warnings
+       export,export_primitives,import,export_folder_structure,&
+       export_structured,import_structured,import_primitives,export,import,&
+       set_IO_dir,make_IO_dir,get_necessary_for_restart,suppress_warnings
 
        interface init;                     module procedure init_copy_SF;                end interface
        interface delete;                   module procedure delete_SF;                   end interface
@@ -30,6 +29,7 @@
        interface export;                   module procedure export_SF;                   end interface
        interface export_primitives;        module procedure export_primitives_SF;        end interface
        interface import;                   module procedure import_SF;                   end interface
+       interface export_folder_structure;  module procedure export_folder_structure_SF;  end interface
        interface export_structured;        module procedure export_structured_D_SF;      end interface
        interface import_structured;        module procedure import_structured_D_SF;      end interface
        interface import_primitives;        module procedure import_primitives_SF;        end interface
@@ -287,6 +287,26 @@
            enddo
          endif
          call make_IO_dir(this%DL,dir//'DL'//fortran_PS)
+       end subroutine
+
+       subroutine export_folder_structure_SF(this,dir)
+         implicit none
+         type(SF),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: i_BF
+         integer :: s_BF
+         integer :: un
+         if (allocated(this%BF)) then
+           s_BF = size(this%BF)
+           write(un,*) s_BF
+           do i_BF=1,s_BF
+             call export_structured(this%BF(i_BF),&
+             dir//'BF_'//int2str(i_BF)//fortran_PS)
+           enddo
+         else
+           write(un,*) 0
+         endif
+         call export_structured(this%DL,dir//'DL'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_SF(this,dir)

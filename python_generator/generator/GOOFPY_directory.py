@@ -3,6 +3,7 @@ class GOOFPY_directory:
 	def __init__(self,PS):
 		self.PS = PS
 		self.dir_GOOFPY               = ''
+		self.dir_MOONS                = ''
 		self.dir_code                 = ''
 		self.dir_app                  = ''
 		self.dir_code_pre_generated   = ''
@@ -29,6 +30,7 @@ class GOOFPY_directory:
 		return
 
 	def set_dir_GOOFPY(self,dir_GOOFPY): self.dir_GOOFPY = dir_GOOFPY
+	def set_dir_MOONS(self,dir_MOONS): self.dir_MOONS = dir_MOONS
 	def set_dir_app(self,dir_app): self.dir_app = dir_app
 	def set_f_ext(self,f_ext): self.f_ext = f_ext
 	def set_dir_interface(self,dir_interface): self.dir_interface = dir_interface
@@ -55,6 +57,7 @@ class GOOFPY_directory:
 	def compute_common_root(self):
 		self.dir_list = []
 		self.dir_list = self.dir_list+[self.dir_GOOFPY]
+		self.dir_list = self.dir_list+[self.dir_MOONS]
 		self.dir_list = self.dir_list+[self.dir_code]
 		self.dir_list = self.dir_list+[self.dir_app]
 		self.dir_list = self.dir_list+[self.dir_code_generated]
@@ -78,10 +81,11 @@ class GOOFPY_directory:
 		temp = [x for x in temp if not x=='']
 		self.common_root = temp[0]
 		for x in temp[1:]:
-			self.common_root = f.longest_substring_finder(self.common_root, x)
+			self.common_root = f.longest_substring_finder_new(self.common_root, x)
 
 	def unify_path_separator(self):
 		self.dir_GOOFPY             = self.dir_GOOFPY.replace('/',self.PS_file_sys).replace('\\',self.PS_file_sys)
+		self.dir_MOONS              = self.dir_MOONS.replace('/',self.PS_file_sys).replace('\\',self.PS_file_sys)
 		self.dir_code               = self.dir_code.replace('/',self.PS_file_sys).replace('\\',self.PS_file_sys)
 		self.dir_app                = self.dir_app.replace('/',self.PS_file_sys).replace('\\',self.PS_file_sys)
 		self.dir_code_generated     = self.dir_code_generated.replace('/',self.PS_file_sys).replace('\\',self.PS_file_sys)
@@ -107,6 +111,7 @@ class GOOFPY_directory:
 		print('-------------------------------------- GOOFPY directory')
 		print('PS                       = '+self.PS)
 		print('dir_GOOFPY               = '+self.dir_GOOFPY.replace(self.common_root,''))
+		print('dir_MOONS                = '+self.dir_MOONS.replace(self.common_root,''))
 		print('dir_code                 = '+self.dir_code.replace(self.common_root,''))
 		print('dir_code                 = '+self.dir_code.replace(self.common_root,''))
 		print('dir_app                  = '+self.dir_app.replace(self.common_root,''))
@@ -136,6 +141,7 @@ class GOOFPY_directory:
 		print('PS_file_sys              = '+self.PS_file_sys)
 		print('PS_make_file             = '+self.PS_make_file)
 		print('dir_GOOFPY               = '+self.dir_GOOFPY)
+		print('dir_MOONS                = '+self.dir_MOONS)
 		print('dir_code                 = '+self.dir_code)
 		print('dir_app                  = '+self.dir_app)
 		print('dir_code_generated       = '+self.dir_code_generated)

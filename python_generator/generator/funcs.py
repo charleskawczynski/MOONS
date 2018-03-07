@@ -176,7 +176,7 @@ def get_compiled_files(d,make_src_files):
     root_path_replace = [('$('+x.split('=')[0].replace(' ','')+')',x.split('=')[1].replace(' ','')) for x in root_path_replace]
     compiled_files = [x.replace(y,z) for x in compiled_files for y,z in root_path_replace if y in x]
     compiled_files = [x.replace(d.PS_make_file,d.PS_file_sys) for x in compiled_files]
-    compiled_files = [d.common_root+x for x in compiled_files]
+    compiled_files = [d.dir_MOONS+x for x in compiled_files]
     compiled_files = [x.replace('..','') for x in compiled_files]
     compiled_files = [x.replace(d.PS_file_sys+d.PS_file_sys,d.PS_file_sys) for x in compiled_files]
     defined_vars = get_defined_vars(d.makefile_main)
@@ -192,6 +192,8 @@ def combine_makefile(d):
     (compiled_files,root_path_replace,defined_vars) = get_compiled_files(d,make_src_files)
     compiled_files = list(set(compiled_files))
     sorted_file_list = get_sorted_file_list(d,compiled_files)
+    defined_vars = [(x,y) for x,y in defined_vars if not 'rm' == x.lower()]
+    defined_vars = [(x,y) for x,y in defined_vars if not 'rm' == y.lower()]
     L = sorted_file_list
     for MFV in d.make_file_vpaths:
         L = [x.replace(MFV[0],MFV[1]) for x in L]
@@ -280,4 +282,14 @@ def longest_substring_finder(string1, string2):
             else:
                 if (len(match) > len(answer)): answer = match
                 match = ""
+    return answer
+
+def longest_substring_finder_new(string1, string2):
+    len_min = min([len(string1), len(string2)])
+    answer = ""
+    for i in range(len_min):
+        if string1[i] == string2[i]:
+            answer += string1[i]
+        else:
+            break
     return answer

@@ -26,7 +26,13 @@
        logical,parameter :: F = .false.
 
        SP%GP%periodic_dir            = (/0,1,0/)
-       SP%GP%apply_BC_order          = (/5,6,1,2,3,4/) ! good for periodic in y?
+       SP%GP%apply_BC_order          = get_apply_BC_order(SP%GP%periodic_dir)
+       SP%GP%FFT_dir                 = get_FFT_dir(SP%GP%periodic_dir)
+
+       SP%MT%zero_source_components   = (/F,F,F/)
+       SP%MT%zero_source_components_any   = any(SP%MT%zero_source_components)
+       SP%IT%zero_source_components   = (/F,F,F/)
+       SP%IT%zero_source_components_any   = any(SP%IT%zero_source_components)
 
        ! call init_IC_BC(var      ,IC   ,BC)
        call init_IC_BC(SP%VS%T    ,0    ,0 )

@@ -2,39 +2,40 @@
        ! ******* THIS CODE IS GENERATED. DO NOT EDIT *******
        ! ***************************************************
        module dir_tree_mod
-       use IO_tools_mod
        use datatype_conversion_mod
        use dir_group_mod
-       use dir_manip_mod
+       use IO_tools_mod
        use path_mod
        use string_mod
+       use dir_manip_mod
        implicit none
 
        private
        public :: dir_tree
        public :: init,delete,display,display_short,display,print,print_short,&
-       export,export_primitives,import,export_structured,import_structured,&
-       import_primitives,export,import,set_IO_dir,make_IO_dir,&
-       suppress_warnings
+       export,export_primitives,import,export_folder_structure,&
+       export_structured,import_structured,import_primitives,export,import,&
+       set_IO_dir,make_IO_dir,suppress_warnings
 
-       interface init;             module procedure init_copy_dir_tree;          end interface
-       interface delete;           module procedure delete_dir_tree;             end interface
-       interface display;          module procedure display_dir_tree;            end interface
-       interface display_short;    module procedure display_short_dir_tree;      end interface
-       interface display;          module procedure display_wrap_dir_tree;       end interface
-       interface print;            module procedure print_dir_tree;              end interface
-       interface print_short;      module procedure print_short_dir_tree;        end interface
-       interface export;           module procedure export_dir_tree;             end interface
-       interface export_primitives;module procedure export_primitives_dir_tree;  end interface
-       interface import;           module procedure import_dir_tree;             end interface
-       interface export_structured;module procedure export_structured_D_dir_tree;end interface
-       interface import_structured;module procedure import_structured_D_dir_tree;end interface
-       interface import_primitives;module procedure import_primitives_dir_tree;  end interface
-       interface export;           module procedure export_wrap_dir_tree;        end interface
-       interface import;           module procedure import_wrap_dir_tree;        end interface
-       interface set_IO_dir;       module procedure set_IO_dir_dir_tree;         end interface
-       interface make_IO_dir;      module procedure make_IO_dir_dir_tree;        end interface
-       interface suppress_warnings;module procedure suppress_warnings_dir_tree;  end interface
+       interface init;                   module procedure init_copy_dir_tree;              end interface
+       interface delete;                 module procedure delete_dir_tree;                 end interface
+       interface display;                module procedure display_dir_tree;                end interface
+       interface display_short;          module procedure display_short_dir_tree;          end interface
+       interface display;                module procedure display_wrap_dir_tree;           end interface
+       interface print;                  module procedure print_dir_tree;                  end interface
+       interface print_short;            module procedure print_short_dir_tree;            end interface
+       interface export;                 module procedure export_dir_tree;                 end interface
+       interface export_primitives;      module procedure export_primitives_dir_tree;      end interface
+       interface import;                 module procedure import_dir_tree;                 end interface
+       interface export_folder_structure;module procedure export_folder_structure_dir_tree;end interface
+       interface export_structured;      module procedure export_structured_D_dir_tree;    end interface
+       interface import_structured;      module procedure import_structured_D_dir_tree;    end interface
+       interface import_primitives;      module procedure import_primitives_dir_tree;      end interface
+       interface export;                 module procedure export_wrap_dir_tree;            end interface
+       interface import;                 module procedure import_wrap_dir_tree;            end interface
+       interface set_IO_dir;             module procedure set_IO_dir_dir_tree;             end interface
+       interface make_IO_dir;            module procedure make_IO_dir_dir_tree;            end interface
+       interface suppress_warnings;      module procedure suppress_warnings_dir_tree;      end interface
 
        type dir_tree
          type(path) :: tar_p
@@ -481,6 +482,57 @@
          call make_IO_dir(this%phi,dir//'phi'//fortran_PS)
          call make_IO_dir(this%rho,dir//'rho'//fortran_PS)
          call make_IO_dir(this%test,dir//'test'//fortran_PS)
+       end subroutine
+
+       subroutine export_folder_structure_dir_tree(this,dir)
+         implicit none
+         type(dir_tree),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         call export_structured(this%tar_p,dir//'tar_p'//fortran_PS)
+         call export_structured(this%out_dir,dir//'out_dir'//fortran_PS)
+         call export_structured(this%LDC,dir//'LDC'//fortran_PS)
+         call export_structured(this%mat,dir//'mat'//fortran_PS)
+         call export_structured(this%config,dir//'config'//fortran_PS)
+         call export_structured(this%meshes,dir//'meshes'//fortran_PS)
+         call export_structured(this%BEM,dir//'BEM'//fortran_PS)
+         call export_structured(this%wall_clock,&
+         dir//'wall_clock'//fortran_PS)
+         call export_structured(this%matrix_visualization,&
+         dir//'matrix_visualization'//fortran_PS)
+         call export_structured(this%dimensionless_params,&
+         dir//'dimensionless_params'//fortran_PS)
+         call export_structured(this%params,dir//'params'//fortran_PS)
+         call export_structured(this%ISP,dir//'ISP'//fortran_PS)
+         call export_structured(this%TMP,dir//'TMP'//fortran_PS)
+         call export_structured(this%EF,dir//'EF'//fortran_PS)
+         call export_structured(this%export_now,&
+         dir//'export_now'//fortran_PS)
+         call export_structured(this%e_budget,dir//'e_budget'//fortran_PS)
+         call export_structured(this%e_budget_N,&
+         dir//'e_budget_N'//fortran_PS)
+         call export_structured(this%e_budget_C,&
+         dir//'e_budget_C'//fortran_PS)
+         call export_structured(this%restart_root,&
+         dir//'restart_root'//fortran_PS)
+         call export_structured(this%restart1,dir//'restart1'//fortran_PS)
+         call export_structured(this%restart2,dir//'restart2'//fortran_PS)
+         call export_structured(this%restart,dir//'restart'//fortran_PS)
+         call export_structured(this%unknowns,dir//'unknowns'//fortran_PS)
+         call export_structured(this%governing_equations,&
+         dir//'governing_equations'//fortran_PS)
+         call export_structured(this%PS,dir//'PS'//fortran_PS)
+         call export_structured(this%tar,dir//'tar'//fortran_PS)
+         call export_structured(this%U,dir//'U'//fortran_PS)
+         call export_structured(this%B,dir//'B'//fortran_PS)
+         call export_structured(this%jCrossB,dir//'jCrossB'//fortran_PS)
+         call export_structured(this%stresses,dir//'stresses'//fortran_PS)
+         call export_structured(this%J,dir//'J'//fortran_PS)
+         call export_structured(this%T,dir//'T'//fortran_PS)
+         call export_structured(this%p,dir//'p'//fortran_PS)
+         call export_structured(this%phi,dir//'phi'//fortran_PS)
+         call export_structured(this%rho,dir//'rho'//fortran_PS)
+         call export_structured(this%test,dir//'test'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_dir_tree(this,dir)

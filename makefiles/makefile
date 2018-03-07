@@ -7,18 +7,19 @@ RELEASE = 'OPTIMIZE'
 USE_OPEN_MP = 'TRUE'
 # Setting EXPORT_FOR_AUTO_RESTART = 'FALSE' removes all import statements from the main loop,
 # so the solution cannot be restarted and no parameters can be modified during runtime.
-EXPORT_FOR_AUTO_RESTART = 'TRUE'
-# EXPORT_FOR_AUTO_RESTART = 'FALSE'
+# EXPORT_FOR_AUTO_RESTART = 'TRUE'
+EXPORT_FOR_AUTO_RESTART = 'FALSE'
 PARALLELIZE_3D_OPS = 'TRUE'
 # Enter the name of the desired input file folder:
 # sim_params_default = sim_params_default_MHD_LDC_Sergey_uniform
 # sim_params_default = sim_params_default_MHD_Shercliff
 # sim_params_default = sim_params_default_MHD_cylinder_driven_cavity
 # sim_params_default = sim_params_default_plasma_disruption
-sim_params_default = sim_params_default_plasma_disruption_plane
+# sim_params_default = sim_params_default_plasma_disruption_plane
 # sim_params_default = sim_params_default_plasma_disruption_solid_bar
 # sim_params_default = sim_params_default_plasma_disruption_1D_analytic
 # sim_params_default = sim_params_default_Bandaru
+sim_params_default = sim_params_default_Ghia
 # sim_params_default = sim_params_default_BC_full_3D
 # sim_params_default = sim_params_default_full_BC
 
@@ -65,6 +66,7 @@ RM = rm
 PS_clean = $(strip /)
 
 # ************* DIRECTORY SETTINGS ******************
+SRC_ROOT = ..$(PS)code
 SRC_DIR = ..$(PS)code$(PS)handwritten
 SRC_DIR_GENERATED = ..$(PS)code$(PS)generated_code
 SRC_DIR_PRE_GENERATED = ..$(PS)code$(PS)pre_generated
@@ -88,8 +90,15 @@ ifeq ($(CLUSTER),'Workstation_CK')
 	# TARGET_DIR = F:$(PS)Property_of_C_Kawczynski$(PS)SIMS$(PS)PD$(PS)PD_plane_solid_zero_res
 	# TARGET_DIR = F:$(PS)Property_of_C_Kawczynski$(PS)SIMS$(PS)PD$(PS)PD_plane_unsteady_B0_zero_res
 	# TARGET_DIR = F:$(PS)Property_of_C_Kawczynski$(PS)SIMS$(PS)PD$(PS)PD_plane_insulating
-	TARGET_DIR = F:$(PS)Property_of_C_Kawczynski$(PS)SIMS$(PS)PD$(PS)PD_plane_stresses
-	# TARGET_DIR = F:$(PS)Property_of_C_Kawczynski$(PS)SIMS$(PS)Bandaru$(PS)B1
+	# TARGET_DIR = F:$(PS)Property_of_C_Kawczynski$(PS)SIMS$(PS)PD$(PS)new_PD_plane_unsteady_B0
+	# TARGET_DIR = F:$(PS)Property_of_C_Kawczynski$(PS)SIMS$(PS)PD$(PS)new_PD_plane_constant_dB0dt
+	# TARGET_DIR = F:$(PS)Property_of_C_Kawczynski$(PS)SIMS$(PS)PD$(PS)new_PD_plane_solid_constant_dB0dt
+	# TARGET_DIR = F:$(PS)Property_of_C_Kawczynski$(PS)SIMS$(PS)PD$(PS)new_PD_plane_solid_constant_dB0dt_long
+	# TARGET_DIR = F:$(PS)Property_of_C_Kawczynski$(PS)SIMS$(PS)PD$(PS)new_PD_plane_constant_dB0dt_long
+	# TARGET_DIR = F:$(PS)Property_of_C_Kawczynski$(PS)SIMS$(PS)PD$(PS)new_PD_plane_constant_dB0dt_big_dt
+	# TARGET_DIR = F:$(PS)Property_of_C_Kawczynski$(PS)SIMS$(PS)PD$(PS)new_PD_plane_solid_unsteady_B0
+	# TARGET_DIR = F:$(PS)Property_of_C_Kawczynski$(PS)SIMS$(PS)Bandaru$(PS)Q8
+	TARGET_DIR = F:$(PS)Property_of_C_Kawczynski$(PS)SIMS$(PS)Ghia$(PS)Re400
 	# TARGET_DIR = F:$(PS)Property_of_C_Kawczynski$(PS)SIMS$(PS)PD$(PS)PD_plane_solid_unsteady_B0_zero_res
 	# TARGET_DIR = F:$(PS)Property_of_C_Kawczynski$(PS)SIMS$(PS)PD$(PS)PD_constant_dB0dt_plane_solid
 	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)PD$(PS)PD_plane_div_adv
@@ -152,7 +161,7 @@ FCFLAGS += -D_DOUBLE_PRECISION_
 
 # FFT_poisson.f90:
 # FCFLAGS += -D_FFT_FULL_
-# FCFLAGS += -D_FFT_RADIX2_
+FCFLAGS += -D_FFT_RADIX2_
 
 # is_nan.f90:
 # FCFLAGS += -D_ISNAN_USE_HACK_
@@ -296,11 +305,15 @@ endif
 
 TARGET = $(TARGET_DIR)$(PS)MOONS.exe
 
-include vpath_pre_generated.make
-include vpath_generated.make
-include vpath_handwritten.make
+# include vpath_pre_generated.make
+# include vpath_generated.make
+# include vpath_handwritten.make
+# include src_all.make
 
-include src_all.make
+VPATH = $(TARGET_DIR)\
+	$(SRC_ROOT)\
+
+SRCS_F = $(SRC_ROOT)$(PS)BIG_FILE.f90
 
 SRCS_F += $(TARGET_DIR)$(PS)main.f90
 

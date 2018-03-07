@@ -2,37 +2,38 @@
        ! ******* THIS CODE IS GENERATED. DO NOT EDIT *******
        ! ***************************************************
        module export_field_mod
-       use IO_tools_mod
-       use datatype_conversion_mod
-       use dir_manip_mod
        use string_mod
+       use datatype_conversion_mod
+       use IO_tools_mod
+       use dir_manip_mod
        implicit none
 
        private
        public :: export_field
        public :: init,delete,display,display_short,display,print,print_short,&
-       export,export_primitives,import,export_structured,import_structured,&
-       import_primitives,export,import,set_IO_dir,make_IO_dir,&
-       suppress_warnings
+       export,export_primitives,import,export_folder_structure,&
+       export_structured,import_structured,import_primitives,export,import,&
+       set_IO_dir,make_IO_dir,suppress_warnings
 
-       interface init;             module procedure init_copy_export_field;          end interface
-       interface delete;           module procedure delete_export_field;             end interface
-       interface display;          module procedure display_export_field;            end interface
-       interface display_short;    module procedure display_short_export_field;      end interface
-       interface display;          module procedure display_wrap_export_field;       end interface
-       interface print;            module procedure print_export_field;              end interface
-       interface print_short;      module procedure print_short_export_field;        end interface
-       interface export;           module procedure export_export_field;             end interface
-       interface export_primitives;module procedure export_primitives_export_field;  end interface
-       interface import;           module procedure import_export_field;             end interface
-       interface export_structured;module procedure export_structured_D_export_field;end interface
-       interface import_structured;module procedure import_structured_D_export_field;end interface
-       interface import_primitives;module procedure import_primitives_export_field;  end interface
-       interface export;           module procedure export_wrap_export_field;        end interface
-       interface import;           module procedure import_wrap_export_field;        end interface
-       interface set_IO_dir;       module procedure set_IO_dir_export_field;         end interface
-       interface make_IO_dir;      module procedure make_IO_dir_export_field;        end interface
-       interface suppress_warnings;module procedure suppress_warnings_export_field;  end interface
+       interface init;                   module procedure init_copy_export_field;              end interface
+       interface delete;                 module procedure delete_export_field;                 end interface
+       interface display;                module procedure display_export_field;                end interface
+       interface display_short;          module procedure display_short_export_field;          end interface
+       interface display;                module procedure display_wrap_export_field;           end interface
+       interface print;                  module procedure print_export_field;                  end interface
+       interface print_short;            module procedure print_short_export_field;            end interface
+       interface export;                 module procedure export_export_field;                 end interface
+       interface export_primitives;      module procedure export_primitives_export_field;      end interface
+       interface import;                 module procedure import_export_field;                 end interface
+       interface export_folder_structure;module procedure export_folder_structure_export_field;end interface
+       interface export_structured;      module procedure export_structured_D_export_field;    end interface
+       interface import_structured;      module procedure import_structured_D_export_field;    end interface
+       interface import_primitives;      module procedure import_primitives_export_field;      end interface
+       interface export;                 module procedure export_wrap_export_field;            end interface
+       interface import;                 module procedure import_wrap_export_field;            end interface
+       interface set_IO_dir;             module procedure set_IO_dir_export_field;             end interface
+       interface make_IO_dir;            module procedure make_IO_dir_export_field;            end interface
+       interface suppress_warnings;      module procedure suppress_warnings_export_field;      end interface
 
        type export_field
          logical :: export_ever = .false.
@@ -155,6 +156,13 @@
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
+       end subroutine
+
+       subroutine export_folder_structure_export_field(this,dir)
+         implicit none
+         type(export_field),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
        end subroutine
 
        subroutine export_structured_D_export_field(this,dir)

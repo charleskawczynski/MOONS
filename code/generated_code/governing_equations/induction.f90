@@ -2,45 +2,46 @@
        ! ******* THIS CODE IS GENERATED. DO NOT EDIT *******
        ! ***************************************************
        module induction_mod
-       use IO_tools_mod
-       use FFT_Solver_SF_mod
        use PCG_solver_SF_mod
-       use PCG_solver_VF_mod
-       use SF_mod
-       use TF_mod
-       use VF_mod
-       use datatype_conversion_mod
-       use dir_manip_mod
-       use mesh_mod
-       use mesh_domain_mod
        use string_mod
+       use datatype_conversion_mod
+       use mesh_domain_mod
+       use IO_tools_mod
+       use VF_mod
+       use PCG_solver_VF_mod
+       use TF_mod
+       use mesh_mod
+       use FFT_Solver_SF_mod
+       use SF_mod
+       use dir_manip_mod
        implicit none
 
        private
        public :: induction
        public :: init,delete,display,display_short,display,print,print_short,&
-       export,export_primitives,import,export_structured,import_structured,&
-       import_primitives,export,import,set_IO_dir,make_IO_dir,&
-       suppress_warnings
+       export,export_primitives,import,export_folder_structure,&
+       export_structured,import_structured,import_primitives,export,import,&
+       set_IO_dir,make_IO_dir,suppress_warnings
 
-       interface init;             module procedure init_copy_induction;          end interface
-       interface delete;           module procedure delete_induction;             end interface
-       interface display;          module procedure display_induction;            end interface
-       interface display_short;    module procedure display_short_induction;      end interface
-       interface display;          module procedure display_wrap_induction;       end interface
-       interface print;            module procedure print_induction;              end interface
-       interface print_short;      module procedure print_short_induction;        end interface
-       interface export;           module procedure export_induction;             end interface
-       interface export_primitives;module procedure export_primitives_induction;  end interface
-       interface import;           module procedure import_induction;             end interface
-       interface export_structured;module procedure export_structured_D_induction;end interface
-       interface import_structured;module procedure import_structured_D_induction;end interface
-       interface import_primitives;module procedure import_primitives_induction;  end interface
-       interface export;           module procedure export_wrap_induction;        end interface
-       interface import;           module procedure import_wrap_induction;        end interface
-       interface set_IO_dir;       module procedure set_IO_dir_induction;         end interface
-       interface make_IO_dir;      module procedure make_IO_dir_induction;        end interface
-       interface suppress_warnings;module procedure suppress_warnings_induction;  end interface
+       interface init;                   module procedure init_copy_induction;              end interface
+       interface delete;                 module procedure delete_induction;                 end interface
+       interface display;                module procedure display_induction;                end interface
+       interface display_short;          module procedure display_short_induction;          end interface
+       interface display;                module procedure display_wrap_induction;           end interface
+       interface print;                  module procedure print_induction;                  end interface
+       interface print_short;            module procedure print_short_induction;            end interface
+       interface export;                 module procedure export_induction;                 end interface
+       interface export_primitives;      module procedure export_primitives_induction;      end interface
+       interface import;                 module procedure import_induction;                 end interface
+       interface export_folder_structure;module procedure export_folder_structure_induction;end interface
+       interface export_structured;      module procedure export_structured_D_induction;    end interface
+       interface import_structured;      module procedure import_structured_D_induction;    end interface
+       interface import_primitives;      module procedure import_primitives_induction;      end interface
+       interface export;                 module procedure export_wrap_induction;            end interface
+       interface import;                 module procedure import_wrap_induction;            end interface
+       interface set_IO_dir;             module procedure set_IO_dir_induction;             end interface
+       interface make_IO_dir;            module procedure make_IO_dir_induction;            end interface
+       interface suppress_warnings;      module procedure suppress_warnings_induction;      end interface
 
        type induction
          logical :: suppress_warning = .false.
@@ -573,6 +574,114 @@
          endif
          call make_IO_dir(this%MD_fluid,dir//'MD_fluid'//fortran_PS)
          call make_IO_dir(this%MD_sigma,dir//'MD_sigma'//fortran_PS)
+       end subroutine
+
+       subroutine export_folder_structure_induction(this,dir)
+         implicit none
+         type(induction),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         call export_structured(this%PCG_B,dir//'PCG_B'//fortran_PS)
+         call export_structured(this%PCG_cleanB,&
+         dir//'PCG_cleanB'//fortran_PS)
+         call export_structured(this%FFT_cleanB,&
+         dir//'FFT_cleanB'//fortran_PS)
+         if (get_necessary_for_restart(this%sigmaInv_CC)) then
+           call export_structured(this%sigmaInv_CC,&
+           dir//'sigmaInv_CC'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%cell_volume)) then
+           call export_structured(this%cell_volume,&
+           dir//'cell_volume'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%divB)) then
+           call export_structured(this%divB,dir//'divB'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%divJ)) then
+           call export_structured(this%divJ,dir//'divJ'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%phi)) then
+           call export_structured(this%phi,dir//'phi'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_CC)) then
+           call export_structured(this%temp_CC,dir//'temp_CC'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%F)) then
+           call export_structured(this%F,dir//'F'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%Fnm1)) then
+           call export_structured(this%Fnm1,dir//'Fnm1'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%L)) then
+           call export_structured(this%L,dir//'L'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%J)) then
+           call export_structured(this%J,dir//'J'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_E)) then
+           call export_structured(this%temp_E,dir//'temp_E'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%B)) then
+           call export_structured(this%B,dir//'B'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%Bnm1)) then
+           call export_structured(this%Bnm1,dir//'Bnm1'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%B0)) then
+           call export_structured(this%B0,dir//'B0'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%Btot)) then
+           call export_structured(this%Btot,dir//'Btot'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%B_interior)) then
+           call export_structured(this%B_interior,&
+           dir//'B_interior'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_F1)) then
+           call export_structured(this%temp_F1,dir//'temp_F1'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_F2)) then
+           call export_structured(this%temp_F2,dir//'temp_F2'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%jCrossB)) then
+           call export_structured(this%jCrossB,dir//'jCrossB'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%Bstar)) then
+           call export_structured(this%Bstar,dir//'Bstar'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%dB0dt)) then
+           call export_structured(this%dB0dt,dir//'dB0dt'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%sigmaInv_edge)) then
+           call export_structured(this%sigmaInv_edge,&
+           dir//'sigmaInv_edge'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%J_interior)) then
+           call export_structured(this%J_interior,&
+           dir//'J_interior'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%curlUCrossB)) then
+           call export_structured(this%curlUCrossB,&
+           dir//'curlUCrossB'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%cell_inverse_area)) then
+           call export_structured(this%cell_inverse_area,&
+           dir//'cell_inverse_area'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%CC_VF_fluid)) then
+           call export_structured(this%CC_VF_fluid,&
+           dir//'CC_VF_fluid'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%CC_VF_sigma)) then
+           call export_structured(this%CC_VF_sigma,&
+           dir//'CC_VF_sigma'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_CC_VF)) then
+           call export_structured(this%temp_CC_VF,&
+           dir//'temp_CC_VF'//fortran_PS)
+         endif
+         call export_structured(this%MD_fluid,dir//'MD_fluid'//fortran_PS)
+         call export_structured(this%MD_sigma,dir//'MD_sigma'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_induction(this,dir)

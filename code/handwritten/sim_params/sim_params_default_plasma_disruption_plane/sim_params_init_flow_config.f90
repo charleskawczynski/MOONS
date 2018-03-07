@@ -29,6 +29,11 @@
        SP%GP%apply_BC_order = get_apply_BC_order(SP%GP%periodic_dir)
        SP%GP%FFT_dir        = get_FFT_dir(SP%GP%periodic_dir)
 
+       SP%MT%zero_source_components   = (/F,T,T/)
+       SP%MT%zero_source_components_any   = any(SP%MT%zero_source_components)
+       SP%IT%zero_source_components   = (/F,F,F/)
+       SP%IT%zero_source_components_any   = any(SP%IT%zero_source_components)
+
        ! call init_IC_BC(var      ,IC   ,BC)
        call init_IC_BC(SP%VS%T    ,0    ,0 )
        call init_IC_BC(SP%VS%U    ,0    ,0 )
@@ -65,8 +70,8 @@
        call init(SP%IT%advection       ,T, 1.0_cp           )
        call init(SP%IT%diffusion       ,T, -SP%VS%B%MFP%beta) ! since LHS and J includes scale
        call init(SP%IT%diffusion_linear,F, -SP%VS%B%MFP%beta) ! since LHS and J includes scale
-       call init(SP%IT%unsteady_B0     ,T, -1.0_cp          ) ! since RHS
-       call init(SP%IT%constant_dB0dt  ,F, +1.0_cp          ) ! since RHS, positive since dB0dt is neg on LHS
+       call init(SP%IT%unsteady_B0     ,F, -1.0_cp          ) ! since RHS
+       call init(SP%IT%constant_dB0dt  ,T, +0.1_cp          ) ! since RHS, positive since dB0dt is neg on LHS
 
        ! Sources to add to energy equation. NOTE: scale is not set if add=false
        call init(SP%ET%advection          , F,-1.0_cp           )

@@ -2,45 +2,46 @@
        ! ******* THIS CODE IS GENERATED. DO NOT EDIT *******
        ! ***************************************************
        module momentum_mod
-       use IO_tools_mod
-       use FFT_Solver_SF_mod
        use PCG_solver_SF_mod
-       use PCG_solver_VF_mod
-       use SF_mod
-       use TF_mod
-       use VF_mod
-       use datatype_conversion_mod
-       use dir_manip_mod
-       use mesh_mod
        use string_mod
+       use datatype_conversion_mod
        use time_statistics_VF_mod
+       use IO_tools_mod
+       use VF_mod
+       use PCG_solver_VF_mod
+       use TF_mod
+       use mesh_mod
+       use FFT_Solver_SF_mod
+       use SF_mod
+       use dir_manip_mod
        implicit none
 
        private
        public :: momentum
        public :: init,delete,display,display_short,display,print,print_short,&
-       export,export_primitives,import,export_structured,import_structured,&
-       import_primitives,export,import,set_IO_dir,make_IO_dir,&
-       suppress_warnings
+       export,export_primitives,import,export_folder_structure,&
+       export_structured,import_structured,import_primitives,export,import,&
+       set_IO_dir,make_IO_dir,suppress_warnings
 
-       interface init;             module procedure init_copy_momentum;          end interface
-       interface delete;           module procedure delete_momentum;             end interface
-       interface display;          module procedure display_momentum;            end interface
-       interface display_short;    module procedure display_short_momentum;      end interface
-       interface display;          module procedure display_wrap_momentum;       end interface
-       interface print;            module procedure print_momentum;              end interface
-       interface print_short;      module procedure print_short_momentum;        end interface
-       interface export;           module procedure export_momentum;             end interface
-       interface export_primitives;module procedure export_primitives_momentum;  end interface
-       interface import;           module procedure import_momentum;             end interface
-       interface export_structured;module procedure export_structured_D_momentum;end interface
-       interface import_structured;module procedure import_structured_D_momentum;end interface
-       interface import_primitives;module procedure import_primitives_momentum;  end interface
-       interface export;           module procedure export_wrap_momentum;        end interface
-       interface import;           module procedure import_wrap_momentum;        end interface
-       interface set_IO_dir;       module procedure set_IO_dir_momentum;         end interface
-       interface make_IO_dir;      module procedure make_IO_dir_momentum;        end interface
-       interface suppress_warnings;module procedure suppress_warnings_momentum;  end interface
+       interface init;                   module procedure init_copy_momentum;              end interface
+       interface delete;                 module procedure delete_momentum;                 end interface
+       interface display;                module procedure display_momentum;                end interface
+       interface display_short;          module procedure display_short_momentum;          end interface
+       interface display;                module procedure display_wrap_momentum;           end interface
+       interface print;                  module procedure print_momentum;                  end interface
+       interface print_short;            module procedure print_short_momentum;            end interface
+       interface export;                 module procedure export_momentum;                 end interface
+       interface export_primitives;      module procedure export_primitives_momentum;      end interface
+       interface import;                 module procedure import_momentum;                 end interface
+       interface export_folder_structure;module procedure export_folder_structure_momentum;end interface
+       interface export_structured;      module procedure export_structured_D_momentum;    end interface
+       interface import_structured;      module procedure import_structured_D_momentum;    end interface
+       interface import_primitives;      module procedure import_primitives_momentum;      end interface
+       interface export;                 module procedure export_wrap_momentum;            end interface
+       interface import;                 module procedure import_wrap_momentum;            end interface
+       interface set_IO_dir;             module procedure set_IO_dir_momentum;             end interface
+       interface make_IO_dir;            module procedure make_IO_dir_momentum;            end interface
+       interface suppress_warnings;      module procedure suppress_warnings_momentum;      end interface
 
        type momentum
          logical :: suppress_warning = .false.
@@ -388,6 +389,63 @@
          endif
          if (get_necessary_for_restart(this%temp_CC_VF)) then
            call make_IO_dir(this%temp_CC_VF,dir//'temp_CC_VF'//fortran_PS)
+         endif
+       end subroutine
+
+       subroutine export_folder_structure_momentum(this,dir)
+         implicit none
+         type(momentum),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         call export_structured(this%PCG_P,dir//'PCG_P'//fortran_PS)
+         call export_structured(this%PCG_U,dir//'PCG_U'//fortran_PS)
+         call export_structured(this%FFT_P,dir//'FFT_P'//fortran_PS)
+         call export_structured(this%TS,dir//'TS'//fortran_PS)
+         if (get_necessary_for_restart(this%p)) then
+           call export_structured(this%p,dir//'p'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%divU)) then
+           call export_structured(this%divU,dir//'divU'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_CC)) then
+           call export_structured(this%temp_CC,dir//'temp_CC'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%U)) then
+           call export_structured(this%U,dir//'U'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%Ustar)) then
+           call export_structured(this%Ustar,dir//'Ustar'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%Unm1)) then
+           call export_structured(this%Unm1,dir//'Unm1'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%U_CC)) then
+           call export_structured(this%U_CC,dir//'U_CC'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%F)) then
+           call export_structured(this%F,dir//'F'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%Fnm1)) then
+           call export_structured(this%Fnm1,dir//'Fnm1'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%L)) then
+           call export_structured(this%L,dir//'L'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_F1)) then
+           call export_structured(this%temp_F1,dir//'temp_F1'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_F2)) then
+           call export_structured(this%temp_F2,dir//'temp_F2'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_F3)) then
+           call export_structured(this%temp_F3,dir//'temp_F3'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_E)) then
+           call export_structured(this%temp_E,dir//'temp_E'//fortran_PS)
+         endif
+         if (get_necessary_for_restart(this%temp_CC_VF)) then
+           call export_structured(this%temp_CC_VF,&
+           dir//'temp_CC_VF'//fortran_PS)
          endif
        end subroutine
 

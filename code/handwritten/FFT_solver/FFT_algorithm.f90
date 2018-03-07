@@ -66,7 +66,7 @@
           !$OMP END PARALLEL DO
         enddo
 
-        ! 'Pin down pressure'
+        ! 'Pin down pressure' in Fourier space
         do t=1,u%s
           u%BF(t)%GF%f(:,2,2) = 0.0_cp
         enddo
@@ -80,7 +80,7 @@
 
         if (.true.) then
           call lap(res,u,m)
-          call subtract(res,f)
+          call subtract(res,f_in)
           call assign_ghost_XPeriodic(res,0.0_cp)
           call compute(norm,res,vol,m%MP%volume)
           call print(norm,'FFT_x_'//name)
@@ -115,7 +115,7 @@
           !$OMP END PARALLEL DO
         enddo
 
-        ! 'Pin down pressure'
+        ! 'Pin down pressure' in Fourier space
         do t=1,u%s
           u%BF(t)%GF%f(2,:,2) = 0.0_cp
         enddo
@@ -129,7 +129,7 @@
 
         if (compute_norms) then
           call lap(res,u,m)
-          call subtract(res,f)
+          call subtract(res,f_in)
           call assign_ghost_XPeriodic(res,0.0_cp)
           call compute(norm,res,vol,m%MP%volume)
           call print(norm,'FFT_y_'//name)
@@ -164,7 +164,7 @@
           !$OMP END PARALLEL DO
         enddo
 
-        ! 'Pin down pressure'
+        ! 'Pin down pressure' in Fourier space
         do t=1,u%s
           u%BF(t)%GF%f(2,2,:) = 0.0_cp
         enddo
@@ -178,7 +178,7 @@
 
         if (compute_norms) then
           call lap(res,u,m)
-          call subtract(res,f)
+          call subtract(res,f_in)
           call assign_ghost_XPeriodic(res,0.0_cp)
           call compute(norm,res,vol,m%MP%volume)
           call print(norm,'FFT_z_'//name)

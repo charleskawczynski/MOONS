@@ -19,6 +19,7 @@
        public :: add_curl_U_cross_B
        public :: add_curl_J
        public :: add_unsteady_B0
+       public :: add_constant_dB0dt
        public :: compute_JCrossB
        public :: compute_B_dot_gradB
 
@@ -56,6 +57,14 @@
          call multiply(B0,scale_B0)
          call assign_dB0_dt_vs_t(dB0dt,TMP)
          call add_product(F,dB0dt,scale_dB0_dt) ! (-) since added to RHS
+       end subroutine
+
+       subroutine add_constant_dB0dt(F,dB0dt,scale_dB0_dt)
+         implicit none
+         type(SF),intent(inout) :: F,dB0dt
+         real(cp),intent(in) :: scale_dB0_dt
+         call assign(dB0dt,scale_dB0_dt)
+         call add(F,dB0dt)
        end subroutine
 
        subroutine compute_JCrossB(jCrossB,B,J,m,scale,&

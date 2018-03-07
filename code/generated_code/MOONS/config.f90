@@ -2,47 +2,49 @@
        ! ******* THIS CODE IS GENERATED. DO NOT EDIT *******
        ! ***************************************************
        module config_mod
-       use IO_tools_mod
        use datatype_conversion_mod
-       use dir_manip_mod
-       use dir_tree_mod
-       use export_now_mod
-       use export_safe_mod
+       use IO_tools_mod
        use kill_switch_mod
-       use sim_params_mod
        use stop_clock_mod
+       use dir_tree_mod
        use string_mod
+       use export_now_mod
+       use sim_params_mod
+       use export_safe_mod
+       use dir_manip_mod
        implicit none
 
        private
        public :: config
        public :: init,delete,display,display_short,display,print,print_short,&
-       export,export_primitives,import,export_structured,import_structured,&
-       import_primitives,export,import,set_IO_dir,make_IO_dir,&
-       suppress_warnings,export,import,export_structured,import_structured
+       export,export_primitives,import,export_folder_structure,&
+       export_structured,import_structured,import_primitives,export,import,&
+       set_IO_dir,make_IO_dir,suppress_warnings,export,import,&
+       export_structured,import_structured
 
-       interface init;             module procedure init_copy_config;           end interface
-       interface delete;           module procedure delete_config;              end interface
-       interface display;          module procedure display_config;             end interface
-       interface display_short;    module procedure display_short_config;       end interface
-       interface display;          module procedure display_wrap_config;        end interface
-       interface print;            module procedure print_config;               end interface
-       interface print_short;      module procedure print_short_config;         end interface
-       interface export;           module procedure export_config;              end interface
-       interface export_primitives;module procedure export_primitives_config;   end interface
-       interface import;           module procedure import_config;              end interface
-       interface export_structured;module procedure export_structured_D_config; end interface
-       interface import_structured;module procedure import_structured_D_config; end interface
-       interface import_primitives;module procedure import_primitives_config;   end interface
-       interface export;           module procedure export_wrap_config;         end interface
-       interface import;           module procedure import_wrap_config;         end interface
-       interface set_IO_dir;       module procedure set_IO_dir_config;          end interface
-       interface make_IO_dir;      module procedure make_IO_dir_config;         end interface
-       interface suppress_warnings;module procedure suppress_warnings_config;   end interface
-       interface export;           module procedure export_DN_config;           end interface
-       interface import;           module procedure import_DN_config;           end interface
-       interface export_structured;module procedure export_structured_DN_config;end interface
-       interface import_structured;module procedure import_structured_DN_config;end interface
+       interface init;                   module procedure init_copy_config;              end interface
+       interface delete;                 module procedure delete_config;                 end interface
+       interface display;                module procedure display_config;                end interface
+       interface display_short;          module procedure display_short_config;          end interface
+       interface display;                module procedure display_wrap_config;           end interface
+       interface print;                  module procedure print_config;                  end interface
+       interface print_short;            module procedure print_short_config;            end interface
+       interface export;                 module procedure export_config;                 end interface
+       interface export_primitives;      module procedure export_primitives_config;      end interface
+       interface import;                 module procedure import_config;                 end interface
+       interface export_folder_structure;module procedure export_folder_structure_config;end interface
+       interface export_structured;      module procedure export_structured_D_config;    end interface
+       interface import_structured;      module procedure import_structured_D_config;    end interface
+       interface import_primitives;      module procedure import_primitives_config;      end interface
+       interface export;                 module procedure export_wrap_config;            end interface
+       interface import;                 module procedure import_wrap_config;            end interface
+       interface set_IO_dir;             module procedure set_IO_dir_config;             end interface
+       interface make_IO_dir;            module procedure make_IO_dir_config;            end interface
+       interface suppress_warnings;      module procedure suppress_warnings_config;      end interface
+       interface export;                 module procedure export_DN_config;              end interface
+       interface import;                 module procedure import_DN_config;              end interface
+       interface export_structured;      module procedure export_structured_DN_config;   end interface
+       interface import_structured;      module procedure import_structured_DN_config;   end interface
 
        type config
          type(dir_tree) :: DT
@@ -306,6 +308,27 @@
          call make_IO_dir(this%KS,dir//'KS'//fortran_PS)
          call make_IO_dir(this%dir,dir//'dir'//fortran_PS)
          call make_IO_dir(this%name,dir//'name'//fortran_PS)
+       end subroutine
+
+       subroutine export_folder_structure_config(this,dir)
+         implicit none
+         type(config),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         integer :: un_indicate
+         un_indicate = new_and_open(dir,&
+         'delete_primitives_to_bypass_restart')
+         close(un_indicate)
+         call export_structured(this%DT,dir//'DT'//fortran_PS)
+         call export_structured(this%SP,dir//'SP'//fortran_PS)
+         call export_structured(this%dir_target,&
+         dir//'dir_target'//fortran_PS)
+         call export_structured(this%sc,dir//'sc'//fortran_PS)
+         call export_structured(this%EN,dir//'EN'//fortran_PS)
+         call export_structured(this%ES,dir//'ES'//fortran_PS)
+         call export_structured(this%KS,dir//'KS'//fortran_PS)
+         call export_structured(this%dir,dir//'dir'//fortran_PS)
+         call export_structured(this%name,dir//'name'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_config(this,dir)

@@ -2,38 +2,39 @@
        ! ******* THIS CODE IS GENERATED. DO NOT EDIT *******
        ! ***************************************************
        module probe_set_nrg_mod
-       use IO_tools_mod
-       use datatype_conversion_mod
-       use dir_manip_mod
        use probe_mod
+       use datatype_conversion_mod
+       use IO_tools_mod
        use string_mod
+       use dir_manip_mod
        implicit none
 
        private
        public :: probe_set_nrg
        public :: init,delete,display,display_short,display,print,print_short,&
-       export,export_primitives,import,export_structured,import_structured,&
-       import_primitives,export,import,set_IO_dir,make_IO_dir,&
-       suppress_warnings
+       export,export_primitives,import,export_folder_structure,&
+       export_structured,import_structured,import_primitives,export,import,&
+       set_IO_dir,make_IO_dir,suppress_warnings
 
-       interface init;             module procedure init_copy_probe_set_nrg;          end interface
-       interface delete;           module procedure delete_probe_set_nrg;             end interface
-       interface display;          module procedure display_probe_set_nrg;            end interface
-       interface display_short;    module procedure display_short_probe_set_nrg;      end interface
-       interface display;          module procedure display_wrap_probe_set_nrg;       end interface
-       interface print;            module procedure print_probe_set_nrg;              end interface
-       interface print_short;      module procedure print_short_probe_set_nrg;        end interface
-       interface export;           module procedure export_probe_set_nrg;             end interface
-       interface export_primitives;module procedure export_primitives_probe_set_nrg;  end interface
-       interface import;           module procedure import_probe_set_nrg;             end interface
-       interface export_structured;module procedure export_structured_D_probe_set_nrg;end interface
-       interface import_structured;module procedure import_structured_D_probe_set_nrg;end interface
-       interface import_primitives;module procedure import_primitives_probe_set_nrg;  end interface
-       interface export;           module procedure export_wrap_probe_set_nrg;        end interface
-       interface import;           module procedure import_wrap_probe_set_nrg;        end interface
-       interface set_IO_dir;       module procedure set_IO_dir_probe_set_nrg;         end interface
-       interface make_IO_dir;      module procedure make_IO_dir_probe_set_nrg;        end interface
-       interface suppress_warnings;module procedure suppress_warnings_probe_set_nrg;  end interface
+       interface init;                   module procedure init_copy_probe_set_nrg;              end interface
+       interface delete;                 module procedure delete_probe_set_nrg;                 end interface
+       interface display;                module procedure display_probe_set_nrg;                end interface
+       interface display_short;          module procedure display_short_probe_set_nrg;          end interface
+       interface display;                module procedure display_wrap_probe_set_nrg;           end interface
+       interface print;                  module procedure print_probe_set_nrg;                  end interface
+       interface print_short;            module procedure print_short_probe_set_nrg;            end interface
+       interface export;                 module procedure export_probe_set_nrg;                 end interface
+       interface export_primitives;      module procedure export_primitives_probe_set_nrg;      end interface
+       interface import;                 module procedure import_probe_set_nrg;                 end interface
+       interface export_folder_structure;module procedure export_folder_structure_probe_set_nrg;end interface
+       interface export_structured;      module procedure export_structured_D_probe_set_nrg;    end interface
+       interface import_structured;      module procedure import_structured_D_probe_set_nrg;    end interface
+       interface import_primitives;      module procedure import_primitives_probe_set_nrg;      end interface
+       interface export;                 module procedure export_wrap_probe_set_nrg;            end interface
+       interface import;                 module procedure import_wrap_probe_set_nrg;            end interface
+       interface set_IO_dir;             module procedure set_IO_dir_probe_set_nrg;             end interface
+       interface make_IO_dir;            module procedure make_IO_dir_probe_set_nrg;            end interface
+       interface suppress_warnings;      module procedure suppress_warnings_probe_set_nrg;      end interface
 
        type probe_set_nrg
          type(probe) :: probe_divQ
@@ -159,6 +160,15 @@
          call suppress_warnings(this)
          call make_dir_quiet(dir)
          call make_IO_dir(this%probe_divQ,dir//'probe_divQ'//fortran_PS)
+       end subroutine
+
+       subroutine export_folder_structure_probe_set_nrg(this,dir)
+         implicit none
+         type(probe_set_nrg),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
+         call export_structured(this%probe_divQ,&
+         dir//'probe_divQ'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_probe_set_nrg(this,dir)

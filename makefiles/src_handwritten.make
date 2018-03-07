@@ -229,6 +229,7 @@ SRCS_F +=\
 	$(SRC_DIR)$(PS)matrix_vis$(PS)matrix_vis.f90\
 	$(SRC_DIR)$(PS)MOONS$(PS)MOONS_simulate_crash.f90\
 	$(SRC_DIR)$(PS)MOONS$(PS)MOONS_export_full_restart.f90\
+	$(SRC_DIR)$(PS)MOONS$(PS)MOONS_IO_controls.f90\
 	$(SRC_DIR)$(PS)MOONS$(PS)MOONS_init.f90\
 	$(SRC_DIR)$(PS)MOONS$(PS)MOONS_config.f90\
 	$(SRC_DIR)$(PS)MOONS$(PS)MOONS_solver.f90\

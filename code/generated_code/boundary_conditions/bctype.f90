@@ -3,37 +3,38 @@
        ! ***************************************************
        module bctype_mod
        use current_precision_mod
-       use IO_tools_mod
        use datatype_conversion_mod
-       use dir_manip_mod
+       use IO_tools_mod
        use string_mod
+       use dir_manip_mod
        implicit none
 
        private
        public :: bctype
        public :: init,delete,display,display_short,display,print,print_short,&
-       export,export_primitives,import,export_structured,import_structured,&
-       import_primitives,export,import,set_IO_dir,make_IO_dir,&
-       suppress_warnings
+       export,export_primitives,import,export_folder_structure,&
+       export_structured,import_structured,import_primitives,export,import,&
+       set_IO_dir,make_IO_dir,suppress_warnings
 
-       interface init;             module procedure init_copy_bctype;          end interface
-       interface delete;           module procedure delete_bctype;             end interface
-       interface display;          module procedure display_bctype;            end interface
-       interface display_short;    module procedure display_short_bctype;      end interface
-       interface display;          module procedure display_wrap_bctype;       end interface
-       interface print;            module procedure print_bctype;              end interface
-       interface print_short;      module procedure print_short_bctype;        end interface
-       interface export;           module procedure export_bctype;             end interface
-       interface export_primitives;module procedure export_primitives_bctype;  end interface
-       interface import;           module procedure import_bctype;             end interface
-       interface export_structured;module procedure export_structured_D_bctype;end interface
-       interface import_structured;module procedure import_structured_D_bctype;end interface
-       interface import_primitives;module procedure import_primitives_bctype;  end interface
-       interface export;           module procedure export_wrap_bctype;        end interface
-       interface import;           module procedure import_wrap_bctype;        end interface
-       interface set_IO_dir;       module procedure set_IO_dir_bctype;         end interface
-       interface make_IO_dir;      module procedure make_IO_dir_bctype;        end interface
-       interface suppress_warnings;module procedure suppress_warnings_bctype;  end interface
+       interface init;                   module procedure init_copy_bctype;              end interface
+       interface delete;                 module procedure delete_bctype;                 end interface
+       interface display;                module procedure display_bctype;                end interface
+       interface display_short;          module procedure display_short_bctype;          end interface
+       interface display;                module procedure display_wrap_bctype;           end interface
+       interface print;                  module procedure print_bctype;                  end interface
+       interface print_short;            module procedure print_short_bctype;            end interface
+       interface export;                 module procedure export_bctype;                 end interface
+       interface export_primitives;      module procedure export_primitives_bctype;      end interface
+       interface import;                 module procedure import_bctype;                 end interface
+       interface export_folder_structure;module procedure export_folder_structure_bctype;end interface
+       interface export_structured;      module procedure export_structured_D_bctype;    end interface
+       interface import_structured;      module procedure import_structured_D_bctype;    end interface
+       interface import_primitives;      module procedure import_primitives_bctype;      end interface
+       interface export;                 module procedure export_wrap_bctype;            end interface
+       interface import;                 module procedure import_wrap_bctype;            end interface
+       interface set_IO_dir;             module procedure set_IO_dir_bctype;             end interface
+       interface make_IO_dir;            module procedure make_IO_dir_bctype;            end interface
+       interface suppress_warnings;      module procedure suppress_warnings_bctype;      end interface
 
        type bctype
          logical :: Dirichlet = .false.
@@ -219,6 +220,13 @@
          character(len=*),intent(in) :: dir
          call suppress_warnings(this)
          call make_dir_quiet(dir)
+       end subroutine
+
+       subroutine export_folder_structure_bctype(this,dir)
+         implicit none
+         type(bctype),intent(in) :: this
+         character(len=*),intent(in) :: dir
+         integer :: un
        end subroutine
 
        subroutine export_structured_D_bctype(this,dir)
