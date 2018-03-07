@@ -1,0 +1,70 @@
+\documentclass[11pt]{article}
+\newcommand{\PSCHAIN}{..}
+\input{../prepend_PS_chain}
+\newcommand{\rootdir}{\PSCHAIN}
+\input{\PSCHAIN/includes/includes}
+
+\newcommand{\HALF}{\frac{1}{2}}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Derivation of Governing Equations}
+
+The dimensional momentum and induction equations for uniform $\rho,\mu,\M,\sigma$ are
+\begin{equation}\begin{aligned}
+\PD_t u_i+u_j\PD_j u_i = - \frac{1}{\rho} \PD_i p+ \nu \PD_{jj} u_i + \frac{1}{\rho \M} (B_j \PD_j B_i - \tfrac{1}{2} \PD_i B_j B_j) \\
+\PD_t B_i = \frac{1}{\sigma \M} \PD_{jj} B_i - \PD_j (u_j B_i - u_i B_j)
+\end{aligned} \end{equation}
+Remove magnetic pressure
+\begin{equation}\begin{aligned}
+\PD_t u_i+u_j\PD_j u_i = -\PD_i p+ \nu \PD_{jj} u_i + \frac{1}{\rho \M} B_j \PD_j B_i \\
+\PD_t B_i = \frac{1}{\sigma \M} \PD_{jj} B_i - \PD_j (u_j B_i - u_i B_j)
+\end{aligned} \end{equation}
+Expanding equations yields
+\small
+\begin{equation}\begin{aligned}
+\PD_t u+ u\PD_x u + v\PD_y u + w\PD_z u = -\frac{1}{\rho}\PD_x p+ \nu (\PD_{xx} u+\PD_{yy} u+\PD_{zz} u) + \frac{1}{\rho \M} (B_x \PD_x B_x + B_y \PD_y B_x + B_z \PD_z B_x) \\
+\PD_t v+ u\PD_x v + v\PD_y v + w\PD_z v = -\frac{1}{\rho}\PD_y p+ \nu (\PD_{xx} v+\PD_{yy} v+\PD_{zz} v) + \frac{1}{\rho \M} (B_x \PD_x B_y + B_y \PD_y B_y + B_z \PD_z B_y) \\
+\PD_t w+ u\PD_x w + v\PD_y w + w\PD_z w = -\frac{1}{\rho}\PD_z p+ \nu (\PD_{xx} w+\PD_{yy} w+\PD_{zz} w) + \frac{1}{\rho \M} (B_x \PD_x B_z + B_y \PD_y B_z + B_z \PD_z B_z) \\
+\PD_t B_x = \frac{1}{\sigma \M} (\PD_{xx} B_x + \PD_{yy} B_x+\PD_{zz} B_x)                         - \PD_y (v B_x - u B_y) - \PD_z (w B_x - u B_z) \\
+\PD_t B_y = \frac{1}{\sigma \M} (\PD_{xx} B_y + \PD_{yy} B_y+\PD_{zz} B_y) - \PD_x (u B_y - v B_x)                         - \PD_z (w B_y - v B_z) \\
+\PD_t B_z = \frac{1}{\sigma \M} (\PD_{xx} B_z + \PD_{yy} B_z+\PD_{zz} B_z) - \PD_x (u B_z - w B_x) - \PD_y (v B_z - w B_y)                         \\
+\end{aligned} \end{equation}
+\normalsize
+Assuming:
+\begin{itemize}\setlength\itemsep{-1em}
+	\item $\PD_x=0$
+	\item $\PD_z=0$
+\end{itemize}
+We have
+\begin{equation}\begin{aligned}
+\PD_t u = -\frac{1}{\rho}\PD_x p+ \nu (\PD_{yy} u) + \frac{1}{\rho \M} (B_y \PD_y B_x) \\
+\PD_t v = -\frac{1}{\rho}\PD_y p+ \nu (\PD_{yy} v) + \frac{1}{\rho \M} (B_y \PD_y B_y) \\
+\PD_t w = -\frac{1}{\rho}\PD_z p+ \nu (\PD_{yy} w) + \frac{1}{\rho \M} (B_y \PD_y B_z) \\
+\PD_t B_x = \frac{1}{\sigma \M} (\PD_{yy} B_x)  - \PD_y (v B_x - u B_y) \\
+\PD_t B_y = \frac{1}{\sigma \M} (\PD_{yy} B_y)                          \\
+\PD_t B_z = \frac{1}{\sigma \M} (\PD_{yy} B_z)  - \PD_y (v B_z - w B_y) \\
+\end{aligned} \end{equation}
+Assuming:
+\begin{itemize}\setlength\itemsep{-1em}
+	\item $v=0$
+	\item $w=0$
+	\item $\B^0>>\B^1$
+	\item steady
+	\item $B_x = B_x^1$
+\end{itemize}
+We have
+\begin{equation}\begin{aligned}
+0 = -\frac{1}{\rho}\PD_x p+ \nu (\PD_{yy} u) + \frac{1}{\rho \M} (B_y^0 \PD_y B_x) \\
+0 = \frac{1}{\sigma \M} (\PD_{yy} B_x)  + B_y^0 \PD_y u \\
+\end{aligned} \end{equation}
+Or
+\begin{equation}\begin{aligned}
+\frac{1}{\rho}\PD_x p = \nu \PD_{yy} u + \frac{1}{\rho \M} B_y^0 \PD_y B_x \\
+\PD_{yy} B_x = - \sigma \M B_y^0 \PD_y u \\
+\end{aligned} \end{equation}
+
+\end{document}

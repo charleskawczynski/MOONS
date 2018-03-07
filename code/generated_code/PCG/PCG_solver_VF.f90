@@ -63,6 +63,8 @@
          type(iter_solver_params) :: ISP
          type(string) :: dir
          type(string) :: name
+         type(string) :: var_dir
+         type(string) :: var_name
          procedure(preconditioner_VF),pointer,nopass :: prec
          procedure(op_VF),pointer,nopass :: operator
          procedure(op_VF_explicit),pointer,nopass :: operator_explicit
@@ -92,6 +94,8 @@
          call init(this%ISP,that%ISP)
          call init(this%dir,that%dir)
          call init(this%name,that%name)
+         call init(this%var_dir,that%var_dir)
+         call init(this%var_name,that%var_name)
          this%prec => that%prec
          this%operator => that%operator
          this%operator_explicit => that%operator_explicit
@@ -117,6 +121,8 @@
          call delete(this%ISP)
          call delete(this%dir)
          call delete(this%name)
+         call delete(this%var_dir)
+         call delete(this%var_name)
          nullify(this%prec)
          nullify(this%operator)
          nullify(this%operator_explicit)
@@ -143,6 +149,8 @@
          call display(this%ISP,un)
          call display(this%dir,un)
          call display(this%name,un)
+         call display(this%var_dir,un)
+         call display(this%var_name,un)
        end subroutine
 
        subroutine display_short_PCG_solver_VF(this,un)
@@ -166,6 +174,8 @@
          call display(this%ISP,un)
          call display(this%dir,un)
          call display(this%name,un)
+         call display(this%var_dir,un)
+         call display(this%var_name,un)
        end subroutine
 
        subroutine display_wrap_PCG_solver_VF(this,dir,name)
@@ -210,6 +220,8 @@
          call export(this%ISP,un)
          call export(this%dir,un)
          call export(this%name,un)
+         call export(this%var_dir,un)
+         call export(this%var_name,un)
        end subroutine
 
        subroutine import_PCG_solver_VF(this,un)
@@ -233,6 +245,8 @@
          call import(this%ISP,un)
          call import(this%dir,un)
          call import(this%name,un)
+         call import(this%var_dir,un)
+         call import(this%var_name,un)
        end subroutine
 
        subroutine export_primitives_PCG_solver_VF(this,un)
@@ -311,6 +325,10 @@
          call export_structured(this%ISP,str(this%dir)//'ISP'//fortran_PS)
          call export_structured(this%dir,str(this%dir)//'dir'//fortran_PS)
          call export_structured(this%name,str(this%dir)//'name'//fortran_PS)
+         call export_structured(this%var_dir,&
+         str(this%dir)//'var_dir'//fortran_PS)
+         call export_structured(this%var_name,&
+         str(this%dir)//'var_name'//fortran_PS)
          close(un)
        end subroutine
 
@@ -334,6 +352,10 @@
          call import_structured(this%ISP,str(this%dir)//'ISP'//fortran_PS)
          call import_structured(this%dir,str(this%dir)//'dir'//fortran_PS)
          call import_structured(this%name,str(this%dir)//'name'//fortran_PS)
+         call import_structured(this%var_dir,&
+         str(this%dir)//'var_dir'//fortran_PS)
+         call import_structured(this%var_name,&
+         str(this%dir)//'var_name'//fortran_PS)
          close(un)
        end subroutine
 
@@ -357,6 +379,8 @@
          call set_IO_dir(this%ISP,dir//'ISP'//fortran_PS)
          call set_IO_dir(this%dir,dir//'dir'//fortran_PS)
          call set_IO_dir(this%name,dir//'name'//fortran_PS)
+         call set_IO_dir(this%var_dir,dir//'var_dir'//fortran_PS)
+         call set_IO_dir(this%var_name,dir//'var_name'//fortran_PS)
        end subroutine
 
        subroutine make_IO_dir_PCG_solver_VF(this,dir)
@@ -396,6 +420,8 @@
          call make_IO_dir(this%ISP,dir//'ISP'//fortran_PS)
          call make_IO_dir(this%dir,dir//'dir'//fortran_PS)
          call make_IO_dir(this%name,dir//'name'//fortran_PS)
+         call make_IO_dir(this%var_dir,dir//'var_dir'//fortran_PS)
+         call make_IO_dir(this%var_name,dir//'var_name'//fortran_PS)
        end subroutine
 
        subroutine export_structured_D_PCG_solver_VF(this,dir)
@@ -434,6 +460,8 @@
          call export_structured(this%ISP,dir//'ISP'//fortran_PS)
          call export_structured(this%dir,dir//'dir'//fortran_PS)
          call export_structured(this%name,dir//'name'//fortran_PS)
+         call export_structured(this%var_dir,dir//'var_dir'//fortran_PS)
+         call export_structured(this%var_name,dir//'var_name'//fortran_PS)
          close(un)
        end subroutine
 
@@ -473,6 +501,8 @@
          call import_structured(this%ISP,dir//'ISP'//fortran_PS)
          call import_structured(this%dir,dir//'dir'//fortran_PS)
          call import_structured(this%name,dir//'name'//fortran_PS)
+         call import_structured(this%var_dir,dir//'var_dir'//fortran_PS)
+         call import_structured(this%var_name,dir//'var_name'//fortran_PS)
          close(un)
        end subroutine
 

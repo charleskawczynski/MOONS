@@ -1,0 +1,110 @@
+\documentclass[11pt]{article}
+\newcommand{\PSCHAIN}{..}
+\input{../prepend_PS_chain}
+\newcommand{\rootdir}{\PSCHAIN}
+\input{\PSCHAIN/includes/includes}
+
+\newcommand{\HALF}{\frac{1}{2}}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Transformation}
+The Hartmann flow governing equations are:
+
+\begin{equation}\begin{aligned}
+\frac{1}{\rho}\PD_x p = \nu \PD_{yy} u + \frac{1}{\rho \M} B_y^0 \PD_y B_x \\
+\PD_{yy} B_x = - \sigma \M B_y^0 \PD_y u \\
+\end{aligned} \end{equation}
+
+Or, since $y$ is the only variable, we have
+\begin{equation}\begin{aligned}
+\frac{1}{\rho}\PD_x p = \nu u'' + \frac{1}{\rho \M} B_y^0 B_x' \\
+B_x'' = - \sigma \M B_y^0 u' \\
+\end{aligned} \end{equation}
+
+Introducing the variable transformation
+\begin{equation}\begin{aligned}
+X = u + C B_x \\
+Y = u - C B_x \\
+\end{aligned} \end{equation}
+Let's look at each transformation
+\subsection{X transformation}
+We have
+\begin{equation}\begin{aligned}
+\frac{1}{\rho}\PD_x p = \nu (X''-C B_x'') + \frac{1}{\rho \M} B_y^0 B_x' \\
+B_x'' = - \sigma \M B_y^0 (X' - C B_x') \\
+\end{aligned} \end{equation}
+Therefore
+\begin{equation}\begin{aligned}
+\frac{1}{\rho}\PD_x p = \nu (X''-C (- \sigma \M B_y^0 (X' - C B_x'))) + \frac{1}{\rho \M} B_y^0 B_x' \\
+\frac{1}{\rho}\PD_x p = \nu (X''+C \sigma \M B_y^0 (X' - C B_x')) + \frac{1}{\rho \M} B_y^0 B_x' \\
+\frac{1}{\rho}\PD_x p = \nu (X''+ C \sigma \M B_y^0 X' - C^2 \sigma \M B_y^0 B_x') + \frac{1}{\rho \M} B_y^0 B_x' \\
+\frac{1}{\rho}\PD_x p = \nu X''+ C \nu \sigma \M B_y^0 X' - C^2 \nu \sigma \M B_y^0 B_x' + \frac{1}{\rho \M} B_y^0 B_x' \\
+\end{aligned} \end{equation}
+We need $B_x'$ to dropout, therefore we need $C$ such that
+\begin{equation}\begin{aligned}
+- C^2 \nu \sigma \M B_y^0 B_x' + \frac{1}{\rho \M} B_y^0 B_x' = 0 \\
+C^2 \nu \sigma \M = \frac{1}{\rho \M} \\
+C^2 = \frac{1}{ \mu \sigma \M^2} \\
+C = \frac{1}{\M \sqrt{\mu \sigma}} \\
+\end{aligned} \end{equation}
+Our governing equation is then
+\begin{equation}\begin{aligned}
+\nu X''+ \frac{1}{\M \sqrt{\mu \sigma}} \nu \sigma \M B_y^0 X' = \frac{1}{\rho}\PD_x p \\
+\nu X''+ \frac{1}{\sqrt{\rho \nu \sigma}} \nu \sigma B_y^0 X' = \frac{1}{\rho}\PD_x p \\
+\nu X''+ \frac{\sqrt{\nu \sigma}}{\sqrt{\rho}} B_y^0 X' = \frac{1}{\rho}\PD_x p \\
+\mu X''+ \sqrt{\mu \sigma} B_y^0 X' = \PD_x p\\
+\end{aligned} \end{equation}
+
+\subsection{Y transformation}
+Now the $Y$ transformation:
+\begin{equation}\begin{aligned}
+\frac{1}{\rho}\PD_x p = \nu (Y'' + C B_x'') + \frac{1}{\rho \M} B_y^0 B_x' \\
+B_x'' = - \sigma \M B_y^0 (Y' + C B_x') \\
+\end{aligned} \end{equation}
+Therefore
+\begin{equation}\begin{aligned}
+\frac{1}{\rho}\PD_x p = \nu (Y'' + C (- \sigma \M B_y^0 (Y' + C B_x'))) + \frac{1}{\rho \M} B_y^0 B_x' \\
+\frac{1}{\rho}\PD_x p = \nu Y'' + \nu C (- \sigma \M B_y^0 (Y' + C B_x')) + \frac{1}{\rho \M} B_y^0 B_x' \\
+\frac{1}{\rho}\PD_x p = \nu Y'' - C \nu \sigma \M B_y^0 (Y' + C B_x') + \frac{1}{\rho \M} B_y^0 B_x' \\
+\frac{1}{\rho}\PD_x p = \nu Y'' - C \nu \sigma \M B_y^0 Y' - C^2 \nu \sigma \M B_y^0 B_x' + \frac{1}{\rho \M} B_y^0 B_x' \\
+\end{aligned} \end{equation}
+Again, we need $B_x'$ to dropout, therefore we need $C$ such that
+\begin{equation}\begin{aligned}
+- C^2 \nu \sigma \M B_y^0 B_x' + \frac{1}{\rho \M} B_y^0 B_x' = 0 \\
+- C^2 \nu \sigma \M + \frac{1}{\rho \M} = 0 \\
+C^2 = \frac{1}{\mu \sigma \M^2} = 0 \\
+C = \frac{1}{\M \sqrt{\mu \sigma}} \\
+\end{aligned} \end{equation}
+Same as before. Therefore, our equation is:
+\begin{equation}\begin{aligned}
+\nu Y'' - \frac{1}{\M \sqrt{\mu \sigma}} \nu \sigma \M B_y^0 Y' = \frac{1}{\rho}\PD_x p\\
+\nu Y'' - \frac{1}{\sqrt{\mu \sigma}} \nu \sigma B_y^0 Y' = \frac{1}{\rho}\PD_x p\\
+\nu Y'' - \frac{\sqrt{\nu \sigma}}{\sqrt{\rho}} B_y^0 Y' = \frac{1}{\rho}\PD_x p\\
+\mu Y'' - \sqrt{\mu \sigma} B_y^0 Y' = \PD_x p\\
+\end{aligned} \end{equation}
+
+\subsection{Transformation summary}
+Our decoupled, transformed governing equations are then:
+\begin{equation}\begin{aligned}
+C = \frac{1}{\M \sqrt{\mu \sigma}} \\
+X = u + C B_x \\
+Y = u - C B_x \\
+\mu X'' + \sqrt{\mu \sigma} B_y^0 X' = \PD_x p\\
+\mu Y'' - \sqrt{\mu \sigma} B_y^0 Y' = \PD_x p\\
+\end{aligned} \end{equation}
+Writing this in a more compact form, we have
+\begin{equation}\begin{aligned}
+C = \frac{1}{\M \sqrt{\mu \sigma}} \\
+D = B_y^0 \sqrt{\frac{\sigma}{\mu}} \\
+F = \frac{1}{\mu} \PD_x p \\
+X = u + C B_x \\
+Y = u - C B_x \\
+X'' + D X' = F \\
+Y'' - D Y' = F \\
+\end{aligned} \end{equation}
+
+\end{document}

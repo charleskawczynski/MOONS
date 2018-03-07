@@ -1,0 +1,151 @@
+\documentclass[11pt]{article}
+\newcommand{\PSCHAIN}{..}
+\input{../prepend_PS_chain}
+\newcommand{\rootdir}{\PSCHAIN}
+\input{\PSCHAIN/includes/includes}
+
+\newcommand{\HALF}{\frac{1}{2}}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{ODE Solution}
+Our decoupled, transformed governing equations are then:
+\begin{equation}\begin{aligned}
+C = \frac{1}{\M \sqrt{\mu \sigma}} \\
+D = B_y^0 \sqrt{\frac{\sigma}{\mu}} \\
+F = \frac{1}{\mu} \PD_x p \\
+X = u + C B_x \\
+Y = u - C B_x \\
+X'' + D X' = F \\
+Y'' - D Y' = F \\
+u   = \frac{1}{2}  (X+Y) \\
+B_x = \frac{1}{2C} (X-Y) \\
+\end{aligned} \end{equation}
+
+The general solution to these ODEs, using Wolfram Alpha, is
+\begin{equation}\begin{aligned}
+X = \frac{c_1}{D} e^{-D y} + \frac{F}{D} y + c_2  \\
+Y = \frac{c_3}{D} e^{+D y} - \frac{F}{D} y + c_4  \\
+\end{aligned} \end{equation}
+Returning to our primitive variables to apply BCs, we have
+\begin{equation}\begin{aligned}
+u & = \frac{1}{2} (X+Y) \\
+  & = \frac{1}{2} \left( \frac{c_1}{D} e^{-D y} + \frac{F}{D} y + c_2+\frac{c_3}{D} e^{+D y} - \frac{F}{D} y + c_4 \right) \\
+  & = \frac{1}{2D} ( c_1 e^{-D y} + F y + D c_2 + c_3 e^{+D y} - F y + D c_4 ) \\
+  & = \frac{1}{2D} ( c_1 e^{-D y} + D c_2 + c_3 e^{+D y} + D c_4 ) \\
+\end{aligned} \end{equation}
+And
+\begin{equation}\begin{aligned}
+B_x & = \frac{1}{2C} (X-Y) \\
+    & = \frac{1}{2C} \left(\frac{c_1}{D} e^{-D y} + \frac{F}{D} y + c_2 - \frac{c_3}{D} e^{+D y} + \frac{F}{D} y - c_4\right) \\
+    & = \frac{1}{2CD} (c_1 e^{-D y} + F y + D c_2 - c_3 e^{+D y} + F y - D c_4) \\
+    & = \frac{1}{2CD} (c_1 e^{-D y} + D c_2 - c_3 e^{+D y} - D c_4 + 2F y) \\
+\end{aligned} \end{equation}
+
+\subsection{Particular solution}
+
+Applying BCs, we have
+\begin{equation}\begin{aligned}
+u(-a)   = 0 & = \frac{1}{2D} ( c_1 e^{-D (-a)} + D c_2 + c_3 e^{+D (-a)} + D c_4) = 0 \\
+u(+a)   = 0 & = \frac{1}{2D} ( c_1 e^{-D (+a)} + D c_2 + c_3 e^{+D (+a)} + D c_4) = 0 \\
+B_x(-a) = 0 & = \frac{1}{2CD} (c_1 e^{-D (-a)} + D c_2 - c_3 e^{+D (-a)} - D c_4) + 2 F (-a)= 0 \\
+B_x(+a) = 0 & = \frac{1}{2CD} (c_1 e^{-D (+a)} + D c_2 - c_3 e^{+D (+a)} - D c_4) + 2 F (+a)= 0 \\
+\end{aligned} \end{equation}
+So,
+\begin{equation}\begin{aligned}
+c_1 e^{+D a} + D c_2 + c_3 e^{-D a} + c_4 D & = 0 \\
+c_1 e^{-D a} + D c_2 + c_3 e^{+D a} + c_4 D & = 0 \\
+c_1 e^{+D a} + D c_2 - c_3 e^{-D a} - c_4 D & = +2 F a \\
+c_1 e^{-D a} + D c_2 - c_3 e^{+D a} - c_4 D & = -2 F a \\
+\end{aligned} \end{equation}
+Using Matlab:
+\begin{verbatim}
+clc; close all; clear all
+syms D a F
+A = [exp(+D*a) D +exp(-D*a) +D;
+     exp(-D*a) D +exp(+D*a) +D;
+     exp(+D*a) D -exp(-D*a) -D;
+     exp(-D*a) D -exp(+D*a) -D]
+b = [0;0;2*F*a;-2*F*a]
+c = inv(A)*b
+r = latex(simplify(c))
+test_1 = c(1) - c(3)
+test_2 = c(2) - c(4)
+\end{verbatim}
+The solution was found to be:
+\begin{equation}\begin{aligned}
+c = \left(\begin{array}{c} \frac{2\, F\, a\, \mathrm{e}^{D\, a}}{\mathrm{e}^{2\, D\, a} - 1}\\ -\frac{F\, a\, \left(\mathrm{e}^{2\, D\, a} + 1\right)}{D\, \left(\mathrm{e}^{2\, D\, a} - 1\right)}\\ \frac{2\, F\, a\, \mathrm{e}^{D\, a}}{\mathrm{e}^{2\, D\, a} - 1}\\ -\frac{F\, a\, \left(\mathrm{e}^{2\, D\, a} + 1\right)}{D\, \left(\mathrm{e}^{2\, D\, a} - 1\right)} \end{array}\right) \\
+\end{aligned} \end{equation}
+
+Put slightly differently, we have
+\begin{equation}\begin{aligned}
+c_1  = c_3 =  \frac{Fa}{\sinh(Da)} \\
+c_2  = c_4 = -\frac{Fa}{D} \frac{\cosh(Da)}{\sinh(Da)} \\
+\end{aligned} \end{equation}
+
+Therefore, our particular solution is
+\small
+\begin{equation}\begin{aligned}
+u   & = \frac{1}{2D}  \left(\frac{Fa}{\sinh(Da)} e^{-D y} - D \frac{Fa}{D} \frac{\cosh(Da)}{\sinh(Da)} + \frac{Fa}{\sinh(Da)} e^{+D y} - D \frac{Fa}{D} \frac{\cosh(Da)}{\sinh(Da)} \right) \\
+B_x & = \frac{1}{2DC} \left(\frac{Fa}{\sinh(Da)} e^{-D y} - D \frac{Fa}{D} \frac{\cosh(Da)}{\sinh(Da)} - \frac{Fa}{\sinh(Da)} e^{+D y} + D \frac{Fa}{D} \frac{\cosh(Da)}{\sinh(Da)} + 2F y \right) \\
+\end{aligned} \end{equation}
+Double check:
+\normalsize
+Simplifying velocity, we have
+\begin{equation}\begin{aligned}
+u   & = \frac{1}{2D}  \left(\frac{Fa}{\sinh(Da)} e^{-D y} - D \frac{Fa}{D} \frac{\cosh(Da)}{\sinh(Da)} + \frac{Fa}{\sinh(Da)} e^{+D y} - D \frac{Fa}{D} \frac{\cosh(Da)}{\sinh(Da)} \right) \\
+    & = \frac{Fa}{2D \sinh(Da)}  \left(e^{-D y} - \cosh(Da) + e^{+D y} - \cosh(Da) \right) \\
+    & = \frac{Fa}{2D \sinh(Da)}  \left(2 \cosh(Dy) - 2 \cosh(Da) \right) \\
+    & = \frac{Fa}{D} \frac{\cosh(Da)}{\sinh(Da)}  \left( \frac{\cosh(Dy)}{\cosh(Da)}  - 1 \right) \\
+\end{aligned} \end{equation}
+
+The magnetic field is then
+\begin{equation}\begin{aligned}
+B_x & = \frac{1}{2DC} \left(\frac{Fa}{\sinh(Da)} e^{-D y} - D \frac{Fa}{D} \frac{\cosh(Da)}{\sinh(Da)} - \frac{Fa}{\sinh(Da)} e^{+D y} + D \frac{Fa}{D} \frac{\cosh(Da)}{\sinh(Da)} + 2F y \right) \\
+    & = \frac{Fa}{2DC} \frac{1}{\sinh(Da)} \left(e^{-D y} - e^{+D y} + 2 \frac{y}{a} \sinh(Da) \right) \\
+    & = \frac{Fa}{2DC} \frac{1}{\sinh(Da)} \left(-2\sinh(Dy) + 2 \frac{y}{a} \sinh(Da) \right) \\
+    & = \frac{Fa}{DC} \left(-\frac{\sinh(Dy)}{\sinh(Da)} + \frac{y}{a} \right) \\
+    & = \frac{Fa}{DC} \left(\frac{y}{a} - \frac{\sinh(Dy)}{\sinh(Da)}\right) \\
+\end{aligned} \end{equation}
+
+\subsection{Summary}
+
+Our final solution is then
+\begin{equation}\begin{aligned}
+C   & = \frac{1}{\M \sqrt{\mu \sigma}} \\
+D   & = B_y^0 \sqrt{\frac{\sigma}{\mu}} \\
+F   & = \frac{1}{\mu} \PD_x p \\
+u   & = \frac{Fa}{D} \frac{\cosh(Da)}{\sinh(Da)}  \left( \frac{\cosh(Dy)}{\cosh(Da)}  - 1 \right) \\
+B_x & = \frac{Fa}{DC} \left(\frac{y}{a} - \frac{\sinh(Dy)}{\sinh(Da)}\right) \\
+\end{aligned} \end{equation}
+
+Noting the Hartmann number, we have
+\begin{equation}\begin{aligned}
+Ha  & = Da = a B_y^0 \sqrt{\frac{\sigma}{\mu}} \\
+C   & = \frac{1}{\M \sqrt{\mu \sigma}} \\
+F   & = \frac{1}{\mu} \PD_x p \\
+u   & = \frac{Fa^2}{Ha} \frac{\cosh(Ha)}{\sinh(Ha)}  \left( \frac{\cosh(Ha \frac{y}{a} )}{\cosh(Ha)}  - 1 \right) \\
+B_x & = \frac{Fa^2}{CHa} \left(\frac{y}{a} - \frac{\sinh(Ha \frac{y}{a})}{\sinh(Ha)}\right) \\
+\end{aligned} \end{equation}
+
+\begin{verbatim}
+clc; clear all; close all;
+D = 2;
+F = 2;
+a = 20;
+C = 2;
+y = linspace(-a,a);
+Ha = D*a;
+Hay = Ha*y/a;
+u = F*a^2/Ha*cosh(Ha)/sinh(Ha)*(cosh(Hay)/cosh(Ha)-1);
+B_x = F*a^2/Ha*(y/a - sinh(Hay)/sinh(Ha));
+plot(y,u,y,B_x)
+xlabel('y')
+legend('u','B_x')
+title('Hartmann Flow')
+\end{verbatim}
+
+\end{document}

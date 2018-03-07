@@ -23,14 +23,16 @@
 
 % Equation font size
 \newcommand{\EQS}{\Huge}
+% \newcommand{\EQSTYLE}{\Huge} % non-bold version
+\newcommand{\EQSTYLE}{\boldsymbol}
 
 % Length of arrowed parts
 \newcommand{\arrowL}{0.4}
 \newcommand{\coordL}{0.2}
 
 % Thickness of lines
-\newcommand{\w}{2}
-\newcommand{\wCrissCross}{\w/2}
+\newcommand{\w}{4}
+\newcommand{\wCrissCross}{\w}
 \newcommand{\wCoord}{\w}
 \newcommand{\wArr}{5}
 \newcommand{\s}{4.8} % New
@@ -49,19 +51,19 @@
 \tikzstyle{every node}=[font=\LARGE]
 % Node lines
 	% \draw[line width=1,dashed] ({\NODEAX},{\NODEAY}) -- ({\NODEBX},{\NODEBY});
-	\draw[line width=1] ({\NODECX},{\NODECY}) -- ({\NODEDX},{\NODEDY});
-	\draw[line width=1] ({\NODEEX},{\NODEEY}) -- ({\NODEFX},{\NODEFY});
-	\draw[line width=1] ({\NODEGX},{\NODEGY}) -- ({\NODEHX},{\NODEHY});
+	\draw[line width=\w] ({\NODECX},{\NODECY}) -- ({\NODEDX},{\NODEDY});
+	\draw[line width=\w] ({\NODEEX},{\NODEEY}) -- ({\NODEFX},{\NODEFY});
+	\draw[line width=\w] ({\NODEGX},{\NODEGY}) -- ({\NODEHX},{\NODEHY});
 
 	% \draw[line width=1,dashed] ({\NODEAX},{\NODEAY}) -- ({\NODEEX},{\NODEEY});
-	\draw[line width=1] ({\NODEBX},{\NODEBY}) -- ({\NODEFX},{\NODEFY});
-	\draw[line width=1] ({\NODECX},{\NODECY}) -- ({\NODEGX},{\NODEGY});
-	\draw[line width=1] ({\NODEDX},{\NODEDY}) -- ({\NODEHX},{\NODEHY});
+	\draw[line width=\w] ({\NODEBX},{\NODEBY}) -- ({\NODEFX},{\NODEFY});
+	\draw[line width=\w] ({\NODECX},{\NODECY}) -- ({\NODEGX},{\NODEGY});
+	\draw[line width=\w] ({\NODEDX},{\NODEDY}) -- ({\NODEHX},{\NODEHY});
 
 	% \draw[line width=1,dashed] ({\NODEAX},{\NODEAY}) -- ({\NODECX},{\NODECY});
-	\draw[line width=1] ({\NODEBX},{\NODEBY}) -- ({\NODEDX},{\NODEDY});
-	\draw[line width=1] ({\NODEEX},{\NODEEY}) -- ({\NODEGX},{\NODEGY});
-	\draw[line width=1] ({\NODEFX},{\NODEFY}) -- ({\NODEHX},{\NODEHY});
+	\draw[line width=\w] ({\NODEBX},{\NODEBY}) -- ({\NODEDX},{\NODEDY});
+	\draw[line width=\w] ({\NODEEX},{\NODEEY}) -- ({\NODEGX},{\NODEGY});
+	\draw[line width=\w] ({\NODEFX},{\NODEFY}) -- ({\NODEHX},{\NODEHY});
 
 % Criss-cross lines (Sergey's request)
 	\draw[line width=\wCrissCross,dashed] ({\NODEFX},{\NODEFY}) -- ({\NODEDX},{\NODEDY});
@@ -77,19 +79,19 @@
 	% \draw[line width=1] ({\CCX},{\CCY}) -- ++ ({\ZTFACEX},{\ZTFACEY});
 
 % Face fields:
-	\draw[line width=\wArr,\arrR] ({\XTFACEX},{\XTFACEY}) -- ++ ({\arrowL},{0})                        node[anchor=west]  {\EQS $(u,B_x)_{i+\frac{1}{2},j,k}$};
-	\draw[line width=\wArr,\arrR] ({\YTFACEX},{\YTFACEY}) -- ++ ({0},{\arrowL})                        node[anchor=south]  {\EQS $(v,B_y)_{i,j+\frac{1}{2},k}$};
+	\draw[line width=\wArr,\arrR] ({\XTFACEX},{\XTFACEY}) -- ++ ({\arrowL},{0})                        node[anchor=west]  {\EQS $\EQSTYLE{(u,B_x)_{i+\frac{1}{2},j,k}}$};
+	\draw[line width=\wArr,\arrR] ({\YTFACEX},{\YTFACEY}) -- ++ ({0},{\arrowL})                        node[anchor=south]  {\EQS $\EQSTYLE{(v,B_y)_{i,j+\frac{1}{2},k}}$};
 	% \draw[line width=\wArr,\arrR] ({\ZTFACEX},{\ZTFACEY}) -- ++ ({-\arrowL*\DIAGX},{-\arrowL*\DIAGY})  node[right=1,anchor=north]  {\EQS $(w,B_z)_{i,j,k+\frac{1}{2}}$};
 	% \draw[line width=\wArr,\arrL] ({\ZTFACEX-\arrowL*\DIAGX},{\ZTFACEY-\arrowL*\DIAGY}) -- ++ ({\arrowL*\DIAGX},{\arrowL*\DIAGY})  node[below=2,anchor=north]  {\EQS $(w,B_z)_{i,j,k+\frac{1}{2}}$};
-	\draw[line width=\wArr,\arrL] ({\ZTFACEX-\arrowL*\DIAGX},{\ZTFACEY-\arrowL*\DIAGY}) -- ++ ({\arrowL*\DIAGX},{\arrowL*\DIAGY})  node[below=.8,anchor=north]  {\EQS $(w,B_z)_{i,j,k+\frac{1}{2}}$};
+	\draw[line width=\wArr,\arrL] ({\ZTFACEX-\arrowL*\DIAGX},{\ZTFACEY-\arrowL*\DIAGY}) -- ++ ({\arrowL*\DIAGX},{\arrowL*\DIAGY})  node[below=.8,anchor=north]  {\EQS $\EQSTYLE{(w,B_z)_{i,j,k+\frac{1}{2}}}$};
 
 % Edge fields:
 	% \draw[line width=\wArr,\arrR] ({\XEDGEDX},{\XEDGEDY}) -- ++ ({\arrowL},{0})                        node[left=.7,anchor=north]  {\EQS ${J_x}_{i,j+\frac{1}{2},k+\frac{1}{2}}$};
 	% \draw[line width=\wArr,\arrR] ({\YEDGEDX},{\YEDGEDY}) -- ++ ({0},{\arrowL})                        node[below=1.7,anchor=north]  {\EQS ${J_y}_{i+\frac{1}{2},j,k+\frac{1}{2}}$};
 	% \draw[line width=\wArr,\arrR] ({\ZEDGEDX},{\ZEDGEDY}) -- ++ ({-\arrowL*\DIAGX},{-\arrowL*\DIAGY})  node[below=-.4,anchor=north west]  {\EQS ${J_z}_{i+\frac{1}{2},j+\frac{1}{2},k}$};
-	\draw[line width=\wArr,\arrR] ({\XEDGEDX},{\XEDGEDY}) -- ++ ({\arrowL},{0})                        node[left=.7,anchor=north]         {\EQS $(\sigma,J_x)_{i,j+\frac{1}{2},k+\frac{1}{2}}$};
-	\draw[line width=\wArr,\arrR] ({\YEDGEDX},{\YEDGEDY}) -- ++ ({0},{\arrowL})                        node[below=1.7,anchor=north]       {\EQS $(\sigma,J_y)_{i+\frac{1}{2},j,k+\frac{1}{2}}$};
-	\draw[line width=\wArr,\arrR] ({\ZEDGEDX},{\ZEDGEDY}) -- ++ ({-\arrowL*\DIAGX},{-\arrowL*\DIAGY})  node[right=.6]  {\EQS $(\sigma,J_z)_{i+\frac{1}{2},j+\frac{1}{2},k}$};
+	\draw[line width=\wArr,\arrR] ({\XEDGEDX},{\XEDGEDY}) -- ++ ({\arrowL},{0})                        node[left=.7,anchor=north]         {\EQS $\EQSTYLE{(\sigma,J_x)_{i,j+\frac{1}{2},k+\frac{1}{2}}}$};
+	\draw[line width=\wArr,\arrR] ({\YEDGEDX},{\YEDGEDY}) -- ++ ({0},{\arrowL})                        node[below=1.7,anchor=north]       {\EQS $\EQSTYLE{(\sigma,J_y)_{i+\frac{1}{2},j,k+\frac{1}{2}}}$};
+	\draw[line width=\wArr,\arrR] ({\ZEDGEDX},{\ZEDGEDY}) -- ++ ({-\arrowL*\DIAGX},{-\arrowL*\DIAGY})  node[right=.6]  {\EQS $\EQSTYLE{(\sigma,J_z)_{i+\frac{1}{2},j+\frac{1}{2},k}}$};
 
 % Coordinate system and cell center fields (coordinate system cell center)
 	% \draw [fill] (\CCX,\CCY) circle [radius=0.02];
@@ -101,10 +103,10 @@
 % Coordinate system and cell center fields (coordinate system outside)
 	\draw [fill] (\CCX,\CCY) circle [radius=0.02];
 	% \draw (\CCX,\CCY) node[left=.5,anchor=east]{\EQS$ (\correctU,\correctB)_{i,j,k}$};
-	\draw (\CCX,\CCY) node[left=.7,anchor=south]{\EQS$ (\correctU,\correctB)_{i,j,k}$};
-	\draw[line width=\wCoord,\arrR]	({\NODEBX},{\NODEBY}) -- ++ (\coordL,0)                           node[anchor=south]{\EQS $x$};
-	\draw[line width=\wCoord,\arrR]	({\NODECX},{\NODECY}) -- ++ (0,\coordL)                           node[anchor=south]{\EQS $y$};
-	\draw[line width=\wCoord,\arrR]	({\NODEEX},{\NODEEY}) -- ++ ({-\DIAGX*\coordL},{-\DIAGY*\coordL}) node[anchor=east] {\EQS $z$};
+	\draw (\CCX,\CCY) node[left=1,anchor=south]{\EQS$\EQSTYLE{p_{i,j,k}}$};
+	\draw[line width=\wCoord,\arrR]	({\NODEBX},{\NODEBY}) -- ++ (\coordL,0)                           node[anchor=south]{\EQS $\EQSTYLE{x}$};
+	\draw[line width=\wCoord,\arrR]	({\NODECX},{\NODECY}) -- ++ (0,\coordL)                           node[anchor=south]{\EQS $\EQSTYLE{y}$};
+	\draw[line width=\wCoord,\arrR]	({\NODEEX},{\NODEEY}) -- ++ ({-\DIAGX*\coordL},{-\DIAGY*\coordL}) node[anchor=east] {\EQS $\EQSTYLE{z}$};
 \end{tikzpicture}
 
 \end{document}

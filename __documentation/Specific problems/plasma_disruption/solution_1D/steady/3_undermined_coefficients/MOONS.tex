@@ -182,6 +182,21 @@ u   = a \frac{1}{B_z^0} \frac{\PD B_x^0}{\PD t}  \left( \frac{z}{a} - \frac{\sin
 B_x = \sqrt{\mu \sigma a^2 \M^2} \frac{1}{B_z^0} \frac{\PD B_x^0}{\PD t} \left( \frac{\cosh(Ha \frac{z}{a})}{\sinh(Ha)} - \frac{1}{\tanh(Ha)} \right) \\
 Ha = a B_z^0 \sqrt{\frac{\sigma}{\rho \nu}} \\
 \end{aligned} \end{equation}
+Also, the currents and Lorentz force may be computed
+\section{Currents}
+\begin{equation}\begin{aligned}
+J_y &= \PD_z B_x^1 = \sqrt{\mu \sigma a^2 \M^2} \frac{1}{B_z^0} \frac{\PD B_x^0}{\PD t} \frac{a B_z^0 \sqrt{\frac{\sigma}{\rho \nu}}}{a} \left( \frac{\sinh \left(Ha \frac{z}{a} \right)}{\sinh(Ha)}\right), \\
+    & = \sqrt{\frac{\sigma}{\rho \nu} \mu \sigma a^2 \M^2} \frac{\PD B_x^0}{\PD t} \frac{\cosh \left(Ha \frac{z}{a} \right)}{\sinh(Ha)}, \\
+    &= \sigma a \M \frac{\PD B_x^0}{\PD t} \frac{\sinh \left(Ha \frac{z}{a} \right)}{\sinh(Ha)}, \\
+\end{aligned} \end{equation}
+
+\section{Lorentz force}
+\begin{equation}\begin{aligned}
+F_x & = J_y B_z^0 \\
+&= \sigma a \M \frac{\PD B_x^0}{\PD t} \frac{\sinh \left(Ha \frac{z}{a} \right)}{\sinh(Ha)} B_z^0, \\
+F_z & = - J_y (B_x^0 + B_x^1) \\
+& = - \sigma a \M \frac{\PD B_x^0}{\PD t} \frac{\sinh \left(Ha \frac{z}{a} \right)}{\sinh(Ha)} \left(B_x^0 + \sqrt{\mu \sigma a^2 \M^2} \frac{1}{B_z^0} \frac{\PD B_x^0}{\PD t} \left( \frac{\cosh(Ha \frac{z}{a})}{\sinh(Ha)} - \frac{1}{\tanh(Ha)} \right) \right) \\
+\end{aligned} \end{equation}
 
 \section{Unit check}
 Clearly, units are correct for velocity

@@ -49,7 +49,7 @@
       contains
 
       subroutine init_PCG_SF(PCG,operator,operator_explicit,prec,m,ISP,MFP,&
-        x,x_BC,k,dir,name,testSymmetry,exportOperator)
+        x,x_BC,k,var_dir,var_name,testSymmetry,exportOperator)
         implicit none
         procedure(op_SF) :: operator
         procedure(op_SF_explicit) :: operator_explicit
@@ -59,7 +59,7 @@
         type(iter_solver_params),intent(in) :: ISP
         type(SF),intent(in) :: x,x_BC
         type(TF),intent(in) :: k
-        character(len=*),intent(in) :: dir,name
+        character(len=*),intent(in) :: var_dir,var_name
         logical,intent(in) :: testSymmetry,exportOperator
         type(matrix_free_params),intent(in) :: MFP
         type(SF) :: temp_Minv
@@ -83,12 +83,12 @@
         call init(PCG%norm)
         call init(PCG%MFP,MFP)
         call volume(PCG%vol,m)
-        call init(PCG%dir,dir)
-        call init(PCG%name,name)
-        PCG%un = new_and_open(dir,str(PCG%name))
-        PCG%un_convergence = new_and_open(dir,str(PCG%name)//'_convergence')
-        call tecHeader(str(PCG%name),PCG%un,.false.)
-        call tecHeader(str(PCG%name),PCG%un_convergence,.false.)
+        call init(PCG%var_dir,var_dir)
+        call init(PCG%var_name,var_name)
+        PCG%un = new_and_open(var_dir,str(PCG%var_name))
+        PCG%un_convergence = new_and_open(var_dir,str(PCG%var_name)//'_convergence')
+        call tecHeader(str(PCG%var_name),PCG%un,.false.)
+        call tecHeader(str(PCG%var_name),PCG%un_convergence,.false.)
         PCG%prec => prec
         PCG%operator => operator
         PCG%operator_explicit => operator_explicit
@@ -98,24 +98,24 @@
         if (verifyPreconditioner) then
           call init(temp_Minv,PCG%Minv)
           call assign(temp_Minv,PCG%Minv)
-          call export_raw(m,temp_Minv,dir,'PCG_SF_prec_tec_'//str(PCG%name),0)
-          call export_matrix(temp_Minv,dir,'PCG_SF_prec_mat_'//str(PCG%name))
+          call export_raw(m,temp_Minv,var_dir,'PCG_SF_prec_tec_'//str(PCG%var_name),0)
+          call export_matrix(temp_Minv,var_dir,'PCG_SF_prec_mat_'//str(PCG%var_name))
           call get_diagonal(operator_explicit,temp_Minv,x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
-          call export_raw(m,temp_Minv,dir,'PCG_SF_op_tec_diag_'//str(PCG%name),0)
-          call export_matrix(temp_Minv,dir,'PCG_SF_op_mat_diag_'//str(PCG%name))
+          call export_raw(m,temp_Minv,var_dir,'PCG_SF_op_tec_diag_'//str(PCG%var_name),0)
+          call export_matrix(temp_Minv,var_dir,'PCG_SF_op_mat_diag_'//str(PCG%var_name))
           call delete(temp_Minv)
         endif
 
         if (testSymmetry) then
-          call test_symmetry(operator,'PCG_SF_'//str(PCG%name),x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
+          call test_symmetry(operator,'PCG_SF_'//str(PCG%var_name),x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
         endif
         if (exportOperator) then
-          call export_operator(operator_explicit,dir,'PCG_SF_'//str(PCG%name),x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
+          call export_operator(operator_explicit,var_dir,'PCG_SF_'//str(PCG%var_name),x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
         endif
       end subroutine
 
       subroutine init_PCG_VF(PCG,operator,operator_explicit,prec,m,ISP,MFP,&
-        x,x_BC,k,dir,name,testSymmetry,exportOperator)
+        x,x_BC,k,var_dir,var_name,testSymmetry,exportOperator)
         implicit none
         procedure(op_VF) :: operator
         procedure(op_VF_explicit) :: operator_explicit
@@ -125,7 +125,7 @@
         type(iter_solver_params),intent(in) :: ISP
         type(VF),intent(in) :: x,x_BC
         type(TF),intent(in) :: k
-        character(len=*),intent(in) :: dir,name
+        character(len=*),intent(in) :: var_dir,var_name
         logical,intent(in) :: testSymmetry,exportOperator
         type(matrix_free_params),intent(in) :: MFP
         type(VF) :: temp_Minv
@@ -148,12 +148,12 @@
         call init(PCG%norm)
         call init(PCG%MFP,MFP)
         call volume(PCG%vol,m)
-        call init(PCG%dir,dir)
-        call init(PCG%name,name)
-        PCG%un = new_and_open(dir,str(PCG%name))
-        PCG%un_convergence = new_and_open(dir,str(PCG%name)//'_convergence')
-        call tecHeader(str(PCG%name),PCG%un,.true.)
-        call tecHeader(str(PCG%name),PCG%un_convergence,.true.)
+        call init(PCG%var_dir,var_dir)
+        call init(PCG%var_name,var_name)
+        PCG%un = new_and_open(var_dir,str(PCG%var_name))
+        PCG%un_convergence = new_and_open(var_dir,str(PCG%var_name)//'_convergence')
+        call tecHeader(str(PCG%var_name),PCG%un,.true.)
+        call tecHeader(str(PCG%var_name),PCG%un_convergence,.true.)
         PCG%prec => prec
         PCG%operator => operator
         PCG%operator_explicit => operator_explicit
@@ -163,19 +163,19 @@
         if (verifyPreconditioner) then
           call init(temp_Minv,PCG%Minv)
           call assign(temp_Minv,PCG%Minv)
-          call export_raw(m,temp_Minv,dir,'PCG_VF_prec_tec_'//str(PCG%name),0)
-          call export_matrix(temp_Minv,dir,'PCG_VF_prec_mat_'//str(PCG%name))
+          call export_raw(m,temp_Minv,var_dir,'PCG_VF_prec_tec_'//str(PCG%var_name),0)
+          call export_matrix(temp_Minv,var_dir,'PCG_VF_prec_mat_'//str(PCG%var_name))
           call get_diagonal(operator_explicit,temp_Minv,x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
-          call export_raw(m,temp_Minv,dir,'PCG_VF_op_tec_diag_'//str(PCG%name),0)
-          call export_matrix(temp_Minv,dir,'PCG_VF_op_mat_diag_'//str(PCG%name))
+          call export_raw(m,temp_Minv,var_dir,'PCG_VF_op_tec_diag_'//str(PCG%var_name),0)
+          call export_matrix(temp_Minv,var_dir,'PCG_VF_op_mat_diag_'//str(PCG%var_name))
           call delete(temp_Minv)
         endif
 
         if (testSymmetry) then
-          call test_symmetry(operator,'PCG_VF_'//str(PCG%name),x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
+          call test_symmetry(operator,'PCG_VF_'//str(PCG%var_name),x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
         endif
         if (exportOperator) then
-          call export_operator(operator_explicit,dir,'PCG_VF_'//str(PCG%name),x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
+          call export_operator(operator_explicit,var_dir,'PCG_VF_'//str(PCG%var_name),x,PCG%k,PCG%vol,m,MFP,PCG%tempk)
         endif
       end subroutine
 
@@ -186,7 +186,7 @@
         type(SF),intent(in) :: b
         type(mesh),intent(in) :: m
         logical,intent(in) :: compute_norms
-        call solve_PCG(PCG%operator,PCG%operator_explicit,str(PCG%name),&
+        call solve_PCG(PCG%operator,PCG%operator_explicit,str(PCG%var_name),&
         x,PCG%x_BC,b,PCG%vol,PCG%k,m,PCG%MFP,PCG%ISP,PCG%norm,compute_norms,PCG%un,&
         PCG%un_convergence,PCG%tempx,PCG%tempk,PCG%Ax,PCG%r,PCG%p,&
         PCG%z,PCG%Minv)
@@ -199,20 +199,20 @@
         type(VF),intent(in) :: b
         type(mesh),intent(in) :: m
         logical,intent(in) :: compute_norms
-        call solve_PCG(PCG%operator,PCG%operator_explicit,str(PCG%name),&
+        call solve_PCG(PCG%operator,PCG%operator_explicit,str(PCG%var_name),&
         x,PCG%x_BC,b,PCG%vol,PCG%k,m,PCG%MFP,PCG%ISP,PCG%norm,compute_norms,PCG%un,&
         PCG%un_convergence,PCG%tempx,PCG%tempk,PCG%Ax,PCG%r,PCG%p,&
         PCG%z,PCG%Minv)
       end subroutine
 
-      subroutine tecHeader(name,un,VF)
+      subroutine tecHeader(var_name,un,VF)
         implicit none
-        character(len=*),intent(in) :: name
+        character(len=*),intent(in) :: var_name
         integer,intent(in) :: un
         logical,intent(in) :: VF
         type(string) :: s
-        if (VF) then; write(un,*) 'TITLE = "PCG_VF residuals for '//name//'"'
-        else;         write(un,*) 'TITLE = "PCG_SF residuals for '//name//'"'
+        if (VF) then; write(un,*) 'TITLE = "PCG_VF residuals for '//var_name//'"'
+        else;         write(un,*) 'TITLE = "PCG_SF residuals for '//var_name//'"'
         endif
         call init(s,'VARIABLES = iter_total,stop_criteria')
         call append(s,',res_norm_L1,res_norm_L2,res_norm_Linf')

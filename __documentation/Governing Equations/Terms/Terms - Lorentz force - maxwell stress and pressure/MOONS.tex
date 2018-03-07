@@ -21,17 +21,8 @@ We may write the $\J\CROSS \B$ force as
 	&= \epsilon_{ijk} \epsilon_{jmn} \left( \PD_m \frac{B_n}{\mu} B_k \right) \\
 	&= \epsilon_{jki} \epsilon_{jmn} \left( \PD_m \frac{B_n}{\mu} B_k \right) \\
 	&= (\delta_{km} \delta_{in} - \delta_{kn} \delta_{im} ) \left( \PD_m \frac{B_n}{\mu} B_k \right) \\
-	&= \left( \PD_k \frac{B_i}{\mu} B_k \right) -
-	\left( \PD_i \frac{B_k}{\mu} B_k \right) \\
-	\J\CROSS \B &= \left( B_k \PD_k \frac{B_i}{\mu} \right) -
-	\left( \PD_i \frac{B_k B_k}{\mu} \right)
-\end{aligned}
-\end{equation}
-In vector notation, this may be written as
-\begin{equation}
-\begin{aligned}
-	\J \CROSS \B
-	&= \B \DOT \DEL \left( \frac{\B}{\mu} \right) - \DIV \left( \frac{\B \B}{\mu} \right)
+	&= \PD_k \left( \frac{B_i}{\mu} B_k \right) - \left( \PD_i \frac{B_k}{\mu} B_k \right) \\
+	&= \PD_k \underbrace{\left( \frac{B_i}{\mu} B_k \right)}_{\text{maxwell stress}} - \PD_i \underbrace{\left( \frac{B_k}{\mu} B_k \right)}_{\text{magnetic pressure}} \\
 \end{aligned}
 \end{equation}
 

@@ -14,25 +14,15 @@
 
 We may write the $\J\CROSS \B$ force as
 
-\begin{equation}
-	\J\CROSS \B = \epsilon_ijk j_j B_k =
-	\epsilon_ijk \left( \epsilon_jmn \PD_m \frac{B_n}{\mu} B_k \right)
-\end{equation}
-\begin{equation}
-	= \epsilon_ijk \epsilon_jmn \left( \PD_m \frac{B_n}{\mu} B_k \right)
-	= \epsilon_jki \epsilon_jmn \left( \PD_m \frac{B_n}{\mu} B_k \right)
-\end{equation}
-\begin{equation}
-	= (\delta_{km} \delta_{in} - \delta_{kn} \delta_{im} ) \left( \PD_m \frac{B_n}{\mu} B_k \right)
-\end{equation}
-\begin{equation}
-	= \left( \PD_k \frac{B_i}{\mu} B_k \right) -
-	\left( \PD_i \frac{B_k}{\mu} B_k \right)
-\end{equation}
-
-\begin{equation}
-	\J \CROSS \B = B_k
-	\left( \PD_k \frac{B_i}{\mu} - \PD_i \frac{B_k}{\mu} \right)
-\end{equation}
+\begin{equation}\begin{aligned}
+	\J\CROSS \B
+	& = \epsilon_{lmn} j_m B_n \\
+	& = \epsilon_{lmn} \left( \epsilon_{mpq} \PD_p \frac{B_q}{\mu} \right) B_n \\
+	& = \epsilon_{lmn} \epsilon_{mpq} \left( \PD_p \frac{B_q}{\mu} \right) B_n \\
+	& = \epsilon_{mnl} \epsilon_{mpq} \left( \PD_p \frac{B_q}{\mu} \right) B_n \\
+	& = (\delta_{np} \delta_{lq} - \delta_{nq} \delta_{lp} ) \left( \PD_p \frac{B_q}{\mu} \right) B_n \\
+	& = B_p \left( \PD_p \frac{B_l}{\mu} \right) - B_n \left( \PD_l \frac{B_n}{\mu} \right) \\
+	& = \PD_p \left( B_p \frac{B_l}{\mu} \right) - \frac{1}{2} \PD_l \left( B_n \frac{B_n}{\mu} \right) \\
+\end{aligned} \end{equation}
 
 \end{document}
