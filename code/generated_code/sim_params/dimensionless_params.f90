@@ -47,6 +47,7 @@
          real(cp) :: N = 0.0_cp
          real(cp) :: Ha = 0.0_cp
          real(cp) :: tau = 0.0_cp
+         real(cp) :: t_plasma = 0.0_cp
          real(cp) :: Gr = 0.0_cp
          real(cp) :: Fr = 0.0_cp
          real(cp) :: Pr = 0.0_cp
@@ -82,6 +83,7 @@
          this%N = that%N
          this%Ha = that%Ha
          this%tau = that%tau
+         this%t_plasma = that%t_plasma
          this%Gr = that%Gr
          this%Fr = that%Fr
          this%Pr = that%Pr
@@ -113,6 +115,7 @@
          this%N = 0.0_cp
          this%Ha = 0.0_cp
          this%tau = 0.0_cp
+         this%t_plasma = 0.0_cp
          this%Gr = 0.0_cp
          this%Fr = 0.0_cp
          this%Pr = 0.0_cp
@@ -145,6 +148,7 @@
          write(un,*) 'N                    = ',this%N
          write(un,*) 'Ha                   = ',this%Ha
          write(un,*) 'tau                  = ',this%tau
+         write(un,*) 't_plasma             = ',this%t_plasma
          write(un,*) 'Gr                   = ',this%Gr
          write(un,*) 'Fr                   = ',this%Fr
          write(un,*) 'Pr                   = ',this%Pr
@@ -177,6 +181,7 @@
          write(un,*) 'N                    = ',this%N
          write(un,*) 'Ha                   = ',this%Ha
          write(un,*) 'tau                  = ',this%tau
+         write(un,*) 't_plasma             = ',this%t_plasma
          write(un,*) 'Gr                   = ',this%Gr
          write(un,*) 'Fr                   = ',this%Fr
          write(un,*) 'Pr                   = ',this%Pr
@@ -250,6 +255,7 @@
          write(un,*) 'N                     = ';write(un,*) this%N
          write(un,*) 'Ha                    = ';write(un,*) this%Ha
          write(un,*) 'tau                   = ';write(un,*) this%tau
+         write(un,*) 't_plasma              = ';write(un,*) this%t_plasma
          write(un,*) 'Gr                    = ';write(un,*) this%Gr
          write(un,*) 'Fr                    = ';write(un,*) this%Fr
          write(un,*) 'Pr                    = ';write(un,*) this%Pr
@@ -280,6 +286,7 @@
          read(un,*); read(un,*) this%N
          read(un,*); read(un,*) this%Ha
          read(un,*); read(un,*) this%tau
+         read(un,*); read(un,*) this%t_plasma
          read(un,*); read(un,*) this%Gr
          read(un,*); read(un,*) this%Fr
          read(un,*); read(un,*) this%Pr

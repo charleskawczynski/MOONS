@@ -45,7 +45,7 @@
            call add_curl_J(F,ind%m,ind%J,ind%sigmaInv_edge,SP%IT%diffusion%scale,ind%temp_F2,ind%temp_E)
          endif
          if (SP%IT%unsteady_B0%add) then
-           call add_unsteady_B0(F,ind%B0,ind%dB0dt,SP%IT%B_applied%scale,SP%IT%unsteady_B0%scale,TMP)
+           call add_unsteady_B0(F,ind%B0,ind%dB0dt,SP%IT%B_applied%scale,SP%IT%unsteady_B0%scale,TMP,SP%DP%t_plasma)
          endif
          if (SP%IT%constant_dB0dt%add) then
            call add_constant_dB0dt(F%x,ind%dB0dt%x,SP%IT%constant_dB0dt%scale)

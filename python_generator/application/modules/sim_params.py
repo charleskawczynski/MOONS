@@ -198,6 +198,7 @@ def add_modules(g,T,F,priv,real):
 	g.module[m_name].add_prop('N',real,priv)
 	g.module[m_name].add_prop('Ha',real,priv)
 	g.module[m_name].add_prop('tau',real,priv)
+	g.module[m_name].add_prop('t_plasma',real,priv)
 	g.module[m_name].add_prop('Gr',real,priv)
 	g.module[m_name].add_prop('Fr',real,priv)
 	g.module[m_name].add_prop('Pr',real,priv)

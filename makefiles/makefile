@@ -102,6 +102,7 @@ ifeq ($(CLUSTER),'Workstation_CK')
 	# TARGET_DIR = F:$(PS)Property_of_C_Kawczynski$(PS)SIMS$(PS)PD$(PS)PD_plane_solid_unsteady_B0_zero_res
 	# TARGET_DIR = F:$(PS)Property_of_C_Kawczynski$(PS)SIMS$(PS)PD$(PS)PD_constant_dB0dt_plane_solid
 	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)PD$(PS)PD_plane_div_adv
+	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)PD$(PS)fusion
 	# TARGET_DIR = C:$(PS)Users$(PS)charl$(PS)Documents$(PS)MOONS$(PS)SIMS$(PS)PD$(PS)fusion_solid
 endif
 

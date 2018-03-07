@@ -20,6 +20,10 @@
        SP%DP%t_start                 = 0.0_cp
 
        SP%DP%t_final                 = 10.0_cp
+
+       SP%DP%t_plasma                     = 0.0047_cp
+       ! SP%DP%t_plasma                     = 0.00790207929237_cp
+
        ! SP%DP%t_final                 = 3.0_cp*SP%DP%dtime ! for testing
 
        SP%DP%Re                      = 11769054.2652_cp
