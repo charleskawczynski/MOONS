@@ -424,6 +424,7 @@
          call make_IO_dir(this%name,dir//'name'//fortran_PS)
          call make_IO_dir(this%var_dir,dir//'var_dir'//fortran_PS)
          call make_IO_dir(this%var_name,dir//'var_name'//fortran_PS)
+<<<<<<< HEAD
        end subroutine
 
        subroutine export_folder_structure_PCG_solver_VF(this,dir)
@@ -462,6 +463,8 @@
          call export_structured(this%name,dir//'name'//fortran_PS)
          call export_structured(this%var_dir,dir//'var_dir'//fortran_PS)
          call export_structured(this%var_name,dir//'var_name'//fortran_PS)
+=======
+>>>>>>> 653c73fc24c010c440eabb9936336456af4e109f
        end subroutine
 
        subroutine export_structured_D_PCG_solver_VF(this,dir)

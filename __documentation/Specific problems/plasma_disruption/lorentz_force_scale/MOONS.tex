@@ -1,0 +1,51 @@
+\documentclass[11pt]{article}
+\newcommand{\PSCHAIN}{..}
+\input{../prepend_PS_chain}
+\newcommand{\rootdir}{\PSCHAIN}
+\input{\PSCHAIN/includes/includes}
+
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Lorentz Force Scale}
+The dimensional momentum equation is:
+\begin{equation}
+	\boxed{
+	\rho \left( \frac{\PD \U}{\PD t} + (\U \DOT \DEL) \U \right) =
+	-\DEL p + \mu \DEL^2 \U + \J \CROSS \B
+	}
+\end{equation}
+Newton definition:
+\begin{equation}\begin{aligned}
+	[N] = \text{[kg m/s$^2$]} \\
+\end{aligned}\end{equation}
+The units are:
+\begin{equation}\begin{aligned}
+	[\U] = \text{[m/s]} \\
+	[t] = \text{[s]} \\
+	[x,y,z] = \text{[m]} \\
+	[\rho] = \text{[kg/m$^3$]} \\
+\end{aligned}\end{equation}
+Therefore, the Lorentz force units are:
+\begin{equation}\begin{aligned}
+	[\J \CROSS \B] & = \frac{\text{m}}{\text{s}} \frac{1}{\text{s}} \frac{\text{kg}}{\text{m}^3} \\
+	& = \frac{\text{kg}}{\text{m}^2 \text{s}^2} \\
+	& = \frac{\text{kg} \text{ m}}{\text{s}^2} \frac{1}{\text{m}^3} \\
+	& = [N] \frac{1}{\text{m}^3} \\
+\end{aligned}\end{equation}
+
+The Lorentz force is force per unit volume! Therefore, we must first multiply by the volume in which it is acting.
+
+
+The implemented form follows
+\begin{equation}\begin{aligned}
+	[\H \BUN \B] & = \frac{\text{kg}}{\text{m}^3} \frac{\text{m}}{\text{s}} \frac{\text{m}}{\text{s}} = [\text{N}] \frac{1}{\text{m}^2} \\
+	             & = \frac{B_c}{\M} B_c (\H^* \BUN \B^*) \\
+	             & = \rho U_c^2 Al (\H^* \BUN \B^*) \\
+\end{aligned}\end{equation}
+
+
+\end{document}

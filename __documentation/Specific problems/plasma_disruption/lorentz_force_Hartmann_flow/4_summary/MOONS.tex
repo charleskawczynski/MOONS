@@ -1,0 +1,71 @@
+\documentclass[11pt]{article}
+\newcommand{\PSCHAIN}{..}
+\input{../prepend_PS_chain}
+\newcommand{\rootdir}{\PSCHAIN}
+\input{\PSCHAIN/includes/includes}
+
+\newcommand{\HALF}{\frac{1}{2}}
+
+\begin{document}
+\doublespacing
+\MOONSTITLE
+\maketitle
+
+\section{Solution summary}
+
+The Hartmann flow solution is:
+\begin{equation}\begin{aligned}
+Ha  & = Da = a B_y^0 \sqrt{\frac{\sigma}{\mu}} \\
+C   & = \frac{1}{\M \sqrt{\mu \sigma}} \\
+F   & = \frac{1}{\mu} \PD_x p \\
+u   & = \frac{Fa^2}{Ha} \frac{\cosh(Ha)}{\sinh(Ha)}  \left( \frac{\cosh(Ha \frac{y}{a} )}{\cosh(Ha)}  - 1 \right) \\
+B_x & = \frac{Fa^2}{CHa} \left(\frac{y}{a} - \frac{\sinh(Ha \frac{y}{a})}{\sinh(Ha)}\right) \\
+\end{aligned} \end{equation}
+
+Therefore the currents are
+\begin{equation}\begin{aligned}
+\J  & = \CURL \B \\
+J_z & = - \PD_y B_x \\
+    & = - \frac{Fa^2}{CHa} \PD_y \left(\frac{y}{a} - \frac{\sinh(Ha \frac{y}{a})}{\sinh(Ha)}\right) \\
+    & = - \frac{Fa^2}{CHa} \left(\frac{1}{a} - \frac{Ha}{a} \frac{\cosh(Ha \frac{y}{a})}{\sinh(Ha)}\right) \\
+    & = - \frac{Fa^2}{CHa^2} \left(1 - Ha \frac{\cosh(Ha \frac{y}{a})}{\sinh(Ha)}\right) \\
+\end{aligned} \end{equation}
+Therefore, the Lorentz force is
+\begin{equation}\begin{aligned}
+F_{y,Lorentz} = (\J \CROSS \B)_y =  \\
+              = J_z B_x \\
+              = - \frac{Fa^2}{CHa^2} \left(1 - Ha \frac{\cosh(Ha \frac{y}{a})}{\sinh(Ha)}\right) \frac{Fa^2}{CHa} \left(\frac{y}{a} - \frac{\sinh(Ha \frac{y}{a})}{\sinh(Ha)}\right) \\
+              = - \frac{F^2a^4}{C^2Ha^3} \left(1 - Ha \frac{\cosh(Ha \frac{y}{a})}{\sinh(Ha)}\right) \left(\frac{y}{a} - \frac{\sinh(Ha \frac{y}{a})}{\sinh(Ha)}\right) \\
+\end{aligned} \end{equation}
+
+\begin{verbatim}
+clc; clear all; close all;
+D = 2;
+F = 2;
+a = 20;
+C = 2;
+y = linspace(-a,a);
+Ha = D*a;
+Hay = Ha*y/a;
+u = F*a^2/Ha*cosh(Ha)/sinh(Ha)*(cosh(Hay)/cosh(Ha)-1);
+B_x = F*a^2/Ha*(y/a - sinh(Hay)/sinh(Ha));
+J_z = - F*a^2/(C*Ha^2)*(1 - Ha*cosh(Hay)/sinh(Ha));
+F_L = J_z.*B_x;
+plot(y,u,y,B_x,y,J_z,y,F_L)
+xlabel('y')
+legend('u','B_x','J_z','F_L')
+title('Hartmann Flow')
+\end{verbatim}
+
+% \newpage
+% \section{Naveen's solution}
+% The Hartmann flow solution is...
+% \begin{equation}\begin{aligned}
+% u(y)    & = \hat{u} \left( 1 - \frac{\cosh(Ha y)}{\cosh(Ha)} \right) \\
+% B_x(y)  & = \hat{u} \frac{\sinh(Ha y)}{\cosh(Ha)} - \frac{y}{Ha} \\
+% \hat{u} & = \frac{1}{Ha} \frac{c_w+1}{c_w Ha+\tanh(Ha)} \\
+% c_w     & = \frac{\sigma_w t_w}{\sigma (a/2)} \\
+% \end{aligned}\end{equation}
+
+
+\end{document}

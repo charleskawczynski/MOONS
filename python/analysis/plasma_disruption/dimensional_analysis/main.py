@@ -11,10 +11,11 @@ clear = lambda: os.system('cls')
 clear()
 
 def pow(i): return 10.0**(i)
-def velocity(mat,B,L,tau): return B*L*np.sqrt(mat.sigma/(mat.rho*tau))
+def velocity(mat,B0_P,B_T,L,tau): return L*np.sqrt(B0_P*B_T*mat.sigma/(mat.rho*tau))
 def Reynolds(mat,U,L): return U*L/mat.nu
 def magnetic_Reynolds(mat,U,L): return U*L*mat.mu_m*mat.sigma
 def Hartmann(mat,B,L): return B*L*np.sqrt(mat.sigma/(mat.rho*mat.nu))
+def Alfven(mat,B,U): return B**2.0/(mat.mu_m*mat.rho*U**2.0)
 def KE_dimensional(mat,U,L,KE_dimensionless): return (U**2*mat.rho *L**3)*KE_dimensionless
 def ME_dimensional(mat,B,L,ME_dimensionless): return (B**2/mat.mu_m*L**3)*ME_dimensionless
 
@@ -35,6 +36,7 @@ mat = MP
 mat.print_MP()
 
 print('\n***************** KNOWN SCALES *****************')
+compute_actual_dimensionless_numbers = False
 L_c = 0.1
 # tau = abs(7069.62 - 45000.0)*pow(-6)    # [s] - Based on Mike Ulrickson's data
 tau = 0.0047                            # [s] - Based on B0/max(dB0/dt)
@@ -42,6 +44,7 @@ tau = 0.0047                            # [s] - Based on B0/max(dB0/dt)
 # tau = abs(50.0)*pow(-6)                 # [s] - Sergey's suggestion
 B0_T = 5 # [T]
 B0_P = 1 # [T]
+B_c = B0_T
 B_c = B0_P
 print('L_c            = '+str(L_c))
 print('tau            = '+str(tau))
@@ -49,9 +52,10 @@ print('B0_P           = '+str(B0_P))
 print('B0_T           = '+str(B0_T))
 print('B_c            = '+str(B_c))
 print('\n***************** ESTIMATED SCALES *****************')
-U_c = velocity(mat,B_c,L_c,tau)
+U_c = velocity(mat,B0_P,B0_T,L_c,tau)
 
-J_c = mat.sigma*U_c*B_c
+# J_c = mat.sigma*U_c*B_c
+J_c = mat.sigma*L_c*B0_P/tau
 t_c = L_c/U_c
 print('U_c            = '+str(U_c))
 print('J_c            = '+str(J_c))
@@ -60,40 +64,54 @@ print('\n***************** ESTIMATED DIMENSIONLESS PARAMETERS *****************'
 Rem = magnetic_Reynolds(mat,U_c,L_c)
 Re  = Reynolds(mat,U_c,L_c)
 Ha  = Hartmann(mat,B_c,L_c)
+Al  = Alfven(mat,B_c,U_c)
 print('Re             = '+str(Re))
 print('Ha             = '+str(Ha))
 print('Rem            = '+str(Rem))
+print('Al             = '+str(Al))
 
-print('\n************ DIMENSIONLESS PARAMETERS FROM MOONS OUTPUT ************')
-U_sim = 0.07
-# U_sim = np.sqrt(0.5)
-B_sim = 0.005
-# B_sim = np.sqrt(0.1)
-J_sim = np.sqrt(0.57) # J^2 does not include 1/2
-KE_sim = 0.25
-ME_sim = 0.25
-print(' U_sim [   ]   = '+str(U_sim))
-print(' B_sim [   ]   = '+str(B_sim))
-print(' J_sim [   ]   = '+str(J_sim))
-print('KE_sim [   ]   = '+str(KE_sim))
-print('ME_sim [   ]   = '+str(ME_sim))
-print('\n************ DIMENSIONALIZING PARAMETERS FROM MOONS OUTPUT ************')
-U_dim = dimensional_U(U_sim,U_c)
-B_dim = dimensional_B(B_sim,B_c)
-J_dim = dimensional_B(J_sim,J_c)
-KE_dim = KE_dimensional(mat,U_c,L_c,KE_sim)
-ME_dim = ME_dimensional(mat,B_c,L_c,ME_sim)
-print(' U_dim [m/s]   = '+str(U_dim))
-print(' B_dim [ T ]   = '+str(B_dim))
-print(' J_dim [ A ]   = '+str(J_dim))
-print('KE_dim [ J ]   = '+str(KE_dim))
-print('ME_dim [ J ]   = '+str(ME_dim))
-print('\n****************** ACTUAL DIMENSIONLESS PARAMETERS *******************')
-Rem = magnetic_Reynolds(mat,U_dim,L_c)
-Re  = Reynolds(mat,U_dim,L_c)
-Ha = Hartmann(mat,B_c,L_c)
-print('Re     (real)  = '+str(Re))
-print('Ha     (real)  = '+str(Ha))
-print('Rem    (real)  = '+str(Rem))
+print('\n****************** CONVERTING TO DIMENSIONAL UNITS *******************')
+KE_scale = mat.rho*U_c**2.0*L_c**3.0
+ME_scale = mat.rho*U_c**2.0*L_c**3.0
+EM_force = mat.rho*U_c**2.0/L_c
+EM_stress = mat.rho*U_c**2.0
+print('KE_scale  [J]  = '+str(KE_scale))
+print('ME_scale  [J]  = '+str(ME_scale))
+print('EM_force  [N]  = '+str(EM_force))
+print('EM_stress [Pa] = '+str(EM_stress))
+
+if compute_actual_dimensionless_numbers:
+	print('\n************ DIMENSIONLESS PARAMETERS FROM MOONS OUTPUT ************')
+	U_sim = 0.07
+	# U_sim = np.sqrt(0.5)
+	B_sim = 0.005
+	# B_sim = np.sqrt(0.1)
+	J_sim = np.sqrt(0.57) # J^2 does not include 1/2
+	KE_sim = 0.25
+	ME_sim = 0.25
+	print(' U_sim [   ]   = '+str(U_sim))
+	print(' B_sim [   ]   = '+str(B_sim))
+	print(' J_sim [   ]   = '+str(J_sim))
+	print('KE_sim [   ]   = '+str(KE_sim))
+	print('ME_sim [   ]   = '+str(ME_sim))
+	print('\n************ DIMENSIONALIZING PARAMETERS FROM MOONS OUTPUT ************')
+	U_dim = dimensional_U(U_sim,U_c)
+	B_dim = dimensional_B(B_sim,B_c)
+	J_dim = dimensional_B(J_sim,J_c)
+	KE_dim = KE_dimensional(mat,U_c,L_c,KE_sim)
+	ME_dim = ME_dimensional(mat,B_c,L_c,ME_sim)
+	print(' U_dim [m/s]   = '+str(U_dim))
+	print(' B_dim [ T ]   = '+str(B_dim))
+	print(' J_dim [ A ]   = '+str(J_dim))
+	print('KE_dim [ J ]   = '+str(KE_dim))
+	print('ME_dim [ J ]   = '+str(ME_dim))
+	print('\n****************** ACTUAL DIMENSIONLESS PARAMETERS *******************')
+	Rem = magnetic_Reynolds(mat,U_dim,L_c)
+	Re  = Reynolds(mat,U_dim,L_c)
+	Ha = Hartmann(mat,B_c,L_c)
+	print('Re     (real)  = '+str(Re))
+	print('Ha     (real)  = '+str(Ha))
+	print('Rem    (real)  = '+str(Rem))
+
 
 IO.delete_pyc_files()
